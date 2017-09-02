@@ -1,0 +1,133 @@
+//
+//  script_output.hpp
+//  blocksci
+//
+//  Created by Harry Kalodner on 3/18/17.
+//
+//
+
+#ifndef script_output_hpp
+#define script_output_hpp
+
+#include "basic_types.hpp"
+
+#include <blocksci/scripts/pubkey.hpp>
+#include <blocksci/scripts/script.hpp>
+#include <blocksci/scripts/script_info.hpp>
+#include <blocksci/scripts/address_pointer.hpp>
+
+#include <boost/variant/variant_fwd.hpp>
+
+#include <array>
+#include <stdio.h>
+
+class BlockchainState;
+class AddressWriter;
+
+
+struct ScriptOutputBase {
+    void processOutput(BlockchainState &) {}
+    void checkOutput(const BlockchainState &) {}
+};
+
+template<blocksci::ScriptType::Enum type>
+struct ScriptOutput;
+
+template <>
+struct ScriptOutput<blocksci::ScriptType::Enum::PUBKEY> : public ScriptOutputBase {
+    CPubKey pubkey;
+    
+    ScriptOutput(const std::vector<unsigned char> &vch1);
+    ScriptOutput(const CPubKey &pub) : pubkey(pub) {}
+    
+    bool isValid() const { return true; }
+    
+    blocksci::uint160 getHash();
+};
+
+template <>
+struct ScriptOutput<blocksci::ScriptType::Enum::PUBKEYHASH> : public ScriptOutputBase {
+    
+    CKeyID hash;
+    
+    ScriptOutput(blocksci::uint160 &pubkeyHash) : hash{pubkeyHash} {}
+    
+    bool isValid() const { return true; }
+    
+    blocksci::uint160 getHash();
+};
+
+template <>
+struct ScriptOutput<blocksci::ScriptType::Enum::SCRIPTHASH> : public ScriptOutputBase {
+    CKeyID hash;
+    
+    ScriptOutput(blocksci::uint160 hash_) : hash(hash_) {}
+    
+    blocksci::uint160 getHash();
+    
+    bool isValid() const {
+        return true;
+    }
+};
+
+template <>
+struct ScriptOutput<blocksci::ScriptType::Enum::MULTISIG> {
+    static constexpr int MAX_ADDRESSES = 16;
+    using RawAddressArray = std::array<CPubKey, MAX_ADDRESSES>;
+    using ProcessedAddressArray = std::array<blocksci::AddressPointer, MAX_ADDRESSES>;
+    using FirstSeenArray = std::array<bool, MAX_ADDRESSES>;
+    uint8_t numRequired;
+    uint8_t numTotal;
+    uint16_t addressCount;
+    
+    ProcessedAddressArray processedAddresses;
+    RawAddressArray addresses;
+    FirstSeenArray firstSeen;
+    
+    ScriptOutput() : addressCount(0) {}
+    
+    void addAddress(const std::vector<unsigned char> &vch1);
+    
+    bool isValid() const {
+        return numRequired <= numTotal && numTotal == addressCount;
+    }
+    
+    blocksci::uint160 getHash();
+    void processOutput(BlockchainState &state);
+    void checkOutput(const BlockchainState &state);
+};
+
+template <>
+struct ScriptOutput<blocksci::ScriptType::Enum::NONSTANDARD> : public ScriptOutputBase {
+    CScript script;
+    
+    ScriptOutput<blocksci::ScriptType::Enum::NONSTANDARD>() {};
+    ScriptOutput<blocksci::ScriptType::Enum::NONSTANDARD>(const CScript &script);
+    
+    bool isValid() const {
+        return true;
+    }
+};
+
+template <>
+struct ScriptOutput<blocksci::ScriptType::Enum::NULL_DATA> : public ScriptOutputBase {
+    std::vector<unsigned char> fullData;
+    
+    ScriptOutput<blocksci::ScriptType::Enum::NULL_DATA>(const CScript &script);
+    
+    bool isValid() const {
+        return true;
+    }
+};
+
+using ScriptOutputType = blocksci::to_script_variant_t<ScriptOutput, blocksci::ScriptInfoList>;
+
+template <blocksci::ScriptType::Enum type>
+std::pair<blocksci::AddressPointer, bool> getAddressNum(ScriptOutput<type> &data, BlockchainState &state);
+
+template <blocksci::ScriptType::Enum type>
+std::pair<blocksci::AddressPointer, bool> checkAddressNum(ScriptOutput<type> &data, const BlockchainState &state);
+
+ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsigned char *scriptEnd);
+
+#endif /* script_output_hpp */

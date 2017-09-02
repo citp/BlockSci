@@ -1,0 +1,318 @@
+//
+//  script_output.cpp
+//  blocksci
+//
+//  Created by Harry Kalodner on 3/18/17.
+//
+//
+
+#define BLOCKSCI_WITHOUT_SINGLETON
+
+#include "script_output.hpp"
+#include "address_writer.hpp"
+
+#include "blockchain_state.hpp"
+
+#include <blocksci/hash.hpp>
+
+#include <boost/variant/get.hpp>
+
+template <bool deduped>
+struct AddressNumImp {
+    template <blocksci::ScriptType::Enum type>
+    static std::pair<blocksci::AddressPointer, bool> get(ScriptOutput<type> &data, BlockchainState &state);
+    
+    template <blocksci::ScriptType::Enum type>
+    static std::pair<blocksci::AddressPointer, bool> check(ScriptOutput<type> &data, const BlockchainState &state);
+};
+
+template <>
+struct AddressNumImp<true> {
+    template <blocksci::ScriptType::Enum type>
+    static std::pair<blocksci::AddressPointer, bool> get(ScriptOutput<type> &data, BlockchainState &state) {
+        blocksci::RawAddress rawAddress{data.getHash(), blocksci::addressScriptType(type)};
+        auto addressInfo = state.findAddress(rawAddress);
+        auto processed = state.resolveAddress(addressInfo);
+        return std::make_pair(blocksci::AddressPointer(processed.first.addressNum, type), processed.second);
+    }
+    
+    template <blocksci::ScriptType::Enum type>
+    static std::pair<blocksci::AddressPointer, bool> check(ScriptOutput<type> &data, const BlockchainState &state) {
+        blocksci::RawAddress rawAddress{data.getHash(), blocksci::addressScriptType(type)};
+        auto addressInfo = state.findAddress(rawAddress);
+        return std::make_pair(blocksci::AddressPointer(addressInfo.addressNum, type), addressInfo.addressNum == 0);
+    }
+};
+
+template <>
+struct AddressNumImp<false> {
+    template <blocksci::ScriptType::Enum type>
+    static std::pair<blocksci::AddressPointer, bool> get(ScriptOutput<type> &, BlockchainState &state) {
+        auto index = state.getNewAddressIndex(type);
+        return std::make_pair(blocksci::AddressPointer(index, type), true);
+    }
+    
+    template <blocksci::ScriptType::Enum type>
+    static std::pair<blocksci::AddressPointer, bool> check(ScriptOutput<type> &, const BlockchainState &) {
+        return std::make_pair(blocksci::AddressPointer(0, type), true);
+    }
+};
+
+
+template <blocksci::ScriptType::Enum type>
+std::pair<blocksci::AddressPointer, bool> getAddressNum(ScriptOutput<type> &data, BlockchainState &state) {
+    return AddressNumImp<blocksci::ScriptInfo<type>::deduped>::get(data, state);
+}
+
+template <blocksci::ScriptType::Enum type>
+std::pair<blocksci::AddressPointer, bool> checkAddressNum(ScriptOutput<type> &data, const BlockchainState &state) {
+    return AddressNumImp<blocksci::ScriptInfo<type>::deduped>::check(data, state);
+}
+
+#define VAL(x) template std::pair<blocksci::AddressPointer, bool> getAddressNum<blocksci::ScriptType::Enum::x>(ScriptOutput<blocksci::ScriptType::Enum::x> &data, BlockchainState &state); 
+SCRIPT_TYPE_SET
+#undef VAL
+
+#define VAL(x) template std::pair<blocksci::AddressPointer, bool> checkAddressNum<blocksci::ScriptType::Enum::x>(ScriptOutput<blocksci::ScriptType::Enum::x> &data, const BlockchainState &state);
+SCRIPT_TYPE_SET
+#undef VAL
+
+struct ScriptOutputIsValid : public boost::static_visitor<bool> {
+    template <blocksci::ScriptType::Enum type>
+    bool operator()(const ScriptOutput<type> &data) const {
+        return data.isValid();
+    }
+};
+
+bool isValid(const ScriptOutputType &type) {
+    static auto visitor = ScriptOutputIsValid();
+    return boost::apply_visitor(visitor, type);
+}
+
+// MARK: TX_PUBKEY
+
+ScriptOutput<blocksci::ScriptType::Enum::PUBKEY>::ScriptOutput(const std::vector<unsigned char> &vch1) : pubkey(vch1) {}
+
+blocksci::uint160 ScriptOutput<blocksci::ScriptType::Enum::PUBKEY>::getHash() {
+    return pubkey.GetID();
+}
+
+// MARK: TX_PUBKEYHASH
+
+blocksci::uint160 ScriptOutput<blocksci::ScriptType::Enum::PUBKEYHASH>::getHash() {
+    return hash;
+}
+
+// MARK: TX_SCRIPTHASH
+
+blocksci::uint160 ScriptOutput<blocksci::ScriptType::Enum::SCRIPTHASH>::getHash() {
+    return hash;
+}
+
+// MARK: TX_MULTISIG
+
+blocksci::uint160 ScriptOutput<blocksci::ScriptType::Enum::MULTISIG>::getHash() {
+    std::vector<char> sigData;
+    sigData.resize(sizeof(numRequired) + sizeof(CKeyID) * addressCount);
+    size_t sigDataPos = 0;
+    
+    memcpy(&sigData[sigDataPos], reinterpret_cast<const char *>(&numRequired), sizeof(numRequired));
+    sigDataPos += sizeof(numRequired);
+    
+    auto sortedAddresses = addresses;
+    std::sort(sortedAddresses.begin(), sortedAddresses.begin() + addressCount);
+    
+    for (int i = 0; i < addressCount; i++) {
+        auto addressHash = sortedAddresses[i].GetID();
+        memcpy(&sigData[sigDataPos], reinterpret_cast<const char *>(&addressHash), sizeof(addressHash));
+        sigDataPos += sizeof(addressHash);
+    }
+    
+    return ripemd160(sigData.data(), sigData.size());
+}
+
+void ScriptOutput<blocksci::ScriptType::Enum::MULTISIG>::processOutput(BlockchainState &state) {
+    for (int i = 0; i < addressCount; i++) {
+        blocksci::RawAddress rawAddress{addresses[i].GetID(), blocksci::ScriptType::Enum::PUBKEYHASH};
+        auto addressInfo = state.findAddress(rawAddress);
+        auto addrGetRes = state.resolveAddress(addressInfo);
+        processedAddresses[i] = addrGetRes.first;
+        firstSeen[i] = addrGetRes.second;
+    }
+}
+
+void ScriptOutput<blocksci::ScriptType::Enum::MULTISIG>::checkOutput(const BlockchainState &state) {
+    for (int i = 0; i < addressCount; i++) {
+        blocksci::RawAddress rawAddress{addresses[i].GetID(), blocksci::ScriptType::Enum::PUBKEYHASH};
+        auto addressInfo = state.findAddress(rawAddress);
+        processedAddresses[i] = {addressInfo.addressNum, blocksci::ScriptType::Enum::PUBKEY};
+        firstSeen[i] = addressInfo.addressNum == 0;
+    }
+}
+
+void ScriptOutput<blocksci::ScriptType::Enum::MULTISIG>::addAddress(const std::vector<unsigned char> &vch1) {
+    addresses[addressCount] = CPubKey(vch1);
+    addressCount++;
+}
+
+// MARK: TX_NONSTANDARD
+
+ScriptOutput<blocksci::ScriptType::Enum::NONSTANDARD>::ScriptOutput(const CScript &script_) : script(script_) {}
+
+// MARK: TX_NULL_DATA
+
+ScriptOutput<blocksci::ScriptType::Enum::NULL_DATA>::ScriptOutput(const CScript &script){
+    CScript::const_iterator pc1 = script.begin();
+    opcodetype opcode1;
+    std::vector<unsigned char> vch1;
+    while(true) {
+        if(!script.GetOp(pc1, opcode1, vch1)) {
+            break;
+        }
+        fullData.insert(fullData.end(), vch1.begin(), vch1.end());
+    }
+}
+
+// MARK: Script Processing
+
+bool isValidPubkey(std::vector<unsigned char> &vch1) {
+    if (vch1.size() < 33 || vch1.size() > 65)
+        return false;
+    
+    char chHeader = vch1[0];
+    if ((chHeader == 2 || chHeader == 3) && vch1.size() == 33) {
+        return true;
+    } else if ((chHeader == 4 || chHeader == 6 || chHeader == 7) && vch1.size() == 65) {
+        return true;
+    }
+    
+    return false;
+}
+
+ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsigned char *scriptEnd) {
+    // Templates
+    using namespace blocksci;
+    
+    static std::vector<std::pair<ScriptType::Enum, CScript>> mTemplates;
+    if (mTemplates.empty())
+    {
+        // Standard tx, sender provides pubkey, receiver adds signature
+        auto pubkey = std::make_pair(ScriptType::Enum::PUBKEY, CScript() << OP_PUBKEY << OP_CHECKSIG);
+        mTemplates.push_back(pubkey);
+        
+        // Bitcoin address tx, sender provides hash of pubkey, receiver provides signature and pubkey
+        auto pubkeyHash = std::make_pair(ScriptType::Enum::PUBKEYHASH, CScript() << OP_DUP << OP_HASH160 << OP_PUBKEYHASH << OP_EQUALVERIFY << OP_CHECKSIG);
+        mTemplates.push_back(pubkeyHash);
+        
+        // Sender provides N pubkeys, receivers provides M signatures
+        auto multisig = std::make_pair(ScriptType::Enum::MULTISIG, CScript() << OP_SMALLINTEGER << OP_PUBKEYS << OP_SMALLINTEGER << OP_CHECKMULTISIG);
+        mTemplates.push_back(multisig);
+    }
+    CScript scriptPubKey(scriptBegin, scriptEnd);
+    
+    // Shortcut for pay-to-script-hash, which are more constrained than the other types:
+    // it is always OP_HASH160 20 [20 byte hash] OP_EQUAL
+    if (scriptPubKey.IsPayToScriptHash())
+    {
+        blocksci::uint160 hash;
+        memcpy(&hash, &(*(scriptPubKey.begin()+2)), 20);
+        return ScriptOutput<ScriptType::Enum::SCRIPTHASH>{{hash}};
+    }
+    
+    // Provably prunable, data-carrying output
+    //
+    // So long as script passes the IsUnspendable() test and all but the first
+    // byte passes the IsPushOnly() test we don't care what exactly is in the
+    // script.
+    
+    if (scriptPubKey.size() >= 1 && scriptPubKey[0] == OP_RETURN && scriptPubKey.IsPushOnly(scriptPubKey.begin()+1)) {
+        return ScriptOutput<ScriptType::Enum::NULL_DATA>{scriptPubKey};
+    }
+    
+    // Scan templates
+    const CScript& script1 = scriptPubKey;
+    
+    
+    boost::optional<ScriptOutputType> type;
+    for (auto &tplate : mTemplates) {
+        uint8_t numRequired = 0;
+        bool isFirstSmallInt = true;
+        
+        const CScript& script2 = tplate.second;
+        
+        opcodetype opcode1, opcode2;
+        std::vector<unsigned char> vch1, vch2;
+        
+        // Compare
+        CScript::const_iterator pc1 = script1.begin();
+        CScript::const_iterator pc2 = script2.begin();
+        while (true)
+        {
+            if (pc1 == script1.end() && pc2 == script2.end())
+            {
+                if (!isValid(*type)) {
+                    break;
+                }
+                return *type;
+            }
+            if (!script1.GetOp(pc1, opcode1, vch1))
+                break;
+            if (!script2.GetOp(pc2, opcode2, vch2))
+                break;
+            
+            // Template matching opcodes:
+            if (opcode2 == OP_PUBKEYS)
+            {
+                ScriptOutput<ScriptType::Enum::MULTISIG> output;
+                output.numRequired = numRequired;
+                
+                while (vch1.size() >= 33 && vch1.size() <= 65)
+                {
+                    output.addAddress(vch1);
+                    
+                    if (!script1.GetOp(pc1, opcode1, vch1))
+                        break;
+                }
+                if (!script2.GetOp(pc2, opcode2, vch2))
+                    break;
+                
+                type = output;
+            }
+            
+            if (opcode2 == OP_PUBKEY)
+            {
+                if (!isValidPubkey(vch1)) {
+                    break;
+                }
+                type = ScriptOutput<ScriptType::Enum::PUBKEY>{vch1};
+            }
+            else if (opcode2 == OP_PUBKEYHASH)
+            {
+                if (vch1.size() != sizeof(uint160))
+                    break;
+                auto address = uint160{vch1};
+                type = ScriptOutput<ScriptType::Enum::PUBKEYHASH>{address};
+            }
+            else if (opcode2 == OP_SMALLINTEGER)
+            {   // Single-byte small integer pushed onto vSolutions
+                if (opcode1 == OP_0 || (opcode1 >= OP_1 && opcode1 <= OP_16)) {
+                    if (isFirstSmallInt) {
+                        numRequired = (char)CScript::DecodeOP_N(opcode1);
+                        isFirstSmallInt = false;
+                    } else {
+                        auto &out = boost::get<ScriptOutput<ScriptType::Enum::MULTISIG>>(*type);
+                        out.numTotal = (char)CScript::DecodeOP_N(opcode1);
+                    }
+                }
+                else
+                    break;
+            }
+            else if (opcode1 != opcode2 || vch1 != vch2)
+            {
+                // Others must match exactly
+                break;
+            }
+        }
+    }
+    return ScriptOutput<ScriptType::Enum::NONSTANDARD>{scriptPubKey};
+}
