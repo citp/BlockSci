@@ -1,9 +1,9 @@
 BlockSci
 ====================================
 
-BlockSci Documentation Available
+BlockSci Documentation_ Available
 ----------------------------------
-.. _BlockSci: https://citp.github.io/BlockSci/
+.. _Documentation: https://citp.github.io/BlockSci/
 
 BlockSci Setup Instructions
 -------------------------------- 
