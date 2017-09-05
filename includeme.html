@@ -1,0 +1,146 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>BlockSci &#8212; BlockSci 0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Non-Standard Script" href="scripts/NonStandardScript.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="blocksci">
+<h1>BlockSci<a class="headerlink" href="#blocksci" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="blocksci-setup-instructions">
+<h2>BlockSci Setup Instructions<a class="headerlink" href="#blocksci-setup-instructions" title="Permalink to this headline">¶</a></h2>
+<p>Below I list setup expressions for compiling blocksci on Ubuntu 16.04.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>sudo apt-get update
+sudo apt install build-essential cmake libssl-dev libboost-all-dev libsqlite3-dev autogen autoconf libleveldb-dev libcurl4-openssl-dev libjsoncpp-dev libjsonrpccpp-dev libjsonrpccpp-tools python3-dev python3-pip
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+sudo apt-get update
+sudo apt install gcc-6 g++-6
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 <span class="m">60</span> --slave /usr/bin/g++ g++ /usr/bin/g++-6
+
+git clone https://github.com/bitcoin-core/secp256k1
+<span class="nb">cd</span> secp256k1
+./autogen.sh
+./configure --enable-module-recovery
+make
+sudo make install
+
+<span class="nb">cd</span> libs/bitcoin-cpp-api
+mkdir release
+<span class="nb">cd</span> release
+cmake --DCMAKE_BUILD_TYPE<span class="o">=</span>Release ..
+make
+sudo make install
+
+<span class="nb">cd</span> ../../..
+mkdir release
+<span class="nb">cd</span> release
+cmake --DCMAKE_BUILD_TYPE<span class="o">=</span>Release ..
+make
+sudo make install
+
+sudo -H pip3 install --upgrade pip
+sudo -H pip3 install --upgrade multiprocess psutil jupyter pycrypto matplotlib pandas dateparser
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">BlockSci</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="chain/chain.html">Chain Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scripts/scripts.html">Script Classes</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">BlockSci</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#blocksci-setup-instructions">BlockSci Setup Instructions</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="scripts/NonStandardScript.html" title="previous chapter">Non-Standard Script</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Harry Kalodner.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/includeme.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

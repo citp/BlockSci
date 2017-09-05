@@ -1,0 +1,193 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Address &#8212; BlockSci 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Address Type" href="address_type.html" />
+    <link rel="prev" title="Script Classes" href="scripts.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="address">
+<h1>Address<a class="headerlink" href="#address" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="blocksci.Address">
+<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">Address</code><a class="headerlink" href="#blocksci.Address" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pointer to an address</p>
+<dl class="method">
+<dt id="blocksci.Address.address_count">
+<code class="descname">address_count</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#blocksci.Address.address_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the total number of address of a given type</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Address.addresses_with_prefix">
+<code class="descname">addresses_with_prefix</code><span class="sig-paren">(</span><em>arg0: str</em><span class="sig-paren">)</span> &#x2192; List[blocksci.blocksci_interface.Address]<a class="headerlink" href="#blocksci.Address.addresses_with_prefix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all addresses that begin with the given prefix</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.Address.first_tx">
+<code class="descname">first_tx</code><a class="headerlink" href="#blocksci.Address.first_tx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the first transaction that was sent to this address</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Address.from_string">
+<code class="descname">from_string</code><span class="sig-paren">(</span><em>arg0: str</em><span class="sig-paren">)</span> &#x2192; Optional[blocksci.blocksci_interface.Address]<a class="headerlink" href="#blocksci.Address.from_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct an address object from an address string</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Address.from_strings">
+<code class="descname">from_strings</code><span class="sig-paren">(</span><em>arg0: List[str]</em><span class="sig-paren">)</span> &#x2192; List[blocksci.blocksci_interface.Address]<a class="headerlink" href="#blocksci.Address.from_strings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of addresses that match the given address strings</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Address.in_txes">
+<code class="descname">in_txes</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Address</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Transaction]<a class="headerlink" href="#blocksci.Address.in_txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all transaction where this address was an input</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Address.ins">
+<code class="descname">ins</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Address</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Input]<a class="headerlink" href="#blocksci.Address.ins" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all inputs spent from this address</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Address.out_txes">
+<code class="descname">out_txes</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Address</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Transaction]<a class="headerlink" href="#blocksci.Address.out_txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all transaction where this address was an output</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Address.outs">
+<code class="descname">outs</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Address</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Output]<a class="headerlink" href="#blocksci.Address.outs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all outputs sent to this address</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.Address.script">
+<code class="descname">script</code><a class="headerlink" href="#blocksci.Address.script" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the script associated with this address</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Address.txes">
+<code class="descname">txes</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Address</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Transaction]<a class="headerlink" href="#blocksci.Address.txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all transactions involving this address</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">BlockSci</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../chain/chain.html">Chain Classes</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="scripts.html">Script Classes</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Address</a></li>
+<li class="toctree-l2"><a class="reference internal" href="address_type.html">Address Type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PubkeyScript.html">Pubkey Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PubkeyHashScript.html">Pubkey Hash Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PayToScriptHashScript.html">Pay to ScriptHash Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="MultisigScript.html">Multisig Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="NulldataScript.html">Null Data Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="NonStandardScript.html">Non-Standard Script</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../includeme.html">BlockSci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="scripts.html">Script Classes</a><ul>
+      <li>Previous: <a href="scripts.html" title="previous chapter">Script Classes</a></li>
+      <li>Next: <a href="address_type.html" title="next chapter">Address Type</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Harry Kalodner.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/scripts/address.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

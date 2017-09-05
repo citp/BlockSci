@@ -1,0 +1,246 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Blockchain &#8212; BlockSci 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Block" href="block.html" />
+    <link rel="prev" title="Chain Classes" href="chain.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="blockchain">
+<h1>Blockchain<a class="headerlink" href="#blockchain" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="blocksci.Blockchain">
+<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">Blockchain</code><span class="sig-paren">(</span><em>loc</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing the blockchain</p>
+<dl class="attribute">
+<dt id="blocksci.Blockchain.__dict__">
+<code class="descname">__dict__</code><em class="property"> = mappingproxy({'__init__': &lt;function new_init&gt;, '__dict__': &lt;attribute '__dict__' of 'blocksci.blocksci_interface.Blockchain' objects&gt;, '__doc__': 'Class representing the blockchain', '__module__': 'blocksci.blocksci_interface', '__len__': &lt;instancemethod __len__&gt;, '__iter__': &lt;instancemethod __iter__&gt;, '__getitem__': &lt;instancemethod __getitem__&gt;, 'segment': &lt;instancemethod segment&gt;, 'coinjoin_txes': &lt;instancemethod coinjoin_txes&gt;, 'possible_coinjoin_txes': &lt;instancemethod possible_coinjoin_txes&gt;, 'script_type_txes': &lt;instancemethod script_type_txes&gt;, 'script_deanon_txes': &lt;instancemethod script_deanon_txes&gt;, 'change_script_type_txes': &lt;instancemethod change_script_type_txes&gt;, 'keyset_change_txes': &lt;instancemethod keyset_change_txes&gt;, 'map_blocks': &lt;function map_blocks&gt;, 'filter_blocks': &lt;function filter_blocks&gt;, 'filter_txes': &lt;function filter_txes&gt;, 'mapreduce_block_ranges': &lt;function mapreduce_block_ranges&gt;, 'mapreduce_blocks': &lt;function mapreduce_blocks&gt;, 'mapreduce_txes': &lt;function mapreduce_txes&gt;, 'range': &lt;function block_range&gt;, 'heights_to_dates': &lt;function heights_to_dates&gt;})</em><a class="headerlink" href="#blocksci.Blockchain.__dict__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Blockchain.__getitem__">
+<code class="descname">__getitem__</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.__getitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overloaded function.</p>
+<ol class="arabic simple">
+<li>__getitem__(self: blocksci.blocksci_interface.Blockchain, arg0: int) -&gt; blocksci::Block</li>
+<li>__getitem__(self: blocksci.blocksci_interface.Blockchain, arg0: slice) -&gt; list</li>
+</ol>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Blockchain.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>loc</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Blockchain.__iter__">
+<code class="descname">__iter__</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Blockchain</em><span class="sig-paren">)</span> &#x2192; iterator<a class="headerlink" href="#blocksci.Blockchain.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Blockchain.__len__">
+<code class="descname">__len__</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Blockchain</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#blocksci.Blockchain.__len__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.Blockchain.__module__">
+<code class="descname">__module__</code><em class="property"> = 'blocksci.blocksci_interface'</em><a class="headerlink" href="#blocksci.Blockchain.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Blockchain.change_script_type_txes">
+<code class="descname">change_script_type_txes</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Blockchain</em>, <em>arg0: int</em>, <em>arg1: int</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Transaction]<a class="headerlink" href="#blocksci.Blockchain.change_script_type_txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of transaction for which is_change_over returns true</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Blockchain.coinjoin_txes">
+<code class="descname">coinjoin_txes</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Blockchain</em>, <em>arg0: int</em>, <em>arg1: int</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Transaction]<a class="headerlink" href="#blocksci.Blockchain.coinjoin_txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all transactions that might be JoinMarket coinjoin transactions</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Blockchain.filter_blocks">
+<code class="descname">filter_blocks</code><span class="sig-paren">(</span><em>filterFunc</em>, <em>start=None</em>, <em>end=None</em>, <em>cpu_count=4</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.filter_blocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all blocks in range which match the given criteria</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Blockchain.filter_txes">
+<code class="descname">filter_txes</code><span class="sig-paren">(</span><em>filterFunc</em>, <em>start=None</em>, <em>end=None</em>, <em>cpu_count=4</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.filter_txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all transactions in range which match the given criteria</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Blockchain.heights_to_dates">
+<code class="descname">heights_to_dates</code><span class="sig-paren">(</span><em>df</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.heights_to_dates" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Blockchain.keyset_change_txes">
+<code class="descname">keyset_change_txes</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Blockchain</em>, <em>arg0: int</em>, <em>arg1: int</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Transaction]<a class="headerlink" href="#blocksci.Blockchain.keyset_change_txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of transaction for which is_keyset_change returns true</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Blockchain.map_blocks">
+<code class="descname">map_blocks</code><span class="sig-paren">(</span><em>blockFunc</em>, <em>start=None</em>, <em>end=None</em>, <em>cpu_count=4</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.map_blocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the given function over each block in range and returns a list of the results</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Blockchain.mapreduce_block_ranges">
+<code class="descname">mapreduce_block_ranges</code><span class="sig-paren">(</span><em>chain</em>, <em>mapFunc</em>, <em>start=None</em>, <em>end=None</em>, <em>reduceFunc=None</em>, <em>init=None</em>, <em>cpu_count=4</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.mapreduce_block_ranges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialized multithreaded map reduce function over a stream of block ranges</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Blockchain.mapreduce_blocks">
+<code class="descname">mapreduce_blocks</code><span class="sig-paren">(</span><em>chain</em>, <em>mapFunc</em>, <em>start=None</em>, <em>end=None</em>, <em>reduceFunc=None</em>, <em>init=None</em>, <em>cpu_count=4</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.mapreduce_blocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialized multithreaded map reduce function over a stream of blocks</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Blockchain.mapreduce_txes">
+<code class="descname">mapreduce_txes</code><span class="sig-paren">(</span><em>chain</em>, <em>mapFunc</em>, <em>start=None</em>, <em>end=None</em>, <em>reduceFunc=None</em>, <em>init=None</em>, <em>cpu_count=4</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.mapreduce_txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialized multithreaded map reduce function over a stream of transactions</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Blockchain.possible_coinjoin_txes">
+<code class="descname">possible_coinjoin_txes</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Blockchain</em>, <em>arg0: int</em>, <em>arg1: float</em>, <em>arg2: int</em><span class="sig-paren">)</span> &#x2192; Tuple[List[blocksci::Transaction], List[blocksci::Transaction]]<a class="headerlink" href="#blocksci.Blockchain.possible_coinjoin_txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all transactions that might be coinjoin transactions</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Blockchain.range">
+<code class="descname">range</code><span class="sig-paren">(</span><em>start</em>, <em>end=None</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.range" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Blockchain.script_deanon_txes">
+<code class="descname">script_deanon_txes</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Blockchain</em>, <em>arg0: int</em>, <em>arg1: int</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Transaction]<a class="headerlink" href="#blocksci.Blockchain.script_deanon_txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of transaction for which is_script_deanon returns true</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Blockchain.script_type_txes">
+<code class="descname">script_type_txes</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Blockchain</em>, <em>arg0: int</em>, <em>arg1: int</em>, <em>arg2: blocksci.blocksci_interface.address_type</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Transaction]<a class="headerlink" href="#blocksci.Blockchain.script_type_txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all transactions that include outputs of the given script type</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Blockchain.segment">
+<code class="descname">segment</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Blockchain</em>, <em>arg0: int</em>, <em>arg1: int</em>, <em>arg2: int</em><span class="sig-paren">)</span> &#x2192; List[List[blocksci::Block]]<a class="headerlink" href="#blocksci.Blockchain.segment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">BlockSci</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="chain.html">Chain Classes</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Blockchain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="block.html">Block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tx.html">Transaction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="input.html">Transaction Input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="output.html">Transaction Output</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../scripts/scripts.html">Script Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../includeme.html">BlockSci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="chain.html">Chain Classes</a><ul>
+      <li>Previous: <a href="chain.html" title="previous chapter">Chain Classes</a></li>
+      <li>Next: <a href="block.html" title="next chapter">Block</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Harry Kalodner.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/chain/blockchain.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

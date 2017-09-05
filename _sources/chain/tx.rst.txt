@@ -1,0 +1,6 @@
+Transaction
+====================================
+
+.. autoclass:: blocksci.Tx
+   :members:
+   :undoc-members:

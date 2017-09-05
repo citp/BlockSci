@@ -1,0 +1,6 @@
+Pubkey Hash Script
+====================================
+
+.. autoclass:: blocksci.PubkeyHashScript
+   :members:
+   :inherited-members:
