@@ -1,9 +1,16 @@
 BlockSci
 ====================================
 
-BlockSci Documentation_ Available
+BlockSci Documentation
 ----------------------------------
+Documentation_ is available for the python interface library
+
 .. _Documentation: https://citp.github.io/BlockSci/
+
+Additionally, a demonstration Notebook_ is available in the Notebooks folder
+
+.. _Notebook: https://citp.github.io/BlockSci/demo.html
+
 
 BlockSci Setup Instructions
 -------------------------------- 
