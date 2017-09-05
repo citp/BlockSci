@@ -12,7 +12,7 @@
 #include "config.hpp"
 #include "script_output.hpp"
 
-#include <blocksci/uint256.hpp>
+#include <blocksci/bitcoin_uint256.hpp>
 
 #include <boost/variant/variant.hpp>
 

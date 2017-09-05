@@ -14,18 +14,19 @@
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/transaction.hpp>
-#include <blocksci/scripts/address_pointer.hpp>
-#include <blocksci/scripts/address_types.hpp>
-#include <blocksci/scripts/script_info.hpp>
+#include <blocksci/address/address.hpp>
+#include <blocksci/address/address_types.hpp>
+#include <blocksci/address/address_info.hpp>
+#include <blocksci/scripts/scripthash_script.hpp>
 
 void AddressTraverser::processTx(const blocksci::DataAccess &access, const blocksci::Transaction &tx) {
     uint16_t i = 0;
     for (auto &output : tx.outputs()) {
-        auto pointer = output.getAddressPointer();
-        sawAddress(pointer, tx.txNum);
-        if (pointer.type == blocksci::ScriptType::Enum::MULTISIG) {
-            auto address = pointer.getAddress(access.scripts);
-            for (auto &nestedAddressPointer : address->nestedAddressPointers()) {
+        auto address = output.getAddress();
+        sawAddress(address, tx.txNum);
+        if (address.type == blocksci::AddressType::Enum::MULTISIG) {
+            auto script = address.getScript(access.scripts);
+            for (auto &nestedAddressPointer : script->nestedAddresses()) {
                 if (nestedAddressPointer.addressNum != 0) {
                     sawAddress(nestedAddressPointer, tx.txNum);
                 }
@@ -35,20 +36,20 @@ void AddressTraverser::processTx(const blocksci::DataAccess &access, const block
     }
     
     for (auto &input : tx.inputs()) {
-        if (input.getType() == blocksci::ScriptType::Enum::SCRIPTHASH) {
-            auto pointer = input.getAddressPointer();
-            auto address = pointer.getAddress(access.scripts);
-            auto p2shAddress = dynamic_cast<blocksci::address::ScriptHash *>(address.get());
-            processP2SHAddress(access.scripts, p2shAddress->wrappedAddressPointer, input.linkedTxNum, pointer.addressNum);
+        if (input.getType() == blocksci::AddressType::Enum::SCRIPTHASH) {
+            auto address = input.getAddress();
+            auto script = address.getScript(access.scripts);
+            auto p2shAddress = dynamic_cast<blocksci::script::ScriptHash *>(script.get());
+            processP2SHAddress(access.scripts, p2shAddress->wrappedAddress, input.spentTxIndex(), address.addressNum);
         }
     }
 }
 
-void AddressTraverser::processP2SHAddress(const blocksci::ScriptAccess &access, const blocksci::AddressPointer &pointer, uint32_t txNum, uint32_t p2shNum) {
-    linkP2SHAddress(pointer, txNum, p2shNum);
-    if (hasNestedAddresses(pointer.type)) {
-        auto address = pointer.getAddress(access);
-        for (auto &nestedAddressPointer : address->nestedAddressPointers()) {
+void AddressTraverser::processP2SHAddress(const blocksci::ScriptAccess &access, const blocksci::Address &address, uint32_t txNum, uint32_t p2shNum) {
+    linkP2SHAddress(address, txNum, p2shNum);
+    if (hasNestedAddresses(address.type)) {
+        auto script = address.getScript(access);
+        for (auto &nestedAddressPointer : script->nestedAddresses()) {
             // This check shouldn't be necessary
             if (nestedAddressPointer.addressNum != 0) {
                 processP2SHAddress(access, nestedAddressPointer, txNum, p2shNum);

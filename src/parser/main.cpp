@@ -23,7 +23,7 @@
 #include "address_writer.hpp"
 
 #include <blocksci/data_access.hpp>
-#include <blocksci/scripts/address_types.hpp>
+#include <blocksci/address/address_types.hpp>
 #include <blocksci/chain/chain_access.hpp>
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>
@@ -58,9 +58,9 @@ void rollbackTransactions(size_t blockKeepCount, const ParserConfiguration &conf
         BlockchainState state(config);
         ChainWriter chainWriter{config};
         
-        std::unordered_map<ScriptType::Enum, uint32_t> addressCounts;
+        std::unordered_map<AddressType::Enum, uint32_t> addressCounts;
         ScriptAccess scripts{config};
-        ScriptFirstSeenAccess firstSeenIndex(config);
+        AddressFirstSeenAccess firstSeenIndex(config);
         
         auto &firstDeletedBlock = blocks[blockKeepCount];
         auto firstDeletedTxNum = firstDeletedBlock.firstTxIndex;
@@ -73,14 +73,14 @@ void rollbackTransactions(size_t blockKeepCount, const ParserConfiguration &conf
             
             for (uint16_t i = 0; i < tx.outputCount(); i++) {
                 auto &output = tx.outputs()[i];
-                if (output.getAddressPointer().getFirstTransactionIndex(firstSeenIndex) == txNum) {
+                if (output.getAddress().getFirstTransactionIndex(firstSeenIndex) == txNum) {
                     auto prevValue = addressCounts[output.getType()];
-                    auto addressNum = output.getAddressPointer().addressNum;
+                    auto addressNum = output.getAddress().addressNum;
                     if (addressNum < prevValue) {
                         addressCounts[output.getType()] = addressNum;
                     }
                 }
-                if (output.getType() != ScriptType::Enum::NULL_DATA) {
+                if (output.getType() != AddressType::Enum::NULL_DATA) {
                     state.spendOutput({hash, i});
                 }
             }
@@ -97,7 +97,7 @@ void rollbackTransactions(size_t blockKeepCount, const ParserConfiguration &conf
                         output->linkedTxNum = 0;
                         Inout out = *output;
                         out.linkedTxNum = spentTx.txNum;
-                        UTXO utxo(out, input.getAddressPointer());
+                        UTXO utxo(out, input.getAddress());
                         state.addOutput(utxo, {spentTx.getHash(chain), i});
                     }
                     output++;
@@ -160,7 +160,7 @@ void backUpdateTxes(const ParserConfiguration &config) {
     for (auto &update : updates) {
         auto txPos = txFile.getPointerAtIndex(update.pointer.txNum);
         txPos += sizeof(blocksci::RawTransaction);
-        txPos += sizeof(blocksci::Output) * update.pointer.outputNum;
+        txPos += sizeof(blocksci::Output) * update.pointer.inoutNum;
         blocksci::Output *output = reinterpret_cast<blocksci::Output *>(txPos);
         output->linkedTxNum = update.linkedTxNum;
         count ++;

@@ -14,21 +14,21 @@
 
 namespace blocksci {
     ScriptAccess::ScriptAccess(const DataConfiguration &config) :
-    scriptFiles(blocksci::apply(blocksci::ScriptInfoList(), [&] (auto tag) {
-        return config.scriptsDirectory()/ blocksci::ScriptInfo<decltype(tag)::type>::typeName;
+    scriptFiles(blocksci::apply(blocksci::AddressInfoList(), [&] (auto tag) {
+        return config.scriptsDirectory()/ blocksci::AddressInfo<decltype(tag)::type>::typeName;
     })) {}
     
     
-    template<ScriptType::Enum type>
+    template<AddressType::Enum type>
     struct AddressCountFunctor {
         static size_t f(const ScriptAccess &access) {
             return access.addressCount<type>();
         }
     };
     
-    size_t ScriptAccess::addressCount(ScriptType::Enum type) const {
+    size_t ScriptAccess::addressCount(AddressType::Enum type) const {
         static constexpr auto table = make_dynamic_table<AddressCountFunctor>();
-        static constexpr std::size_t size = ScriptType::all.size();
+        static constexpr std::size_t size = AddressType::all.size();
         
         auto index = static_cast<size_t>(type);
         if (index >= size)

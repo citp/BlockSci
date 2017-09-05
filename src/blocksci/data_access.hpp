@@ -9,10 +9,11 @@
 #ifndef data_access_hpp
 #define data_access_hpp
 
-#include "scripts/script_access.hpp"
-#include "scripts/script_first_seen_access.hpp"
-#include "chain/chain_access.hpp"
-#include "data_configuration.hpp"
+#include <blocksci/scripts/script_access.hpp>
+#include <blocksci/address/address_index.hpp>
+#include <blocksci/address/address_first_seen_access.hpp>
+#include <blocksci/chain/chain_access.hpp>
+#include <blocksci/data_configuration.hpp>
 
 #include <stdio.h>
 
@@ -23,7 +24,8 @@ namespace blocksci {
         const DataConfiguration config;
         ChainAccess chain;
         ScriptAccess scripts;
-        ScriptFirstSeenAccess scriptsFirstSeen;
+        AddressFirstSeenAccess addressFirstSeen;
+        AddressIndex addressIndex;
         
         static DataAccess &Instance(const DataConfiguration &config, bool errorOnReorg, uint32_t blocksIgnored);
         static DataAccess &Instance();

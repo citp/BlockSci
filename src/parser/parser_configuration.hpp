@@ -11,7 +11,7 @@
 
 #include "config.hpp"
 
-#include <blocksci/uint256.hpp>
+#include <blocksci/bitcoin_uint256.hpp>
 #include <blocksci/data_configuration.hpp>
 
 #include <boost/filesystem.hpp>

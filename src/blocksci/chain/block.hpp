@@ -9,11 +9,13 @@
 #ifndef block_hpp
 #define block_hpp
 
-#include <blocksci/uint256.hpp>
+#include <blocksci/bitcoin_uint256.hpp>
+#include <blocksci/address/address_types.hpp>
 
 #include <boost/range/adaptor/transformed.hpp>
-#include <boost/date_time/posix_time/ptime.hpp>
 
+#include <unordered_map>
+#include <chrono>
 #include <stdio.h>
 
 namespace blocksci {
@@ -50,7 +52,7 @@ namespace blocksci {
             return hash.GetHex();
         }
         
-        boost::posix_time::ptime getTime() const;
+        std::chrono::system_clock::time_point getTime() const;
         
         size_t size() const { return numTxes; }
         
@@ -98,8 +100,9 @@ namespace blocksci {
         
         #endif
     };
+    
     size_t sizeBytes(const Block &block, const ChainAccess &access);
-    std::vector<uint64_t> allFees(const Block &block, const ChainAccess &access);
+    std::vector<uint64_t> fees(const Block &block, const ChainAccess &access);
     std::vector<double> feesPerByte(const Block &block, const ChainAccess &access);
     TransactionSummary transactionStatistics(const Block &block, const ChainAccess &access);
     std::vector<const Output *> getUnspentOutputs(const Block &block, const ChainAccess &access);
@@ -109,18 +112,20 @@ namespace blocksci {
     uint64_t totalOutAfterHeight(const Block &block, uint32_t height, const ChainAccess &access);
     uint64_t getTotalSpentOfAge(const Block &block, const ChainAccess &access, uint32_t age);
     std::vector<uint64_t> getTotalSpentOfAges(const Block &block, const ChainAccess &access, uint32_t maxAge);
+    std::unordered_map<AddressType::Enum, int64_t> netAddressTypeValue(const Block &block, const ChainAccess &access);
     
     #ifndef BLOCKSCI_WITHOUT_SINGLETON
     size_t sizeBytes(const Block &block);
     uint64_t totalOut(const Block &block);
     uint64_t totalIn(const Block &block);
     uint64_t totalOutAfterHeight(const Block &block, uint32_t height);
-    std::vector<uint64_t> allFees(const Block &block);
+    std::vector<uint64_t> fees(const Block &block);
     std::vector<double> feesPerByte(const Block &block);
     std::vector<const Output *> getUnspentOutputs(const Block &block);
     std::vector<const Output *> getOutputsSpentByHeight(const Block &block, uint32_t height);
     uint64_t getTotalSpentOfAge(const Block &block, uint32_t age);
     std::vector<uint64_t> getTotalSpentOfAges(const Block &block, uint32_t maxAge);
+    std::unordered_map<AddressType::Enum, int64_t> netAddressTypeValue(const Block &block);
     #endif
 }
 

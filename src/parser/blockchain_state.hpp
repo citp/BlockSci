@@ -12,10 +12,10 @@
 #include "bloom_filter.hpp"
 #include "basic_types.hpp"
 
-#include <blocksci/scripts/script_types.hpp>
-#include <blocksci/scripts/raw_address_pointer.hpp>
-#include <blocksci/uint256.hpp>
-#include <blocksci/scripts/address_pointer.hpp>
+#include <blocksci/bitcoin_uint256.hpp>
+#include <blocksci/address/address.hpp>
+#include <blocksci/address/raw_address_pointer.hpp>
+#include <blocksci/address/address_types.hpp>
 #include <blocksci/chain/output_pointer.hpp>
 #include <blocksci/chain/output.hpp>
 
@@ -32,11 +32,11 @@
 struct ParserConfiguration;
 
 struct UTXO {
-    blocksci::AddressPointer address;
+    blocksci::Address address;
     blocksci::Output output;
     
     UTXO() = default;
-    UTXO(const blocksci::Output &output, const blocksci::AddressPointer &address);
+    UTXO(const blocksci::Output &output, const blocksci::Address &address);
 };
 
 class CBloomFilter;
@@ -111,10 +111,10 @@ public:
     
     AddressInfo findAddress(const blocksci::RawAddress &address) const;
     // Bool is true if address is new
-    std::pair<blocksci::AddressPointer, bool> resolveAddress(const AddressInfo &addressInfo);
-    uint32_t getNewAddressIndex(blocksci::ScriptType::Enum type);
+    std::pair<blocksci::Address, bool> resolveAddress(const AddressInfo &addressInfo);
+    uint32_t getNewAddressIndex(blocksci::AddressType::Enum type);
     
-    void removeAddresses(const std::unordered_map<blocksci::ScriptType::Enum, uint32_t> &deletedIndex);
+    void removeAddresses(const std::unordered_map<blocksci::AddressType::Enum, uint32_t> &deletedIndex);
 };
 
 #endif /* blockchain_state_hpp */

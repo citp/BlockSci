@@ -1,5 +1,14 @@
 from blocksci.blocksci_interface import *
+from blocksci.currency import *
+from blocksci.blockchain_info import *
+from blocksci.blocktrail import *
+from blocksci.opreturn import *
+
 from multiprocess import Pool
+from functools import reduce
+import datetime
+import dateparser
+import pandas as pd
 import psutil
 import tempfile
 import importlib
@@ -8,79 +17,194 @@ import sys
 import os
 import inspect
 
-def map_blocks_general(chain, start, end, mapFunc):
-    cpu_count = psutil.cpu_count()
+def mapreduce_block_ranges(chain, mapFunc, start=None, end=None, reduceFunc=None, init=None, cpu_count=psutil.cpu_count()):
+    """Initialized multithreaded map reduce function over a stream of block ranges
+    """
+    if start is None:
+        start = 0
+    if end is None:
+        end = len(chain)
+    if cpu_count == 1:
+        return reduce(reduceFunc, (mapFunc(block) for block in chain[start:end]))
+
+    if reduceFunc is None:
+        def reduceFunc(cur, el):
+            return cur + [el]
+        init = list()
     segments = chain.segment(start, end, cpu_count)
     with Pool(cpu_count - 1) as p:
         results_future = p.map_async(mapFunc, segments[1:])
         last = mapFunc(segments[0])
         results = results_future.get()
         results.insert(0, last)
-    return [x for y in results for x in y]
+    return reduce(reduceFunc, results, init)
 
-def map_blocks(self, start, end, blockFunc):
+
+def mapreduce_blocks(chain, mapFunc, start=None, end=None, reduceFunc=None, init=None, cpu_count=psutil.cpu_count()):
+    """Initialized multithreaded map reduce function over a stream of blocks
+    """
+    def mapRangeFunc(blocks):
+        if reduceFunc is None:
+            def defaultReduceFunc(cur, el):
+                return cur + [el]
+            return reduce(defaultReduceFunc, (mapFunc(block) for block in blocks), list())
+        else:
+            return reduce(reduceFunc, (mapFunc(block) for block in blocks), init)
+    return mapreduce_block_ranges(chain, mapRangeFunc, start, end, reduceFunc, init, cpu_count)
+
+
+
+def mapreduce_txes(chain, mapFunc, start=None, end=None, reduceFunc=None, init=None, cpu_count=psutil.cpu_count()):
+    """Initialized multithreaded map reduce function over a stream of transactions
+    """
+    def mapRangeFunc(blocks):
+        return reduce(reduceFunc, (mapFunc(tx) for block in blocks for tx in block))
+    return mapreduce_block_ranges(chain, mapRangeFunc, start, end, reduceFunc, init, cpu_count)
+
+
+def map_blocks(self, blockFunc, start = None, end = None, cpu_count=psutil.cpu_count()):
+    """Runs the given function over each block in range and returns a list of the results
+    """
     def mapFunc(blocks):
         return [blockFunc(block) for block in blocks]
-    
-    return map_blocks_general(self, start, end, mapFunc)
+    return mapreduce_block_ranges(self, mapFunc, start, end, cpu_count=cpu_count)
 
-def filter_txes(self, start, end, filterFunc):
+def filter_blocks(self, filterFunc, start = None, end = None, cpu_count=psutil.cpu_count()):
+    """Return all blocks in range which match the given criteria
+    """
     def mapFunc(blocks):
-        return [tx for block in blocks for tx in block if filterFunc(tx)]
-    return map_blocks_general(self, start, end, mapFunc)
+        return [block.height for block in blocks if filterFunc(block)]
+    heights = mapreduce_block_ranges(self, mapFunc, start, end, cpu_count=cpu_count)
+    return [chain[x] for x in heights]
+
+def filter_txes(self, filterFunc, start = None, end = None, cpu_count=psutil.cpu_count()):
+    """Return all transactions in range which match the given criteria
+    """
+    def mapFunc(blocks):
+        return [tx.index for block in blocks for tx in block if filterFunc(tx)]
+    tx_ids = mapreduce_block_ranges(self, mapFunc, start, end, cpu_count=cpu_count)
+    return [Tx.tx_with_index(x) for x in tx_ids]
+
+Blockchain.map_blocks = map_blocks
+Blockchain.filter_blocks = filter_blocks
+Blockchain.filter_txes = filter_txes
+Blockchain.mapreduce_block_ranges = mapreduce_block_ranges
+Blockchain.mapreduce_blocks = mapreduce_blocks
+Blockchain.mapreduce_txes = mapreduce_txes
+
+def heights_to_dates(self, df):
+    return df.set_index(df.index.to_series().apply(lambda x: self[x].time))
+
+def satoshi_to_currency(chain, converter, df, columns=None):
+    if columns is None:
+        columns = df.columns
+    def convert_row(row):
+        date = row["index"]
+        if hasattr(date, 'date'):
+            date = date.date()
+        rate = converter.exchangerate(date) / 1e8
+        for column in columns:
+            if column in row:
+                row[column] = rate * row[column]
+        return row
+    df["index"] = df.index
+    index_type = str(df["index"].dtype)
+    if index_type == "int64":
+        df["index"] = pd.Series(df["index"]).apply(lambda x: chain[x].time.date())
+    df = df.apply(convert_row, axis=1)
+    del df["index"]
+    return df
+
+def block_range(self, start, end=None):
+    def add_one_month(dt0):
+        dt1 = dt0.replace(day=1)
+        dt2 = dt1 + datetime.timedelta(days=32)
+        dt3 = dt2.replace(day=1)
+        return dt3
+    if self.block_times is None:
+        self.block_times = pd.DataFrame([block.time for block in self], columns=["date"])
+        self.block_times["height"] = self.block_times.index
+        self.block_times.index = self.block_times["date"]
+        del self.block_times["date"]
+
+    start_date = pd.to_datetime(start)
+    if end is None:
+        res = dateparser.DateDataParser().get_date_data(start)
+        if res['period'] == 'month':
+            end = add_one_month(start_date)
+        elif res['period'] == 'day':
+            end = start_date + datetime.timedelta(days=1)
+    else:
+        end = pd.to_datetime(end)
+
+    return [self[height] for height in self.block_times[(self.block_times.index >= start_date) & (self.block_times.index < end)].height.tolist()]
 
 old_init = Blockchain.__init__
-def new_init(self, loc = "/data2/bitcoin-data/"):
+def new_init(self, loc):
     old_init(self, loc)
-
+    self.block_times = None
+    self.cpp = CPP(self)
 Blockchain.__init__ = new_init
-Blockchain.map_blocks = map_blocks
-Blockchain.filter_txes = filter_txes
-  
-moduleDirectory = tempfile.TemporaryDirectory()
-sys.path.append(moduleDirectory.name)
-print(moduleDirectory.name)
-dynamicFunctionCounter = 0
+Blockchain.range = block_range
+Blockchain.heights_to_dates = heights_to_dates
 
 class DummyClass:
     pass 
 
 loaderDirectory = os.path.dirname(os.path.abspath(inspect.getsourcefile(DummyClass)))
 
-def function_loader(code, function_name):
-    global dynamicFunctionCounter
-    global moduleDirectory
-    def generate_code(func_name, module_name, func_def):
-        from string import Template
-        filein = open(loaderDirectory + '/templateExtension.cpp')
-        template = Template(filein.read())
-        return template.safe_substitute({"func_name" : func_name, "module_name":module_name, "func_def" : func_def})
-        
-    def create_makefile(module_name):
+
+class CPP(object):
+    def __init__(self, chain):
+        self.dynamicFunctionCounter = 0
+        self.module_directory = tempfile.TemporaryDirectory()
+        sys.path.append(self.module_directory.name)
+        self.saved_tx_filters = {}
+        self.chain = chain
+
+    def generate_module_name(self):
+        module_name = "dynamicCode" + str(self.dynamicFunctionCounter)
+        self.dynamicFunctionCounter += 1
+        return module_name
+
+    def filter_tx(self, code, start=None, end=None):
+        if start is None:
+            start = 0
+        if end is None:
+            end = len(self.chain)
+        if code not in self.saved_tx_filters:
+            from string import Template
+            filein = open(loaderDirectory + '/filterTxesExtension.cpp')
+            template = Template(filein.read())
+            module_name = self.generate_module_name()
+            filled_template = template.safe_substitute({"module_name":module_name, "func_def" : code})
+            makefile = self.create_makefile(module_name)
+            func = self.build_function(filled_template, makefile, module_name)
+            self.saved_tx_filters[code] = func
+        return self.saved_tx_filters[code](self.chain, start, end)
+            
+    def create_makefile(self, module_name):
         from string import Template
         import os
         filein = open(loaderDirectory + '/templateMakefile')
         template = Template(filein.read())
-        subs = {"module_name" : module_name, "install_location" : moduleDirectory.name, "srcname" : module_name + ".cpp", "loaderDirectory":loaderDirectory}
+        subs = {"module_name" : module_name, "install_location" : self.module_directory.name, "srcname" : module_name + ".cpp", "loaderDirectory":loaderDirectory}
         return template.safe_substitute(subs)
-    module_name = "dynamicCode" + str(dynamicFunctionCounter)
-    dynamicFunctionCounter += 1
-    full_code = generate_code(function_name, module_name, code)
-    makefile = create_makefile(module_name)
-    builddir = tempfile.TemporaryDirectory()
-    print(builddir)
-    with open(builddir.name + '/' + module_name + ".cpp", 'w') as f:
-        f.write(full_code)
-    with open(builddir.name + '/CMakeLists.txt', 'w') as f:
-        f.write(makefile)
-    process = subprocess.Popen(["cmake", "."], cwd=builddir.name, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    out, err = process.communicate()
-    print(err.decode('utf8'))
-    process = subprocess.Popen(["make"], cwd=builddir.name, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    out, err = process.communicate()
-    print(err.decode('utf8'))
-    process = subprocess.Popen(["make", "install"], cwd=builddir.name, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    out, err = process.communicate()
-    print(err.decode('utf8'))
-    mod = importlib.import_module(module_name)
-    return getattr(mod, "func")    
+
+    def build_function(self, full_code, makefile, module_name):
+        builddir = tempfile.TemporaryDirectory()
+        with open(builddir.name + '/' + module_name + ".cpp", 'w') as f:
+            f.write(full_code)
+        with open(builddir.name + '/CMakeLists.txt', 'w') as f:
+            f.write(makefile)
+        process = subprocess.Popen(["cmake", "."], cwd=builddir.name, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = process.communicate()
+        print(err.decode('utf8'))
+        process = subprocess.Popen(["make"], cwd=builddir.name, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = process.communicate()
+        print(err.decode('utf8'))
+        process = subprocess.Popen(["make", "install"], cwd=builddir.name, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = process.communicate()
+        print(err.decode('utf8'))
+        mod = importlib.import_module(module_name)
+        return getattr(mod, "func")  

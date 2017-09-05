@@ -15,7 +15,7 @@
 #include "preproccessed_block.hpp"
 #include "utilities.hpp"
 
-#include <blocksci/scripts/address_pointer.hpp>
+#include <blocksci/address/address.hpp>
 #include <blocksci/chain/chain_access.hpp>
 #include <blocksci/chain/block.hpp>
 #include <blocksci/chain/transaction.hpp>
@@ -24,12 +24,12 @@
 
 #include <boost/variant/variant_fwd.hpp>
 
-struct ProcessOutputVisitorReplay : public boost::static_visitor<blocksci::AddressPointer> {
+struct ProcessOutputVisitorReplay : public boost::static_visitor<blocksci::Address> {
     const BlockchainState &state;
     ProcessOutputVisitorReplay(const BlockchainState &state_) : state(state_) {}
-    template <blocksci::ScriptType::Enum type>
-    blocksci::AddressPointer operator()(ScriptOutput<type> &scriptOutput) const {
-        std::pair<blocksci::AddressPointer, bool> processed = checkAddressNum(scriptOutput, state);
+    template <blocksci::AddressType::Enum type>
+    blocksci::Address operator()(ScriptOutput<type> &scriptOutput) const {
+        std::pair<blocksci::Address, bool> processed = checkAddressNum(scriptOutput, state);
         if (processed.second) {
             scriptOutput.checkOutput(state);
         }
@@ -37,7 +37,7 @@ struct ProcessOutputVisitorReplay : public boost::static_visitor<blocksci::Addre
     }
 };
 
-template<blocksci::ScriptType::Enum type>
+template<blocksci::AddressType::Enum type>
 struct ScriptInputFunctor {
     static void f(const InputInfo &info, const RawTransaction &tx, const BlockchainState &state, const AddressWriter &addressWriter) {
         ScriptInput<type> input(info, tx, addressWriter);
@@ -49,7 +49,7 @@ void processInputVisitor(const InputInfo &info, const RawTransaction &tx, const 
     auto &type = info.address.type;
     
     static constexpr auto table = blocksci::make_dynamic_table<ScriptInputFunctor>();
-    static constexpr std::size_t size = blocksci::ScriptType::all.size();
+    static constexpr std::size_t size = blocksci::AddressType::all.size();
     
     auto index = static_cast<size_t>(type);
     if (index >= size)
@@ -108,7 +108,7 @@ void replayBlock(const FileParserConfiguration &config, uint32_t blockNum) {
         uint16_t j = 0;
         for (auto &input : tx.inputs) {
             auto &realInput = realTx.inputs()[j];
-            InputInfo info{realInput.getAddressPointer(), j, input.scriptBegin, input.scriptEnd};
+            InputInfo info{realInput.getAddress(), j, input.scriptBegin, input.scriptEnd};
             processInputVisitor(info, tx, state, writer);
             j++;
         }

@@ -6,11 +6,14 @@
 //
 //
 
+#include "optional_py.hpp"
+
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/input.hpp>
-#include <blocksci/scripts/address_pointer.hpp>
-#include <blocksci/uint256.hpp>
+#include <blocksci/chain/block.hpp>
+#include <blocksci/address/address.hpp>
+#include <blocksci/bitcoin_uint256.hpp>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -22,44 +25,12 @@ namespace py = pybind11;
 
 using namespace blocksci;
 
-namespace pybind11 { namespace detail {
-    template<typename T>
-    struct type_caster<boost::optional<T>>
-    {
-        static handle cast(boost::optional<T> src, return_value_policy policy, handle parent)
-        {
-            if (src)
-            {
-                return type_caster<T>::cast(*src, policy, parent);
-            }
-            
-            // if not set convert to None
-            return none().inc_ref();
-        }
-        PYBIND11_TYPE_CASTER(boost::optional<T>, _("Optional"));
-    };
-}}
-
-py::object reduceOutputsPython(const Transaction::output_range &col, py::function callable, py::object initial) {
-    return boost::accumulate(col, initial, [&](py::object accumulated, const Output &output) {
-        return callable(accumulated, output.getSpendingTx(), output.toAddressNum, output.getValue(), output.getType());
-    });
-}
-
-py::object reduceSpentOutputsPython(const Transaction::input_range &col, py::function callable, py::object initial) {
-    return boost::accumulate(col, initial, [&](py::object accumulated, const Input &input) {
-        return callable(accumulated, input.linkedTxNum, input.toAddressNum, input.getValue(), input.getType());
-    });
-}
-
 void init_tx(py::module &m) {
-    py::class_<Transaction>(m, "Tx", "Class representing a transcation in a block")
+    py::class_<Transaction>(m, "Tx", "Class representing a transaction in a block")
     .def("__str__", &Transaction::getString)
     .def("__repr__", &Transaction::getString)
-    .def("__eq__", &Transaction::operator==)
-    .def("__hash__", [](const Transaction &tx) {
-        return tx.txNum;
-    })
+    .def(py::self == py::self)
+    .def(hash(py::self))
     .def_static("tx_with_index", py::overload_cast<uint32_t>(&Transaction::txWithIndex),
                 R"docstring(
                 This functions gets the transaction with given index.
@@ -73,37 +44,31 @@ void init_tx(py::module &m) {
     .def_static("txes_with_hashes", [](const std::vector<std::string> &txHashes) {
         return getTransactionsFromHashes(txHashes);
     })
-    .def_property_readonly("num_txouts", &Transaction::outputCount, "The number of outputs")
-    .def_property_readonly("num_txins", &Transaction::inputCount)
-    .def_property_readonly("size_bytes", &Transaction::sizeBytes)
-    .def_property_readonly("locktime", &Transaction::locktime)
-    .def_readonly("block_height", &Transaction::blockHeight)
-    .def_readonly("tx_index", &Transaction::txNum)
-    .def_property_readonly("txins", &Transaction::inputs)
-    .def_property_readonly("txouts", &Transaction::outputs)
-    .def("hash", [](const Transaction &tx) {
-        return tx.getHash().GetHex();
-    })
-    .def("total_in", py::overload_cast<const Transaction &>(totalIn))
-    .def("total_out", totalOut)
-    .def("fee", py::overload_cast<const Transaction &>(fee))
-    .def("op_return", py::overload_cast<const Transaction &>(getOpReturn), py::return_value_policy::reference_internal)
-    .def("op_return_data", py::overload_cast<const Transaction &>(getOpReturnData))
-    .def("is_coinbase", isCoinbase)
-    .def("is_coinjoin", py::overload_cast<const Transaction &>(isCoinjoin))
-    .def("is_deanon_tx", py::overload_cast<const Transaction &>(isDeanonTx))
-    .def("is_change_over_tx", py::overload_cast<const Transaction &>(isChangeOverTx))
-    .def("is_coinjoin_extra", [](const Transaction &tx, uint64_t minBaseFee, double percentageFee, size_t maxDepth) {
+    .def_property_readonly("num_outs", &Transaction::outputCount, "The number of outputs this transaction has")
+    .def_property_readonly("num_ins", &Transaction::inputCount, "The number of inputs this transaction has")
+    .def_property_readonly("size", &Transaction::sizeBytes, "The size of this transaction in bytes")
+    .def_property_readonly("locktime", &Transaction::locktime, "The locktime of this transasction")
+    .def_readonly("block_height", &Transaction::blockHeight, "The height of the block that this transaction was in")
+    .def_property_readonly("block", py::overload_cast<>(&Transaction::block, py::const_), "The block that this transaction was in")
+    .def_readonly("index", &Transaction::txNum, "The internal index of this transaction")
+    .def_property_readonly("ins", &Transaction::inputs, "A list of the inputs of the transaction")
+    .def_property_readonly("outs", &Transaction::outputs, "A list of the outputs of the transaction")
+    .def_property_readonly("hash", py::overload_cast<>(&Transaction::getHash, py::const_), "The 256-bit hash of this transaction")
+    .def_property_readonly("value_in", py::overload_cast<const Transaction &>(totalIn), "The sum of the value of all of the inputs")
+    .def_property_readonly("value_out", py::overload_cast<const Transaction &>(totalOut), "The sum of the value of all of the outputs")
+    .def_property_readonly("fee", py::overload_cast<const Transaction &>(fee), "The fee paid by this transaction")
+    .def_property_readonly("fee_per_byte", py::overload_cast<const Transaction &>(feePerByte), "The ratio of fee paid to size in bytes of this transaction")
+    .def_property_readonly("op_return", py::overload_cast<const Transaction &>(getOpReturn), py::return_value_policy::reference_internal, "If this transaction included a null data script, return its output. Otherwise return None")
+    .def_property_readonly("is_coinbase", isCoinbase, "Return's true if this transaction is a Coinbase transaction")
+    .def_property_readonly("is_coinjoin", py::overload_cast<const Transaction &>(isCoinjoin), "Uses basic structural features to quickly decide whether this transaction might be a JoinMarket coinjoin transaction")
+    .def_property_readonly("is_script_deanon", py::overload_cast<const Transaction &>(isDeanonTx), "Returns true if this transaction's change address is deanonymized by the script types involved")
+    .def_property_readonly("is_change_over", py::overload_cast<const Transaction &>(isChangeOverTx), "Returns true if this transaction contained all inputs of one address type and all outputs of a different type")
+    .def_property_readonly("is_keyset_change", py::overload_cast<const Transaction &>(containsKeysetChange), "Returns true if this transaction contains distinct addresses which share some of the same keys, indicating that the access control structure has changed")
+    .def_property_readonly("is_definite_coinjoin", [](const Transaction &tx, uint64_t minBaseFee, double percentageFee, size_t maxDepth) {
         py::gil_scoped_release release;
         return isCoinjoinExtra(tx, minBaseFee, percentageFee, maxDepth);
-    })
-    .def("is_possible_coinjoin", [](const Transaction &tx, uint64_t minBaseFee, double percentageFee, size_t maxDepth) {
-        py::gil_scoped_release release;
-        return isPossibleCoinjoin(tx, minBaseFee, percentageFee, maxDepth);
-    })
-    .def("get_change_output", py::overload_cast<const Transaction &>(getChangeOutput), py::return_value_policy::reference)
-    .def("get_source_txes", py::overload_cast<const Transaction &, int, const Input &>(getSourceAddresses))
-    .def("get_source_txes_list", py::overload_cast<const Transaction &, int, const Input &, const std::vector<Transaction> &>( getSourceAddressesList))
+    }, py::arg("maxDepth") = 0, "This function uses subset matching in order to determine whether this transaction is a JoinMarket coinjoin. If maxDepth != 0, it limits the total number of possible subsets the algorithm will check.")
+    .def_property_readonly("change_output", py::overload_cast<const Transaction &>(getChangeOutput), py::return_value_policy::reference, "If the change address in this transaction can be determined via the fresh address criteria, return it. Otherwise return None.")
     ;
     
     py::enum_<CoinJoinResult>(m, "CoinJoinResult")
@@ -113,11 +78,9 @@ void init_tx(py::module &m) {
     ;
     
     py::class_<Transaction::input_range>(m, "InputRange", "Class representing a range of transaction inputs")
-    .def("reduce", &reduceSpentOutputsPython)
     .def("__len__", &Transaction::input_range::size)
-    /// Optional sequence protocol operations
     .def("__iter__", [](const Transaction::input_range &range) { return py::make_iterator(range.begin(), range.end()); },
-         py::keep_alive<0, 1>() /* Essential: keep object alive while iterator exists */)
+         py::keep_alive<0, 1>())
     .def("__getitem__", [](const Transaction::input_range &range, int64_t i) -> const Input & {
         while (i < 0) {
             i = range.size() - i;
@@ -140,11 +103,9 @@ void init_tx(py::module &m) {
     });
     
     py::class_<Transaction::output_range>(m, "OutputRange", "Class representing a range of transaction outputs")
-    .def("reduce", &reduceOutputsPython)
     .def("__len__", &Transaction::output_range::size)
-    /// Optional sequence protocol operations
     .def("__iter__", [](const Transaction::output_range &range) { return py::make_iterator(range.begin(), range.end()); },
-         py::return_value_policy::reference, py::keep_alive<0, 1>() /* Essential: keep object alive while iterator exists */)
+         py::return_value_policy::reference, py::keep_alive<0, 1>())
     .def("__getitem__", [](const Transaction::output_range &range, int64_t i) -> const Output & {
         while (i < 0) {
             i = range.size() - i;

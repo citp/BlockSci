@@ -16,7 +16,8 @@
 #include "transaction_summary.hpp"
 #include "transaction_iterator.hpp"
 
-#include <boost/date_time/posix_time/conversion.hpp>
+#include <boost/range/algorithm.hpp>
+#include <boost/range/adaptors.hpp>
 
 #include <numeric>
 #include <fstream>
@@ -52,8 +53,8 @@ namespace blocksci {
         return access.getCoinbase(coinbaseOffset);
     }
     
-    boost::posix_time::ptime Block::getTime() const {
-        return boost::posix_time::from_time_t(static_cast<time_t>(timestamp));
+    std::chrono::system_clock::time_point Block::getTime() const {
+        return std::chrono::system_clock::from_time_t(static_cast<time_t>(timestamp));
     }
     
     boost::iterator_range<TransactionIterator> Block::txes(const ChainAccess &access) const {
@@ -70,7 +71,7 @@ namespace blocksci {
     
     Block::value_type Block::getTx(const ChainAccess &access, uint32_t txNum) const {
         auto num = firstTxIndex + txNum;
-        return Transaction(access.createTx(num), num, height);
+        return Transaction(access.getTx(num), num, height);
     }
     
     Transaction Block::coinbaseTx(const ChainAccess &access) const {
@@ -100,26 +101,18 @@ namespace blocksci {
         return size;
     }
     
-    std::vector<uint64_t> allFees(const Block &block, const ChainAccess &access) {
+    std::vector<uint64_t> fees(const Block &block, const ChainAccess &access) {
         std::vector<uint64_t> fees;
-        fees.reserve(block.numTxes - 1);
-        for (uint32_t i = 1; i < block.numTxes; i++) {
-            auto tx = block.getTx(access, i);
-            fees.push_back(fee(tx));
-        }
-        
+        fees.reserve(block.numTxes);
+        boost::copy(block.txes(access) | boost::adaptors::transformed(fee), std::back_inserter(fees));
         return fees;
     }
     
     std::vector<double> feesPerByte(const Block &block, const ChainAccess &access) {
-        std::vector<double> fees;
-        fees.reserve(block.numTxes - 1);
-        for (uint32_t i = 1; i < block.numTxes; i++) {
-            auto tx = block.getTx(access, i);
-            fees.push_back(feePerByte(tx));
-        }
-        
-        return fees;
+        std::vector<double> feesPerBytes;
+        feesPerBytes.reserve(block.numTxes);
+        boost::copy(block.txes(access) | boost::adaptors::transformed(feePerByte), std::back_inserter(feesPerBytes));
+        return feesPerBytes;
     }
     
     TransactionSummary transactionStatistics(const Block &block, const ChainAccess &access) {
@@ -187,13 +180,26 @@ namespace blocksci {
         return total;
     }
     
+    std::unordered_map<AddressType::Enum, int64_t> netAddressTypeValue(const Block &block, const ChainAccess &access) {
+        std::unordered_map<AddressType::Enum, int64_t> net;
+        for (auto tx : block.txes(access)) {
+            for (auto &output : tx.outputs()) {
+                net[output.getType()] += output.getValue();
+            }
+            for (auto &input : tx.inputs()) {
+                net[input.getType()] += input.getValue();
+            }
+        }
+        return net;
+    }
+    
     uint64_t getTotalSpentOfAge(const Block &block, const ChainAccess &access, uint32_t age) {
         uint64_t total = 0;
         auto &oldBlock = access.getBlock(block.height - age);
         uint32_t newestTxNum = oldBlock.txes(access).back().txNum;
         for (auto tx : block.txes(access)) {
             for (auto &input : tx.inputs()) {
-                if (input.linkedTxNum <= newestTxNum) {
+                if (input.spentTxIndex() <= newestTxNum) {
                     total += input.getValue();
                 }
             }
@@ -206,8 +212,8 @@ namespace blocksci {
         uint32_t newestTxNum = access.getBlock(block.height - 1).txes(access).back().txNum;
         for (auto tx : block.txes(access)) {
             for (auto &input : tx.inputs()) {
-                if (input.linkedTxNum <= newestTxNum) {
-                    uint32_t age = std::min(maxAge, block.height - access.getBlockHeight(input.linkedTxNum)) - 1;
+                if (input.spentTxIndex() <= newestTxNum) {
+                    uint32_t age = std::min(maxAge, block.height - access.getBlockHeight(input.spentTxIndex())) - 1;
                     totals[age] += input.getValue();
                 }
             }

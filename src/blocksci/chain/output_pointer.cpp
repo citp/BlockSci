@@ -11,23 +11,36 @@
 #include "output_pointer.hpp"
 #include "chain_access.hpp"
 #include "transaction.hpp"
+#include "input.hpp"
+#include "output.hpp"
+#include "address/address.hpp"
+
+#include <boost/functional/hash.hpp>
 
 #include <sstream>
 
 namespace blocksci {
-    OutputPointer::OutputPointer(uint32_t txNum_, uint16_t outputNum_) : txNum(txNum_), outputNum(outputNum_) {}
-    
-    Transaction OutputPointer::getTransaction(const ChainAccess &access) const {
-        return Transaction(access.createTx(txNum), txNum, access.getBlockHeight(txNum));
+    const Output &OutputPointer::getOutput(const ChainAccess &access) const {
+        return access.getOutput(txNum, inoutNum);
     }
     
-    const Output &OutputPointer::getOutput(const ChainAccess &access) const {
-        return access.createOutput(*this);
+    Input OutputPointer::getInput(const ChainAccess &access) const {
+        return getOutput(access).matchedInput(txNum);
     }
     
     std::string OutputPointer::toString() const {
         std::stringstream ss;
-        ss << "OutputPointer(tx_index_from=" << txNum << ", output_index_from=" << outputNum << ")";
+        ss << "OutputPointer(tx_index_from=" << txNum << ", output_index_from=" << inoutNum << ")";
         return ss.str();
+    }
+}
+
+namespace std
+{
+    size_t hash<blocksci::OutputPointer>::operator()(const blocksci::OutputPointer &pointer) const {
+        std::size_t seed = 41352363;
+        boost::hash_combine(seed, pointer.txNum);
+        boost::hash_combine(seed, pointer.inoutNum);
+        return seed;
     }
 }

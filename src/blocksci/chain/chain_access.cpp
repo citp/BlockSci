@@ -14,6 +14,7 @@
 #include "output_pointer.hpp"
 #include "transaction.hpp"
 #include "output.hpp"
+#include "input.hpp"
 
 namespace blocksci {
     ChainAccess::ChainAccess(const DataConfiguration &config, bool errorOnReorg_, uint32_t blocksIgnored) :
@@ -53,15 +54,24 @@ namespace blocksci {
         return txFile.getPointerAtIndex(index);
     }
     
-    const RawTransaction *ChainAccess::createTx(uint32_t index) const {
+    const RawTransaction *ChainAccess::getTx(uint32_t index) const {
         return txFile.getData(index);
     }
     
-    const Output &ChainAccess::createOutput(const OutputPointer &pointer) const {
-        auto linkedTxPos = getTxPos(pointer.txNum);
+    const Output &ChainAccess::getOutput(uint32_t txIndex, uint16_t outputNum) const {
+        auto linkedTxPos = getTxPos(txIndex);
         linkedTxPos += sizeof(RawTransaction);
-        linkedTxPos += sizeof(Output) * pointer.outputNum;
+        linkedTxPos += sizeof(Output) * outputNum;
         return *reinterpret_cast<const Output *>(linkedTxPos);
+    }
+    
+    const Input &ChainAccess::getInput(uint32_t txIndex, uint16_t inputNum) const {
+        auto tx = getTx(txIndex);
+        auto txPos = reinterpret_cast<const char *>(tx);
+        txPos += sizeof(RawTransaction);
+        txPos += sizeof(Output) * tx->outputCount;
+        txPos += sizeof(Input) * inputNum;
+        return *reinterpret_cast<const Input *>(txPos);
     }
     
     uint32_t ChainAccess::getBlockHeight(uint32_t txIndex) const {

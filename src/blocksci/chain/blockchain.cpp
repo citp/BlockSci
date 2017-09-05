@@ -7,12 +7,14 @@
 //
 
 #include "blockchain.hpp"
-#include "data_configuration.hpp"
 #include "block.hpp"
 #include "transaction.hpp"
-#include "data_access.hpp"
-#include "scripts/address_index.hpp"
 #include "output.hpp"
+
+#include "address/address_index.hpp"
+
+#include "data_configuration.hpp"
+#include "data_access.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -84,10 +86,6 @@ namespace blocksci {
     }
     const Block& Blockchain::operator[] (const uint32_t index) const {
         return static_cast<const Block &>(access.chain.getBlocks()[index]);
-    }
-    
-    AddressIndex Blockchain::getAddressIndex() const {
-        return AddressIndex(access.config);
     }
     
     uint32_t txCount(const Blockchain &chain) {
@@ -168,7 +166,7 @@ namespace blocksci {
         return chain.mapReduceBlockRanges(startBlock, endBlock, mapFunc, reduceFunc, txes);
     }
     
-    std::vector<Transaction> getTransactionIncludingOutput(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock, ScriptType::Enum type) {
+    std::vector<Transaction> getTransactionIncludingOutput(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock, AddressType::Enum type) {
         return getMatchingTransactions(chain, startBlock, endBlock, [type](const Transaction &tx) {
             for (auto &output : tx.outputs()) {
                 if (output.getType() == type) {

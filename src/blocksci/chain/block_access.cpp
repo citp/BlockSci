@@ -58,8 +58,8 @@ namespace blocksci {
         return totalOutAfterHeight(block, height, DataAccess::Instance().chain);
     }
     
-    std::vector<uint64_t> allFees(const Block &block) {
-        return allFees(block, DataAccess::Instance().chain);
+    std::vector<uint64_t> fees(const Block &block) {
+        return fees(block, DataAccess::Instance().chain);
     }
     
     std::vector<double> feesPerByte(const Block &block) {
@@ -80,5 +80,9 @@ namespace blocksci {
     
     std::vector<uint64_t> getTotalSpentOfAges(const Block &block, uint32_t maxAge) {
         return getTotalSpentOfAges(block, DataAccess::Instance().chain, maxAge);
+    }
+    
+    std::unordered_map<AddressType::Enum, int64_t> netAddressTypeValue(const Block &block) {
+        return netAddressTypeValue(block, DataAccess::Instance().chain);
     }
 }

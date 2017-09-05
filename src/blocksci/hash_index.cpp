@@ -8,7 +8,7 @@
 
 #include "hash_index.hpp"
 #include "data_configuration.hpp"
-#include "uint256.hpp"
+#include "bitcoin_uint256.hpp"
 
 namespace blocksci {
     HashIndex::HashIndex(const DataConfiguration &config) {

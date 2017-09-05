@@ -10,7 +10,7 @@
 #define output_hpp
 
 #include "inout.hpp"
-#include <blocksci/scripts/script_types.hpp>
+#include <blocksci/address/address_types.hpp>
 
 #include <boost/optional.hpp>
 
@@ -19,13 +19,17 @@
 
 namespace blocksci {
     struct Transaction;
-    struct AddressPointer;
     struct Address;
     struct OutputPointer;
+    struct Input;
     class ChainAccess;
     
     struct Output : public Inout {
+        using Inout::Inout;
+        
         Output(const Inout &other) : Inout(other) {}
+        
+        Input matchedInput(uint32_t txIndex) const;
         
         uint32_t getSpendingTxIndex(const ChainAccess &access) const;
         
@@ -35,21 +39,10 @@ namespace blocksci {
         
         std::string toString() const;
         
-        bool operator==(const Output& other) const;
-        
-        bool operator!=(const Output& other) const {
-            return ! operator==(other);
-        }
-        
         boost::optional<Transaction> getSpendingTx(const ChainAccess &access) const;
-        
-        AddressPointer getAddressPointer() const;
-        
         
         // Requires DataAccess
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        
-        static const Output &create(const OutputPointer &pointer);
         
         uint32_t getSpendingTxIndex() const;
         boost::optional<Transaction> getSpendingTx() const;

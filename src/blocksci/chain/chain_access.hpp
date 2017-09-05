@@ -10,7 +10,7 @@
 #define chain_access_hpp
 
 #include <blocksci/file_mapper.hpp>
-#include <blocksci/uint256.hpp>
+#include <blocksci/bitcoin_uint256.hpp>
 
 #include <boost/range/iterator_range.hpp>
 #include <stdio.h>
@@ -23,7 +23,7 @@ namespace blocksci {
     
     struct Block;
     struct Output;
-    struct OutputPointer;
+    struct Input;
     struct DataConfiguration;
     struct RawTransaction;
     
@@ -60,9 +60,10 @@ namespace blocksci {
         
         const char *getTxPos(uint32_t index) const;
         
-        const RawTransaction *createTx(uint32_t index) const;
+        const RawTransaction *getTx(uint32_t index) const;
         
-        const Output &createOutput(const OutputPointer &pointer) const;
+        const Output &getOutput(uint32_t txIndex, uint16_t outputNum) const;
+        const Input &getInput(uint32_t txIndex, uint16_t inputNum) const;
         
         size_t txCount() const;
         

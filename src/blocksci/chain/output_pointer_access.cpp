@@ -9,13 +9,14 @@
 #include "output_pointer.hpp"
 #include "data_access.hpp"
 #include "transaction.hpp"
+#include "input.hpp"
 
 namespace blocksci {
-    Transaction OutputPointer::getTransaction() const {
-        return getTransaction(DataAccess::Instance().chain);
-    }
-    
     const Output &OutputPointer::getOutput() const {
         return getOutput(DataAccess::Instance().chain);
+    }
+    
+    Input OutputPointer::getInput() const {
+        return getInput(DataAccess::Instance().chain);
     }
 }

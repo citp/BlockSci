@@ -11,10 +11,10 @@
 
 namespace blocksci {
     struct OutputPointer;
-    struct AddressPointer;
+    struct Address;
     struct Transaction;
     class ScriptAccess;
-    class ScriptFirstSeenAccess;
+    class AddressFirstSeenAccess;
     class DataAccess;
 }
 
@@ -23,11 +23,11 @@ namespace blocksci {
 
 class AddressTraverser {
     
-    void processP2SHAddress(const blocksci::ScriptAccess &access, const blocksci::AddressPointer &pointer, uint32_t txNum, uint32_t p2shNum);
+    void processP2SHAddress(const blocksci::ScriptAccess &access, const blocksci::Address &pointer, uint32_t txNum, uint32_t p2shNum);
     
-    virtual void sawAddress(const blocksci::AddressPointer &pointer, uint32_t txNum) = 0;
+    virtual void sawAddress(const blocksci::Address &pointer, uint32_t txNum) = 0;
     
-    virtual void linkP2SHAddress(const blocksci::AddressPointer &pointer, uint32_t txNum, uint32_t p2shNum) = 0;
+    virtual void linkP2SHAddress(const blocksci::Address &pointer, uint32_t txNum, uint32_t p2shNum) = 0;
     
 public:
     void processTx(const blocksci::DataAccess &access, const blocksci::Transaction &tx);

@@ -13,9 +13,9 @@
 
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/output_pointer.hpp>
-#include <blocksci/scripts/address_pointer.hpp>
-#include <blocksci/scripts/address_types.hpp>
-#include <blocksci/scripts/script_info.hpp>
+#include <blocksci/address/address.hpp>
+#include <blocksci/address/address_types.hpp>
+#include <blocksci/address/address_info.hpp>
 
 
 #include <blocksci/data_access.hpp>
@@ -26,10 +26,10 @@
 #include <fstream>
 
 FirstSeenIndex::FirstSeenIndex(const ParserConfiguration &config, const blocksci::ScriptAccess &access) {
-    auto tags = blocksci::ScriptInfoList();
+    auto tags = blocksci::AddressInfoList();
     blocksci::for_each(tags, [this, &config, &access](auto tag) -> decltype(auto) {
         constexpr auto type = decltype(tag)::type;
-        auto path = config.firstSeenDirectory()/blocksci::ScriptInfo<type>::typeName;
+        auto path = config.firstSeenDirectory()/blocksci::AddressInfo<type>::typeName;
         auto mainParams = std::fstream::out | std::fstream::binary;
         auto extraParams = std::fstream::ate | std::fstream::in;
         
@@ -49,8 +49,8 @@ FirstSeenIndex::FirstSeenIndex(const ParserConfiguration &config, const blocksci
     });
 }
 
-void FirstSeenIndex::sawAddress(const blocksci::AddressPointer &pointer, uint32_t txNum) {
-    auto type = addressScriptType(pointer.type);
+void FirstSeenIndex::sawAddress(const blocksci::Address &pointer, uint32_t txNum) {
+    auto type = addressAddressType(pointer.type);
     auto it = files.find(type);
     auto &file = it->second;
     auto oldValue = *file.getData(pointer.addressNum - 1);
@@ -59,12 +59,12 @@ void FirstSeenIndex::sawAddress(const blocksci::AddressPointer &pointer, uint32_
     }
 }
 
-void FirstSeenIndex::linkP2SHAddress(const blocksci::AddressPointer &pointer, uint32_t, uint32_t p2shNum) {
+void FirstSeenIndex::linkP2SHAddress(const blocksci::Address &pointer, uint32_t, uint32_t p2shNum) {
     
-    auto &p2shFile = files.find(blocksci::ScriptType::Enum::SCRIPTHASH)->second;
+    auto &p2shFile = files.find(blocksci::AddressType::Enum::SCRIPTHASH)->second;
     auto firstUsage = *p2shFile.getData(p2shNum);
     
-    auto type = addressScriptType(pointer.type);
+    auto type = addressAddressType(pointer.type);
     auto it = files.find(type);
     auto &file = it->second;
     auto oldValue = *file.getData(pointer.addressNum - 1);

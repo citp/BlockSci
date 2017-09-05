@@ -12,7 +12,7 @@
 #include "chain_access.hpp"
 #include "output.hpp"
 #include "transaction.hpp"
-#include "scripts/address_pointer.hpp"
+#include "address/address.hpp"
 
 #include <sstream>
 
@@ -24,9 +24,13 @@ namespace blocksci {
     
     std::string Input::toString() const {
         std::stringstream ss;
-        auto address = getAddressPointer();
+        auto address = getAddress();
         ss << "TxIn(tx_index_to=" << linkedTxNum << ", address=" << address <<", satoshis=" << getValue() << ")";
         return ss.str();
+    }
+    
+    Output Input::matchedOutput(uint32_t txIndex) const {
+        return {txIndex, getAddress(), getValue()};
     }
 }
 

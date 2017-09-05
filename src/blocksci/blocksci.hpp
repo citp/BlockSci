@@ -17,8 +17,8 @@
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>
-#include <blocksci/scripts/address.hpp>
-#include <blocksci/scripts/address_types.hpp>
+#include <blocksci/address/address.hpp>
+#include <blocksci/address/address_types.hpp>
 
 #pragma GCC visibility pop
 

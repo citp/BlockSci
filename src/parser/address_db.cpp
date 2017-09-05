@@ -11,8 +11,8 @@
 
 #include "parser_configuration.hpp"
 
-#include <blocksci/scripts/address_pointer.hpp>
-#include <blocksci/scripts/address_index.hpp>
+#include <blocksci/address/address.hpp>
+#include <blocksci/address/address_index.hpp>
 #include <blocksci/chain/output_pointer.hpp>
 
 #include <boost/filesystem.hpp>
@@ -123,7 +123,7 @@ AddressDB::~AddressDB() {
     sqlite3_close(db);
 }
 
-void AddressDB::sawAddress(const blocksci::AddressPointer &pointer, uint32_t txNum) {
+void AddressDB::sawAddress(const blocksci::Address &pointer, uint32_t txNum) {
     auto type = pointer.getDBType();
     if (type >= 0 && type < 3) {
         auto stmt = insertStatements[type];
@@ -139,7 +139,7 @@ void AddressDB::sawAddress(const blocksci::AddressPointer &pointer, uint32_t txN
     }
 }
 
-void AddressDB::linkP2SHAddress(const blocksci::AddressPointer &, uint32_t, uint32_t) {
+void AddressDB::linkP2SHAddress(const blocksci::Address &, uint32_t, uint32_t) {
     
 }
 

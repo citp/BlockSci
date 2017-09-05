@@ -12,8 +12,8 @@
 #include "basic_types.hpp"
 #include "script_output.hpp"
 
-#include <blocksci/scripts/script_types.hpp>
-#include <blocksci/scripts/address.hpp>
+#include <blocksci/address/address_types.hpp>
+#include <blocksci/address/address.hpp>
 #include <blocksci/chain/output_pointer.hpp>
 
 #include <boost/variant/variant.hpp>
@@ -27,12 +27,12 @@ class CPubKey;
 
 
 struct InputInfo {
-    blocksci::AddressPointer address;
+    blocksci::Address address;
     uint32_t inputNum;
     const unsigned char *scriptBegin;
     const unsigned char *scriptEnd;
     
-    InputInfo(const blocksci::AddressPointer &address_, uint32_t inputNum_, const unsigned char *scriptBegin_, const unsigned char *scriptEnd_) : address(address_), inputNum(inputNum_), scriptBegin(scriptBegin_), scriptEnd(scriptEnd_) {}
+    InputInfo(const blocksci::Address &address_, uint32_t inputNum_, const unsigned char *scriptBegin_, const unsigned char *scriptEnd_) : address(address_), inputNum(inputNum_), scriptBegin(scriptBegin_), scriptEnd(scriptEnd_) {}
     
     CScript getScript() const {
         return CScript(scriptBegin, scriptEnd);
@@ -43,17 +43,17 @@ struct ScriptInputBase {
     void checkInput(const InputInfo &, const RawTransaction &, const BlockchainState &, const AddressWriter &) {}
 };
 
-template<blocksci::ScriptType::Enum type>
+template<blocksci::AddressType::Enum type>
 struct ScriptInput;
 
 template<>
-struct ScriptInput<blocksci::ScriptType::Enum::PUBKEY> : public ScriptInputBase {
+struct ScriptInput<blocksci::AddressType::Enum::PUBKEY> : public ScriptInputBase {
     ScriptInput(const InputInfo &, const RawTransaction &, const AddressWriter &) {}
     void processInput(const InputInfo &, const RawTransaction &, BlockchainState &, AddressWriter &) {}
 };
 
 template<>
-struct ScriptInput<blocksci::ScriptType::Enum::PUBKEYHASH> : public ScriptInputBase {
+struct ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH> : public ScriptInputBase {
     uint32_t addressNum;
     CPubKey pubkey;
     
@@ -62,7 +62,7 @@ struct ScriptInput<blocksci::ScriptType::Enum::PUBKEYHASH> : public ScriptInputB
 };
 
 template<>
-struct ScriptInput<blocksci::ScriptType::Enum::NONSTANDARD> : public ScriptInputBase {
+struct ScriptInput<blocksci::AddressType::Enum::NONSTANDARD> : public ScriptInputBase {
     uint32_t addressNum;
     CScript script;
     
@@ -71,17 +71,17 @@ struct ScriptInput<blocksci::ScriptType::Enum::NONSTANDARD> : public ScriptInput
 };
 
 template <>
-struct ScriptInput<blocksci::ScriptType::Enum::NULL_DATA> : public ScriptInputBase {
+struct ScriptInput<blocksci::AddressType::Enum::NULL_DATA> : public ScriptInputBase {
     ScriptInput(const InputInfo &inputInfo, const RawTransaction &tx, const AddressWriter &);
     void processInput(const InputInfo &, const RawTransaction &, BlockchainState &, AddressWriter &);
 };
 
-using ScriptInputType = blocksci::to_script_variant_t<ScriptInput, blocksci::ScriptInfoList>;
+using ScriptInputType = blocksci::to_script_variant_t<ScriptInput, blocksci::AddressInfoList>;
 
 template<>
-struct ScriptInput<blocksci::ScriptType::Enum::SCRIPTHASH> : public ScriptInputBase {
+struct ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptInputBase {
     uint32_t addressNum;
-    blocksci::AddressPointer wrappedAddress;
+    blocksci::Address wrappedAddress;
     ScriptOutputType wrappedScriptOutput;
     std::vector<unsigned char> wrappedInputScript;
     
@@ -91,7 +91,7 @@ struct ScriptInput<blocksci::ScriptType::Enum::SCRIPTHASH> : public ScriptInputB
 };
 
 template<>
-struct ScriptInput<blocksci::ScriptType::Enum::MULTISIG> : public ScriptInputBase {
+struct ScriptInput<blocksci::AddressType::Enum::MULTISIG> : public ScriptInputBase {
     static constexpr int MAX_ADDRESSES = 16;
     uint32_t addressNum;
     std::bitset<MAX_ADDRESSES> spendSet;

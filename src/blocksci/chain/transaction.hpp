@@ -19,15 +19,17 @@ enum class CoinJoinResult {
 };
 
 namespace blocksci {
-    struct AddressPointer;
+    struct Address;
     class uint256;
     class ScriptAccess;
     class ChainAccess;
-    class ScriptFirstSeenAccess;
+    class AddressFirstSeenAccess;
     struct TransactionSummary;
     struct Input;
     struct Output;
-    struct InputExpander;
+    struct Block;
+    struct InputPointer;
+    struct OutputPointer;
     
     struct RawTransaction {
         uint32_t sizeBytes;
@@ -65,7 +67,8 @@ namespace blocksci {
         uint256 getHash(const ChainAccess &access) const;
         std::string getString() const;
         
-        boost::optional<uint16_t> getOutputNum(const Input &input) const;
+        std::vector<OutputPointer> getOutputPointers(const InputPointer &pointer, const ChainAccess &access) const;
+        std::vector<InputPointer> getInputPointers(const OutputPointer &pointer, const ChainAccess &access) const;
         
         bool operator==(const Transaction& other) const {
             return txNum == other.txNum;
@@ -74,6 +77,8 @@ namespace blocksci {
         bool operator<(const Transaction &other) const {
             return txNum < other.txNum;
         }
+        
+        const Block &block(const ChainAccess &access) const;
         
         uint32_t sizeBytes() const {
             return data->sizeBytes;
@@ -107,6 +112,8 @@ namespace blocksci {
         static boost::optional<Transaction> txWithHash(std::string hash);
         
         uint256 getHash() const;
+        
+        const Block &block() const;
         #endif
     };
     
@@ -128,25 +135,14 @@ namespace blocksci {
     uint64_t fee(const Transaction &tx);
     double feePerByte(const Transaction &tx);
     
-    const Output * getChangeOutput(const ScriptFirstSeenAccess &scripts, const Transaction &tx);
-    
-    std::vector<std::pair<AddressPointer, int>> getSourceAddresses(const ChainAccess &access, const Transaction &tx, int maxDepth, const Input &inputToReplace);
-    
-    std::vector<std::pair<AddressPointer, int>> getSourceAddressesList(const ChainAccess &access, const Transaction &tx, int maxDepth, const Input &inputToReplace, const std::vector<Transaction> &cjTxes);
-    
-    std::string getOpReturnData(const Transaction &tx, const ScriptAccess &access);
+    const Output * getChangeOutput(const AddressFirstSeenAccess &scripts, const Transaction &tx);
     
     #ifndef BLOCKSCI_WITHOUT_SINGLETON
     std::vector<Transaction> getTransactionsFromHashes(const std::vector<std::string> &txHashes);
-    std::string getOpReturnData(const Transaction &tx);
     bool containsKeysetChange(const Transaction &tx);
     
     const Output *getChangeOutput(const Transaction &tx);
     bool isChangeOverTx(const Transaction &tx);
-    
-    std::vector<std::pair<AddressPointer, int>> getSourceAddresses(const Transaction &tx, int maxDepth, const Input &inputToReplace);
-    
-    std::vector<std::pair<AddressPointer, int>> getSourceAddressesList(const Transaction &tx, int maxDepth, const Input &inputToReplace, const std::vector<Transaction> &cjTxes);
     
     #endif
 }
@@ -162,5 +158,6 @@ namespace std {
         }
     };
 }
+
 
 #endif /* transaction_hpp */

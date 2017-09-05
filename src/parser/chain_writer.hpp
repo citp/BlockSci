@@ -10,7 +10,7 @@
 #define chain_writer_hpp
 
 #include <blocksci/file_mapper.hpp>
-#include <blocksci/uint256.hpp>
+#include <blocksci/bitcoin_uint256.hpp>
 
 #include <stdio.h>
 

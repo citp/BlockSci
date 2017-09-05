@@ -35,9 +35,6 @@ FileParserConfiguration::FileParserConfiguration(const boost::filesystem::path &
     if (bitcoinDirectoryString.find("litecoin") != std::string::npos || bitcoinDirectoryString.find("Litecoin") != std::string::npos) {
         blockMagic = 0xdbb6c0fb;
         workHashFunction = doubleSha256;
-    } else if (bitcoinDirectoryString.find("DashCore") != std::string::npos || bitcoinDirectoryString.find("dashcore") != std::string::npos) {
-        blockMagic = 0xbd6b0cbf;
-        workHashFunction = hashX11;
     } else if (bitcoinDirectoryString.find("regtest") != std::string::npos) {
         blockMagic = 0xdab5bffa;
         workHashFunction = doubleSha256;

@@ -11,7 +11,7 @@
 
 #include "blockchain_state.hpp"
 
-#include <blocksci/uint256.hpp>
+#include <blocksci/bitcoin_uint256.hpp>
 
 #include <fstream>
 #include <array>

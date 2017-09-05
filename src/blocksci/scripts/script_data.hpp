@@ -9,11 +9,12 @@
 #ifndef script_data_hpp
 #define script_data_hpp
 
-#include "address_pointer.hpp"
-#include "script.hpp"
-#include "pubkey.hpp"
+#include "bitcoin_script.hpp"
+#include "bitcoin_pubkey.hpp"
 
-#include <blocksci/uint256.hpp>
+#include <blocksci/address/address.hpp>
+
+#include <blocksci/bitcoin_uint256.hpp>
 
 #include <stdio.h>
 
@@ -36,7 +37,7 @@ namespace blocksci {
     
     struct ScriptHashData {
         uint160 address;
-        AddressPointer wrappedAddress;
+        Address wrappedAddress;
         
         size_t size() {
             return sizeof(ScriptHashData);
@@ -53,12 +54,12 @@ namespace blocksci {
         MultisigData &operator=(const MultisigData &other) = delete;
         MultisigData &operator=(MultisigData &&other) = delete;
         
-        std::vector<AddressPointer> getAddresses() const {
-            std::vector<AddressPointer> res;
+        std::vector<Address> getAddresses() const {
+            std::vector<Address> res;
             
             const uint32_t *addresses = reinterpret_cast<const uint32_t *>(reinterpret_cast<const char *>(this) + sizeof(MultisigData));
             for (uint32_t i = 0; i < addressCount; i++) {
-                res.emplace_back(addresses[i], ScriptType::Enum::PUBKEYHASH);
+                res.emplace_back(addresses[i], AddressType::Enum::PUBKEYHASH);
             }
             
             return res;

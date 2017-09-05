@@ -11,10 +11,10 @@
 
 #include "basic_types.hpp"
 
-#include <blocksci/scripts/pubkey.hpp>
-#include <blocksci/scripts/script.hpp>
-#include <blocksci/scripts/script_info.hpp>
-#include <blocksci/scripts/address_pointer.hpp>
+#include <blocksci/scripts/bitcoin_script.hpp>
+#include <blocksci/scripts/bitcoin_pubkey.hpp>
+#include <blocksci/address/address_info.hpp>
+#include <blocksci/address/address.hpp>
 
 #include <boost/variant/variant_fwd.hpp>
 
@@ -30,11 +30,11 @@ struct ScriptOutputBase {
     void checkOutput(const BlockchainState &) {}
 };
 
-template<blocksci::ScriptType::Enum type>
+template<blocksci::AddressType::Enum type>
 struct ScriptOutput;
 
 template <>
-struct ScriptOutput<blocksci::ScriptType::Enum::PUBKEY> : public ScriptOutputBase {
+struct ScriptOutput<blocksci::AddressType::Enum::PUBKEY> : public ScriptOutputBase {
     CPubKey pubkey;
     
     ScriptOutput(const std::vector<unsigned char> &vch1);
@@ -46,7 +46,7 @@ struct ScriptOutput<blocksci::ScriptType::Enum::PUBKEY> : public ScriptOutputBas
 };
 
 template <>
-struct ScriptOutput<blocksci::ScriptType::Enum::PUBKEYHASH> : public ScriptOutputBase {
+struct ScriptOutput<blocksci::AddressType::Enum::PUBKEYHASH> : public ScriptOutputBase {
     
     CKeyID hash;
     
@@ -58,7 +58,7 @@ struct ScriptOutput<blocksci::ScriptType::Enum::PUBKEYHASH> : public ScriptOutpu
 };
 
 template <>
-struct ScriptOutput<blocksci::ScriptType::Enum::SCRIPTHASH> : public ScriptOutputBase {
+struct ScriptOutput<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptOutputBase {
     CKeyID hash;
     
     ScriptOutput(blocksci::uint160 hash_) : hash(hash_) {}
@@ -71,10 +71,10 @@ struct ScriptOutput<blocksci::ScriptType::Enum::SCRIPTHASH> : public ScriptOutpu
 };
 
 template <>
-struct ScriptOutput<blocksci::ScriptType::Enum::MULTISIG> {
+struct ScriptOutput<blocksci::AddressType::Enum::MULTISIG> {
     static constexpr int MAX_ADDRESSES = 16;
     using RawAddressArray = std::array<CPubKey, MAX_ADDRESSES>;
-    using ProcessedAddressArray = std::array<blocksci::AddressPointer, MAX_ADDRESSES>;
+    using ProcessedAddressArray = std::array<blocksci::Address, MAX_ADDRESSES>;
     using FirstSeenArray = std::array<bool, MAX_ADDRESSES>;
     uint8_t numRequired;
     uint8_t numTotal;
@@ -98,11 +98,11 @@ struct ScriptOutput<blocksci::ScriptType::Enum::MULTISIG> {
 };
 
 template <>
-struct ScriptOutput<blocksci::ScriptType::Enum::NONSTANDARD> : public ScriptOutputBase {
+struct ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD> : public ScriptOutputBase {
     CScript script;
     
-    ScriptOutput<blocksci::ScriptType::Enum::NONSTANDARD>() {};
-    ScriptOutput<blocksci::ScriptType::Enum::NONSTANDARD>(const CScript &script);
+    ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD>() {};
+    ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD>(const CScript &script);
     
     bool isValid() const {
         return true;
@@ -110,23 +110,23 @@ struct ScriptOutput<blocksci::ScriptType::Enum::NONSTANDARD> : public ScriptOutp
 };
 
 template <>
-struct ScriptOutput<blocksci::ScriptType::Enum::NULL_DATA> : public ScriptOutputBase {
+struct ScriptOutput<blocksci::AddressType::Enum::NULL_DATA> : public ScriptOutputBase {
     std::vector<unsigned char> fullData;
     
-    ScriptOutput<blocksci::ScriptType::Enum::NULL_DATA>(const CScript &script);
+    ScriptOutput<blocksci::AddressType::Enum::NULL_DATA>(const CScript &script);
     
     bool isValid() const {
         return true;
     }
 };
 
-using ScriptOutputType = blocksci::to_script_variant_t<ScriptOutput, blocksci::ScriptInfoList>;
+using ScriptOutputType = blocksci::to_script_variant_t<ScriptOutput, blocksci::AddressInfoList>;
 
-template <blocksci::ScriptType::Enum type>
-std::pair<blocksci::AddressPointer, bool> getAddressNum(ScriptOutput<type> &data, BlockchainState &state);
+template <blocksci::AddressType::Enum type>
+std::pair<blocksci::Address, bool> getAddressNum(ScriptOutput<type> &data, BlockchainState &state);
 
-template <blocksci::ScriptType::Enum type>
-std::pair<blocksci::AddressPointer, bool> checkAddressNum(ScriptOutput<type> &data, const BlockchainState &state);
+template <blocksci::AddressType::Enum type>
+std::pair<blocksci::Address, bool> checkAddressNum(ScriptOutput<type> &data, const BlockchainState &state);
 
 ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsigned char *scriptEnd);
 

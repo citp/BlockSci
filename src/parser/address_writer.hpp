@@ -14,7 +14,7 @@
 #include "script_input.hpp"
 
 #include <blocksci/file_mapper.hpp>
-#include <blocksci/scripts/script_info.hpp>
+#include <blocksci/address/address_info.hpp>
 #include <blocksci/scripts/script_data.hpp>
 
 #include <boost/variant/variant.hpp>
@@ -35,59 +35,59 @@ struct ScriptFileType<blocksci::Indexed<T...>> {
 };
 
 
-template<blocksci::ScriptType::Enum type>
-using ScriptFileType_t = typename ScriptFileType<typename blocksci::ScriptInfo<type>::storage>::type;
+template<blocksci::AddressType::Enum type>
+using ScriptFileType_t = typename ScriptFileType<typename blocksci::AddressInfo<type>::storage>::type;
 
-template<blocksci::ScriptType::Enum type>
+template<blocksci::AddressType::Enum type>
 struct ScriptFile : public ScriptFileType_t<type> {
     using ScriptFileType_t<type>::ScriptFileType_t;
 };
 
-template<blocksci::ScriptType::Enum type>
+template<blocksci::AddressType::Enum type>
 struct ScriptOutput;
 
-template<blocksci::ScriptType::Enum type>
+template<blocksci::AddressType::Enum type>
 struct ScriptInput;
 
 class AddressWriter {
-    using ScriptFilesTuple = blocksci::internal::to_script_type<ScriptFile, blocksci::ScriptInfoList>::type;
+    using ScriptFilesTuple = blocksci::internal::to_script_type<ScriptFile, blocksci::AddressInfoList>::type;
     
     ScriptFilesTuple scriptFiles;
     
-    template<blocksci::ScriptType::Enum type>
+    template<blocksci::AddressType::Enum type>
     void serializeImp(const ScriptInput<type> &input);
     
-    template<blocksci::ScriptType::Enum type>
+    template<blocksci::AddressType::Enum type>
     void serializeImp(const ScriptOutput<type> &output);
     
 public:
     
-    template <blocksci::ScriptType::Enum type>
+    template <blocksci::AddressType::Enum type>
     ScriptFile<type> &getFile() {
         return std::get<ScriptFile<type>>(scriptFiles);
     }
     
-    template <blocksci::ScriptType::Enum type>
+    template <blocksci::AddressType::Enum type>
     const ScriptFile<type> &getFile() const {
         return std::get<ScriptFile<type>>(scriptFiles);
     }
     
-    template<blocksci::ScriptType::Enum type>
+    template<blocksci::AddressType::Enum type>
     void serialize(const ScriptOutput<type> &output) {
         serializeImp(output);
     }
     
-    template<blocksci::ScriptType::Enum type>
+    template<blocksci::AddressType::Enum type>
     void serialize(const ScriptInput<type> &input) {
         serializeImp(input);
     }
     
-    template<blocksci::ScriptType::Enum type>
+    template<blocksci::AddressType::Enum type>
     void truncate(uint32_t index) {
         getFile<type>().truncate(index);
     }
     
-    void truncate(blocksci::ScriptType::Enum type, uint32_t index);
+    void truncate(blocksci::AddressType::Enum type, uint32_t index);
     
     void serialize(const ScriptOutputType &output);
     void serialize(const ScriptInputType &input);

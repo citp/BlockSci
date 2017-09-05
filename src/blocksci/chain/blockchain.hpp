@@ -24,7 +24,6 @@
 namespace blocksci {
     struct DataConfiguration;
     class DataAccess;
-    class AddressIndex;
     
     namespace detail {
         template <typename T>
@@ -96,8 +95,6 @@ namespace blocksci {
         TransactionIterator beginTransactions(uint32_t blockNum);
         TransactionIterator endTransactions(uint32_t blockNum);
         
-        AddressIndex getAddressIndex() const;
-        
         template <typename MapFunc, typename ReduceFunc, typename ResultType>
         auto mapReduceBlockRanges(uint32_t start, uint32_t stop, MapFunc mapFunc, ReduceFunc reduceFunc, ResultType identity) const -> decltype(mapFunc(std::declval<std::vector<Block> &>())) {
             auto segments = segmentChain(*this, start, stop, std::thread::hardware_concurrency());
@@ -161,7 +158,7 @@ namespace blocksci {
     
     std::vector<Transaction> getCoinjoinTransactions(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock);
     std::pair<std::vector<Transaction>, std::vector<Transaction>> getPossibleCoinjoinTransactions(const Blockchain &chain, uint64_t minBaseFee, double percentageFee, size_t maxDepth);
-    std::vector<Transaction> getTransactionIncludingOutput(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock, ScriptType::Enum type);
+    std::vector<Transaction> getTransactionIncludingOutput(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock, AddressType::Enum type);
     
     std::vector<Transaction> getDeanonTxes(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock);
     std::vector<Transaction> getChangeOverTxes(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock);

@@ -13,7 +13,7 @@
 
 #ifdef BLOCKSCI_FILE_PARSER
 
-#include <blocksci/uint256.hpp>
+#include <blocksci/bitcoin_uint256.hpp>
 
 #include <unordered_map>
 #include <vector>

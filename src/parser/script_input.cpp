@@ -11,13 +11,13 @@
 #include "script_input.hpp"
 #include "address_writer.hpp"
 #include "preproccessed_block.hpp"
-#include <blocksci/scripts/pubkey.hpp>
+#include <blocksci/scripts/bitcoin_pubkey.hpp>
 
 #include <secp256k1.h>
 
 #include <iostream>
 
-ScriptInput<blocksci::ScriptType::Enum::SCRIPTHASH>::ScriptInput(const InputInfo &inputInfo, const RawTransaction &, const AddressWriter &) : addressNum(inputInfo.address.addressNum) {
+ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::ScriptInput(const InputInfo &inputInfo, const RawTransaction &, const AddressWriter &) : addressNum(inputInfo.address.addressNum) {
     CScript script(inputInfo.getScript());
     
     CScript::const_iterator pc1 = script.begin();
@@ -44,7 +44,7 @@ ScriptInput<blocksci::ScriptType::Enum::SCRIPTHASH>::ScriptInput(const InputInfo
     wrappedScriptOutput = extractScriptData(outputScriptBegin, outputScriptBegin + lastScript.size());
 }
 
-template<blocksci::ScriptType::Enum type>
+template<blocksci::AddressType::Enum type>
 struct P2SHInputFunctor {
     static ScriptInputType f(const InputInfo &info, const RawTransaction &tx, BlockchainState &state, AddressWriter &addressWriter) {
         auto input = ScriptInput<type>(info, tx, addressWriter);
@@ -57,7 +57,7 @@ ScriptInputType p2shInputVisitor(const InputInfo &info, const RawTransaction &tx
     auto &type = info.address.type;
     
     static constexpr auto table = blocksci::make_dynamic_table<P2SHInputFunctor>();
-    static constexpr std::size_t size = blocksci::ScriptType::all.size();
+    static constexpr std::size_t size = blocksci::AddressType::all.size();
     
     auto index = static_cast<size_t>(type);
     if (index >= size)
@@ -67,12 +67,12 @@ ScriptInputType p2shInputVisitor(const InputInfo &info, const RawTransaction &tx
     return table[index](info, tx, state, addressWriter);
 }
 
-struct ProcessP2SHVisitor : public boost::static_visitor<std::pair<blocksci::AddressPointer, bool>> {
+struct ProcessP2SHVisitor : public boost::static_visitor<std::pair<blocksci::Address, bool>> {
     BlockchainState &state;
     ProcessP2SHVisitor(BlockchainState &state_) : state(state_) {}
-    template <blocksci::ScriptType::Enum type>
-    std::pair<blocksci::AddressPointer, bool> operator()(ScriptOutput<type> &scriptOutput) const {
-        std::pair<blocksci::AddressPointer, bool> processed = getAddressNum(scriptOutput, state);
+    template <blocksci::AddressType::Enum type>
+    std::pair<blocksci::Address, bool> operator()(ScriptOutput<type> &scriptOutput) const {
+        std::pair<blocksci::Address, bool> processed = getAddressNum(scriptOutput, state);
         if (processed.second) {
             scriptOutput.processOutput(state);
         }
@@ -80,9 +80,9 @@ struct ProcessP2SHVisitor : public boost::static_visitor<std::pair<blocksci::Add
     }
 };
 
-void ScriptInput<blocksci::ScriptType::Enum::SCRIPTHASH>::processInput(const InputInfo &inputInfo, const RawTransaction &tx, BlockchainState &state, AddressWriter &writer) {
+void ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::processInput(const InputInfo &inputInfo, const RawTransaction &tx, BlockchainState &state, AddressWriter &writer) {
     ProcessP2SHVisitor visitor(state);
-    std::pair<blocksci::AddressPointer, bool> processed = boost::apply_visitor(visitor, wrappedScriptOutput);
+    std::pair<blocksci::Address, bool> processed = boost::apply_visitor(visitor, wrappedScriptOutput);
     wrappedAddress = processed.first;
     writer.serialize(*this);
     if (processed.second) {
@@ -95,7 +95,7 @@ void ScriptInput<blocksci::ScriptType::Enum::SCRIPTHASH>::processInput(const Inp
     writer.serialize(p2shInputVisitor(p2shInputInfo, tx, state, writer));
 }
 
-template<blocksci::ScriptType::Enum type>
+template<blocksci::AddressType::Enum type>
 struct CheckP2SHInputFunctor {
     static ScriptInputType f(const InputInfo &info, const RawTransaction &tx, const BlockchainState &state, const AddressWriter &addressWriter) {
         auto input = ScriptInput<type>(info, tx, addressWriter);
@@ -108,7 +108,7 @@ ScriptInputType checkP2SHInputVisitor(const InputInfo &info, const RawTransactio
     auto &type = info.address.type;
     
     static constexpr auto table = blocksci::make_dynamic_table<CheckP2SHInputFunctor>();
-    static constexpr std::size_t size = blocksci::ScriptType::all.size();
+    static constexpr std::size_t size = blocksci::AddressType::all.size();
     
     auto index = static_cast<size_t>(type);
     if (index >= size)
@@ -119,12 +119,12 @@ ScriptInputType checkP2SHInputVisitor(const InputInfo &info, const RawTransactio
 }
 
 
-struct CheckP2SHVisitor : public boost::static_visitor<std::pair<blocksci::AddressPointer, bool>> {
+struct CheckP2SHVisitor : public boost::static_visitor<std::pair<blocksci::Address, bool>> {
     const BlockchainState &state;
     CheckP2SHVisitor(const BlockchainState &state_) : state(state_) {}
-    template <blocksci::ScriptType::Enum type>
-    std::pair<blocksci::AddressPointer, bool> operator()(ScriptOutput<type> &scriptOutput) const {
-        std::pair<blocksci::AddressPointer, bool> processed = checkAddressNum(scriptOutput, state);
+    template <blocksci::AddressType::Enum type>
+    std::pair<blocksci::Address, bool> operator()(ScriptOutput<type> &scriptOutput) const {
+        std::pair<blocksci::Address, bool> processed = checkAddressNum(scriptOutput, state);
         if (processed.second) {
             scriptOutput.checkOutput(state);
         }
@@ -132,9 +132,9 @@ struct CheckP2SHVisitor : public boost::static_visitor<std::pair<blocksci::Addre
     }
 };
 
-void ScriptInput<blocksci::ScriptType::Enum::SCRIPTHASH>::checkInput(const InputInfo &inputInfo, const RawTransaction &tx, const BlockchainState &state, const AddressWriter &writer) {
+void ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::checkInput(const InputInfo &inputInfo, const RawTransaction &tx, const BlockchainState &state, const AddressWriter &writer) {
     CheckP2SHVisitor visitor(state);
-    std::pair<blocksci::AddressPointer, bool> processed = boost::apply_visitor(visitor, wrappedScriptOutput);
+    std::pair<blocksci::Address, bool> processed = boost::apply_visitor(visitor, wrappedScriptOutput);
     wrappedAddress = processed.first;
     const unsigned char *inputScriptBegin = wrappedInputScript.data();
     const unsigned char *inputScriptEnd = wrappedInputScript.data() + wrappedInputScript.size();
@@ -142,7 +142,7 @@ void ScriptInput<blocksci::ScriptType::Enum::SCRIPTHASH>::checkInput(const Input
     checkP2SHInputVisitor(p2shInputInfo, tx, state, writer);
 }
 
-ScriptInput<blocksci::ScriptType::Enum::PUBKEYHASH>::ScriptInput(const InputInfo &inputInfo, const RawTransaction &, const AddressWriter &) : addressNum(inputInfo.address.addressNum) {
+ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInput(const InputInfo &inputInfo, const RawTransaction &, const AddressWriter &) : addressNum(inputInfo.address.addressNum) {
     auto script = inputInfo.getScript();
     auto pc = script.begin();
     opcodetype opcode;
@@ -152,15 +152,15 @@ ScriptInput<blocksci::ScriptType::Enum::PUBKEYHASH>::ScriptInput(const InputInfo
     pubkey.Set(vchSig.begin(), vchSig.end());
 }
 
-void ScriptInput<blocksci::ScriptType::Enum::PUBKEYHASH>::processInput(const InputInfo &, const RawTransaction &, BlockchainState &, AddressWriter &writer) {
+void ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::processInput(const InputInfo &, const RawTransaction &, BlockchainState &, AddressWriter &writer) {
     writer.serialize(*this);
 }
 
-ScriptInput<blocksci::ScriptType::Enum::MULTISIG>::ScriptInput(const InputInfo &, const RawTransaction &, const AddressWriter &) {
+ScriptInput<blocksci::AddressType::Enum::MULTISIG>::ScriptInput(const InputInfo &, const RawTransaction &, const AddressWriter &) {
     // Prelimary work on code to track multisig spend sets
     /*
-    auto &multisigFile = writer.getFile<blocksci::ScriptType::Enum::MULTISIG>();
-    auto &pubkeyFile = writer.getFile<blocksci::ScriptType::Enum::PUBKEY>();
+    auto &multisigFile = writer.getFile<blocksci::AddressType::Enum::MULTISIG>();
+    auto &pubkeyFile = writer.getFile<blocksci::AddressType::Enum::PUBKEY>();
     auto multisigData = multisigFile.getData(inputInfo.address.addressNum - 1);
     auto addresses = multisigData->getAddresses();
     
@@ -203,20 +203,20 @@ ScriptInput<blocksci::ScriptType::Enum::MULTISIG>::ScriptInput(const InputInfo &
     */
 }
 
-void ScriptInput<blocksci::ScriptType::Enum::MULTISIG>::processInput(const InputInfo &, const RawTransaction &, BlockchainState &, AddressWriter &writer) {
+void ScriptInput<blocksci::AddressType::Enum::MULTISIG>::processInput(const InputInfo &, const RawTransaction &, BlockchainState &, AddressWriter &writer) {
     writer.serialize(*this);
 }
 
-ScriptInput<blocksci::ScriptType::Enum::NONSTANDARD>::ScriptInput(const InputInfo &inputInfo, const RawTransaction &, const AddressWriter &) : addressNum(inputInfo.address.addressNum), script(inputInfo.getScript()) {
+ScriptInput<blocksci::AddressType::Enum::NONSTANDARD>::ScriptInput(const InputInfo &inputInfo, const RawTransaction &, const AddressWriter &) : addressNum(inputInfo.address.addressNum), script(inputInfo.getScript()) {
 }
 
-void ScriptInput<blocksci::ScriptType::Enum::NONSTANDARD>::processInput(const InputInfo &, const RawTransaction &, BlockchainState &, AddressWriter &writer) {
+void ScriptInput<blocksci::AddressType::Enum::NONSTANDARD>::processInput(const InputInfo &, const RawTransaction &, BlockchainState &, AddressWriter &writer) {
     writer.serialize(*this);
 }
 
-ScriptInput<blocksci::ScriptType::Enum::NULL_DATA>::ScriptInput(const InputInfo &, const RawTransaction &, const AddressWriter &) {
+ScriptInput<blocksci::AddressType::Enum::NULL_DATA>::ScriptInput(const InputInfo &, const RawTransaction &, const AddressWriter &) {
 }
 
-void ScriptInput<blocksci::ScriptType::Enum::NULL_DATA>::processInput(const InputInfo &, const RawTransaction &, BlockchainState &, AddressWriter &writer) {
+void ScriptInput<blocksci::AddressType::Enum::NULL_DATA>::processInput(const InputInfo &, const RawTransaction &, BlockchainState &, AddressWriter &writer) {
     writer.serialize(*this);
 }

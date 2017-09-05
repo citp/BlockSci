@@ -24,9 +24,9 @@ class AddressDB : public AddressTraverser {
     
     AddressDB(std::pair<sqlite3 *, bool> init);
     
-    void sawAddress(const blocksci::AddressPointer &pointer, uint32_t txNum) override;
+    void sawAddress(const blocksci::Address &pointer, uint32_t txNum) override;
     
-    void linkP2SHAddress(const blocksci::AddressPointer &pointer, uint32_t txNum, uint32_t p2shNum) override;
+    void linkP2SHAddress(const blocksci::Address &pointer, uint32_t txNum, uint32_t p2shNum) override;
     
 public:
     AddressDB(const ParserConfiguration &config);

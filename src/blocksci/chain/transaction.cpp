@@ -12,8 +12,12 @@
 #include "output.hpp"
 #include "input.hpp"
 #include "chain_access.hpp"
-#include "scripts/address_pointer.hpp"
-#include "scripts/address_types.hpp"
+#include "input_pointer.hpp"
+#include "output_pointer.hpp"
+#include "address/address.hpp"
+#include "scripts/scriptsfwd.hpp"
+#include "scripts/scripthash_script.hpp"
+#include "scripts/multisig_script.hpp"
 
 #include <boost/range/adaptors.hpp>
 #include <boost/functional/hash.hpp>
@@ -36,6 +40,10 @@ namespace blocksci {
     uint256 Transaction::getHash(const ChainAccess &access) const {
         auto &txHashesFile = access.getTxHashesFile();
         return *txHashesFile.getData(txNum);
+    }
+    
+    const Block &Transaction::block(const ChainAccess &access) const {
+        return access.getBlock(blockHeight);
     }
     
     std::string Transaction::getString() const {
@@ -77,7 +85,7 @@ namespace blocksci {
     }
     
     Transaction Transaction::txWithIndex(const ChainAccess &access, uint32_t index, uint32_t height) {
-        return {access.createTx(index), index, height};
+        return {access.getTx(index), index, height};
     }
     
     boost::optional<Transaction> Transaction::txWithHash(const ChainAccess &access, std::string hash) {
@@ -94,16 +102,30 @@ namespace blocksci {
         return boost::make_iterator_range_n(reinterpret_cast<const Input *>(pos), inputCount());
     }
     
-    boost::optional<uint16_t> Transaction::getOutputNum(const Input &input) const {
-        Output search{input};
+    std::vector<OutputPointer> Transaction::getOutputPointers(const InputPointer &pointer, const ChainAccess &access) const {
+        std::vector<OutputPointer> pointers;
+        auto search = pointer.getOutput(access);
         uint16_t i = 0;
         for (auto &output : outputs()) {
             if (output == search) {
-                return i;
+                pointers.emplace_back(txNum, i);
             }
             i++;
         }
-        return boost::none;
+        return pointers;
+    }
+    
+    std::vector<InputPointer> Transaction::getInputPointers(const OutputPointer &pointer, const ChainAccess &access) const {
+        std::vector<InputPointer> pointers;
+        auto search = pointer.getInput(access);
+        uint16_t i = 0;
+        for (auto &input : inputs()) {
+            if (input == search) {
+                pointers.emplace_back(txNum, i);
+            }
+            i++;
+        }
+        return pointers;
     }
     
     bool isCoinbase(const Transaction &tx) {
@@ -112,7 +134,7 @@ namespace blocksci {
     
     const Output *getOpReturn(const Transaction &tx) {
         for (auto &output : tx.outputs()) {
-            if (output.getType() == ScriptType::Enum::NULL_DATA) {
+            if (output.getType() == AddressType::Enum::NULL_DATA) {
                 return &output;
             }
         }
@@ -151,18 +173,6 @@ namespace blocksci {
         return static_cast<double>(fee(tx)) / static_cast<double>(tx.sizeBytes());
     }
     
-    std::string getOpReturnData(const Transaction &tx, const ScriptAccess &access) {
-        auto opreturn = getOpReturn(tx);
-        if (opreturn != nullptr) {
-            auto address = reinterpret_cast<const Output *>(opreturn)->getAddressPointer().getAddress(access);
-            auto pointer = address.get();
-            auto opReturnAddress = dynamic_cast<address::OpReturn *>(pointer);
-            return opReturnAddress->data;
-        } else {
-            return std::string();
-        }
-    }
-    
     bool isCoinjoin(const Transaction &tx) {
         if (tx.inputCount() < 2 || tx.outputCount() < 3) {
             return false;
@@ -173,9 +183,9 @@ namespace blocksci {
             return false;
         }
         
-        std::unordered_set<AddressPointer> inputAddresses;
+        std::unordered_set<Address> inputAddresses;
         for (auto &input : tx.inputs()) {
-            inputAddresses.insert(input.getAddressPointer());
+            inputAddresses.insert(input.getAddress());
         }
         
         if (participantCount > inputAddresses.size()) {
@@ -310,18 +320,18 @@ namespace blocksci {
             return CoinJoinResult::False;
         }
         
-        std::unordered_map<AddressPointer, uint64_t> inputValues;
+        std::unordered_map<Address, uint64_t> inputValues;
         for (auto &input : tx.inputs()) {
-            inputValues[input.getAddressPointer()] += input.getValue();
+            inputValues[input.getAddress()] += input.getValue();
         }
         
         if (participantCount > inputValues.size()) {
             return CoinJoinResult::False;
         }
         
-        std::unordered_map<uint64_t, std::unordered_set<AddressPointer>> outputValues;
+        std::unordered_map<uint64_t, std::unordered_set<Address>> outputValues;
         for (auto &output : tx.outputs()) {
-            outputValues[output.getValue()].insert(output.getAddressPointer());
+            outputValues[output.getValue()].insert(output.getAddress());
         }
         
         using pair_type = decltype(outputValues)::value_type;
@@ -398,9 +408,9 @@ namespace blocksci {
             return CoinJoinResult::False;
         }
         
-        std::unordered_map<AddressPointer, uint64_t> inputValues;
+        std::unordered_map<Address, uint64_t> inputValues;
         for (auto &input : tx.inputs()) {
-            inputValues[input.getAddressPointer()] += input.getValue();
+            inputValues[input.getAddress()] += input.getValue();
         }
         
         if (inputValues.size() == 1) {
@@ -409,7 +419,7 @@ namespace blocksci {
         
         std::vector<const Output *> unknownOutputs;
         for (auto &output : tx.outputs()) {
-            if (inputValues.find(output.getAddressPointer()) == inputValues.end()) {
+            if (inputValues.find(output.getAddress()) == inputValues.end()) {
                 unknownOutputs.push_back(&output);
             }
         }
@@ -449,53 +459,7 @@ namespace blocksci {
         return getSumCount(values, bucketGoals, maxDepth);
     }
     
-    std::vector<std::pair<AddressPointer, int>> _getSourceAddresses(const ChainAccess &access, const Transaction &tx, uint16_t outputNum, int depth, int maxDepth, const Input &inputToReplace, std::map<std::pair<uint32_t, uint16_t>, int> &seenTxMap, std::function<bool(const Transaction &tx)> &coinjoinTest) {
-        std::vector<std::pair<AddressPointer, int>> possibleAddresses;
-        auto it = seenTxMap.find(std::make_pair(tx.txNum, outputNum));
-        if (it != seenTxMap.end()) {
-            int oldDepth = it->second;
-            if (depth >= oldDepth) {
-                return possibleAddresses;
-            }
-        }
-        seenTxMap[std::make_pair(tx.txNum, outputNum)] = depth;
-        if (!coinjoinTest(tx)) {
-            possibleAddresses.emplace_back(tx.outputs()[outputNum].getAddressPointer(), depth);
-        } else if (depth < maxDepth) {
-            for (auto &input : tx.inputs()) {
-                if (input == inputToReplace) {
-                    possibleAddresses.emplace_back(AddressPointer(), depth + 1);
-                } else {
-                    auto spentTransaction = input.getSpentTx(access);
-                    auto connectedOutputs = _getSourceAddresses(access, spentTransaction, *spentTransaction.getOutputNum(input), depth + 1, maxDepth, inputToReplace, seenTxMap, coinjoinTest);
-                    possibleAddresses.insert(possibleAddresses.end(), connectedOutputs.begin(), connectedOutputs.end());
-                    
-                }
-            }
-        }
-        return possibleAddresses;
-    }
-    
-    std::vector<std::pair<AddressPointer, int>> getSourceAddressesImp(const ChainAccess &access, const Transaction &tx, int maxDepth, const Input &inputToReplace, std::function<bool(const Transaction &tx)> &coinjoinTest) {
-        std::map<std::pair<uint32_t, uint16_t>, int> seenTxMap;
-        return _getSourceAddresses(access, tx, 0, 0, maxDepth, inputToReplace, seenTxMap, coinjoinTest);
-    }
-    
-    std::vector<std::pair<AddressPointer, int>> getSourceAddresses(const ChainAccess &access, const Transaction &tx, int maxDepth, const Input &inputToReplace) {
-        std::function<bool(const Transaction &tx)> testFunc(isCoinjoin);
-        return getSourceAddressesImp(access, tx, maxDepth, inputToReplace, testFunc);
-    }
-    
-    std::vector<std::pair<AddressPointer, int>> getSourceAddressesList(const ChainAccess &access, const Transaction &tx, int maxDepth, const Input &inputToReplace, const std::vector<Transaction> &cjTxes) {
-        
-        std::unordered_set<Transaction> txSet{cjTxes.begin(), cjTxes.end()};
-        std::function<bool(const Transaction &tx)> testFunc([&txSet](const Transaction &tx) {
-            return txSet.find(tx) != txSet.end();
-        });
-        return getSourceAddressesImp(access, tx, maxDepth, inputToReplace, testFunc);
-    }
-    
-    const Output *getChangeOutput(const ScriptFirstSeenAccess &scripts, const Transaction &tx) {
+    const Output *getChangeOutput(const AddressFirstSeenAccess &scripts, const Transaction &tx) {
         if (isCoinjoin(tx)) {
             return nullptr;
         }
@@ -508,9 +472,9 @@ namespace blocksci {
         uint16_t spendableCount = 0;
         const Output *change = nullptr;
         for (const auto &output : tx.outputs()) {
-            if (output.getAddressPointer().isSpendable()) {
+            if (output.getAddress().isSpendable()) {
                 spendableCount++;
-                if (output.getValue() < smallestInput && output.getAddressPointer().getFirstTransactionIndex(scripts) == tx.txNum) {
+                if (output.getValue() < smallestInput && output.getAddress().getFirstTransactionIndex(scripts) == tx.txNum) {
                     if (change) {
                         return nullptr;
                     }
@@ -534,16 +498,16 @@ namespace blocksci {
             return false;
         }
         
-        std::unordered_set<ScriptType::Enum> inputCounts;
+        std::unordered_set<AddressType::Enum> inputCounts;
         for (auto &input : tx.inputs()) {
-            inputCounts.insert(input.getAddressPointer().type);
+            inputCounts.insert(input.getAddress().type);
         }
         
         if (inputCounts.size() != 1) {
             return false;
         }
         
-        ScriptType::Enum inputType = *inputCounts.begin();
+        AddressType::Enum inputType = *inputCounts.begin();
         
         bool seenType = false;
         for (auto &output : tx.outputs()) {
@@ -558,30 +522,33 @@ namespace blocksci {
         return seenType;
     }
     
-    AddressPointer getInsidePointer(const AddressPointer &pointer, const blocksci::ScriptAccess &access) {
-        if (pointer.type == ScriptType::Enum::SCRIPTHASH) {
-            auto address = pointer.getAddress(access);
-            auto scriptHashAddress = dynamic_cast<address::ScriptHash *>(address.get());
-            return getInsidePointer(scriptHashAddress->wrappedAddressPointer, access);
-        } else {
-            return pointer;
+    namespace {
+        Address getInsidePointer(const Address &pointer, const blocksci::ScriptAccess &access) {
+            if (pointer.type == AddressType::Enum::SCRIPTHASH) {
+                auto address = pointer.getScript(access);
+                auto scriptHashAddress = dynamic_cast<script::ScriptHash *>(address.get());
+                return getInsidePointer(scriptHashAddress->wrappedAddress, access);
+            } else {
+                return pointer;
+            }
         }
     }
     
+    
     struct DetailedType {
-        ScriptType::Enum mainType;
+        AddressType::Enum mainType;
         bool hasSubtype;
-        ScriptType::Enum subType;
+        AddressType::Enum subType;
         int i;
         int j;
         
-        DetailedType(const AddressPointer &pointer, const ScriptAccess &scripts) : mainType(pointer.type), hasSubtype(false), subType(ScriptType::Enum::NONSTANDARD), i(0), j(0) {
+        DetailedType(const Address &pointer, const ScriptAccess &scripts) : mainType(pointer.type), hasSubtype(false), subType(AddressType::Enum::NONSTANDARD), i(0), j(0) {
             auto insidePointer = getInsidePointer(pointer, scripts);
             subType = insidePointer.type;
             hasSubtype = insidePointer.addressNum > 0;
-            if (subType == ScriptType::Enum::MULTISIG) {
-                auto address = insidePointer.getAddress(scripts);
-                auto multisigAddress = dynamic_cast<address::Multisig *>(address.get());
+            if (subType == AddressType::Enum::MULTISIG) {
+                auto address = insidePointer.getScript(scripts);
+                auto multisigAddress = dynamic_cast<script::Multisig *>(address.get());
                 i = multisigAddress->required;
                 j = multisigAddress->addresses.size();
             }
@@ -591,11 +558,11 @@ namespace blocksci {
             if (mainType != other.mainType || subType != other.subType) {
                 return false;
             }
-            if (mainType == ScriptType::Enum::SCRIPTHASH && (!hasSubtype || !other.hasSubtype)) {
+            if (mainType == AddressType::Enum::SCRIPTHASH && (!hasSubtype || !other.hasSubtype)) {
                 return false;
             }
             
-            if (subType == ScriptType::Enum::MULTISIG && (i != other.i || j != other.j)) {
+            if (subType == AddressType::Enum::MULTISIG && (i != other.i || j != other.j)) {
                 return false;
             }
             
@@ -614,7 +581,7 @@ namespace blocksci {
             if (b.hasSubtype) {
                 boost::hash_combine(seed, b.subType);
             }
-            if (b.subType == ScriptType::Enum::MULTISIG) {
+            if (b.subType == AddressType::Enum::MULTISIG) {
                 boost::hash_combine(seed, b.i);
                 boost::hash_combine(seed, b.j);
             }
@@ -629,7 +596,7 @@ namespace blocksci {
         
         std::unordered_set<DetailedType, DetailedTypeHasher> outputTypes;
         for (auto &output : tx.outputs()) {
-            outputTypes.insert(DetailedType{output.getAddressPointer(), scripts});
+            outputTypes.insert(DetailedType{output.getAddress(), scripts});
         }
         
         if (outputTypes.size() != 1) {
@@ -638,7 +605,7 @@ namespace blocksci {
         
         std::unordered_set<DetailedType, DetailedTypeHasher> inputTypes;
         for (auto &input : tx.inputs()) {
-            inputTypes.insert(DetailedType{input.getAddressPointer(), scripts});
+            inputTypes.insert(DetailedType{input.getAddress(), scripts});
         }
         
         if (inputTypes.size() != 1) {
@@ -653,10 +620,10 @@ namespace blocksci {
             return false;
         }
         
-        std::unordered_set<AddressPointer> multisigOutputs;
+        std::unordered_set<Address> multisigOutputs;
         for (auto &output : tx.outputs()) {
-            auto pointer = getInsidePointer(output.getAddressPointer(), access);
-            if (pointer.type == ScriptType::Enum::MULTISIG) {
+            auto pointer = getInsidePointer(output.getAddress(), access);
+            if (pointer.type == AddressType::Enum::MULTISIG) {
                 multisigOutputs.insert(pointer);
             }
         }
@@ -665,10 +632,10 @@ namespace blocksci {
             return false;
         }
         
-        std::unordered_set<AddressPointer> multisigInputs;
+        std::unordered_set<Address> multisigInputs;
         for (auto &input : tx.inputs()) {
-            auto pointer = getInsidePointer(input.getAddressPointer(), access);
-            if (pointer.type == ScriptType::Enum::MULTISIG) {
+            auto pointer = getInsidePointer(input.getAddress(), access);
+            if (pointer.type == AddressType::Enum::MULTISIG) {
                 if (multisigOutputs.find(pointer) == multisigOutputs.end()) {
                     multisigInputs.insert(pointer);
                 }
@@ -679,19 +646,19 @@ namespace blocksci {
             return false;
         }
         
-        std::unordered_set<AddressPointer> containedOutputs;
+        std::unordered_set<Address> containedOutputs;
         for (auto &pointer : multisigOutputs) {
-            auto address = pointer.getAddress(access);
-            auto multisigAddress = dynamic_cast<address::Multisig *>(address.get());
-            for (auto &add : multisigAddress->nestedAddressPointers()) {
+            auto address = pointer.getScript(access);
+            auto multisigAddress = dynamic_cast<script::Multisig *>(address.get());
+            for (auto &add : multisigAddress->nestedAddresses()) {
                 containedOutputs.insert(add);
             }
         }
         
         for (auto &pointer : multisigInputs) {
-            auto address = pointer.getAddress(access);
-            auto multisigAddress = dynamic_cast<address::Multisig *>(address.get());
-            for (auto &add : multisigAddress->nestedAddressPointers()) {
+            auto address = pointer.getScript(access);
+            auto multisigAddress = dynamic_cast<script::Multisig *>(address.get());
+            for (auto &add : multisigAddress->nestedAddresses()) {
                 if (containedOutputs.find(add) != containedOutputs.end()) {
                     return true;
                 }

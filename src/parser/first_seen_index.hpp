@@ -11,7 +11,7 @@
 
 #include "address_traverser.hpp"
 
-#include <blocksci/scripts/script_types.hpp>
+#include <blocksci/address/address_types.hpp>
 #include <blocksci/file_mapper.hpp>
 
 #include <unordered_map>
@@ -20,10 +20,10 @@
 struct ParserConfiguration;
 
 class FirstSeenIndex : public AddressTraverser {
-    std::unordered_map<blocksci::ScriptType::Enum, blocksci::FixedSizeFileMapper<uint32_t, boost::iostreams::mapped_file::readwrite>> files;
+    std::unordered_map<blocksci::AddressType::Enum, blocksci::FixedSizeFileMapper<uint32_t, boost::iostreams::mapped_file::readwrite>> files;
     
-    void sawAddress(const blocksci::AddressPointer &pointer, uint32_t txNum) override;
-    void linkP2SHAddress(const blocksci::AddressPointer &pointer, uint32_t txNum, uint32_t p2shNum) override;
+    void sawAddress(const blocksci::Address &pointer, uint32_t txNum) override;
+    void linkP2SHAddress(const blocksci::Address &pointer, uint32_t txNum, uint32_t p2shNum) override;
     
 public:
     FirstSeenIndex(const ParserConfiguration &config, const blocksci::ScriptAccess &access);

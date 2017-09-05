@@ -24,7 +24,7 @@
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/transaction.hpp>
-#include <blocksci/scripts/pubkey.hpp>
+#include <blocksci/scripts/bitcoin_pubkey.hpp>
 
 #ifdef BLOCKSCI_RPC_PARSER
 #include <bitcoinapi/bitcoinapi.h>
@@ -235,13 +235,13 @@ void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<bl
 
 #endif
 
-struct ProcessOutputVisitor : public boost::static_visitor<blocksci::AddressPointer> {
+struct ProcessOutputVisitor : public boost::static_visitor<blocksci::Address> {
     BlockchainState &state;
     AddressWriter &addressWriter;
     ProcessOutputVisitor(BlockchainState &state_, AddressWriter &addressWriter_) : state(state_), addressWriter(addressWriter_) {}
-    template <blocksci::ScriptType::Enum type>
-    blocksci::AddressPointer operator()(ScriptOutput<type> &scriptOutput) const {
-        std::pair<blocksci::AddressPointer, bool> processed = getAddressNum(scriptOutput, state);
+    template <blocksci::AddressType::Enum type>
+    blocksci::Address operator()(ScriptOutput<type> &scriptOutput) const {
+        std::pair<blocksci::Address, bool> processed = getAddressNum(scriptOutput, state);
         if (processed.second) {
             scriptOutput.processOutput(state);
             addressWriter.serialize(scriptOutput);
@@ -250,7 +250,7 @@ struct ProcessOutputVisitor : public boost::static_visitor<blocksci::AddressPoin
     }
 };
 
-template<blocksci::ScriptType::Enum type>
+template<blocksci::AddressType::Enum type>
 struct ScriptInputFunctor {
     static void f(const InputInfo &info, const RawTransaction &tx, BlockchainState &state, AddressWriter &addressWriter) {
         auto input = ScriptInput<type>(info, tx, addressWriter);
@@ -262,7 +262,7 @@ void processInputVisitor(const InputInfo &info, const RawTransaction &tx, Blockc
     auto &type = info.address.type;
     
     static constexpr auto table = blocksci::make_dynamic_table<ScriptInputFunctor>();
-    static constexpr std::size_t size = blocksci::ScriptType::all.size();
+    static constexpr std::size_t size = blocksci::AddressType::all.size();
     
     auto index = static_cast<size_t>(type);
     if (index >= size)

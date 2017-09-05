@@ -9,27 +9,24 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "output.hpp"
+#include "input.hpp"
 #include "chain_access.hpp"
 #include "transaction.hpp"
-#include "scripts/address.hpp"
+#include "address/address.hpp"
 
 #include <sstream>
 
 namespace blocksci {
     
+    Input Output::matchedInput(uint32_t txIndex) const {
+        return {txIndex, getAddress(), getValue()};
+    }
+    
     std::string Output::toString() const {
         std::stringstream ss;
-        auto address = getAddressPointer();
+        auto address = getAddress();
         ss << "TxOut(tx_index_to=" << linkedTxNum << ", address=" << address <<", satoshis=" << getValue() << ")";
         return ss.str();
-    }
-    
-    AddressPointer Output::getAddressPointer() const {
-        return AddressPointer(toAddressNum, getType());
-    }
-    
-    bool Output::operator==(const Output& otherOutput) const {
-        return this == &otherOutput;
     }
     
     uint32_t Output::getSpendingTxIndex(const ChainAccess &access) const {
