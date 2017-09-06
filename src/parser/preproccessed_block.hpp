@@ -29,11 +29,23 @@ namespace blocksci {
     struct OutputPointer;
 }
 
+
+
+struct WitnessStackItem {
+    uint32_t length;
+    const char *itemBegin;
+    
+    #ifdef BLOCKSCI_FILE_PARSER
+    WitnessStackItem(const char **buffer);
+    #endif
+};
+
 struct RawInput {
     RawOutputPointer rawOutputPointer;
     uint32_t sequenceNum;
     const unsigned char *scriptBegin;
     const unsigned char *scriptEnd;
+    std::vector<WitnessStackItem> witnessStack;
     
     std::vector<unsigned char> scriptBytes;
     
@@ -81,6 +93,7 @@ struct RawTransaction {
     
     std::vector<RawInput> inputs;
     std::vector<RawOutput> outputs;
+    
     
     RawTransaction() :
       txNum(0),

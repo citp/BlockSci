@@ -1,15 +1,18 @@
 //
-//  script_info.hpp
+//  address_info.hpp
 //  blocksci
 //
 //  Created by Harry Kalodner on 3/18/17.
 //
 //
 
-#ifndef script_info_hpp
-#define script_info_hpp
+#ifndef address_info_hpp
+#define address_info_hpp
 
 #include "address_types.hpp"
+
+#include <blocksci/util.hpp>
+#include <blocksci/scripts/script_type.hpp>
 
 #include <boost/variant/variant_fwd.hpp>
 
@@ -18,20 +21,6 @@
 #include <stdio.h>
 
 namespace blocksci {
-    
-    struct PubkeyData;
-    struct PubkeyHashData;
-    struct ScriptHashData;
-    struct MultisigData;
-    struct NonstandardScriptData;
-    struct RawData;
-    
-    template <typename T>
-    struct FixedSize;
-    
-    template <typename ...T>
-    struct Indexed;
-    
     template <AddressType::Enum>
     struct AddressInfo;
     
@@ -43,7 +32,7 @@ namespace blocksci {
         static constexpr bool hasNestedAddresses = false;
         static constexpr bool deduped = true;
         static constexpr AddressType::Enum addressAddressType = AddressType::Enum::PUBKEYHASH;
-        using storage = FixedSize<PubkeyData>;
+        static constexpr ScriptType::Enum scriptType = ScriptType::Enum::PUBKEY;
     };
     
     template <>
@@ -54,7 +43,18 @@ namespace blocksci {
         static constexpr bool hasNestedAddresses = false;
         static constexpr bool deduped = true;
         static constexpr AddressType::Enum addressAddressType = AddressType::Enum::PUBKEYHASH;
-        using storage = FixedSize<PubkeyHashData>;
+        static constexpr ScriptType::Enum scriptType = ScriptType::Enum::PUBKEY;
+    };
+    
+    template <>
+    struct AddressInfo<AddressType::Enum::WITNESS_PUBKEYHASH> {
+        static constexpr char typeName[] = "witness_pubkeyhash";
+        static constexpr int addressType = 0;
+        static constexpr bool spendable = true;
+        static constexpr bool hasNestedAddresses = false;
+        static constexpr bool deduped = true;
+        static constexpr AddressType::Enum addressAddressType = AddressType::Enum::PUBKEYHASH;
+        static constexpr ScriptType::Enum scriptType = ScriptType::Enum::PUBKEY;
     };
     
     template <>
@@ -65,7 +65,18 @@ namespace blocksci {
         static constexpr bool hasNestedAddresses = true;
         static constexpr bool deduped = true;
         static constexpr AddressType::Enum addressAddressType = AddressType::Enum::SCRIPTHASH;
-        using storage = FixedSize<ScriptHashData>;
+        static constexpr ScriptType::Enum scriptType = ScriptType::Enum::SCRIPTHASH;
+    };
+    
+    template <>
+    struct AddressInfo<AddressType::Enum::WITNESS_SCRIPTHASH> {
+        static constexpr char typeName[] = "witness_scripthash";
+        static constexpr int addressType = 1;
+        static constexpr bool spendable = true;
+        static constexpr bool hasNestedAddresses = true;
+        static constexpr bool deduped = true;
+        static constexpr AddressType::Enum addressAddressType = AddressType::Enum::SCRIPTHASH;
+        static constexpr ScriptType::Enum scriptType = ScriptType::Enum::SCRIPTHASH;
     };
     
     template <>
@@ -76,7 +87,7 @@ namespace blocksci {
         static constexpr bool hasNestedAddresses = true;
         static constexpr bool deduped = true;
         static constexpr AddressType::Enum addressAddressType = AddressType::Enum::MULTISIG;
-        using storage = Indexed<MultisigData>;
+        static constexpr ScriptType::Enum scriptType = ScriptType::Enum::MULTISIG;
     };
     
     template <>
@@ -87,7 +98,7 @@ namespace blocksci {
         static constexpr bool hasNestedAddresses = false;
         static constexpr bool deduped = false;
         static constexpr AddressType::Enum addressAddressType = AddressType::Enum::NONSTANDARD;
-        using storage = Indexed<NonstandardScriptData,NonstandardScriptData>;
+        static constexpr ScriptType::Enum scriptType = ScriptType::Enum::NONSTANDARD;
     };
     
     template <>
@@ -98,13 +109,13 @@ namespace blocksci {
         static constexpr bool hasNestedAddresses = false;
         static constexpr bool deduped = false;
         static constexpr AddressType::Enum addressAddressType = AddressType::Enum::NULL_DATA;
-        using storage = Indexed<RawData>;
+        static constexpr ScriptType::Enum scriptType = ScriptType::Enum::NULL_DATA;
     };
     
     std::string GetTxnOutputType(AddressType::Enum t);
     
     template<AddressType::Enum AddressType>
-    struct ScriptTag {
+    struct AddressTag {
         static constexpr AddressType::Enum type = AddressType;
     };
     
@@ -119,16 +130,16 @@ namespace blocksci {
         };
         
         template<template<AddressType::Enum> class K, typename T>
-        struct to_script_type;
+        struct to_address_type;
         
         template<template<AddressType::Enum> class K, AddressType::Enum Type>
-        struct to_script_type<K, ScriptTag<Type>> {
+        struct to_address_type<K, AddressTag<Type>> {
             using type = K<Type>;
         };
         
         template <template<AddressType::Enum> class K, typename... Types>
-        struct to_script_type<K, std::tuple<Types...>> {
-            using type = std::tuple<typename to_script_type<K, Types>::type...>;
+        struct to_address_type<K, std::tuple<Types...>> {
+            using type = std::tuple<typename to_address_type<K, Types>::type...>;
         };
         
         template<int I, class Tuple, typename F> struct for_each_impl {
@@ -142,16 +153,6 @@ namespace blocksci {
                 f(std::get<0>(t));
             }
         };
-        
-        template <class F, size_t... Is>
-        constexpr auto index_apply_impl(F f, std::index_sequence<Is...>) {
-            return f(std::integral_constant<size_t, Is> {}...);
-        }
-        
-        template <size_t N, class F>
-        constexpr auto index_apply(F f) {
-            return index_apply_impl(f, std::make_index_sequence<N>{});
-        }
         
         template <template<AddressType::Enum> class Functor, std::size_t... Is>
         constexpr auto make_dynamic_table_impl(std::index_sequence<Is...>) -> std::array<decltype(&Functor<AddressType::Enum::PUBKEY>::f), sizeof...(Is)> {
@@ -188,7 +189,7 @@ namespace blocksci {
     }
     
     template <template<AddressType::Enum> class K, typename... Types>
-    using to_script_variant_t = typename internal::to_variant<typename internal::to_script_type<K, Types...>::type>::type;
+    using to_script_variant_t = typename internal::to_variant<typename internal::to_address_type<K, Types...>::type>::type;
 
     
     template<blocksci::AddressType::Enum type>
@@ -221,7 +222,7 @@ namespace blocksci {
     
     inline auto getAddressTypes() {
         return internal::index_apply<AddressType::all.size()>([](auto... Is) {
-            return std::make_tuple(ScriptTag<std::get<Is>(AddressType::all)>{}...);
+            return std::make_tuple(AddressTag<std::get<Is>(AddressType::all)>{}...);
         });
     }
     
@@ -273,4 +274,4 @@ namespace blocksci {
     }
 }
 
-#endif /* script_info_hpp */
+#endif /* address_info_hpp */

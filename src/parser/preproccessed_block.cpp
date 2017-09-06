@@ -68,10 +68,28 @@ scriptOutput(extractScriptData(scriptBegin, scriptBegin + scriptLength)) {
     *buffer += scriptLength;
 }
 
+WitnessStackItem::WitnessStackItem(const char **buffer) : length(readVariableLengthInteger(buffer)), itemBegin(*buffer)  {
+    *buffer += length;
+}
+
 void RawTransaction::load(const char **buffer) {
+    SHA256_CTX sha256CTX;
+    SHA256_Init(&sha256CTX);
     auto startPos = *buffer;
+    SHA256_Update(&sha256CTX, *buffer, sizeof(int32_t));
     version = readNext<int32_t>(buffer);
+    
+    const char *inputStart = *buffer;
     auto inputCount = readVariableLengthInteger(buffer);
+    
+    bool isSegwit = false;
+    if (inputCount == 0) {
+        auto flag = readNext<uint8_t>(buffer);
+        assert(flag == 1);
+        isSegwit = true;
+        inputStart = *buffer;
+        inputCount = readVariableLengthInteger(buffer);
+    }
     
     inputs.clear();
     inputs.reserve(inputCount);
@@ -87,9 +105,26 @@ void RawTransaction::load(const char **buffer) {
         outputs.emplace_back(buffer);
     }
     
+    SHA256_Update(&sha256CTX, inputStart, *buffer - inputStart);
+    
+    if (isSegwit) {
+        for (decltype(inputCount) i = 0; i < inputCount; i++) {
+            auto &input = inputs[i];
+            uint32_t stackItemCount = readVariableLengthInteger(buffer);
+            for (uint32_t i = 0; i < stackItemCount; i++) {
+                input.witnessStack.emplace_back(buffer);
+            }
+        }
+    }
+    
+    SHA256_Update(&sha256CTX, *buffer, sizeof(uint32_t));
+    
     locktime = readNext<uint32_t>(buffer);
     sizeBytes = static_cast<uint32_t>(*buffer - startPos);
-    hash = doubleSha256(startPos, sizeBytes);
+    
+    SHA256_Final((unsigned char *)&hash, &sha256CTX);
+    hash = sha256(reinterpret_cast<const uint8_t *>(&hash), sizeof(hash));
+    // hash = doubleSha256(startPos, sizeBytes);
 }
 
 #endif
