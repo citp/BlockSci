@@ -99,7 +99,7 @@ namespace blocksci {
             }
         }
         
-        auto addresses = access.findMatchingAddresses<AddressType::Enum::PUBKEYHASH>([&](const auto &nextAddress) {
+        auto addresses = access.findMatchingAddresses<ScriptType::Enum::PUBKEYHASH>([&](const auto &nextAddress) {
             return rawAddresses.find(RawAddress(nextAddress)) != rawAddresses.end();
         });
         

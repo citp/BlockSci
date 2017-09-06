@@ -22,7 +22,7 @@ namespace blocksci {
     };
     
     class AddressFirstSeenAccess {
-        using AddressFilesFirstSeenTuple = internal::to_script_type<AddressFirstSeenFile, AddressInfoList>::type;
+        using AddressFilesFirstSeenTuple = internal::to_address_type<AddressFirstSeenFile, AddressInfoList>::type;
         AddressFilesFirstSeenTuple addressFilesFirstSeen;
         
     public:

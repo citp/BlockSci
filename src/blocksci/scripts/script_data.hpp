@@ -21,17 +21,10 @@
 namespace blocksci {
     struct PubkeyData {
         CPubKey pubkey;
-        
-        size_t size() {
-            return sizeof(pubkey);
-        }
-    };
-    
-    struct PubkeyHashData {
         uint160 address;
         
         size_t size() {
-            return sizeof(PubkeyHashData);
+            return sizeof(PubkeyData);
         }
     };
     

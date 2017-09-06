@@ -9,8 +9,10 @@
 #ifndef script_access_hpp
 #define script_access_hpp
 
-#include <blocksci/address/address_info.hpp>
+#include "script_info.hpp"
 #include "script_data.hpp"
+
+#include <blocksci/address/address_info.hpp>
 
 #include <blocksci/file_mapper.hpp>
 
@@ -24,12 +26,12 @@ namespace blocksci {
     struct ScriptFileType;
     
     template<typename T>
-    struct ScriptFileType<blocksci::FixedSize<T>> {
+    struct ScriptFileType<FixedSize<T>> {
         using type = FixedSizeFileMapper<T>;
     };
     
     template<typename ...T>
-    struct ScriptFileType<blocksci::Indexed<T...>> {
+    struct ScriptFileType<Indexed<T...>> {
         using type = IndexedFileMapper<boost::iostreams::mapped_file::mapmode::readonly, T...>;
     };
     
@@ -37,14 +39,14 @@ namespace blocksci {
     using ScriptFileType_t = typename ScriptFileType<T>::type;
     
     
-    template<AddressType::Enum type>
-    struct ScriptFile : public ScriptFileType_t<typename AddressInfo<type>::storage> {
-        using ScriptFileType_t<typename AddressInfo<type>::storage>::ScriptFileType_t;
+    template<ScriptType::Enum type>
+    struct ScriptFile : public ScriptFileType_t<typename ScriptInfo<type>::storage> {
+        using ScriptFileType_t<typename ScriptInfo<type>::storage>::ScriptFileType_t;
     };
 
     class ScriptAccess {
     private:
-        using ScriptFilesTuple = internal::to_script_type<ScriptFile, AddressInfoList>::type;
+        using ScriptFilesTuple = internal::to_script_type<ScriptFile, ScriptInfoList>::type;
         
         ScriptFilesTuple scriptFiles;
         
@@ -53,18 +55,20 @@ namespace blocksci {
         ScriptAccess(const DataConfiguration &config);
         
         template<AddressType::Enum type>
-        boost::optional<Address> findAddress(uint160 rawAddress) const {
-            auto &file = std::get<ScriptFile<type>>(scriptFiles);
-            auto index = file.find([&](const auto &item) { return item.address == rawAddress; });
+        boost::optional<Address> findAddress(uint160 hash) const {
+            constexpr auto scriptType = AddressInfo<type>::scriptType;
+            auto &file = std::get<ScriptFile<scriptType>>(scriptFiles);
+            auto index = file.find([&](const auto &item) { return item.address == hash; });
             if (index) {
                 return Address(*index + 1, type);
             }
             return boost::none;
         }
         
-        template<AddressType::Enum type, typename Func>
+        template<ScriptType::Enum type, typename Func>
         std::vector<Address> findMatchingAddresses(Func func) const {
-            auto &file = std::get<ScriptFile<type>>(scriptFiles);
+            constexpr auto scriptType = AddressInfo<type>::scriptType;
+            auto &file = std::get<ScriptFile<scriptType>>(scriptFiles);
             
             auto addressNums = file.findAll(func);
             
@@ -74,6 +78,12 @@ namespace blocksci {
                 addresses.emplace_back(num + 1, type);
             }
             return addresses;
+        }
+        
+        template <ScriptType::Enum type>
+        AddressType::Enum getAddressType(uint32_t addressNum) const {
+            return AddressType::Enum::PUBKEYHASH;
+//            return std::get<ScriptFile<type>>(scriptFiles).getData(addressNum - 1);
         }
         
         template <AddressType::Enum type>
