@@ -6,6 +6,7 @@ from blocksci.opreturn import *
 
 from multiprocess import Pool
 from functools import reduce
+import operator
 import datetime
 import dateparser
 import pandas as pd
@@ -17,20 +18,17 @@ import sys
 import os
 import inspect
 
-def mapreduce_block_ranges(chain, mapFunc, start=None, end=None, reduceFunc=None, init=None, cpu_count=psutil.cpu_count()):
+def mapreduce_block_ranges(chain, mapFunc, reduceFunc, init,  start=None, end=None, cpu_count=psutil.cpu_count()):
     """Initialized multithreaded map reduce function over a stream of block ranges
     """
     if start is None:
         start = 0
     if end is None:
         end = len(chain)
+
     if cpu_count == 1:
         return reduce(reduceFunc, (mapFunc(block) for block in chain[start:end]))
 
-    if reduceFunc is None:
-        def reduceFunc(cur, el):
-            return cur + [el]
-        init = list()
     segments = chain.segment(start, end, cpu_count)
     with Pool(cpu_count - 1) as p:
         results_future = p.map_async(mapFunc, segments[1:])
@@ -40,21 +38,14 @@ def mapreduce_block_ranges(chain, mapFunc, start=None, end=None, reduceFunc=None
     return reduce(reduceFunc, results, init)
 
 
-def mapreduce_blocks(chain, mapFunc, start=None, end=None, reduceFunc=None, init=None, cpu_count=psutil.cpu_count()):
+def mapreduce_blocks(chain, mapFunc, reduceFunc, init, start=None, end=None, cpu_count=psutil.cpu_count()):
     """Initialized multithreaded map reduce function over a stream of blocks
     """
     def mapRangeFunc(blocks):
-        if reduceFunc is None:
-            def defaultReduceFunc(cur, el):
-                return cur + [el]
-            return reduce(defaultReduceFunc, (mapFunc(block) for block in blocks), list())
-        else:
-            return reduce(reduceFunc, (mapFunc(block) for block in blocks), init)
+        return reduce(reduceFunc, (mapFunc(block) for block in blocks), init)
     return mapreduce_block_ranges(chain, mapRangeFunc, start, end, reduceFunc, init, cpu_count)
 
-
-
-def mapreduce_txes(chain, mapFunc, start=None, end=None, reduceFunc=None, init=None, cpu_count=psutil.cpu_count()):
+def mapreduce_txes(chain, mapFunc, reduceFunc, init,  start=None, end=None, cpu_count=psutil.cpu_count()):
     """Initialized multithreaded map reduce function over a stream of transactions
     """
     def mapRangeFunc(blocks):
@@ -67,22 +58,25 @@ def map_blocks(self, blockFunc, start = None, end = None, cpu_count=psutil.cpu_c
     """
     def mapFunc(blocks):
         return [blockFunc(block) for block in blocks]
-    return mapreduce_block_ranges(self, mapFunc, start, end, cpu_count=cpu_count)
+
+    return mapreduce_block_ranges(self, mapFunc, operator.concat, list(), start, end, cpu_count)
 
 def filter_blocks(self, filterFunc, start = None, end = None, cpu_count=psutil.cpu_count()):
     """Return all blocks in range which match the given criteria
     """
     def mapFunc(blocks):
-        return [block.height for block in blocks if filterFunc(block)]
-    heights = mapreduce_block_ranges(self, mapFunc, start, end, cpu_count=cpu_count)
-    return [chain[x] for x in heights]
+        return [block for block in blocks if filterFunc(block)]
+    return  mapreduce_block_ranges(self, mapFunc, operator.concat, list(), start, end, cpu_count=cpu_count)
 
 def filter_txes(self, filterFunc, start = None, end = None, cpu_count=psutil.cpu_count()):
     """Return all transactions in range which match the given criteria
     """
     def mapFunc(blocks):
         return [tx.index for block in blocks for tx in block if filterFunc(tx)]
-    tx_ids = mapreduce_block_ranges(self, mapFunc, start, end, cpu_count=cpu_count)
+    def reduceFunc(cur, el):
+        return cur + [el]
+    init = list()
+    tx_ids = mapreduce_block_ranges(self, mapFunc, reduceFunc, init, start, end, cpu_count)
     return [Tx.tx_with_index(x) for x in tx_ids]
 
 Blockchain.map_blocks = map_blocks
@@ -94,26 +88,6 @@ Blockchain.mapreduce_txes = mapreduce_txes
 
 def heights_to_dates(self, df):
     return df.set_index(df.index.to_series().apply(lambda x: self[x].time))
-
-def satoshi_to_currency(chain, converter, df, columns=None):
-    if columns is None:
-        columns = df.columns
-    def convert_row(row):
-        date = row["index"]
-        if hasattr(date, 'date'):
-            date = date.date()
-        rate = converter.exchangerate(date) / 1e8
-        for column in columns:
-            if column in row:
-                row[column] = rate * row[column]
-        return row
-    df["index"] = df.index
-    index_type = str(df["index"].dtype)
-    if index_type == "int64":
-        df["index"] = pd.Series(df["index"]).apply(lambda x: chain[x].time.date())
-    df = df.apply(convert_row, axis=1)
-    del df["index"]
-    return df
 
 def block_range(self, start, end=None):
     def add_one_month(dt0):
@@ -149,7 +123,7 @@ Blockchain.range = block_range
 Blockchain.heights_to_dates = heights_to_dates
 
 class DummyClass:
-    pass 
+    pass
 
 loaderDirectory = os.path.dirname(os.path.abspath(inspect.getsourcefile(DummyClass)))
 
@@ -182,7 +156,7 @@ class CPP(object):
             func = self.build_function(filled_template, makefile, module_name)
             self.saved_tx_filters[code] = func
         return self.saved_tx_filters[code](self.chain, start, end)
-            
+
     def create_makefile(self, module_name):
         from string import Template
         import os
@@ -207,4 +181,4 @@ class CPP(object):
         out, err = process.communicate()
         print(err.decode('utf8'))
         mod = importlib.import_module(module_name)
-        return getattr(mod, "func")  
+        return getattr(mod, "func")

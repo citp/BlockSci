@@ -187,7 +187,7 @@ namespace blocksci {
                 net[output.getType()] += output.getValue();
             }
             for (auto &input : tx.inputs()) {
-                net[input.getType()] += input.getValue();
+                net[input.getType()] -= input.getValue();
             }
         }
         return net;
