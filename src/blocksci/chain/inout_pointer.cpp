@@ -10,9 +10,6 @@
 #include "transaction.hpp"
 #include "chain_access.hpp"
 
-#include <boost/functional/hash.hpp>
-
-
 namespace blocksci {
     Transaction InoutPointer::getTransaction(const ChainAccess &access) const {
         return Transaction(access.getTx(txNum), txNum, access.getBlockHeight(txNum));

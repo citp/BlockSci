@@ -10,7 +10,6 @@
 
 #include "address_traverser.hpp"
 
-#include <blocksci/data_access.hpp>
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/transaction.hpp>
@@ -18,14 +17,15 @@
 #include <blocksci/address/address_types.hpp>
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/scripts/scripthash_script.hpp>
+#include <blocksci/scripts/script_access.hpp>
 
-void AddressTraverser::processTx(const blocksci::DataAccess &access, const blocksci::Transaction &tx) {
+void AddressTraverser::processTx(const blocksci::ScriptAccess &scripts, const blocksci::Transaction &tx) {
     uint16_t i = 0;
     for (auto &output : tx.outputs()) {
         auto address = output.getAddress();
         sawAddress(address, tx.txNum);
         if (address.type == blocksci::AddressType::Enum::MULTISIG) {
-            auto script = address.getScript(access.scripts);
+            auto script = address.getScript(scripts);
             for (auto &nestedAddressPointer : script->nestedAddresses()) {
                 if (nestedAddressPointer.addressNum != 0) {
                     sawAddress(nestedAddressPointer, tx.txNum);
@@ -38,9 +38,9 @@ void AddressTraverser::processTx(const blocksci::DataAccess &access, const block
     for (auto &input : tx.inputs()) {
         if (input.getType() == blocksci::AddressType::Enum::SCRIPTHASH) {
             auto address = input.getAddress();
-            auto script = address.getScript(access.scripts);
+            auto script = address.getScript(scripts);
             auto p2shAddress = dynamic_cast<blocksci::script::ScriptHash *>(script.get());
-            processP2SHAddress(access.scripts, p2shAddress->wrappedAddress, input.spentTxIndex(), address.addressNum);
+            processP2SHAddress(scripts, p2shAddress->wrappedAddress, input.spentTxIndex(), address.addressNum);
         }
     }
 }

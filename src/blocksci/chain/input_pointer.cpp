@@ -11,6 +11,8 @@
 #include "input.hpp"
 #include "output.hpp"
 
+#include <boost/functional/hash.hpp>
+
 #include <sstream>
 
 namespace blocksci {

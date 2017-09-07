@@ -297,11 +297,12 @@ ChainUpdateInfo<blockinfo_t> prepareChain(const RPCParserConfiguration &config, 
 void updateAddressDb(const ParserConfiguration &config, uint32_t startBlock) {
     std::cout << "Updating address database" << std::endl;
     AddressDB db(config);
-    blocksci::DataAccess access(config, false, 0);
-    auto blocks = access.chain.getBlocks();
+    blocksci::ChainAccess chain{config, false, 0};
+    blocksci::ScriptAccess scripts{config};
+    auto blocks = chain.getBlocks();
     for (uint32_t i = startBlock; i < blocks.size(); i++) {
-        for (auto tx : blocks[i].txes(access.chain)) {
-            db.processTx(access, tx);
+        for (auto tx : blocks[i].txes(chain)) {
+            db.processTx(scripts, tx);
         }
     }
 }
@@ -309,23 +310,25 @@ void updateAddressDb(const ParserConfiguration &config, uint32_t startBlock) {
 void updateHashIndex(const ParserConfiguration &config, uint32_t startBlock) {
     std::cout << "Updating hash database" << std::endl;
     HashIndex db(config);
-    blocksci::DataAccess access(config, false, 0);
-    auto blocks = access.chain.getBlocks();
+    blocksci::ChainAccess chain{config, false, 0};
+    auto blocks = chain.getBlocks();
     for (uint32_t i = startBlock; i < blocks.size(); i++) {
-        for (auto tx : blocks[i].txes(access.chain)) {
-            db.processTx(access.chain, tx);
+        for (auto tx : blocks[i].txes(chain)) {
+            db.processTx(chain, tx);
         }
     }
 }
 
 void updateFirstSeenIndex(const ParserConfiguration &config, uint32_t startBlock) {
     std::cout << "Updating first seen index" << std::endl;
-    blocksci::DataAccess access(config, false, 0);
-    FirstSeenIndex index(config, access.scripts);
-    auto blocks = access.chain.getBlocks();
+    blocksci::ChainAccess chain{config, false, 0};
+    blocksci::ScriptAccess scripts{config};
+    
+    FirstSeenIndex index(config, scripts);
+    auto blocks = chain.getBlocks();
     for (uint32_t i = startBlock; i < blocks.size(); i++) {
-        for (auto tx : blocks[i].txes(access.chain)) {
-            index.processTx(access, tx);
+        for (auto tx : blocks[i].txes(chain)) {
+            index.processTx(scripts, tx);
         }
     }
 }
@@ -451,7 +454,7 @@ int main(int argc, const char * argv[]) {
     std::string bitcoinDirectoryString;
     po::options_description fileOptions("File parser options");
     fileOptions.add_options()
-    ("bitcoin-directory", po::value<std::string>(&bitcoinDirectoryString)->default_value("~/.bitcoin/"), "Path to bitcoin directory")
+    ("coin-directory", po::value<std::string>(&bitcoinDirectoryString), "Path to cryptocurrency directory")
     ;
     #endif
     
@@ -506,7 +509,7 @@ int main(int argc, const char * argv[]) {
         #endif
         
         if (diskEnabled) {
-            if (vm.count("bitcoin-directory")) {
+            if (vm.count("coin-directory")) {
                 validDisk = true;
             }
         }
@@ -542,7 +545,7 @@ int main(int argc, const char * argv[]) {
         if (validDisk) {
             bitcoinDirectory = {bitcoinDirectoryString};
             bitcoinDirectory = boost::filesystem::absolute(bitcoinDirectory);
-            rootPTree.put("bitcoin-directory", bitcoinDirectory.native());
+            rootPTree.put("coin-directory", bitcoinDirectory.native());
         }
         
         if (validRPC) {

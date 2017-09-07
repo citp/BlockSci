@@ -26,7 +26,7 @@ namespace blocksci {
     const std::string AddressIndex::addrTables[] = {"SINGLE_ADDRESSES", "MULTISIG_ADDRESSES", "P2SH_ADDRESSES"};
     
     AddressIndex::AddressIndex(const DataConfiguration &config) {
-        auto rc = sqlite3_open(config.addressDBFilePath().c_str(), &addressDb);
+        auto rc = sqlite3_open_v2(config.addressDBFilePath().c_str(), &addressDb, SQLITE_OPEN_READONLY, NULL);
         if (rc){
             fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(addressDb));
         }
@@ -34,7 +34,7 @@ namespace blocksci {
     
     AddressIndex::AddressIndex(const AddressIndex &other) {
         
-        auto rc = sqlite3_open(sqlite3_db_filename(other.addressDb, "main"), &addressDb);
+        auto rc = sqlite3_open_v2(sqlite3_db_filename(other.addressDb, "main"), &addressDb, SQLITE_OPEN_READONLY, NULL);
         if (rc){
             fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(addressDb));
         }
@@ -47,7 +47,7 @@ namespace blocksci {
     
     AddressIndex& AddressIndex::operator=(const AddressIndex& other) {
         sqlite3_close(addressDb);
-        auto rc = sqlite3_open(sqlite3_db_filename(other.addressDb, "main"), &addressDb);
+        auto rc = sqlite3_open_v2(sqlite3_db_filename(other.addressDb, "main"), &addressDb, SQLITE_OPEN_READONLY, NULL);
         if (rc){
             fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(addressDb));
         }

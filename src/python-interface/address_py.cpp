@@ -21,8 +21,8 @@ namespace py = pybind11;
 using namespace blocksci;
 
 void init_address(py::module &m) {
-    py::class_<Address>(m, "Address", "Pointer to an address")
-    .def(py::init<uint32_t, AddressType::Enum>())
+    py::class_<Address>(m, "Address", "Represents an abstract address object which uniquely identifies a given address")
+    .def(py::init<uint32_t, AddressType::Enum>(), "Can be constructed directly by passing it an address index and address type")
     .def("__repr__", &Address::toString)
     .def(py::self == py::self)
     .def(hash(py::self))

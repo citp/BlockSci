@@ -15,7 +15,7 @@ namespace blocksci {
     struct Transaction;
     class ScriptAccess;
     class AddressFirstSeenAccess;
-    class DataAccess;
+    class ScriptAccess;
 }
 
 #include <cstdint>
@@ -30,7 +30,7 @@ class AddressTraverser {
     virtual void linkP2SHAddress(const blocksci::Address &pointer, uint32_t txNum, uint32_t p2shNum) = 0;
     
 public:
-    void processTx(const blocksci::DataAccess &access, const blocksci::Transaction &tx);
+    void processTx(const blocksci::ScriptAccess &scripts, const blocksci::Transaction &tx);
 };
 
 #endif /* address_traverser_hpp */
