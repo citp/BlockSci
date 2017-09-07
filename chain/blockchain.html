@@ -57,8 +57,12 @@
 <dd><p>Overloaded function.</p>
 <ol class="arabic simple">
 <li>__getitem__(self: blocksci.blocksci_interface.Blockchain, arg0: int) -&gt; blocksci::Block</li>
+</ol>
+<p>Return the block of the given height</p>
+<ol class="arabic simple" start="2">
 <li>__getitem__(self: blocksci.blocksci_interface.Blockchain, arg0: slice) -&gt; list</li>
 </ol>
+<p>Return a list of blocks with their heights in the given range</p>
 </dd></dl>
 
 <dl class="method">
@@ -69,12 +73,14 @@
 <dl class="method">
 <dt id="blocksci.Blockchain.__iter__">
 <code class="descname">__iter__</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Blockchain</em><span class="sig-paren">)</span> &#x2192; iterator<a class="headerlink" href="#blocksci.Blockchain.__iter__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Allows direct iteration over the blocks in the blockchain</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="blocksci.Blockchain.__len__">
 <code class="descname">__len__</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Blockchain</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#blocksci.Blockchain.__len__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns the total number of blocks in the blockchain</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="blocksci.Blockchain.__module__">
@@ -124,19 +130,19 @@
 
 <dl class="method">
 <dt id="blocksci.Blockchain.mapreduce_block_ranges">
-<code class="descname">mapreduce_block_ranges</code><span class="sig-paren">(</span><em>chain</em>, <em>mapFunc</em>, <em>start=None</em>, <em>end=None</em>, <em>reduceFunc=None</em>, <em>init=None</em>, <em>cpu_count=4</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.mapreduce_block_ranges" title="Permalink to this definition">¶</a></dt>
+<code class="descname">mapreduce_block_ranges</code><span class="sig-paren">(</span><em>chain</em>, <em>mapFunc</em>, <em>reduceFunc</em>, <em>init</em>, <em>start=None</em>, <em>end=None</em>, <em>cpu_count=4</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.mapreduce_block_ranges" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialized multithreaded map reduce function over a stream of block ranges</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="blocksci.Blockchain.mapreduce_blocks">
-<code class="descname">mapreduce_blocks</code><span class="sig-paren">(</span><em>chain</em>, <em>mapFunc</em>, <em>start=None</em>, <em>end=None</em>, <em>reduceFunc=None</em>, <em>init=None</em>, <em>cpu_count=4</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.mapreduce_blocks" title="Permalink to this definition">¶</a></dt>
+<code class="descname">mapreduce_blocks</code><span class="sig-paren">(</span><em>chain</em>, <em>mapFunc</em>, <em>reduceFunc</em>, <em>init</em>, <em>start=None</em>, <em>end=None</em>, <em>cpu_count=4</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.mapreduce_blocks" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialized multithreaded map reduce function over a stream of blocks</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="blocksci.Blockchain.mapreduce_txes">
-<code class="descname">mapreduce_txes</code><span class="sig-paren">(</span><em>chain</em>, <em>mapFunc</em>, <em>start=None</em>, <em>end=None</em>, <em>reduceFunc=None</em>, <em>init=None</em>, <em>cpu_count=4</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.mapreduce_txes" title="Permalink to this definition">¶</a></dt>
+<code class="descname">mapreduce_txes</code><span class="sig-paren">(</span><em>chain</em>, <em>mapFunc</em>, <em>reduceFunc</em>, <em>init</em>, <em>start=None</em>, <em>end=None</em>, <em>cpu_count=4</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.mapreduce_txes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialized multithreaded map reduce function over a stream of transactions</p>
 </dd></dl>
 
@@ -166,7 +172,8 @@
 <dl class="method">
 <dt id="blocksci.Blockchain.segment">
 <code class="descname">segment</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Blockchain</em>, <em>arg0: int</em>, <em>arg1: int</em>, <em>arg2: int</em><span class="sig-paren">)</span> &#x2192; List[List[blocksci::Block]]<a class="headerlink" href="#blocksci.Blockchain.segment" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Divide the blockchain into the given number of chunks with roughly the same number of transactions in each</p>
+</dd></dl>
 
 </dd></dl>
 
