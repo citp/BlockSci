@@ -459,7 +459,7 @@ namespace blocksci {
         return getSumCount(values, bucketGoals, maxDepth);
     }
     
-    const Output *getChangeOutput(const AddressFirstSeenAccess &scripts, const Transaction &tx) {
+    const Output *getChangeOutput(const ScriptFirstSeenAccess &scripts, const Transaction &tx) {
         if (isCoinjoin(tx)) {
             return nullptr;
         }

@@ -23,7 +23,7 @@ namespace blocksci {
     class uint256;
     class ScriptAccess;
     class ChainAccess;
-    class AddressFirstSeenAccess;
+    class ScriptFirstSeenAccess;
     struct TransactionSummary;
     struct Input;
     struct Output;
@@ -135,7 +135,7 @@ namespace blocksci {
     uint64_t fee(const Transaction &tx);
     double feePerByte(const Transaction &tx);
     
-    const Output * getChangeOutput(const AddressFirstSeenAccess &scripts, const Transaction &tx);
+    const Output * getChangeOutput(const ScriptFirstSeenAccess &scripts, const Transaction &tx);
     
     #ifndef BLOCKSCI_WITHOUT_SINGLETON
     std::vector<Transaction> getTransactionsFromHashes(const std::vector<std::string> &txHashes);

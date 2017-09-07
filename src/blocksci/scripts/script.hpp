@@ -9,7 +9,7 @@
 #ifndef script_hpp
 #define script_hpp
 
-#include <blocksci/address/address_types.hpp>
+#include "script_type.hpp"
 #include <blocksci/address/address.hpp>
 
 #include <vector>
@@ -17,9 +17,6 @@
 #include <stdio.h>
 
 namespace blocksci {
-    
-    template <AddressType::Enum AddressType>
-    class ScriptAddress;
     
     struct Script {
         virtual std::string toString(const DataConfiguration &config) const = 0;

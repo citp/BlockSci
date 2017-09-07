@@ -58,7 +58,32 @@ struct ScriptOutput<blocksci::AddressType::Enum::PUBKEYHASH> : public ScriptOutp
 };
 
 template <>
+struct ScriptOutput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : public ScriptOutputBase {
+    
+    CKeyID hash;
+    
+    ScriptOutput(blocksci::uint160 &pubkeyHash) : hash{pubkeyHash} {}
+    
+    bool isValid() const { return true; }
+    
+    blocksci::uint160 getHash();
+};
+
+template <>
 struct ScriptOutput<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptOutputBase {
+    CKeyID hash;
+    
+    ScriptOutput(blocksci::uint160 hash_) : hash(hash_) {}
+    
+    blocksci::uint160 getHash();
+    
+    bool isValid() const {
+        return true;
+    }
+};
+
+template <>
+struct ScriptOutput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> : public ScriptOutputBase {
     CKeyID hash;
     
     ScriptOutput(blocksci::uint160 hash_) : hash(hash_) {}
@@ -74,7 +99,7 @@ template <>
 struct ScriptOutput<blocksci::AddressType::Enum::MULTISIG> {
     static constexpr int MAX_ADDRESSES = 16;
     using RawAddressArray = std::array<CPubKey, MAX_ADDRESSES>;
-    using ProcessedAddressArray = std::array<blocksci::Address, MAX_ADDRESSES>;
+    using ProcessedAddressArray = std::array<uint32_t, MAX_ADDRESSES>;
     using FirstSeenArray = std::array<bool, MAX_ADDRESSES>;
     uint8_t numRequired;
     uint8_t numTotal;

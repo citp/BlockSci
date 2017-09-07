@@ -17,11 +17,11 @@ namespace blocksci {
     struct RawData;
     
     template <>
-    class ScriptAddress<AddressType::Enum::NULL_DATA> : public Script {
+    class ScriptAddress<ScriptType::Enum::NULL_DATA> : public Script {
         
     public:
-        ScriptAddress<AddressType::Enum::NULL_DATA>(const RawData *rawData);
-        ScriptAddress<AddressType::Enum::NULL_DATA>(const ScriptAccess &access, uint32_t addressNum);
+        ScriptAddress<ScriptType::Enum::NULL_DATA>(const RawData *rawData);
+        ScriptAddress<ScriptType::Enum::NULL_DATA>(const ScriptAccess &access, uint32_t addressNum);
         std::string data;
         
         std::string toString(const DataConfiguration &config) const override;

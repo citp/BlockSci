@@ -218,15 +218,15 @@ namespace blocksci {
         }
     }
 
-    std::pair<uint160, AddressType::Enum> CBitcoinAddress::Get(const DataConfiguration &config) const
+    std::pair<uint160, ScriptType::Enum> CBitcoinAddress::Get(const DataConfiguration &config) const
     {
         uint160 id;
         memcpy(&id, vchData.data(), sizeof(id));
         if (vchVersion == config.pubkeyPrefix)
-            return std::make_pair(id, AddressType::Enum::PUBKEYHASH);
+            return std::make_pair(id, ScriptType::Enum::PUBKEY);
         else if (vchVersion == config.scriptPrefix)
-            return std::make_pair(id, AddressType::Enum::SCRIPTHASH);
+            return std::make_pair(id, ScriptType::Enum::SCRIPTHASH);
         else
-            return std::make_pair(id, AddressType::Enum::NONSTANDARD);
+            return std::make_pair(id, ScriptType::Enum::NONSTANDARD);
     }
 }

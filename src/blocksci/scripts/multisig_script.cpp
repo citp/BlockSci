@@ -17,7 +17,7 @@ namespace blocksci {
     
     Multisig::ScriptAddress(const MultisigData *rawData) : required(rawData->m), total(rawData->n), addresses(rawData->getAddresses()) {}
     
-    Multisig::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : Multisig(access.getScriptData<AddressType::Enum::MULTISIG>(addressNum)) {}
+    Multisig::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : Multisig(access.getScriptData<ScriptType::Enum::MULTISIG>(addressNum)) {}
     
     bool Multisig::operator==(const Script &other) {
         auto multisigOther = dynamic_cast<const Multisig *>(&other);

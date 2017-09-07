@@ -111,10 +111,10 @@ public:
     
     AddressInfo findAddress(const blocksci::RawAddress &address) const;
     // Bool is true if address is new
-    std::pair<blocksci::Address, bool> resolveAddress(const AddressInfo &addressInfo);
-    uint32_t getNewAddressIndex(blocksci::AddressType::Enum type);
+    std::pair<uint32_t, bool> resolveAddress(const AddressInfo &addressInfo);
+    uint32_t getNewAddressIndex(blocksci::ScriptType::Enum type);
     
-    void removeAddresses(const std::unordered_map<blocksci::AddressType::Enum, uint32_t> &deletedIndex);
+    void removeAddresses(const std::unordered_map<blocksci::ScriptType::Enum, uint32_t> &deletedIndex);
 };
 
 #endif /* blockchain_state_hpp */

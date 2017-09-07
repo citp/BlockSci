@@ -19,7 +19,7 @@ namespace blocksci {
     
     Pubkey::ScriptAddress(const PubkeyData *rawData) : pubkey(rawData->pubkey) {}
     
-    Pubkey::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : Pubkey(access.getScriptData<AddressType::Enum::PUBKEY>(addressNum)) {}
+    Pubkey::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : Pubkey(access.getScriptData<ScriptType::Enum::PUBKEY>(addressNum)) {}
     
     bool Pubkey::operator==(const Script &other) {
         auto otherA = dynamic_cast<const Pubkey *>(&other);

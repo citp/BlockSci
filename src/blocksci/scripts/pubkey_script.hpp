@@ -17,13 +17,13 @@ namespace blocksci {
     struct PubkeyData;
     
     template <>
-    class ScriptAddress<AddressType::Enum::PUBKEY> : public Script {
+    class ScriptAddress<ScriptType::Enum::PUBKEY> : public Script {
         
     public:
         CPubKey pubkey;
         
-        ScriptAddress<AddressType::Enum::PUBKEY>(const PubkeyData *rawData);
-        ScriptAddress<AddressType::Enum::PUBKEY>(const ScriptAccess &access, uint32_t addressNum);
+        ScriptAddress<ScriptType::Enum::PUBKEY>(const PubkeyData *rawData);
+        ScriptAddress<ScriptType::Enum::PUBKEY>(const ScriptAccess &access, uint32_t addressNum);
         
         std::string addressString(const DataConfiguration &config) const;
         

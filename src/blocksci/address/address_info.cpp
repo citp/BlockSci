@@ -19,6 +19,8 @@ namespace blocksci {
     constexpr char AddressInfo<AddressType::Enum::MULTISIG>::typeName[];
     constexpr char AddressInfo<AddressType::Enum::NULL_DATA>::typeName[];
     constexpr char AddressInfo<AddressType::Enum::NONSTANDARD>::typeName[];
+    constexpr char AddressInfo<AddressType::Enum::WITNESS_PUBKEYHASH>::typeName[];
+    constexpr char AddressInfo<AddressType::Enum::WITNESS_SCRIPTHASH>::typeName[];
     
     template<AddressType::Enum type>
     struct TypeNameFunctor {
@@ -28,7 +30,7 @@ namespace blocksci {
     };
     
     std::string GetTxnOutputType(AddressType::Enum type) {
-        static auto table = make_static_table<TypeNameFunctor>();
+        static auto table = make_static_table<AddressType, TypeNameFunctor>();
         static constexpr std::size_t size = AddressType::all.size();
         
         auto index = static_cast<size_t>(type);

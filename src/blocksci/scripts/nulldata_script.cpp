@@ -16,7 +16,7 @@ namespace blocksci {
     using namespace script;
     OpReturn::ScriptAddress(const RawData *raw) : data(raw->getData()) {}
     
-    OpReturn::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : OpReturn(access.getScriptData<AddressType::Enum::NULL_DATA>(addressNum)) {}
+    OpReturn::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : OpReturn(access.getScriptData<ScriptType::Enum::NULL_DATA>(addressNum)) {}
     
     bool OpReturn::operator==(const Script &other) {
         auto otherA = dynamic_cast<const OpReturn *>(&other);
