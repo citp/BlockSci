@@ -31,7 +31,6 @@ namespace blocksci {
         static constexpr bool spendable = true;
         static constexpr bool hasNestedAddresses = false;
         static constexpr bool deduped = true;
-        static constexpr AddressType::Enum addressAddressType = AddressType::Enum::PUBKEYHASH;
         static constexpr ScriptType::Enum scriptType = ScriptType::Enum::PUBKEY;
     };
     
@@ -42,7 +41,6 @@ namespace blocksci {
         static constexpr bool spendable = true;
         static constexpr bool hasNestedAddresses = false;
         static constexpr bool deduped = true;
-        static constexpr AddressType::Enum addressAddressType = AddressType::Enum::PUBKEYHASH;
         static constexpr ScriptType::Enum scriptType = ScriptType::Enum::PUBKEY;
     };
     
@@ -53,7 +51,6 @@ namespace blocksci {
         static constexpr bool spendable = true;
         static constexpr bool hasNestedAddresses = false;
         static constexpr bool deduped = true;
-        static constexpr AddressType::Enum addressAddressType = AddressType::Enum::PUBKEYHASH;
         static constexpr ScriptType::Enum scriptType = ScriptType::Enum::PUBKEY;
     };
     
@@ -64,7 +61,6 @@ namespace blocksci {
         static constexpr bool spendable = true;
         static constexpr bool hasNestedAddresses = true;
         static constexpr bool deduped = true;
-        static constexpr AddressType::Enum addressAddressType = AddressType::Enum::SCRIPTHASH;
         static constexpr ScriptType::Enum scriptType = ScriptType::Enum::SCRIPTHASH;
     };
     
@@ -75,7 +71,6 @@ namespace blocksci {
         static constexpr bool spendable = true;
         static constexpr bool hasNestedAddresses = true;
         static constexpr bool deduped = true;
-        static constexpr AddressType::Enum addressAddressType = AddressType::Enum::SCRIPTHASH;
         static constexpr ScriptType::Enum scriptType = ScriptType::Enum::SCRIPTHASH;
     };
     
@@ -86,7 +81,6 @@ namespace blocksci {
         static constexpr bool spendable = true;
         static constexpr bool hasNestedAddresses = true;
         static constexpr bool deduped = true;
-        static constexpr AddressType::Enum addressAddressType = AddressType::Enum::MULTISIG;
         static constexpr ScriptType::Enum scriptType = ScriptType::Enum::MULTISIG;
     };
     
@@ -97,7 +91,6 @@ namespace blocksci {
         static constexpr bool spendable = true;
         static constexpr bool hasNestedAddresses = false;
         static constexpr bool deduped = false;
-        static constexpr AddressType::Enum addressAddressType = AddressType::Enum::NONSTANDARD;
         static constexpr ScriptType::Enum scriptType = ScriptType::Enum::NONSTANDARD;
     };
     
@@ -108,7 +101,6 @@ namespace blocksci {
         static constexpr bool spendable = false;
         static constexpr bool hasNestedAddresses = false;
         static constexpr bool deduped = false;
-        static constexpr AddressType::Enum addressAddressType = AddressType::Enum::NULL_DATA;
         static constexpr ScriptType::Enum scriptType = ScriptType::Enum::NULL_DATA;
     };
     
@@ -141,68 +133,23 @@ namespace blocksci {
         struct to_address_type<K, std::tuple<Types...>> {
             using type = std::tuple<typename to_address_type<K, Types>::type...>;
         };
-        
-        template<int I, class Tuple, typename F> struct for_each_impl {
-            static void for_each(Tuple& t, F f) {
-                for_each_impl<I - 1, Tuple, F>::for_each(t, f);
-                f(std::get<I>(t));
-            }
-        };
-        template<class Tuple, typename F> struct for_each_impl<0, Tuple, F> {
-            static void for_each(Tuple& t, F f) {
-                f(std::get<0>(t));
-            }
-        };
-        
-        template <template<AddressType::Enum> class Functor, std::size_t... Is>
-        constexpr auto make_dynamic_table_impl(std::index_sequence<Is...>) -> std::array<decltype(&Functor<AddressType::Enum::PUBKEY>::f), sizeof...(Is)> {
-            return {{Functor<AddressType::all[Is]>::f...}};
-        }
-        
-        template <template<AddressType::Enum> class Functor, std::size_t... Is>
-        constexpr auto make_static_table_impl(std::index_sequence<Is...>) -> std::array<decltype(Functor<AddressType::Enum::PUBKEY>::f()), sizeof...(Is)> {
-            return {{Functor<AddressType::all[Is]>::f()...}};
-        }
-    }
-    
-    template <template<AddressType::Enum> class Functor>
-    constexpr auto make_static_table() {
-        return internal::make_static_table_impl<Functor>(std::make_index_sequence<AddressType::all.size()>{});
-    }
-    
-    template <template<AddressType::Enum> class Functor>
-    constexpr auto make_dynamic_table() {
-        return internal::make_dynamic_table_impl<Functor>(std::make_index_sequence<AddressType::all.size()>{});
-    }
-    
-    template <class Tuple, class F>
-    constexpr auto apply(Tuple t, F f) {
-        return internal::index_apply<std::tuple_size<Tuple>{}>([&](auto... Is) {
-            return std::make_tuple(f(std::get<Is>(t))...);
-        });
-    }
-    
-    
-    template<class Tuple, typename F>
-    void for_each(Tuple& t, F f) {
-        internal::for_each_impl<std::tuple_size<Tuple>::value - 1, Tuple, F>::for_each(t, f);
     }
     
     template <template<AddressType::Enum> class K, typename... Types>
     using to_script_variant_t = typename internal::to_variant<typename internal::to_address_type<K, Types...>::type>::type;
 
     
-    template<blocksci::AddressType::Enum type>
+    template<AddressType::Enum type>
     struct SpendableFunctor {
         static constexpr bool f() {
             return AddressInfo<type>::spendable;
         }
     };
     
-    template<blocksci::AddressType::Enum type>
-    struct AddressAddressTypeFunctor {
-        static constexpr AddressType::Enum f() {
-            return AddressInfo<type>::addressAddressType;
+    template<AddressType::Enum type>
+    struct ScriptTypeFunctor {
+        static constexpr ScriptType::Enum f() {
+            return AddressInfo<type>::scriptType;
         }
     };
     
@@ -228,10 +175,10 @@ namespace blocksci {
     
     using AddressInfoList = decltype(getAddressTypes());
     
-    static constexpr auto spendableTable = blocksci::make_static_table<SpendableFunctor>();
-    static constexpr auto addressAddressTypeTable = blocksci::make_static_table<AddressAddressTypeFunctor>();
-    static constexpr auto nestedAddressTable = blocksci::make_static_table<HasNestedAddressesFunctor>();
-    static constexpr auto dbTypeTable = blocksci::make_static_table<DBTypeFunctor>();
+    static constexpr auto spendableTable = blocksci::make_static_table<AddressType, SpendableFunctor>();
+    static constexpr auto scriptTypeTable = blocksci::make_static_table<AddressType, ScriptTypeFunctor>();
+    static constexpr auto nestedAddressTable = blocksci::make_static_table<AddressType, HasNestedAddressesFunctor>();
+    static constexpr auto dbTypeTable = blocksci::make_static_table<AddressType, DBTypeFunctor>();
     
     constexpr bool isSpendable(AddressType::Enum t) {
         
@@ -243,14 +190,14 @@ namespace blocksci {
         return spendableTable[index];
     }
     
-    constexpr AddressType::Enum addressAddressType(AddressType::Enum t) {
+    constexpr ScriptType::Enum scriptType(AddressType::Enum t) {
         
         auto index = static_cast<size_t>(t);
         if (index >= AddressType::size)
         {
             throw std::invalid_argument("combination of enum values is not valid");
         }
-        return addressAddressTypeTable[index];
+        return scriptTypeTable[index];
     }
     
     constexpr bool hasNestedAddresses(AddressType::Enum t) {

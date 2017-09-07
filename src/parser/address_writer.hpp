@@ -15,6 +15,7 @@
 
 #include <blocksci/file_mapper.hpp>
 #include <blocksci/address/address_info.hpp>
+#include <blocksci/scripts/script_info.hpp>
 #include <blocksci/scripts/script_data.hpp>
 
 #include <boost/variant/variant.hpp>
@@ -35,10 +36,10 @@ struct ScriptFileType<blocksci::Indexed<T...>> {
 };
 
 
-template<blocksci::AddressType::Enum type>
-using ScriptFileType_t = typename ScriptFileType<typename blocksci::AddressInfo<type>::storage>::type;
+template<blocksci::ScriptType::Enum type>
+using ScriptFileType_t = typename ScriptFileType<typename blocksci::ScriptInfo<type>::storage>::type;
 
-template<blocksci::AddressType::Enum type>
+template<blocksci::ScriptType::Enum type>
 struct ScriptFile : public ScriptFileType_t<type> {
     using ScriptFileType_t<type>::ScriptFileType_t;
 };
@@ -50,7 +51,7 @@ template<blocksci::AddressType::Enum type>
 struct ScriptInput;
 
 class AddressWriter {
-    using ScriptFilesTuple = blocksci::internal::to_script_type<ScriptFile, blocksci::AddressInfoList>::type;
+    using ScriptFilesTuple = blocksci::internal::to_script_type<ScriptFile, blocksci::ScriptInfoList>::type;
     
     ScriptFilesTuple scriptFiles;
     
@@ -62,12 +63,12 @@ class AddressWriter {
     
 public:
     
-    template <blocksci::AddressType::Enum type>
+    template <blocksci::ScriptType::Enum type>
     ScriptFile<type> &getFile() {
         return std::get<ScriptFile<type>>(scriptFiles);
     }
     
-    template <blocksci::AddressType::Enum type>
+    template <blocksci::ScriptType::Enum type>
     const ScriptFile<type> &getFile() const {
         return std::get<ScriptFile<type>>(scriptFiles);
     }
@@ -82,12 +83,12 @@ public:
         serializeImp(input);
     }
     
-    template<blocksci::AddressType::Enum type>
+    template<blocksci::ScriptType::Enum type>
     void truncate(uint32_t index) {
         getFile<type>().truncate(index);
     }
     
-    void truncate(blocksci::AddressType::Enum type, uint32_t index);
+    void truncate(blocksci::ScriptType::Enum type, uint32_t index);
     
     void serialize(const ScriptOutputType &output);
     void serialize(const ScriptInputType &input);

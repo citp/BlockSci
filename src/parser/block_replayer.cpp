@@ -48,7 +48,7 @@ struct ScriptInputFunctor {
 void processInputVisitor(const InputInfo &info, const RawTransaction &tx, const BlockchainState &state, const AddressWriter &addressWriter) {
     auto &type = info.address.type;
     
-    static constexpr auto table = blocksci::make_dynamic_table<ScriptInputFunctor>();
+    static constexpr auto table = blocksci::make_dynamic_table<blocksci::AddressType, ScriptInputFunctor>();
     static constexpr std::size_t size = blocksci::AddressType::all.size();
     
     auto index = static_cast<size_t>(type);

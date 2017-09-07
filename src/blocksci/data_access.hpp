@@ -11,7 +11,7 @@
 
 #include <blocksci/scripts/script_access.hpp>
 #include <blocksci/address/address_index.hpp>
-#include <blocksci/address/address_first_seen_access.hpp>
+#include <blocksci/scripts/script_first_seen_access.hpp>
 #include <blocksci/chain/chain_access.hpp>
 #include <blocksci/data_configuration.hpp>
 
@@ -24,7 +24,7 @@ namespace blocksci {
         const DataConfiguration config;
         ChainAccess chain;
         ScriptAccess scripts;
-        AddressFirstSeenAccess addressFirstSeen;
+        ScriptFirstSeenAccess scriptFirstSeen;
         AddressIndex addressIndex;
         
         static DataAccess &Instance(const DataConfiguration &config, bool errorOnReorg, uint32_t blocksIgnored);

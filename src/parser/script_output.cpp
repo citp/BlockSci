@@ -30,15 +30,15 @@ template <>
 struct AddressNumImp<true> {
     template <blocksci::AddressType::Enum type>
     static std::pair<blocksci::Address, bool> get(ScriptOutput<type> &data, BlockchainState &state) {
-        blocksci::RawAddress rawAddress{data.getHash(), blocksci::addressAddressType(type)};
+        blocksci::RawAddress rawAddress{data.getHash(), blocksci::scriptType(type)};
         auto addressInfo = state.findAddress(rawAddress);
         auto processed = state.resolveAddress(addressInfo);
-        return std::make_pair(blocksci::Address(processed.first.addressNum, type), processed.second);
+        return std::make_pair(blocksci::Address(processed.first, type), processed.second);
     }
     
     template <blocksci::AddressType::Enum type>
     static std::pair<blocksci::Address, bool> check(ScriptOutput<type> &data, const BlockchainState &state) {
-        blocksci::RawAddress rawAddress{data.getHash(), blocksci::addressAddressType(type)};
+        blocksci::RawAddress rawAddress{data.getHash(), blocksci::scriptType(type)};
         auto addressInfo = state.findAddress(rawAddress);
         return std::make_pair(blocksci::Address(addressInfo.addressNum, type), addressInfo.addressNum == 0);
     }
@@ -48,7 +48,7 @@ template <>
 struct AddressNumImp<false> {
     template <blocksci::AddressType::Enum type>
     static std::pair<blocksci::Address, bool> get(ScriptOutput<type> &, BlockchainState &state) {
-        auto index = state.getNewAddressIndex(type);
+        auto index = state.getNewAddressIndex(scriptType(type));
         return std::make_pair(blocksci::Address(index, type), true);
     }
     
@@ -103,9 +103,21 @@ blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::PUBKEYHASH>::getHash
     return hash;
 }
 
+// MARK: WITNESS_PUBKEYHASH
+
+blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::getHash() {
+    return hash;
+}
+
 // MARK: TX_SCRIPTHASH
 
 blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::SCRIPTHASH>::getHash() {
+    return hash;
+}
+
+// MARK: WITNESS_SCRIPTHASH
+
+blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::getHash() {
     return hash;
 }
 
@@ -133,7 +145,7 @@ blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::getHash()
 
 void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::processOutput(BlockchainState &state) {
     for (int i = 0; i < addressCount; i++) {
-        blocksci::RawAddress rawAddress{addresses[i].GetID(), blocksci::AddressType::Enum::PUBKEYHASH};
+        blocksci::RawAddress rawAddress{addresses[i].GetID(), blocksci::ScriptType::Enum::PUBKEY};
         auto addressInfo = state.findAddress(rawAddress);
         auto addrGetRes = state.resolveAddress(addressInfo);
         processedAddresses[i] = addrGetRes.first;
@@ -143,9 +155,9 @@ void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::processOutput(Blockcha
 
 void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::checkOutput(const BlockchainState &state) {
     for (int i = 0; i < addressCount; i++) {
-        blocksci::RawAddress rawAddress{addresses[i].GetID(), blocksci::AddressType::Enum::PUBKEYHASH};
+        blocksci::RawAddress rawAddress{addresses[i].GetID(), blocksci::ScriptType::Enum::PUBKEY};
         auto addressInfo = state.findAddress(rawAddress);
-        processedAddresses[i] = {addressInfo.addressNum, blocksci::AddressType::Enum::PUBKEY};
+        processedAddresses[i] = addressInfo.addressNum;
         firstSeen[i] = addressInfo.addressNum == 0;
     }
 }

@@ -46,7 +46,7 @@ namespace blocksci {
     
     const Output * getChangeOutput(const Transaction &tx) {
         auto &instance = DataAccess::Instance();
-        return getChangeOutput(instance.addressFirstSeen, tx);
+        return getChangeOutput(instance.scriptFirstSeen, tx);
     }
     
     bool isChangeOverTx(const Transaction &tx) {

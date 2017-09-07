@@ -18,7 +18,7 @@ namespace blocksci {
     
     ScriptHash::ScriptAddress(const ScriptHashData *rawData) : address(rawData->address), wrappedAddress(rawData->wrappedAddress) {}
     
-    ScriptHash::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : ScriptHash(access.getScriptData<AddressType::Enum::SCRIPTHASH>(addressNum)) {}
+    ScriptHash::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : ScriptHash(access.getScriptData<ScriptType::Enum::SCRIPTHASH>(addressNum)) {}
     
     ScriptHash::ScriptAddress(const uint160 &address_) : address(address_), wrappedAddress() {}
     

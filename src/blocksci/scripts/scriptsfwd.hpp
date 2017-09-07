@@ -9,11 +9,10 @@
 #ifndef scriptsfwd_h
 #define scriptsfwd_h
 
-#include <blocksci/address/address_types.hpp>
+#include "script_type.hpp"
 
 namespace blocksci {
     struct PubkeyData;
-    struct PubkeyHashData;
     struct MultisigData;
     struct ScriptHashData;
     struct RawData;
@@ -21,16 +20,15 @@ namespace blocksci {
     class ScriptAccess;
     struct DataConfiguration;
     
-    template <AddressType::Enum AddressType>
+    template <ScriptType::Enum>
     class ScriptAddress;
     
     namespace script {
-        using Pubkey = ScriptAddress<AddressType::Enum::PUBKEY>;
-        using PubkeyHash = ScriptAddress<AddressType::Enum::PUBKEYHASH>;
-        using ScriptHash = ScriptAddress<AddressType::Enum::SCRIPTHASH>;
-        using Multisig = ScriptAddress<AddressType::Enum::MULTISIG>;
-        using OpReturn = ScriptAddress<AddressType::Enum::NULL_DATA>;
-        using Nonstandard = ScriptAddress<AddressType::Enum::NONSTANDARD>;
+        using Pubkey = ScriptAddress<ScriptType::Enum::PUBKEY>;
+        using ScriptHash = ScriptAddress<ScriptType::Enum::SCRIPTHASH>;
+        using Multisig = ScriptAddress<ScriptType::Enum::MULTISIG>;
+        using OpReturn = ScriptAddress<ScriptType::Enum::NULL_DATA>;
+        using Nonstandard = ScriptAddress<ScriptType::Enum::NONSTANDARD>;
     }
 }
 

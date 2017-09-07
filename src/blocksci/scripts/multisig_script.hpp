@@ -16,15 +16,15 @@ namespace blocksci {
     struct MultisigData;
     
     template <>
-    class ScriptAddress<AddressType::Enum::MULTISIG> : public Script {
+    class ScriptAddress<ScriptType::Enum::MULTISIG> : public Script {
         
     public:
         uint8_t required;
         uint8_t total;
         std::vector<Address> addresses;
         
-        ScriptAddress<AddressType::Enum::MULTISIG>(const MultisigData *rawData);
-        ScriptAddress<AddressType::Enum::MULTISIG>(const ScriptAccess &access, uint32_t addressNum);
+        ScriptAddress<ScriptType::Enum::MULTISIG>(const MultisigData *rawData);
+        ScriptAddress<ScriptType::Enum::MULTISIG>(const ScriptAccess &access, uint32_t addressNum);
         
         std::string toString(const DataConfiguration &config) const override;
         std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const override;

@@ -23,7 +23,7 @@ namespace blocksci {
     struct Input;
     class ScriptAccess;
     class ChainAccess;
-    class AddressFirstSeenAccess;
+    class ScriptFirstSeenAccess;
     class AddressIndex;
     struct DataConfiguration;
     
@@ -48,8 +48,8 @@ namespace blocksci {
         
         std::string toString() const;
         
-        Transaction getFirstTransaction(const ChainAccess &chain, const AddressFirstSeenAccess &scriptsFirstSeen) const;
-        uint32_t getFirstTransactionIndex(const AddressFirstSeenAccess &access) const;
+        Transaction getFirstTransaction(const ChainAccess &chain, const ScriptFirstSeenAccess &scriptsFirstSeen) const;
+        uint32_t getFirstTransactionIndex(const ScriptFirstSeenAccess &access) const;
         
         std::unique_ptr<Script> getScript(const ScriptAccess &access) const;
         
@@ -74,18 +74,11 @@ namespace blocksci {
         #endif
     };
     
-    boost::optional<Address> getAddressFromString(const DataConfiguration &config, const ScriptAccess &access, const std::string &addressString);
-    
-    std::vector<Address> getAddressesFromStrings(const DataConfiguration &config, const ScriptAccess &access, const std::vector<std::string> &addressStrings);
-    
-    std::vector<Address> getAddressesWithPrefix(const DataConfiguration &config, const ScriptAccess &access, const std::string &prefix);
     size_t addressCount(const ScriptAccess &access);
     
     // Requires DataAccess
     #ifndef BLOCKSCI_WITHOUT_SINGLETON
     boost::optional<Address> getAddressFromString(const std::string &addressString);
-    std::vector<Address> getAddressesFromStrings(const std::vector<std::string> &addressStrings);
-    std::vector<Address> getAddressesWithPrefix(const std::string &prefix);
     size_t addressCount();
     #endif
 }

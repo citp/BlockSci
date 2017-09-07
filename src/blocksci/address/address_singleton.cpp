@@ -18,12 +18,12 @@ namespace blocksci {
     }
     
     uint32_t Address::getFirstTransactionIndex() const {
-        return getFirstTransactionIndex(DataAccess::Instance().addressFirstSeen);
+        return getFirstTransactionIndex(DataAccess::Instance().scriptFirstSeen);
     }
     
     Transaction Address::getFirstTransaction() const {
         auto &instance = DataAccess::Instance();
-        return getFirstTransaction(instance.chain, instance.addressFirstSeen);
+        return getFirstTransaction(instance.chain, instance.scriptFirstSeen);
     }
     
     std::vector<const Output *> Address::getOutputs() const {
@@ -49,21 +49,6 @@ namespace blocksci {
     std::vector<Transaction> Address::getInputTransactions() const {
         auto &instance = DataAccess::Instance();
         return getInputTransactions(instance.addressIndex, instance.chain);
-    }
-    
-    boost::optional<Address> getAddressFromString(const std::string &addressString) {
-        auto &instance = DataAccess::Instance();
-        return getAddressFromString(instance.config, instance.scripts, addressString);
-    }
-    
-    std::vector<Address> getAddressesFromStrings(const std::vector<std::string> &addressStrings) {
-        auto &instance = DataAccess::Instance();
-        return getAddressesFromStrings(instance.config, instance.scripts, addressStrings);
-    }
-    
-    std::vector<Address> getAddressesWithPrefix(const std::string &prefix) {
-        auto &instance = DataAccess::Instance();
-        return getAddressesWithPrefix(instance.config, instance.scripts, prefix);
     }
     
     size_t addressCount() {

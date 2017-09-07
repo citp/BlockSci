@@ -58,9 +58,9 @@ void rollbackTransactions(size_t blockKeepCount, const ParserConfiguration &conf
         BlockchainState state(config);
         ChainWriter chainWriter{config};
         
-        std::unordered_map<AddressType::Enum, uint32_t> addressCounts;
+        std::unordered_map<ScriptType::Enum, uint32_t> addressCounts;
         ScriptAccess scripts{config};
-        AddressFirstSeenAccess firstSeenIndex(config);
+        ScriptFirstSeenAccess firstSeenIndex(config);
         
         auto &firstDeletedBlock = blocks[blockKeepCount];
         auto firstDeletedTxNum = firstDeletedBlock.firstTxIndex;
@@ -74,10 +74,10 @@ void rollbackTransactions(size_t blockKeepCount, const ParserConfiguration &conf
             for (uint16_t i = 0; i < tx.outputCount(); i++) {
                 auto &output = tx.outputs()[i];
                 if (output.getAddress().getFirstTransactionIndex(firstSeenIndex) == txNum) {
-                    auto prevValue = addressCounts[output.getType()];
+                    auto &prevValue = addressCounts[scriptType(output.getType())];
                     auto addressNum = output.getAddress().addressNum;
                     if (addressNum < prevValue) {
-                        addressCounts[output.getType()] = addressNum;
+                        prevValue = addressNum;
                     }
                 }
                 if (output.getType() != AddressType::Enum::NULL_DATA) {

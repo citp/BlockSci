@@ -14,7 +14,7 @@ namespace blocksci {
     struct Address;
     struct Transaction;
     class ScriptAccess;
-    class AddressFirstSeenAccess;
+    class ScriptFirstSeenAccess;
     class ScriptAccess;
 }
 

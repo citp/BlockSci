@@ -31,26 +31,31 @@ namespace blocksci {
     
     template <>
     struct ScriptInfo<ScriptType::Enum::PUBKEY> {
+        static constexpr char typeName[] = "pubkey_script";
         using storage = FixedSize<PubkeyData>;
     };
     
     template <>
     struct ScriptInfo<ScriptType::Enum::SCRIPTHASH> {
+        static constexpr char typeName[] = "scripthash_script";
         using storage = FixedSize<ScriptHashData>;
     };
     
     template <>
     struct ScriptInfo<ScriptType::Enum::MULTISIG> {
+        static constexpr char typeName[] = "multisig_script";
         using storage = Indexed<MultisigData>;
     };
     
     template <>
     struct ScriptInfo<ScriptType::Enum::NONSTANDARD> {
+        static constexpr char typeName[] = "nonstandard_script";
         using storage = Indexed<NonstandardScriptData,NonstandardScriptData>;
     };
     
     template <>
     struct ScriptInfo<ScriptType::Enum::NULL_DATA> {
+        static constexpr char typeName[] = "null_data_script";
         using storage = Indexed<RawData>;
     };
     

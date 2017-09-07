@@ -20,13 +20,13 @@ namespace blocksci {
     struct ScriptType {
         
         enum class Enum {
-#define VAL(x) x
+            #define VAL(x) x
             SCRIPT_TYPE_LIST
-#undef VAL
+            #undef VAL
         };
-#define VAL(x) Enum::x
+        #define VAL(x) Enum::x
         static constexpr std::array<Enum, 5> all = {{SCRIPT_TYPE_LIST}};
-#undef VAL
+        #undef VAL
         
         static constexpr size_t size = all.size();
     };

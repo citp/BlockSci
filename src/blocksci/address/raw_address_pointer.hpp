@@ -9,7 +9,7 @@
 #ifndef raw_address_pointer_hpp
 #define raw_address_pointer_hpp
 
-#include "address_types.hpp"
+#include "scripts/script_type.hpp"
 #include <blocksci/bitcoin_uint256.hpp>
 
 #include <boost/optional.hpp>
@@ -18,7 +18,7 @@
 
 namespace blocksci {
     struct DataConfiguration;
-    struct PubkeyHashData;
+    struct PubkeyData;
     struct ScriptHashData;
     
     struct RawAddress {
@@ -26,15 +26,15 @@ namespace blocksci {
         static constexpr size_t maxBinSize = 25;
         
         uint160 hash;
-        AddressType::Enum type;
+        ScriptType::Enum type;
         
         bool operator==(const RawAddress& other) const {
             return type == other.type && hash == other.hash;
         }
         
         RawAddress() {}
-        RawAddress(uint160 hash, AddressType::Enum type);
-        RawAddress(const PubkeyHashData &data);
+        RawAddress(uint160 hash, ScriptType::Enum type);
+        RawAddress(const PubkeyData &data);
         RawAddress(const ScriptHashData &data);
         
         static boost::optional<RawAddress> create(const DataConfiguration &config, const std::string &addressString);
@@ -52,7 +52,7 @@ namespace std {
         size_t operator()(const blocksci::RawAddress &b) const {
             std::size_t seed = 123945432;
             hash<blocksci::uint160> hasher1;
-            hash<blocksci::AddressType::Enum> hasher2;
+            hash<blocksci::ScriptType::Enum> hasher2;
             seed ^= hasher1(b.hash) + 0x9e3779b9 + (seed<<6) + (seed>>2);
             seed ^= hasher2(b.type) + 0x9e3779b9 + (seed<<6) + (seed>>2);
             return seed;

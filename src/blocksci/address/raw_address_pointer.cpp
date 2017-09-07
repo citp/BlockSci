@@ -19,18 +19,18 @@
 
 namespace blocksci {
     
-    RawAddress::RawAddress(uint160 hash_, AddressType::Enum type_) : hash(hash_), type(type_) {}
+    RawAddress::RawAddress(uint160 hash_, ScriptType::Enum type_) : hash(hash_), type(type_) {}
     
-    RawAddress::RawAddress(const PubkeyHashData &data) : RawAddress(data.address, AddressType::Enum::PUBKEYHASH) {}
+    RawAddress::RawAddress(const PubkeyData &data) : RawAddress(data.address, ScriptType::Enum::PUBKEY) {}
     
-    RawAddress::RawAddress(const ScriptHashData &data) : RawAddress(data.address, AddressType::Enum::SCRIPTHASH) {
+    RawAddress::RawAddress(const ScriptHashData &data) : RawAddress(data.address, ScriptType::Enum::SCRIPTHASH) {
         
     }
     
     boost::optional<RawAddress> RawAddress::create(const DataConfiguration &config, const std::string &addressString) {
         CBitcoinAddress address{addressString};
         auto ret = address.Get(config);
-        if (ret.second != AddressType::Enum::NONSTANDARD) {
+        if (ret.second != ScriptType::Enum::NONSTANDARD) {
             return RawAddress{ret.first, ret.second};
         } else {
             return boost::none;

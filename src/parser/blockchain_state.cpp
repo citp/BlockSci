@@ -49,7 +49,7 @@ BlockchainState::BlockchainState(const ParserConfiguration &config_) : config(co
 
     blocksci::uint160 deletedAddress;
     deletedAddress.SetHex("FFFFFFFFFFFFFFFFFFFF");
-    blocksci::RawAddress deletedKey{deletedAddress, blocksci::AddressType::Enum::NULL_DATA};
+    blocksci::RawAddress deletedKey{deletedAddress, blocksci::ScriptType::Enum::NULL_DATA};
     
     singleAddressMap.set_deleted_key(deletedKey);
     oldSingleAddressMap.set_deleted_key(deletedKey);
@@ -107,7 +107,7 @@ void BlockchainState::initializeScriptIndexes() {
             scriptIndexes.push_back(value);
         }
     } else {
-        for (size_t i = 0; i < 6; i++) {
+        for (size_t i = 0; i < blocksci::ScriptType::all.size(); i++) {
             scriptIndexes.push_back(0);
         }
     }
@@ -120,7 +120,7 @@ void BlockchainState::saveScriptIndexes() {
     }
 }
 
-uint32_t BlockchainState::getNewAddressIndex(blocksci::AddressType::Enum type) {
+uint32_t BlockchainState::getNewAddressIndex(blocksci::ScriptType::Enum type) {
     return ++scriptIndexes[static_cast<uint8_t>(type)];
 }
 
@@ -180,7 +180,7 @@ BloomFilter<blocksci::RawAddress> BlockchainState::generateAddressBloomFilter(ui
     return bloom;
 }
 
-std::pair<blocksci::Address, bool> BlockchainState::resolveAddress(const AddressInfo &addressInfo) {
+std::pair<uint32_t, bool> BlockchainState::resolveAddress(const AddressInfo &addressInfo) {
     auto rawAddress = addressInfo.rawAddress;
     switch (addressInfo.location) {
         case AddressLocation::SingleUseMap:
@@ -209,11 +209,10 @@ std::pair<blocksci::Address, bool> BlockchainState::resolveAddress(const Address
             addressBloomFilter = generateAddressBloomFilter(addressBloomFilter.getMaxItems() * 2, addressBloomFilter.getFPRate());
         }
     }
-    blocksci::Address address{addressNum, rawAddress.type};
-    return std::make_pair(address, !foundAddress);
+    return std::make_pair(addressNum, !foundAddress);
 }
 
-void BlockchainState::removeAddresses(const std::unordered_map<blocksci::AddressType::Enum, uint32_t> &deletedIndex) {
+void BlockchainState::removeAddresses(const std::unordered_map<blocksci::ScriptType::Enum, uint32_t> &deletedIndex) {
     auto multiAddressIt = multiAddressMap.begin();
     while (multiAddressIt != multiAddressMap.end()) {
         auto it = deletedIndex.find(multiAddressIt->first.type);

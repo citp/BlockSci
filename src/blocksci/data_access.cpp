@@ -11,7 +11,7 @@
 
 namespace blocksci {
     
-    DataAccess::DataAccess(const DataConfiguration &config_, bool errorOnReorg_, uint32_t blocksIgnored_) : config(config_), chain(config, errorOnReorg_, blocksIgnored_), scripts(config), addressFirstSeen(config), addressIndex(config) {}
+    DataAccess::DataAccess(const DataConfiguration &config_, bool errorOnReorg_, uint32_t blocksIgnored_) : config(config_), chain(config, errorOnReorg_, blocksIgnored_), scripts(config), scriptFirstSeen(config), addressIndex(config) {}
     
     DataAccess &DataAccess::Instance(const DataConfiguration &config_, bool errorOnReorg, uint32_t blocksIgnored) {
         // Since it's a static variable, if the class has already been created,
@@ -25,7 +25,7 @@ namespace blocksci {
             config = config_;
             myInstance.chain = ChainAccess(config, errorOnReorg, blocksIgnored);
             myInstance.scripts = ScriptAccess(config);
-            myInstance.addressFirstSeen = AddressFirstSeenAccess(config);
+            myInstance.scriptFirstSeen = ScriptFirstSeenAccess(config);
             myInstance.addressIndex = AddressIndex(config);
         }
         

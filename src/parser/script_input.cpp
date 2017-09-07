@@ -56,7 +56,7 @@ struct P2SHInputFunctor {
 ScriptInputType p2shInputVisitor(const InputInfo &info, const RawTransaction &tx, BlockchainState &state, AddressWriter &addressWriter) {
     auto &type = info.address.type;
     
-    static constexpr auto table = blocksci::make_dynamic_table<P2SHInputFunctor>();
+    static constexpr auto table = blocksci::make_dynamic_table<blocksci::AddressType, P2SHInputFunctor>();
     static constexpr std::size_t size = blocksci::AddressType::all.size();
     
     auto index = static_cast<size_t>(type);
@@ -107,7 +107,7 @@ struct CheckP2SHInputFunctor {
 ScriptInputType checkP2SHInputVisitor(const InputInfo &info, const RawTransaction &tx, const BlockchainState &state, const AddressWriter &addressWriter) {
     auto &type = info.address.type;
     
-    static constexpr auto table = blocksci::make_dynamic_table<CheckP2SHInputFunctor>();
+    static constexpr auto table = blocksci::make_dynamic_table<blocksci::AddressType, CheckP2SHInputFunctor>();
     static constexpr std::size_t size = blocksci::AddressType::all.size();
     
     auto index = static_cast<size_t>(type);
@@ -218,5 +218,22 @@ ScriptInput<blocksci::AddressType::Enum::NULL_DATA>::ScriptInput(const InputInfo
 }
 
 void ScriptInput<blocksci::AddressType::Enum::NULL_DATA>::processInput(const InputInfo &, const RawTransaction &, BlockchainState &, AddressWriter &writer) {
+    writer.serialize(*this);
+}
+
+ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::ScriptInput(const InputInfo &, const RawTransaction &, const AddressWriter &) {
+    
+}
+
+void ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::processInput(const InputInfo &, const RawTransaction &, BlockchainState &, AddressWriter &writer) {
+    writer.serialize(*this);
+}
+
+
+ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::ScriptInput(const InputInfo &, const RawTransaction &, const AddressWriter &) {
+    
+}
+
+void ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::processInput(const InputInfo &, const RawTransaction &, BlockchainState &, AddressWriter &writer) {
     writer.serialize(*this);
 }
