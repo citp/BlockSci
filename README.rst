@@ -84,6 +84,10 @@ Below I list setup expressions for compiling blocksci on Ubuntu 16.04.
 	./configure --enable-module-recovery
 	make
 	sudo make install
+	
+	git clone https://github.com/citp/BlockSci.git
+	cd BlockSci
+	git submodule init --recursive update
 
 	cd libs/bitcoin-cpp-api
 	mkdir release
