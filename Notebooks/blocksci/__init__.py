@@ -9,6 +9,7 @@ from functools import reduce
 import operator
 import datetime
 import dateparser
+from dateutil.relativedelta import relativedelta
 import pandas as pd
 import psutil
 import tempfile
@@ -23,8 +24,12 @@ def mapreduce_block_ranges(chain, mapFunc, reduceFunc, init,  start=None, end=No
     """
     if start is None:
         start = 0
-    if end is None:
-        end = len(chain)
+        if end is None:
+            end = len(chain)
+    elif isinstance(start, str):
+        blocks = chain.range(start, end)
+        start = blocks[0].height
+        end = blocks[-1].height
 
     if cpu_count == 1:
         return reduce(reduceFunc, (mapFunc(block) for block in chain[start:end]))
@@ -90,11 +95,6 @@ def heights_to_dates(self, df):
     return df.set_index(df.index.to_series().apply(lambda x: self[x].time))
 
 def block_range(self, start, end=None):
-    def add_one_month(dt0):
-        dt1 = dt0.replace(day=1)
-        dt2 = dt1 + datetime.timedelta(days=32)
-        dt3 = dt2.replace(day=1)
-        return dt3
     if self.block_times is None:
         self.block_times = pd.DataFrame([block.time for block in self], columns=["date"])
         self.block_times["height"] = self.block_times.index
@@ -105,9 +105,11 @@ def block_range(self, start, end=None):
     if end is None:
         res = dateparser.DateDataParser().get_date_data(start)
         if res['period'] == 'month':
-            end = add_one_month(start_date)
+            end = start_date + relativedelta(months=1)
         elif res['period'] == 'day':
-            end = start_date + datetime.timedelta(days=1)
+            end = start_date + relativedelta(days=1)
+        elif res['period'] == 'year':
+            end = start_date + relativedelta(years=1)
     else:
         end = pd.to_datetime(end)
 
