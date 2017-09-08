@@ -45,12 +45,23 @@
 <dl class="class">
 <dt id="blocksci.Address">
 <em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">Address</code><a class="headerlink" href="#blocksci.Address" title="Permalink to this definition">¶</a></dt>
-<dd><p>Pointer to an address</p>
+<dd><p>Represents an abstract address object which uniquely identifies a given address</p>
+<dl class="method">
+<dt id="blocksci.Address.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Address</em>, <em>arg0: int</em>, <em>arg1: blocksci::AddressType::Enum</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#blocksci.Address.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Can be constructed directly py passing it an address index and address type</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="blocksci.Address.address_count">
 <code class="descname">address_count</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#blocksci.Address.address_count" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the total number of address of a given type</p>
 </dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.Address.address_num">
+<code class="descname">address_num</code><a class="headerlink" href="#blocksci.Address.address_num" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="blocksci.Address.addresses_with_prefix">
@@ -111,6 +122,11 @@
 <code class="descname">txes</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Address</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Transaction]<a class="headerlink" href="#blocksci.Address.txes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a list of all transactions involving this address</p>
 </dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.Address.type">
+<code class="descname">type</code><a class="headerlink" href="#blocksci.Address.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
