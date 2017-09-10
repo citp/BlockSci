@@ -118,7 +118,7 @@ blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::SCRIPTHASH>::getHash
 // MARK: WITNESS_SCRIPTHASH
 
 blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::getHash() {
-    return hash;
+    return ripemd160(reinterpret_cast<const char *>(&hash), sizeof(hash));
 }
 
 // MARK: TX_MULTISIG
@@ -229,6 +229,35 @@ ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsig
         blocksci::uint160 hash;
         memcpy(&hash, &(*(scriptPubKey.begin()+2)), 20);
         return ScriptOutput<AddressType::Enum::SCRIPTHASH>{{hash}};
+    }
+    
+    if (scriptPubKey.IsWitnessProgram()) {
+        auto pc = scriptPubKey.begin();
+        opcodetype opcode;
+        std::vector<unsigned char> vchSig;
+        scriptPubKey.GetOp(pc, opcode, vchSig);
+        uint8_t version = CScript::DecodeOP_N(opcode);
+        scriptPubKey.GetOp(pc, opcode, vchSig);
+        if (version == 0 && vchSig.size() == 20) {
+            return ScriptOutput<AddressType::Enum::WITNESS_PUBKEYHASH>(uint160{vchSig});
+        } else if (version == 0 && vchSig.size() == 32) {
+            return ScriptOutput<AddressType::Enum::WITNESS_SCRIPTHASH>(uint256{vchSig});
+        }
+        
+//
+//        
+//        if (version == 0 && scriptPubKey.size() == 22) {
+//
+//            typeRet = TX_WITNESS_V0_KEYHASH;
+//            vSolutionsRet.push_back(witnessprogram);
+//            return true;
+//        }
+//        if (witnessversion == 0 && witnessprogram.size() == 34) {
+//            typeRet = TX_WITNESS_V0_SCRIPTHASH;
+//            vSolutionsRet.push_back(witnessprogram);
+//            return true;
+//        }
+//        return false;
     }
     
     // Provably prunable, data-carrying output

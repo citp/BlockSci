@@ -62,7 +62,7 @@ struct ScriptOutput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : public Sc
     
     CKeyID hash;
     
-    ScriptOutput(blocksci::uint160 &pubkeyHash) : hash{pubkeyHash} {}
+    ScriptOutput(blocksci::uint160 &&pubkeyHash) : hash{pubkeyHash} {}
     
     bool isValid() const { return true; }
     
@@ -84,9 +84,9 @@ struct ScriptOutput<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptOutp
 
 template <>
 struct ScriptOutput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> : public ScriptOutputBase {
-    CKeyID hash;
+    blocksci::uint256 hash;
     
-    ScriptOutput(blocksci::uint160 hash_) : hash(hash_) {}
+    ScriptOutput(blocksci::uint256 hash_) : hash(hash_) {}
     
     blocksci::uint160 getHash();
     

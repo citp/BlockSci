@@ -23,6 +23,7 @@
 
 class AddressWriter;
 struct RawTransaction;
+struct WitnessStackItem;
 class CPubKey;
 
 
@@ -31,8 +32,9 @@ struct InputInfo {
     uint32_t inputNum;
     const unsigned char *scriptBegin;
     const unsigned char *scriptEnd;
+    const std::vector<WitnessStackItem> &witnessStack;
     
-    InputInfo(const blocksci::Address &address_, uint32_t inputNum_, const unsigned char *scriptBegin_, const unsigned char *scriptEnd_) : address(address_), inputNum(inputNum_), scriptBegin(scriptBegin_), scriptEnd(scriptEnd_) {}
+    InputInfo(const blocksci::Address &address_, uint32_t inputNum_, const unsigned char *scriptBegin_, const unsigned char *scriptEnd_, const std::vector<WitnessStackItem> &witnessStack_) : address(address_), inputNum(inputNum_), scriptBegin(scriptBegin_), scriptEnd(scriptEnd_), witnessStack(witnessStack_) {}
     
     CScript getScript() const {
         return CScript(scriptBegin, scriptEnd);

@@ -391,13 +391,18 @@ void updateChain(const ConfigType &config, uint32_t maxBlockNum) {
         
         updateBlocks(config, chainUpdateInfo, startingTxCount);
         
-        backUpdateTxes(config);
-        
         auto startBlockHeight = chainUpdateInfo.blocksToAdd.front().height;
+        
+        std::thread hashIndexThread([&config, startBlockHeight]() {
+            updateHashIndex(config, startBlockHeight);
+        });
+        
+        backUpdateTxes(config);
         
         updateFirstSeenIndex(config, startBlockHeight);
         updateAddressDb(config, startBlockHeight);
-        updateHashIndex(config, startBlockHeight);
+        
+        hashIndexThread.join();
     }
 }
 
