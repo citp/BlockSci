@@ -37,9 +37,9 @@ std::vector<unsigned char> hexStringToVec(const std::string scripthex) {
 
 InputInfo RawInput::getInfo(const UTXO &utxo, uint16_t i) {
     if (scriptBytes.size() > 0) {
-        return {utxo.address, i, scriptBytes.data(), scriptBytes.data() + scriptBytes.size()};
+        return {utxo.address, i, scriptBytes.data(), scriptBytes.data() + scriptBytes.size(), witnessStack};
     } else {
-        return {utxo.address, i, scriptBegin, scriptEnd};
+        return {utxo.address, i, scriptBegin, scriptEnd, witnessStack};
     }
 }
 

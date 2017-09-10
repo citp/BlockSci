@@ -108,7 +108,7 @@ void replayBlock(const FileParserConfiguration &config, uint32_t blockNum) {
         uint16_t j = 0;
         for (auto &input : tx.inputs) {
             auto &realInput = realTx.inputs()[j];
-            InputInfo info{realInput.getAddress(), j, input.scriptBegin, input.scriptEnd};
+            InputInfo info{realInput.getAddress(), j, input.scriptBegin, input.scriptEnd, input.witnessStack};
             processInputVisitor(info, tx, state, writer);
             j++;
         }

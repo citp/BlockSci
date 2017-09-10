@@ -91,7 +91,7 @@ void ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::processInput(const In
     
     const unsigned char *inputScriptBegin = wrappedInputScript.data();
     const unsigned char *inputScriptEnd = wrappedInputScript.data() + wrappedInputScript.size();
-    InputInfo p2shInputInfo{wrappedAddress, inputInfo.inputNum, inputScriptBegin, inputScriptEnd};
+    InputInfo p2shInputInfo{wrappedAddress, inputInfo.inputNum, inputScriptBegin, inputScriptEnd, inputInfo.witnessStack};
     writer.serialize(p2shInputVisitor(p2shInputInfo, tx, state, writer));
 }
 
@@ -138,7 +138,7 @@ void ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::checkInput(const Inpu
     wrappedAddress = processed.first;
     const unsigned char *inputScriptBegin = wrappedInputScript.data();
     const unsigned char *inputScriptEnd = wrappedInputScript.data() + wrappedInputScript.size();
-    InputInfo p2shInputInfo{wrappedAddress, inputInfo.inputNum, inputScriptBegin, inputScriptEnd};
+    InputInfo p2shInputInfo{wrappedAddress, inputInfo.inputNum, inputScriptBegin, inputScriptEnd, inputInfo.witnessStack};
     checkP2SHInputVisitor(p2shInputInfo, tx, state, writer);
 }
 
@@ -225,15 +225,15 @@ ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::ScriptInput(const 
     
 }
 
-void ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::processInput(const InputInfo &, const RawTransaction &, BlockchainState &, AddressWriter &writer) {
+void ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::processInput(const InputInfo &inputInfo, const RawTransaction &, BlockchainState &, AddressWriter &writer) {
     writer.serialize(*this);
 }
 
 
-ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::ScriptInput(const InputInfo &, const RawTransaction &, const AddressWriter &) {
+ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::ScriptInput(const InputInfo &inputInfo, const RawTransaction &, const AddressWriter &) {
     
 }
 
-void ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::processInput(const InputInfo &, const RawTransaction &, BlockchainState &, AddressWriter &writer) {
+void ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::processInput(const InputInfo &inputInfo, const RawTransaction &, BlockchainState &, AddressWriter &writer) {
     writer.serialize(*this);
 }
