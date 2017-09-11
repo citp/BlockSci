@@ -118,3 +118,8 @@ Here are the steps for compiling BlockSci on Ubuntu 16.04.
 
 	sudo -H pip3 install --upgrade pip
 	sudo -H pip3 install --upgrade multiprocess psutil jupyter pycrypto matplotlib pandas dateparser
+	
+Team
+=======
+
+BlockSci was created by Harry Kalodner, Steven Goldfeder, Alishah Chator, Malte Möser, and Arvind Narayanan at Princeton University. It is supported by NSF grants CNS-1421689 and CNS-1651938 and an NSF Graduate Research Fellowship under grant number DGE-1148900. We've released a [paper](https://arxiv.org/abs/1709.02489) describing BlockSci's design and a few applications that illustrate its capabilities.
