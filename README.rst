@@ -75,6 +75,17 @@ To use the python library, you only need to import the BlockSci library. By defa
 	import blocksci
 	chain = blocksci.Blockchain("file_path_to_output-directory")
 
+If you would like to use BlockSci through a web interface, we recommend the use of `Jupyter Notebook`_. Once Jupyter is installed, simply navigate into BlockSci/Notebooks and run:
+
+.. code-block:: bash
+
+	jupyter notebook
+	
+which will open a window in your browser to the Jupyter server.
+
+.. _Jupyter Notebook: https://jupyter.readthedocs.io/en/latest/install.html
+
+
 BlockSci Compilation Instructions
 ======================================
 
@@ -122,4 +133,6 @@ Here are the steps for compiling BlockSci on Ubuntu 16.04.
 Team
 =======
 
-BlockSci was created by Harry Kalodner, Steven Goldfeder, Alishah Chator, Malte Möser, and Arvind Narayanan at Princeton University. It is supported by NSF grants CNS-1421689 and CNS-1651938 and an NSF Graduate Research Fellowship under grant number DGE-1148900. We've released a [paper](https://arxiv.org/abs/1709.02489) describing BlockSci's design and a few applications that illustrate its capabilities.
+BlockSci was created by Harry Kalodner, Steven Goldfeder, Alishah Chator, Malte Möser, and Arvind Narayanan at Princeton University. It is supported by NSF grants CNS-1421689 and CNS-1651938 and an NSF Graduate Research Fellowship under grant number DGE-1148900. We've released a paper_ describing BlockSci's design and a few applications that illustrate its capabilities.
+
+.. _paper: https://arxiv.org/abs/1709.02489
