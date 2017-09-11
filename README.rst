@@ -20,9 +20,9 @@ If you want to start using BlockSci immediately, we have made available an EC2 i
 
 .. code-block:: bash
 
-	ssh -i .ssh/your_private_key.pem -L 8888:localhost:8888 ubuntu@your_url.amazonaws.com
+	ssh -i .ssh/your_private_key.pem -N -L 8888:localhost:8888 ubuntu@your_url.amazonaws.com
 
-This sets up an SSH tunnel between port 8888 on your remote EC2 instance and port 8888 on your localhost. You can use whichever port you like on your local machine. Next, you can navigate to https://localhost:8888/ in your browser and log in with the password 'blocksci'. A demo notebook will be available for you to run and you can begin exploring the blockchain.
+This sets up an SSH tunnel between port 8888 on your remote EC2 instance and port 8888 on your localhost. You can use whichever port you like on your local machine. Next, you can navigate to https://localhost:8888/ (https is required) in your browser and log in with the password 'blocksci'. When connecting to the server, you will receive a certificate error regarding the self-signed certificate. This error is expected and can be safely bypassed. A demo notebook will be available for you to run and you can begin exploring the blockchain. Don't forget to shut down the EC2 instance when you are finished since EC2 charges hourly.
 
 .. _ami-1f9b8364: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-1f9b8364
 
