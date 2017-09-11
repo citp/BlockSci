@@ -9,10 +9,10 @@
 #include "cluster_manager.hpp"
 #include "cluster.hpp"
 
-#include <blocksci/scripts/address.hpp>
+#include <blocksci/address/address_info.hpp>
 
-ClusterManager::ClusterManager(std::string baseDirectory) : clusterOffsetFile(baseDirectory + "clusterOffsets"), clusterAddressesFile(baseDirectory + "clusterAddresses"), scriptClusterIndexFiles(blocksci::apply(blocksci::ScriptInfoList(), [&] (auto tag) {
-    return baseDirectory + blocksci::ScriptInfo<tag.type>::typeName + "_cluster_index";;
+ClusterManager::ClusterManager(std::string baseDirectory) : clusterOffsetFile(baseDirectory + "clusterOffsets"), clusterAddressesFile(baseDirectory + "clusterAddresses"), scriptClusterIndexFiles(blocksci::apply(blocksci::AddressInfoList(), [&] (auto tag) {
+    return baseDirectory + blocksci::AddressInfo<tag.type>::typeName + "_cluster_index";;
 }))  {
 }
 
@@ -25,17 +25,17 @@ uint32_t ClusterManager::clusterCount() const {
     return clusterOffsetFile.size();
 }
 
-template<blocksci::ScriptType::Enum type>
+template<blocksci::AddressType::Enum type>
 struct ClusterNumFunctor {
-    static uint32_t f(const ClusterManager *cm, const blocksci::AddressPointer &address) {
-        return cm->getClusterNum<addressScriptType(type)>(address.addressNum);;
+    static uint32_t f(const ClusterManager *cm, const blocksci::Address &address) {
+        return cm->getClusterNum<addressAddressType(type)>(address.addressNum);;
     }
 };
 
 
-uint32_t ClusterManager::getClusterNum(const blocksci::AddressPointer &address) const {
+uint32_t ClusterManager::getClusterNum(const blocksci::Address &address) const {
     static auto table = blocksci::make_dynamic_table<ClusterNumFunctor>();
-    static constexpr std::size_t size = blocksci::ScriptType::all.size();
+    static constexpr std::size_t size = blocksci::AddressType::all.size();
     
     auto index = static_cast<size_t>(address.type);
     if (index >= size)
@@ -45,11 +45,11 @@ uint32_t ClusterManager::getClusterNum(const blocksci::AddressPointer &address) 
     return table[index](this, address);
 }
 
-Cluster ClusterManager::getCluster(const blocksci::AddressPointer &address) const {
+Cluster ClusterManager::getCluster(const blocksci::Address &address) const {
     return Cluster(getClusterNum(address), *this);
 }
 
-std::vector<TaggedCluster> ClusterManager::taggedClusters(const std::unordered_map<blocksci::AddressPointer, std::string> &tags) {
+std::vector<TaggedCluster> ClusterManager::taggedClusters(const std::unordered_map<blocksci::Address, std::string> &tags) {
     std::vector<TaggedCluster> taggedClusters;
     for (auto &cluster : getClusters()) {
         auto taggedAddresses = cluster.taggedAddresses(tags);
@@ -82,7 +82,7 @@ std::vector<uint32_t> ClusterManager::getClusterSizes() const {
     return clusterSizes;
 }
 
-boost::iterator_range<const blocksci::AddressPointer *> ClusterManager::getClusterAddresses(uint32_t clusterNum) const {
+boost::iterator_range<const blocksci::Address *> ClusterManager::getClusterAddresses(uint32_t clusterNum) const {
     auto nextClusterOffset = *clusterOffsetFile.getData(clusterNum);
     uint32_t clusterOffset = 0;
     if (clusterNum > 0) {

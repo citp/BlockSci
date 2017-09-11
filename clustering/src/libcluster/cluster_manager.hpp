@@ -11,7 +11,8 @@
 
 #include "cluster.hpp"
 
-#include <blocksci/data_access.hpp>
+#include <blocksci/file_mapper.hpp>
+#include <blocksci/address/address_info.hpp>
 
 #include <boost/range/iterator_range.hpp>
 #include <boost/range/counting_range.hpp>
@@ -20,7 +21,7 @@
 
 class Cluster;
 
-template<blocksci::ScriptType::Enum type>
+template<blocksci::AddressType::Enum type>
 struct ScriptClusterIndexFile : public blocksci::FixedSizeFileMapper<uint32_t> {
     using blocksci::FixedSizeFileMapper<uint32_t>::FixedSizeFileMapper;
 };
@@ -29,34 +30,34 @@ class ClusterExpander;
 
 struct TaggedCluster {
     Cluster cluster;
-    std::vector<TaggedAddressPointer> taggedAddresses;
+    std::vector<TaggedAddress> taggedAddresses;
     
-    TaggedCluster(const Cluster &cluster_, std::vector<TaggedAddressPointer> &&taggedAddresses_) : cluster(cluster_), taggedAddresses(taggedAddresses_) {}
+    TaggedCluster(const Cluster &cluster_, std::vector<TaggedAddress> &&taggedAddresses_) : cluster(cluster_), taggedAddresses(taggedAddresses_) {}
 };
 
 class ClusterManager {
     blocksci::FixedSizeFileMapper<uint32_t> clusterOffsetFile;
-    blocksci::FixedSizeFileMapper<blocksci::AddressPointer> clusterAddressesFile;
+    blocksci::FixedSizeFileMapper<blocksci::Address> clusterAddressesFile;
     
-    using ScriptClusterIndexTuple = blocksci::internal::to_script_type<ScriptClusterIndexFile, blocksci::ScriptInfoList>::type;
+    using ScriptClusterIndexTuple = blocksci::internal::to_script_type<ScriptClusterIndexFile, blocksci::AddressInfoList>::type;
     
     ScriptClusterIndexTuple scriptClusterIndexFiles;
     
 public:
     ClusterManager(std::string baseDirectory);
     
-    Cluster getCluster(const blocksci::AddressPointer &address) const;
+    Cluster getCluster(const blocksci::Address &address) const;
     
-    template<blocksci::ScriptType::Enum type>
+    template<blocksci::AddressType::Enum type>
     uint32_t getClusterNum(uint32_t addressNum) const {
         auto &file = std::get<ScriptClusterIndexFile<type>>(scriptClusterIndexFiles);
         return *file.getData(addressNum);
     }
     
-    uint32_t getClusterNum(const blocksci::AddressPointer &address) const;
+    uint32_t getClusterNum(const blocksci::Address &address) const;
     
     uint32_t getClusterSize(uint32_t clusterNum) const;
-    boost::iterator_range<const blocksci::AddressPointer *> getClusterAddresses(uint32_t clusterNum) const;
+    boost::iterator_range<const blocksci::Address *> getClusterAddresses(uint32_t clusterNum) const;
     
     uint32_t clusterCount() const;
     
@@ -64,7 +65,7 @@ public:
     
     std::vector<uint32_t> getClusterSizes() const;
     
-    std::vector<TaggedCluster> taggedClusters(const std::unordered_map<blocksci::AddressPointer, std::string> &tags);
+    std::vector<TaggedCluster> taggedClusters(const std::unordered_map<blocksci::Address, std::string> &tags);
 };
 
 class ClusterExpander

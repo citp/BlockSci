@@ -9,6 +9,11 @@
 #include <libcluster/cluster.hpp>
 #include <libcluster/cluster_manager.hpp>
 
+#include <blocksci/chain/transaction_iterator.hpp>
+#include <blocksci/chain/block.hpp>
+#include <blocksci/chain/input.hpp>
+#include <blocksci/chain/output.hpp>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
@@ -21,13 +26,13 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
     for (auto tx : block.txes()) {
         std::set<uint32_t> inputClusters;
         for (auto &input : tx.inputs()) {
-            auto cluster = manager.getCluster(input.getAddressPointer());
+            auto cluster = manager.getCluster(input.getAddress());
             if (cluster.getSize() < 30000) {
                 inputClusters.insert(cluster.clusterNum);
             }
         }
         for (auto &output : tx.outputs()) {
-            if ((!output.isSpent() || output.getSpendingTx()->blockHeight - block.height > 3) && inputClusters.find(manager.getCluster(output.getAddressPointer()).clusterNum) == inputClusters.end()) {
+            if ((!output.isSpent() || output.getSpendingTx()->blockHeight - block.height > 3) && inputClusters.find(manager.getCluster(output.getAddress()).clusterNum) == inputClusters.end()) {
                 total += output.getValue();
             }
         }
@@ -60,9 +65,9 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
      .def("address_count", &Cluster::getAddressCount)
      ;
      
-     py::class_<TaggedAddressPointer>(m, "TaggedAddressPointer")
-     .def_readonly("address_pointer", &TaggedAddressPointer::pointer)
-     .def_readonly("tag", &TaggedAddressPointer::tag)
+     py::class_<TaggedAddress>(m, "TaggedAddress")
+     .def_readonly("address", &TaggedAddress::address)
+     .def_readonly("tag", &TaggedAddress::tag)
      ;
      
      py::class_<TaggedCluster>(m, "TaggedCluster")
@@ -100,7 +105,7 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
      })
      ;
      
-     using address_range = boost::iterator_range<const blocksci::AddressPointer *>;
+     using address_range = boost::iterator_range<const blocksci::Address *>;
      py::class_<address_range>(m, "AddressRange")
      .def("__len__", &address_range::size)
      /// Optional sequence protocol operations

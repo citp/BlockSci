@@ -8,8 +8,13 @@
 
 #include <dset/dset.h>
 
-#include <blocksci/blocksci.hpp>
-#include <blocksci/data_access.hpp>
+#include <blocksci/chain/blockchain.hpp>
+#include <blocksci/chain/output.hpp>
+#include <blocksci/chain/input.hpp>
+#include <blocksci/chain/transaction.hpp>
+#include <blocksci/address/address.hpp>
+#include <blocksci/scripts/scriptsfwd.hpp>
+#include <blocksci/scripts/scripthash_script.hpp>
 
 #include <unordered_map>
 #include <unordered_set>
@@ -31,9 +36,9 @@ bool isCoinjoinFast(const Transaction &tx, const std::vector<const Output *> &sp
         return false;
     }
     
-    std::unordered_set<AddressPointer> inputAddresses;
+    std::unordered_set<Address> inputAddresses;
     for (auto spentOutput : spentOutputs) {
-        inputAddresses.insert(spentOutput->getAddressPointer());
+        inputAddresses.insert(spentOutput->getAddress());
     }
     
     if (participantCount > inputAddresses.size()) {
@@ -71,9 +76,9 @@ const Output * getChange(const Transaction &tx, uint64_t smallestInput) {
     uint16_t spendableCount = 0;
     const Output *change = nullptr;
     for (const auto &output : tx.outputs()) {
-        auto addressPointer = output.getAddressPointer();
-        if (addressPointer.isSpendable()) {
-            if (output.getValue() < smallestInput && addressPointer.getFirstTransactionIndex() == tx.txNum) {
+        auto address = output.getAddress();
+        if (address.isSpendable()) {
+            if (output.getValue() < smallestInput && address.getFirstTransactionIndex() == tx.txNum) {
                 if (change) {
                     // Multiple possible change addresses
                     return nullptr;
@@ -91,24 +96,24 @@ const Output * getChange(const Transaction &tx, uint64_t smallestInput) {
     return change;
 }
 
-std::vector<std::pair<AddressPointer, AddressPointer>> process_transaction(const Transaction &tx) {
-    std::vector<std::pair<AddressPointer, AddressPointer>> pairsToUnion;
+std::vector<std::pair<Address, Address>> process_transaction(const Transaction &tx) {
+    std::vector<std::pair<Address, Address>> pairsToUnion;
     
     if (!isCoinjoin(tx) && !isCoinbase(tx)) {
         auto inputs = tx.inputs();
         uint64_t smallestInput = inputs.front().getValue();
-        auto firstAddress = inputs.front().getAddressPointer();
+        auto firstAddress = inputs.front().getAddress();
         if (tx.inputCount() > 1) {
             for (uint16_t i = 1; i < tx.inputCount(); i++) {
                 smallestInput = std::min(smallestInput, inputs[i].getValue());
-                pairsToUnion.emplace_back(firstAddress, inputs[i].getAddressPointer());
+                pairsToUnion.emplace_back(firstAddress, inputs[i].getAddress());
             }
         }
         
         auto change = getChange(tx, smallestInput);
         
         if (change) {
-            pairsToUnion.emplace_back(change->getAddressPointer(), firstAddress);
+            pairsToUnion.emplace_back(change->getAddress(), firstAddress);
         }
     }
     return pairsToUnion;
@@ -152,20 +157,20 @@ void segmentWork(uint32_t start, uint32_t end, uint32_t segmentCount, Job job) {
     }
 }
 
-std::vector<uint32_t> getClusters(Blockchain &chain, std::unordered_map<AddressPointer, uint32_t> &addressesMapped, uint32_t totalAddressCount) {
+std::vector<uint32_t> getClusters(Blockchain &chain, std::unordered_map<Address, uint32_t> &addressesMapped, uint32_t totalAddressCount) {
     
     DisjointSets ds(totalAddressCount);
     
-    auto scriptHashCount = chain.access.scripts.addressCount<ScriptType::Enum::SCRIPTHASH>();
+    auto scriptHashCount = chain.access.scripts.addressCount<AddressType::Enum::SCRIPTHASH>();
     
     
     segmentWork(1, scriptHashCount + 1, 8, [&ds, &addressesMapped](uint32_t index) {
-        AddressPointer pointer(index, ScriptType::Enum::SCRIPTHASH);
-        auto address = pointer.getAddress();
-        auto addressPointer = dynamic_cast<address::ScriptHash *>(address.get());
-        if (addressPointer && addressPointer->wrappedAddressPointer.addressNum > 0) {
-            auto wrappedPointer = addressPointer->wrappedAddressPointer;
-            ds.unite(addressesMapped[pointer], addressesMapped[wrappedPointer]);
+        Address address(index, AddressType::Enum::SCRIPTHASH);
+        auto script = address.getScript();
+        auto scripthashScript = dynamic_cast<script::ScriptHash *>(script.get());
+        if (scripthashScript && scripthashScript->wrappedAddress.addressNum > 0) {
+            auto wrappedPointer = scripthashScript->wrappedAddress;
+            ds.unite(addressesMapped[address], addressesMapped[wrappedPointer]);
         }
     });
     
@@ -209,9 +214,9 @@ uint32_t remapClusterIds(std::vector<uint32_t> &parents) {
     return clusterCount;
 }
 
-void recordOrderedAddresses(const std::vector<uint32_t> &parent, std::vector<uint32_t> &clusterPositions, const std::vector<AddressPointer> &idensMapped) {
+void recordOrderedAddresses(const std::vector<uint32_t> &parent, std::vector<uint32_t> &clusterPositions, const std::vector<Address> &idensMapped) {
     
-    std::vector<AddressPointer> orderedAddresses;
+    std::vector<Address> orderedAddresses;
     orderedAddresses.resize(parent.size());
     
     for (size_t i = 0; i < parent.size(); i++) {
@@ -221,7 +226,7 @@ void recordOrderedAddresses(const std::vector<uint32_t> &parent, std::vector<uin
     }
     
     std::ofstream clusterAddressesFile("clusterAddresses.dat", std::ios::binary);
-    clusterAddressesFile.write(reinterpret_cast<char *>(orderedAddresses.data()), sizeof(AddressPointer) * orderedAddresses.size());
+    clusterAddressesFile.write(reinterpret_cast<char *>(orderedAddresses.data()), sizeof(Address) * orderedAddresses.size());
 }
 
 int main(int argc, const char * argv[]) {
@@ -235,12 +240,12 @@ int main(int argc, const char * argv[]) {
     
     std::vector<uint32_t> addressCounts;
     
-    constexpr std::array<ScriptType::Enum, 5> types = {{
-        ScriptType::Enum::NONSTANDARD,
-        ScriptType::Enum::PUBKEYHASH,
-        ScriptType::Enum::SCRIPTHASH,
-        ScriptType::Enum::MULTISIG,
-        ScriptType::Enum::NULL_DATA
+    constexpr std::array<AddressType::Enum, 5> types = {{
+        AddressType::Enum::NONSTANDARD,
+        AddressType::Enum::PUBKEYHASH,
+        AddressType::Enum::SCRIPTHASH,
+        AddressType::Enum::MULTISIG,
+        AddressType::Enum::NULL_DATA
     }};
     
     uint32_t totalAddressCount = 0;
@@ -248,12 +253,12 @@ int main(int argc, const char * argv[]) {
         totalAddressCount += chain.access.scripts.addressCount(type);
     }
     
-    std::unordered_map<AddressPointer, uint32_t> addressesMapped;
-    std::vector<AddressPointer> idensMapped;
+    std::unordered_map<Address, uint32_t> addressesMapped;
+    std::vector<Address> idensMapped;
     idensMapped.reserve(totalAddressCount);
     addressesMapped.reserve(totalAddressCount);
     
-    std::unordered_map<ScriptType::Enum, uint32_t> addressStarts;
+    std::unordered_map<AddressType::Enum, uint32_t> addressStarts;
     
     uint32_t index = 0;
     for (size_t i = 0; i < types.size(); i++) {
@@ -261,7 +266,7 @@ int main(int argc, const char * argv[]) {
         addressStarts[type] = index;
         auto count = chain.access.scripts.addressCount(type);
         for (uint32_t i = 1; i <= count; i++) {
-            auto pointer = AddressPointer{i, type};
+            auto pointer = Address{i, type};
             addressesMapped[pointer] = index;
             idensMapped.push_back(pointer);
             index++;
