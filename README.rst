@@ -3,15 +3,15 @@ BlockSci
 
 BlockSci Documentation
 =====================
-Documentation_ is available for the python interface library
+Documentation_ is available for the python interface library.
 
 .. _Documentation: https://citp.github.io/BlockSci/
 
-Additionally, a demonstration Notebook_ is available in the Notebooks folder
+Additionally, a demonstration Notebook_ is available in the Notebooks folder.
 
 .. _Notebook: https://citp.github.io/BlockSci/demo.html
 
-More detailed documentation is coming soon. Meanwhile, feel free to contact us at blocksci@lists.cs.princeton.edu.
+For installation instructions, see below. More detailed documentation is coming soon. Meanwhile, feel free to contact us at blocksci@lists.cs.princeton.edu.
 
 Quick Setup using Amazon EC2
 ==============
@@ -133,6 +133,6 @@ Here are the steps for compiling BlockSci on Ubuntu 16.04.
 Team
 =======
 
-BlockSci was created by Harry Kalodner, Steven Goldfeder, Alishah Chator, Malte Möser, and Arvind Narayanan at Princeton University. It is supported by NSF grants CNS-1421689 and CNS-1651938 and an NSF Graduate Research Fellowship under grant number DGE-1148900. We've released a paper_ describing BlockSci's design and a few applications that illustrate its capabilities.
+BlockSci was created by Harry Kalodner, Steven Goldfeder, Alishah Chator, Malte Möser, and Arvind Narayanan at Princeton University. It is supported by NSF grants CNS-1421689 and CNS-1651938 and an NSF Graduate Research Fellowship under grant number DGE-1148900. We've released a paper_ describing BlockSci's design and a few applications that illustrate its capabilities. You can contact the team at blocksci@lists.cs.princeton.edu.
 
 .. _paper: https://arxiv.org/abs/1709.02489
