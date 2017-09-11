@@ -11,7 +11,7 @@ Additionally, a demonstration Notebook_ is available in the Notebooks folder
 
 .. _Notebook: https://citp.github.io/BlockSci/demo.html
 
-More detailed documentation is coming soon.
+More detailed documentation is coming soon. Meanwhile, feel free to contact us at blocksci@lists.cs.princeton.edu.
 
 Quick Setup using Amazon EC2
 ==============
