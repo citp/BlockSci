@@ -11,6 +11,20 @@ Additionally, a demonstration Notebook_ is available in the Notebooks folder
 
 .. _Notebook: https://citp.github.io/BlockSci/demo.html
 
+Quick Setup
+==============
+
+If you want to start using BlockSci immediately, you may using our ami-1f9b8364_. We recomend making use of an instance with 61GB of memory or more for optimal performance (r4.2xlarge). On boot, a Jupyter Notebook running BlockSci will launch immediately. In order to access the notebook, you must set up port forwarding to your computer. Inserting the name of your private key file and the domain of your ec2 instance into the following line will make the Notebook available on your machine.
+
+Note: Despite the fact that the URL says localhost, it is actually loading from your EC2 instance.
+
+.. code-block:: bash
+
+	ssh -i .ssh/your_private_key.pem -L 8888:localhost:8888 ubuntu@your_url.amazonaws.com
+	
+After running this line, you can navigate to https://localhost:8888/ in your browser and log in with the password 'blocksci'. A demo notebook will be available for you to run and you can begin exploring BlockSci further.
+
+.. _ami-1f9b8364: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-1f9b8364
 
 BlockSci Setup
 =====================
