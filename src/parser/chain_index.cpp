@@ -42,7 +42,7 @@ BlockInfo::BlockInfo(const CBlockHeader &h, int fileNum, unsigned int dataPos, u
 }
 
 ChainIndex::ChainIndex(const FileParserConfiguration &config_) : config(config_) {
-    boost::filesystem::fstream file(config.blockListPath(), std::ios::binary);
+    boost::filesystem::ifstream file(config.blockListPath(), std::ios::binary);
     if (file.good()) {
         uint64_t length;
         file.read(reinterpret_cast<char *>(&length), sizeof(length));
@@ -64,8 +64,9 @@ void ChainIndex::updateFromFilesystem() {
     size_t filePos = 0;
     
     if (!blockList.empty()) {
-        fileNum = blockList.back().nFile;
-        filePos = blockList.back().nDataPos;
+        auto &lastBlock = blockList.back();
+        fileNum = lastBlock.nFile;
+        filePos = lastBlock.nDataPos;
     }
     
     int firstFile = fileNum;
@@ -93,7 +94,7 @@ void ChainIndex::updateFromFilesystem() {
         // config.blockMagic
         // 0xdab5bffa
         uint32_t magic = 0;
-        while ((magic = readNext<uint32_t>(&startPos)) == config.blockMagic) {
+        while ((magic = readNext<uint32_t>(&startPos)) == 0x0709110b) {
             uint32_t length = readNext<uint32_t>(&startPos);
             filePos = startPos - fileMap.data();
             auto header = reinterpret_cast<const CBlockHeader *>(startPos);

@@ -9,10 +9,8 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "preproccessed_block.hpp"
-
 #include "utilities.hpp"
 #include "chain_index.hpp"
-#include "blockchain_state.hpp"
 #include "script_input.hpp"
 #include <blocksci/hash.hpp>
 #include <blocksci/chain/transaction.hpp>
@@ -35,11 +33,11 @@ std::vector<unsigned char> hexStringToVec(const std::string scripthex) {
     return scriptBytes;
 }
 
-InputInfo RawInput::getInfo(const UTXO &utxo, uint16_t i) {
+InputInfo RawInput::getInfo(uint16_t i) {
     if (scriptBytes.size() > 0) {
-        return {utxo.address, i, scriptBytes.data(), scriptBytes.data() + scriptBytes.size(), witnessStack};
+        return {i, scriptBytes.data(), static_cast<uint32_t>(scriptBytes.size()), witnessStack};
     } else {
-        return {utxo.address, i, scriptBegin, scriptEnd, witnessStack};
+        return {i, scriptBegin, scriptLength, witnessStack};
     }
 }
 
@@ -53,9 +51,8 @@ RawOutput::RawOutput(const std::vector<unsigned char> &scriptBytes, uint64_t val
 RawInput::RawInput(const char **buffer) {
     rawOutputPointer.hash = readNext<blocksci::uint256>(buffer);
     rawOutputPointer.outputNum = static_cast<uint16_t>(readNext<uint32_t>(buffer));
-    auto scriptLength = readVariableLengthInteger(buffer);
+    scriptLength = readVariableLengthInteger(buffer);
     scriptBegin = reinterpret_cast<const unsigned char*>(*buffer);
-    scriptEnd = scriptBegin + scriptLength;
     *buffer += scriptLength;
     sequenceNum = readNext<uint32_t>(buffer);
 }
@@ -111,7 +108,7 @@ void RawTransaction::load(const char **buffer) {
         for (decltype(inputCount) i = 0; i < inputCount; i++) {
             auto &input = inputs[i];
             uint32_t stackItemCount = readVariableLengthInteger(buffer);
-            for (uint32_t i = 0; i < stackItemCount; i++) {
+            for (uint32_t j = 0; j < stackItemCount; j++) {
                 input.witnessStack.emplace_back(buffer);
             }
         }

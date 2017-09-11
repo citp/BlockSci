@@ -16,7 +16,7 @@
 namespace blocksci {
     template <>
     class ScriptAddress<ScriptType::Enum::NONSTANDARD> : public Script {
-        CScript inputScript;
+        boost::optional<CScript> inputScript;
         CScript outputScript;
         
     public:

@@ -17,7 +17,8 @@
 #include "preproccessed_block.hpp"
 
 #include "chain_index.hpp"
-#include "blockchain_state.hpp"
+#include "utxo_state.hpp"
+#include "address_state.hpp"
 
 #include <blocksci/hash.hpp>
 #include <blocksci/chain/block.hpp>
@@ -34,7 +35,7 @@
 #include <fstream>
 #include <iostream>
 
-BlockProcessor::BlockProcessor() : done(false) {
+BlockProcessor::BlockProcessor() : rawDone(false), utxoDone(false) {
     
 }
 
@@ -139,7 +140,7 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
         
         for (uint32_t i = 0; i < txCount; i++) {
             RawTransaction *tx;
-            if (!used_transaction_queue.pop(tx)) {
+            if (!finished_transaction_queue.pop(tx)) {
                 tx = new RawTransaction();
             } else {
                 auto it = files.begin();
@@ -153,24 +154,28 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
                 }
             }
             
+            if (firstTxIndex == 490) {
+                std::cout << "Test\n";
+            }
+            
             tx->load(&startPos);
             
             if (tx->inputs.size() == 1 && tx->inputs[0].rawOutputPointer.hash == nullHash) {
-                coinbase.assign(tx->inputs[0].scriptBegin, tx->inputs[0].scriptEnd);
+                auto scriptBegin = tx->inputs[0].scriptBegin;
+                coinbase.assign(scriptBegin, scriptBegin + tx->inputs[0].scriptLength);
                 tx->inputs.clear();
             }
             
-            while (!transaction_queue.push(tx)) {
+            while (!utxo_transaction_queue.push(tx)) {
                 std::this_thread::sleep_for(100ms);
             }
+            firstTxIndex++;
         }
         
         blockFile.write(getBlock(firstTxIndex, txCount, blockCoinbaseFile.size(), block));
         blockCoinbaseFile.write(coinbase.begin(), coinbase.end());
-        
-        firstTxIndex += txCount;
     }
-    done = true;
+    rawDone = true;
 }
 
 #endif
@@ -213,13 +218,13 @@ void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<bl
         
         for (uint32_t i = 0; i < blockTxCount; i++) {
             RawTransaction *tx;
-            if (!used_transaction_queue.pop(tx)) {
+            if (!finished_transaction_queue.pop(tx)) {
                 tx = new RawTransaction();
             }
             loadTxRPC(tx, block, i, bapi);
             
             // Note to self: Currently this does not get the coinbase tx data
-            while (!transaction_queue.push(tx)) {
+            while (!utxo_transaction_queue.push(tx)) {
                 std::this_thread::sleep_for(100ms);
             }
         }
@@ -230,15 +235,15 @@ void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<bl
         firstTxIndex += blockTxCount;
     }
     
-    done = true;
+    rawDone = true;
 }
 
 #endif
 
 struct ProcessOutputVisitor : public boost::static_visitor<blocksci::Address> {
-    BlockchainState &state;
+    AddressState &state;
     AddressWriter &addressWriter;
-    ProcessOutputVisitor(BlockchainState &state_, AddressWriter &addressWriter_) : state(state_), addressWriter(addressWriter_) {}
+    ProcessOutputVisitor(AddressState &state_, AddressWriter &addressWriter_) : state(state_), addressWriter(addressWriter_) {}
     template <blocksci::AddressType::Enum type>
     blocksci::Address operator()(ScriptOutput<type> &scriptOutput) const {
         std::pair<blocksci::Address, bool> processed = getAddressNum(scriptOutput, state);
@@ -252,40 +257,96 @@ struct ProcessOutputVisitor : public boost::static_visitor<blocksci::Address> {
 
 template<blocksci::AddressType::Enum type>
 struct ScriptInputFunctor {
-    static void f(const InputInfo &info, const RawTransaction &tx, BlockchainState &state, AddressWriter &addressWriter) {
+    static void f(uint32_t addressNum, const InputInfo &info, const RawTransaction &tx, AddressState &state, AddressWriter &addressWriter) {
         auto input = ScriptInput<type>(info, tx, addressWriter);
-        input.processInput(info, tx, state, addressWriter);
+        input.processInput(addressNum, info, tx, state, addressWriter);
     }
 };
 
-void processInputVisitor(const InputInfo &info, const RawTransaction &tx, BlockchainState &state, AddressWriter &addressWriter) {
-    auto &type = info.address.type;
-    
+void processInputVisitor(const blocksci::Address &address, const InputInfo &info, const RawTransaction &tx, AddressState &state, AddressWriter &addressWriter) {
+
     static constexpr auto table = blocksci::make_dynamic_table<blocksci::AddressType, ScriptInputFunctor>();
     static constexpr std::size_t size = blocksci::AddressType::all.size();
     
-    auto index = static_cast<size_t>(type);
+    auto index = static_cast<size_t>(address.type);
     if (index >= size)
     {
         throw std::invalid_argument("combination of enum values is not valid");
     }
-    return table[index](info, tx, state, addressWriter);
+    return table[index](address.addressNum, info, tx, state, addressWriter);
 }
 
-void BlockProcessor::processNewBlocks(ParserConfiguration config, uint32_t firstTxNum, uint32_t totalTxCount) {
+void BlockProcessor::processUTXOs(ParserConfiguration config, uint32_t firstTxNum) {
+    using namespace std::chrono_literals;
+    
+    uint32_t txNum = firstTxNum;
+    
+    UTXOState utxoState{config};
+    
+    std::cout.setf(std::ios::fixed,std::ios::floatfield);
+    std::cout.precision(1);
+    
+    blocksci::FixedSizeFileMapper<TxUpdate, boost::iostreams::mapped_file::readwrite> txUpdateFile(config.txUpdatesFilePath());
+    
+    auto consume = [&](RawTransaction *tx) -> void {
+        
+        tx->txNum = txNum;
+        
+        uint16_t i = 0;
+        for (auto &output : tx->outputs) {
+            auto type = addressType(output.scriptOutput);
+            blocksci::Address address{0, type};
+            blocksci::Inout blocksciOutput{0, address, output.value};
+            
+            if (blocksci::isSpendable(type)) {
+                blocksciOutput.linkedTxNum = txNum;
+                UTXO utxo{blocksciOutput, type};
+                RawOutputPointer pointer{tx->hash, i};
+                utxoState.addOutput(utxo, pointer);
+            }
+            i++;
+        }
+        
+        i = 0;
+        for (auto &input : tx->inputs) {
+            auto utxo = utxoState.spendOutput(input.rawOutputPointer);
+            input.addressType = utxo.addressType;
+            input.linkedTxNum = utxo.output.linkedTxNum;
+            i++;
+        }
+        
+        
+        while (!address_transaction_queue.push(tx)) {
+            std::this_thread::sleep_for(100ms);
+        }
+        
+        txNum++;
+        
+        utxoState.optionalSave();
+    };
+    
+    while (!rawDone) {
+        while (utxo_transaction_queue.consume_all(consume)) {}
+        std::this_thread::sleep_for(100ms);
+    }
+    while (utxo_transaction_queue.consume_all(consume)) {}
+    
+    utxoDone = true;
+}
+
+void BlockProcessor::processAddresses(ParserConfiguration config, uint32_t totalTxCount) {
     using namespace std::chrono_literals;
     
     ChainWriter writer(config);
     AddressWriter addressWriter(config);
-    uint32_t txNum = firstTxNum;
     
     auto percentage = static_cast<double>(totalTxCount) / 1000.0;
     
     uint32_t percentageMarker = static_cast<uint32_t>(std::ceil(percentage));
     
-    BlockchainState state(config);
+    AddressState addressState{config};
     
-    ProcessOutputVisitor outputVisitor{state, addressWriter};
+    ProcessOutputVisitor outputVisitor{addressState, addressWriter};
     
     std::cout.setf(std::ios::fixed,std::ios::floatfield);
     std::cout.precision(1);
@@ -301,63 +362,57 @@ void BlockProcessor::processNewBlocks(ParserConfiguration config, uint32_t first
         writer.writeTransactionHeader(tx->getRawTransaction());
         writer.writeTransactionHash(tx->hash);
         
-        tx->txNum = txNum;
-        
         uint16_t i = 0;
         for (auto &output : tx->outputs) {
             auto address = boost::apply_visitor(outputVisitor, output.scriptOutput);
-            
             blocksci::Inout blocksciOutput{0, address, output.value};
             writer.writeTransactionOutput(blocksciOutput);
-            
-            if (address.isSpendable()) {
-                blocksciOutput.linkedTxNum = txNum;
-                UTXO utxo{blocksciOutput, address};
-                RawOutputPointer pointer{tx->hash, i};
-                state.addOutput(utxo, pointer);
-            }
             i++;
         }
         
         i = 0;
         for (auto &input : tx->inputs) {
-            auto utxo = state.spendOutput(input.rawOutputPointer);
-            txUpdateFile.write({{utxo.output.linkedTxNum, input.rawOutputPointer.outputNum}, txNum});
+            auto spentTx = writer.txFile.getData(input.linkedTxNum);
+            auto spentOutput = spentTx->getOutput(input.rawOutputPointer.outputNum);
+            spentOutput->linkedTxNum = tx->txNum;
+            auto address = spentOutput->getAddress();
             // This is called for every input since there is currently no way to detect the first input spending an address. Additionally an address may be spent in different ways (ex. multisig)
-            InputInfo info = input.getInfo(utxo, i);
-            processInputVisitor(info, *tx, state, addressWriter);
-            writer.writeTransactionInput(utxo.output, input.sequenceNum);
+            InputInfo info = input.getInfo(i);
+            processInputVisitor(address, info, *tx, addressState, addressWriter);
+            writer.writeTransactionInput({input.linkedTxNum, address, spentOutput->getValue()}, input.sequenceNum);
             i++;
         }
+        
+        writer.finishTransaction();
         
         if (tx->sizeBytes > 800) {
             delete tx;
         } else {
-            if (!used_transaction_queue.push(tx)) {
+            if (!finished_transaction_queue.push(tx)) {
                 delete tx;
             }
         }
         
-        txNum++;
         count++;
         
         if (count % percentageMarker == 0) {
             std::cout << "\r" << (static_cast<double>(count) / static_cast<double>(totalTxCount)) * 100 << "% done" << std::flush;
         }
         
-        state.optionalSave();
+        addressState.optionalSave();
     };
     
-    while (!done) {
-        while (transaction_queue.consume_all(consume)) {}
+    while (!utxoDone) {
+        while (address_transaction_queue.consume_all(consume)) {}
         std::this_thread::sleep_for(100ms);
     }
-    while (transaction_queue.consume_all(consume)) {}
+    while (address_transaction_queue.consume_all(consume)) {}
     std::cout << "\nDone processing txes\n";
 }
 
+
 BlockProcessor::~BlockProcessor() {
-    used_transaction_queue.consume_all([](RawTransaction *tx) {
+    finished_transaction_queue.consume_all([](RawTransaction *tx) {
         delete tx;
     });
 }

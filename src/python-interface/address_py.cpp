@@ -35,10 +35,7 @@ void init_address(py::module &m) {
     .def("out_txes", py::overload_cast<>(&Address::getOutputTransactions, py::const_), "Returns a list of all transaction where this address was an output")
     .def_property_readonly("script", py::overload_cast<>(&Address::getScript, py::const_), "Returns the script associated with this address")
     .def_property_readonly("first_tx", py::overload_cast<>(&Address::getFirstTransaction, py::const_), "Get the first transaction that was sent to this address")
-    .def_static("from_string", py::overload_cast<const std::string &>(getAddressFromString), "Construct an address object from an address string")
-    .def_static("from_strings", py::overload_cast<const std::vector<std::string> &>(getAddressesFromStrings), "Return a list of addresses that match the given address strings")
     .def_static("address_count", static_cast<size_t(*)()>(addressCount), "Get the total number of address of a given type")
-    .def_static("addresses_with_prefix", py::overload_cast<const std::string &>(getAddressesWithPrefix), "Find all addresses that begin with the given prefix")
     ;
     
     py::class_<Script> baseScript(m, "Script", "Class representing a script which coins are sent to");
@@ -48,13 +45,9 @@ void init_address(py::module &m) {
     ;
     
     py::class_<script::Pubkey>(m, "PubkeyScript", baseScript, "Extra data about pay to pubkey address")
-    .def_readonly("raw_address", &script::Pubkey::pubkey, "Public key for this address")
-    .def_property_readonly("address", py::overload_cast<>(&script::Pubkey::addressString, py::const_), "Bitcoin address string")
-    ;
-    
-    py::class_<script::PubkeyHash>(m, "PubkeyHashScript", baseScript, "Extra data about pay to pubkey hash address")
-    .def_readonly("raw_address", &script::PubkeyHash::address, "160 bit address hash")
-    .def_property_readonly("address", py::overload_cast<>(&script::PubkeyHash::addressString, py::const_), "Bitcoin address string")
+    .def_property_readonly("pubkey", &script::Pubkey::getPubkey, "Public key for this address")
+    .def_readonly("pubkeyhash", &script::Pubkey::pubkeyhash, "160 bit address hash")
+    .def_property_readonly("address_string", py::overload_cast<>(&script::Pubkey::addressString, py::const_), "Bitcoin address string")
     ;
     
     py::class_<script::Multisig>(m, "MultisigScript", baseScript, "Extra data about multi-signature address")
@@ -64,7 +57,7 @@ void init_address(py::module &m) {
     ;
     
     py::class_<script::ScriptHash>(m, "PayToScriptHashScript", baseScript, "Extra data about pay to script hash address")
-    .def_readonly("wrapped_address", &script::ScriptHash::wrappedAddress, "The address inside this P2SH address")
+    .def_property_readonly("wrapped_address", &script::ScriptHash::getWrappedAddress, "The address inside this P2SH address")
     .def_readonly("raw_address",  &script::ScriptHash::address, "The 160 bit P2SH address hash")
     .def_property_readonly("wrapped_script",py::overload_cast<>(&script::ScriptHash::wrappedScript, py::const_), "The script inside this P2SH address")
     .def_property_readonly("address", py::overload_cast<>(&script::ScriptHash::addressString, py::const_), "Bitcoin address string")
@@ -88,6 +81,8 @@ void init_address(py::module &m) {
     .value("scripthash", AddressType::Enum::SCRIPTHASH)
     .value("multisig", AddressType::Enum::MULTISIG)
     .value("nulldata", AddressType::Enum::NULL_DATA)
+    .value("witness_pubkeyhash", AddressType::Enum::WITNESS_PUBKEYHASH)
+    .value("witness_scripthash", AddressType::Enum::WITNESS_SCRIPTHASH)
     .export_values()
     .def_property_readonly_static("types", [](py::object) -> std::array<AddressType::Enum, 6> {
         return {{AddressType::Enum::PUBKEY, AddressType::Enum::PUBKEYHASH, AddressType::Enum::SCRIPTHASH,

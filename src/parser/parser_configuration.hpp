@@ -38,6 +38,10 @@ struct ParserConfiguration : public blocksci::DataConfiguration {
         return parserDirectory()/"utxoDB";
     }
     
+    boost::filesystem::path addressDBPath() const {
+        return parserDirectory()/"addressDB";
+    }
+    
     boost::filesystem::path blockListPath() const {
         return parserDirectory()/"blockList.dat";
     }

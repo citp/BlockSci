@@ -31,6 +31,27 @@ namespace blocksci {
     
     RawTransaction::RawTransaction(uint32_t sizeBytes_, uint32_t locktime_, uint16_t inputCount_, uint16_t outputCount_) : sizeBytes(sizeBytes_), locktime(locktime_), inputCount(inputCount_), outputCount(outputCount_) {}
     
+    Output *RawTransaction::getOutput(uint16_t outputNum) {
+        auto pos = reinterpret_cast<char *>(this) + sizeof(RawTransaction);
+        return reinterpret_cast<Output *>(pos) + outputNum;
+    }
+    
+    Input *RawTransaction::getInput(uint16_t inputNum) {
+        auto pos = reinterpret_cast<char *>(this) + sizeof(RawTransaction) + outputCount * sizeof(Output);
+        return reinterpret_cast<Input *>(pos) + inputNum;
+    }
+    
+    const Output *RawTransaction::getOutput(uint16_t outputNum) const {
+        auto pos = reinterpret_cast<const char *>(this) + sizeof(RawTransaction);
+        return reinterpret_cast<const Output *>(pos) + outputNum;
+    }
+    
+    const Input *RawTransaction::getInput(uint16_t inputNum) const {
+        auto pos = reinterpret_cast<const char *>(this) + sizeof(RawTransaction) + outputCount * sizeof(Output);
+        return reinterpret_cast<const Input *>(pos) + inputNum;
+    }
+    
+    
     Transaction::Transaction(const RawTransaction *data_, uint32_t txNum_, uint32_t blockHeight_) : data(data_), txNum(txNum_), blockHeight(blockHeight_) {}
     
     const Transaction &Transaction::create(const ChainAccess &access, uint32_t index) {
@@ -523,13 +544,23 @@ namespace blocksci {
     }
     
     namespace {
-        Address getInsidePointer(const Address &pointer, const blocksci::ScriptAccess &access) {
+        boost::optional<Address> getInsidePointer(const boost::optional<Address> &address, const blocksci::ScriptAccess &access);
+        
+        boost::optional<Address> getInsidePointer(const Address &pointer, const blocksci::ScriptAccess &access) {
             if (pointer.type == AddressType::Enum::SCRIPTHASH) {
                 auto address = pointer.getScript(access);
                 auto scriptHashAddress = dynamic_cast<script::ScriptHash *>(address.get());
-                return getInsidePointer(scriptHashAddress->wrappedAddress, access);
+                return getInsidePointer(scriptHashAddress->getWrappedAddress(), access);
             } else {
                 return pointer;
+            }
+        }
+        
+        boost::optional<Address> getInsidePointer(const boost::optional<Address> &address, const blocksci::ScriptAccess &access) {
+            if (address) {
+                return getInsidePointer(*address, access);
+            } else {
+                return boost::none;
             }
         }
     }
@@ -544,13 +575,15 @@ namespace blocksci {
         
         DetailedType(const Address &pointer, const ScriptAccess &scripts) : mainType(pointer.type), hasSubtype(false), subType(AddressType::Enum::NONSTANDARD), i(0), j(0) {
             auto insidePointer = getInsidePointer(pointer, scripts);
-            subType = insidePointer.type;
-            hasSubtype = insidePointer.addressNum > 0;
-            if (subType == AddressType::Enum::MULTISIG) {
-                auto address = insidePointer.getScript(scripts);
-                auto multisigAddress = dynamic_cast<script::Multisig *>(address.get());
-                i = multisigAddress->required;
-                j = multisigAddress->addresses.size();
+            if (insidePointer) {
+                subType = insidePointer->type;
+                hasSubtype = true;
+                if (subType == AddressType::Enum::MULTISIG) {
+                    auto address = insidePointer->getScript(scripts);
+                    auto multisigAddress = dynamic_cast<script::Multisig *>(address.get());
+                    i = multisigAddress->required;
+                    j = multisigAddress->addresses.size();
+                }
             }
         }
         
@@ -623,8 +656,8 @@ namespace blocksci {
         std::unordered_set<Address> multisigOutputs;
         for (auto &output : tx.outputs()) {
             auto pointer = getInsidePointer(output.getAddress(), access);
-            if (pointer.type == AddressType::Enum::MULTISIG) {
-                multisigOutputs.insert(pointer);
+            if (pointer && pointer->type == AddressType::Enum::MULTISIG) {
+                multisigOutputs.insert(*pointer);
             }
         }
         
@@ -635,9 +668,9 @@ namespace blocksci {
         std::unordered_set<Address> multisigInputs;
         for (auto &input : tx.inputs()) {
             auto pointer = getInsidePointer(input.getAddress(), access);
-            if (pointer.type == AddressType::Enum::MULTISIG) {
-                if (multisigOutputs.find(pointer) == multisigOutputs.end()) {
-                    multisigInputs.insert(pointer);
+            if (pointer && pointer->type == AddressType::Enum::MULTISIG) {
+                if (multisigOutputs.find(*pointer) == multisigOutputs.end()) {
+                    multisigInputs.insert(*pointer);
                 }
             }
         }
@@ -648,20 +681,25 @@ namespace blocksci {
         
         std::unordered_set<Address> containedOutputs;
         for (auto &pointer : multisigOutputs) {
-            auto address = pointer.getScript(access);
-            auto multisigAddress = dynamic_cast<script::Multisig *>(address.get());
-            for (auto &add : multisigAddress->nestedAddresses()) {
+            auto script = pointer.getScript(access);
+            std::function<void(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &add) {
                 containedOutputs.insert(add);
-            }
+            };
+            script->visitPointers(visitFunc);
         }
         
         for (auto &pointer : multisigInputs) {
-            auto address = pointer.getScript(access);
-            auto multisigAddress = dynamic_cast<script::Multisig *>(address.get());
-            for (auto &add : multisigAddress->nestedAddresses()) {
+            auto script = pointer.getScript(access);
+            bool foundMatch = false;
+            std::function<void(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &add) {
                 if (containedOutputs.find(add) != containedOutputs.end()) {
-                    return true;
+                    foundMatch = true;
+                    return;
                 }
+            };
+            script->visitPointers(visitFunc);
+            if (foundMatch) {
+                return true;
             }
         }
         

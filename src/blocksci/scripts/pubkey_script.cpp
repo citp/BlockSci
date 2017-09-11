@@ -17,7 +17,7 @@ namespace blocksci {
     using namespace script;
     
     
-    Pubkey::ScriptAddress(const PubkeyData *rawData) : pubkey(rawData->pubkey) {}
+    Pubkey::ScriptAddress(const PubkeyData *rawData) : pubkey(rawData->pubkey), pubkeyhash(rawData->address) {}
     
     Pubkey::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : Pubkey(access.getScriptData<ScriptType::Enum::PUBKEY>(addressNum)) {}
     

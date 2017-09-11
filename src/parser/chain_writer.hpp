@@ -25,8 +25,10 @@ struct ParserConfiguration;
 struct RawTransaction;
 
 class ChainWriter {
+private:
+    bool needsFlush;
 public:
-    blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::Transaction> txFile;
+    blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction> txFile;
     blocksci::FixedSizeFileMapper<blocksci::uint256, boost::iostreams::mapped_file::readwrite> txHashesFile;
     blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, uint32_t> sequenceFile;
     
@@ -36,6 +38,7 @@ public:
     void writeTransactionHash(const blocksci::uint256 &hash);
     void writeTransactionOutput(const blocksci::Inout &output);
     void writeTransactionInput(const blocksci::Inout &input, uint32_t sequenceNum);
+    void finishTransaction();
     
     void truncate(uint32_t blockHeight);
 };

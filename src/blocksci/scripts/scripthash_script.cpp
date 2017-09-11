@@ -16,11 +16,11 @@
 namespace blocksci {
     using namespace script;
     
-    ScriptHash::ScriptAddress(const ScriptHashData *rawData) : address(rawData->address), wrappedAddress(rawData->wrappedAddress) {}
+    ScriptHash::ScriptAddress(const ScriptHashData *rawData) : wrappedAddress(rawData->wrappedAddress), address(rawData->address) {}
     
     ScriptHash::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : ScriptHash(access.getScriptData<ScriptType::Enum::SCRIPTHASH>(addressNum)) {}
     
-    ScriptHash::ScriptAddress(const uint160 &address_) : address(address_), wrappedAddress() {}
+    ScriptHash::ScriptAddress(const uint160 &address_) : wrappedAddress(), address(address_) {}
     
     bool ScriptHash::operator==(const Script &other) {
         auto otherA = dynamic_cast<const ScriptHash *>(&other);

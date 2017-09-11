@@ -11,7 +11,6 @@
 #include "chain_writer.hpp"
 #include "parser_configuration.hpp"
 #include "preproccessed_block.hpp"
-#include "blockchain_state.hpp"
 
 #include <blocksci/chain/output_pointer.hpp>
 #include <blocksci/chain/input.hpp>
@@ -22,11 +21,11 @@
 #include <iostream>
 #include <boost/filesystem.hpp>
 
-ChainWriter::ChainWriter(const ParserConfiguration &config) : txFile(config.txFilePath()), txHashesFile(config.txHashesFilePath()), sequenceFile(config.sequenceFilePath()) {}
+ChainWriter::ChainWriter(const ParserConfiguration &config) : needsFlush(false), txFile(config.txFilePath()), txHashesFile(config.txHashesFilePath()), sequenceFile(config.sequenceFilePath()) {}
 
 void ChainWriter::writeTransactionHeader(const blocksci::RawTransaction &tx) {
     txFile.writeIndexGroup();
-    txFile.write(tx);
+    needsFlush |= txFile.write(tx);
     sequenceFile.writeIndexGroup();
 }
 
@@ -35,12 +34,18 @@ void ChainWriter::writeTransactionHash(const blocksci::uint256 &hash) {
 }
 
 void ChainWriter::writeTransactionOutput(const blocksci::Inout &output) {
-    txFile.write(output);
+    needsFlush |= txFile.write(output);
 }
 
 void ChainWriter::writeTransactionInput(const blocksci::Inout &input, uint32_t sequenceNum) {
-    txFile.write(input);
+    needsFlush |= txFile.write(input);
     sequenceFile.write(sequenceNum);
+}
+
+void ChainWriter::finishTransaction() {
+    if (needsFlush) {
+        txFile.clearBuffer();
+    }
 }
 
 void ChainWriter::truncate(uint32_t lastTxNum) {

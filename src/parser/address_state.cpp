@@ -1,52 +1,25 @@
 //
-//  blockchain_state.cpp
-//  blocksci_devel
+//  address_state.cpp
+//  blocksci
 //
-//  Created by Harry Kalodner on 1/27/17.
-//  Copyright © 2017 Harry Kalodner. All rights reserved.
+//  Created by Harry Kalodner on 9/10/17.
+//
 //
 
-#define BLOCKSCI_WITHOUT_SINGLETON
-
-#include "blockchain_state.hpp"
-#include "preproccessed_block.hpp"
-
+#include "address_state.hpp"
 #include "parser_configuration.hpp"
-#include "utilities.hpp"
-
-#include <blocksci/hash.hpp>
 
 #include <leveldb/write_batch.h>
-#include <leveldb/cache.h>
-#include <leveldb/env.h>
-#include <leveldb/filter_policy.h>
 
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/fstream.hpp>
-
-#include <fstream>
-#include <iostream>
-
-
-const auto DeletedKeysMaxSize = 5000000;
-const auto UTXOMapMaxSize = 5000000;
-const auto SingleAddressMapMaxSize = 5000000;
+const auto SingleAddressMapMaxSize = 10'000'000;
 const auto StartingAddressCount = 500'000'000;
 const auto AddressFalsePositiveRate = .05;
 
-UTXO::UTXO(const blocksci::Output &output_, const blocksci::Address &address_) : address(address_), output(output_) {}
-
-BlockchainState::BlockchainState(const ParserConfiguration &config_) : config(config_)  {
+AddressState::AddressState(const ParserConfiguration &config_) : config(config_)  {
     leveldb::Options options;
     options.create_if_missing = true;
-    leveldb::DB::Open(options, config.utxoDBPath().c_str(), &levelDb);
-
-    blocksci::uint256 nullHash;
-    nullHash.SetNull();
-    RawOutputPointer deletedPointer = {nullHash, 0};
-    utxoMap.set_deleted_key(deletedPointer);
-    oldUTXOMap.set_deleted_key(deletedPointer);
-
+    leveldb::DB::Open(options, config.addressDBPath().c_str(), &levelDb);
+    
     blocksci::uint160 deletedAddress;
     deletedAddress.SetHex("FFFFFFFFFFFFFFFFFFFF");
     blocksci::RawAddress deletedKey{deletedAddress, blocksci::ScriptType::Enum::NULL_DATA};
@@ -70,7 +43,7 @@ BlockchainState::BlockchainState(const ParserConfiguration &config_) : config(co
     initializeScriptIndexes();
 }
 
-BlockchainState::~BlockchainState() {
+AddressState::~AddressState() {
     boost::filesystem::ofstream bloomFile(config.addressBloomCacheFile(), std::ofstream::out | std::ofstream::binary);
     bloomFile << addressBloomFilter;
     
@@ -83,22 +56,15 @@ BlockchainState::~BlockchainState() {
     
     saveScriptIndexes();
     
-    clearDeletedKeys();
-    clearUTXOCache();
     clearAddressCache();
-    clearUTXOCache();
     clearAddressCache();
-    
-    if (utxoClearFuture.valid()) {
-        utxoClearFuture.wait();
-    }
     
     if (addressClearFuture.valid()) {
         addressClearFuture.wait();
     }
 }
 
-void BlockchainState::initializeScriptIndexes() {
+void AddressState::initializeScriptIndexes() {
     boost::filesystem::ifstream inputFile(config.scriptTypeCountFile());
     
     if (inputFile) {
@@ -113,48 +79,18 @@ void BlockchainState::initializeScriptIndexes() {
     }
 }
 
-void BlockchainState::saveScriptIndexes() {
+void AddressState::saveScriptIndexes() {
     boost::filesystem::ofstream outputFile(config.scriptTypeCountFile());
     for (auto value : scriptIndexes) {
         outputFile << value << " ";
     }
 }
 
-uint32_t BlockchainState::getNewAddressIndex(blocksci::ScriptType::Enum type) {
+uint32_t AddressState::getNewAddressIndex(blocksci::ScriptType::Enum type) {
     return ++scriptIndexes[static_cast<uint8_t>(type)];
 }
 
-UTXO BlockchainState::spendOutput(const RawOutputPointer &pointer) {
-    auto it = utxoMap.find(pointer);
-    if (it != utxoMap.end()) {
-        UTXO utxo = it->second;
-        utxoMap.erase(it);
-        return utxo;
-    }
-    
-    it = oldUTXOMap.find(pointer);
-    if (it != oldUTXOMap.end()) {
-        UTXO utxo = it->second;
-        oldUTXOMap.erase(it);
-        return utxo;
-    }
-    
-    
-    leveldb::Slice keySlice(reinterpret_cast<const char *>(&pointer), sizeof(pointer));
-    std::string value;
-    leveldb::Status s = levelDb->Get(leveldb::ReadOptions(), keySlice, &value);
-    if (!s.ok()) {
-        std::cout << "Couldn't find utxo for " << pointer.hash.GetHex() << std::endl;
-        assert(false);
-    }
-    
-    UTXO utxo = *reinterpret_cast<const UTXO *>(value.data());
-    
-    deletedKeys.push_back(pointer);
-    return utxo;
-}
-
-BloomFilter<blocksci::RawAddress> BlockchainState::generateAddressBloomFilter(uint64_t maxAddresses, double falsePositiveRate) {
+BloomFilter<blocksci::RawAddress> AddressState::generateAddressBloomFilter(uint64_t maxAddresses, double falsePositiveRate) {
     BloomFilter<blocksci::RawAddress> bloom{maxAddresses, falsePositiveRate};
     for (auto &pair : singleAddressMap) {
         bloom.add(pair.first);
@@ -180,7 +116,7 @@ BloomFilter<blocksci::RawAddress> BlockchainState::generateAddressBloomFilter(ui
     return bloom;
 }
 
-std::pair<uint32_t, bool> BlockchainState::resolveAddress(const AddressInfo &addressInfo) {
+std::pair<uint32_t, bool> AddressState::resolveAddress(const AddressInfo &addressInfo) {
     auto rawAddress = addressInfo.rawAddress;
     switch (addressInfo.location) {
         case AddressLocation::SingleUseMap:
@@ -212,7 +148,7 @@ std::pair<uint32_t, bool> BlockchainState::resolveAddress(const AddressInfo &add
     return std::make_pair(addressNum, !foundAddress);
 }
 
-void BlockchainState::removeAddresses(const std::unordered_map<blocksci::ScriptType::Enum, uint32_t> &deletedIndex) {
+void AddressState::removeAddresses(const std::unordered_map<blocksci::ScriptType::Enum, uint32_t> &deletedIndex) {
     auto multiAddressIt = multiAddressMap.begin();
     while (multiAddressIt != multiAddressMap.end()) {
         auto it = deletedIndex.find(multiAddressIt->first.type);
@@ -261,7 +197,7 @@ void BlockchainState::removeAddresses(const std::unordered_map<blocksci::ScriptT
     addressBloomFilter = generateAddressBloomFilter(addressBloomFilter.getMaxItems(), addressBloomFilter.getFPRate());
 }
 
-AddressInfo BlockchainState::findAddress(const blocksci::RawAddress &address) const {
+AddressInfo AddressState::findAddress(const blocksci::RawAddress &address) const {
     static uint64_t fpcount = 0;
     
     if (!addressBloomFilter.possiblyContains(address)) {
@@ -296,35 +232,13 @@ AddressInfo BlockchainState::findAddress(const blocksci::RawAddress &address) co
     return {address, AddressLocation::NotFound, singleAddressMap.end(), 0};
 }
 
-
-void BlockchainState::addOutput(UTXO utxo, const RawOutputPointer &outputPointer) {
-    utxoMap.insert(std::make_pair(outputPointer, utxo));
-}
-
-void BlockchainState::optionalSave() {
-    if (deletedKeys.size() > DeletedKeysMaxSize) {
-        clearDeletedKeys();
-    }
-    
-    if (utxoMap.size() > (UTXOMapMaxSize * 9 / 2) / 10) {
-        clearUTXOCache();
-    }
-    
+void AddressState::optionalSave() {
     if (singleAddressMap.size() > (SingleAddressMapMaxSize * 9) / 10) {
         clearAddressCache();
     }
 }
 
-void BlockchainState::clearDeletedKeys() {
-    leveldb::WriteBatch batch;
-    for (auto &pointer : deletedKeys) {
-        batch.Delete(leveldb::Slice(reinterpret_cast<const char *>(&pointer), sizeof(pointer)));
-    }
-    deletedKeys.clear();
-    levelDb->Write(leveldb::WriteOptions(), &batch);
-}
-
-void BlockchainState::clearAddressCache() {
+void AddressState::clearAddressCache() {
     if (addressClearFuture.valid()) {
         addressClearFuture.wait();
         oldSingleAddressMap.clear();
@@ -334,24 +248,6 @@ void BlockchainState::clearAddressCache() {
     addressClearFuture = std::async(std::launch::async, [&, addressesToSave] {
         leveldb::WriteBatch batch;
         for (auto &entry : addressesToSave) {
-            std::string value(reinterpret_cast<char const*>(&entry.second), sizeof(entry.second));
-            batch.Put(leveldb::Slice(reinterpret_cast<const char *>(&entry.first), sizeof(entry.first)), value);
-        }
-        levelDb->Write(leveldb::WriteOptions(), &batch);
-    });
-}
-
-void BlockchainState::clearUTXOCache() {
-    if (utxoClearFuture.valid()) {
-        utxoClearFuture.wait();
-        oldUTXOMap.clear();
-        utxoMap.swap(oldUTXOMap);
-    }
-    
-    auto utxosToSave = utxo_map(oldUTXOMap);
-    utxoClearFuture = std::async(std::launch::async, [&, utxosToSave] {
-        leveldb::WriteBatch batch;
-        for (auto &entry : utxosToSave) {
             std::string value(reinterpret_cast<char const*>(&entry.second), sizeof(entry.second));
             batch.Put(leveldb::Slice(reinterpret_cast<const char *>(&entry.first), sizeof(entry.first)), value);
         }

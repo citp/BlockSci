@@ -18,9 +18,10 @@ namespace blocksci {
     
     template <>
     class ScriptAddress<ScriptType::Enum::PUBKEY> : public Script {
-        
-    public:
+    private:
         CPubKey pubkey;
+    public:
+        uint160 pubkeyhash;
         
         ScriptAddress<ScriptType::Enum::PUBKEY>(const PubkeyData *rawData);
         ScriptAddress<ScriptType::Enum::PUBKEY>(const ScriptAccess &access, uint32_t addressNum);
@@ -30,6 +31,14 @@ namespace blocksci {
         std::string toString(const DataConfiguration &config) const override;
         std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const override;
         bool operator==(const Script &other) override;
+        
+        boost::optional<CPubKey> getPubkey() const {
+            if (pubkey.IsValid()) {
+                return pubkey;
+            } else {
+                return boost::none;
+            }
+        }
         
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
         ScriptAddress<AddressType::Enum::PUBKEY>(uint32_t addressNum);

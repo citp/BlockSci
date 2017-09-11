@@ -11,10 +11,11 @@
 #include "config.hpp"
 #include "utilities.hpp"
 #include "parser_configuration.hpp"
+#include "utxo_state.hpp"
+#include "address_state.hpp"
 #include "chain_index.hpp"
 #include "preproccessed_block.hpp"
 #include "block_processor.hpp"
-#include "blockchain_state.hpp"
 #include "address_db.hpp"
 #include "first_seen_index.hpp"
 #include "hash_index.hpp"
@@ -55,7 +56,7 @@ void rollbackTransactions(size_t blockKeepCount, const ParserConfiguration &conf
     auto blocks = chain.getBlocks();
     
     if (blocks.size() > blockKeepCount) {
-        BlockchainState state(config);
+        UTXOState utxoState{config};
         ChainWriter chainWriter{config};
         
         std::unordered_map<ScriptType::Enum, uint32_t> addressCounts;
@@ -81,7 +82,7 @@ void rollbackTransactions(size_t blockKeepCount, const ParserConfiguration &conf
                     }
                 }
                 if (output.getType() != AddressType::Enum::NULL_DATA) {
-                    state.spendOutput({hash, i});
+                    utxoState.spendOutput({hash, i});
                 }
             }
             
@@ -97,15 +98,16 @@ void rollbackTransactions(size_t blockKeepCount, const ParserConfiguration &conf
                         output->linkedTxNum = 0;
                         Inout out = *output;
                         out.linkedTxNum = spentTx.txNum;
-                        UTXO utxo(out, input.getAddress());
-                        state.addOutput(utxo, {spentTx.getHash(chain), i});
+                        UTXO utxo(out, input.getType());
+                        utxoState.addOutput(utxo, {spentTx.getHash(chain), i});
                     }
                     output++;
                 }
             }
             
             
-            state.removeAddresses(addressCounts);
+            AddressState addressState{config};
+            addressState.removeAddresses(addressCounts);
             
             chainWriter.truncate(firstDeletedTxNum);
             
@@ -365,12 +367,17 @@ void updateBlocks(const ConfigType &config, const ChainUpdateInfo<BlockType> cha
         processor.readNewBlocks(config, chainUpdateInfo.blocksToAdd, startingTxCount);
     });
     
-    std::thread consumer_thread([&processor, config, startingTxCount, newTxCount]() {
-        processor.processNewBlocks(config, startingTxCount, newTxCount);
+    std::thread utxoThread([&processor, config, startingTxCount]() {
+        processor.processUTXOs(config, startingTxCount);
+    });
+    
+    std::thread addressThread([&processor, config, newTxCount]() {
+        processor.processAddresses(config, newTxCount);
     });
     
     producer_thread.join();
-    consumer_thread.join();
+    utxoThread.join();
+    addressThread.join();
 }
 
 template <typename ConfigType>
@@ -393,16 +400,16 @@ void updateChain(const ConfigType &config, uint32_t maxBlockNum) {
         
         auto startBlockHeight = chainUpdateInfo.blocksToAdd.front().height;
         
-        std::thread hashIndexThread([&config, startBlockHeight]() {
-            updateHashIndex(config, startBlockHeight);
-        });
+//        std::thread hashIndexThread([&config, startBlockHeight]() {
+//            updateHashIndex(config, startBlockHeight);
+//        });
         
-        backUpdateTxes(config);
+//        backUpdateTxes(config);
         
-        updateFirstSeenIndex(config, startBlockHeight);
-        updateAddressDb(config, startBlockHeight);
+//        updateFirstSeenIndex(config, startBlockHeight);
+//        updateAddressDb(config, startBlockHeight);
         
-        hashIndexThread.join();
+//        hashIndexThread.join();
     }
 }
 
@@ -580,11 +587,11 @@ int main(int argc, const char * argv[]) {
         boost::filesystem::path bitcoinDirectory{bitcoinDirectoryString};
         bitcoinDirectory = boost::filesystem::absolute(bitcoinDirectory);
         FileParserConfiguration config{bitcoinDirectory, dataDirectory};
-        if (bitcoinDirectoryString.find("bitcoin") != std::string::npos || bitcoinDirectoryString.find("Bitcoin") != std::string::npos) {
-            if (maxBlockNum > 478559 || maxBlockNum == 0) {
-                maxBlockNum = 478559;
-            }
-        }
+//        if (bitcoinDirectoryString.find("bitcoin") != std::string::npos || bitcoinDirectoryString.find("Bitcoin") != std::string::npos) {
+//            if (maxBlockNum > 478559 || maxBlockNum == 0) {
+//                maxBlockNum = 478559;
+//            }
+//        }
         // replayBlock(config, 177618);
         updateChain(config, maxBlockNum);
 //        backUpdateTxes(config);

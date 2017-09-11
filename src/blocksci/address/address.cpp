@@ -72,7 +72,11 @@ namespace blocksci {
     }
 
     std::unique_ptr<Script> Address::getScript(const ScriptAccess &access) const {
-        return Script::create(access, *this);
+        if (addressNum != 0) {
+            return Script::create(access, *this);
+        } else {
+            return nullptr;
+        }
     }
     
     size_t addressCount(const ScriptAccess &access) {
