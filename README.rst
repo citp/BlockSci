@@ -68,7 +68,7 @@ In order to use the C++ library, you must compile your code against the BlockSci
 Python
 -------
 
-To use the python library, you only need to import the blocksci library. By default the library is installed into BlockSci/Notebooks. To use the library simply open the python interpretter in that folder and run:
+To use the python library, you only need to import the BlockSci library. By default the library is installed into BlockSci/Notebooks. To use the library simply open the Python interpreter in that folder and run:
 
 .. code-block:: python
 
@@ -78,7 +78,7 @@ To use the python library, you only need to import the blocksci library. By defa
 BlockSci Compilation Instructions
 ======================================
 
-Below I list setup expressions for compiling blocksci on Ubuntu 16.04.
+Here are the steps for compiling BlockSci on Ubuntu 16.04.
 
 ..  code-block:: bash
 
