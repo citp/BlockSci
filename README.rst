@@ -11,37 +11,36 @@ Additionally, a demonstration Notebook_ is available in the Notebooks folder
 
 .. _Notebook: https://citp.github.io/BlockSci/demo.html
 
-Quick Setup
+More detailed documentation is coming soon.
+
+Quick Setup using Amazon EC2
 ==============
 
-If you want to start using BlockSci immediately, you may using our ami-1f9b8364_. We recomend making use of an instance with 61GB of memory or more for optimal performance (r4.2xlarge). On boot, a Jupyter Notebook running BlockSci will launch immediately. In order to access the notebook, you must set up port forwarding to your computer. Inserting the name of your private key file and the domain of your ec2 instance into the following line will make the Notebook available on your machine.
-
-Note: Despite the fact that the URL says localhost, it is actually loading from your EC2 instance.
+If you want to start using BlockSci immediately, we have made available an EC2 image: ami-1f9b8364_. We recomend using instance with 61GB of memory or more for optimal performance (r4.2xlarge). On boot, a Jupyter Notebook running BlockSci will launch immediately. To access the notebook, you must set up port forwarding to your computer. Inserting the name of your private key file and the domain of your ec2 instance into the following command will make the Notebook available on your machine.
 
 .. code-block:: bash
 
 	ssh -i .ssh/your_private_key.pem -L 8888:localhost:8888 ubuntu@your_url.amazonaws.com
-	
-After running this line, you can navigate to https://localhost:8888/ in your browser and log in with the password 'blocksci'. A demo notebook will be available for you to run and you can begin exploring BlockSci further.
+
+This sets up an SSH tunnel between port 8888 on your remote EC2 instance and port 8888 on your localhost. You can use whichever port you like on your local machine. Next, you can navigate to https://localhost:8888/ in your browser and log in with the password 'blocksci'. A demo notebook will be available for you to run and you can begin exploring the blockchain.
 
 .. _ami-1f9b8364: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-1f9b8364
 
-BlockSci Setup
+Local Setup
 =====================
-In order to use BlockSci, you must be running a full node since BlockSci requires the full serialized blockchain data structure which full nodes produce. The blockchain_parser binary which is built from this repo performs the transformation of this blockchain data into our customized BlockSci database format.
+To run BlockSci locally, you must be running a full node (such as bitcoind or an altcoin node) since BlockSci requires the full serialized blockchain data structure which full nodes produce. 
 
-The parser has two modes for creating data files. 
+Parser
+----------
 
-Disk Mode
------------
+The next step is parsing the blockchain downloaded by the full node. The blockchain_parser binary which is built from this repo performs the transformation of this blockchain data into our customized BlockSci database format. It has two modes.
+
 Disk mode is optimized for parsing Bitcoin's data files. It reads blockchain data directly from disk in a rapid manner. However this means that it does not work on many other blockchains which have different serialization formats than Bitcoin.
 
 ..  code-block:: bash
 
 	blocksci_parser --bitcoin-directory .bitcoin --output-directory bitcoin-data
 
-RPC
-------
 RPC mode uses the RPC interface of a cryptocurrency to extract data regarding the blockchain. It works with a variety of cryptocurrencies which have the same general model as Bitcoin, but with minor changes to the serialization format which break the parser in disk mode. One example of this is Namecoin.
 
 ..  code-block:: bash
@@ -76,7 +75,7 @@ To use the python library, you only need to import the blocksci library. By defa
 	import blocksci
 	chain = blocksci.Blockchain("file_path_to_output-directory")
 
-BlockSci Installation Instructions
+BlockSci Compilation Instructions
 ======================================
 
 Below I list setup expressions for compiling blocksci on Ubuntu 16.04.
