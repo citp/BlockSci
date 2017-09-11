@@ -33,9 +33,11 @@ struct TxUpdate {
 };
 
 class BlockProcessor {
-    boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<50000>> transaction_queue;
+    boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<50000>> utxo_transaction_queue;
     
-    boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<50000>> used_transaction_queue;
+    boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<50000>> address_transaction_queue;
+    
+    boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<50000>> finished_transaction_queue;
     
     boost::unordered_map<int, std::pair<boost::iostreams::mapped_file, uint32_t>> files;
     
@@ -44,7 +46,8 @@ class BlockProcessor {
     #endif
     
 public:
-    boost::atomic<bool> done;
+    boost::atomic<bool> rawDone;
+    boost::atomic<bool> utxoDone;
     
     BlockProcessor();
     ~BlockProcessor();
@@ -55,7 +58,8 @@ public:
     #ifdef BLOCKSCI_RPC_PARSER
     void readNewBlocks(RPCParserConfiguration config, std::vector<blockinfo_t> blocksToAdd, uint32_t startingTxCount);
     #endif
-    void processNewBlocks(ParserConfiguration config, uint32_t firstTxNum, uint32_t totalTxCount);
+    void processUTXOs(ParserConfiguration config, uint32_t firstTxNum);
+    void processAddresses(ParserConfiguration config, uint32_t totalTxCount);
 };
 
 

@@ -26,11 +26,10 @@ void AddressTraverser::processTx(const blocksci::ScriptAccess &scripts, const bl
         sawAddress(address, tx.txNum);
         if (address.type == blocksci::AddressType::Enum::MULTISIG) {
             auto script = address.getScript(scripts);
-            for (auto &nestedAddressPointer : script->nestedAddresses()) {
-                if (nestedAddressPointer.addressNum != 0) {
-                    sawAddress(nestedAddressPointer, tx.txNum);
-                }
-            }
+            std::function<void(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &address) {
+                sawAddress(address, tx.txNum);
+            };
+            script->visitPointers(visitFunc);
         }
         i++;
     }
@@ -40,7 +39,10 @@ void AddressTraverser::processTx(const blocksci::ScriptAccess &scripts, const bl
             auto address = input.getAddress();
             auto script = address.getScript(scripts);
             auto p2shAddress = dynamic_cast<blocksci::script::ScriptHash *>(script.get());
-            processP2SHAddress(scripts, p2shAddress->wrappedAddress, input.spentTxIndex(), address.addressNum);
+            auto wrappedAddress = p2shAddress->getWrappedAddress();
+            if (wrappedAddress) {
+                processP2SHAddress(scripts, *wrappedAddress, input.spentTxIndex(), address.addressNum);
+            }
         }
     }
 }
@@ -49,11 +51,9 @@ void AddressTraverser::processP2SHAddress(const blocksci::ScriptAccess &access, 
     linkP2SHAddress(address, txNum, p2shNum);
     if (hasNestedAddresses(address.type)) {
         auto script = address.getScript(access);
-        for (auto &nestedAddressPointer : script->nestedAddresses()) {
-            // This check shouldn't be necessary
-            if (nestedAddressPointer.addressNum != 0) {
-                processP2SHAddress(access, nestedAddressPointer, txNum, p2shNum);
-            }
-        }
+        std::function<void(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &address) {
+            processP2SHAddress(access, address, txNum, p2shNum);
+        };
+        script->visitPointers(visitFunc);
     }
 }

@@ -24,13 +24,11 @@ namespace blocksci {
         
         virtual ~Script() = default;
         
-        virtual std::vector<Address> nestedAddresses() const {
-            return std::vector<Address>();
-        }
-        
         virtual bool operator==(const Script &other) = 0;
         
         static std::unique_ptr<Script> create(const ScriptAccess &access, const Address &address);
+        
+        virtual void visitPointers(const std::function<void(const Address &)> &) const {}
         
         // requires DataAccess
         

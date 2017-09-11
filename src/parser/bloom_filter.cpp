@@ -9,7 +9,7 @@
 #include "bloom_filter.hpp"
 #include "MurmurHash3.hpp"
 
-#include "blockchain_state.hpp"
+#include "address_state.hpp"
 
 #include <blocksci/bitcoin_uint256.hpp>
 

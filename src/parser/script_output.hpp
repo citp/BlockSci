@@ -21,13 +21,13 @@
 #include <array>
 #include <stdio.h>
 
-class BlockchainState;
 class AddressWriter;
+class AddressState;
 
 
 struct ScriptOutputBase {
-    void processOutput(BlockchainState &) {}
-    void checkOutput(const BlockchainState &) {}
+    void processOutput(AddressState &) {}
+    void checkOutput(const AddressState &) {}
 };
 
 template<blocksci::AddressType::Enum type>
@@ -42,7 +42,7 @@ struct ScriptOutput<blocksci::AddressType::Enum::PUBKEY> : public ScriptOutputBa
     
     bool isValid() const { return true; }
     
-    blocksci::uint160 getHash();
+    blocksci::uint160 getHash() const;
 };
 
 template <>
@@ -54,7 +54,7 @@ struct ScriptOutput<blocksci::AddressType::Enum::PUBKEYHASH> : public ScriptOutp
     
     bool isValid() const { return true; }
     
-    blocksci::uint160 getHash();
+    blocksci::uint160 getHash() const;
 };
 
 template <>
@@ -66,7 +66,7 @@ struct ScriptOutput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : public Sc
     
     bool isValid() const { return true; }
     
-    blocksci::uint160 getHash();
+    blocksci::uint160 getHash() const;
 };
 
 template <>
@@ -75,7 +75,7 @@ struct ScriptOutput<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptOutp
     
     ScriptOutput(blocksci::uint160 hash_) : hash(hash_) {}
     
-    blocksci::uint160 getHash();
+    blocksci::uint160 getHash() const;
     
     bool isValid() const {
         return true;
@@ -88,7 +88,7 @@ struct ScriptOutput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> : public Sc
     
     ScriptOutput(blocksci::uint256 hash_) : hash(hash_) {}
     
-    blocksci::uint160 getHash();
+    blocksci::uint160 getHash() const;
     
     bool isValid() const {
         return true;
@@ -117,9 +117,9 @@ struct ScriptOutput<blocksci::AddressType::Enum::MULTISIG> {
         return numRequired <= numTotal && numTotal == addressCount;
     }
     
-    blocksci::uint160 getHash();
-    void processOutput(BlockchainState &state);
-    void checkOutput(const BlockchainState &state);
+    blocksci::uint160 getHash() const;
+    void processOutput(AddressState &state);
+    void checkOutput(const AddressState &state);
 };
 
 template <>
@@ -148,10 +148,12 @@ struct ScriptOutput<blocksci::AddressType::Enum::NULL_DATA> : public ScriptOutpu
 using ScriptOutputType = blocksci::to_script_variant_t<ScriptOutput, blocksci::AddressInfoList>;
 
 template <blocksci::AddressType::Enum type>
-std::pair<blocksci::Address, bool> getAddressNum(ScriptOutput<type> &data, BlockchainState &state);
+std::pair<blocksci::Address, bool> getAddressNum(ScriptOutput<type> &data, AddressState &state);
 
 template <blocksci::AddressType::Enum type>
-std::pair<blocksci::Address, bool> checkAddressNum(ScriptOutput<type> &data, const BlockchainState &state);
+std::pair<blocksci::Address, bool> checkAddressNum(ScriptOutput<type> &data, const AddressState &state);
+
+blocksci::AddressType::Enum addressType(const ScriptOutputType &type);
 
 ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsigned char *scriptEnd);
 

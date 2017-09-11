@@ -19,7 +19,6 @@
 #include <stdio.h>
 
 struct InputInfo;
-struct UTXO;
 struct getrawtransaction_t;
 struct vout_t;
 struct vin_t;
@@ -44,12 +43,14 @@ struct RawInput {
     RawOutputPointer rawOutputPointer;
     uint32_t sequenceNum;
     const unsigned char *scriptBegin;
-    const unsigned char *scriptEnd;
+    uint32_t scriptLength;
     std::vector<WitnessStackItem> witnessStack;
+    uint32_t linkedTxNum;
+    blocksci::AddressType::Enum addressType;
     
     std::vector<unsigned char> scriptBytes;
     
-    InputInfo getInfo(const UTXO &utxo, uint16_t i);
+    InputInfo getInfo(uint16_t i);
     
     RawInput(){}
     

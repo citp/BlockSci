@@ -12,7 +12,6 @@
 #include "scriptsfwd.hpp"
 #include "script_access.hpp"
 #include "pubkey_script.hpp"
-#include "pubkeyhash_script.hpp"
 #include "multisig_script.hpp"
 #include "scripthash_script.hpp"
 #include "nulldata_script.hpp"

@@ -11,7 +11,7 @@
 #include "script_output.hpp"
 #include "address_writer.hpp"
 
-#include "blockchain_state.hpp"
+#include "address_state.hpp"
 
 #include <blocksci/hash.hpp>
 
@@ -20,16 +20,16 @@
 template <bool deduped>
 struct AddressNumImp {
     template <blocksci::AddressType::Enum type>
-    static std::pair<blocksci::Address, bool> get(ScriptOutput<type> &data, BlockchainState &state);
+    static std::pair<blocksci::Address, bool> get(ScriptOutput<type> &data, AddressState &state);
     
     template <blocksci::AddressType::Enum type>
-    static std::pair<blocksci::Address, bool> check(ScriptOutput<type> &data, const BlockchainState &state);
+    static std::pair<blocksci::Address, bool> check(ScriptOutput<type> &data, const AddressState &state);
 };
 
 template <>
 struct AddressNumImp<true> {
     template <blocksci::AddressType::Enum type>
-    static std::pair<blocksci::Address, bool> get(ScriptOutput<type> &data, BlockchainState &state) {
+    static std::pair<blocksci::Address, bool> get(ScriptOutput<type> &data, AddressState &state) {
         blocksci::RawAddress rawAddress{data.getHash(), blocksci::scriptType(type)};
         auto addressInfo = state.findAddress(rawAddress);
         auto processed = state.resolveAddress(addressInfo);
@@ -37,7 +37,7 @@ struct AddressNumImp<true> {
     }
     
     template <blocksci::AddressType::Enum type>
-    static std::pair<blocksci::Address, bool> check(ScriptOutput<type> &data, const BlockchainState &state) {
+    static std::pair<blocksci::Address, bool> check(ScriptOutput<type> &data, const AddressState &state) {
         blocksci::RawAddress rawAddress{data.getHash(), blocksci::scriptType(type)};
         auto addressInfo = state.findAddress(rawAddress);
         return std::make_pair(blocksci::Address(addressInfo.addressNum, type), addressInfo.addressNum == 0);
@@ -47,35 +47,47 @@ struct AddressNumImp<true> {
 template <>
 struct AddressNumImp<false> {
     template <blocksci::AddressType::Enum type>
-    static std::pair<blocksci::Address, bool> get(ScriptOutput<type> &, BlockchainState &state) {
+    static std::pair<blocksci::Address, bool> get(ScriptOutput<type> &, AddressState &state) {
         auto index = state.getNewAddressIndex(scriptType(type));
         return std::make_pair(blocksci::Address(index, type), true);
     }
     
     template <blocksci::AddressType::Enum type>
-    static std::pair<blocksci::Address, bool> check(ScriptOutput<type> &, const BlockchainState &) {
+    static std::pair<blocksci::Address, bool> check(ScriptOutput<type> &, const AddressState &) {
         return std::make_pair(blocksci::Address(0, type), true);
     }
 };
 
 
 template <blocksci::AddressType::Enum type>
-std::pair<blocksci::Address, bool> getAddressNum(ScriptOutput<type> &data, BlockchainState &state) {
+std::pair<blocksci::Address, bool> getAddressNum(ScriptOutput<type> &data, AddressState &state) {
     return AddressNumImp<blocksci::AddressInfo<type>::deduped>::get(data, state);
 }
 
 template <blocksci::AddressType::Enum type>
-std::pair<blocksci::Address, bool> checkAddressNum(ScriptOutput<type> &data, const BlockchainState &state) {
+std::pair<blocksci::Address, bool> checkAddressNum(ScriptOutput<type> &data, const AddressState &state) {
     return AddressNumImp<blocksci::AddressInfo<type>::deduped>::check(data, state);
 }
 
-#define VAL(x) template std::pair<blocksci::Address, bool> getAddressNum<blocksci::AddressType::Enum::x>(ScriptOutput<blocksci::AddressType::Enum::x> &data, BlockchainState &state);
+#define VAL(x) template std::pair<blocksci::Address, bool> getAddressNum<blocksci::AddressType::Enum::x>(ScriptOutput<blocksci::AddressType::Enum::x> &data, AddressState &state);
 ADDRESS_TYPE_SET
 #undef VAL
 
-#define VAL(x) template std::pair<blocksci::Address, bool> checkAddressNum<blocksci::AddressType::Enum::x>(ScriptOutput<blocksci::AddressType::Enum::x> &data, const BlockchainState &state);
+#define VAL(x) template std::pair<blocksci::Address, bool> checkAddressNum<blocksci::AddressType::Enum::x>(ScriptOutput<blocksci::AddressType::Enum::x> &data, const AddressState &state);
 ADDRESS_TYPE_SET
 #undef VAL
+
+struct ScriptOutputAddressType : public boost::static_visitor<blocksci::AddressType::Enum> {
+    template <blocksci::AddressType::Enum type>
+    blocksci::AddressType::Enum operator()(const ScriptOutput<type> &) const {
+        return type;
+    }
+};
+
+blocksci::AddressType::Enum addressType(const ScriptOutputType &type) {
+    static auto visitor = ScriptOutputAddressType();
+    return boost::apply_visitor(visitor, type);
+}
 
 struct ScriptOutputIsValid : public boost::static_visitor<bool> {
     template <blocksci::AddressType::Enum type>
@@ -93,37 +105,37 @@ bool isValid(const ScriptOutputType &type) {
 
 ScriptOutput<blocksci::AddressType::Enum::PUBKEY>::ScriptOutput(const std::vector<unsigned char> &vch1) : pubkey(vch1) {}
 
-blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::PUBKEY>::getHash() {
+blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::PUBKEY>::getHash() const {
     return pubkey.GetID();
 }
 
 // MARK: TX_PUBKEYHASH
 
-blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::PUBKEYHASH>::getHash() {
+blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::PUBKEYHASH>::getHash() const {
     return hash;
 }
 
 // MARK: WITNESS_PUBKEYHASH
 
-blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::getHash() {
+blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::getHash() const {
     return hash;
 }
 
 // MARK: TX_SCRIPTHASH
 
-blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::SCRIPTHASH>::getHash() {
+blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::SCRIPTHASH>::getHash() const {
     return hash;
 }
 
 // MARK: WITNESS_SCRIPTHASH
 
-blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::getHash() {
+blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::getHash() const {
     return ripemd160(reinterpret_cast<const char *>(&hash), sizeof(hash));
 }
 
 // MARK: TX_MULTISIG
 
-blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::getHash() {
+blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::getHash() const {
     std::vector<char> sigData;
     sigData.resize(sizeof(numRequired) + sizeof(CKeyID) * addressCount);
     size_t sigDataPos = 0;
@@ -143,7 +155,7 @@ blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::getHash()
     return ripemd160(sigData.data(), sigData.size());
 }
 
-void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::processOutput(BlockchainState &state) {
+void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::processOutput(AddressState &state) {
     for (int i = 0; i < addressCount; i++) {
         blocksci::RawAddress rawAddress{addresses[i].GetID(), blocksci::ScriptType::Enum::PUBKEY};
         auto addressInfo = state.findAddress(rawAddress);
@@ -153,7 +165,7 @@ void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::processOutput(Blockcha
     }
 }
 
-void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::checkOutput(const BlockchainState &state) {
+void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::checkOutput(const AddressState &state) {
     for (int i = 0; i < addressCount; i++) {
         blocksci::RawAddress rawAddress{addresses[i].GetID(), blocksci::ScriptType::Enum::PUBKEY};
         auto addressInfo = state.findAddress(rawAddress);

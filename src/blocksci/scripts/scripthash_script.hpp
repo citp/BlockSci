@@ -18,10 +18,10 @@ namespace blocksci {
     
     template <>
     class ScriptAddress<ScriptType::Enum::SCRIPTHASH> : public Script {
-        
+    private:
+        Address wrappedAddress;
     public:
         uint160 address;
-        Address wrappedAddress;
         
         ScriptAddress<ScriptType::Enum::SCRIPTHASH>(const ScriptHashData *rawData);
         ScriptAddress<ScriptType::Enum::SCRIPTHASH>(const uint160 &address);
@@ -34,13 +34,20 @@ namespace blocksci {
         
         bool operator==(const Script &other) override;
         
-        std::vector<Address> nestedAddresses() const override {
-            std::vector<Address> addresses;
+        boost::optional<Address> getWrappedAddress() const {
             if (wrappedAddress.addressNum != 0) {
-                addresses.push_back(wrappedAddress);
+                return wrappedAddress;
+            } else {
+                return boost::none;
             }
-            return addresses;
         }
+        
+        void visitPointers(const std::function<void(const Address &)> &visitFunc) const override {
+            if (wrappedAddress.addressNum != 0) {
+                visitFunc(wrappedAddress);
+            }
+        }
+        
         
         std::unique_ptr<Script> wrappedScript(const ScriptAccess &access) const {
             return wrappedAddress.getScript(access);
