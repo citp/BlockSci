@@ -98,11 +98,10 @@ namespace blocksci {
     
     template <>
     struct SimpleFileMapper<boost::iostreams::mapped_file::mapmode::readwrite> : public SimpleFileMapperBase {
-        static constexpr size_t bufferSize = 50000000;
-        std::unique_ptr<std::array<char, bufferSize>> buffer;
-        OffsetType bufferOffset;
+        static constexpr size_t maxBufferSize = 500000000;
+        std::vector<char> buffer;
         
-        SimpleFileMapper(boost::filesystem::path path) : SimpleFileMapperBase(path, boost::iostreams::mapped_file::mapmode::readwrite), buffer(std::make_unique<std::array<char, bufferSize>>()), bufferOffset(0) {}
+        SimpleFileMapper(boost::filesystem::path path) : SimpleFileMapperBase(path, boost::iostreams::mapped_file::mapmode::readwrite) {}
         
         ~SimpleFileMapper() {
             clearBuffer();
@@ -112,30 +111,31 @@ namespace blocksci {
         
         template<typename T, typename = std::enable_if_t<std::is_trivially_copyable<T>::value>>
         bool writeImp(const T &t) {
-            bool bufferCleared = bufferOffset + sizeof(t) > bufferSize;
-            if (bufferCleared) {
+            auto start = reinterpret_cast<const char *>(&t);
+            buffer.insert(buffer.end(), start, start + sizeof(t));
+            
+            bool bufferFull = buffer.size() > maxBufferSize;
+            if (bufferFull) {
                 clearBuffer();
             }
-            std::memcpy(buffer->data() + bufferOffset, &t, sizeof(t));
-            bufferOffset += sizeof(T);
-            return bufferCleared;
+            return bufferFull;
         }
         
     public:
         
         void clearBuffer() {
-            if (bufferOffset > 0) {
+            if (buffer.size() > 0) {
                 if (!file.is_open()) {
                     boost::iostreams::mapped_file_params params{path.native()};
-                    params.new_file_size = bufferOffset;
+                    params.new_file_size = buffer.size();
                     params.flags = boost::iostreams::mapped_file::readwrite;
                     file.open(params);
                 } else {
-                    file.resize(fileEnd + bufferOffset);
+                    file.resize(fileEnd + buffer.size());
                 }
-                memcpy(file.data() + fileEnd, &(*buffer)[0], bufferOffset);
-                fileEnd += bufferOffset;
-                bufferOffset = 0;
+                memcpy(file.data() + fileEnd, buffer.data(), buffer.size());
+                fileEnd += buffer.size();
+                buffer.clear();
             }
         }
         
@@ -150,7 +150,7 @@ namespace blocksci {
             } else if (offset < fileEnd) {
                 return file.data() + offset;
             } else {
-                return &(*buffer)[offset - fileEnd];
+                return buffer.data() + (offset - fileEnd);
             }
         }
         
@@ -160,12 +160,12 @@ namespace blocksci {
             } else if (offset < fileEnd) {
                 return file.const_data() + offset;
             } else {
-                return &(*buffer)[offset - fileEnd];
+                return buffer.data() + (offset - fileEnd);
             }
         }
         
         size_t size() const {
-            return SimpleFileMapperBase::size() + bufferOffset;
+            return SimpleFileMapperBase::size() + buffer.size();
         }
         
         void truncate(OffsetType offset) {
