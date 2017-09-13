@@ -11,7 +11,9 @@
 
 #include "config.hpp"
 #include "parser_configuration.hpp"
+#include "address_writer.hpp"
 
+#include <blocksci/file_mapper.hpp>
 #include <blocksci/chain/output_pointer.hpp>
 
 #include <boost/iostreams/device/mapped_file.hpp>
@@ -33,6 +35,8 @@ struct TxUpdate {
 };
 
 class BlockProcessor {
+    using HashFile = blocksci::FixedSizeFileMapper<blocksci::uint256, boost::iostreams::mapped_file::readwrite>;
+    
     boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<50000>> utxo_transaction_queue;
     
     boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<50000>> address_transaction_queue;
@@ -41,15 +45,28 @@ class BlockProcessor {
     
     boost::unordered_map<int, std::pair<boost::iostreams::mapped_file, uint32_t>> files;
     
+    AddressWriter addressWriter;
+    HashFile hashFile;
+    
     #ifdef BLOCKSCI_RPC_PARSER
     void loadTxRPC(RawTransaction *tx, const blockinfo_t &block, uint32_t txNum, BitcoinAPI & bapi);
     #endif
+    
+    std::atomic<uint32_t> lastTxFinished;
     
 public:
     boost::atomic<bool> rawDone;
     boost::atomic<bool> utxoDone;
     
-    BlockProcessor();
+    const HashFile &getHashFile() const {
+        return hashFile;
+    }
+    
+    uint32_t getLastestTxFinished() const {
+        return lastTxFinished.load();
+    }
+    
+    BlockProcessor(ParserConfiguration config);
     ~BlockProcessor();
     
     #ifdef BLOCKSCI_FILE_PARSER

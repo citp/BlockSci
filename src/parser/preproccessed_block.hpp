@@ -91,6 +91,7 @@ struct RawTransaction {
     uint32_t sizeBytes;
     uint32_t locktime;
     int32_t version;
+    uint32_t blockHeight;
     
     std::vector<RawInput> inputs;
     std::vector<RawOutput> outputs;
@@ -102,15 +103,14 @@ struct RawTransaction {
       sizeBytes(0),
       locktime(0),
       version(0),
-      inputs(),
-      outputs() {}
+      blockHeight(0) {}
     
     #ifdef BLOCKSCI_FILE_PARSER
-    void load(const char **buffer);
+    void load(const char **buffer, uint32_t blockHeight);
     #endif
     
     #ifdef BLOCKSCI_RPC_PARSER
-    void load(const getrawtransaction_t &txinfo);
+    void load(const getrawtransaction_t &txinfo, uint32_t blockHeight);
     #endif
     
     blocksci::uint256 getHash(const InputInfo &info, int hashType) const;

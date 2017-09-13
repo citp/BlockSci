@@ -17,6 +17,7 @@
 namespace blocksci {
     class ChainAccess;
     struct Transaction;
+    class uint256;
 }
 
 struct ParserConfiguration;
@@ -33,7 +34,7 @@ class HashIndex {
 public:
     HashIndex(const ParserConfiguration &config);
     ~HashIndex();
-    void processTx(const blocksci::ChainAccess &chain, const blocksci::Transaction &tx);
+    void processTx(const blocksci::uint256 &hash, uint32_t index);
 };
 
 #endif /* tx_hash_index_hpp */

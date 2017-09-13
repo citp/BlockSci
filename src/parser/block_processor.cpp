@@ -9,8 +9,6 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "block_processor.hpp"
-#include "chain_writer.hpp"
-#include "address_writer.hpp"
 #include "script_input.hpp"
 #include "file_writer.hpp"
 
@@ -36,7 +34,7 @@
 #include <fstream>
 #include <iostream>
 
-BlockProcessor::BlockProcessor() : rawDone(false), utxoDone(false) {
+BlockProcessor::BlockProcessor(ParserConfiguration config) : hashFile(config.txHashesFilePath()), addressWriter(config), lastTxFinished(0), rawDone(false), utxoDone(false) {
     
 }
 
@@ -97,7 +95,7 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
     boost::unordered_map<int, uint32_t> lastBlockRequired;
     boost::unordered_map<int, uint32_t> lastTxRequired;
     
-    auto firstTxIndex = startingTxCount;
+    auto txNum = startingTxCount;
     
     int maxBlockFile = 0;
     int minBlockFile = std::numeric_limits<int>::max();
@@ -112,7 +110,6 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
     
     blocksci::ArbitraryFileMapper<boost::iostreams::mapped_file::readwrite> blockCoinbaseFile(config.blockCoinbaseFilePath());
     blocksci::FixedSizeFileMapper<blocksci::Block, boost::iostreams::mapped_file::readwrite> blockFile(config.blockFilePath());
-    blocksci::FixedSizeFileMapper<blocksci::uint256, boost::iostreams::mapped_file::readwrite> txHashesFile{config.txHashesFilePath()};
     blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, uint32_t> sequenceFile{config.sequenceFilePath()};
     
     for (uint32_t i = 0; i < blocksToAdd.size(); i++) {
@@ -141,6 +138,8 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
         
         std::vector<unsigned char> coinbase;
         
+        auto firstTxIndex = txNum;
+        
         for (uint32_t i = 0; i < txCount; i++) {
             RawTransaction *tx;
             if (!finished_transaction_queue.pop(tx)) {
@@ -156,14 +155,10 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
                     }
                 }
             }
+
+            tx->load(&startPos, block.height);
             
-            if (firstTxIndex == 490) {
-                std::cout << "Test\n";
-            }
-            
-            tx->load(&startPos);
-            
-            txHashesFile.write(tx->hash);
+            hashFile.write(tx->hash);
             sequenceFile.writeIndexGroup();
             for (auto &input : tx->inputs) {
                 sequenceFile.write(input.sequenceNum);
@@ -178,7 +173,7 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
             while (!utxo_transaction_queue.push(tx)) {
                 std::this_thread::sleep_for(100ms);
             }
-            firstTxIndex++;
+            txNum++;
         }
         
         blockFile.write(getBlock(firstTxIndex, txCount, blockCoinbaseFile.size(), block));
@@ -205,19 +200,19 @@ void BlockProcessor::loadTxRPC(RawTransaction *tx, const blockinfo_t &block, uin
         //Set the desired initial block reward
         tx->outputs.emplace_back(scriptBytes, 50 * 100000000.0);
         tx->hash = blocksci::uint256S("0100000000000000000000000000000000000000000000000000000000000000");
+        tx->blockHeight = 0;
     } else {
         auto txinfo = bapi.getrawtransaction(block.tx[txNum], 1);
-        tx->load(txinfo);
+        tx->load(txinfo, block.height);
     }
 }
 
 void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<blockinfo_t> blocksToAdd, uint32_t startingTxCount) {
     using namespace std::chrono_literals;
-    auto firstTxIndex = startingTxCount;
+    auto txNum = startingTxCount;
     
     blocksci::ArbitraryFileMapper<boost::iostreams::mapped_file::readwrite> blockCoinbaseFile(config.blockCoinbaseFilePath());
     blocksci::FixedSizeFileMapper<blocksci::Block, boost::iostreams::mapped_file::readwrite> blockFile(config.blockFilePath());
-    blocksci::FixedSizeFileMapper<blocksci::uint256, boost::iostreams::mapped_file::readwrite> txHashesFile{config.txHashesFilePath()};
     
     BitcoinAPI bapi{config.createBitcoinAPI()};
     
@@ -225,7 +220,7 @@ void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<bl
         uint32_t blockTxCount = block.tx.size();
         
         std::vector<unsigned char> coinbase;
-        
+        auto firstTxIndex = txNum;
         for (uint32_t i = 0; i < blockTxCount; i++) {
             RawTransaction *tx;
             if (!finished_transaction_queue.pop(tx)) {
@@ -233,12 +228,13 @@ void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<bl
             }
             loadTxRPC(tx, block, i, bapi);
             
-            txHashesFile.write(tx->hash);
+            hashFile.write(tx->hash);
             
             // Note to self: Currently this does not get the coinbase tx data
             while (!utxo_transaction_queue.push(tx)) {
                 std::this_thread::sleep_for(100ms);
             }
+            txNum++;
         }
         
         blockFile.write(getBlock(firstTxIndex, blockTxCount, blockCoinbaseFile.size(), block));
@@ -365,8 +361,6 @@ void BlockProcessor::processAddresses(ParserConfiguration config, uint32_t total
     
     using TxFile = blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction>;
     
-    AddressWriter addressWriter(config);
-    
     auto percentage = static_cast<double>(totalTxCount) / 1000.0;
     
     uint32_t percentageMarker = static_cast<uint32_t>(std::ceil(percentage));
@@ -440,11 +434,12 @@ void BlockProcessor::processAddresses(ParserConfiguration config, uint32_t total
     while (!utxoDone) {
         while (address_transaction_queue.write_available() < 10000 && address_transaction_queue.pop(rawTx)) {
             
-            if (rawTx->txNum >= txFile.size() - 10000) {
+            if (rawTx->txNum + 10000 >= txFile.size()) {
                 txFile = TxFile{config.txFilePath()};
             }
             
             consume(rawTx, txFile);
+            lastTxFinished = rawTx->txNum;
         }
         std::this_thread::sleep_for(100ms);
     }
@@ -452,12 +447,16 @@ void BlockProcessor::processAddresses(ParserConfiguration config, uint32_t total
     txFile = TxFile{config.txFilePath()};
     while (address_transaction_queue.pop(rawTx)) {
         consume(rawTx, txFile);
+        lastTxFinished = rawTx->txNum;
     }
     std::cout << "\nDone processing txes\n";
 }
 
 
 BlockProcessor::~BlockProcessor() {
+    assert(!utxo_transaction_queue.pop());
+    assert(!address_transaction_queue.pop());
+    
     finished_transaction_queue.consume_all([](RawTransaction *tx) {
         delete tx;
     });

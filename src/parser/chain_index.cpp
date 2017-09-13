@@ -93,8 +93,9 @@ void ChainIndex::updateFromFilesystem() {
         }
         // config.blockMagic
         // 0xdab5bffa
+        // 0x0709110b
         uint32_t magic = 0;
-        while ((magic = readNext<uint32_t>(&startPos)) == 0x0709110b) {
+        while ((magic = readNext<uint32_t>(&startPos)) == config.blockMagic) {
             uint32_t length = readNext<uint32_t>(&startPos);
             filePos = startPos - fileMap.data();
             auto header = reinterpret_cast<const CBlockHeader *>(startPos);
