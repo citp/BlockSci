@@ -37,7 +37,7 @@ namespace blocksci {
         }
         
 #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        ScriptAddress<AddressType::Enum::MULTISIG>(uint32_t addressNum);
+        ScriptAddress<ScriptType::Enum::MULTISIG>(uint32_t addressNum);
 #endif
     };
 }

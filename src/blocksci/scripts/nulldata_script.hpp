@@ -29,7 +29,7 @@ namespace blocksci {
         bool operator==(const Script &other) override;
         
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        ScriptAddress<AddressType::Enum::NULL_DATA>(uint32_t addressNum);
+        ScriptAddress<ScriptType::Enum::NULL_DATA>(uint32_t addressNum);
         #endif
     };
 }
