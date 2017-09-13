@@ -139,7 +139,6 @@ void RawTransaction::load(const getrawtransaction_t &txinfo) {
     version = txinfo.version;
     locktime = txinfo.locktime;
     sizeBytes = txinfo.hex.size() / 2;
-    hash = blocksci::uint256S(txinfo.txid);
     unsigned int inputCount = txinfo.vin.size();
     inputs.clear();
     inputs.reserve(inputCount);
@@ -153,6 +152,7 @@ void RawTransaction::load(const getrawtransaction_t &txinfo) {
     for (unsigned int i = 0; i < outputCount; i++) {
         outputs.emplace_back(txinfo.vout[i]);
     }
+    hash = blocksci::uint256S(txinfo.txid);;
 }
 #endif
 

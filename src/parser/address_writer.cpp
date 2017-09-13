@@ -156,7 +156,7 @@ void AddressWriter::serializeImp<AddressType::Enum::NONSTANDARD>(const ScriptOut
 template<>
 void AddressWriter::serializeImp<AddressType::Enum::NONSTANDARD>(const ScriptInput<AddressType::Enum::NONSTANDARD> &input, uint32_t addressNum) {
     auto &file = std::get<ScriptFile<ScriptType::Enum::NONSTANDARD>>(scriptFiles);
-    file.updateIndexGroup<1>(addressNum);
+    file.updateIndexGroup<1>(addressNum - 1);
     file.write(input.script.begin(), input.script.end());
 }
 

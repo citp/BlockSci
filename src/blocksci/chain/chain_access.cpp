@@ -25,9 +25,8 @@ namespace blocksci {
     errorOnReorg(errorOnReorg_) {
 
         maxHeight = static_cast<uint32_t>(blockFile.size()) - blocksIgnored;
-        auto maxLoadedBlock = getBlockFile().getData(maxHeight - 1);
-        
         if (errorOnReorg_) {
+            auto maxLoadedBlock = getBlockFile().getData(maxHeight - 1);
             lastBlockHash = maxLoadedBlock->hash;
             _maxLoadedTx = maxLoadedBlock->firstTxIndex + maxLoadedBlock->numTxes;
             lastBlockHashDisk = &maxLoadedBlock->hash;
@@ -95,8 +94,12 @@ namespace blocksci {
     
     const boost::iterator_range<const Block *> ChainAccess::getBlocks() const {
         reorgCheck();
-        auto fullRange = blockFile.getRange();
-        return boost::iterator_range<const Block *>(fullRange.begin(), fullRange.begin() + maxHeight);
+        if (blockFile.size() > 0) {
+            auto fullRange = blockFile.getRange();
+            return boost::iterator_range<const Block *>(fullRange.begin(), fullRange.begin() + maxHeight);
+        } else {
+            return boost::iterator_range<const Block *>{};
+        }
     }
     
     std::vector<unsigned char> ChainAccess::getCoinbase(uint64_t offset) const {

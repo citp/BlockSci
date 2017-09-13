@@ -57,7 +57,12 @@ namespace blocksci {
         size_t fileEnd;
     public:
         boost::filesystem::path path;
-        // boost::interprocess::read_only
+        
+        void reload() {
+            fileEnd = boost::filesystem::file_size(path);
+            file.resize(fileEnd);
+        }
+        
         SimpleFileMapperBase(boost::filesystem::path path_, boost::iostreams::mapped_file::mapmode mode) : fileEnd(0), path(path_) {
             path += ".dat";
             
@@ -76,6 +81,7 @@ namespace blocksci {
         
         const char *getDataAtOffset(OffsetType offset) const {
             if (offset != InvalidFileIndex) {
+                assert(offset < size());
                 return reinterpret_cast<const char *>(file.const_data()) + offset;
             } else {
                 return nullptr;
@@ -98,7 +104,7 @@ namespace blocksci {
     
     template <>
     struct SimpleFileMapper<boost::iostreams::mapped_file::mapmode::readwrite> : public SimpleFileMapperBase {
-        static constexpr size_t maxBufferSize = 500000000;
+        static constexpr size_t maxBufferSize = 50000000;
         std::vector<char> buffer;
         
         SimpleFileMapper(boost::filesystem::path path) : SimpleFileMapperBase(path, boost::iostreams::mapped_file::mapmode::readwrite) {}
@@ -145,6 +151,7 @@ namespace blocksci {
         }
         
         char *getDataAtOffset(OffsetType offset) {
+            assert(offset < fileEnd + buffer.size() || offset == InvalidFileIndex);
             if (offset == InvalidFileIndex) {
                 return nullptr;
             } else if (offset < fileEnd) {
@@ -155,6 +162,7 @@ namespace blocksci {
         }
         
         const char *getDataAtOffset(OffsetType offset) const {
+            assert(offset < fileEnd + buffer.size() || offset == InvalidFileIndex);
             if (offset == InvalidFileIndex) {
                 return nullptr;
             } else if (offset < fileEnd) {
@@ -166,6 +174,10 @@ namespace blocksci {
         
         size_t size() const {
             return SimpleFileMapperBase::size() + buffer.size();
+        }
+        
+        size_t fileSize() const {
+            return boost::filesystem::file_size(path);
         }
         
         void truncate(OffsetType offset) {
@@ -201,11 +213,13 @@ namespace blocksci {
         using SimpleFileMapper<mode>::SimpleFileMapper;
         
         add_const_ptr_t<T> getData(size_t index) const {
+            assert(index < size());
             const char *pos = SimpleFileMapper<mode>::getDataAtOffset(index * sizeof(T));
             return reinterpret_cast<add_const_ptr_t<T>>(pos);
         }
         
         add_ptr_t<T> getData(size_t index) {
+            assert(index < size());
             char *pos = SimpleFileMapper<mode>::getDataAtOffset(index * sizeof(T));
             return reinterpret_cast<add_ptr_t<T>>(pos);
         }
@@ -220,6 +234,10 @@ namespace blocksci {
         
         size_t size() const {
             return SimpleFileMapper<mode>::size() / sizeof(T);
+        }
+        
+        size_t fileSize() const {
+            return SimpleFileMapper<mode>::fileSize() / sizeof(T);
         }
         
         void truncate(size_t index) {
@@ -291,10 +309,21 @@ namespace blocksci {
         IndexedFileMapper(boost::filesystem::path pathPrefix) : ArbitraryFileMapper<mode>(boost::filesystem::path(pathPrefix).concat("_data")), indexFile(boost::filesystem::path(pathPrefix).concat("_index")) {
         }
         
+        void reload() {
+            clearBuffer();
+            indexFile.reload();
+            ArbitraryFileMapper<mode>::reload();
+        }
+        
+        void clearBuffer() {
+            indexFile.clearBuffer();
+            ArbitraryFileMapper<mode>::clearBuffer();
+        }
+        
         template<size_t indexNum = 0>
-        OffsetType getOffset(size_t index) const {
+        OffsetType getOffset(size_t offset) const {
             static_assert(indexNum < sizeof...(T), "Trying to fetch index out of bounds");
-            auto indexData = indexFile.getData(index);
+            auto indexData = indexFile.getData(offset);
             return (*indexData)[indexNum];
         }
         
@@ -304,6 +333,10 @@ namespace blocksci {
         
         size_t size() const {
             return indexFile.size();
+        }
+        
+        size_t fileSize() const {
+            return indexFile.fileSize();
         }
         
         void truncate(OffsetType index) {
@@ -338,7 +371,9 @@ namespace blocksci {
         
         template<size_t indexNum = 0>
         char *getPointerAtIndex(uint32_t index) {
-            return ArbitraryFileMapper<mode>::getDataAtOffset(getOffset<indexNum>(index));
+            assert(index < size());
+            auto offset = getOffset<indexNum>(index);
+            return ArbitraryFileMapper<mode>::getDataAtOffset(offset);
         }
         
         template<size_t indexNum = 0>
@@ -364,17 +399,22 @@ namespace blocksci {
         
         template<size_t indexNum = 0>
         add_const_ptr_t<nth_element<indexNum>> getDataAtIndex(size_t index) const {
+            assert(index < size());
             return reinterpret_cast<add_const_ptr_t<nth_element<indexNum>>>(getPointerAtIndex<indexNum>(index));
         }
         
         template<size_t indexNum = 0>
         add_ptr_t<nth_element<indexNum>> getDataAtIndex(size_t index) {
-            return reinterpret_cast<add_ptr_t<nth_element<indexNum>>>(getPointerAtIndex<indexNum>(index));
+            assert(index < size());
+            auto ptr = reinterpret_cast<add_ptr_t<nth_element<indexNum>>>(getPointerAtIndex<indexNum>(index));
+            assert(ptr != nullptr);
+            return ptr;
         }
         
         template<class A=add_const_ptr_t<std::tuple<T...>>>
         std::enable_if_t<(sizeof...(T) > 1), A>
         getData(size_t index) const {
+            assert(index < size());
             auto pointers = getPointersAtIndex(index);
             return tuple_cast<T...>(pointers);
         }
@@ -382,12 +422,14 @@ namespace blocksci {
         template<class A=add_const_ptr_t<nth_element<0>>>
         std::enable_if_t<(sizeof...(T) == 1), A>
         getData(size_t index) const {
+            assert(index < size());
             return getDataAtIndex<0>(index);
         }
         
         template<class A=add_ptr_t<std::tuple<T...>>>
         std::enable_if_t<(sizeof...(T) > 1), A>
         getData(size_t index) {
+            assert(index < size());
             auto pointers = getPointersAtIndex(index);
             return tuple_cast<T...>(pointers);
         }
@@ -395,7 +437,10 @@ namespace blocksci {
         template<class A=add_ptr_t<nth_element<0>>>
         std::enable_if_t<(sizeof...(T) == 1), A>
         getData(size_t index) {
-            return getDataAtIndex<0>(index);
+            assert(index < size());
+            auto data = getDataAtIndex<0>(index);
+            assert(data != nullptr);
+            return data;
         }
         
     };

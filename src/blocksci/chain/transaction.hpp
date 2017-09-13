@@ -44,11 +44,11 @@ namespace blocksci {
         RawTransaction &operator=(const RawTransaction &) = delete;
         RawTransaction &operator=(RawTransaction &&) = delete;
         
-        Output *getOutput(uint16_t outputNum);
-        Input *getInput(uint16_t inputNum);
+        Output &getOutput(uint16_t outputNum);
+        Input &getInput(uint16_t inputNum);
         
-        const Output *getOutput(uint16_t outputNum) const;
-        const Input *getInput(uint16_t inputNum) const;
+        const Output &getOutput(uint16_t outputNum) const;
+        const Input &getInput(uint16_t inputNum) const;
         
     };
     
