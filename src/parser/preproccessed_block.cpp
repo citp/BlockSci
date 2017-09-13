@@ -69,7 +69,8 @@ WitnessStackItem::WitnessStackItem(const char **buffer) : length(readVariableLen
     *buffer += length;
 }
 
-void RawTransaction::load(const char **buffer) {
+void RawTransaction::load(const char **buffer, uint32_t blockHeight_) {
+    blockHeight = blockHeight_;
     SHA256_CTX sha256CTX;
     SHA256_Init(&sha256CTX);
     auto startPos = *buffer;
@@ -135,7 +136,8 @@ RawInput::RawInput(const vin_t &vin) {
 
 RawOutput::RawOutput(const vout_t &vout) : RawOutput(hexStringToVec(vout.scriptPubKey.hex), static_cast<uint64_t>(vout.value * 100000000)) {}
 
-void RawTransaction::load(const getrawtransaction_t &txinfo) {
+void RawTransaction::load(const getrawtransaction_t &txinfo, uint32_t blockHeight_) {
+    blockHeight = blockHeight_;
     version = txinfo.version;
     locktime = txinfo.locktime;
     sizeBytes = txinfo.hex.size() / 2;

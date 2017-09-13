@@ -19,22 +19,22 @@
 #include <blocksci/scripts/scripthash_script.hpp>
 #include <blocksci/scripts/script_access.hpp>
 
-void AddressTraverser::processTx(const blocksci::ScriptAccess &scripts, const blocksci::Transaction &tx) {
-    uint16_t i = 0;
-    for (auto &output : tx.outputs()) {
+void AddressTraverser::processTx(const blocksci::ScriptAccess &scripts, const blocksci::RawTransaction &tx, uint32_t txNum) {
+    for (uint16_t i = 0; i < tx.outputCount; i++) {
+        auto &output = tx.getOutput(i);
         auto address = output.getAddress();
-        sawAddress(address, tx.txNum);
+        sawAddress(address, txNum);
         if (address.type == blocksci::AddressType::Enum::MULTISIG) {
             auto script = address.getScript(scripts);
             std::function<void(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &address) {
-                sawAddress(address, tx.txNum);
+                sawAddress(address, txNum);
             };
             script->visitPointers(visitFunc);
         }
-        i++;
     }
     
-    for (auto &input : tx.inputs()) {
+    for (uint16_t i = 0; i < tx.inputCount; i++) {
+        auto &input = tx.getInput(i);
         if (input.getType() == blocksci::AddressType::Enum::SCRIPTHASH) {
             auto address = input.getAddress();
             auto script = address.getScript(scripts);

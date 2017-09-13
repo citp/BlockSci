@@ -115,10 +115,9 @@ HashIndex::~HashIndex() {
     sqlite3_close(db);
 }
 
-void HashIndex::processTx(const blocksci::ChainAccess &access, const blocksci::Transaction &tx) {
-    blocksci::uint256 hash = tx.getHash(access);
+void HashIndex::processTx(const blocksci::uint256 &hash, uint32_t index) {
     sqlite3_bind_blob(txInsertStatement, 1, &hash, sizeof(hash), SQLITE_TRANSIENT);
-    sqlite3_bind_int(txInsertStatement, 2, tx.txNum);
+    sqlite3_bind_int(txInsertStatement, 2, index);
     
     auto rc = sqlite3_step(txInsertStatement);
     if (rc != SQLITE_DONE) {

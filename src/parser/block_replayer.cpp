@@ -93,7 +93,7 @@ void replayBlock(const FileParserConfiguration &config, uint32_t blockNum) {
         auto realTx = realBlock.getTx(currentChain, txNum);
         
         RawTransaction tx;
-        tx.load(&startPos);
+        tx.load(&startPos, blockNum);
         
         if (tx.inputs.size() == 1 && tx.inputs[0].rawOutputPointer.hash == nullHash) {
             auto scriptBegin = tx.inputs[0].scriptBegin;
