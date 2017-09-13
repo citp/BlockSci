@@ -54,7 +54,7 @@ namespace blocksci {
         }
         
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        ScriptAddress<AddressType::Enum::SCRIPTHASH>(uint32_t addressNum);
+        ScriptAddress<ScriptType::Enum::SCRIPTHASH>(uint32_t addressNum);
         std::string addressString() const;
         std::unique_ptr<Script> wrappedScript() const;
         #endif

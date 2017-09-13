@@ -41,7 +41,7 @@ namespace blocksci {
         }
         
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        ScriptAddress<AddressType::Enum::PUBKEY>(uint32_t addressNum);
+        ScriptAddress<ScriptType::Enum::PUBKEY>(uint32_t addressNum);
         std::string addressString() const;
         #endif
     };
