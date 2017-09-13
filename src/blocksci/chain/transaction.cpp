@@ -31,24 +31,28 @@ namespace blocksci {
     
     RawTransaction::RawTransaction(uint32_t sizeBytes_, uint32_t locktime_, uint16_t inputCount_, uint16_t outputCount_) : sizeBytes(sizeBytes_), locktime(locktime_), inputCount(inputCount_), outputCount(outputCount_) {}
     
-    Output *RawTransaction::getOutput(uint16_t outputNum) {
+    Output &RawTransaction::getOutput(uint16_t outputNum) {
         auto pos = reinterpret_cast<char *>(this) + sizeof(RawTransaction);
-        return reinterpret_cast<Output *>(pos) + outputNum;
+        auto outputs = reinterpret_cast<Output *>(pos);
+        return outputs[outputNum];
     }
     
-    Input *RawTransaction::getInput(uint16_t inputNum) {
+    Input &RawTransaction::getInput(uint16_t inputNum) {
         auto pos = reinterpret_cast<char *>(this) + sizeof(RawTransaction) + outputCount * sizeof(Output);
-        return reinterpret_cast<Input *>(pos) + inputNum;
+        auto inputs = reinterpret_cast<Input *>(pos);
+        return inputs[inputNum];
     }
     
-    const Output *RawTransaction::getOutput(uint16_t outputNum) const {
+    const Output &RawTransaction::getOutput(uint16_t outputNum) const {
         auto pos = reinterpret_cast<const char *>(this) + sizeof(RawTransaction);
-        return reinterpret_cast<const Output *>(pos) + outputNum;
+        auto outputs = reinterpret_cast<const Output *>(pos);
+        return outputs[outputNum];
     }
     
-    const Input *RawTransaction::getInput(uint16_t inputNum) const {
+    const Input &RawTransaction::getInput(uint16_t inputNum) const {
         auto pos = reinterpret_cast<const char *>(this) + sizeof(RawTransaction) + outputCount * sizeof(Output);
-        return reinterpret_cast<const Input *>(pos) + inputNum;
+        auto inputs = reinterpret_cast<const Input *>(pos);
+        return inputs[inputNum];
     }
     
     

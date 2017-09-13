@@ -368,7 +368,7 @@ void updateBlocks(const ConfigType &config, const ChainUpdateInfo<BlockType> cha
     });
     
     std::thread utxoThread([&processor, config, startingTxCount]() {
-        processor.processUTXOs(config, startingTxCount);
+        processor.processUTXOs(config);
     });
     
     std::thread addressThread([&processor, config, newTxCount]() {

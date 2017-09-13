@@ -58,7 +58,7 @@ public:
     #ifdef BLOCKSCI_RPC_PARSER
     void readNewBlocks(RPCParserConfiguration config, std::vector<blockinfo_t> blocksToAdd, uint32_t startingTxCount);
     #endif
-    void processUTXOs(ParserConfiguration config, uint32_t firstTxNum);
+    void processUTXOs(ParserConfiguration config);
     void processAddresses(ParserConfiguration config, uint32_t totalTxCount);
 };
 
