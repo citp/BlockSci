@@ -11,6 +11,8 @@
 
 #include <leveldb/write_batch.h>
 
+#include <boost/filesystem/fstream.hpp>
+
 const auto SingleAddressMapMaxSize = 10'000'000;
 const auto StartingAddressCount = 500'000'000;
 const auto AddressFalsePositiveRate = .05;
