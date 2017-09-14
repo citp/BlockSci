@@ -28,14 +28,9 @@ struct RawTransaction;
 struct BlockInfo;
 struct blockinfo_t;
 class BitcoinAPI;
-
-struct TxUpdate {
-    blocksci::OutputPointer pointer;
-    uint32_t linkedTxNum;
-};
+class UTXOState;
 
 class BlockProcessor {
-    using HashFile = blocksci::FixedSizeFileMapper<blocksci::uint256, boost::iostreams::mapped_file::readwrite>;
     
     boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<50000>> utxo_transaction_queue;
     
@@ -45,28 +40,15 @@ class BlockProcessor {
     
     boost::unordered_map<int, std::pair<boost::iostreams::mapped_file, uint32_t>> files;
     
-    AddressWriter addressWriter;
-    HashFile hashFile;
-    
     #ifdef BLOCKSCI_RPC_PARSER
     void loadTxRPC(RawTransaction *tx, const blockinfo_t &block, uint32_t txNum, BitcoinAPI & bapi);
     #endif
-    
-    std::atomic<uint32_t> lastTxFinished;
     
 public:
     boost::atomic<bool> rawDone;
     boost::atomic<bool> utxoDone;
     
-    const HashFile &getHashFile() const {
-        return hashFile;
-    }
-    
-    uint32_t getLastestTxFinished() const {
-        return lastTxFinished.load();
-    }
-    
-    BlockProcessor(ParserConfiguration config);
+    BlockProcessor();
     ~BlockProcessor();
     
     #ifdef BLOCKSCI_FILE_PARSER
@@ -75,8 +57,8 @@ public:
     #ifdef BLOCKSCI_RPC_PARSER
     void readNewBlocks(RPCParserConfiguration config, std::vector<blockinfo_t> blocksToAdd, uint32_t startingTxCount);
     #endif
-    void processUTXOs(ParserConfiguration config);
-    void processAddresses(ParserConfiguration config, uint32_t totalTxCount);
+    void processUTXOs(ParserConfiguration config, UTXOState &utxoState);
+    void processAddresses(ParserConfiguration config, AddressState &addressState, uint32_t currentCount, uint32_t totalTxCount);
 };
 
 

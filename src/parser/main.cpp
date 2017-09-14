@@ -128,19 +128,6 @@ void rollbackTransactions(size_t blockKeepCount, const ParserConfiguration &conf
     }
 }
 
-std::vector<TxUpdate> getUpdates(const ParserConfiguration &config) {
-    std::vector<TxUpdate> updates;
-    blocksci::FixedSizeFileMapper<TxUpdate> txUpdateFile(config.txUpdatesFilePath());
-    auto fileUpdates = txUpdateFile.getRange();
-    updates.insert(updates.end(), fileUpdates.begin(), fileUpdates.end());
-    
-    std::sort(updates.begin(), updates.end(), [](const TxUpdate& a, const TxUpdate& b) {
-        return a.pointer < b.pointer;
-    });
-    
-    return updates;
-}
-
 std::vector<char> HexToBytes(const std::string& hex) {
     std::vector<char> bytes;
     
@@ -284,24 +271,6 @@ void printUpdateInfo(const ParserConfiguration &config, const ChainUpdateInfo<Bl
     std::cout << "Adding " << chainUpdateInfo.blocksToAdd.size() << " blocks" << std::endl;
 }
 
-uint32_t updateIndex(const ParserConfiguration &config, uint32_t startTx) {
-    std::cout << "Creating index" << std::endl;
-    blocksci::ScriptAccess scripts{config};
-    blocksci::IndexedFileMapper<boost::iostreams::mapped_file::mapmode::readonly, blocksci::RawTransaction> txFile_{config.txFilePath()};
-    const auto &txFile = txFile_;
-    
-    FirstSeenIndex index(config, scripts);
-    AddressDB addressDB(config);
-    
-    auto total = txFile.size();
-    for (uint32_t i = startTx; i < total; i++) {
-        auto tx = txFile.getData(i);
-        index.processTx(scripts, *tx, i);
-        addressDB.processTx(scripts, *tx, i);
-    }
-    return total;
-}
-
 template <typename ConfigType>
 void updateChain(const ConfigType &config, uint32_t maxBlockNum) {
     using namespace std::chrono_literals;
@@ -314,83 +283,95 @@ void updateChain(const ConfigType &config, uint32_t maxBlockNum) {
     
     rollbackTransactions(chainUpdateInfo.splitPoint, config);
     
-    if (chainUpdateInfo.blocksToAdd.size() > 0) {
+    auto blocksToAdd = std::move(chainUpdateInfo.blocksToAdd);
+    
+    AddressDB addressDB{config};
+    FirstSeenIndex firstSeen{config};
+    HashIndex hashIndex{config};
+    
+    std::future<void> addressDBUpdate = std::async(std::launch::async, [&] {});
+    std::future<void> firstSeenUpdate = std::async(std::launch::async, [&] {});
+    std::future<void> hashIndexUpdate = std::async(std::launch::async, [&] {});
+    
+    uint32_t startingTxCount = getStartingTxCount(config);
+    uint32_t blockNum = 0;
+    uint32_t lastBlockNum = 0;
+    
+    UTXOState utxoState{config};
+    AddressState addressState{config};
+    
+    uint32_t totalTxCount = 0;
+    for (auto &block : blocksToAdd) {
+        totalTxCount += txCount(block);
+    }
+    
+    uint32_t currentCount = 0;
+    
+    while (blockNum < blocksToAdd.size()) {
+        
         uint32_t newTxCount = 0;
-        for (auto &block : chainUpdateInfo.blocksToAdd) {
+        
+        for (; blockNum < blocksToAdd.size(); blockNum++) {
+            auto &block = blocksToAdd[blockNum];
             newTxCount += txCount(block);
+            
+            if (newTxCount > 1'000'000) {
+                break;
+            }
         }
-        uint32_t startingTxCount = getStartingTxCount(config);
-        uint32_t firstTx = startingTxCount;
-        uint32_t lastTx = startingTxCount + newTxCount;
+        
+        decltype(blocksToAdd) nextBlocks{blocksToAdd.begin() + lastBlockNum, blocksToAdd.begin() + blockNum};
         
         {
-            std::cout << "Beginning block processing\n";
+            BlockProcessor processor;
             
-            BlockProcessor processor{config};
-            
-            std::thread producer_thread([&processor, config, chainUpdateInfo, startingTxCount]() {
-                processor.readNewBlocks(config, chainUpdateInfo.blocksToAdd, startingTxCount);
+            std::thread producer_thread([&]() {
+                processor.readNewBlocks(config, nextBlocks, startingTxCount);
             });
             
-            std::thread utxoThread([&processor, config, startingTxCount]() {
-                processor.processUTXOs(config);
+            std::thread utxoThread([&]() {
+                processor.processUTXOs(config, utxoState);
             });
             
-            std::thread addressThread([&processor, config, newTxCount]() {
-                processor.processAddresses(config, newTxCount);
+            std::thread addressThread([&]() {
+                processor.processAddresses(config, addressState, currentCount, totalTxCount);
             });
             
-            while (firstTx < lastTx) {
-                HashIndex hashDB(config);
-                auto total = processor.getHashFile().size();
-                for (uint32_t i = firstTx; i < total; i++) {
-                    hashDB.processTx(*processor.getHashFile().getData(i), i);
-                }
-                firstTx = total;
-                std::this_thread::sleep_for(100ms);
-            }
             
             producer_thread.join();
             utxoThread.join();
             addressThread.join();
-            
-            auto total = processor.getHashFile().size();
-            assert(total == lastTx);
-            HashIndex hashDB(config);
-            for (uint32_t i = firstTx; i < total; i++) {
-                hashDB.processTx(*processor.getHashFile().getData(i), i);
-            }
         }
         
-        updateIndex(config, startingTxCount);
+        currentCount += newTxCount;
+        startingTxCount += newTxCount;
+        lastBlockNum = blockNum;
+        
+        if (addressDBUpdate.wait_for(0ms) == std::future_status::ready) {
+            addressDBUpdate.get();
+            addressDBUpdate = std::async(std::launch::async, [&] {
+                addressDB.update();
+            });
+        }
+        
+        if (firstSeenUpdate.wait_for(0ms) == std::future_status::ready) {
+            firstSeenUpdate.get();
+            firstSeenUpdate = std::async(std::launch::async, [&] {
+                firstSeen.update();
+            });
+        }
+        
+        if (hashIndexUpdate.wait_for(0ms) == std::future_status::ready) {
+            hashIndexUpdate.get();
+            hashIndexUpdate = std::async(std::launch::async, [&] {
+                hashIndex.update();
+            });
+        }
     }
+    addressDBUpdate.get();
+    firstSeenUpdate.get();
+    hashIndexUpdate.get();
 }
-
-struct Input64 {
-    uint64_t txNum;
-    uint32_t outputNum;
-    uint32_t sequenceNum;
-};
-
-struct Output64 {
-    uint64_t linkedTxNum;
-    uint64_t toAddressNum;
-    uint64_t other;
-};
-
-struct InOut {
-    uint64_t other;
-    uint32_t linkedTx;
-    uint32_t toAddressNum;
-};
-
-struct RawTransactionCachedFee {
-    uint64_t fee;
-    uint32_t sizeBytes;
-    uint32_t locktime;
-    uint16_t inputCount;
-    uint16_t outputCount;
-};
 
 int main(int argc, const char * argv[]) {
     namespace po = boost::program_options;

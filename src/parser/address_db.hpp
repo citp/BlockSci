@@ -22,7 +22,7 @@ class AddressDB : public AddressTraverser {
     bool firstRun;
     std::unordered_map<int, sqlite3_stmt *> insertStatements;
     
-    AddressDB(std::pair<sqlite3 *, bool> init);
+    AddressDB(const ParserConfiguration &config, std::pair<sqlite3 *, bool> init);
     
     void sawAddress(const blocksci::Address &pointer, uint32_t txNum) override;
     

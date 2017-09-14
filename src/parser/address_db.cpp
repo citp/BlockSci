@@ -85,9 +85,9 @@ std::unordered_map<int, sqlite3_stmt *> setupInsertStatements(sqlite3 *addressDb
     return insertStatements;
 }
 
-AddressDB::AddressDB(const ParserConfiguration &config) : AddressDB(openAddressDb(config.addressDBFilePath())) {}
+AddressDB::AddressDB(const ParserConfiguration &config) : AddressDB(config, openAddressDb(config.addressDBFilePath())) {}
 
-AddressDB::AddressDB(std::pair<sqlite3 *, bool> init) : db(init.first), firstRun(init.second), insertStatements(setupInsertStatements(db)) {
+AddressDB::AddressDB(const ParserConfiguration &config, std::pair<sqlite3 *, bool> init) : AddressTraverser(config, "addressDB"), db(init.first), firstRun(init.second), insertStatements(setupInsertStatements(db)) {
     sqlite3_exec(db, "PRAGMA synchronous = OFF", NULL, NULL, NULL);
     sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
 }

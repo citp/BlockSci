@@ -57,8 +57,15 @@ namespace blocksci {
     }
     
     void TransactionIterator::updateNextBlock() {
-        prevBlockLast = access->getBlock(blockNum).firstTxIndex - 1;
-        nextBlockFirst = access->getBlock(blockNum + 1).firstTxIndex;
+        if (blockNum < access->getBlocks().size()) {
+            auto &block = access->getBlock(blockNum);
+            prevBlockLast = block.firstTxIndex - 1;
+            nextBlockFirst = block.firstTxIndex + block.size();
+        } else {
+            auto &prevBlock = access->getBlock(blockNum - 1);
+            prevBlockLast = prevBlock.firstTxIndex + prevBlock.size() - 1;
+            nextBlockFirst = std::numeric_limits<decltype(nextBlockFirst)>::max();
+        }
     }
     
     void TransactionIterator::updateTxPos() {

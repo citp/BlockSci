@@ -9,32 +9,37 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "address_traverser.hpp"
+#include "parser_configuration.hpp"
 
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/transaction.hpp>
+#include <blocksci/chain/transaction_iterator.hpp>
+#include <blocksci/chain/chain_access.hpp>
 #include <blocksci/address/address.hpp>
 #include <blocksci/address/address_types.hpp>
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/scripts/scripthash_script.hpp>
 #include <blocksci/scripts/script_access.hpp>
 
-void AddressTraverser::processTx(const blocksci::ScriptAccess &scripts, const blocksci::RawTransaction &tx, uint32_t txNum) {
-    for (uint16_t i = 0; i < tx.outputCount; i++) {
-        auto &output = tx.getOutput(i);
+AddressTraverser::AddressTraverser(const ParserConfiguration &config_, const std::string &resultName) : ParserIndex(config_, resultName) {
+}
+
+
+void AddressTraverser::processTx(const blocksci::ChainAccess &, const blocksci::ScriptAccess &scripts, const blocksci::Transaction &tx) {
+    for (auto &output : tx.outputs()) {
         auto address = output.getAddress();
-        sawAddress(address, txNum);
+        sawAddress(address, tx.txNum);
         if (address.type == blocksci::AddressType::Enum::MULTISIG) {
             auto script = address.getScript(scripts);
             std::function<void(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &address) {
-                sawAddress(address, txNum);
+                sawAddress(address, tx.txNum);
             };
             script->visitPointers(visitFunc);
         }
     }
     
-    for (uint16_t i = 0; i < tx.inputCount; i++) {
-        auto &input = tx.getInput(i);
+    for (auto &input : tx.inputs()) {
         if (input.getType() == blocksci::AddressType::Enum::SCRIPTHASH) {
             auto address = input.getAddress();
             auto script = address.getScript(scripts);

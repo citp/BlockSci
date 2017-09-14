@@ -25,9 +25,12 @@
 
 #include <fstream>
 
-FirstSeenIndex::FirstSeenIndex(const ParserConfiguration &config, const blocksci::ScriptAccess &access) {
+FirstSeenIndex::FirstSeenIndex(const ParserConfiguration &config) : AddressTraverser(config, "first_seen") {}
+
+void FirstSeenIndex::prepareUpdate(const blocksci::ChainAccess &, const blocksci::ScriptAccess &scripts) {
     auto tags = blocksci::ScriptInfoList();
-    blocksci::for_each(tags, [this, &config, &access](auto tag) -> decltype(auto) {
+    files.clear();
+    blocksci::for_each(tags, [&](auto tag) -> decltype(auto) {
         constexpr auto type = decltype(tag)::type;
         auto path = config.firstSeenDirectory()/blocksci::ScriptInfo<type>::typeName;
         auto mainParams = std::fstream::out | std::fstream::binary;
@@ -43,9 +46,9 @@ FirstSeenIndex::FirstSeenIndex(const ParserConfiguration &config, const blocksci
             file.close();
         }
         
-        boost::filesystem::resize_file(fullPath, sizeof(uint32_t) * access.scriptCount<type>());
+        boost::filesystem::resize_file(fullPath, sizeof(uint32_t) * scripts.scriptCount<type>());
         
-        this->files.emplace(std::piecewise_construct, std::forward_as_tuple(type), std::forward_as_tuple(path));
+        files.emplace(std::piecewise_construct, std::forward_as_tuple(type), std::forward_as_tuple(path));
     });
 }
 
@@ -62,7 +65,7 @@ void FirstSeenIndex::sawAddress(const blocksci::Address &pointer, uint32_t txNum
 void FirstSeenIndex::linkP2SHAddress(const blocksci::Address &pointer, uint32_t, uint32_t p2shNum) {
     
     auto &p2shFile = files.find(blocksci::ScriptType::Enum::SCRIPTHASH)->second;
-    auto firstUsage = *p2shFile.getData(p2shNum);
+    auto firstUsage = *p2shFile.getData(p2shNum - 1);
     
     auto type = scriptType(pointer.type);
     auto it = files.find(type);

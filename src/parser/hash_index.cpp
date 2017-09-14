@@ -65,11 +65,11 @@ std::pair<sqlite3 *, bool> openHashDb(boost::filesystem::path hashIndexFilePath)
     return std::make_pair(db, !dbAlreadyExists);
 }
 
-HashIndex::HashIndex(const ParserConfiguration &config): HashIndex(openHashDb(config.hashIndexFilePath())) {
+HashIndex::HashIndex(const ParserConfiguration &config): HashIndex(config, openHashDb(config.hashIndexFilePath())) {
     
 }
 
-HashIndex::HashIndex(std::pair<sqlite3 *, bool> init) : db(init.first), firstRun(init.second) {
+HashIndex::HashIndex(const ParserConfiguration &config, std::pair<sqlite3 *, bool> init) : ParserIndex(config, "hashIndex"), db(init.first), firstRun(init.second) {
     
     std::array<sqlite3_stmt **, 3> insertStatements{{&txInsertStatement, &p2shInsertStatement, &pubkeyHashInsertStatement}};
     
@@ -115,9 +115,10 @@ HashIndex::~HashIndex() {
     sqlite3_close(db);
 }
 
-void HashIndex::processTx(const blocksci::uint256 &hash, uint32_t index) {
+void HashIndex::processTx(const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &, const blocksci::Transaction &tx) {
+    auto hash = tx.getHash(chain);
     sqlite3_bind_blob(txInsertStatement, 1, &hash, sizeof(hash), SQLITE_TRANSIENT);
-    sqlite3_bind_int(txInsertStatement, 2, index);
+    sqlite3_bind_int(txInsertStatement, 2, tx.txNum);
     
     auto rc = sqlite3_step(txInsertStatement);
     if (rc != SQLITE_DONE) {
