@@ -50,7 +50,7 @@ struct RawInput {
     
     std::vector<unsigned char> scriptBytes;
     
-    InputInfo getInfo(uint16_t i);
+    InputInfo getInfo(uint16_t i, bool isSegwit);
     
     RawInput(){}
     
@@ -70,14 +70,14 @@ struct RawOutput {
     ScriptOutputType scriptOutput;
 
     #ifdef BLOCKSCI_FILE_PARSER
-    RawOutput(const char **buffer);
+    RawOutput(const char **buffer, bool witnessActivated);
     #endif
     
     #ifdef BLOCKSCI_RPC_PARSER
-    RawOutput(const vout_t &vout);
+    RawOutput(const vout_t &vout, bool witnessActivated);
     #endif
     
-    RawOutput(const std::vector<unsigned char> &scriptBytes, uint64_t value);
+    RawOutput(const std::vector<unsigned char> &scriptBytes, uint64_t value, bool witnessActivated);
     
     RawOutput(const ScriptOutputType &scriptOutput_, uint64_t value_, uint32_t scriptLength_) : value(value_), scriptLength(scriptLength_), scriptOutput(scriptOutput_) {}
     
@@ -92,6 +92,7 @@ struct RawTransaction {
     uint32_t locktime;
     int32_t version;
     uint32_t blockHeight;
+    bool isSegwit;
     
     std::vector<RawInput> inputs;
     std::vector<RawOutput> outputs;
@@ -106,11 +107,11 @@ struct RawTransaction {
       blockHeight(0) {}
     
     #ifdef BLOCKSCI_FILE_PARSER
-    void load(const char **buffer, uint32_t blockHeight);
+    void load(const char **buffer, uint32_t blockHeight, bool witnessActivated);
     #endif
     
     #ifdef BLOCKSCI_RPC_PARSER
-    void load(const getrawtransaction_t &txinfo, uint32_t blockHeight);
+    void load(const getrawtransaction_t &txinfo, uint32_t blockHeight, bool witnessActivated);
     #endif
     
     blocksci::uint256 getHash(const InputInfo &info, int hashType) const;

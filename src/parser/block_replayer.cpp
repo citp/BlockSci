@@ -17,6 +17,7 @@
 #include "utilities.hpp"
 
 #include <blocksci/address/address.hpp>
+#include <blocksci/scripts/script_access.hpp>
 #include <blocksci/chain/chain_access.hpp>
 #include <blocksci/chain/block.hpp>
 #include <blocksci/chain/transaction.hpp>
@@ -85,15 +86,17 @@ void replayBlock(const FileParserConfiguration &config, uint32_t blockNum) {
     const AddressState &addressState = addressState_;
     const AddressWriter &writer = addressWriter;
     blocksci::ChainAccess currentChain(config, false, 0);
+    blocksci::ScriptAccess scripts(config);
     
     ProcessOutputVisitorReplay outputVisitor{addressState};
     
     auto realBlock = currentChain.getBlock(blockNum);
+    auto segwit = isSegwit(realBlock, currentChain, scripts);
     for (uint32_t txNum = 0; txNum < txCount; txNum++) {
         auto realTx = realBlock.getTx(currentChain, txNum);
         
         RawTransaction tx;
-        tx.load(&startPos, blockNum);
+        tx.load(&startPos, blockNum, segwit);
         
         if (tx.inputs.size() == 1 && tx.inputs[0].rawOutputPointer.hash == nullHash) {
             auto scriptBegin = tx.inputs[0].scriptBegin;
@@ -108,7 +111,7 @@ void replayBlock(const FileParserConfiguration &config, uint32_t blockNum) {
         uint16_t j = 0;
         for (auto &input : tx.inputs) {
             auto &realInput = realTx.inputs()[j];
-            InputInfo info{j, input.scriptBegin, input.scriptLength, input.witnessStack};
+            InputInfo info{j, input.scriptBegin, input.scriptLength, input.witnessStack, segwit};
             processInputVisitor(realInput.getType(), info, tx, addressState, writer);
             j++;
         }

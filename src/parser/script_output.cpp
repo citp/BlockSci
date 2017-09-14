@@ -213,7 +213,7 @@ bool isValidPubkey(std::vector<unsigned char> &vch1) {
     return false;
 }
 
-ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsigned char *scriptEnd) {
+ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsigned char *scriptEnd, bool witnessActivated) {
     // Templates
     using namespace blocksci;
     
@@ -243,7 +243,7 @@ ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsig
         return ScriptOutput<AddressType::Enum::SCRIPTHASH>{{hash}};
     }
     
-    if (scriptPubKey.IsWitnessProgram()) {
+    if (witnessActivated && scriptPubKey.IsWitnessProgram()) {
         auto pc = scriptPubKey.begin();
         opcodetype opcode;
         std::vector<unsigned char> vchSig;
@@ -255,21 +255,6 @@ ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsig
         } else if (version == 0 && vchSig.size() == 32) {
             return ScriptOutput<AddressType::Enum::WITNESS_SCRIPTHASH>(uint256{vchSig});
         }
-        
-//
-//        
-//        if (version == 0 && scriptPubKey.size() == 22) {
-//
-//            typeRet = TX_WITNESS_V0_KEYHASH;
-//            vSolutionsRet.push_back(witnessprogram);
-//            return true;
-//        }
-//        if (witnessversion == 0 && witnessprogram.size() == 34) {
-//            typeRet = TX_WITNESS_V0_SCRIPTHASH;
-//            vSolutionsRet.push_back(witnessprogram);
-//            return true;
-//        }
-//        return false;
     }
     
     // Provably prunable, data-carrying output

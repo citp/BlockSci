@@ -25,6 +25,7 @@ namespace blocksci {
     struct TransactionSummary;
     struct Output;
     class ChainAccess;
+    class ScriptAccess;
     
     struct Block {
         
@@ -73,6 +74,7 @@ namespace blocksci {
         }
         
         Transaction coinbaseTx(const ChainAccess &access) const;
+        bool isSegwit(const ChainAccess &access) const;
         
         value_type getTx(const ChainAccess &access, uint32_t txNum) const;
         
@@ -102,6 +104,7 @@ namespace blocksci {
     };
     
     size_t sizeBytes(const Block &block, const ChainAccess &access);
+    bool isSegwit(const Block &block, const ChainAccess &access, const ScriptAccess &scripts);
     std::vector<uint64_t> fees(const Block &block, const ChainAccess &access);
     std::vector<double> feesPerByte(const Block &block, const ChainAccess &access);
     TransactionSummary transactionStatistics(const Block &block, const ChainAccess &access);
@@ -116,6 +119,7 @@ namespace blocksci {
     
     #ifndef BLOCKSCI_WITHOUT_SINGLETON
     size_t sizeBytes(const Block &block);
+    bool isSegwit(const Block &block);
     uint64_t totalOut(const Block &block);
     uint64_t totalIn(const Block &block);
     uint64_t totalOutAfterHeight(const Block &block, uint32_t height);

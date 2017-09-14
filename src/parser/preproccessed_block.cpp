@@ -33,19 +33,19 @@ std::vector<unsigned char> hexStringToVec(const std::string scripthex) {
     return scriptBytes;
 }
 
-InputInfo RawInput::getInfo(uint16_t i) {
+InputInfo RawInput::getInfo(uint16_t i, bool isSegwit) {
     if (scriptBytes.size() > 0) {
-        return {i, scriptBytes.data(), static_cast<uint32_t>(scriptBytes.size()), witnessStack};
+        return {i, scriptBytes.data(), static_cast<uint32_t>(scriptBytes.size()), witnessStack, isSegwit};
     } else {
-        return {i, scriptBegin, scriptLength, witnessStack};
+        return {i, scriptBegin, scriptLength, witnessStack, isSegwit};
     }
 }
 
-ScriptOutputType getScriptOutput(const std::vector<unsigned char> &scriptBytes) {
-    return extractScriptData(scriptBytes.data(), scriptBytes.data() + scriptBytes.size());
+ScriptOutputType getScriptOutput(const std::vector<unsigned char> &scriptBytes, bool witnessActivated) {
+    return extractScriptData(scriptBytes.data(), scriptBytes.data() + scriptBytes.size(), witnessActivated);
 }
 
-RawOutput::RawOutput(const std::vector<unsigned char> &scriptBytes, uint64_t value) : RawOutput(getScriptOutput(scriptBytes), value, scriptBytes.size()) {}
+RawOutput::RawOutput(const std::vector<unsigned char> &scriptBytes, uint64_t value, bool witnessActivated) : RawOutput(getScriptOutput(scriptBytes, witnessActivated), value, scriptBytes.size()) {}
 
 #ifdef BLOCKSCI_FILE_PARSER
 RawInput::RawInput(const char **buffer) {
@@ -57,11 +57,11 @@ RawInput::RawInput(const char **buffer) {
     sequenceNum = readNext<uint32_t>(buffer);
 }
 
-RawOutput::RawOutput(const char **buffer) :
+RawOutput::RawOutput(const char **buffer, bool witnessActivated) :
 value(readNext<uint64_t>(buffer)),
 scriptLength(readVariableLengthInteger(buffer)),
 scriptBegin(reinterpret_cast<const unsigned char*>(*buffer)),
-scriptOutput(extractScriptData(scriptBegin, scriptBegin + scriptLength)) {
+scriptOutput(extractScriptData(scriptBegin, scriptBegin + scriptLength, witnessActivated)) {
     *buffer += scriptLength;
 }
 
@@ -69,7 +69,8 @@ WitnessStackItem::WitnessStackItem(const char **buffer) : length(readVariableLen
     *buffer += length;
 }
 
-void RawTransaction::load(const char **buffer, uint32_t blockHeight_) {
+void RawTransaction::load(const char **buffer, uint32_t blockHeight_, bool witnessActivated) {
+    isSegwit = witnessActivated;
     blockHeight = blockHeight_;
     SHA256_CTX sha256CTX;
     SHA256_Init(&sha256CTX);
@@ -100,7 +101,7 @@ void RawTransaction::load(const char **buffer, uint32_t blockHeight_) {
     outputs.clear();
     outputs.reserve(outputCount);
     for (decltype(outputCount) i = 0; i < outputCount; i++) {
-        outputs.emplace_back(buffer);
+        outputs.emplace_back(buffer, witnessActivated);
     }
     
     SHA256_Update(&sha256CTX, inputStart, *buffer - inputStart);
@@ -134,9 +135,10 @@ RawInput::RawInput(const vin_t &vin) {
     scriptBytes = hexStringToVec(vin.scriptSig.hex);
 }
 
-RawOutput::RawOutput(const vout_t &vout) : RawOutput(hexStringToVec(vout.scriptPubKey.hex), static_cast<uint64_t>(vout.value * 100000000)) {}
+RawOutput::RawOutput(const vout_t &vout, bool witnessActivated) : RawOutput(hexStringToVec(vout.scriptPubKey.hex), static_cast<uint64_t>(vout.value * 100000000), witnessActivated) {}
 
-void RawTransaction::load(const getrawtransaction_t &txinfo, uint32_t blockHeight_) {
+void RawTransaction::load(const getrawtransaction_t &txinfo, uint32_t blockHeight_, bool witnessActivated) {
+    isSegwit = witnessActivated;
     blockHeight = blockHeight_;
     version = txinfo.version;
     locktime = txinfo.locktime;
@@ -152,7 +154,7 @@ void RawTransaction::load(const getrawtransaction_t &txinfo, uint32_t blockHeigh
     outputs.clear();
     outputs.reserve(outputCount);
     for (unsigned int i = 0; i < outputCount; i++) {
-        outputs.emplace_back(txinfo.vout[i]);
+        outputs.emplace_back(txinfo.vout[i], witnessActivated);
     }
     hash = blocksci::uint256S(txinfo.txid);;
 }

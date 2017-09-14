@@ -42,6 +42,11 @@ namespace blocksci {
     }
     
     
+    bool isSegwit(const Block &block) {
+        auto &instance = DataAccess::Instance();
+        return isSegwit(block, instance.chain, instance.scripts);
+    }
+    
     size_t sizeBytes(const Block &block) {
         return sizeBytes(block, DataAccess::Instance().chain);
     }
