@@ -9,6 +9,8 @@
 #ifndef hash_index_hpp
 #define hash_index_hpp
 
+#include "parser_index.hpp"
+
 #include <sqlite3.h>
 
 #include <tuple>
@@ -22,14 +24,16 @@ namespace blocksci {
 
 struct ParserConfiguration;
 
-class HashIndex {
+class HashIndex : public ParserIndex {
     sqlite3 *db;
     sqlite3_stmt *txInsertStatement;
     sqlite3_stmt *pubkeyHashInsertStatement;
     sqlite3_stmt *p2shInsertStatement;
     bool firstRun;
     
-    HashIndex(std::pair<sqlite3 *, bool> init);
+    HashIndex(const ParserConfiguration &config, std::pair<sqlite3 *, bool> init);
+    
+    void processTx(const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts, const blocksci::Transaction &tx) override;
     
 public:
     HashIndex(const ParserConfiguration &config);

@@ -26,6 +26,7 @@ namespace blocksci {
     struct Input;
     struct DataConfiguration;
     struct RawTransaction;
+    class TransactionIterator;
     
     
     class ChainAccess {
@@ -74,7 +75,8 @@ namespace blocksci {
             return txHashesFile;
         }
     };
+    
+    boost::iterator_range<TransactionIterator> iterateTransactions(const ChainAccess &chain, uint32_t startIndex, uint32_t endIndex);
 }
-
 
 #endif /* chain_access_hpp */

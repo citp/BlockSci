@@ -25,9 +25,10 @@ class FirstSeenIndex : public AddressTraverser {
     void sawAddress(const blocksci::Address &pointer, uint32_t txNum) override;
     void linkP2SHAddress(const blocksci::Address &pointer, uint32_t txNum, uint32_t p2shNum) override;
     
-public:
-    FirstSeenIndex(const ParserConfiguration &config, const blocksci::ScriptAccess &access);
+    void prepareUpdate(const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override;
     
+public:
+    FirstSeenIndex(const ParserConfiguration &config);
 };
 
 #endif /* first_seen_index_hpp */

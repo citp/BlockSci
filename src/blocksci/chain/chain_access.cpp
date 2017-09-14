@@ -15,6 +15,7 @@
 #include "transaction.hpp"
 #include "output.hpp"
 #include "input.hpp"
+#include "transaction_iterator.hpp"
 
 namespace blocksci {
     ChainAccess::ChainAccess(const DataConfiguration &config, bool errorOnReorg_, uint32_t blocksIgnored) :
@@ -75,7 +76,7 @@ namespace blocksci {
     
     uint32_t ChainAccess::getBlockHeight(uint32_t txIndex) const {
         reorgCheck();
-        if (txIndex >= _maxLoadedTx) {
+        if (errorOnReorg && txIndex >= _maxLoadedTx) {
             throw std::out_of_range("Transaction index out of range");
         }
         auto blockRange = getBlocks();
@@ -109,4 +110,12 @@ namespace blocksci {
         auto range = boost::make_iterator_range_n(reinterpret_cast<const unsigned char *>(pos), length);
         return std::vector<unsigned char>(range.begin(), range.end());
     }
+    
+    boost::iterator_range<TransactionIterator> iterateTransactions(const ChainAccess &chain, uint32_t startIndex, uint32_t endIndex) {
+        auto begin = TransactionIterator(&chain, startIndex);
+        auto end = TransactionIterator(&chain, endIndex);
+        return boost::make_iterator_range(begin, end);
+    }
+    
+    
 }
