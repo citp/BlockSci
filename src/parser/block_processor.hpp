@@ -40,8 +40,9 @@ class BlockProcessor {
     
     boost::unordered_map<int, std::pair<boost::iostreams::mapped_file, uint32_t>> files;
     
+    void closeFinishedFiles(uint32_t txNum);
     #ifdef BLOCKSCI_RPC_PARSER
-    void loadTxRPC(RawTransaction *tx, const blockinfo_t &block, uint32_t txNum, BitcoinAPI & bapi);
+    void loadTxRPC(RawTransaction *tx, const blockinfo_t &block, uint32_t txNum, BitcoinAPI & bapi, bool witnessActivated);
     #endif
     
 public:

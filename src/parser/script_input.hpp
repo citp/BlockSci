@@ -32,8 +32,9 @@ struct InputInfo {
     const unsigned char *scriptBegin;
     uint32_t scriptLength;
     const std::vector<WitnessStackItem> &witnessStack;
+    bool witnessActivated;
     
-    InputInfo(uint32_t inputNum_, const unsigned char *scriptBegin_, uint32_t scriptLength_, const std::vector<WitnessStackItem> &witnessStack_) : inputNum(inputNum_), scriptBegin(scriptBegin_), scriptLength(scriptLength_), witnessStack(witnessStack_) {}
+    InputInfo(uint32_t inputNum_, const unsigned char *scriptBegin_, uint32_t scriptLength_, const std::vector<WitnessStackItem> &witnessStack_, bool witnessActivated_) : inputNum(inputNum_), scriptBegin(scriptBegin_), scriptLength(scriptLength_), witnessStack(witnessStack_), witnessActivated(witnessActivated_) {}
     
     CScript getScript() const {
         return CScript(scriptBegin, scriptBegin + scriptLength);

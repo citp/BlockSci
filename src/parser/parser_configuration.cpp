@@ -42,8 +42,6 @@ FileParserConfiguration::FileParserConfiguration(const boost::filesystem::path &
         blockMagic = 0xd9b4bef9;
         workHashFunction = doubleSha256;
     }
-    
-    
 }
 
 boost::filesystem::path FileParserConfiguration::pathForBlockFile(int fileNum) const {

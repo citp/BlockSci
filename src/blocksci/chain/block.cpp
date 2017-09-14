@@ -15,6 +15,8 @@
 #include "input.hpp"
 #include "transaction_summary.hpp"
 #include "transaction_iterator.hpp"
+#include "address/address.hpp"
+#include "scripts/nulldata_script.hpp"
 
 #include <boost/range/algorithm.hpp>
 #include <boost/range/adaptors.hpp>
@@ -76,6 +78,23 @@ namespace blocksci {
     
     Transaction Block::coinbaseTx(const ChainAccess &access) const {
         return getTx(access, 0);
+    }
+    
+    bool isSegwit(const Block &block, const ChainAccess &access, const ScriptAccess &scripts) {
+        auto coinbase = block.coinbaseTx(access);
+        for (int i = coinbase.outputCount() - 1; i >= 0; i--) {
+            auto &output = coinbase.outputs()[i];
+            if (output.getType() == AddressType::Enum::NULL_DATA) {
+                auto rawScript = output.getAddress().getScript(scripts);
+                auto nulldata = dynamic_cast<script::OpReturn *>(rawScript.get());
+                auto data = nulldata->data;
+                uint32_t startVal = *reinterpret_cast<const uint32_t *>(data.c_str());
+                if (startVal == 0xaa21a9ed) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     
     /**

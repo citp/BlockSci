@@ -49,6 +49,8 @@ struct ParserConfiguration : public blocksci::DataConfiguration {
     boost::filesystem::path txUpdatesFilePath() const {
         return parserDirectory()/"txUpdates";
     }
+    
+    bool witnessActivatedAtHeight(uint32_t blockHeight) const;
 };
 
 #ifdef BLOCKSCI_FILE_PARSER

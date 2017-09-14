@@ -42,7 +42,7 @@ ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::ScriptInput(const InputInf
     
     CScript wrappedOutputScript(lastScript.begin(), lastScript.end());
     auto outputScriptBegin = reinterpret_cast<const unsigned char *>(lastScript.data());
-    wrappedScriptOutput = extractScriptData(outputScriptBegin, outputScriptBegin + lastScript.size());
+    wrappedScriptOutput = extractScriptData(outputScriptBegin, outputScriptBegin + lastScript.size(), inputInfo.witnessActivated);
 }
 
 template<blocksci::AddressType::Enum type>
@@ -89,7 +89,7 @@ void ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::processInput(uint32_t
         writer.serialize(wrappedScriptOutput);
     }
     
-    InputInfo p2shInputInfo{inputInfo.inputNum, wrappedInputBegin, wrappedInputLength, inputInfo.witnessStack};
+    InputInfo p2shInputInfo{inputInfo.inputNum, wrappedInputBegin, wrappedInputLength, inputInfo.witnessStack, inputInfo.witnessActivated};
     p2shInputVisitor(wrappedAddress, p2shInputInfo, tx, state, writer);
 }
 
@@ -133,7 +133,7 @@ void ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::checkInput(const Inpu
     CheckP2SHVisitor visitor(state);
     std::pair<blocksci::Address, bool> processed = boost::apply_visitor(visitor, wrappedScriptOutput);
     wrappedAddress = processed.first;
-    InputInfo p2shInputInfo{inputInfo.inputNum, wrappedInputBegin, wrappedInputLength, inputInfo.witnessStack};
+    InputInfo p2shInputInfo{inputInfo.inputNum, wrappedInputBegin, wrappedInputLength, inputInfo.witnessStack, inputInfo.witnessActivated};
     checkP2SHInputVisitor(wrappedAddress.type, p2shInputInfo, tx, state, writer);
 }
 
@@ -243,7 +243,7 @@ void ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::processInput(
 ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::ScriptInput(const InputInfo &inputInfo, const RawTransaction &, const AddressWriter &) {
     auto &witnessScriptItem = inputInfo.witnessStack.back();
     auto outputBegin = reinterpret_cast<const unsigned char *>(witnessScriptItem.itemBegin);
-    wrappedScriptOutput = extractScriptData(outputBegin, outputBegin + witnessScriptItem.length);
+    wrappedScriptOutput = extractScriptData(outputBegin, outputBegin + witnessScriptItem.length, inputInfo.witnessActivated);
 }
 
 void ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::processInput(uint32_t addressNum, const InputInfo &inputInfo, const RawTransaction &tx, AddressState &state, AddressWriter &writer) {
@@ -255,7 +255,7 @@ void ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::processInput(
         writer.serialize(wrappedScriptOutput);
     }
     
-    InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.scriptBegin, 0, inputInfo.witnessStack};
+    InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.scriptBegin, 0, inputInfo.witnessStack, inputInfo.witnessActivated};
     p2shInputVisitor(wrappedAddress, p2shInputInfo, tx, state, writer);
 }
 
@@ -263,6 +263,6 @@ void ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::checkInput(co
     CheckP2SHVisitor visitor(state);
     std::pair<blocksci::Address, bool> processed = boost::apply_visitor(visitor, wrappedScriptOutput);
     wrappedAddress = processed.first;
-    InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.scriptBegin, 0, inputInfo.witnessStack};
+    InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.scriptBegin, 0, inputInfo.witnessStack, inputInfo.witnessActivated};
     checkP2SHInputVisitor(wrappedAddress.type, p2shInputInfo, tx, state, writer);
 }

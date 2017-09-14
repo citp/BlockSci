@@ -88,6 +88,40 @@ blocksci::Block getBlock(uint32_t firstTxIndex, uint32_t txCount, size_t coinbas
     return {firstTxIndex, txCount, static_cast<uint32_t>(block.height), block.hash, block.nVersion, block.nTime, block.nBits, block.nNonce, coinbasePos};
 }
 
+
+void BlockProcessor::closeFinishedFiles(uint32_t txNum) {
+    auto it = files.begin();
+    while (it != files.end()) {
+        if (it->second.second < txNum) {
+            it->second.first.close();
+            it = files.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+struct SegwitChecker : public boost::static_visitor<bool> {
+    bool operator()(const ScriptOutput<blocksci::AddressType::Enum::NULL_DATA> &output) const {
+        uint32_t segwitMarker = *reinterpret_cast<const uint32_t *>(output.fullData.data());
+        return segwitMarker == 0xaa21a9ed;
+    }
+    
+    template <blocksci::AddressType::Enum type>
+    bool operator()(const ScriptOutput<type> &) const {
+        return false;
+    }
+};
+
+bool checkSegwit(RawTransaction *tx, const SegwitChecker &checker) {
+    for (int i = tx->outputs.size() - 1; i >= 0; i--) {
+        if (boost::apply_visitor(checker, tx->outputs[i].scriptOutput)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<BlockInfo> blocksToAdd, uint32_t startingTxCount) {
     using namespace std::chrono_literals;
     
@@ -113,6 +147,13 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
     blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, uint32_t> sequenceFile{config.sequenceFilePath()};
     blocksci::FixedSizeFileMapper<blocksci::uint256, boost::iostreams::mapped_file::readwrite> hashFile{config.txHashesFilePath()};
     
+    blocksci::uint256 nullHash;
+    nullHash.SetNull();
+    
+    SegwitChecker checker;
+    
+    std::vector<unsigned char> coinbase;
+    
     for (uint32_t i = 0; i < blocksToAdd.size(); i++) {
         auto &block = blocksToAdd[i];
         
@@ -134,30 +175,31 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
         startPos += blockHeaderSize;
         uint32_t txCount = readVariableLengthInteger(&startPos);
         
+        auto firstTxIndex = txNum;
+        auto blockStart = startPos;
+        
+        
+        RawTransaction *tx;
+        if (!finished_transaction_queue.pop(tx)) {
+            tx = new RawTransaction();
+        } else {
+            closeFinishedFiles(tx->txNum);
+        }
+        
         blocksci::uint256 nullHash;
         nullHash.SetNull();
-        
-        std::vector<unsigned char> coinbase;
-        
-        auto firstTxIndex = txNum;
+        bool segwit = false;
+        auto segwitPos = blockStart;
+        for (uint32_t i = 0; i < txCount; i++) {
+            tx->load(&segwitPos, 0, false);
+            if (tx->inputs.size() == 1 && tx->inputs[0].rawOutputPointer.hash == nullHash) {
+                segwit = checkSegwit(tx, checker);
+                break;
+            }
+        }
         
         for (uint32_t i = 0; i < txCount; i++) {
-            RawTransaction *tx;
-            if (!finished_transaction_queue.pop(tx)) {
-                tx = new RawTransaction();
-            } else {
-                auto it = files.begin();
-                while (it != files.end()) {
-                    if (it->second.second < tx->txNum) {
-                        it->second.first.close();
-                        it = files.erase(it);
-                    } else {
-                        ++it;
-                    }
-                }
-            }
-
-            tx->load(&startPos, block.height);
+            tx->load(&startPos, block.height, segwit);
             
             hashFile.write(tx->hash);
             sequenceFile.writeIndexGroup();
@@ -175,6 +217,12 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
                 std::this_thread::sleep_for(100ms);
             }
             txNum++;
+            
+            if (!finished_transaction_queue.pop(tx)) {
+                tx = new RawTransaction();
+            } else {
+                closeFinishedFiles(tx->txNum);
+            }
         }
         
         blockFile.write(getBlock(firstTxIndex, txCount, blockCoinbaseFile.size(), block));
@@ -191,7 +239,7 @@ blocksci::Block getBlock(uint32_t firstTxIndex, uint32_t txCount, size_t coinbas
     return {firstTxIndex, txCount, static_cast<uint32_t>(block.height), blocksci::uint256S(block.hash), block.version, block.time, static_cast<uint32_t>(std::stoul(block.bits, nullptr, 16)), block.nonce, coinbasePos};
 }
 
-void BlockProcessor::loadTxRPC(RawTransaction *tx, const blockinfo_t &block, uint32_t txNum, BitcoinAPI & bapi) {
+void BlockProcessor::loadTxRPC(RawTransaction *tx, const blockinfo_t &block, uint32_t txNum, BitcoinAPI & bapi, bool witnessActivated) {
     if (block.height == 0) {
         tx->outputs.clear();
         tx->outputs.reserve(1);
@@ -199,12 +247,12 @@ void BlockProcessor::loadTxRPC(RawTransaction *tx, const blockinfo_t &block, uin
         auto scriptPubKey = CScript() << ParseHex("040184a11fa689ad5123690c81a3a49c8f13f8d45bac857fbcbc8bc4a8ead3eb4b1ff4d4614fa18dce611aaf1f471216fe1b51851b4acf21b17fc45171ac7b13af") << OP_CHECKSIG;
         std::vector<unsigned char> scriptBytes(scriptPubKey.begin(), scriptPubKey.end());
         //Set the desired initial block reward
-        tx->outputs.emplace_back(scriptBytes, 50 * 100000000.0);
+        tx->outputs.emplace_back(scriptBytes, 50 * 100000000.0, false);
         tx->hash = blocksci::uint256S("0100000000000000000000000000000000000000000000000000000000000000");
         tx->blockHeight = 0;
     } else {
         auto txinfo = bapi.getrawtransaction(block.tx[txNum], 1);
-        tx->load(txinfo, block.height);
+        tx->load(txinfo, block.height, witnessActivated);
     }
 }
 
@@ -219,17 +267,28 @@ void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<bl
     
     BitcoinAPI bapi{config.createBitcoinAPI()};
     
+    
+    RawTransaction *tx;
+    SegwitChecker checker;
+    
     for (auto &block : blocksToAdd) {
         uint32_t blockTxCount = block.tx.size();
+        if (!finished_transaction_queue.pop(tx)) {
+            tx = new RawTransaction();
+        }
+        
+        loadTxRPC(tx, block, 0, bapi, false);
+        bool segwit = checkSegwit(tx, checker);
+        
         
         std::vector<unsigned char> coinbase;
         auto firstTxIndex = txNum;
         for (uint32_t i = 0; i < blockTxCount; i++) {
-            RawTransaction *tx;
+            
             if (!finished_transaction_queue.pop(tx)) {
                 tx = new RawTransaction();
             }
-            loadTxRPC(tx, block, i, bapi);
+            loadTxRPC(tx, block, i, bapi, segwit);
             
             hashFile.write(tx->hash);
             sequenceFile.writeIndexGroup();
@@ -406,7 +465,7 @@ void BlockProcessor::processAddresses(ParserConfiguration config, AddressState &
             diskInput.toAddressNum = address.addressNum;
             spentOutput.linkedTxNum = tx->txNum;
             
-            InputInfo info = input.getInfo(i);
+            InputInfo info = input.getInfo(i, tx->isSegwit);
             processInputVisitor(address, info, *tx, addressState, addressWriter);
             
             i++;
