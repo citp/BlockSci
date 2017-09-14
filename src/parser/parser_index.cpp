@@ -12,6 +12,8 @@
 #include <blocksci/chain/transaction_iterator.hpp>
 #include <blocksci/scripts/script_access.hpp>
 
+#include <boost/filesystem/fstream.hpp>
+
 ParserIndex::ParserIndex(const ParserConfiguration &config_, const std::string &resultName) : config(config_), cachePath(config_.parserDirectory()/(resultName + ".txt")) {
     boost::filesystem::ifstream inputFile(cachePath);
     inputFile >> latestTx;
