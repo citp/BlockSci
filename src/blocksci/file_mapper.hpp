@@ -55,6 +55,7 @@ namespace blocksci {
     struct SimpleFileMapperBase {
     protected:
         boost::iostreams::mapped_file file;
+        boost::iostreams::mapped_file::mapmode fileMode;
         size_t fileEnd;
     public:
         boost::filesystem::path path;
@@ -65,13 +66,13 @@ namespace blocksci {
                 if (file.is_open()) {
                     file.resize(fileEnd);
                 } else {
-                    file.open(path, mode);
+                    file.open(path, fileMode);
                 }
                 
             }
         }
         
-        SimpleFileMapperBase(boost::filesystem::path path_, boost::iostreams::mapped_file::mapmode mode) : fileEnd(0), path(path_) {
+        SimpleFileMapperBase(boost::filesystem::path path_, boost::iostreams::mapped_file::mapmode mode) : fileMode(mode), fileEnd(0), path(path_) {
             path += ".dat";
             
             if (boost::filesystem::exists(path)) {
