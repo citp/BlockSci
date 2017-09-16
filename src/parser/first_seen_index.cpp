@@ -25,37 +25,33 @@
 
 #include <fstream>
 
-FirstSeenIndex::FirstSeenIndex(const ParserConfiguration &config) : AddressTraverser(config, "first_seen") {}
-
-void FirstSeenIndex::prepareUpdate(const blocksci::ChainAccess &, const blocksci::ScriptAccess &scripts) {
-    auto tags = blocksci::ScriptInfoList();
-    files.clear();
-    blocksci::for_each(tags, [&](auto tag) -> decltype(auto) {
-        constexpr auto type = decltype(tag)::type;
-        auto path = config.firstSeenDirectory()/blocksci::ScriptInfo<type>::name;
-        auto mainParams = std::fstream::out | std::fstream::binary;
-        auto extraParams = std::fstream::ate | std::fstream::in;
-        
+FirstSeenIndex::FirstSeenIndex(const ParserConfiguration &config) : AddressTraverser(config, "first_seen") {
+    for (auto type : blocksci::ScriptType::all) {
+        auto path = config.firstSeenDirectory()/scriptName(type);
         auto fullPath = path;
         fullPath.concat(".dat");
-        boost::filesystem::fstream file(fullPath, mainParams | extraParams);
-        if (!file.is_open()) {
-            file.open(fullPath, mainParams);
-        }
-        if (file.is_open()) {
-            file.close();
-        }
-        
-        boost::filesystem::resize_file(fullPath, sizeof(uint32_t) * scripts.scriptCount<type>());
-        
         files.emplace(std::piecewise_construct, std::forward_as_tuple(type), std::forward_as_tuple(path));
-    });
+    }
 }
+
+void FirstSeenIndex::prepareUpdate(const blocksci::ChainAccess &, const blocksci::ScriptAccess &scripts) {
+    for (auto pair : files) {
+        auto &file = pair.second;
+        file.truncate(scripts.scriptCount(pair.first));
+        file.reload();
+    }
+}
+
+// truncate
 
 void FirstSeenIndex::maybeUpdate(const blocksci::Address &address, uint32_t txNum) {
     auto type = scriptType(address.type);
     auto it = files.find(type);
     auto &file = it->second;
+    if (address.addressNum - 1 < file.size()) {
+        file.truncate(address.addressNum);
+        file.reload();
+    }
     auto oldValue = *file.getData(address.addressNum - 1);
     if (oldValue == 0 || txNum < oldValue) {
         file.update(address.addressNum - 1, txNum);
@@ -68,6 +64,10 @@ void FirstSeenIndex::sawAddress(const blocksci::Address &address, const blocksci
 
 void FirstSeenIndex::revealedP2SH(uint32_t scriptNum, const blocksci::Address &wrappedAddress, const blocksci::ScriptAccess &scripts) {
     auto &p2shFile = files.find(blocksci::ScriptType::Enum::SCRIPTHASH)->second;
+    if (scriptNum - 1 < p2shFile.size()) {
+        p2shFile.truncate(scriptNum);
+        p2shFile.reload();
+    }
     auto firstUsage = *p2shFile.getData(scriptNum - 1);
     std::function<void(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
         maybeUpdate(a, firstUsage);

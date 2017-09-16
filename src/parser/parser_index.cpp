@@ -37,6 +37,8 @@ void ParserIndex::update(const std::vector<uint32_t> &revealed) {
         waitingRevealed.clear();
         blocksci::ChainAccess chain{config, false, 0};
         auto maxTxCount = chain.txCount();
+        blocksci::ScriptAccess scripts{config};
+        prepareUpdate(chain, scripts);
         updateFuture = std::async(std::launch::async, [this, nextRevealed, maxTxCount] {
             runUpdate(nextRevealed, maxTxCount);
         });
@@ -47,7 +49,6 @@ void ParserIndex::runUpdate(const std::vector<uint32_t> &revealed, uint32_t maxT
     blocksci::ChainAccess chain{config, false, 0};
     blocksci::ScriptAccess scripts{config};
     
-    prepareUpdate(chain, scripts);
     auto currentCount = chain.txCount();
     if (latestTx < currentCount) {
         auto newTransactions = iterateTransactions(chain, latestTx, maxTxCount);
