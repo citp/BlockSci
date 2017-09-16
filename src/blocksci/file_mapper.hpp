@@ -11,6 +11,7 @@
 
 #include <boost/iostreams/device/mapped_file.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
 
 #include <boost/range/adaptor/transformed.hpp>
 
