@@ -180,6 +180,9 @@ namespace blocksci {
         }
         
         void truncate(OffsetType offset) {
+            if (!boost::filesystem::exists(path)) {
+                boost::filesystem::fstream{path, std::fstream::out | std::fstream::binary};
+            }
             boost::filesystem::resize_file(path, offset);
         }
     };
@@ -240,7 +243,7 @@ namespace blocksci {
         }
         
         void truncate(size_t index) {
-            boost::filesystem::resize_file(SimpleFileMapper<mode>::path, index * sizeof(T));
+            SimpleFileMapper<mode>::truncate(index * sizeof(T));
         }
         
         boost::iterator_range<add_const_ptr_t<T>> getRange() const {
