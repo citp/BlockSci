@@ -62,7 +62,12 @@ namespace blocksci {
         void reload() {
             fileEnd = boost::filesystem::file_size(path);
             if (fileEnd > 0) {
-                file.resize(fileEnd);
+                if (file.is_open()) {
+                    file.resize(fileEnd);
+                } else {
+                    file.open(path, mode);
+                }
+                
             }
         }
         
@@ -72,7 +77,6 @@ namespace blocksci {
             if (boost::filesystem::exists(path)) {
                 fileEnd = boost::filesystem::file_size(path);
                 if (fileEnd != 0) {
-                    
                     file.open(path, mode);
                 }
             }
