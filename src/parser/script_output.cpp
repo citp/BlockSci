@@ -17,6 +17,45 @@
 
 #include <boost/variant/get.hpp>
 
+struct ProcessOutputVisitor : public boost::static_visitor<blocksci::Address> {
+    AddressState &state;
+    AddressWriter &addressWriter;
+    ProcessOutputVisitor(AddressState &state_, AddressWriter &addressWriter_) : state(state_), addressWriter(addressWriter_) {}
+    template <blocksci::AddressType::Enum type>
+    blocksci::Address operator()(ScriptOutput<type> &scriptOutput) const {
+        std::pair<blocksci::Address, bool> processed = getAddressNum(scriptOutput, state);
+        if (processed.second) {
+            scriptOutput.processOutput(state);
+            addressWriter.serialize(scriptOutput);
+        }
+        return processed.first;
+    }
+};
+
+blocksci::Address processOutput(ScriptOutputType &scriptOutput, AddressState &state, AddressWriter &addressWriter) {
+    ProcessOutputVisitor outputVisitor{state, addressWriter};
+    return boost::apply_visitor(outputVisitor, scriptOutput);
+}
+
+struct CheckOutputVisitor : public boost::static_visitor<blocksci::Address> {
+    const AddressState &state;
+    CheckOutputVisitor(const AddressState &state_) : state(state_) {}
+    template <blocksci::AddressType::Enum type>
+    blocksci::Address operator()(ScriptOutput<type> &scriptOutput) const {
+        std::pair<blocksci::Address, bool> processed = checkAddressNum(scriptOutput, state);
+        if (processed.second) {
+            scriptOutput.checkOutput(state);
+        }
+        return processed.first;
+    }
+};
+
+blocksci::Address checkOutput(ScriptOutputType &scriptOutput, const AddressState &state) {
+    CheckOutputVisitor outputVisitor{state};
+    return boost::apply_visitor(outputVisitor, scriptOutput);
+}
+
+
 template <bool deduped>
 struct AddressNumImp {
     template <blocksci::AddressType::Enum type>
@@ -61,12 +100,12 @@ struct AddressNumImp<false> {
 
 template <blocksci::AddressType::Enum type>
 std::pair<blocksci::Address, bool> getAddressNum(ScriptOutput<type> &data, AddressState &state) {
-    return AddressNumImp<blocksci::AddressInfo<type>::deduped>::get(data, state);
+    return AddressNumImp<blocksci::ScriptInfo<blocksci::AddressInfo<type>::scriptType>::deduped>::get(data, state);
 }
 
 template <blocksci::AddressType::Enum type>
 std::pair<blocksci::Address, bool> checkAddressNum(ScriptOutput<type> &data, const AddressState &state) {
-    return AddressNumImp<blocksci::AddressInfo<type>::deduped>::check(data, state);
+    return AddressNumImp<blocksci::ScriptInfo<blocksci::AddressInfo<type>::scriptType>::deduped>::check(data, state);
 }
 
 #define VAL(x) template std::pair<blocksci::Address, bool> getAddressNum<blocksci::AddressType::Enum::x>(ScriptOutput<blocksci::AddressType::Enum::x> &data, AddressState &state);

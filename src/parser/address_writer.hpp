@@ -56,7 +56,7 @@ class AddressWriter {
     ScriptFilesTuple scriptFiles;
     
     template<blocksci::AddressType::Enum type>
-    void serializeImp(const ScriptInput<type> &input, uint32_t addressNum);
+    bool serializeImp(const ScriptInput<type> &input, uint32_t addressNum);
     
     template<blocksci::AddressType::Enum type>
     void serializeImp(const ScriptOutput<type> &output);
@@ -79,8 +79,8 @@ public:
     }
     
     template<blocksci::AddressType::Enum type>
-    void serialize(const ScriptInput<type> &input, uint32_t addressNum) {
-        serializeImp(input, addressNum);
+    bool serialize(const ScriptInput<type> &input, uint32_t addressNum) {
+        return serializeImp(input, addressNum);
     }
     
     template<blocksci::ScriptType::Enum type>

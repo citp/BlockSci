@@ -31,7 +31,6 @@ namespace blocksci {
     class AddressIndex {
         sqlite3 *addressDb;
     public:
-        const static std::string addrTables[3];
         
         AddressIndex(const DataConfiguration &config);
         AddressIndex(const AddressIndex &other);

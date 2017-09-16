@@ -15,6 +15,8 @@
 #include "chain/output.hpp"
 #include "chain/input.hpp"
 #include "address.hpp"
+#include "address_info.hpp"
+#include "scripts/script_info.hpp"
 #include "data_configuration.hpp"
 
 #include <vector>
@@ -22,8 +24,6 @@
 #include <iostream>
 
 namespace blocksci {
-    
-    const std::string AddressIndex::addrTables[] = {"SINGLE_ADDRESSES", "MULTISIG_ADDRESSES", "P2SH_ADDRESSES"};
     
     AddressIndex::AddressIndex(const DataConfiguration &config) {
         auto rc = sqlite3_open_v2(config.addressDBFilePath().c_str(), &addressDb, SQLITE_OPEN_READONLY, NULL);
@@ -128,7 +128,7 @@ namespace blocksci {
         sqlite3_stmt *stmt;
         std::vector<blocksci::OutputPointer> outputs;
         std::stringstream ss;
-        ss << "SELECT TX_INDEX, OUTPUT_NUM FROM " << addrTables[address.getDBType()] << " WHERE ADDRESS_NUM = ?" ;
+        ss << "SELECT TX_INDEX, OUTPUT_NUM, ADDRESS_TYPE FROM " << scriptName(scriptType(address.type)) << " WHERE ADDRESS_NUM = ?" ;
         auto rc = sqlite3_prepare_v2(addressDb, ss.str().c_str(), -1, &stmt, 0);
         if( rc != SQLITE_OK ){
             fprintf(stderr, "SQL error: %s\n", sqlite3_errmsg(addressDb));

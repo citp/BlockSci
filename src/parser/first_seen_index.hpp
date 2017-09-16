@@ -22,8 +22,10 @@ struct ParserConfiguration;
 class FirstSeenIndex : public AddressTraverser {
     std::unordered_map<blocksci::ScriptType::Enum, blocksci::FixedSizeFileMapper<uint32_t, boost::iostreams::mapped_file::readwrite>> files;
     
-    void sawAddress(const blocksci::Address &pointer, uint32_t txNum) override;
-    void linkP2SHAddress(const blocksci::Address &pointer, uint32_t txNum, uint32_t p2shNum) override;
+    void maybeUpdate(const blocksci::Address &address, uint32_t txNum);
+    
+    void sawAddress(const blocksci::Address &address, const blocksci::OutputPointer &pointer) override;
+    void revealedP2SH(uint32_t scriptNum, const blocksci::Address &wrappedAddress, const blocksci::ScriptAccess &scripts) override;
     
     void prepareUpdate(const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override;
     

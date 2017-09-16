@@ -30,6 +30,13 @@ struct blockinfo_t;
 class BitcoinAPI;
 class UTXOState;
 
+struct RevealedScriptHash {
+    uint32_t addressNum;
+    uint32_t txNum;
+    
+    RevealedScriptHash(uint32_t addressNum_, uint32_t txNum_) : addressNum(addressNum_), txNum(txNum_) {}
+};
+
 class BlockProcessor {
     
     boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<50000>> utxo_transaction_queue;
@@ -59,7 +66,7 @@ public:
     void readNewBlocks(RPCParserConfiguration config, std::vector<blockinfo_t> blocksToAdd, uint32_t startingTxCount);
     #endif
     void processUTXOs(ParserConfiguration config, UTXOState &utxoState);
-    void processAddresses(ParserConfiguration config, AddressState &addressState, uint32_t currentCount, uint32_t totalTxCount);
+    std::vector<uint32_t> processAddresses(ParserConfiguration config, AddressState &addressState, uint32_t currentCount, uint32_t totalTxCount, uint32_t maxBlockHeight);
 };
 
 

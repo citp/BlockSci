@@ -155,6 +155,9 @@ std::pair<blocksci::Address, bool> checkAddressNum(ScriptOutput<type> &data, con
 
 blocksci::AddressType::Enum addressType(const ScriptOutputType &type);
 
+blocksci::Address processOutput(ScriptOutputType &scriptOutput, AddressState &state, AddressWriter &addressWriter);
+blocksci::Address checkOutput(ScriptOutputType &scriptOutput, const AddressState &state);
+
 ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsigned char *scriptEnd, bool witnessActivated);
 
 #endif /* script_output_hpp */

@@ -15,7 +15,7 @@
 namespace blocksci {
     ScriptAccess::ScriptAccess(const DataConfiguration &config) :
     scriptFiles(blocksci::apply(blocksci::ScriptInfoList(), [&] (auto tag) {
-        return config.scriptsDirectory()/ ScriptInfo<decltype(tag)::type>::typeName;
+        return config.scriptsDirectory()/ ScriptInfo<decltype(tag)::type>::name;
     })) {}
     
     

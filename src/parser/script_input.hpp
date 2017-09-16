@@ -26,6 +26,7 @@ struct RawTransaction;
 struct WitnessStackItem;
 class CPubKey;
 
+using ProcessedInput = prevector<3, uint32_t>;
 
 struct InputInfo {
     uint32_t inputNum;
@@ -51,7 +52,9 @@ struct ScriptInput;
 template<>
 struct ScriptInput<blocksci::AddressType::Enum::PUBKEY> : public ScriptInputBase {
     ScriptInput(const InputInfo &, const RawTransaction &, const AddressWriter &) {}
-    void processInput(uint32_t, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &) {}
+    ProcessedInput processInput(uint32_t, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &) {
+        return ProcessedInput{};
+    }
 };
 
 template<>
@@ -59,14 +62,14 @@ struct ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH> : public ScriptInput
     CPubKey pubkey;
     
     ScriptInput(const InputInfo &inputInfo, const RawTransaction &tx, const AddressWriter &);
-    void processInput(uint32_t addressNum, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &);
+    ProcessedInput processInput(uint32_t addressNum, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &);
 };
 
 template<>
 struct ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : public ScriptInputBase {
     CPubKey pubkey;
     ScriptInput(const InputInfo &inputInfo, const RawTransaction &tx, const AddressWriter &);
-    void processInput(uint32_t addressNum, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &);
+    ProcessedInput processInput(uint32_t addressNum, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &);
 };
 
 template<>
@@ -74,13 +77,13 @@ struct ScriptInput<blocksci::AddressType::Enum::NONSTANDARD> : public ScriptInpu
     CScript script;
     
     ScriptInput(const InputInfo &inputInfo, const RawTransaction &tx, const AddressWriter &);
-    void processInput(uint32_t addressNum, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &);
+    ProcessedInput processInput(uint32_t addressNum, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &);
 };
 
 template <>
 struct ScriptInput<blocksci::AddressType::Enum::NULL_DATA> : public ScriptInputBase {
     ScriptInput(const InputInfo &inputInfo, const RawTransaction &tx, const AddressWriter &);
-    void processInput(uint32_t addressNum, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &);
+    ProcessedInput processInput(uint32_t addressNum, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &);
 };
 
 using ScriptInputType = blocksci::to_script_variant_t<ScriptInput, blocksci::AddressInfoList>;
@@ -93,7 +96,7 @@ struct ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptInput
     uint32_t wrappedInputLength;
     
     ScriptInput(const InputInfo &inputInfo, const RawTransaction &tx, const AddressWriter &);
-    void processInput(uint32_t addressNum, const InputInfo &inputInfo, const RawTransaction &tx, AddressState &state, AddressWriter &writer);
+    ProcessedInput processInput(uint32_t addressNum, const InputInfo &inputInfo, const RawTransaction &tx, AddressState &state, AddressWriter &writer);
     void checkInput(const InputInfo &inputInfo, const RawTransaction &tx, const AddressState &state, const AddressWriter &writer);
 };
 
@@ -103,7 +106,7 @@ struct ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> : public Scr
     ScriptOutputType wrappedScriptOutput;
     
     ScriptInput(const InputInfo &inputInfo, const RawTransaction &tx, const AddressWriter &);
-    void processInput(uint32_t addressNum, const InputInfo &inputInfo, const RawTransaction &tx, AddressState &state, AddressWriter &writer);
+    ProcessedInput processInput(uint32_t addressNum, const InputInfo &inputInfo, const RawTransaction &tx, AddressState &state, AddressWriter &writer);
     void checkInput(const InputInfo &inputInfo, const RawTransaction &tx, const AddressState &state, const AddressWriter &writer);
 };
 
@@ -113,7 +116,11 @@ struct ScriptInput<blocksci::AddressType::Enum::MULTISIG> : public ScriptInputBa
     std::bitset<MAX_ADDRESSES> spendSet;
     
     ScriptInput(const InputInfo &inputInfo, const RawTransaction &tx, const AddressWriter &);
-    void processInput(uint32_t addressNum, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &);
+    ProcessedInput processInput(uint32_t addressNum, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &);
 };
+
+ProcessedInput processInput(const blocksci::Address &address, const InputInfo &info, const RawTransaction &tx, AddressState &state, AddressWriter &addressWriter);
+
+void checkInput(blocksci::AddressType::Enum type, const InputInfo &info, const RawTransaction &tx, const AddressState &state, const AddressWriter &addressWriter);
 
 #endif /* script_input_hpp */
