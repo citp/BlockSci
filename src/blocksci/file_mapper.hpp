@@ -80,8 +80,7 @@ namespace blocksci {
         }
         
         const char *getDataAtOffset(OffsetType offset) const {
-            if (offset != InvalidFileIndex) {
-                assert(offset < size());
+            if (offset < size()) {
                 return reinterpret_cast<const char *>(file.const_data()) + offset;
             } else {
                 return nullptr;

@@ -314,42 +314,6 @@ void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<bl
 
 #endif
 
-struct ProcessOutputVisitor : public boost::static_visitor<blocksci::Address> {
-    AddressState &state;
-    AddressWriter &addressWriter;
-    ProcessOutputVisitor(AddressState &state_, AddressWriter &addressWriter_) : state(state_), addressWriter(addressWriter_) {}
-    template <blocksci::AddressType::Enum type>
-    blocksci::Address operator()(ScriptOutput<type> &scriptOutput) const {
-        std::pair<blocksci::Address, bool> processed = getAddressNum(scriptOutput, state);
-        if (processed.second) {
-            scriptOutput.processOutput(state);
-            addressWriter.serialize(scriptOutput);
-        }
-        return processed.first;
-    }
-};
-
-template<blocksci::AddressType::Enum type>
-struct ScriptInputFunctor {
-    static void f(uint32_t addressNum, const InputInfo &info, const RawTransaction &tx, AddressState &state, AddressWriter &addressWriter) {
-        auto input = ScriptInput<type>(info, tx, addressWriter);
-        input.processInput(addressNum, info, tx, state, addressWriter);
-    }
-};
-
-void processInputVisitor(const blocksci::Address &address, const InputInfo &info, const RawTransaction &tx, AddressState &state, AddressWriter &addressWriter) {
-
-    static constexpr auto table = blocksci::make_dynamic_table<blocksci::AddressType, ScriptInputFunctor>();
-    static constexpr std::size_t size = blocksci::AddressType::all.size();
-    
-    auto index = static_cast<size_t>(address.type);
-    if (index >= size)
-    {
-        throw std::invalid_argument("combination of enum values is not valid");
-    }
-    return table[index](address.addressNum, info, tx, state, addressWriter);
-}
-
 void BlockProcessor::processUTXOs(ParserConfiguration config, UTXOState &utxoState) {
     using namespace std::chrono_literals;
     
@@ -374,7 +338,7 @@ void BlockProcessor::processUTXOs(ParserConfiguration config, UTXOState &utxoSta
             blocksci::Inout blocksciOutput{0, address, output.value};
             txFile.write(blocksciOutput);
             
-            if (blocksci::isSpendable(type)) {
+            if (isSpendable(scriptType(type))) {
                 blocksciOutput.linkedTxNum = txNum;
                 UTXO utxo{blocksciOutput, type};
                 RawOutputPointer pointer{tx->hash, i};
@@ -420,7 +384,7 @@ void BlockProcessor::processUTXOs(ParserConfiguration config, UTXOState &utxoSta
     utxoDone = true;
 }
 
-void BlockProcessor::processAddresses(ParserConfiguration config, AddressState &addressState, uint32_t currentCount, uint32_t totalTxCount) {
+std::vector<uint32_t> BlockProcessor::processAddresses(ParserConfiguration config, AddressState &addressState, uint32_t currentCount, uint32_t totalTxCount, uint32_t maxBlockHeight) {
     using namespace std::chrono_literals;
     
     using TxFile = blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction>;
@@ -430,12 +394,13 @@ void BlockProcessor::processAddresses(ParserConfiguration config, AddressState &
     uint32_t percentageMarker = static_cast<uint32_t>(std::ceil(percentage));
     
     AddressWriter addressWriter{config};
-    ProcessOutputVisitor outputVisitor{addressState, addressWriter};
     
     std::cout.setf(std::ios::fixed,std::ios::floatfield);
     std::cout.precision(1);
     
     ECCVerifyHandle handle;
+    
+    std::vector<uint32_t> revealed;
     
     auto consume = [&](RawTransaction *tx, TxFile &txFile) -> void {
         auto diskTx = txFile.getData(tx->txNum);
@@ -447,7 +412,7 @@ void BlockProcessor::processAddresses(ParserConfiguration config, AddressState &
         uint16_t i = 0;
         for (auto &output : tx->outputs) {
             auto &diskOutput = diskTx->getOutput(i);
-            auto address = boost::apply_visitor(outputVisitor, output.scriptOutput);
+            auto address = processOutput(output.scriptOutput, addressState, addressWriter);
             assert(address.addressNum > 0);
             diskOutput.toAddressNum = address.addressNum;
             i++;
@@ -466,8 +431,11 @@ void BlockProcessor::processAddresses(ParserConfiguration config, AddressState &
             spentOutput.linkedTxNum = tx->txNum;
             
             InputInfo info = input.getInfo(i, tx->isSegwit);
-            processInputVisitor(address, info, *tx, addressState, addressWriter);
+            auto processedInput = processInput(address, info, *tx, addressState, addressWriter);
             
+            for (auto &index : processedInput) {
+                revealed.push_back(index);
+            }
             i++;
         }
         
@@ -482,7 +450,8 @@ void BlockProcessor::processAddresses(ParserConfiguration config, AddressState &
         currentCount++;
         
         if (currentCount % percentageMarker == 0) {
-            std::cout << "\r" << (static_cast<double>(currentCount) / static_cast<double>(totalTxCount)) * 100 << "% done" << std::flush;
+            auto percentDone = (static_cast<double>(currentCount) / static_cast<double>(totalTxCount)) * 100;
+            std::cout << "\r" << percentDone << "% done, Block " << tx->blockHeight << "/" << maxBlockHeight << std::flush;
         }
         
         addressState.optionalSave();
@@ -506,6 +475,8 @@ void BlockProcessor::processAddresses(ParserConfiguration config, AddressState &
     while (address_transaction_queue.pop(rawTx)) {
         consume(rawTx, txFile);
     }
+    
+    return revealed;
 }
 
 

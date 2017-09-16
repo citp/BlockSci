@@ -27,11 +27,7 @@ namespace blocksci {
 
 class AddressTraverser : public ParserIndex {
     
-    void processP2SHAddress(const blocksci::ScriptAccess &access, const blocksci::Address &pointer, uint32_t txNum, uint32_t p2shNum);
-    
-    virtual void sawAddress(const blocksci::Address &pointer, uint32_t txNum) = 0;
-    
-    virtual void linkP2SHAddress(const blocksci::Address &pointer, uint32_t txNum, uint32_t p2shNum) = 0;
+    virtual void sawAddress(const blocksci::Address &address, const blocksci::OutputPointer &outputPointer) = 0;
     
     void processTx(const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts, const blocksci::Transaction &tx) override;
     

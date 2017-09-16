@@ -32,7 +32,7 @@ void FirstSeenIndex::prepareUpdate(const blocksci::ChainAccess &, const blocksci
     files.clear();
     blocksci::for_each(tags, [&](auto tag) -> decltype(auto) {
         constexpr auto type = decltype(tag)::type;
-        auto path = config.firstSeenDirectory()/blocksci::ScriptInfo<type>::typeName;
+        auto path = config.firstSeenDirectory()/blocksci::ScriptInfo<type>::name;
         auto mainParams = std::fstream::out | std::fstream::binary;
         auto extraParams = std::fstream::ate | std::fstream::in;
         
@@ -52,26 +52,25 @@ void FirstSeenIndex::prepareUpdate(const blocksci::ChainAccess &, const blocksci
     });
 }
 
-void FirstSeenIndex::sawAddress(const blocksci::Address &pointer, uint32_t txNum) {
-    auto type = scriptType(pointer.type);
+void FirstSeenIndex::maybeUpdate(const blocksci::Address &address, uint32_t txNum) {
+    auto type = scriptType(address.type);
     auto it = files.find(type);
     auto &file = it->second;
-    auto oldValue = *file.getData(pointer.addressNum - 1);
+    auto oldValue = *file.getData(address.addressNum - 1);
     if (oldValue == 0 || txNum < oldValue) {
-        file.update(pointer.addressNum - 1, txNum);
+        file.update(address.addressNum - 1, txNum);
     }
 }
 
-void FirstSeenIndex::linkP2SHAddress(const blocksci::Address &pointer, uint32_t, uint32_t p2shNum) {
-    
+void FirstSeenIndex::sawAddress(const blocksci::Address &address, const blocksci::OutputPointer &pointer) {
+    maybeUpdate(address, pointer.txNum);
+}
+
+void FirstSeenIndex::revealedP2SH(uint32_t scriptNum, const blocksci::Address &wrappedAddress, const blocksci::ScriptAccess &scripts) {
     auto &p2shFile = files.find(blocksci::ScriptType::Enum::SCRIPTHASH)->second;
-    auto firstUsage = *p2shFile.getData(p2shNum - 1);
-    
-    auto type = scriptType(pointer.type);
-    auto it = files.find(type);
-    auto &file = it->second;
-    auto oldValue = *file.getData(pointer.addressNum - 1);
-    if (oldValue == 0 || firstUsage < oldValue) {
-        file.update(pointer.addressNum - 1, firstUsage);
-    }
+    auto firstUsage = *p2shFile.getData(scriptNum - 1);
+    std::function<void(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
+        maybeUpdate(a, firstUsage);
+    };
+    visit(wrappedAddress, visitFunc, scripts);
 }

@@ -11,22 +11,24 @@
 
 #include "address_traverser.hpp"
 
-#include <unordered_map>
+#include <blocksci/scripts/script_type.hpp>
 
 #include <sqlite3.h>
+#include <unordered_map>
 
 struct ParserConfiguration;
 
 class AddressDB : public AddressTraverser {
     sqlite3 *db;
     bool firstRun;
-    std::unordered_map<int, sqlite3_stmt *> insertStatements;
+    std::unordered_map<blocksci::ScriptType::Enum,  sqlite3_stmt *> insertStatements;
     
     AddressDB(const ParserConfiguration &config, std::pair<sqlite3 *, bool> init);
     
-    void sawAddress(const blocksci::Address &pointer, uint32_t txNum) override;
+    void addAddress(const blocksci::Address &address, const blocksci::OutputPointer &pointer);
     
-    void linkP2SHAddress(const blocksci::Address &pointer, uint32_t txNum, uint32_t p2shNum) override;
+    void sawAddress(const blocksci::Address &address, const blocksci::OutputPointer &pointer) override;
+    void revealedP2SH(uint32_t scriptNum, const blocksci::Address &, const blocksci::ScriptAccess &scripts) override;
     
 public:
     AddressDB(const ParserConfiguration &config);

@@ -27,11 +27,8 @@ namespace blocksci {
     
     Address::Address(uint32_t addressNum_, AddressType::Enum type_) : addressNum(addressNum_), type(type_) {}
     
-    int Address::getDBType() const {
-        return blocksci::getDBType(type);    }
-    
     bool Address::isSpendable() const {
-        return blocksci::isSpendable(type);
+        return blocksci::isSpendable(scriptType(type));
     }
     
     std::string Address::toString() const {
@@ -45,6 +42,17 @@ namespace blocksci {
             ss << ")";
             return ss.str();
         }
+    }
+    
+    
+    
+    void visit(const Address &address, const std::function<void(const Address &)> &visitFunc, const ScriptAccess &scripts) {
+        visitFunc(address);
+        auto script = address.getScript(scripts);
+        std::function<void(const blocksci::Address &)> nestedVisitor = [&](const blocksci::Address &nestedAddress) {
+            visit(nestedAddress, visitFunc, scripts);
+        };
+        script->visitPointers(visitFunc);
     }
     
     template<AddressType::Enum type>

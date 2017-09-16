@@ -35,7 +35,6 @@ namespace blocksci {
         Address();
         Address(uint32_t addressNum, AddressType::Enum type);
         
-        int getDBType() const;
         bool isSpendable() const;
         
         bool operator==(const Address& other) const {
@@ -75,6 +74,8 @@ namespace blocksci {
     };
     
     size_t addressCount(const ScriptAccess &access);
+    
+    void visit(const Address &address, const std::function<void(const Address &)> &visitFunc, const ScriptAccess &access);
     
     // Requires DataAccess
     #ifndef BLOCKSCI_WITHOUT_SINGLETON

@@ -17,6 +17,48 @@
 
 #include <iostream>
 
+
+template<blocksci::AddressType::Enum type>
+struct ProcessScriptInputFunctor {
+    static ProcessedInput f(uint32_t addressNum, const InputInfo &info, const RawTransaction &tx, AddressState &state, AddressWriter &addressWriter) {
+        auto input = ScriptInput<type>(info, tx, addressWriter);
+        return input.processInput(addressNum, info, tx, state, addressWriter);
+    }
+};
+
+ProcessedInput processInput(const blocksci::Address &address, const InputInfo &info, const RawTransaction &tx, AddressState &state, AddressWriter &addressWriter) {
+    
+    static constexpr auto table = blocksci::make_dynamic_table<blocksci::AddressType, ProcessScriptInputFunctor>();
+    static constexpr std::size_t size = blocksci::AddressType::all.size();
+    
+    auto index = static_cast<size_t>(address.type);
+    if (index >= size)
+    {
+        throw std::invalid_argument("combination of enum values is not valid");
+    }
+    return table[index](address.addressNum, info, tx, state, addressWriter);
+}
+
+template<blocksci::AddressType::Enum type>
+struct CheckScriptInputFunctor {
+    static void f(const InputInfo &info, const RawTransaction &tx, const AddressState &state, const AddressWriter &addressWriter) {
+        ScriptInput<type> input(info, tx, addressWriter);
+        input.checkInput(info, tx, state, addressWriter);
+    }
+};
+
+void checkInput(blocksci::AddressType::Enum type, const InputInfo &info, const RawTransaction &tx, const AddressState &state, const AddressWriter &addressWriter) {
+    static constexpr auto table = blocksci::make_dynamic_table<blocksci::AddressType, CheckScriptInputFunctor>();
+    static constexpr std::size_t size = blocksci::AddressType::all.size();
+    
+    auto index = static_cast<size_t>(type);
+    if (index >= size)
+    {
+        throw std::invalid_argument("combination of enum values is not valid");
+    }
+    table[index](info, tx, state, addressWriter);
+}
+
 ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::ScriptInput(const InputInfo &inputInfo, const RawTransaction &, const AddressWriter &) {
     CScript script(inputInfo.getScript());
     
@@ -45,96 +87,22 @@ ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::ScriptInput(const InputInf
     wrappedScriptOutput = extractScriptData(outputScriptBegin, outputScriptBegin + lastScript.size(), inputInfo.witnessActivated);
 }
 
-template<blocksci::AddressType::Enum type>
-struct P2SHInputFunctor {
-    static ScriptInputType f(uint32_t addressNum, const InputInfo &info, const RawTransaction &tx, AddressState &state, AddressWriter &addressWriter) {
-        auto input = ScriptInput<type>(info, tx, addressWriter);
-        input.processInput(addressNum, info, tx, state, addressWriter);
-        return std::move(input);
-    }
-};
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::processInput(uint32_t addressNum, const InputInfo &inputInfo, const RawTransaction &tx, AddressState &state, AddressWriter &writer) {
+    wrappedAddress = processOutput(wrappedScriptOutput, state, writer);
+    bool firstSpend = writer.serialize(*this, addressNum);
 
-ScriptInputType p2shInputVisitor(const blocksci::Address &address, const InputInfo &info, const RawTransaction &tx, AddressState &state, AddressWriter &addressWriter) {
-    
-    static constexpr auto table = blocksci::make_dynamic_table<blocksci::AddressType, P2SHInputFunctor>();
-    static constexpr std::size_t size = blocksci::AddressType::all.size();
-    
-    auto index = static_cast<size_t>(address.type);
-    if (index >= size)
-    {
-        throw std::invalid_argument("combination of enum values is not valid");
-    }
-    return table[index](address.addressNum, info, tx, state, addressWriter);
-}
-
-struct ProcessP2SHVisitor : public boost::static_visitor<std::pair<blocksci::Address, bool>> {
-    AddressState &state;
-    ProcessP2SHVisitor(AddressState &state_) : state(state_) {}
-    template <blocksci::AddressType::Enum type>
-    std::pair<blocksci::Address, bool> operator()(ScriptOutput<type> &scriptOutput) const {
-        std::pair<blocksci::Address, bool> processed = getAddressNum(scriptOutput, state);
-        if (processed.second) {
-            scriptOutput.processOutput(state);
-        }
-        return processed;
-    }
-};
-
-void ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::processInput(uint32_t addressNum, const InputInfo &inputInfo, const RawTransaction &tx, AddressState &state, AddressWriter &writer) {
-    ProcessP2SHVisitor visitor(state);
-    std::pair<blocksci::Address, bool> processed = boost::apply_visitor(visitor, wrappedScriptOutput);
-    wrappedAddress = processed.first;
-    writer.serialize(*this, addressNum);
-    if (processed.second) {
-        writer.serialize(wrappedScriptOutput);
-    }
-    
     InputInfo p2shInputInfo{inputInfo.inputNum, wrappedInputBegin, wrappedInputLength, inputInfo.witnessStack, inputInfo.witnessActivated};
-    p2shInputVisitor(wrappedAddress, p2shInputInfo, tx, state, writer);
+    ProcessedInput processedInput = ::processInput(wrappedAddress, p2shInputInfo, tx, state, writer);
+    if (firstSpend) {
+        processedInput.push_back(addressNum);
+    }
+    return processedInput;
 }
-
-template<blocksci::AddressType::Enum type>
-struct CheckP2SHInputFunctor {
-    static ScriptInputType f(const InputInfo &info, const RawTransaction &tx, const AddressState &state, const AddressWriter &addressWriter) {
-        auto input = ScriptInput<type>(info, tx, addressWriter);
-        input.checkInput(info, tx, state, addressWriter);
-        return std::move(input);
-    }
-};
-
-ScriptInputType checkP2SHInputVisitor(blocksci::AddressType::Enum type, const InputInfo &info, const RawTransaction &tx, const AddressState &state, const AddressWriter &addressWriter) {
-    
-    static constexpr auto table = blocksci::make_dynamic_table<blocksci::AddressType, CheckP2SHInputFunctor>();
-    static constexpr std::size_t size = blocksci::AddressType::all.size();
-    
-    auto index = static_cast<size_t>(type);
-    if (index >= size)
-    {
-        throw std::invalid_argument("combination of enum values is not valid");
-    }
-    return table[index](info, tx, state, addressWriter);
-}
-
-
-struct CheckP2SHVisitor : public boost::static_visitor<std::pair<blocksci::Address, bool>> {
-    const AddressState &state;
-    CheckP2SHVisitor(const AddressState &state_) : state(state_) {}
-    template <blocksci::AddressType::Enum type>
-    std::pair<blocksci::Address, bool> operator()(ScriptOutput<type> &scriptOutput) const {
-        std::pair<blocksci::Address, bool> processed = checkAddressNum(scriptOutput, state);
-        if (processed.second) {
-            scriptOutput.checkOutput(state);
-        }
-        return processed;
-    }
-};
 
 void ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::checkInput(const InputInfo &inputInfo, const RawTransaction &tx, const AddressState &state, const AddressWriter &writer) {
-    CheckP2SHVisitor visitor(state);
-    std::pair<blocksci::Address, bool> processed = boost::apply_visitor(visitor, wrappedScriptOutput);
-    wrappedAddress = processed.first;
+    wrappedAddress = checkOutput(wrappedScriptOutput, state);
     InputInfo p2shInputInfo{inputInfo.inputNum, wrappedInputBegin, wrappedInputLength, inputInfo.witnessStack, inputInfo.witnessActivated};
-    checkP2SHInputVisitor(wrappedAddress.type, p2shInputInfo, tx, state, writer);
+    ::checkInput(wrappedAddress.type, p2shInputInfo, tx, state, writer);
 }
 
 ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInput(const InputInfo &inputInfo, const RawTransaction &, const AddressWriter &) {
@@ -152,8 +120,9 @@ ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInput(const InputInf
     }
 }
 
-void ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::processInput(uint32_t addressNum, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &writer) {
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::processInput(uint32_t addressNum, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &writer) {
     writer.serialize(*this, addressNum);
+    return ProcessedInput{};
 }
 
 ScriptInput<blocksci::AddressType::Enum::MULTISIG>::ScriptInput(const InputInfo &, const RawTransaction &, const AddressWriter &) {
@@ -203,8 +172,9 @@ ScriptInput<blocksci::AddressType::Enum::MULTISIG>::ScriptInput(const InputInfo 
     */
 }
 
-void ScriptInput<blocksci::AddressType::Enum::MULTISIG>::processInput(uint32_t addressNum, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &writer) {
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::MULTISIG>::processInput(uint32_t addressNum, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &writer) {
     writer.serialize(*this, addressNum);
+    return ProcessedInput{};
 }
 
 ScriptInput<blocksci::AddressType::Enum::NONSTANDARD>::ScriptInput(const InputInfo &inputInfo, const RawTransaction &, const AddressWriter &) {
@@ -219,15 +189,17 @@ ScriptInput<blocksci::AddressType::Enum::NONSTANDARD>::ScriptInput(const InputIn
     }
 }
 
-void ScriptInput<blocksci::AddressType::Enum::NONSTANDARD>::processInput(uint32_t addressNum, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &writer) {
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::NONSTANDARD>::processInput(uint32_t addressNum, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &writer) {
     writer.serialize(*this, addressNum);
+    return ProcessedInput{};
 }
 
 ScriptInput<blocksci::AddressType::Enum::NULL_DATA>::ScriptInput(const InputInfo &, const RawTransaction &, const AddressWriter &) {
 }
 
-void ScriptInput<blocksci::AddressType::Enum::NULL_DATA>::processInput(uint32_t addressNum, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &writer) {
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::NULL_DATA>::processInput(uint32_t addressNum, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &writer) {
     writer.serialize(*this, addressNum);
+    return ProcessedInput{};
 }
 
 ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::ScriptInput(const InputInfo &inputInfo, const RawTransaction &, const AddressWriter &) {
@@ -235,8 +207,9 @@ ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::ScriptInput(const 
     pubkey.Set(pubkeyWitness.itemBegin, pubkeyWitness.itemBegin + pubkeyWitness.length);
 }
 
-void ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::processInput(uint32_t addressNum, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &writer) {
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::processInput(uint32_t addressNum, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &writer) {
     writer.serialize(*this, addressNum);
+    return ProcessedInput{};
 }
 
 
@@ -246,23 +219,21 @@ ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::ScriptInput(const 
     wrappedScriptOutput = extractScriptData(outputBegin, outputBegin + witnessScriptItem.length, inputInfo.witnessActivated);
 }
 
-void ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::processInput(uint32_t addressNum, const InputInfo &inputInfo, const RawTransaction &tx, AddressState &state, AddressWriter &writer) {
-    ProcessP2SHVisitor visitor(state);
-    std::pair<blocksci::Address, bool> processed = boost::apply_visitor(visitor, wrappedScriptOutput);
-    wrappedAddress = processed.first;
-    writer.serialize(*this, addressNum);
-    if (processed.second) {
-        writer.serialize(wrappedScriptOutput);
-    }
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::processInput(uint32_t addressNum, const InputInfo &inputInfo, const RawTransaction &tx, AddressState &state, AddressWriter &writer) {
     
+    wrappedAddress = processOutput(wrappedScriptOutput, state, writer);
+    bool firstSpend = writer.serialize(*this, addressNum);
+
     InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.scriptBegin, 0, inputInfo.witnessStack, inputInfo.witnessActivated};
-    p2shInputVisitor(wrappedAddress, p2shInputInfo, tx, state, writer);
+    auto processedInput = ::processInput(wrappedAddress, p2shInputInfo, tx, state, writer);
+    if (firstSpend) {
+        processedInput.push_back(addressNum);
+    }
+    return processedInput;
 }
 
 void ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::checkInput(const InputInfo &inputInfo, const RawTransaction &tx, const AddressState &state, const AddressWriter &writer) {
-    CheckP2SHVisitor visitor(state);
-    std::pair<blocksci::Address, bool> processed = boost::apply_visitor(visitor, wrappedScriptOutput);
-    wrappedAddress = processed.first;
+    wrappedAddress = checkOutput(wrappedScriptOutput, state);
     InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.scriptBegin, 0, inputInfo.witnessStack, inputInfo.witnessActivated};
-    checkP2SHInputVisitor(wrappedAddress.type, p2shInputInfo, tx, state, writer);
+    ::checkInput(wrappedAddress.type, p2shInputInfo, tx, state, writer);
 }

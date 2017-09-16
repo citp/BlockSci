@@ -271,6 +271,27 @@ void printUpdateInfo(const ParserConfiguration &config, const ChainUpdateInfo<Bl
     std::cout << "Adding " << chainUpdateInfo.blocksToAdd.size() << " blocks" << std::endl;
 }
 
+template <typename ConfigType, typename BlockType>
+std::vector<uint32_t> addNewBlocks(const ConfigType &config, const std::vector<BlockType> &nextBlocks, uint32_t startingTxCount, uint32_t currentCount, uint32_t totalTxCount, uint32_t maxBlockHeight, UTXOState &utxoState, AddressState &addressState) {
+    BlockProcessor processor;
+    
+    auto importer = std::async(std::launch::async, [&] {
+        processor.readNewBlocks(config, nextBlocks, startingTxCount);
+    });
+    
+    auto utxoProcessor = std::async(std::launch::async, [&] {
+        processor.processUTXOs(config, utxoState);
+    });
+    
+    auto addressProcessor = std::async(std::launch::async, [&] {
+        return processor.processAddresses(config, addressState, currentCount, totalTxCount, maxBlockHeight);
+    });
+    
+    importer.get();
+    utxoProcessor.get();
+    return addressProcessor.get();
+}
+
 template <typename ConfigType>
 void updateChain(const ConfigType &config, uint32_t maxBlockNum) {
     using namespace std::chrono_literals;
@@ -289,13 +310,10 @@ void updateChain(const ConfigType &config, uint32_t maxBlockNum) {
     FirstSeenIndex firstSeen{config};
     HashIndex hashIndex{config};
     
-    std::future<void> addressDBUpdate = std::async(std::launch::async, [&] {});
-    std::future<void> firstSeenUpdate = std::async(std::launch::async, [&] {});
-    std::future<void> hashIndexUpdate = std::async(std::launch::async, [&] {});
-    
     uint32_t startingTxCount = getStartingTxCount(config);
     uint32_t blockNum = 0;
     uint32_t lastBlockNum = 0;
+    uint32_t maxBlockHeight = blocksToAdd.back().height;
     
     UTXOState utxoState{config};
     AddressState addressState{config};
@@ -322,55 +340,16 @@ void updateChain(const ConfigType &config, uint32_t maxBlockNum) {
         
         decltype(blocksToAdd) nextBlocks{blocksToAdd.begin() + lastBlockNum, blocksToAdd.begin() + blockNum};
         
-        {
-            BlockProcessor processor;
-            
-            std::thread producer_thread([&]() {
-                processor.readNewBlocks(config, nextBlocks, startingTxCount);
-            });
-            
-            std::thread utxoThread([&]() {
-                processor.processUTXOs(config, utxoState);
-            });
-            
-            std::thread addressThread([&]() {
-                processor.processAddresses(config, addressState, currentCount, totalTxCount);
-            });
-            
-            
-            producer_thread.join();
-            utxoThread.join();
-            addressThread.join();
-        }
+        auto revealedScriptHashes = addNewBlocks(config, nextBlocks, startingTxCount, currentCount, totalTxCount, maxBlockHeight, utxoState, addressState);
         
         currentCount += newTxCount;
         startingTxCount += newTxCount;
         lastBlockNum = blockNum;
         
-        if (addressDBUpdate.wait_for(0ms) == std::future_status::ready) {
-            addressDBUpdate.get();
-            addressDBUpdate = std::async(std::launch::async, [&] {
-                addressDB.update();
-            });
-        }
-        
-        if (firstSeenUpdate.wait_for(0ms) == std::future_status::ready) {
-            firstSeenUpdate.get();
-            firstSeenUpdate = std::async(std::launch::async, [&] {
-                firstSeen.update();
-            });
-        }
-        
-        if (hashIndexUpdate.wait_for(0ms) == std::future_status::ready) {
-            hashIndexUpdate.get();
-            hashIndexUpdate = std::async(std::launch::async, [&] {
-                hashIndex.update();
-            });
-        }
+        addressDB.update(revealedScriptHashes);
+        firstSeen.update(revealedScriptHashes);
+        hashIndex.update(revealedScriptHashes);
     }
-    addressDBUpdate.get();
-    firstSeenUpdate.get();
-    hashIndexUpdate.get();
 }
 
 int main(int argc, const char * argv[]) {

@@ -13,6 +13,7 @@
 
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/input.hpp>
+#include <blocksci/chain/output_pointer.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/transaction_iterator.hpp>
 #include <blocksci/chain/chain_access.hpp>
@@ -27,38 +28,14 @@ AddressTraverser::AddressTraverser(const ParserConfiguration &config_, const std
 
 
 void AddressTraverser::processTx(const blocksci::ChainAccess &, const blocksci::ScriptAccess &scripts, const blocksci::Transaction &tx) {
+    uint16_t outputNum = 0;
     for (auto &output : tx.outputs()) {
         auto address = output.getAddress();
-        sawAddress(address, tx.txNum);
-        if (address.type == blocksci::AddressType::Enum::MULTISIG) {
-            auto script = address.getScript(scripts);
-            std::function<void(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &address) {
-                sawAddress(address, tx.txNum);
-            };
-            script->visitPointers(visitFunc);
-        }
-    }
-    
-    for (auto &input : tx.inputs()) {
-        if (input.getType() == blocksci::AddressType::Enum::SCRIPTHASH) {
-            auto address = input.getAddress();
-            auto script = address.getScript(scripts);
-            auto p2shAddress = dynamic_cast<blocksci::script::ScriptHash *>(script.get());
-            auto wrappedAddress = p2shAddress->getWrappedAddress();
-            if (wrappedAddress) {
-                processP2SHAddress(scripts, *wrappedAddress, input.spentTxIndex(), address.addressNum);
-            }
-        }
-    }
-}
-
-void AddressTraverser::processP2SHAddress(const blocksci::ScriptAccess &access, const blocksci::Address &address, uint32_t txNum, uint32_t p2shNum) {
-    linkP2SHAddress(address, txNum, p2shNum);
-    if (hasNestedAddresses(address.type)) {
-        auto script = address.getScript(access);
-        std::function<void(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &address) {
-            processP2SHAddress(access, address, txNum, p2shNum);
+        std::function<void(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
+            blocksci::OutputPointer pointer{tx.txNum, outputNum};
+            sawAddress(a, pointer);
         };
-        script->visitPointers(visitFunc);
+        visit(address, visitFunc, scripts);
+        outputNum++;
     }
 }
