@@ -61,7 +61,9 @@ namespace blocksci {
         
         void reload() {
             fileEnd = boost::filesystem::file_size(path);
-            file.resize(fileEnd);
+            if (fileEnd > 0) {
+                file.resize(fileEnd);
+            }
         }
         
         SimpleFileMapperBase(boost::filesystem::path path_, boost::iostreams::mapped_file::mapmode mode) : fileEnd(0), path(path_) {
