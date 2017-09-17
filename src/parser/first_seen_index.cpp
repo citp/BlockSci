@@ -48,7 +48,7 @@ void FirstSeenIndex::maybeUpdate(const blocksci::Address &address, uint32_t txNu
     auto type = scriptType(address.type);
     auto it = files.find(type);
     auto &file = it->second;
-    if (address.addressNum - 1 < file.size()) {
+    if (address.addressNum - 1 > file.size()) {
         file.truncate(address.addressNum);
         file.reload();
     }
@@ -64,7 +64,7 @@ void FirstSeenIndex::sawAddress(const blocksci::Address &address, const blocksci
 
 void FirstSeenIndex::revealedP2SH(uint32_t scriptNum, const blocksci::Address &wrappedAddress, const blocksci::ScriptAccess &scripts) {
     auto &p2shFile = files.find(blocksci::ScriptType::Enum::SCRIPTHASH)->second;
-    if (scriptNum - 1 < p2shFile.size()) {
+    if (scriptNum - 1 > p2shFile.size()) {
         p2shFile.truncate(scriptNum);
         p2shFile.reload();
     }
