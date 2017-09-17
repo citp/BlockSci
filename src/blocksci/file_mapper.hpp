@@ -99,6 +99,10 @@ namespace blocksci {
         size_t size() const {
             return fileEnd;
         }
+        
+        size_t fileSize() const {
+            return boost::filesystem::file_size(path);
+        }
     };
     
     template<boost::iostreams::mapped_file::mapmode mode = boost::iostreams::mapped_file::mapmode::readonly>
@@ -183,15 +187,12 @@ namespace blocksci {
             return SimpleFileMapperBase::size() + buffer.size();
         }
         
-        size_t fileSize() const {
-            return boost::filesystem::file_size(path);
-        }
-        
         void truncate(OffsetType offset) {
             if (!boost::filesystem::exists(path)) {
                 boost::filesystem::fstream{path, std::fstream::out | std::fstream::binary};
             }
             boost::filesystem::resize_file(path, offset);
+            reload();
         }
     };
     
