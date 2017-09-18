@@ -35,6 +35,10 @@ FirstSeenIndex::FirstSeenIndex(const ParserConfiguration &config) : AddressTrave
     }
 }
 
+FirstSeenIndex::~FirstSeenIndex() {
+    preDestructor();
+}
+
 void FirstSeenIndex::prepareUpdate(const blocksci::ChainAccess &, const blocksci::ScriptAccess &scripts) {
     for (auto pair : files) {
         auto &file = pair.second;
