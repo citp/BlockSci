@@ -148,9 +148,10 @@ void AddressDB::revealedP2SH(blocksci::script::ScriptHash &scriptHash, const blo
     while ( (rc = sqlite3_step(scriptHashQuery)) == SQLITE_ROW) {
         auto txNum = sqlite3_column_int64(scriptHashQuery, 0);
         auto outputNum = sqlite3_column_int(scriptHashQuery, 1);
-        std::function<void(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
+        std::function<bool(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
             blocksci::OutputPointer pointer{static_cast<uint32_t>(txNum), static_cast<uint16_t>(outputNum)};
             addAddress(a, pointer);
+            return true;
         };
         visit(*scriptHash.getWrappedAddress(), visitFunc, scripts);
         

@@ -75,7 +75,7 @@ namespace blocksci {
     
     size_t addressCount(const ScriptAccess &access);
     
-    void visit(const Address &address, const std::function<void(const Address &)> &visitFunc, const ScriptAccess &access);
+    void visit(const Address &address, const std::function<bool(const Address &)> &visitFunc, const ScriptAccess &access);
     
     // Requires DataAccess
     #ifndef BLOCKSCI_WITHOUT_SINGLETON

@@ -32,7 +32,7 @@ namespace blocksci {
     RawTransaction::RawTransaction(uint32_t sizeBytes_, uint32_t locktime_, uint16_t inputCount_, uint16_t outputCount_) : sizeBytes(sizeBytes_), locktime(locktime_), inputCount(inputCount_), outputCount(outputCount_) {}
     
     Output &RawTransaction::getOutput(uint16_t outputNum) {
-        auto pos = reinterpret_cast<char *>(this) + sizeof(RawTransaction) + inputCount * sizeof(Output);
+        auto pos = reinterpret_cast<char *>(this) + sizeof(RawTransaction) + inputCount * sizeof(Input);
         auto outputs = reinterpret_cast<Output *>(pos);
         return outputs[outputNum];
     }
@@ -44,7 +44,7 @@ namespace blocksci {
     }
     
     const Output &RawTransaction::getOutput(uint16_t outputNum) const {
-        auto pos = reinterpret_cast<const char *>(this) + sizeof(RawTransaction) + inputCount * sizeof(Output);
+        auto pos = reinterpret_cast<const char *>(this) + sizeof(RawTransaction) + inputCount * sizeof(Input);
         auto outputs = reinterpret_cast<const Output *>(pos);
         return outputs[outputNum];
     }
@@ -118,12 +118,12 @@ namespace blocksci {
     }
     
     Transaction::output_range Transaction::outputs() const {
-        auto firstOut = data->getOutput(0);
+        auto &firstOut = data->getOutput(0);
         return boost::make_iterator_range_n(&firstOut, outputCount());
     }
     
     Transaction::input_range Transaction::inputs() const {
-        auto firstIn = data->getInput(0);
+        auto &firstIn = data->getInput(0);
         return boost::make_iterator_range_n(&firstIn, inputCount());
     }
     
