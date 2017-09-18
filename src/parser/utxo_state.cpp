@@ -33,7 +33,7 @@ UTXOState::~UTXOState() {
     clearUTXOCache();
     
     if (utxoClearFuture.valid()) {
-        utxoClearFuture.wait();
+        utxoClearFuture.get();
     }
 }
 
@@ -94,7 +94,7 @@ void UTXOState::clearDeletedKeys() {
 
 void UTXOState::clearUTXOCache() {
     if (utxoClearFuture.valid()) {
-        utxoClearFuture.wait();
+        utxoClearFuture.get();
         oldUTXOMap.clear();
         utxoMap.swap(oldUTXOMap);
     }
