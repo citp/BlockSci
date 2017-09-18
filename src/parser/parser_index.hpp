@@ -30,6 +30,7 @@ struct RevealedScriptHash;
 class ParserIndex {
 private:
     std::future<void> updateFuture;
+    std::atomic<bool> launchingUpdate;
 protected:
     ParserConfiguration config;
     boost::filesystem::path cachePath;
