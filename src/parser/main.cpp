@@ -89,20 +89,16 @@ void rollbackTransactions(size_t blockKeepCount, const ParserConfiguration &conf
             
             for(auto &input : tx.inputs()) {
                 auto spentTx = input.getSpentTx(chain);
-                
-                auto pointer = txFile.getPointerAtIndex(spentTx.txNum);
-                pointer += sizeof(blocksci::RawTransaction);
-                pointer += sizeof(Input) * spentTx.inputCount();
-                Inout *output = reinterpret_cast<Inout *>(pointer);
+                auto txPointer = txFile.getData(spentTx.txNum);
                 for (uint16_t i = 0; i < spentTx.outputCount(); i++) {
-                    if (output->linkedTxNum == tx.txNum) {
-                        output->linkedTxNum = 0;
-                        Inout out = *output;
+                    auto &output = txPointer->getOutput(i);
+                    if (output.linkedTxNum == tx.txNum) {
+                        output.linkedTxNum = 0;
+                        Inout out = output;
                         out.linkedTxNum = spentTx.txNum;
                         UTXO utxo(out, input.getType());
                         utxoState.addOutput(utxo, {spentTx.getHash(chain), i});
                     }
-                    output++;
                 }
             }
             

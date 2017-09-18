@@ -59,19 +59,11 @@ namespace blocksci {
     }
     
     const Output &ChainAccess::getOutput(uint32_t txIndex, uint16_t outputNum) const {
-        auto linkedTxPos = getTxPos(txIndex);
-        linkedTxPos += sizeof(RawTransaction);
-        linkedTxPos += sizeof(Output) * outputNum;
-        return *reinterpret_cast<const Output *>(linkedTxPos);
+        return getTx(txIndex)->getOutput(outputNum);
     }
     
     const Input &ChainAccess::getInput(uint32_t txIndex, uint16_t inputNum) const {
-        auto tx = getTx(txIndex);
-        auto txPos = reinterpret_cast<const char *>(tx);
-        txPos += sizeof(RawTransaction);
-        txPos += sizeof(Output) * tx->outputCount;
-        txPos += sizeof(Input) * inputNum;
-        return *reinterpret_cast<const Input *>(txPos);
+        return getTx(txIndex)->getInput(inputNum);
     }
     
     uint32_t ChainAccess::getBlockHeight(uint32_t txIndex) const {

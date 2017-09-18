@@ -46,13 +46,15 @@ namespace blocksci {
     
     
     
-    void visit(const Address &address, const std::function<void(const Address &)> &visitFunc, const ScriptAccess &scripts) {
-        visitFunc(address);
-        auto script = address.getScript(scripts);
-        std::function<void(const blocksci::Address &)> nestedVisitor = [&](const blocksci::Address &nestedAddress) {
-            visit(nestedAddress, visitFunc, scripts);
-        };
-        script->visitPointers(visitFunc);
+    void visit(const Address &address, const std::function<bool(const Address &)> &visitFunc, const ScriptAccess &scripts) {
+        bool visitChildren = visitFunc(address);
+        if (visitChildren) {
+            auto script = address.getScript(scripts);
+            std::function<void(const blocksci::Address &)> nestedVisitor = [&](const blocksci::Address &nestedAddress) {
+                visit(nestedAddress, visitFunc, scripts);
+            };
+            script->visitPointers(visitFunc);
+        }
     }
     
     template<AddressType::Enum type>

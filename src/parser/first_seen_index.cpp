@@ -70,8 +70,9 @@ void FirstSeenIndex::revealedP2SH(blocksci::script::ScriptHash &scriptHash, cons
         p2shFile.reload();
     }
     auto firstUsage = *p2shFile.getData(scriptHash.scriptNum - 1);
-    std::function<void(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
+    std::function<bool(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
         maybeUpdate(a, firstUsage);
+        return true;
     };
     visit(*scriptHash.getWrappedAddress(), visitFunc, scripts);
 }
