@@ -107,8 +107,7 @@ AddressDB::AddressDB(const ParserConfiguration &config, std::pair<sqlite3 *, boo
     sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
 }
 
-AddressDB::~AddressDB() {
-    preDestructor();
+void AddressDB::tearDown() {
     for (auto &pair : insertStatements) {
         sqlite3_finalize(pair.second);
     }

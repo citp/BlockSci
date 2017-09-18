@@ -16,24 +16,36 @@
 
 #include <boost/filesystem/fstream.hpp>
 
-ParserIndex::ParserIndex(const ParserConfiguration &config_, const std::string &resultName) : updateFuture{std::async(std::launch::async, [&] {})}, launchingUpdate(false), config(config_), cachePath(config_.parserDirectory()/(resultName + ".txt")) {
+ParserIndex::ParserIndex(const ParserConfiguration &config_, const std::string &resultName) : updateFuture{std::async(std::launch::async, [&] {})}, launchingUpdate(false), tornDown(false), config(config_), cachePath(config_.parserDirectory()/(resultName + ".txt")) {
     boost::filesystem::ifstream inputFile(cachePath);
     inputFile >> latestTx;
 }
 
 void ParserIndex::preDestructor() {
+    
+}
+
+void ParserIndex::complete() {
     using namespace std::chrono_literals;
-    while (launchingUpdate) {
-        std::this_thread::sleep_for(100ms);
-    }
-    if (updateFuture.valid()) {
-        updateFuture.get();
+    if (!tornDown) {
+        tornDown = true;
+        teardownFuture = std::async(std::launch::async, [&] {
+            while (launchingUpdate) {
+                std::this_thread::sleep_for(100ms);
+            }
+            if (updateFuture.valid()) {
+                updateFuture.get();
+            }
+            
+            tearDown();
+        });
     }
 }
 
 ParserIndex::~ParserIndex() {
-    // Must call this in subclasses to finish update before subclass destructor
-    preDestructor();
+    complete();
+    
+    teardownFuture.get();
     boost::filesystem::ofstream outputFile(cachePath);
     outputFile << latestTx;
 }
@@ -53,8 +65,8 @@ void ParserIndex::update(const std::vector<uint32_t> &revealed) {
         prepareUpdate(chain, scripts);
         updateFuture = std::async(std::launch::async, [this, nextRevealed, maxTxCount] {
             runUpdate(nextRevealed, maxTxCount);
+            launchingUpdate = false;
         });
-        launchingUpdate = false;
     }
 }
 

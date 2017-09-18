@@ -26,7 +26,7 @@ BloomFilter<Key>::BloomFilter() : maxItems(0), fpRate(1), m_numHashes(0), length
 }
 
 template<class Key>
-BloomFilter<Key>::BloomFilter(uint64_t maxItems_, double fpRate_) : maxItems(maxItems_), fpRate(fpRate_), m_numHashes(static_cast<uint8_t>(std::ceil(-std::log(fpRate) / Log2))), length(std::floor((-std::log(fpRate) * maxItems) / Log2Squared)), addedCount(0), data((length + 7) / 8) {
+BloomFilter<Key>::BloomFilter(uint64_t maxItems_, double fpRate_) : maxItems(maxItems_), fpRate(fpRate_), m_numHashes(static_cast<uint8_t>(std::ceil(-std::log(fpRate) / Log2))), length(std::floor((-std::log(fpRate) * maxItems) / Log2Squared)), addedCount(0), data((length + BlockSize - 1) / BlockSize) {
     
 }
 
@@ -49,7 +49,7 @@ void BloomFilter<Key>::add(const Key &key) {
     
     for (int n = 0; n < m_numHashes; n++) {
         auto bitPos = nthHash(n, hashValues[0], hashValues[1], length);
-        data[bitPos / 8] |= 1 << (bitPos % 8);
+        data[bitPos / BlockSize] |= 1 << (bitPos % BlockSize);
     }
     
     addedCount++;
@@ -63,7 +63,7 @@ bool BloomFilter<Key>::possiblyContains(const Key &key) const {
     
     for (int n = 0; n < m_numHashes; n++) {
         auto bitPos = nthHash(n, hashValues[0], hashValues[1], length);
-        if ((data[bitPos / 8] & (1 << (bitPos % 8))) == 0) {
+        if ((data[bitPos / BlockSize] & (1 << (bitPos % BlockSize))) == 0) {
             return false;
         }
     }

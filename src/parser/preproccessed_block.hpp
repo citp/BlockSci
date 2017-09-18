@@ -93,6 +93,8 @@ struct RawTransaction {
     int32_t version;
     uint32_t blockHeight;
     bool isSegwit;
+    const char *txHashStart;
+    uint32_t txHashLength;
     
     std::vector<RawInput> inputs;
     std::vector<RawOutput> outputs;
@@ -113,6 +115,8 @@ struct RawTransaction {
     #ifdef BLOCKSCI_RPC_PARSER
     void load(const getrawtransaction_t &txinfo, uint32_t blockHeight, bool witnessActivated);
     #endif
+    
+    void calculateHash();
     
     blocksci::uint256 getHash(const InputInfo &info, int hashType) const;
     blocksci::RawTransaction getRawTransaction() const;

@@ -39,6 +39,8 @@ struct RevealedScriptHash {
 
 class BlockProcessor {
     
+    boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<50000>> hash_transaction_queue;
+    
     boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<50000>> utxo_transaction_queue;
     
     boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<50000>> address_transaction_queue;
@@ -54,6 +56,7 @@ class BlockProcessor {
     
 public:
     boost::atomic<bool> rawDone;
+    boost::atomic<bool> hashDone;
     boost::atomic<bool> utxoDone;
     
     BlockProcessor();
@@ -65,6 +68,7 @@ public:
     #ifdef BLOCKSCI_RPC_PARSER
     void readNewBlocks(RPCParserConfiguration config, std::vector<blockinfo_t> blocksToAdd, uint32_t startingTxCount);
     #endif
+    void calculateHashes(ParserConfiguration config);
     void processUTXOs(ParserConfiguration config, UTXOState &utxoState);
     std::vector<uint32_t> processAddresses(ParserConfiguration config, AddressState &addressState, uint32_t currentCount, uint32_t totalTxCount, uint32_t maxBlockHeight);
 };
