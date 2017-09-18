@@ -355,6 +355,10 @@ void updateChain(const ConfigType &config, uint32_t maxBlockNum) {
     addressDB.complete();
     firstSeen.complete();
     hashIndex.complete();
+    
+    addressDB.preDestroy();
+    firstSeen.preDestroy();
+    hashIndex.preDestroy();
 }
 
 int main(int argc, const char * argv[]) {
