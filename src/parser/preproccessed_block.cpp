@@ -33,12 +33,18 @@ std::vector<unsigned char> hexStringToVec(const std::string scripthex) {
     return scriptBytes;
 }
 
-InputInfo RawInput::getInfo(uint16_t i, bool isSegwit) {
+InputInfo RawInput::getInfo(uint16_t i, uint32_t txNum, uint32_t addressNum, bool isSegwit) {
+    const unsigned char *start = nullptr;
+    uint32_t length = 0;
     if (scriptBytes.size() > 0) {
-        return {i, scriptBytes.data(), static_cast<uint32_t>(scriptBytes.size()), witnessStack, isSegwit};
+        start = scriptBytes.data();
+        length = static_cast<uint32_t>(scriptBytes.size());
     } else {
-        return {i, scriptBegin, scriptLength, witnessStack, isSegwit};
+        start = scriptBegin;
+        length = scriptLength;
     }
+    
+    return {i, addressNum, txNum, start, length, witnessStack, isSegwit};
 }
 
 ScriptOutputType getScriptOutput(const std::vector<unsigned char> &scriptBytes, bool witnessActivated) {

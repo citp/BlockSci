@@ -76,7 +76,7 @@ void replayBlock(const FileParserConfiguration &config, uint32_t blockNum) {
         uint16_t j = 0;
         for (auto &input : tx.inputs) {
             auto &realInput = realTx.inputs()[j];
-            InputInfo info{j, input.scriptBegin, input.scriptLength, input.witnessStack, segwit};
+            InputInfo info = input.getInfo(j, txNum, realInput.toAddressNum, segwit);
             checkInput(realInput.getType(), info, tx, addressState, writer);
             j++;
         }

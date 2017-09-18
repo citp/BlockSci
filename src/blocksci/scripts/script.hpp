@@ -19,6 +19,10 @@
 namespace blocksci {
     
     struct Script {
+        uint32_t scriptNum;
+        
+        Script(uint32_t scriptNum_) : scriptNum(scriptNum_) {}
+        
         virtual std::string toString(const DataConfiguration &config) const = 0;
         virtual std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const = 0;
         

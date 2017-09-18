@@ -11,6 +11,8 @@
 
 #include "parser_configuration.hpp"
 
+#include <blocksci/scripts/scriptsfwd.hpp>
+
 #include <boost/filesystem/path.hpp>
 
 #include <future>
@@ -35,7 +37,7 @@ protected:
     std::vector<uint32_t> waitingRevealed;
     
     virtual void processTx(const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts, const blocksci::Transaction &tx) = 0;
-    virtual void revealedP2SH(uint32_t addressNum, const blocksci::Address &wrappedAddress, const blocksci::ScriptAccess &scripts) = 0;
+    virtual void revealedP2SH(blocksci::script::ScriptHash &scriptHash, const blocksci::ScriptAccess &scripts) = 0;
     virtual void prepareUpdate(const blocksci::ChainAccess &, const blocksci::ScriptAccess &) {}
     
     void runUpdate(const std::vector<uint32_t> &revealed, uint32_t maxTxCount);

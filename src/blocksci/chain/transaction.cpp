@@ -32,25 +32,25 @@ namespace blocksci {
     RawTransaction::RawTransaction(uint32_t sizeBytes_, uint32_t locktime_, uint16_t inputCount_, uint16_t outputCount_) : sizeBytes(sizeBytes_), locktime(locktime_), inputCount(inputCount_), outputCount(outputCount_) {}
     
     Output &RawTransaction::getOutput(uint16_t outputNum) {
-        auto pos = reinterpret_cast<char *>(this) + sizeof(RawTransaction);
+        auto pos = reinterpret_cast<char *>(this) + sizeof(RawTransaction) + inputCount * sizeof(Output);
         auto outputs = reinterpret_cast<Output *>(pos);
         return outputs[outputNum];
     }
     
     Input &RawTransaction::getInput(uint16_t inputNum) {
-        auto pos = reinterpret_cast<char *>(this) + sizeof(RawTransaction) + outputCount * sizeof(Output);
+        auto pos = reinterpret_cast<char *>(this) + sizeof(RawTransaction);
         auto inputs = reinterpret_cast<Input *>(pos);
         return inputs[inputNum];
     }
     
     const Output &RawTransaction::getOutput(uint16_t outputNum) const {
-        auto pos = reinterpret_cast<const char *>(this) + sizeof(RawTransaction);
+        auto pos = reinterpret_cast<const char *>(this) + sizeof(RawTransaction) + inputCount * sizeof(Output);
         auto outputs = reinterpret_cast<const Output *>(pos);
         return outputs[outputNum];
     }
     
     const Input &RawTransaction::getInput(uint16_t inputNum) const {
-        auto pos = reinterpret_cast<const char *>(this) + sizeof(RawTransaction) + outputCount * sizeof(Output);
+        auto pos = reinterpret_cast<const char *>(this) + sizeof(RawTransaction);
         auto inputs = reinterpret_cast<const Input *>(pos);
         return inputs[inputNum];
     }
@@ -118,13 +118,13 @@ namespace blocksci {
     }
     
     Transaction::output_range Transaction::outputs() const {
-        auto pos = reinterpret_cast<const char *>(data) + sizeof(RawTransaction);
-        return boost::make_iterator_range_n(reinterpret_cast<const Output *>(pos), outputCount());
+        auto firstOut = data->getOutput(0);
+        return boost::make_iterator_range_n(&firstOut, outputCount());
     }
     
     Transaction::input_range Transaction::inputs() const {
-        auto pos = reinterpret_cast<const char *>(data) + sizeof(RawTransaction) + outputCount() * sizeof(Output);
-        return boost::make_iterator_range_n(reinterpret_cast<const Input *>(pos), inputCount());
+        auto firstIn = data->getInput(0);
+        return boost::make_iterator_range_n(&firstIn, inputCount());
     }
     
     std::vector<OutputPointer> Transaction::getOutputPointers(const InputPointer &pointer, const ChainAccess &access) const {
