@@ -31,6 +31,7 @@ class FirstSeenIndex : public AddressTraverser {
     
 public:
     FirstSeenIndex(const ParserConfiguration &config);
+    ~FirstSeenIndex();
 };
 
 #endif /* first_seen_index_hpp */

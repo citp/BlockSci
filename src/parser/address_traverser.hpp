@@ -33,9 +33,6 @@ class AddressTraverser : public ParserIndex {
     
 public:
     AddressTraverser(const ParserConfiguration &config, const std::string &resultName);
-    virtual ~AddressTraverser() {
-        preDestructor();
-    }
 };
 
 #endif /* address_traverser_hpp */
