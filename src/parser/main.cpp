@@ -30,6 +30,7 @@
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/transaction_iterator.hpp>
 #include <blocksci/chain/block.hpp>
+#include <blocksci/scripts/scripthash_script.hpp>
 
 #ifdef BLOCKSCI_RPC_PARSER
 #include <bitcoinapi/bitcoinapi.h>
