@@ -333,7 +333,7 @@ void updateChain(const ConfigType &config, uint32_t maxBlockNum) {
             auto &block = blocksToAdd[blockNum];
             newTxCount += txCount(block);
             
-            if (newTxCount > 1'000) {
+            if (newTxCount > 1'000'000) {
                 break;
             }
         }
