@@ -32,6 +32,7 @@ private:
     std::future<void> updateFuture;
     std::future<void> teardownFuture;
     std::atomic<bool> launchingUpdate;
+    bool destroyed;
 protected:
     std::atomic<bool> tornDown;
     ParserConfiguration config;
@@ -53,6 +54,7 @@ public:
     
     void update(const std::vector<uint32_t> &revealed);
     void complete();
+    void preDestroy();
 };
 
 #endif /* parser_index_hpp */
