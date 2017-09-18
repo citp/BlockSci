@@ -21,9 +21,15 @@ ParserIndex::ParserIndex(const ParserConfiguration &config_, const std::string &
     inputFile >> latestTx;
 }
 
+void ParserIndex::preDestructor() {
+    if (updateFuture.valid()) {
+        updateFuture.get();
+    }
+}
+
 ParserIndex::~ParserIndex() {
-    updateFuture.get();
-    
+    // Must call this in subclasses to finish update before subclass destructor
+    preDestructor();
     boost::filesystem::ofstream outputFile(cachePath);
     outputFile << latestTx;
 }
