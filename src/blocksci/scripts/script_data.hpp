@@ -11,6 +11,7 @@
 
 #include "bitcoin_script.hpp"
 #include "bitcoin_pubkey.hpp"
+#include "typedefs.hpp"
 
 #include <blocksci/address/address.hpp>
 
@@ -31,6 +32,9 @@ namespace blocksci {
     struct ScriptHashData {
         uint160 address;
         Address wrappedAddress;
+        TxIndex txRevealed;
+        
+        ScriptHashData(uint160 address_, Address wrappedAddress_, TxIndex txRevealed_) : address(address_), wrappedAddress(wrappedAddress_), txRevealed(txRevealed_) {}
         
         size_t size() {
             return sizeof(ScriptHashData);

@@ -50,7 +50,7 @@ struct RawInput {
     
     std::vector<unsigned char> scriptBytes;
     
-    InputInfo getInfo(uint16_t i, bool isSegwit);
+    InputInfo getInfo(uint16_t i, uint32_t txNum, uint32_t addressNum, bool isSegwit);
     
     RawInput(){}
     

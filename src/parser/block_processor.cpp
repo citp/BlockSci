@@ -317,9 +317,6 @@ void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<bl
 void BlockProcessor::processUTXOs(ParserConfiguration config, UTXOState &utxoState) {
     using namespace std::chrono_literals;
     
-    std::cout.setf(std::ios::fixed,std::ios::floatfield);
-    std::cout.precision(1);
-    
     IndexedFileWriter<1> txFile{config.txFilePath()};
     
     auto txNum = txFile.size();
@@ -331,6 +328,19 @@ void BlockProcessor::processUTXOs(ParserConfiguration config, UTXOState &utxoSta
         txFile.write(tx->getRawTransaction());
         
         uint16_t i = 0;
+        
+        for (auto &input : tx->inputs) {
+            auto utxo = utxoState.spendOutput(input.rawOutputPointer);
+            input.addressType = utxo.addressType;
+            input.linkedTxNum = utxo.output.linkedTxNum;
+            i++;
+            
+            blocksci::Address address{0, utxo.addressType};
+            blocksci::Inout blocksciInput{utxo.output.linkedTxNum, address, utxo.output.getValue()};
+            txFile.write(blocksciInput);
+        }
+        
+        i = 0;
         for (auto &output : tx->outputs) {
             auto type = addressType(output.scriptOutput);
             blocksci::Address address{0, type};
@@ -346,19 +356,6 @@ void BlockProcessor::processUTXOs(ParserConfiguration config, UTXOState &utxoSta
             }
             i++;
         }
-        
-        i = 0;
-        for (auto &input : tx->inputs) {
-            auto utxo = utxoState.spendOutput(input.rawOutputPointer);
-            input.addressType = utxo.addressType;
-            input.linkedTxNum = utxo.output.linkedTxNum;
-            i++;
-            
-            blocksci::Address address{0, utxo.addressType};
-            blocksci::Inout blocksciInput{utxo.output.linkedTxNum, address, utxo.output.getValue()};
-            txFile.write(blocksciInput);
-        }
-        
         
         
         bool flushed = false;
@@ -410,15 +407,7 @@ std::vector<uint32_t> BlockProcessor::processAddresses(ParserConfiguration confi
         assert(diskTx->outputCount == tx->outputs.size());
         
         uint16_t i = 0;
-        for (auto &output : tx->outputs) {
-            auto &diskOutput = diskTx->getOutput(i);
-            auto address = processOutput(output.scriptOutput, addressState, addressWriter);
-            assert(address.addressNum > 0);
-            diskOutput.toAddressNum = address.addressNum;
-            i++;
-        }
         
-        i = 0;
         for (auto &input : tx->inputs) {
             auto spentTx = txFile.getData(input.linkedTxNum);
             auto &spentOutput = spentTx->getOutput(input.rawOutputPointer.outputNum);
@@ -430,7 +419,7 @@ std::vector<uint32_t> BlockProcessor::processAddresses(ParserConfiguration confi
             diskInput.toAddressNum = address.addressNum;
             spentOutput.linkedTxNum = tx->txNum;
             
-            InputInfo info = input.getInfo(i, tx->isSegwit);
+            InputInfo info = input.getInfo(i, tx->txNum, address.addressNum, tx->isSegwit);
             auto processedInput = processInput(address, info, *tx, addressState, addressWriter);
             
             for (auto &index : processedInput) {
@@ -439,19 +428,29 @@ std::vector<uint32_t> BlockProcessor::processAddresses(ParserConfiguration confi
             i++;
         }
         
-        if (tx->sizeBytes > 800) {
-            delete tx;
-        } else {
-            if (!finished_transaction_queue.push(tx)) {
-                delete tx;
-            }
+        i = 0;
+        for (auto &output : tx->outputs) {
+            auto &diskOutput = diskTx->getOutput(i);
+            auto address = processOutput(output.scriptOutput, addressState, addressWriter);
+            assert(address.addressNum > 0);
+            diskOutput.toAddressNum = address.addressNum;
+            i++;
         }
         
         currentCount++;
         
         if (currentCount % percentageMarker == 0) {
             auto percentDone = (static_cast<double>(currentCount) / static_cast<double>(totalTxCount)) * 100;
-            std::cout << "\r" << percentDone << "% done, Block " << tx->blockHeight << "/" << maxBlockHeight << std::flush;
+            auto blockHeight = tx->blockHeight;
+            std::cout << "\r" << percentDone << "% done, Block " << blockHeight << "/" << maxBlockHeight << std::flush;
+        }
+        
+        if (tx->sizeBytes > 800) {
+            delete tx;
+        } else {
+            if (!finished_transaction_queue.push(tx)) {
+                delete tx;
+            }
         }
         
         addressState.optionalSave();

@@ -23,7 +23,7 @@ namespace blocksci {
         uint8_t total;
         std::vector<Address> addresses;
         
-        ScriptAddress<ScriptType::Enum::MULTISIG>(const MultisigData *rawData);
+        ScriptAddress<ScriptType::Enum::MULTISIG>(uint32_t scriptNum, const MultisigData *rawData);
         ScriptAddress<ScriptType::Enum::MULTISIG>(const ScriptAccess &access, uint32_t addressNum);
         
         std::string toString(const DataConfiguration &config) const override;

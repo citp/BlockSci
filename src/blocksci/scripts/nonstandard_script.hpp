@@ -20,7 +20,7 @@ namespace blocksci {
         CScript outputScript;
         
     public:
-        ScriptAddress<ScriptType::Enum::NONSTANDARD>(std::tuple<const NonstandardScriptData *, const NonstandardScriptData *> &&rawData);
+        ScriptAddress<ScriptType::Enum::NONSTANDARD>(uint32_t scriptNum, std::tuple<const NonstandardScriptData *, const NonstandardScriptData *> &&rawData);
         ScriptAddress<ScriptType::Enum::NONSTANDARD>(const ScriptAccess &access, uint32_t addressNum);
         
         std::string inputString() const;

@@ -23,7 +23,7 @@ namespace blocksci {
     public:
         uint160 pubkeyhash;
         
-        ScriptAddress<ScriptType::Enum::PUBKEY>(const PubkeyData *rawData);
+        ScriptAddress<ScriptType::Enum::PUBKEY>(uint32_t scriptNum, const PubkeyData *rawData);
         ScriptAddress<ScriptType::Enum::PUBKEY>(const ScriptAccess &access, uint32_t addressNum);
         
         std::string addressString(const DataConfiguration &config) const;

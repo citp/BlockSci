@@ -22,10 +22,10 @@ ParserIndex::ParserIndex(const ParserConfiguration &config_, const std::string &
 }
 
 ParserIndex::~ParserIndex() {
+    updateFuture.get();
+    
     boost::filesystem::ofstream outputFile(cachePath);
     outputFile << latestTx;
-    
-    updateFuture.get();
 }
 
 void ParserIndex::update(const std::vector<uint32_t> &revealed) {
@@ -59,8 +59,7 @@ void ParserIndex::runUpdate(const std::vector<uint32_t> &revealed, uint32_t maxT
     
     for (auto reveal : revealed) {
         auto p2sh = blocksci::script::ScriptHash{scripts, reveal};
-        auto wrappedAddress = *p2sh.getWrappedAddress();
-        revealedP2SH(reveal, wrappedAddress, scripts);
+        revealedP2SH(p2sh, scripts);
     }
     
     latestTx = currentCount;

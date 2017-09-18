@@ -20,9 +20,9 @@
 
 template<blocksci::AddressType::Enum type>
 struct ProcessScriptInputFunctor {
-    static ProcessedInput f(uint32_t addressNum, const InputInfo &info, const RawTransaction &tx, AddressState &state, AddressWriter &addressWriter) {
+    static ProcessedInput f(const InputInfo &info, const RawTransaction &tx, AddressState &state, AddressWriter &addressWriter) {
         auto input = ScriptInput<type>(info, tx, addressWriter);
-        return input.processInput(addressNum, info, tx, state, addressWriter);
+        return input.processInput(info, tx, state, addressWriter);
     }
 };
 
@@ -36,7 +36,7 @@ ProcessedInput processInput(const blocksci::Address &address, const InputInfo &i
     {
         throw std::invalid_argument("combination of enum values is not valid");
     }
-    return table[index](address.addressNum, info, tx, state, addressWriter);
+    return table[index](info, tx, state, addressWriter);
 }
 
 template<blocksci::AddressType::Enum type>
@@ -87,21 +87,21 @@ ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::ScriptInput(const InputInf
     wrappedScriptOutput = extractScriptData(outputScriptBegin, outputScriptBegin + lastScript.size(), inputInfo.witnessActivated);
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::processInput(uint32_t addressNum, const InputInfo &inputInfo, const RawTransaction &tx, AddressState &state, AddressWriter &writer) {
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::processInput(const InputInfo &inputInfo, const RawTransaction &tx, AddressState &state, AddressWriter &writer) {
     wrappedAddress = processOutput(wrappedScriptOutput, state, writer);
-    bool firstSpend = writer.serialize(*this, addressNum);
-
-    InputInfo p2shInputInfo{inputInfo.inputNum, wrappedInputBegin, wrappedInputLength, inputInfo.witnessStack, inputInfo.witnessActivated};
+    
+    InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.txNum, wrappedAddress.addressNum, wrappedInputBegin, wrappedInputLength, inputInfo.witnessStack, inputInfo.witnessActivated};
     ProcessedInput processedInput = ::processInput(wrappedAddress, p2shInputInfo, tx, state, writer);
+    bool firstSpend = writer.serialize(*this, inputInfo);
     if (firstSpend) {
-        processedInput.push_back(addressNum);
+        processedInput.push_back(inputInfo.addressNum);
     }
     return processedInput;
 }
 
 void ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::checkInput(const InputInfo &inputInfo, const RawTransaction &tx, const AddressState &state, const AddressWriter &writer) {
     wrappedAddress = checkOutput(wrappedScriptOutput, state);
-    InputInfo p2shInputInfo{inputInfo.inputNum, wrappedInputBegin, wrappedInputLength, inputInfo.witnessStack, inputInfo.witnessActivated};
+    InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.txNum, wrappedAddress.addressNum, wrappedInputBegin, wrappedInputLength, inputInfo.witnessStack, inputInfo.witnessActivated};
     ::checkInput(wrappedAddress.type, p2shInputInfo, tx, state, writer);
 }
 
@@ -120,8 +120,8 @@ ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInput(const InputInf
     }
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::processInput(uint32_t addressNum, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &writer) {
-    writer.serialize(*this, addressNum);
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::processInput(const InputInfo &inputInfo, const RawTransaction &, AddressState &, AddressWriter &writer) {
+    writer.serialize(*this, inputInfo);
     return ProcessedInput{};
 }
 
@@ -172,8 +172,8 @@ ScriptInput<blocksci::AddressType::Enum::MULTISIG>::ScriptInput(const InputInfo 
     */
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::MULTISIG>::processInput(uint32_t addressNum, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &writer) {
-    writer.serialize(*this, addressNum);
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::MULTISIG>::processInput(const InputInfo &inputInfo, const RawTransaction &, AddressState &, AddressWriter &writer) {
+    writer.serialize(*this, inputInfo);
     return ProcessedInput{};
 }
 
@@ -189,16 +189,16 @@ ScriptInput<blocksci::AddressType::Enum::NONSTANDARD>::ScriptInput(const InputIn
     }
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::NONSTANDARD>::processInput(uint32_t addressNum, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &writer) {
-    writer.serialize(*this, addressNum);
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::NONSTANDARD>::processInput(const InputInfo &inputInfo, const RawTransaction &, AddressState &, AddressWriter &writer) {
+    writer.serialize(*this, inputInfo);
     return ProcessedInput{};
 }
 
 ScriptInput<blocksci::AddressType::Enum::NULL_DATA>::ScriptInput(const InputInfo &, const RawTransaction &, const AddressWriter &) {
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::NULL_DATA>::processInput(uint32_t addressNum, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &writer) {
-    writer.serialize(*this, addressNum);
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::NULL_DATA>::processInput(const InputInfo &inputInfo, const RawTransaction &, AddressState &, AddressWriter &writer) {
+    writer.serialize(*this, inputInfo);
     return ProcessedInput{};
 }
 
@@ -207,8 +207,8 @@ ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::ScriptInput(const 
     pubkey.Set(pubkeyWitness.itemBegin, pubkeyWitness.itemBegin + pubkeyWitness.length);
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::processInput(uint32_t addressNum, const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &writer) {
-    writer.serialize(*this, addressNum);
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::processInput(const InputInfo &inputInfo, const RawTransaction &, AddressState &, AddressWriter &writer) {
+    writer.serialize(*this, inputInfo);
     return ProcessedInput{};
 }
 
@@ -219,21 +219,22 @@ ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::ScriptInput(const 
     wrappedScriptOutput = extractScriptData(outputBegin, outputBegin + witnessScriptItem.length, inputInfo.witnessActivated);
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::processInput(uint32_t addressNum, const InputInfo &inputInfo, const RawTransaction &tx, AddressState &state, AddressWriter &writer) {
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::processInput(const InputInfo &inputInfo, const RawTransaction &tx, AddressState &state, AddressWriter &writer) {
     
     wrappedAddress = processOutput(wrappedScriptOutput, state, writer);
-    bool firstSpend = writer.serialize(*this, addressNum);
 
-    InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.scriptBegin, 0, inputInfo.witnessStack, inputInfo.witnessActivated};
+    InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.txNum, wrappedAddress.addressNum, inputInfo.scriptBegin, 0, inputInfo.witnessStack, inputInfo.witnessActivated};
     auto processedInput = ::processInput(wrappedAddress, p2shInputInfo, tx, state, writer);
+    
+    bool firstSpend = writer.serialize(*this, inputInfo);
     if (firstSpend) {
-        processedInput.push_back(addressNum);
+        processedInput.push_back(inputInfo.addressNum);
     }
     return processedInput;
 }
 
 void ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::checkInput(const InputInfo &inputInfo, const RawTransaction &tx, const AddressState &state, const AddressWriter &writer) {
     wrappedAddress = checkOutput(wrappedScriptOutput, state);
-    InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.scriptBegin, 0, inputInfo.witnessStack, inputInfo.witnessActivated};
+    InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.txNum, wrappedAddress.addressNum, inputInfo.scriptBegin, 0, inputInfo.witnessStack, inputInfo.witnessActivated};
     ::checkInput(wrappedAddress.type, p2shInputInfo, tx, state, writer);
 }

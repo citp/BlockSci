@@ -16,6 +16,7 @@
 #include <blocksci/address/address.hpp>
 #include <blocksci/address/address_types.hpp>
 #include <blocksci/address/address_info.hpp>
+#include <blocksci/scripts/scripthash_script.hpp>
 
 
 #include <blocksci/data_access.hpp>
@@ -62,15 +63,15 @@ void FirstSeenIndex::sawAddress(const blocksci::Address &address, const blocksci
     maybeUpdate(address, pointer.txNum);
 }
 
-void FirstSeenIndex::revealedP2SH(uint32_t scriptNum, const blocksci::Address &wrappedAddress, const blocksci::ScriptAccess &scripts) {
+void FirstSeenIndex::revealedP2SH(blocksci::script::ScriptHash &scriptHash, const blocksci::ScriptAccess &scripts) {
     auto &p2shFile = files.find(blocksci::ScriptType::Enum::SCRIPTHASH)->second;
-    if (scriptNum - 1 >= p2shFile.size()) {
-        p2shFile.truncate(scriptNum);
+    if (scriptHash.scriptNum - 1 >= p2shFile.size()) {
+        p2shFile.truncate(scriptHash.scriptNum);
         p2shFile.reload();
     }
-    auto firstUsage = *p2shFile.getData(scriptNum - 1);
+    auto firstUsage = *p2shFile.getData(scriptHash.scriptNum - 1);
     std::function<void(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
         maybeUpdate(a, firstUsage);
     };
-    visit(wrappedAddress, visitFunc, scripts);
+    visit(*scriptHash.getWrappedAddress(), visitFunc, scripts);
 }

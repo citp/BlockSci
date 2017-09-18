@@ -20,7 +20,7 @@ namespace blocksci {
     class ScriptAddress<ScriptType::Enum::NULL_DATA> : public Script {
         
     public:
-        ScriptAddress<ScriptType::Enum::NULL_DATA>(const RawData *rawData);
+        ScriptAddress<ScriptType::Enum::NULL_DATA>(uint32_t scriptNum, const RawData *rawData);
         ScriptAddress<ScriptType::Enum::NULL_DATA>(const ScriptAccess &access, uint32_t addressNum);
         std::string data;
         

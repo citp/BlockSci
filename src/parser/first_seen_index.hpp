@@ -25,7 +25,7 @@ class FirstSeenIndex : public AddressTraverser {
     void maybeUpdate(const blocksci::Address &address, uint32_t txNum);
     
     void sawAddress(const blocksci::Address &address, const blocksci::OutputPointer &pointer) override;
-    void revealedP2SH(uint32_t scriptNum, const blocksci::Address &wrappedAddress, const blocksci::ScriptAccess &scripts) override;
+    void revealedP2SH(blocksci::script::ScriptHash &scriptHash, const blocksci::ScriptAccess &scripts) override;
     
     void prepareUpdate(const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override;
     

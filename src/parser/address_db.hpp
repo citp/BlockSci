@@ -22,13 +22,14 @@ class AddressDB : public AddressTraverser {
     sqlite3 *db;
     bool firstRun;
     std::unordered_map<blocksci::ScriptType::Enum,  sqlite3_stmt *> insertStatements;
+    sqlite3_stmt *scriptHashQuery;
     
     AddressDB(const ParserConfiguration &config, std::pair<sqlite3 *, bool> init);
     
     void addAddress(const blocksci::Address &address, const blocksci::OutputPointer &pointer);
     
     void sawAddress(const blocksci::Address &address, const blocksci::OutputPointer &pointer) override;
-    void revealedP2SH(uint32_t scriptNum, const blocksci::Address &, const blocksci::ScriptAccess &scripts) override;
+    void revealedP2SH(blocksci::script::ScriptHash &scriptHash, const blocksci::ScriptAccess &scripts) override;
     
 public:
     AddressDB(const ParserConfiguration &config);

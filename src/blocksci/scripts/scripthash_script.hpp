@@ -21,10 +21,10 @@ namespace blocksci {
     private:
         Address wrappedAddress;
     public:
+        uint32_t txRevealed;
         uint160 address;
         
-        ScriptAddress<ScriptType::Enum::SCRIPTHASH>(const ScriptHashData *rawData);
-        ScriptAddress<ScriptType::Enum::SCRIPTHASH>(const uint160 &address);
+        ScriptAddress<ScriptType::Enum::SCRIPTHASH>(uint32_t scriptNum, const ScriptHashData *rawData);
         ScriptAddress<ScriptType::Enum::SCRIPTHASH>(const ScriptAccess &access, uint32_t addressNum);
         
         std::string addressString(const DataConfiguration &config) const;

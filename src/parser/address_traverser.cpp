@@ -32,6 +32,13 @@ void AddressTraverser::processTx(const blocksci::ChainAccess &, const blocksci::
     for (auto &output : tx.outputs()) {
         auto address = output.getAddress();
         std::function<void(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
+            // If address is p2sh then ignore the wrapped address if it was revealed after this transaction
+            if (scriptType(a.type) == blocksci::ScriptType::Enum::SCRIPTHASH) {
+                auto p2sh = blocksci::script::ScriptHash{scripts, a.addressNum};
+                if (tx.txNum < p2sh.txRevealed) {
+                    return;
+                }
+            }
             blocksci::OutputPointer pointer{tx.txNum, outputNum};
             sawAddress(a, pointer);
         };
