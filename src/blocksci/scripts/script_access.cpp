@@ -18,6 +18,10 @@ namespace blocksci {
         return config.scriptsDirectory()/ ScriptInfo<decltype(tag)::type>::name;
     })) {}
     
+    void ScriptAccess::reload() {
+        for_each(scriptFiles, [&](auto& file) -> decltype(auto) { file.reload(); });
+    }
+    
     
     template<ScriptType::Enum type>
     struct ScriptCountFunctor {

@@ -29,6 +29,8 @@ namespace blocksci {
         
         ScriptFirstSeenAccess(const DataConfiguration &config);
         
+        void reload();
+        
         template <ScriptType::Enum type>
         uint32_t getFirstTxNum(uint32_t addressNum) const {
             auto &file = std::get<ScriptFirstSeenFile<type>>(scriptFilesFirstSeen);

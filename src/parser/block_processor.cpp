@@ -427,7 +427,7 @@ std::vector<uint32_t> BlockProcessor::processAddresses(ParserConfiguration confi
             }
             i++;
         }
-        
+        // 2,262,720
         i = 0;
         for (auto &output : tx->outputs) {
             auto &diskOutput = diskTx->getOutput(i);
@@ -461,14 +461,13 @@ std::vector<uint32_t> BlockProcessor::processAddresses(ParserConfiguration confi
     while (!utxoDone) {
         while (address_transaction_queue.write_available() < 10000 && address_transaction_queue.pop(rawTx)) {
             if (rawTx->txNum + 10000 >= txFile.size()) {
-                txFile = TxFile{config.txFilePath()};
+                txFile.reload();
             }
             consume(rawTx, txFile);
         }
         std::this_thread::sleep_for(100ms);
     }
-    
-    txFile = TxFile{config.txFilePath()};
+    txFile.reload();
     while (address_transaction_queue.pop(rawTx)) {
         consume(rawTx, txFile);
     }

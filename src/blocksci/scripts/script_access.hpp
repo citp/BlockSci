@@ -55,19 +55,30 @@ namespace blocksci {
         ScriptAccess(const DataConfiguration &config);
         
         template <ScriptType::Enum type>
+        ScriptFile<type> &getFile() {
+            return std::get<ScriptFile<type>>(scriptFiles);
+        }
+        
+        template <ScriptType::Enum type>
+        const ScriptFile<type> &getFile() const {
+            return std::get<ScriptFile<type>>(scriptFiles);
+        }
+        
+        template <ScriptType::Enum type>
         auto getScriptData(uint32_t addressNum) const {
-            return std::get<ScriptFile<type>>(scriptFiles).getData(addressNum - 1);
+            return getFile<type>().getData(addressNum - 1);
         }
         
         template<ScriptType::Enum type>
         size_t scriptCount() const {
-            auto &file = std::get<ScriptFile<type>>(scriptFiles);
-            return file.size();
+            return getFile<type>().size();
         }
         
         size_t scriptCount(ScriptType::Enum type) const;
         
         size_t totalAddressCount() const;
+        
+        void reload();
     };
 
 }
