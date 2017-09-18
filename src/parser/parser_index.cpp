@@ -36,7 +36,9 @@ void ParserIndex::complete() {
             if (updateFuture.valid()) {
                 updateFuture.get();
             }
-            
+            blocksci::ChainAccess chain{config, false, 0};
+            auto maxTxCount = chain.txCount();
+            runUpdate(waitingRevealed, maxTxCount);
             tearDown();
         });
     }
