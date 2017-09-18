@@ -62,7 +62,7 @@ AddressState::~AddressState() {
     clearAddressCache();
     
     if (addressClearFuture.valid()) {
-        addressClearFuture.wait();
+        addressClearFuture.get();
     }
 }
 
@@ -242,7 +242,7 @@ void AddressState::optionalSave() {
 
 void AddressState::clearAddressCache() {
     if (addressClearFuture.valid()) {
-        addressClearFuture.wait();
+        addressClearFuture.get();
         oldSingleAddressMap.clear();
         singleAddressMap.swap(oldSingleAddressMap);
     }
