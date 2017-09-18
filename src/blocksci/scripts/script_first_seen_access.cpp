@@ -14,4 +14,8 @@ namespace blocksci {
     scriptFilesFirstSeen(blocksci::apply(blocksci::ScriptInfoList(), [&] (auto tag) {
         return config.firstSeenDirectory()/blocksci::ScriptInfo<decltype(tag)::type>::name;
     })) {}
+    
+    void ScriptFirstSeenAccess::reload() {
+        for_each(scriptFilesFirstSeen, [&](auto& file) -> decltype(auto) { file.reload(); });
+    }
 }

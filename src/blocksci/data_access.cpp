@@ -21,11 +21,11 @@ namespace blocksci {
         static DataAccess myInstance(config_, errorOnReorg, blocksIgnored);
         static DataConfiguration config = config_;
         
-        if (!config_.isNull() && config_ != config) {
+        if (!config_.isNull()) {
             config = config_;
-            myInstance.chain = ChainAccess(config, errorOnReorg, blocksIgnored);
-            myInstance.scripts = ScriptAccess(config);
-            myInstance.scriptFirstSeen = ScriptFirstSeenAccess(config);
+            myInstance.chain.reload();
+            myInstance.scripts.reload();
+            myInstance.scriptFirstSeen.reload();
             myInstance.addressIndex = AddressIndex(config);
         }
         

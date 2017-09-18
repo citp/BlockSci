@@ -40,10 +40,9 @@ FirstSeenIndex::~FirstSeenIndex() {
 }
 
 void FirstSeenIndex::prepareUpdate(const blocksci::ChainAccess &, const blocksci::ScriptAccess &scripts) {
-    for (auto pair : files) {
+    for (auto &pair : files) {
         auto &file = pair.second;
         file.truncate(scripts.scriptCount(pair.first));
-        file.reload();
     }
 }
 
@@ -53,10 +52,6 @@ void FirstSeenIndex::maybeUpdate(const blocksci::Address &address, uint32_t txNu
     auto type = scriptType(address.type);
     auto it = files.find(type);
     auto &file = it->second;
-    if (address.addressNum - 1 >= file.size()) {
-        file.truncate(address.addressNum);
-        file.reload();
-    }
     auto oldValue = *file.getData(address.addressNum - 1);
     if (oldValue == 0 || txNum < oldValue) {
         file.update(address.addressNum - 1, txNum);
@@ -69,10 +64,6 @@ void FirstSeenIndex::sawAddress(const blocksci::Address &address, const blocksci
 
 void FirstSeenIndex::revealedP2SH(blocksci::script::ScriptHash &scriptHash, const blocksci::ScriptAccess &scripts) {
     auto &p2shFile = files.find(blocksci::ScriptType::Enum::SCRIPTHASH)->second;
-    if (scriptHash.scriptNum - 1 >= p2shFile.size()) {
-        p2shFile.truncate(scriptHash.scriptNum);
-        p2shFile.reload();
-    }
     auto firstUsage = *p2shFile.getData(scriptHash.scriptNum - 1);
     std::function<bool(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
         maybeUpdate(a, firstUsage);

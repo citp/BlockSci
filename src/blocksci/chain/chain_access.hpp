@@ -45,10 +45,13 @@ namespace blocksci {
         void reorgCheck() const;
         
         bool errorOnReorg;
+        uint32_t blocksIgnored;
         
         const FixedSizeFileMapper<Block> &getBlockFile() const {
             return blockFile;
         }
+        
+        void setup();
         
     public:
         ChainAccess(const DataConfiguration &config, bool errorOnReorg, uint32_t blocksIgnored);
@@ -74,6 +77,8 @@ namespace blocksci {
             reorgCheck();
             return txHashesFile;
         }
+        
+        void reload();
     };
     
     boost::iterator_range<TransactionIterator> iterateTransactions(const ChainAccess &chain, uint32_t startIndex, uint32_t endIndex);

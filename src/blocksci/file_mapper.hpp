@@ -61,14 +61,13 @@ namespace blocksci {
         boost::filesystem::path path;
         
         void reload() {
-            fileEnd = boost::filesystem::file_size(path);
-            if (fileEnd > 0) {
+            auto newSize = boost::filesystem::file_size(path);
+            if (newSize != fileEnd) {
                 if (file.is_open()) {
-                    file.resize(fileEnd);
-                } else {
-                    file.open(path, fileMode);
+                    file.close();
                 }
-                
+                file.open(path, fileMode);
+                fileEnd = newSize;
             }
         }
         
@@ -83,9 +82,14 @@ namespace blocksci {
             }
         }
         
+        SimpleFileMapperBase(const SimpleFileMapperBase &) = delete;
+        SimpleFileMapperBase &operator=(const SimpleFileMapperBase &) = delete;
+        
         bool isGood() const {
             return file.is_open();
         }
+        
+        void clearBuffer() {}
         
         const char *getDataAtOffset(OffsetType offset) const {
             if (offset < size()) {
@@ -188,11 +192,21 @@ namespace blocksci {
         }
         
         void truncate(OffsetType offset) {
-            if (!boost::filesystem::exists(path)) {
-                boost::filesystem::fstream{path, std::fstream::out | std::fstream::binary};
+            if (offset < SimpleFileMapperBase::size()) {
+                buffer.clear();
+                boost::filesystem::resize_file(path, offset);
+                reload();
+            } else if (offset < size()) {
+                auto bufferToSave = offset - SimpleFileMapperBase::size();
+                buffer.resize(bufferToSave);
+            } else if (offset > size()) {
+                clearBuffer();
+                if (!boost::filesystem::exists(path)) {
+                    boost::filesystem::fstream{path, std::fstream::out | std::fstream::binary};
+                }
+                boost::filesystem::resize_file(path, offset);
+                reload();
             }
-            boost::filesystem::resize_file(path, offset);
-            reload();
         }
     };
     

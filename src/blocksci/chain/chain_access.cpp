@@ -18,20 +18,25 @@
 #include "transaction_iterator.hpp"
 
 namespace blocksci {
-    ChainAccess::ChainAccess(const DataConfiguration &config, bool errorOnReorg_, uint32_t blocksIgnored) :
-    blockFile(config.blockFilePath()),
-    blockCoinbaseFile(config.blockCoinbaseFilePath()),
-    txFile(config.txFilePath()),
-    txHashesFile(config.txHashesFilePath()),
-    errorOnReorg(errorOnReorg_) {
-
+    
+    void ChainAccess::setup() {
         maxHeight = static_cast<uint32_t>(blockFile.size()) - blocksIgnored;
-        if (errorOnReorg_) {
+        if (errorOnReorg) {
             auto maxLoadedBlock = getBlockFile().getData(maxHeight - 1);
             lastBlockHash = maxLoadedBlock->hash;
             _maxLoadedTx = maxLoadedBlock->firstTxIndex + maxLoadedBlock->numTxes;
             lastBlockHashDisk = &maxLoadedBlock->hash;
         }
+    }
+    
+    ChainAccess::ChainAccess(const DataConfiguration &config, bool errorOnReorg_, uint32_t blocksIgnored_) :
+    blockFile(config.blockFilePath()),
+    blockCoinbaseFile(config.blockCoinbaseFilePath()),
+    txFile(config.txFilePath()),
+    txHashesFile(config.txHashesFilePath()),
+    errorOnReorg(errorOnReorg_),
+    blocksIgnored(blocksIgnored_) {
+        setup();
     }
     
     void ChainAccess::reorgCheck() const {
@@ -42,6 +47,14 @@ namespace blocksci {
     
     uint32_t ChainAccess::maxLoadedTx() const {
         return _maxLoadedTx;
+    }
+    
+    void ChainAccess::reload() {
+        blockFile.reload();
+        blockCoinbaseFile.reload();
+        txFile.reload();
+        txHashesFile.reload();
+        setup();
     }
     
     size_t ChainAccess::txCount() const {
