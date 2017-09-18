@@ -39,7 +39,8 @@ void ParserIndex::complete() {
             blocksci::ChainAccess chain{config, false, 0};
             auto maxTxCount = chain.txCount();
             runUpdate(waitingRevealed, maxTxCount);
-            tearDown();
+            blocksci::ScriptAccess scripts{config};
+            tearDown(scripts);
         });
     }
 }

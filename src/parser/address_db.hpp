@@ -22,7 +22,7 @@ class AddressDB : public AddressTraverser {
     sqlite3 *db;
     bool firstRun;
     std::unordered_map<blocksci::ScriptType::Enum,  sqlite3_stmt *> insertStatements;
-    sqlite3_stmt *scriptHashQuery;
+    std::vector<blocksci::script::ScriptHash> p2shesToAdd;
     
     AddressDB(const ParserConfiguration &config, std::pair<sqlite3 *, bool> init);
     
@@ -31,7 +31,7 @@ class AddressDB : public AddressTraverser {
     void sawAddress(const blocksci::Address &address, const blocksci::OutputPointer &pointer) override;
     void revealedP2SH(blocksci::script::ScriptHash &scriptHash, const blocksci::ScriptAccess &scripts) override;
     
-    void tearDown() override;
+    void tearDown(const blocksci::ScriptAccess &scripts) override;
     
 public:
     AddressDB(const ParserConfiguration &config);

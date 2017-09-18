@@ -89,33 +89,14 @@ std::unordered_map<ScriptType::Enum,  sqlite3_stmt *> setupInsertStatements(sqli
     return insertStatements;
 }
 
-sqlite3_stmt *setupScriptHashQuery(sqlite3 *addressDb) {
-    std::stringstream ss;
-    ss << "SELECT TX_INDEX, OUTPUT_NUM FROM " << scriptName(ScriptType::Enum::SCRIPTHASH) << " WHERE ADDRESS_NUM = ? AND TX_INDEX < ?" ;
-    sqlite3_stmt *stmt;
-    auto rc = sqlite3_prepare_v2(addressDb, ss.str().c_str(), -1, &stmt, 0);
-    if( rc != SQLITE_OK ){
-        fprintf(stderr, "SQL error: %s\n", sqlite3_errmsg(addressDb));
-    }
-    return stmt;
-}
-
 AddressDB::AddressDB(const ParserConfiguration &config) : AddressDB(config, openAddressDb(config.addressDBFilePath())) {}
 
-AddressDB::AddressDB(const ParserConfiguration &config, std::pair<sqlite3 *, bool> init) : AddressTraverser(config, "addressDB"), db(init.first), firstRun(init.second), insertStatements(setupInsertStatements(db)), scriptHashQuery(setupScriptHashQuery(db)) {
+AddressDB::AddressDB(const ParserConfiguration &config, std::pair<sqlite3 *, bool> init) : AddressTraverser(config, "addressDB"), db(init.first), firstRun(init.second), insertStatements(setupInsertStatements(db)) {
     sqlite3_exec(db, "PRAGMA synchronous = OFF", NULL, NULL, NULL);
     sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
 }
 
-void AddressDB::tearDown() {
-    for (auto &pair : insertStatements) {
-        sqlite3_finalize(pair.second);
-    }
-    
-    sqlite3_finalize(scriptHashQuery);
-    
-    sqlite3_exec(db, "END TRANSACTION;", NULL, NULL, NULL);
-    
+void AddressDB::tearDown(const blocksci::ScriptAccess &scripts) {
     if (firstRun) {
         for (auto script : ScriptType::all) {
             if (isDeduped(script)) {
@@ -137,26 +118,46 @@ void AddressDB::tearDown() {
         }
     }
     
+    std::stringstream ss;
+    ss << "SELECT TX_INDEX, OUTPUT_NUM FROM " << scriptName(ScriptType::Enum::SCRIPTHASH) << " WHERE ADDRESS_NUM = ? AND TX_INDEX < ?" ;
+    sqlite3_stmt *scriptHashQuery;
+    auto rc = sqlite3_prepare_v2(db, ss.str().c_str(), -1, &scriptHashQuery, 0);
+    if( rc != SQLITE_OK ){
+        fprintf(stderr, "SQL error: %s\n", sqlite3_errmsg(db));
+    }
+
+    
+    for (auto &scriptHash : p2shesToAdd) {
+        sqlite3_bind_int(scriptHashQuery, 1, static_cast<int32_t>(scriptHash.scriptNum));
+        sqlite3_bind_int64(scriptHashQuery, 2, static_cast<int64_t>(scriptHash.txRevealed));
+        
+        int rc = 0;
+        while ( (rc = sqlite3_step(scriptHashQuery)) == SQLITE_ROW) {
+            auto txNum = sqlite3_column_int64(scriptHashQuery, 0);
+            auto outputNum = sqlite3_column_int(scriptHashQuery, 1);
+            std::function<bool(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
+                blocksci::OutputPointer pointer{static_cast<uint32_t>(txNum), static_cast<uint16_t>(outputNum)};
+                addAddress(a, pointer);
+                return true;
+            };
+            visit(*scriptHash.getWrappedAddress(), visitFunc, scripts);
+            
+        }
+    }
+    
+    for (auto &pair : insertStatements) {
+        sqlite3_finalize(pair.second);
+    }
+    
+    sqlite3_finalize(scriptHashQuery);
+    
+    sqlite3_exec(db, "END TRANSACTION;", NULL, NULL, NULL);
+    
     sqlite3_close(db);
 }
 
-void AddressDB::revealedP2SH(blocksci::script::ScriptHash &scriptHash, const blocksci::ScriptAccess &scripts) {
-    sqlite3_bind_int(scriptHashQuery, 1, static_cast<int32_t>(scriptHash.scriptNum));
-    sqlite3_bind_int64(scriptHashQuery, 2, static_cast<int64_t>(scriptHash.txRevealed));
-    
-    int rc = 0;
-    while ( (rc = sqlite3_step(scriptHashQuery)) == SQLITE_ROW) {
-        auto txNum = sqlite3_column_int64(scriptHashQuery, 0);
-        auto outputNum = sqlite3_column_int(scriptHashQuery, 1);
-        std::function<bool(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
-            blocksci::OutputPointer pointer{static_cast<uint32_t>(txNum), static_cast<uint16_t>(outputNum)};
-            addAddress(a, pointer);
-            return true;
-        };
-        visit(*scriptHash.getWrappedAddress(), visitFunc, scripts);
-        
-    }
-    sqlite3_reset(scriptHashQuery);
+void AddressDB::revealedP2SH(blocksci::script::ScriptHash &scriptHash, const blocksci::ScriptAccess &) {
+    p2shesToAdd.push_back(scriptHash);
 }
 
 void AddressDB::addAddress(const blocksci::Address &address, const blocksci::OutputPointer &pointer) {
