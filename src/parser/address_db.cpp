@@ -108,6 +108,7 @@ AddressDB::AddressDB(const ParserConfiguration &config, std::pair<sqlite3 *, boo
 }
 
 AddressDB::~AddressDB() {
+    preDestructor();
     for (auto &pair : insertStatements) {
         sqlite3_finalize(pair.second);
     }

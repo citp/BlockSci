@@ -40,6 +40,7 @@ protected:
     virtual void revealedP2SH(blocksci::script::ScriptHash &scriptHash, const blocksci::ScriptAccess &scripts) = 0;
     virtual void prepareUpdate(const blocksci::ChainAccess &, const blocksci::ScriptAccess &) {}
     
+    void preDestructor();
     void runUpdate(const std::vector<uint32_t> &revealed, uint32_t maxTxCount);
     
 public:
