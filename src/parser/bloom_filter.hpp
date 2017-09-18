@@ -16,6 +16,9 @@
 template<class Key>
 class BloomFilter {
 public:
+    using BlockType = size_t;
+    static constexpr size_t BlockSize = sizeof(BlockType) * 8;
+    
     BloomFilter();
     BloomFilter(uint64_t maxItems, double fpRate);
     
@@ -69,7 +72,7 @@ private:
     uint8_t m_numHashes;
     uint64_t length;
     uint64_t addedCount;
-    std::vector<uint8_t> data;
+    std::vector<BlockType> data;
 };
 
 

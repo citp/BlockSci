@@ -88,8 +88,8 @@ HashIndex::HashIndex(const ParserConfiguration &config, std::pair<sqlite3 *, boo
     sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
 }
 
-HashIndex::~HashIndex() {
-    preDestructor();
+
+void HashIndex::tearDown() {
     sqlite3_finalize(txInsertStatement);
     
     sqlite3_exec(db, "END TRANSACTION;", NULL, NULL, NULL);

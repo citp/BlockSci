@@ -78,13 +78,9 @@ WitnessStackItem::WitnessStackItem(const char **buffer) : length(readVariableLen
 void RawTransaction::load(const char **buffer, uint32_t blockHeight_, bool witnessActivated) {
     isSegwit = witnessActivated;
     blockHeight = blockHeight_;
-    SHA256_CTX sha256CTX;
-    SHA256_Init(&sha256CTX);
     auto startPos = *buffer;
-    SHA256_Update(&sha256CTX, *buffer, sizeof(int32_t));
     version = readNext<int32_t>(buffer);
-    
-    const char *inputStart = *buffer;
+    txHashStart = *buffer;
     auto inputCount = readVariableLengthInteger(buffer);
     
     bool isSegwit = false;
@@ -92,7 +88,7 @@ void RawTransaction::load(const char **buffer, uint32_t blockHeight_, bool witne
         auto flag = readNext<uint8_t>(buffer);
         assert(flag == 1);
         isSegwit = true;
-        inputStart = *buffer;
+        txHashStart = *buffer;
         inputCount = readVariableLengthInteger(buffer);
     }
     
@@ -110,7 +106,7 @@ void RawTransaction::load(const char **buffer, uint32_t blockHeight_, bool witne
         outputs.emplace_back(buffer, witnessActivated);
     }
     
-    SHA256_Update(&sha256CTX, inputStart, *buffer - inputStart);
+    txHashLength = *buffer - txHashStart;
     
     if (isSegwit) {
         for (decltype(inputCount) i = 0; i < inputCount; i++) {
@@ -122,14 +118,21 @@ void RawTransaction::load(const char **buffer, uint32_t blockHeight_, bool witne
         }
     }
     
-    SHA256_Update(&sha256CTX, *buffer, sizeof(uint32_t));
-    
     locktime = readNext<uint32_t>(buffer);
     sizeBytes = static_cast<uint32_t>(*buffer - startPos);
-    
-    SHA256_Final((unsigned char *)&hash, &sha256CTX);
-    hash = sha256(reinterpret_cast<const uint8_t *>(&hash), sizeof(hash));
-    // hash = doubleSha256(startPos, sizeBytes);
+    hash.SetNull();
+}
+
+void RawTransaction::calculateHash() {
+    if (hash.IsNull()) {
+        SHA256_CTX sha256CTX;
+        SHA256_Init(&sha256CTX);
+        SHA256_Update(&sha256CTX, &version, sizeof(version));
+        SHA256_Update(&sha256CTX, txHashStart, txHashLength);
+        SHA256_Update(&sha256CTX, &locktime, sizeof(locktime));
+        SHA256_Final((unsigned char *)&hash, &sha256CTX);
+        hash = sha256(reinterpret_cast<const uint8_t *>(&hash), sizeof(hash));
+    }
 }
 
 #endif
@@ -164,6 +167,7 @@ void RawTransaction::load(const getrawtransaction_t &txinfo, uint32_t blockHeigh
     }
     hash = blocksci::uint256S(txinfo.txid);;
 }
+
 #endif
 
 blocksci::RawTransaction RawTransaction::getRawTransaction() const {

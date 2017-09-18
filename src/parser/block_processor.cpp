@@ -34,7 +34,7 @@
 #include <fstream>
 #include <iostream>
 
-BlockProcessor::BlockProcessor() : rawDone(false), utxoDone(false) {
+BlockProcessor::BlockProcessor() : rawDone(false), hashDone(false), utxoDone(false) {
     
 }
 
@@ -145,7 +145,6 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
     blocksci::ArbitraryFileMapper<boost::iostreams::mapped_file::readwrite> blockCoinbaseFile(config.blockCoinbaseFilePath());
     blocksci::FixedSizeFileMapper<blocksci::Block, boost::iostreams::mapped_file::readwrite> blockFile(config.blockFilePath());
     blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, uint32_t> sequenceFile{config.sequenceFilePath()};
-    blocksci::FixedSizeFileMapper<blocksci::uint256, boost::iostreams::mapped_file::readwrite> hashFile{config.txHashesFilePath()};
     
     blocksci::uint256 nullHash;
     nullHash.SetNull();
@@ -201,7 +200,6 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
         for (uint32_t i = 0; i < txCount; i++) {
             tx->load(&startPos, block.height, segwit);
             
-            hashFile.write(tx->hash);
             sequenceFile.writeIndexGroup();
             for (auto &input : tx->inputs) {
                 sequenceFile.write(input.sequenceNum);
@@ -213,7 +211,7 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
                 tx->inputs.clear();
             }
             
-            while (!utxo_transaction_queue.push(tx)) {
+            while (!hash_transaction_queue.push(tx)) {
                 std::this_thread::sleep_for(100ms);
             }
             txNum++;
@@ -262,7 +260,6 @@ void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<bl
     
     blocksci::ArbitraryFileMapper<boost::iostreams::mapped_file::readwrite> blockCoinbaseFile(config.blockCoinbaseFilePath());
     blocksci::FixedSizeFileMapper<blocksci::Block, boost::iostreams::mapped_file::readwrite> blockFile(config.blockFilePath());
-    blocksci::FixedSizeFileMapper<blocksci::uint256, boost::iostreams::mapped_file::readwrite> hashFile{config.txHashesFilePath()};
     blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, uint32_t> sequenceFile{config.sequenceFilePath()};
     
     BitcoinAPI bapi{config.createBitcoinAPI()};
@@ -290,14 +287,13 @@ void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<bl
             }
             loadTxRPC(tx, block, i, bapi, segwit);
             
-            hashFile.write(tx->hash);
             sequenceFile.writeIndexGroup();
             for (auto &input : tx->inputs) {
                 sequenceFile.write(input.sequenceNum);
             }
             
             // Note to self: Currently this does not get the coinbase tx data
-            while (!utxo_transaction_queue.push(tx)) {
+            while (!hash_transaction_queue.push(tx)) {
                 std::this_thread::sleep_for(100ms);
             }
             txNum++;
@@ -313,6 +309,26 @@ void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<bl
 }
 
 #endif
+
+void BlockProcessor::calculateHashes(ParserConfiguration config) {
+    using namespace std::chrono_literals;
+    blocksci::FixedSizeFileMapper<blocksci::uint256, boost::iostreams::mapped_file::readwrite> hashFile{config.txHashesFilePath()};
+    auto consume = [&](RawTransaction *tx) -> void {
+        tx->calculateHash();
+        hashFile.write(tx->hash);
+        while (!utxo_transaction_queue.push(tx)) {
+            std::this_thread::sleep_for(100ms);
+        }
+    };
+    
+    while (!rawDone) {
+        while (hash_transaction_queue.consume_all(consume)) {}
+        std::this_thread::sleep_for(100ms);
+    }
+    while (hash_transaction_queue.consume_all(consume)) {}
+    
+    hashDone = true;
+}
 
 void BlockProcessor::processUTXOs(ParserConfiguration config, UTXOState &utxoState) {
     using namespace std::chrono_literals;
@@ -372,7 +388,7 @@ void BlockProcessor::processUTXOs(ParserConfiguration config, UTXOState &utxoSta
         utxoState.optionalSave();
     };
     
-    while (!rawDone) {
+    while (!hashDone) {
         while (utxo_transaction_queue.consume_all(consume)) {}
         std::this_thread::sleep_for(100ms);
     }

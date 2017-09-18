@@ -31,9 +31,10 @@ class AddressDB : public AddressTraverser {
     void sawAddress(const blocksci::Address &address, const blocksci::OutputPointer &pointer) override;
     void revealedP2SH(blocksci::script::ScriptHash &scriptHash, const blocksci::ScriptAccess &scripts) override;
     
+    void tearDown() override;
+    
 public:
     AddressDB(const ParserConfiguration &config);
-    ~AddressDB();
     
     void rollback(uint32_t maxTxIndex);
 };

@@ -275,6 +275,10 @@ std::vector<uint32_t> addNewBlocks(const ConfigType &config, const std::vector<B
         processor.readNewBlocks(config, nextBlocks, startingTxCount);
     });
     
+    auto hashCalculator = std::async(std::launch::async, [&] {
+        processor.calculateHashes(config);
+    });
+    
     auto utxoProcessor = std::async(std::launch::async, [&] {
         processor.processUTXOs(config, utxoState);
     });
@@ -284,6 +288,7 @@ std::vector<uint32_t> addNewBlocks(const ConfigType &config, const std::vector<B
     });
     
     importer.get();
+    hashCalculator.get();
     utxoProcessor.get();
     return addressProcessor.get();
 }
@@ -346,6 +351,10 @@ void updateChain(const ConfigType &config, uint32_t maxBlockNum) {
         firstSeen.update(revealedScriptHashes);
         hashIndex.update(revealedScriptHashes);
     }
+    
+    addressDB.complete();
+    firstSeen.complete();
+    hashIndex.complete();
 }
 
 int main(int argc, const char * argv[]) {
