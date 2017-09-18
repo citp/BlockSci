@@ -16,12 +16,16 @@
 
 #include <boost/filesystem/fstream.hpp>
 
-ParserIndex::ParserIndex(const ParserConfiguration &config_, const std::string &resultName) : updateFuture{std::async(std::launch::async, [&] {})}, config(config_), cachePath(config_.parserDirectory()/(resultName + ".txt")) {
+ParserIndex::ParserIndex(const ParserConfiguration &config_, const std::string &resultName) : updateFuture{std::async(std::launch::async, [&] {})}, launchingUpdate(false), config(config_), cachePath(config_.parserDirectory()/(resultName + ".txt")) {
     boost::filesystem::ifstream inputFile(cachePath);
     inputFile >> latestTx;
 }
 
 void ParserIndex::preDestructor() {
+    using namespace std::chrono_literals;
+    while (launchingUpdate) {
+        std::this_thread::sleep_for(100ms);
+    }
     if (updateFuture.valid()) {
         updateFuture.get();
     }
@@ -36,9 +40,11 @@ ParserIndex::~ParserIndex() {
 
 void ParserIndex::update(const std::vector<uint32_t> &revealed) {
     using namespace std::chrono_literals;
+    
     waitingRevealed.insert(waitingRevealed.end(), revealed.begin(), revealed.end());
     if (updateFuture.wait_for(0ms) == std::future_status::ready) {
         updateFuture.get();
+        launchingUpdate = true;
         auto nextRevealed = std::move(waitingRevealed);
         waitingRevealed.clear();
         blocksci::ChainAccess chain{config, false, 0};
@@ -48,6 +54,7 @@ void ParserIndex::update(const std::vector<uint32_t> &revealed) {
         updateFuture = std::async(std::launch::async, [this, nextRevealed, maxTxCount] {
             runUpdate(nextRevealed, maxTxCount);
         });
+        launchingUpdate = false;
     }
 }
 
