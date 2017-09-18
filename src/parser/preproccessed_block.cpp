@@ -44,7 +44,7 @@ InputInfo RawInput::getInfo(uint16_t i, uint32_t txNum, uint32_t addressNum, boo
         length = scriptLength;
     }
     
-    return {i, addressNum, txNum, start, length, witnessStack, isSegwit};
+    return {i, txNum, addressNum, start, length, witnessStack, isSegwit};
 }
 
 ScriptOutputType getScriptOutput(const std::vector<unsigned char> &scriptBytes, bool witnessActivated) {
