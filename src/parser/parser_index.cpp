@@ -17,8 +17,12 @@
 #include <boost/filesystem/fstream.hpp>
 
 ParserIndex::ParserIndex(const ParserConfiguration &config_, const std::string &resultName) : updateFuture{std::async(std::launch::async, [&] {})}, launchingUpdate(false), destroyed(false), tornDown(false), config(config_), cachePath(config_.parserDirectory()/(resultName + ".txt")) {
-    boost::filesystem::ifstream inputFile(cachePath);
-    inputFile >> latestTx;
+    if (boost::filesystem::exists(cachePath)) {
+        boost::filesystem::ifstream inputFile(cachePath);
+        inputFile >> latestTx;
+    } else {
+        latestTx = 0;
+    }
 }
 
 void ParserIndex::preDestructor() {

@@ -31,12 +31,13 @@ namespace blocksci {
         static sqlite3_stmt *f(sqlite3 *db) {
             sqlite3_stmt *stmt;
             std::stringstream ss;
-            ss << "SELECT TX_INDEX, OUTPUT_NUM FROM " << scriptName(scriptType(type)) << " WHERE ADDRESS_NUM = ? AND ADDRESS_TYPE = " << static_cast<uint8_t>(type);
+            ss << "SELECT TX_INDEX, OUTPUT_NUM FROM " << scriptName(scriptType(type)) << " WHERE ADDRESS_NUM = ? AND ADDRESS_TYPE = ?";
             auto rc = sqlite3_prepare_v2(db, ss.str().c_str(), -1, &stmt, 0);
             if( rc != SQLITE_OK ){
                 fprintf(stderr, "SQL error: %s\n", sqlite3_errmsg(db));
                 return nullptr;
             }
+            sqlite3_bind_int(stmt, 2, static_cast<int>(type));
             return stmt;
         }
     };
