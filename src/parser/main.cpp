@@ -308,6 +308,11 @@ void updateChain(const ConfigType &config, uint32_t maxBlockNum) {
     
     auto blocksToAdd = std::move(chainUpdateInfo.blocksToAdd);
     
+    
+    if (blocksToAdd.size() == 0) {
+        return;
+    }
+    
     AddressDB addressDB{config};
     FirstSeenIndex firstSeen{config};
     HashIndex hashIndex{config};

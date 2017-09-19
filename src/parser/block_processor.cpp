@@ -104,7 +104,7 @@ void BlockProcessor::closeFinishedFiles(uint32_t txNum) {
 struct SegwitChecker : public boost::static_visitor<bool> {
     bool operator()(const ScriptOutput<blocksci::AddressType::Enum::NULL_DATA> &output) const {
         uint32_t segwitMarker = *reinterpret_cast<const uint32_t *>(output.fullData.data());
-        return segwitMarker == 0xaa21a9ed;
+        return segwitMarker == 0xeda921aa;
     }
     
     template <blocksci::AddressType::Enum type>
