@@ -175,8 +175,6 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
         uint32_t txCount = readVariableLengthInteger(&startPos);
         
         auto firstTxIndex = txNum;
-        auto blockStart = startPos;
-        
         
         RawTransaction *tx;
         if (!finished_transaction_queue.pop(tx)) {
@@ -188,7 +186,7 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
         blocksci::uint256 nullHash;
         nullHash.SetNull();
         bool segwit = false;
-        auto segwitPos = blockStart;
+        auto segwitPos = startPos;
         for (uint32_t i = 0; i < txCount; i++) {
             tx->load(&segwitPos, 0, false);
             if (tx->inputs.size() == 1 && tx->inputs[0].rawOutputPointer.hash == nullHash) {
@@ -199,6 +197,7 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
         
         for (uint32_t i = 0; i < txCount; i++) {
             tx->load(&startPos, block.height, segwit);
+            tx->txNum = txNum;
             
             sequenceFile.writeIndexGroup();
             for (auto &input : tx->inputs) {
@@ -286,6 +285,7 @@ void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<bl
                 tx = new RawTransaction();
             }
             loadTxRPC(tx, block, i, bapi, segwit);
+            tx->txNum = txNum;
             
             sequenceFile.writeIndexGroup();
             for (auto &input : tx->inputs) {
@@ -335,11 +335,8 @@ void BlockProcessor::processUTXOs(ParserConfiguration config, UTXOState &utxoSta
     
     IndexedFileWriter<1> txFile{config.txFilePath()};
     
-    auto txNum = txFile.size();
-    
     auto consume = [&](RawTransaction *tx) -> void {
         
-        tx->txNum = txNum;
         txFile.writeIndexGroup();
         txFile.write(tx->getRawTransaction());
         
@@ -365,7 +362,7 @@ void BlockProcessor::processUTXOs(ParserConfiguration config, UTXOState &utxoSta
             txFile.write(blocksciOutput);
             
             if (isSpendable(scriptType(type))) {
-                blocksciOutput.linkedTxNum = txNum;
+                blocksciOutput.linkedTxNum = tx->txNum;
                 UTXO utxo{blocksciOutput, type};
                 RawOutputPointer pointer{tx->hash, i};
                 utxoState.addOutput(utxo, pointer);
@@ -382,8 +379,6 @@ void BlockProcessor::processUTXOs(ParserConfiguration config, UTXOState &utxoSta
             }
             std::this_thread::sleep_for(100ms);
         }
-        
-        txNum++;
         
         utxoState.optionalSave();
     };

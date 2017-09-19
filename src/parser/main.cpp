@@ -340,7 +340,7 @@ void updateChain(const ConfigType &config, uint32_t maxBlockNum) {
             }
         }
         
-        decltype(blocksToAdd) nextBlocks{blocksToAdd.begin() + lastBlockNum, blocksToAdd.begin() + blockNum};
+        decltype(blocksToAdd) nextBlocks{blocksToAdd.begin() + lastBlockNum, blocksToAdd.begin() + blockNum + 1};
         
         auto revealedScriptHashes = addNewBlocks(config, nextBlocks, startingTxCount, currentCount, totalTxCount, maxBlockHeight, utxoState, addressState);
         
