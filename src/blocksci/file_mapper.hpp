@@ -61,13 +61,20 @@ namespace blocksci {
         boost::filesystem::path path;
         
         void reload() {
-            auto newSize = boost::filesystem::file_size(path);
-            if (newSize != fileEnd) {
+            if (boost::filesystem::exists(path)) {
+                auto newSize = boost::filesystem::file_size(path);
+                if (newSize != fileEnd) {
+                    if (file.is_open()) {
+                        file.close();
+                    }
+                    file.open(path, fileMode);
+                    fileEnd = newSize;
+                }
+            } else {
                 if (file.is_open()) {
                     file.close();
                 }
-                file.open(path, fileMode);
-                fileEnd = newSize;
+                fileEnd = 0;
             }
         }
         
