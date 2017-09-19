@@ -17,7 +17,7 @@
 namespace blocksci {
     struct DataConfiguration {
         DataConfiguration() {}
-        DataConfiguration(const boost::filesystem::path &dataDirectory);
+        explicit DataConfiguration(const boost::filesystem::path &dataDirectory);
         
         std::vector<unsigned char> pubkeyPrefix;
         std::vector<unsigned char> scriptPrefix;

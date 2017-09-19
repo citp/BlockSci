@@ -23,7 +23,7 @@ namespace blocksci {
         }
     }
     
-    Nonstandard::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : Nonstandard(addressNum, access.getScriptData<ScriptType::Enum::NONSTANDARD>(addressNum)) {}
+    Nonstandard::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : Nonstandard(addressNum, access.getScriptData<scriptType>(addressNum)) {}
     
     bool Nonstandard::operator==(const Script &other) {
         auto otherA = dynamic_cast<const Nonstandard *>(&other);

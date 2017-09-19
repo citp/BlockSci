@@ -23,8 +23,14 @@ namespace blocksci {
     public:
         uint160 pubkeyhash;
         
-        ScriptAddress<ScriptType::Enum::PUBKEY>(uint32_t scriptNum, const PubkeyData *rawData);
-        ScriptAddress<ScriptType::Enum::PUBKEY>(const ScriptAccess &access, uint32_t addressNum);
+        constexpr static ScriptType::Enum scriptType = ScriptType::Enum::PUBKEY;
+        
+        ScriptAddress<scriptType>(uint32_t scriptNum, const PubkeyData *rawData);
+        ScriptAddress<scriptType>(const ScriptAccess &access, uint32_t addressNum);
+        
+        ScriptType::Enum type() const override {
+            return scriptType;
+        }
         
         std::string addressString(const DataConfiguration &config) const;
         
@@ -41,7 +47,7 @@ namespace blocksci {
         }
         
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        ScriptAddress<ScriptType::Enum::PUBKEY>(uint32_t addressNum);
+        ScriptAddress<scriptType>(uint32_t addressNum);
         std::string addressString() const;
         #endif
     };

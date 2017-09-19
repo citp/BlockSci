@@ -20,8 +20,14 @@ namespace blocksci {
         CScript outputScript;
         
     public:
-        ScriptAddress<ScriptType::Enum::NONSTANDARD>(uint32_t scriptNum, std::tuple<const NonstandardScriptData *, const NonstandardScriptData *> &&rawData);
-        ScriptAddress<ScriptType::Enum::NONSTANDARD>(const ScriptAccess &access, uint32_t addressNum);
+        constexpr static ScriptType::Enum scriptType = ScriptType::Enum::NONSTANDARD;
+        
+        ScriptAddress<scriptType>(uint32_t scriptNum, std::tuple<const NonstandardScriptData *, const NonstandardScriptData *> &&rawData);
+        ScriptAddress<scriptType>(const ScriptAccess &access, uint32_t addressNum);
+        
+        ScriptType::Enum type() const override {
+            return scriptType;
+        }
         
         std::string inputString() const;
         std::string outputString() const;
@@ -31,7 +37,7 @@ namespace blocksci {
         bool operator==(const Script &other) override;
         
 #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        ScriptAddress<ScriptType::Enum::NONSTANDARD>(uint32_t addressNum);
+        ScriptAddress<scriptType>(uint32_t addressNum);
 #endif
     };
 }

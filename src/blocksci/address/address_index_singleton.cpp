@@ -31,4 +31,24 @@ namespace blocksci {
     std::vector<Transaction> AddressIndex::getInputTransactions(const Address &address) const {
         return getInputTransactions(address, DataAccess::Instance().chain);
     }
+    
+    std::vector<const Output *> AddressIndex::getOutputs(const Script &script) const {
+        return getOutputs(script, DataAccess::Instance().chain);
+    }
+    
+    std::vector<const Input *> AddressIndex::getInputs(const Script &script) const {
+        return getInputs(script, DataAccess::Instance().chain);
+    }
+    
+    std::vector<Transaction> AddressIndex::getTransactions(const Script &script) const {
+        return getTransactions(script, DataAccess::Instance().chain);
+    }
+    
+    std::vector<Transaction> AddressIndex::getOutputTransactions(const Script &script) const {
+        return getOutputTransactions(script, DataAccess::Instance().chain);
+    }
+    
+    std::vector<Transaction> AddressIndex::getInputTransactions(const Script &script) const {
+        return getInputTransactions(script, DataAccess::Instance().chain);
+    }
 }

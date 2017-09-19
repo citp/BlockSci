@@ -23,6 +23,8 @@ namespace blocksci {
         
         Script(uint32_t scriptNum_) : scriptNum(scriptNum_) {}
         
+        virtual ScriptType::Enum type() const = 0;
+        
         virtual std::string toString(const DataConfiguration &config) const = 0;
         virtual std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const = 0;
         
@@ -34,12 +36,24 @@ namespace blocksci {
         
         virtual void visitPointers(const std::function<void(const Address &)> &) const {}
         
+        std::vector<const Output *> getOutputs(const AddressIndex &index, const ChainAccess &chain) const;
+        std::vector<const Input *> getInputs(const AddressIndex &index, const ChainAccess &chain) const;
+        std::vector<Transaction> getTransactions(const AddressIndex &index, const ChainAccess &chain) const;
+        std::vector<Transaction> getOutputTransactions(const AddressIndex &index, const ChainAccess &chain) const;
+        std::vector<Transaction> getInputTransactions(const AddressIndex &index, const ChainAccess &chain) const;
+        
         // requires DataAccess
         
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
         static std::unique_ptr<Script> create(const Address &address);
         std::string toString() const;
         std::string toPrettyString() const;
+        
+        std::vector<const Output *> getOutputs() const;
+        std::vector<const Input *> getInputs() const;
+        std::vector<Transaction> getTransactions() const;
+        std::vector<Transaction> getOutputTransactions() const;
+        std::vector<Transaction> getInputTransactions() const;
         #endif
         
     };

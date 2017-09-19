@@ -20,16 +20,22 @@ namespace blocksci {
     class ScriptAddress<ScriptType::Enum::NULL_DATA> : public Script {
         
     public:
-        ScriptAddress<ScriptType::Enum::NULL_DATA>(uint32_t scriptNum, const RawData *rawData);
-        ScriptAddress<ScriptType::Enum::NULL_DATA>(const ScriptAccess &access, uint32_t addressNum);
+        constexpr static ScriptType::Enum scriptType = ScriptType::Enum::NULL_DATA;
+        
+        ScriptAddress<scriptType>(uint32_t scriptNum, const RawData *rawData);
+        ScriptAddress<scriptType>(const ScriptAccess &access, uint32_t addressNum);
         std::string data;
+        
+        ScriptType::Enum type() const override {
+            return scriptType;
+        }
         
         std::string toString(const DataConfiguration &config) const override;
         std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const override;
         bool operator==(const Script &other) override;
         
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        ScriptAddress<ScriptType::Enum::NULL_DATA>(uint32_t addressNum);
+        ScriptAddress<scriptType>(uint32_t addressNum);
         #endif
     };
 }
