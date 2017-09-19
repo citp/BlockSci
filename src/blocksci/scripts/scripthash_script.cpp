@@ -18,7 +18,7 @@ namespace blocksci {
     
     ScriptHash::ScriptAddress(uint32_t scriptNum_, const ScriptHashData *rawData) : Script(scriptNum_), wrappedAddress(rawData->wrappedAddress), txRevealed(rawData->txRevealed), address(rawData->address) {}
     
-    ScriptHash::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : ScriptHash(addressNum, access.getScriptData<ScriptType::Enum::SCRIPTHASH>(addressNum)) {}
+    ScriptHash::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : ScriptHash(addressNum, access.getScriptData<scriptType>(addressNum)) {}
     
     bool ScriptHash::operator==(const Script &other) {
         auto otherA = dynamic_cast<const ScriptHash *>(&other);

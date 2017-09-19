@@ -9,6 +9,9 @@
 #ifndef address_index_hpp
 #define address_index_hpp
 
+#include <blocksci/address/address_types.hpp>
+#include <blocksci/scripts/script_info.hpp>
+
 #include <sqlite3.h>
 
 #include <unordered_set>
@@ -24,12 +27,18 @@ namespace blocksci {
     struct Input;
     struct Transaction;
     struct Address;
+    struct Script;
     class ChainAccess;
     
     
     
     class AddressIndex {
         sqlite3 *addressDb;
+        std::array<sqlite3_stmt *, AddressType::all.size()> addressQueries;
+        std::array<sqlite3_stmt *, ScriptType::all.size()> scriptQueries;
+        
+        AddressIndex(const char *filename);
+        
     public:
         
         AddressIndex(const DataConfiguration &config);
@@ -38,6 +47,7 @@ namespace blocksci {
         ~AddressIndex();
         
         std::vector<OutputPointer> getOutputPointers(const Address &address) const;
+        std::vector<OutputPointer> getOutputPointers(const Script &script) const;
         
         std::vector<const Output *> getOutputs(const Address &address, const ChainAccess &access) const;
         std::vector<const Input *> getInputs(const Address &address, const ChainAccess &access) const;
@@ -45,12 +55,24 @@ namespace blocksci {
         std::vector<Transaction> getOutputTransactions(const Address &address, const ChainAccess &access) const;
         std::vector<Transaction> getInputTransactions(const Address &address, const ChainAccess &access) const;
         
+        std::vector<const Output *> getOutputs(const Script &script, const ChainAccess &access) const;
+        std::vector<const Input *> getInputs(const Script &script, const ChainAccess &access) const;
+        std::vector<Transaction> getTransactions(const Script &script, const ChainAccess &access) const;
+        std::vector<Transaction> getOutputTransactions(const Script &script, const ChainAccess &access) const;
+        std::vector<Transaction> getInputTransactions(const Script &script, const ChainAccess &access) const;
+        
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
         std::vector<const Output *> getOutputs(const Address &address) const;
         std::vector<const Input *> getInputs(const Address &address) const;
         std::vector<Transaction> getTransactions(const Address &address) const;
         std::vector<Transaction> getOutputTransactions(const Address &address) const;
         std::vector<Transaction> getInputTransactions(const Address &address) const;
+        
+        std::vector<const Output *> getOutputs(const Script &script) const;
+        std::vector<const Input *> getInputs(const Script &script) const;
+        std::vector<Transaction> getTransactions(const Script &script) const;
+        std::vector<Transaction> getOutputTransactions(const Script &script) const;
+        std::vector<Transaction> getInputTransactions(const Script &script) const;
         #endif
     };
 }

@@ -24,8 +24,14 @@ namespace blocksci {
         uint32_t txRevealed;
         uint160 address;
         
-        ScriptAddress<ScriptType::Enum::SCRIPTHASH>(uint32_t scriptNum, const ScriptHashData *rawData);
-        ScriptAddress<ScriptType::Enum::SCRIPTHASH>(const ScriptAccess &access, uint32_t addressNum);
+        constexpr static ScriptType::Enum scriptType = ScriptType::Enum::SCRIPTHASH;
+        
+        ScriptAddress<scriptType>(uint32_t scriptNum, const ScriptHashData *rawData);
+        ScriptAddress<scriptType>(const ScriptAccess &access, uint32_t addressNum);
+        
+        ScriptType::Enum type() const override {
+            return scriptType;
+        }
         
         std::string addressString(const DataConfiguration &config) const;
         

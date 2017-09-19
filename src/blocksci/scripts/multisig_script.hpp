@@ -19,12 +19,17 @@ namespace blocksci {
     class ScriptAddress<ScriptType::Enum::MULTISIG> : public Script {
         
     public:
+        constexpr static ScriptType::Enum scriptType = ScriptType::Enum::MULTISIG;
         uint8_t required;
         uint8_t total;
         std::vector<Address> addresses;
         
-        ScriptAddress<ScriptType::Enum::MULTISIG>(uint32_t scriptNum, const MultisigData *rawData);
-        ScriptAddress<ScriptType::Enum::MULTISIG>(const ScriptAccess &access, uint32_t addressNum);
+        ScriptAddress<scriptType>(uint32_t scriptNum, const MultisigData *rawData);
+        ScriptAddress<scriptType>(const ScriptAccess &access, uint32_t addressNum);
+        
+        ScriptType::Enum type() const override {
+            return scriptType;
+        }
         
         std::string toString(const DataConfiguration &config) const override;
         std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const override;
@@ -37,7 +42,7 @@ namespace blocksci {
         }
         
 #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        ScriptAddress<ScriptType::Enum::MULTISIG>(uint32_t addressNum);
+        ScriptAddress<scriptType>(uint32_t addressNum);
 #endif
     };
 }
