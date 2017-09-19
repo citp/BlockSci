@@ -11,10 +11,9 @@
 
 #include "bitcoin_script.hpp"
 #include "bitcoin_pubkey.hpp"
-#include "typedefs.hpp"
 
+#include <blocksci/typedefs.hpp>
 #include <blocksci/address/address.hpp>
-
 #include <blocksci/bitcoin_uint256.hpp>
 
 #include <stdio.h>
