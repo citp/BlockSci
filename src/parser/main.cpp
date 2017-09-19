@@ -313,8 +313,6 @@ void updateChain(const ConfigType &config, uint32_t maxBlockNum) {
     HashIndex hashIndex{config};
     
     uint32_t startingTxCount = getStartingTxCount(config);
-    uint32_t blockNum = 0;
-    uint32_t lastBlockNum = 0;
     uint32_t maxBlockHeight = blocksToAdd.back().height;
     
     UTXOState utxoState{config};
@@ -327,26 +325,27 @@ void updateChain(const ConfigType &config, uint32_t maxBlockNum) {
     
     uint32_t currentCount = 0;
     
-    while (blockNum < blocksToAdd.size()) {
-        
+    auto it = blocksToAdd.begin();
+    auto end = blocksToAdd.end();
+    while (it != end) {
+        auto prev = it;
         uint32_t newTxCount = 0;
-        
-        for (; blockNum < blocksToAdd.size(); blockNum++) {
-            auto &block = blocksToAdd[blockNum];
-            newTxCount += txCount(block);
-            
-            if (newTxCount > 1'000'000) {
-                break;
-            }
+        while (newTxCount < 1000000 && it != end) {
+            newTxCount += txCount(*it);
+            ++it;
         }
         
-        decltype(blocksToAdd) nextBlocks{blocksToAdd.begin() + lastBlockNum, blocksToAdd.begin() + blockNum + 1};
+        decltype(blocksToAdd) nextBlocks{prev, it};
+        
+        uint32_t count = 0;
+        for (auto &block : nextBlocks) {
+            count += txCount(block);
+        }
         
         auto revealedScriptHashes = addNewBlocks(config, nextBlocks, startingTxCount, currentCount, totalTxCount, maxBlockHeight, utxoState, addressState);
         
         currentCount += newTxCount;
         startingTxCount += newTxCount;
-        lastBlockNum = blockNum;
         
         addressDB.update(revealedScriptHashes);
         firstSeen.update(revealedScriptHashes);
