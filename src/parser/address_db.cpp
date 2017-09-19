@@ -49,22 +49,20 @@ std::pair<sqlite3 *, bool> openAddressDb(boost::filesystem::path addressesDBFile
     if (!dbAlreadyExists) {
         /* Create SQL statement */
         for (auto script : ScriptType::all) {
-            if (isDeduped(script)) {
-                std::stringstream ss;
-                ss << "CREATE TABLE ";
-                ss << scriptName(script) << "(";
-                ss << "ADDRESS_NUM     INT     NOT NULL,";
-                ss << "ADDRESS_TYPE    TINYINT NOT NULL,";
-                ss << "TX_INDEX        INT     NOT NULL,";
-                ss << "OUTPUT_NUM      INT     NOT NULL);";
-                
-                char *zErrMsg = 0;
-                auto rc = sqlite3_exec(addressDb, ss.str().c_str(), callback, 0, &zErrMsg);
-                if( rc != SQLITE_OK ){
-                    fprintf(stderr, "SQL error: %s\n", zErrMsg);
-                    sqlite3_free(zErrMsg);
-                    exit(1);
-                }
+            std::stringstream ss;
+            ss << "CREATE TABLE ";
+            ss << scriptName(script) << "(";
+            ss << "ADDRESS_NUM     INT     NOT NULL,";
+            ss << "ADDRESS_TYPE    TINYINT NOT NULL,";
+            ss << "TX_INDEX        INT     NOT NULL,";
+            ss << "OUTPUT_NUM      INT     NOT NULL);";
+            
+            char *zErrMsg = 0;
+            auto rc = sqlite3_exec(addressDb, ss.str().c_str(), callback, 0, &zErrMsg);
+            if( rc != SQLITE_OK ){
+                fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                sqlite3_free(zErrMsg);
+                exit(1);
             }
         }
     }
@@ -75,16 +73,14 @@ std::unordered_map<ScriptType::Enum,  sqlite3_stmt *> setupInsertStatements(sqli
     std::unordered_map<ScriptType::Enum,  sqlite3_stmt *> insertStatements;
     
     for (auto script : ScriptType::all) {
-        if (isDeduped(script)) {
-            sqlite3_stmt *stmt;
-            std::stringstream ss;
-            ss << "INSERT INTO " << scriptName(script) << " VALUES (?, ?, ?, ?)";
-            auto rc = sqlite3_prepare_v2(addressDb,  ss.str().c_str(), -1, &stmt, nullptr);
-            if (rc != SQLITE_OK) {
-                fprintf(stderr, "Failed to fetch data: %s\n", sqlite3_errmsg(addressDb));
-            }
-            insertStatements[script] = stmt;
+        sqlite3_stmt *stmt;
+        std::stringstream ss;
+        ss << "INSERT INTO " << scriptName(script) << " VALUES (?, ?, ?, ?)";
+        auto rc = sqlite3_prepare_v2(addressDb,  ss.str().c_str(), -1, &stmt, nullptr);
+        if (rc != SQLITE_OK) {
+            fprintf(stderr, "Failed to fetch data: %s\n", sqlite3_errmsg(addressDb));
         }
+        insertStatements[script] = stmt;
     }
     return insertStatements;
 }
@@ -99,21 +95,19 @@ AddressDB::AddressDB(const ParserConfiguration &config, std::pair<sqlite3 *, boo
 void AddressDB::tearDown(const blocksci::ScriptAccess &scripts) {
     if (firstRun) {
         for (auto script : ScriptType::all) {
-            if (isDeduped(script)) {
-                std::stringstream ss;
-                ss << "CREATE INDEX ";
-                ss << scriptName(script);
-                ss << "_INDEX ON ";
-                ss << scriptName(script);
-                ss << "(ADDRESS_NUM);";
-                
-                char *zErrMsg = 0;
-                auto rc = sqlite3_exec(db, ss.str().c_str(), callback, 0, &zErrMsg);
-                if( rc != SQLITE_OK ){
-                    fprintf(stderr, "SQL error: %s\n", zErrMsg);
-                    sqlite3_free(zErrMsg);
-                    exit(1);
-                }
+            std::stringstream ss;
+            ss << "CREATE INDEX ";
+            ss << scriptName(script);
+            ss << "_INDEX ON ";
+            ss << scriptName(script);
+            ss << "(ADDRESS_NUM);";
+            
+            char *zErrMsg = 0;
+            auto rc = sqlite3_exec(db, ss.str().c_str(), callback, 0, &zErrMsg);
+            if( rc != SQLITE_OK ){
+                fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                sqlite3_free(zErrMsg);
+                exit(1);
             }
         }
     }
@@ -162,20 +156,18 @@ void AddressDB::revealedP2SH(blocksci::script::ScriptHash &scriptHash, const blo
 
 void AddressDB::addAddress(const blocksci::Address &address, const blocksci::OutputPointer &pointer) {
     auto script = scriptType(address.type);
-    if (isDeduped(script)) {
-        auto stmt = insertStatements[script];
-        sqlite3_bind_int(stmt, 1, address.addressNum);
-        sqlite3_bind_int(stmt, 2, static_cast<uint8_t>(address.type));
-        sqlite3_bind_int(stmt, 3, pointer.txNum);
-        sqlite3_bind_int(stmt, 4, pointer.inoutNum);
-        
-        auto rc = sqlite3_step(stmt);
-        if (rc != SQLITE_DONE) {
-            printf("ERROR inserting data: %s\n", sqlite3_errmsg(db));
-        }
-        
-        sqlite3_reset(stmt);
+    auto stmt = insertStatements[script];
+    sqlite3_bind_int(stmt, 1, address.addressNum);
+    sqlite3_bind_int(stmt, 2, static_cast<uint8_t>(address.type));
+    sqlite3_bind_int(stmt, 3, pointer.txNum);
+    sqlite3_bind_int(stmt, 4, pointer.inoutNum);
+    
+    auto rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE) {
+        printf("ERROR inserting data: %s\n", sqlite3_errmsg(db));
     }
+    
+    sqlite3_reset(stmt);
 }
 
 void AddressDB::sawAddress(const blocksci::Address &address, const blocksci::OutputPointer &pointer) {
@@ -184,11 +176,9 @@ void AddressDB::sawAddress(const blocksci::Address &address, const blocksci::Out
 
 void AddressDB::rollback(uint32_t maxTxIndex) {
     for (auto script : ScriptType::all) {
-        if (isDeduped(script)) {
-            std::stringstream ss;
-            ss << "DELETE FROM " << scriptName(script) << " WHERE TX_INDEX >= " << maxTxIndex;
-            sqlite3_exec(db,  ss.str().c_str(), NULL, NULL, NULL);
-            ss.clear();
-        }
+        std::stringstream ss;
+        ss << "DELETE FROM " << scriptName(script) << " WHERE TX_INDEX >= " << maxTxIndex;
+        sqlite3_exec(db,  ss.str().c_str(), NULL, NULL, NULL);
+        ss.clear();
     }
 }
