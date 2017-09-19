@@ -9,8 +9,8 @@
 #ifndef script_info_hpp
 #define script_info_hpp
 
-#include "util.hpp"
 #include "script_type.hpp"
+#include <blocksci/util.hpp>
 #include <stdio.h>
 
 namespace blocksci {
