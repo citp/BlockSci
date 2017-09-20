@@ -31,8 +31,10 @@ namespace blocksci {
         static sqlite3_stmt *f(sqlite3 *db) {
             sqlite3_stmt *stmt;
             std::stringstream ss;
-            ss << "SELECT TX_INDEX, OUTPUT_NUM FROM " << scriptName(scriptType(type)) << " WHERE ADDRESS_NUM = ? AND ADDRESS_TYPE = ?";
-            auto rc = sqlite3_prepare_v2(db, ss.str().c_str(), -1, &stmt, 0);
+            ss << "SELECT TX_INDEX, OUTPUT_NUM FROM " << scriptName(scriptType(type)) << " WHERE ADDRESS_NUM = ? AND ADDRESS_TYPE = ";
+            ss << static_cast<size_t>(type);
+            auto queryString = ss.str();
+            auto rc = sqlite3_prepare_v2(db, queryString.c_str(), -1, &stmt, 0);
             if( rc != SQLITE_OK ){
                 fprintf(stderr, "SQL error: %s\n", sqlite3_errmsg(db));
                 return nullptr;
@@ -202,13 +204,16 @@ namespace blocksci {
             auto outputNum = sqlite3_column_int(stmt, 1);
             outputs.push_back({static_cast<uint32_t>(txNum), static_cast<uint16_t>(outputNum)});
         }
+        
+        sqlite3_reset(stmt);
         return outputs;
     }
     
     std::vector<OutputPointer> AddressIndex::getOutputPointers(const Script &script) const {
         std::vector<OutputPointer> outputs;
         
-        auto stmt = scriptQueries[static_cast<size_t>(script.type())];
+        auto scriptType = script.type();
+        auto stmt = scriptQueries[static_cast<size_t>(scriptType)];
         sqlite3_bind_int(stmt, 1, static_cast<int32_t>(script.scriptNum));
         
         int rc = 0;
@@ -218,6 +223,7 @@ namespace blocksci {
             outputs.emplace_back(static_cast<uint32_t>(txNum), static_cast<uint16_t>(outputNum));
         }
         
+        sqlite3_reset(stmt);
         return outputs;
     }
 }
