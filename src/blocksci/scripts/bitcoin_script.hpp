@@ -408,9 +408,15 @@ protected:
     }
 public:
     CScript() { }
-    CScript(const_iterator pbegin, const_iterator pend) : CScriptBase(pbegin, pend) { }
-    CScript(std::vector<unsigned char>::const_iterator pbegin, std::vector<unsigned char>::const_iterator pend) : CScriptBase(pbegin, pend) { }
-    CScript(const unsigned char* pbegin, const unsigned char* pend) : CScriptBase(pbegin, pend) { }
+    CScript(const_iterator pbegin, const_iterator pend) : CScriptBase() {
+        insert(end(), pbegin, pend);
+    }
+    CScript(std::vector<unsigned char>::const_iterator pbegin, std::vector<unsigned char>::const_iterator pend) : CScriptBase() {
+        insert(end(), pbegin, pend);
+    }
+    CScript(const unsigned char* pbegin, const unsigned char* pend) : CScriptBase() {
+        insert(end(), pbegin, pend);
+    }
     
     CScript& operator+=(const CScript& b)
     {
