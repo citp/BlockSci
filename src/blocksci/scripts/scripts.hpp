@@ -16,5 +16,6 @@
 #include "scripthash_script.hpp"
 #include "nulldata_script.hpp"
 #include "nonstandard_script.hpp"
+#include "script_pointer.hpp"
 
 #endif /* scripts_h */
