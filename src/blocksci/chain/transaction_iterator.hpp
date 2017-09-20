@@ -49,7 +49,7 @@ namespace blocksci {
         }
         
         size_t distance_to(TransactionIterator const& other) const {
-            return static_cast<int64_t>(other.currentTxIndex) - static_cast<int64_t>(currentTxIndex);
+            return static_cast<size_t>(other.currentTxIndex) - static_cast<size_t>(currentTxIndex);
         }
         
         Transaction dereference() const;

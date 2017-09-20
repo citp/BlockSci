@@ -21,9 +21,10 @@
 
 namespace blocksci {
     // [start, end)
-    std::vector<std::vector<Block>> segmentChain(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock, unsigned int segmentCount) {
+    std::vector<std::vector<Block>> segmentChain(const Blockchain &chain, size_t startBlock, size_t endBlock, unsigned int segmentCount) {
         auto &firstBlock = *(chain.begin() + startBlock);
-        auto lastBlockIt = chain.begin() + endBlock;
+        auto lastBlockIt = chain.begin();
+        std::advance(lastBlockIt, static_cast<int64_t>(endBlock));
         auto lastTx = (lastBlockIt - 1)->firstTxIndex + (lastBlockIt - 1)->numTxes;
         auto firstTx = firstBlock.firstTxIndex;
         auto totalTxCount = lastTx - firstTx;
@@ -37,11 +38,14 @@ namespace blocksci {
         
         std::vector<std::vector<Block>> segments;
         
-        auto it = txIndexes.begin() + startBlock;
+        auto it = txIndexes.begin();
+        std::advance(it, static_cast<int64_t>(startBlock));
         while(lastTx - *it > segmentSize) {
             auto segmentStart = std::distance(txIndexes.begin(), it);
             auto breakPoint = *it + segmentSize;
-            it = std::lower_bound(it, txIndexes.begin() + endBlock, breakPoint);
+            auto endIt = txIndexes.begin();
+            std::advance(endIt, static_cast<int64_t>(endBlock));
+            it = std::lower_bound(it, endIt, breakPoint);
             auto segmentEnd = std::distance(txIndexes.begin(), it);
             segments.push_back(std::vector<Block>(chain.begin() + segmentStart, chain.begin() + segmentEnd));
         }

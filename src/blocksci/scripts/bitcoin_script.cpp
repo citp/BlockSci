@@ -151,6 +151,9 @@ const char* GetOpName(opcodetype opcode)
     }
 }
 
+scriptnum_error::scriptnum_error(const std::string& str) : std::runtime_error(str) {}
+scriptnum_error::~scriptnum_error() = default;
+
 unsigned int CScript::GetSigOpCount(bool fAccurate) const
 {
     unsigned int n = 0;
@@ -166,7 +169,7 @@ unsigned int CScript::GetSigOpCount(bool fAccurate) const
         else if (opcode == OP_CHECKMULTISIG || opcode == OP_CHECKMULTISIGVERIFY)
         {
             if (fAccurate && lastOpcode >= OP_1 && lastOpcode <= OP_16)
-                n += DecodeOP_N(lastOpcode);
+                n += static_cast<unsigned int>(DecodeOP_N(lastOpcode));
             else
                 n += MAX_PUBKEYS_PER_MULTISIG;
         }
@@ -226,8 +229,8 @@ bool CScript::IsWitnessProgram(int& version, std::vector<unsigned char>& program
     if ((*this)[0] != OP_0 && ((*this)[0] < OP_1 || (*this)[0] > OP_16)) {
         return false;
     }
-    if ((size_t)((*this)[1] + 2) == this->size()) {
-        version = DecodeOP_N((opcodetype)(*this)[0]);
+    if (static_cast<size_t>((*this)[1] + 2) == this->size()) {
+        version = DecodeOP_N(static_cast<opcodetype>((*this)[0]));
         program = std::vector<unsigned char>(this->begin() + 2, this->end());
         return true;
     }
@@ -242,7 +245,7 @@ bool CScript::IsWitnessProgram() const
     if ((*this)[0] != OP_0 && ((*this)[0] < OP_1 || (*this)[0] > OP_16)) {
         return false;
     }
-    return ((size_t)((*this)[1] + 2) == this->size());
+    return (static_cast<size_t>((*this)[1] + 2) == this->size());
 }
 
 bool CScript::IsPushOnly(const_iterator pc) const
@@ -291,6 +294,8 @@ bool CScript::HasValidOps() const
     }
     return true;
 }
+
+void CReserveScript::KeepScript() {}
 
 std::string ScriptToAsmStr(const CScript& script, const bool fAttemptSighashDecode)
 {

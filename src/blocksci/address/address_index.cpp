@@ -20,6 +20,8 @@
 #include "scripts/script.hpp"
 #include "data_configuration.hpp"
 
+#include <boost/optional/optional.hpp>
+
 #include <vector>
 #include <sstream>
 #include <iostream>
@@ -59,36 +61,44 @@ namespace blocksci {
         }
     };
     
-    sqlite3 *openAddressDb(const char *filename) {
-        sqlite3 *db;
-        auto rc = sqlite3_open_v2(filename, &db, SQLITE_OPEN_READONLY, NULL);
-        if (rc){
-            fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
-        }
-        return db;
+    std::vector<const Output *> getOutputsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
+    std::vector<const Input *> getInputsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
+    std::vector<Transaction> getTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
+    std::vector<Transaction> getOutputTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
+    std::vector<Transaction> getInputTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
+    
+    void AddressIndex::setupQueries() {
+        addressQueries = make_static_table<AddressType, AddressQueryFunctor>(db);
+        scriptQueries = make_static_table<ScriptType, ScriptQueryFunctor>(db);
     }
     
-    AddressIndex::AddressIndex(const char *filename) : addressDb(openAddressDb(filename)), addressQueries(make_static_table<AddressType, AddressQueryFunctor>(addressDb)), scriptQueries(make_static_table<ScriptType, ScriptQueryFunctor>(addressDb)) {}
-    
-    AddressIndex::AddressIndex(const DataConfiguration &config) : AddressIndex(config.addressDBFilePath().c_str())  {}
-    
-    
-    AddressIndex::AddressIndex(const AddressIndex &other) : AddressIndex(sqlite3_db_filename(other.addressDb, "main")) {}
-    
-    AddressIndex::~AddressIndex() {
+    void AddressIndex::teardownQueries() {
         for_each(addressQueries, [](auto &a) { sqlite3_finalize(a); });
         for_each(scriptQueries, [](auto &a) { sqlite3_finalize(a); });
-        sqlite3_close(addressDb);
+    }
+    
+    AddressIndex::AddressIndex(const DataConfiguration &config) : Database(config.addressDBFilePath().c_str())  {
+        setupQueries();
+    }
+    
+    
+    AddressIndex::AddressIndex(const AddressIndex &other) : Database(other) {
+        setupQueries();
+    }
+    
+    AddressIndex::~AddressIndex() {
+        teardownQueries();
     }
     
     
     AddressIndex& AddressIndex::operator=(const AddressIndex& other) {
-        sqlite3_close(addressDb);
-        addressDb = openAddressDb(sqlite3_db_filename(other.addressDb, "main"));
+        teardownQueries();
+        Database::operator=(other);
+        setupQueries();
         return *this;
     }
     
-    std::vector<const blocksci::Output *> getOutputsImp(std::vector<OutputPointer> pointers, const ChainAccess &access) {
+    std::vector<const Output *> getOutputsImp(std::vector<OutputPointer> pointers, const ChainAccess &access) {
         std::vector<const Output *> outputs;
         outputs.reserve(pointers.size());
         for (auto &pointer : pointers) {
@@ -97,11 +107,11 @@ namespace blocksci {
         return outputs;
     }
     
-    std::vector<const blocksci::Output *> AddressIndex::getOutputs(const Address &address, const ChainAccess &access) const {
+    std::vector<const Output *> AddressIndex::getOutputs(const Address &address, const ChainAccess &access) const {
         return getOutputsImp(getOutputPointers(address), access);
     }
     
-    std::vector<const blocksci::Output *> AddressIndex::getOutputs(const Script &script, const ChainAccess &access) const {
+    std::vector<const Output *> AddressIndex::getOutputs(const Script &script, const ChainAccess &access) const {
         return getOutputsImp(getOutputPointers(script), access);
     }
     

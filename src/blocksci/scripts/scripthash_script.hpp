@@ -40,13 +40,7 @@ namespace blocksci {
         
         bool operator==(const Script &other) override;
         
-        boost::optional<Address> getWrappedAddress() const {
-            if (wrappedAddress.addressNum != 0) {
-                return wrappedAddress;
-            } else {
-                return boost::none;
-            }
-        }
+        boost::optional<Address> getWrappedAddress() const;
         
         void visitPointers(const std::function<void(const Address &)> &visitFunc) const override {
             if (wrappedAddress.addressNum != 0) {

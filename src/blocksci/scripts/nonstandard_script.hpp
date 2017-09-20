@@ -13,6 +13,8 @@
 #include "script.hpp"
 #include "bitcoin_script.hpp"
 
+#include <boost/optional/optional.hpp>
+
 namespace blocksci {
     template <>
     class ScriptAddress<ScriptType::Enum::NONSTANDARD> : public Script {

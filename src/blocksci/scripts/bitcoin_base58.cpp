@@ -24,14 +24,14 @@ namespace blocksci {
         while (*psz && isspace(*psz))
             psz++;
         // Skip and count leading '1's.
-        int zeroes = 0;
-        int length = 0;
+        size_t zeroes = 0;
+        size_t length = 0;
         while (*psz == '1') {
             zeroes++;
             psz++;
         }
         // Allocate enough space in big-endian base256 representation.
-        int size = strlen(psz) * 733 /1000 + 1; // log(58) / log(256), rounded up.
+        size_t size = strlen(psz) * 733 /1000 + 1; // log(58) / log(256), rounded up.
         std::vector<unsigned char> b256(size);
         // Process the characters.
         while (*psz && !isspace(*psz)) {
@@ -40,11 +40,11 @@ namespace blocksci {
             if (ch == nullptr)
                 return false;
             // Apply "b256 = b256 * 58 + ch".
-            int carry = ch - pszBase58;
-            int i = 0;
+            auto carry = ch - pszBase58;
+            size_t i = 0;
             for (std::vector<unsigned char>::reverse_iterator it = b256.rbegin(); (carry != 0 || i < length) && (it != b256.rend()); ++it, ++i) {
                 carry += 58 * (*it);
-                *it = carry % 256;
+                *it = static_cast<unsigned char>(carry % 256);
                 carry /= 256;
             }
             assert(carry == 0);
@@ -57,11 +57,12 @@ namespace blocksci {
         if (*psz != 0)
             return false;
         // Skip leading zeroes in b256.
-        std::vector<unsigned char>::iterator it = b256.begin() + (size - length);
+        auto it = b256.begin();
+        std::advance(it, static_cast<int64_t>(size - length));
         while (it != b256.end() && *it == 0)
             ++it;
         // Copy result into output vector.
-        vch.reserve(zeroes + (b256.end() - it));
+        vch.reserve(zeroes + static_cast<size_t>(std::distance(it, b256.end())));
         vch.assign(zeroes, 0x00);
         while (it != b256.end())
             vch.push_back(*(it++));
@@ -71,21 +72,21 @@ namespace blocksci {
     std::string EncodeBase58(const unsigned char* pbegin, const unsigned char* pend)
     {
         // Skip & count leading zeroes.
-        int zeroes = 0;
-        int length = 0;
+        size_t zeroes = 0;
+        size_t length = 0;
         while (pbegin != pend && *pbegin == 0) {
             pbegin++;
             zeroes++;
         }
         // Allocate enough space in big-endian base58 representation.
-        int size = (pend - pbegin) * 138 / 100 + 1; // log(256) / log(58), rounded up.
+        size_t size = static_cast<size_t>((pend - pbegin) * 138 / 100 + 1); // log(256) / log(58), rounded up.
         std::vector<unsigned char> b58(size);
         // Process the bytes.
         while (pbegin != pend) {
             int carry = *pbegin;
-            int i = 0;
+            size_t i = 0;
             // Apply "b58 = b58 * 256 + ch".
-            for (std::vector<unsigned char>::reverse_iterator it = b58.rbegin(); (carry != 0 || i < length) && (it != b58.rend()); ++it, ++i) {
+            for (auto it = b58.rbegin(); (carry != 0 || i < length) && (it != b58.rend()); ++it, ++i) {
                 carry += 256 * (*it);
                 *it = carry % 58;
                 carry /= 58;
@@ -96,12 +97,13 @@ namespace blocksci {
             pbegin++;
         }
         // Skip leading zeroes in base58 result.
-        std::vector<unsigned char>::iterator it = b58.begin() + (size - length);
+        auto it = b58.begin();
+        std::advance(it, static_cast<int64_t>(size - length));
         while (it != b58.end() && *it == 0)
             ++it;
         // Translate the result into a string.
         std::string str;
-        str.reserve(zeroes + (b58.end() - it));
+        str.reserve(zeroes + static_cast<size_t>(std::distance(it, b58.end())));
         str.assign(zeroes, '1');
         while (it != b58.end())
             str += pszBase58[*(it++)];
@@ -123,7 +125,7 @@ namespace blocksci {
         // add 4-byte hash check to the end
         std::vector<unsigned char> vch(vchIn);
         uint256 hash = doubleSha256(reinterpret_cast<const char*>(vch.data()), vch.size());
-        vch.insert(vch.end(), (unsigned char*)&hash, (unsigned char*)&hash + 4);
+        vch.insert(vch.end(), reinterpret_cast<unsigned char*>(&hash), reinterpret_cast<unsigned char*>(&hash) + 4);
         return EncodeBase58(vch);
     }
 
@@ -165,7 +167,7 @@ namespace blocksci {
 
     void CBase58Data::SetData(const std::vector<unsigned char>& vchVersionIn, const unsigned char* pbegin, const unsigned char* pend)
     {
-        SetData(vchVersionIn, (void*)pbegin, pend - pbegin);
+        SetData(vchVersionIn, reinterpret_cast<const void *>(pbegin), static_cast<size_t>(pend - pbegin));
     }
 
     bool CBase58Data::SetString(const char* psz, unsigned int nVersionBytes)

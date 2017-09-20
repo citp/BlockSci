@@ -35,7 +35,7 @@ namespace blocksci {
         
         std::vector<uint32_t> txNums;
         while ( (rc = sqlite3_step(stmt)) == SQLITE_ROW) {
-            auto txNum = sqlite3_column_int(stmt, 0);
+            auto txNum = static_cast<uint32_t>(sqlite3_column_int(stmt, 0));
             txNums.push_back(txNum);
         }
         sqlite3_finalize(stmt);

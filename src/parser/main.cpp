@@ -49,6 +49,10 @@
 #include <stdio.h>
 #include <assert.h>
 
+void rollbackTransactions(size_t blockKeepCount, const ParserConfiguration &config);
+std::vector<char> HexToBytes(const std::string& hex);
+uint32_t getStartingTxCount(const ParserConfiguration &config);
+
 void rollbackTransactions(size_t blockKeepCount, const ParserConfiguration &config) {
     using namespace blocksci;
     
@@ -65,10 +69,10 @@ void rollbackTransactions(size_t blockKeepCount, const ParserConfiguration &conf
         ScriptAccess scripts{config};
         ScriptFirstSeenAccess firstSeenIndex(config);
         
-        auto &firstDeletedBlock = blocks[blockKeepCount];
+        auto &firstDeletedBlock = blocks[static_cast<decltype(blocks)::difference_type>(blockKeepCount)];
         auto firstDeletedTxNum = firstDeletedBlock.firstTxIndex;
         
-        auto totalTxCount = chain.txCount();
+        uint32_t totalTxCount = static_cast<uint32_t>(chain.txCount());
         
         for (uint32_t txNum = totalTxCount - 1; txNum >= firstDeletedTxNum; txNum--) {
             auto tx = Transaction::txWithIndex(chain, txNum);
@@ -130,7 +134,7 @@ std::vector<char> HexToBytes(const std::string& hex) {
     
     for (unsigned int i = 0; i < hex.length(); i += 2) {
         std::string byteString = hex.substr(i, 2);
-        char byte = (char) strtol(byteString.c_str(), NULL, 16);
+        char byte = static_cast<char>(strtol(byteString.c_str(), NULL, 16));
         bytes.push_back(byte);
     }
     
@@ -140,26 +144,6 @@ std::vector<char> HexToBytes(const std::string& hex) {
 /*
  std::string hexString("0100000001dce0625ea257b0f0e772d61050003020bad0dbc42c96a51491d8c8e23698d2d7010000006a473044022027bce535775f7eceec7a6dacef9ae84e3c5279ab83158e5a5472ded772b8206c02207f109a5f01114938f11e4fef3949e6930d2df50d115e6d577a8e07d3a56e14b20121032a0701b1f33f3b38fd23f23633c69a80b1c878b372b342e6bcbe963e2f88f7f5ffffffff01df280300000000001976a914becca086d70b43ee656d48ab038f09ce5ce0b95588ac00000000");
  */
-
-#ifdef BLOCKSCI_FILE_PARSER
-void printTxInfo(std::string &hexString) {
-    auto bytes = HexToBytes(hexString);
-    const char *bytesPtr = &bytes[0];
-    RawTransaction tx;
-    tx.load(&bytesPtr, 0, true);
-    
-    std::cout << "Size bytes: " << tx.sizeBytes << std::endl;
-    std::cout << "Locktime: " << tx.locktime << std::endl;
-    std::cout << "Version: " << tx.version << std::endl;
-    for (auto &input : tx.inputs) {
-        std::cout << "Spending " << input.rawOutputPointer << " sequence : " << input.sequenceNum << std::endl;
-    }
-    
-    for (auto &output : tx.outputs) {
-        std::cout << "Sent " << output.value << "\n";
-    }
-}
-#endif
 
 template <typename GetBlockHash>
 uint32_t findSplitPoint(const ParserConfiguration &config, uint32_t blockHeight, GetBlockHash getBlockHash) {
@@ -187,6 +171,27 @@ struct ChainUpdateInfo {
 
 
 #ifdef BLOCKSCI_FILE_PARSER
+void printTxInfo(std::string &hexString);
+uint32_t txCount(const BlockInfo &block);
+ChainUpdateInfo<BlockInfo> prepareChain(const FileParserConfiguration &config, uint32_t maxBlockNum);
+
+void printTxInfo(std::string &hexString) {
+    auto bytes = HexToBytes(hexString);
+    const char *bytesPtr = &bytes[0];
+    RawTransaction tx;
+    tx.load(&bytesPtr, 0, true);
+    
+    std::cout << "Size bytes: " << tx.sizeBytes << std::endl;
+    std::cout << "Locktime: " << tx.locktime << std::endl;
+    std::cout << "Version: " << tx.version << std::endl;
+    for (auto &input : tx.inputs) {
+        std::cout << "Spending " << input.rawOutputPointer << " sequence : " << input.sequenceNum << std::endl;
+    }
+    
+    for (auto &output : tx.outputs) {
+        std::cout << "Sent " << output.value << "\n";
+    }
+}
 
 uint32_t txCount(const BlockInfo &block) {
     return block.nTx;
@@ -197,7 +202,7 @@ ChainUpdateInfo<BlockInfo> prepareChain(const FileParserConfiguration &config, u
     
     auto chain = index.generateChain(maxBlockNum);
     
-    uint32_t splitPoint = findSplitPoint(config, chain.size(), [&](uint32_t blockHeight) {
+    uint32_t splitPoint = findSplitPoint(config, static_cast<uint32_t>(chain.size()), [&](uint32_t blockHeight) {
         return chain[blockHeight].hash;
     });
     
@@ -207,6 +212,8 @@ ChainUpdateInfo<BlockInfo> prepareChain(const FileParserConfiguration &config, u
 #endif
 
 #ifdef BLOCKSCI_RPC_PARSER
+uint32_t txCount(const blockinfo_t &block);
+ChainUpdateInfo<blockinfo_t> prepareChain(const RPCParserConfiguration &config, uint32_t maxBlockNum);
 
 uint32_t txCount(const blockinfo_t &block) {
     return block.tx.size();
@@ -217,7 +224,7 @@ ChainUpdateInfo<blockinfo_t> prepareChain(const RPCParserConfiguration &config, 
     if (maxBlockNum == 0) {
         maxBlockNum = std::numeric_limits<uint32_t>::max();
     }
-    auto blockHeight = static_cast<size_t>(std::min(maxBlockNum, static_cast<uint32_t>(bapi.getblockcount())));
+    auto blockHeight = std::min(maxBlockNum, static_cast<uint32_t>(bapi.getblockcount()));
     
     uint32_t splitPoint = findSplitPoint(config, blockHeight, [&](uint32_t blockHeight) {
         return blocksci::uint256S(bapi.getblockhash(blockHeight));
@@ -238,8 +245,6 @@ ChainUpdateInfo<blockinfo_t> prepareChain(const RPCParserConfiguration &config, 
         if (count % percentageMarker == 0) {
             std::cout << "\r" << (static_cast<double>(count) / static_cast<double>(numBlocks)) * 100 << "% done fetching block headers" << std::flush;
         }
-        
-        
     }
     std::cout << std::endl;
 
@@ -510,8 +515,6 @@ int main(int argc, const char * argv[]) {
     
     if (validDisk) {
         #ifdef BLOCKSCI_FILE_PARSER
-        boost::filesystem::path bitcoinDirectory{bitcoinDirectoryString};
-        bitcoinDirectory = boost::filesystem::absolute(bitcoinDirectory);
         FileParserConfiguration config{bitcoinDirectory, dataDirectory};
 //        if (bitcoinDirectoryString.find("bitcoin") != std::string::npos || bitcoinDirectoryString.find("Bitcoin") != std::string::npos) {
 //            if (maxBlockNum > 478559 || maxBlockNum == 0) {

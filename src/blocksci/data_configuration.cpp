@@ -12,6 +12,9 @@
 
 namespace blocksci {
     
+    void createDirectory(boost::filesystem::path dir);
+    
+    
     void createDirectory(boost::filesystem::path dir) {
         if(!(boost::filesystem::exists(dir))){
             boost::filesystem::create_directory(dir);

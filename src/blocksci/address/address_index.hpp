@@ -9,6 +9,7 @@
 #ifndef address_index_hpp
 #define address_index_hpp
 
+#include <blocksci/database.hpp>
 #include <blocksci/address/address_types.hpp>
 #include <blocksci/scripts/script_info.hpp>
 
@@ -32,12 +33,12 @@ namespace blocksci {
     
     
     
-    class AddressIndex {
-        sqlite3 *addressDb;
+    class AddressIndex : Database {
         std::array<sqlite3_stmt *, AddressType::all.size()> addressQueries;
         std::array<sqlite3_stmt *, ScriptType::all.size()> scriptQueries;
         
-        AddressIndex(const char *filename);
+        void setupQueries();
+        void teardownQueries();
         
     public:
         

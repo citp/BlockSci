@@ -21,10 +21,10 @@ namespace blocksci {
         std::string rv;
         static const char hexmap[16] = { '0', '1', '2', '3', '4', '5', '6', '7',
             '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
-        rv.reserve((itend-itbegin)*3);
+        rv.reserve(static_cast<size_t>(itend-itbegin)*3);
         for(T it = itbegin; it < itend; ++it)
         {
-            unsigned char val = (unsigned char)(*it);
+            unsigned char val = static_cast<unsigned char>(*it);
             if(fSpaces && it != itbegin)
                 rv.push_back(' ');
             rv.push_back(hexmap[val>>4]);
@@ -107,26 +107,26 @@ namespace blocksci {
         uint64_t GetUint64(int pos) const
         {
             const uint8_t* ptr = data + pos * 8;
-            return ((uint64_t)ptr[0]) | \
-            ((uint64_t)ptr[1]) << 8 | \
-            ((uint64_t)ptr[2]) << 16 | \
-            ((uint64_t)ptr[3]) << 24 | \
-            ((uint64_t)ptr[4]) << 32 | \
-            ((uint64_t)ptr[5]) << 40 | \
-            ((uint64_t)ptr[6]) << 48 | \
-            ((uint64_t)ptr[7]) << 56;
+            return (static_cast<uint64_t>(ptr[0])) | \
+            (static_cast<uint64_t>(ptr[1])) << 8 | \
+            (static_cast<uint64_t>(ptr[2])) << 16 | \
+            (static_cast<uint64_t>(ptr[3])) << 24 | \
+            (static_cast<uint64_t>(ptr[4])) << 32 | \
+            (static_cast<uint64_t>(ptr[5])) << 40 | \
+            (static_cast<uint64_t>(ptr[6])) << 48 | \
+            (static_cast<uint64_t>(ptr[7])) << 56;
         }
         
         template<typename Stream>
         void Serialize(Stream& s) const
         {
-            s.write((char*)data, sizeof(data));
+            s.write(reinterpret_cast<char *>(data), sizeof(data));
         }
         
         template<typename Stream>
         void Unserialize(Stream& s)
         {
-            s.read((char*)data, sizeof(data));
+            s.read(reinterpret_cast<char *>(data), sizeof(data));
         }
     };
     
@@ -205,7 +205,7 @@ namespace blocksci {
         uint256 trim256() const
         {
             uint256 result;
-            memcpy((void*)&result, (void*)data, 32);
+            memcpy(reinterpret_cast<void *>(&result), reinterpret_cast<const void *>(data), 32);
             return result;
         }
     };

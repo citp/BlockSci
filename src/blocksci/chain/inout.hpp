@@ -60,10 +60,10 @@ namespace blocksci {
             return static_cast<AddressType::Enum>((other >> 60) & 0b1111);
         }
         
-        bool operator==(const Inout& other) const;
+        bool operator==(const Inout& otherInout) const;
         
-        bool operator!=(const Inout& other) const {
-            return ! operator==(other);
+        bool operator!=(const Inout& otherInout) const {
+            return ! operator==(otherInout);
         }
         
         Address getAddress() const;

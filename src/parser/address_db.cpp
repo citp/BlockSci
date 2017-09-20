@@ -18,7 +18,9 @@
 #include <blocksci/scripts/scripthash_script.hpp>
 #include <blocksci/chain/output_pointer.hpp>
 
-#include <boost/filesystem.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
+#include <boost/optional/optional.hpp>
 
 #include <string>
 
@@ -32,6 +34,9 @@ static int callback(void *, int argc, char **argv, char **azColName){
     printf("\n");
     return 0;
 }
+
+std::pair<sqlite3 *, bool> openAddressDb(boost::filesystem::path addressesDBFilePath);
+std::unordered_map<ScriptType::Enum,  sqlite3_stmt *> setupInsertStatements(sqlite3 *addressDb);
 
 std::pair<sqlite3 *, bool> openAddressDb(boost::filesystem::path addressesDBFilePath) {
     
@@ -58,7 +63,7 @@ std::pair<sqlite3 *, bool> openAddressDb(boost::filesystem::path addressesDBFile
             ss << "OUTPUT_NUM      INT     NOT NULL);";
             
             char *zErrMsg = 0;
-            auto rc = sqlite3_exec(addressDb, ss.str().c_str(), callback, 0, &zErrMsg);
+            rc = sqlite3_exec(addressDb, ss.str().c_str(), callback, 0, &zErrMsg);
             if( rc != SQLITE_OK ){
                 fprintf(stderr, "SQL error: %s\n", zErrMsg);
                 sqlite3_free(zErrMsg);
@@ -122,12 +127,11 @@ void AddressDB::tearDown(const blocksci::ScriptAccess &scripts) {
 
     
     for (auto &scriptHash : p2shesToAdd) {
-        sqlite3_bind_int(scriptHashQuery, 1, static_cast<int32_t>(scriptHash.scriptNum));
-        sqlite3_bind_int64(scriptHashQuery, 2, static_cast<int64_t>(scriptHash.txRevealed));
+        sqlite3_bind_int(scriptHashQuery, 1, static_cast<int>(scriptHash.scriptNum));
+        sqlite3_bind_int(scriptHashQuery, 2, static_cast<int>(scriptHash.txRevealed));
         
-        int rc = 0;
         while ( (rc = sqlite3_step(scriptHashQuery)) == SQLITE_ROW) {
-            auto txNum = sqlite3_column_int64(scriptHashQuery, 0);
+            auto txNum = sqlite3_column_int(scriptHashQuery, 0);
             auto outputNum = sqlite3_column_int(scriptHashQuery, 1);
             std::function<bool(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
                 blocksci::OutputPointer pointer{static_cast<uint32_t>(txNum), static_cast<uint16_t>(outputNum)};
@@ -157,10 +161,10 @@ void AddressDB::revealedP2SH(blocksci::script::ScriptHash &scriptHash, const blo
 void AddressDB::addAddress(const blocksci::Address &address, const blocksci::OutputPointer &pointer) {
     auto script = scriptType(address.type);
     auto stmt = insertStatements[script];
-    sqlite3_bind_int(stmt, 1, address.addressNum);
+    sqlite3_bind_int(stmt, 1, static_cast<int>(address.addressNum));
     sqlite3_bind_int(stmt, 2, static_cast<uint8_t>(address.type));
-    sqlite3_bind_int(stmt, 3, pointer.txNum);
-    sqlite3_bind_int(stmt, 4, pointer.inoutNum);
+    sqlite3_bind_int(stmt, 3, static_cast<int>(pointer.txNum));
+    sqlite3_bind_int(stmt, 4, static_cast<int>(pointer.inoutNum));
     
     auto rc = sqlite3_step(stmt);
     if (rc != SQLITE_DONE) {

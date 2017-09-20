@@ -21,12 +21,9 @@ namespace blocksci {
     }
     
     TransactionSummary TransactionSummary::operator+(const Transaction &other) const {
-        return operator+(*other.data);
-    }
-    
-    TransactionSummary TransactionSummary::operator+(const RawTransaction &other) const {
-        uint64_t totalOutputValue = 0;
-        return {totalInputs + other.inputCount, totalOutputs + other.outputCount, totalSize + other.sizeBytes, totalCount + 1, totalOutputValue + 0};
+        TransactionSummary a{*this};
+        a += other;
+        return a;
     }
     
     TransactionSummary &TransactionSummary::operator+=(const Transaction &other) {

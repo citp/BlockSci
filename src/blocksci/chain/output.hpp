@@ -12,7 +12,7 @@
 #include "inout.hpp"
 #include <blocksci/address/address_types.hpp>
 
-#include <boost/optional.hpp>
+#include <boost/optional/optional_fwd.hpp>
 
 #include <memory>
 #include <stdio.h>

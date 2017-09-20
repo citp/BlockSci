@@ -13,6 +13,8 @@
 #include "script_access.hpp"
 #include "bitcoin_base58.hpp"
 
+#include <boost/optional/optional.hpp>
+
 namespace blocksci {
     using namespace script;
     
@@ -24,6 +26,14 @@ namespace blocksci {
     bool Pubkey::operator==(const Script &other) {
         auto otherA = dynamic_cast<const Pubkey *>(&other);
         return otherA && otherA->pubkey == pubkey;
+    }
+    
+    boost::optional<CPubKey> Pubkey::getPubkey() const {
+        if (pubkey.IsValid()) {
+            return pubkey;
+        } else {
+            return boost::none;
+        }
     }
     
     std::string Pubkey::addressString(const DataConfiguration &config) const {

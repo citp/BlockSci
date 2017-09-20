@@ -10,12 +10,13 @@
 #define file_mapper_hpp
 
 #include <boost/iostreams/device/mapped_file.hpp>
-#include <boost/filesystem.hpp>
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
 #include <boost/filesystem/fstream.hpp>
 
 #include <boost/range/adaptor/transformed.hpp>
 
-#include <boost/optional.hpp>
+#include <boost/optional/optional_fwd.hpp>
 
 #include <array>
 #include <vector>
@@ -53,9 +54,10 @@ namespace blocksci {
     constexpr OffsetType InvalidFileIndex = std::numeric_limits<OffsetType>::max();
     
     struct SimpleFileMapperBase {
+        using FileType = boost::iostreams::mapped_file;
     protected:
-        boost::iostreams::mapped_file file;
-        boost::iostreams::mapped_file::mapmode fileMode;
+        FileType file;
+        FileType::mapmode fileMode;
         size_t fileEnd;
     public:
         boost::filesystem::path path;
@@ -78,7 +80,7 @@ namespace blocksci {
             }
         }
         
-        SimpleFileMapperBase(boost::filesystem::path path_, boost::iostreams::mapped_file::mapmode mode) : fileMode(mode), fileEnd(0), path(path_) {
+        SimpleFileMapperBase(boost::filesystem::path path_, FileType::mapmode mode) : fileMode(mode), fileEnd(0), path(path_) {
             path += ".dat";
             
             if (boost::filesystem::exists(path)) {
@@ -155,11 +157,11 @@ namespace blocksci {
             if (buffer.size() > 0) {
                 if (!file.is_open()) {
                     boost::iostreams::mapped_file_params params{path.native()};
-                    params.new_file_size = buffer.size();
+                    params.new_file_size = static_cast<decltype(params.new_file_size)>(buffer.size());
                     params.flags = boost::iostreams::mapped_file::readwrite;
                     file.open(params);
                 } else {
-                    file.resize(fileEnd + buffer.size());
+                    file.resize(static_cast<int64_t>(fileEnd + buffer.size()));
                 }
                 memcpy(file.data() + fileEnd, buffer.data(), buffer.size());
                 fileEnd += buffer.size();
@@ -371,7 +373,7 @@ namespace blocksci {
             return indexFile.fileSize();
         }
         
-        void truncate(OffsetType index) {
+        void truncate(uint32_t index) {
             auto offsets = getOffsets(index);
             indexFile.truncate(index);
             uint64_t minOffset = InvalidFileIndex;
@@ -387,7 +389,7 @@ namespace blocksci {
             return indexFile.getRange() | boost::adaptors::transformed(expanded);
         }
         
-        std::array<const char *, sizeof...(T)> getPointersAtIndex(size_t index) const {
+        std::array<const char *, sizeof...(T)> getPointersAtIndex(uint32_t index) const {
             auto offsets = getOffsets(index);
             std::array<const char *, sizeof...(T)> pointers;
             for (size_t i = 0; i < sizeof...(T); i++) {
@@ -430,13 +432,13 @@ namespace blocksci {
         }
         
         template<size_t indexNum = 0>
-        add_const_ptr_t<nth_element<indexNum>> getDataAtIndex(size_t index) const {
+        add_const_ptr_t<nth_element<indexNum>> getDataAtIndex(uint32_t index) const {
             assert(index < size());
             return reinterpret_cast<add_const_ptr_t<nth_element<indexNum>>>(getPointerAtIndex<indexNum>(index));
         }
         
         template<size_t indexNum = 0>
-        add_ptr_t<nth_element<indexNum>> getDataAtIndex(size_t index) {
+        add_ptr_t<nth_element<indexNum>> getDataAtIndex(uint32_t index) {
             assert(index < size());
             auto ptr = reinterpret_cast<add_ptr_t<nth_element<indexNum>>>(getPointerAtIndex<indexNum>(index));
             assert(ptr != nullptr);
@@ -445,7 +447,7 @@ namespace blocksci {
         
         template<class A=add_const_ptr_t<std::tuple<T...>>>
         std::enable_if_t<(sizeof...(T) > 1), A>
-        getData(size_t index) const {
+        getData(uint32_t index) const {
             assert(index < size());
             auto pointers = getPointersAtIndex(index);
             return tuple_cast<T...>(pointers);
@@ -453,14 +455,14 @@ namespace blocksci {
         
         template<class A=add_const_ptr_t<nth_element<0>>>
         std::enable_if_t<(sizeof...(T) == 1), A>
-        getData(size_t index) const {
+        getData(uint32_t index) const {
             assert(index < size());
             return getDataAtIndex<0>(index);
         }
         
         template<class A=add_ptr_t<std::tuple<T...>>>
         std::enable_if_t<(sizeof...(T) > 1), A>
-        getData(size_t index) {
+        getData(uint32_t index) {
             assert(index < size());
             auto pointers = getPointersAtIndex(index);
             return tuple_cast<T...>(pointers);
@@ -468,7 +470,7 @@ namespace blocksci {
         
         template<class A=add_ptr_t<nth_element<0>>>
         std::enable_if_t<(sizeof...(T) == 1), A>
-        getData(size_t index) {
+        getData(uint32_t index) {
             assert(index < size());
             auto data = getDataAtIndex<0>(index);
             assert(data != nullptr);

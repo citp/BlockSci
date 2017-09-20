@@ -12,7 +12,8 @@
 #include "scripts/script_type.hpp"
 #include <blocksci/bitcoin_uint256.hpp>
 
-#include <boost/optional.hpp>
+#include <boost/optional/optional_fwd.hpp>
+#include <boost/functional/hash.hpp>
 
 #include <stdio.h>
 

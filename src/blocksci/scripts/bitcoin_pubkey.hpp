@@ -9,6 +9,7 @@
 #include <blocksci/hash.hpp>
 #include <blocksci/bitcoin_uint256.hpp>
 
+#include <array>
 #include <stdexcept>
 #include <vector>
 
@@ -43,7 +44,7 @@ private:
      * Just store the serialized data.
      * Its length can very cheaply be computed from the first byte.
      */
-    unsigned char vch[65];
+    std::array<unsigned char, 65> vch;
 
     //! Compute the length of a pubkey with a given first byte.
     unsigned int static GetLen(unsigned char chHeader)
@@ -63,7 +64,7 @@ private:
 
 public:
     //! Construct an invalid public key.
-    CPubKey()
+    CPubKey() : vch{{0}}
     {
         Invalidate();
     }
@@ -72,9 +73,9 @@ public:
     template <typename T>
     void Set(const T pbegin, const T pend)
     {
-        int len = pend == pbegin ? 0 : GetLen(pbegin[0]);
+        unsigned int len = pend == pbegin ? 0 : GetLen(pbegin[0]);
         if (len && len == (pend - pbegin))
-            memcpy(vch, (unsigned char*)&pbegin[0], len);
+            memcpy(vch.data(), reinterpret_cast<const unsigned char*>(&pbegin[0]), len);
         else
             Invalidate();
     }
@@ -94,15 +95,15 @@ public:
 
     //! Simple read-only vector-like interface to the pubkey data.
     unsigned int size() const { return GetLen(vch[0]); }
-    const unsigned char* begin() const { return vch; }
-    const unsigned char* end() const { return vch + size(); }
+    const unsigned char* begin() const { return vch.data(); }
+    const unsigned char* end() const { return vch.data() + size(); }
     const unsigned char& operator[](unsigned int pos) const { return vch[pos]; }
 
     //! Comparator implementation.
     friend bool operator==(const CPubKey& a, const CPubKey& b)
     {
         return a.vch[0] == b.vch[0] &&
-               memcmp(a.vch, b.vch, a.size()) == 0;
+               memcmp(a.vch.data(), b.vch.data(), a.size()) == 0;
     }
     friend bool operator!=(const CPubKey& a, const CPubKey& b)
     {
@@ -111,19 +112,19 @@ public:
     friend bool operator<(const CPubKey& a, const CPubKey& b)
     {
         return a.vch[0] < b.vch[0] ||
-               (a.vch[0] == b.vch[0] && memcmp(a.vch, b.vch, a.size()) < 0);
+               (a.vch[0] == b.vch[0] && memcmp(a.vch.data(), b.vch.data(), a.size()) < 0);
     }
 
     //! Get the KeyID of this public key (hash of its serialization)
     CKeyID GetID() const
     {
-        return CKeyID(hash160(vch, size()));
+        return CKeyID(hash160(vch.data(), size()));
     }
 
     //! Get the 256-bit hash of this public key.
     blocksci::uint256 GetHash() const
     {
-        return sha256(vch, size());
+        return sha256(vch.data(), size());
     }
 
     /*

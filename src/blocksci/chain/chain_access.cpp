@@ -19,6 +19,8 @@
 
 namespace blocksci {
     
+    ReorgException::ReorgException() : std::runtime_error("") {}
+    
     void ChainAccess::setup() {
         maxHeight = static_cast<uint32_t>(blockFile.size()) - blocksIgnored;
         if (errorOnReorg) {
@@ -85,8 +87,8 @@ namespace blocksci {
             throw std::out_of_range("Transaction index out of range");
         }
         auto blockRange = getBlocks();
-        auto it = std::upper_bound(blockRange.begin(), blockRange.end(), txIndex, [](uint32_t txIndex, const Block &b) {
-            return txIndex < b.firstTxIndex;
+        auto it = std::upper_bound(blockRange.begin(), blockRange.end(), txIndex, [](uint32_t index, const Block &b) {
+            return index < b.firstTxIndex;
         });
         it--;
         auto height = static_cast<uint32_t>(std::distance(blockRange.begin(), it));

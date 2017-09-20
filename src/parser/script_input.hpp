@@ -16,6 +16,7 @@
 #include <blocksci/address/address.hpp>
 #include <blocksci/chain/output_pointer.hpp>
 
+#include <boost/container/small_vector.hpp>
 #include <boost/variant/variant.hpp>
 
 #include <bitset>
@@ -26,7 +27,7 @@ struct RawTransaction;
 struct WitnessStackItem;
 class CPubKey;
 
-using ProcessedInput = prevector<3, uint32_t>;
+using ProcessedInput = boost::container::small_vector<uint32_t, 3>;
 
 struct InputInfo {
     uint32_t inputNum;

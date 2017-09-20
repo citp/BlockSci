@@ -19,8 +19,7 @@
 #include "scripts/scripthash_script.hpp"
 #include "scripts/multisig_script.hpp"
 
-#include <boost/range/adaptors.hpp>
-#include <boost/functional/hash.hpp>
+#include <boost/functional/hash/hash.hpp>
 
 #include <unordered_map>
 #include <unordered_set>
@@ -271,6 +270,10 @@ namespace blocksci {
         }
     };
     
+    CoinJoinResult _getSumCount(std::vector<uint64_t> &values, std::vector<OutputBucket> buckets, uint64_t totalRemaining, uint64_t valueLeft, size_t maxDepth, size_t &depth);
+    CoinJoinResult getSumCount(std::vector<uint64_t> &values, std::vector<uint64_t> bucketGoals, size_t maxDepth);
+    
+    
     CoinJoinResult _getSumCount(std::vector<uint64_t> &values, std::vector<OutputBucket> buckets, uint64_t totalRemaining, uint64_t valueLeft, size_t maxDepth, size_t &depth) {
         if (totalRemaining > valueLeft) {
             return CoinJoinResult::False;
@@ -391,7 +394,7 @@ namespace blocksci {
             bucketGoals.push_back(goalValue);
         }
         
-        int j = 0;
+        size_t j = 0;
         for (auto &output : tx.outputs()) {
             if (output.getValue() != goalValue) {
                 bucketGoals[j] += output.getValue();
@@ -586,7 +589,7 @@ namespace blocksci {
                     auto address = insidePointer->getScript(scripts);
                     auto multisigAddress = dynamic_cast<script::Multisig *>(address.get());
                     i = multisigAddress->required;
-                    j = multisigAddress->addresses.size();
+                    j = static_cast<int>(multisigAddress->addresses.size());
                 }
             }
         }

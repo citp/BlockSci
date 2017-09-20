@@ -52,7 +52,7 @@ struct BlockInfo {
     unsigned int nBits;
     unsigned int nNonce;
     
-    BlockInfo() {};
+    BlockInfo() {}
     BlockInfo(const CBlockHeader &h, int fileNum, unsigned int dataPos, unsigned int numTxes, const FileParserConfiguration &config);
 };
 
@@ -67,7 +67,7 @@ struct ChainIndex {
     
     void updateFromFilesystem();
     
-    std::vector<BlockInfo> generateChain(int maxBlockHeight) const;
+    std::vector<BlockInfo> generateChain(uint32_t maxBlockHeight) const;
     
 private:
     int updateHeight(size_t blockNum, const std::unordered_map<blocksci::uint256, size_t> &indexMap);

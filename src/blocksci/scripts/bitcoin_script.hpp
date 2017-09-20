@@ -6,7 +6,7 @@
 #ifndef BITCOIN_SCRIPT_SCRIPT_H
 #define BITCOIN_SCRIPT_SCRIPT_H
 
-#include "bitcoin_prevector.hpp"
+#include <boost/container/small_vector.hpp>
 
 #include <assert.h>
 #include <climits>
@@ -186,7 +186,7 @@ enum opcodetype
     OP_PUBKEYHASH = 0xfd,
     OP_PUBKEY = 0xfe,
     
-    OP_INVALIDOPCODE = 0xff,
+    OP_INVALIDOPCODE = 0xff
 };
 
 // Maximum value that an opcode can be
@@ -197,7 +197,10 @@ const char* GetOpName(opcodetype opcode);
 class scriptnum_error : public std::runtime_error
 {
 public:
-    explicit scriptnum_error(const std::string& str) : std::runtime_error(str) {}
+    explicit scriptnum_error(const std::string& str);
+    scriptnum_error(const scriptnum_error &err) : std::runtime_error(err) {}
+    
+    ~scriptnum_error();
 };
 
 class CScriptNum
@@ -313,7 +316,7 @@ public:
             return std::numeric_limits<int>::max();
         else if (m_value < std::numeric_limits<int>::min())
             return std::numeric_limits<int>::min();
-        return m_value;
+        return static_cast<int>(m_value);
     }
     
     std::vector<unsigned char> getvch() const
@@ -328,7 +331,7 @@ public:
         
         std::vector<unsigned char> result;
         const bool neg = value < 0;
-        uint64_t absvalue = neg ? -value : value;
+        uint64_t absvalue = neg ? static_cast<uint64_t>(-value) : static_cast<uint64_t>(value);
         
         while(absvalue)
         {
@@ -367,7 +370,7 @@ private:
         // If the input vector's most significant byte is 0x80, remove it from
         // the result's msb and return a negative.
         if (vch.back() & 0x80)
-            return -((int64_t)(result & ~(0x80ULL << (8 * (vch.size() - 1)))));
+            return -(static_cast<int64_t>(result & ~(0x80LL << (8 * (vch.size() - 1)))));
         
         return result;
     }
@@ -381,7 +384,7 @@ private:
  * Tests in October 2015 showed use of this reduced dbcache memory usage by 23%
  *  and made an initial sync 13% faster.
  */
-typedef prevector<28, unsigned char> CScriptBase;
+typedef boost::container::small_vector<unsigned char, 28> CScriptBase;
 
 /** Serialized script, used inside transaction inputs and outputs */
 class CScript : public CScriptBase
@@ -391,7 +394,7 @@ protected:
     {
         if (n == -1 || (n >= 1 && n <= 16))
         {
-            push_back(n + (OP_1 - 1));
+            push_back(static_cast<unsigned char>(n + (OP_1 - 1)));
         }
         else if (n == 0)
         {
@@ -435,7 +438,7 @@ public:
     {
         if (opcode < 0 || opcode > 0xff)
             throw std::runtime_error("CScript::operator<<(): invalid opcode");
-        insert(end(), (unsigned char)opcode);
+        insert(end(), static_cast<unsigned char>(opcode));
         return *this;
     }
     
@@ -449,18 +452,18 @@ public:
     {
         if (b.size() < OP_PUSHDATA1)
         {
-            insert(end(), (unsigned char)b.size());
+            insert(end(), static_cast<unsigned char>(b.size()));
         }
         else if (b.size() <= 0xff)
         {
             insert(end(), OP_PUSHDATA1);
-            insert(end(), (unsigned char)b.size());
+            insert(end(), static_cast<unsigned char>(b.size()));
         }
         else if (b.size() <= 0xffff)
         {
             insert(end(), OP_PUSHDATA2);
             uint8_t data[2];
-            uint16_t size = b.size();
+            uint16_t size = static_cast<uint16_t>(b.size());
             memcpy(&data[0], &size, sizeof(size));
             insert(end(), data, data + sizeof(data));
         }
@@ -468,7 +471,7 @@ public:
         {
             insert(end(), OP_PUSHDATA4);
             uint8_t data[4];
-            uint32_t size = b.size();
+            uint32_t size = static_cast<uint32_t>(b.size());
             memcpy(&data[0], &size, sizeof(size));
             insert(end(), data, data + sizeof(data));
         }
@@ -480,7 +483,7 @@ public:
     {
         // I'm not sure if this should push the script or concatenate scripts.
         // If there's ever a use for pushing a script onto a script, delete this member fn
-        assert(!"Warning: Pushing a CScript onto a CScript with << is probably not intended, use + to concatenate!");
+        assert(false); // Warning: Pushing a CScript onto a CScript with << is probably not intended, use + to concatenate!
         return *this;
     }
     
@@ -553,14 +556,14 @@ public:
                 nSize = *reinterpret_cast<const uint32_t *>(&pc[0]);
                 pc += 4;
             }
-            if (end() - pc < 0 || (unsigned int)(end() - pc) < nSize)
+            if (end() - pc < 0 || static_cast<unsigned int>(end() - pc) < nSize)
                 return false;
             if (pvchRet)
                 pvchRet->assign(pc, pc + nSize);
             pc += nSize;
         }
         
-        opcodeRet = (opcodetype)opcode;
+        opcodeRet = static_cast<opcodetype>(opcode);
         return true;
     }
     
@@ -570,14 +573,14 @@ public:
         if (opcode == OP_0)
             return 0;
         assert(opcode >= OP_1 && opcode <= OP_16);
-        return (int)opcode - (int)(OP_1 - 1);
+        return static_cast<int>(opcode) - static_cast<int>(OP_1 - 1);
     }
     static opcodetype EncodeOP_N(int n)
     {
         assert(n >= 0 && n <= 16);
         if (n == 0)
             return OP_0;
-        return (opcodetype)(OP_1+n-1);
+        return static_cast<opcodetype>(OP_1+n-1);
     }
     
     int FindAndDelete(const CScript& b)
@@ -593,7 +596,7 @@ public:
             result.insert(result.end(), pc2, pc);
             while (static_cast<size_t>(end() - pc) >= b.size() && std::equal(b.begin(), b.end(), pc))
             {
-                pc = pc + b.size();
+                pc = pc + static_cast<difference_type>(b.size());
                 ++nFound;
             }
             pc2 = pc;
@@ -610,7 +613,7 @@ public:
     int Find(opcodetype op) const
     {
         int nFound = 0;
-        opcodetype opcode;
+        opcodetype opcode = OP_0;
         for (const_iterator pc = begin(); pc != end() && GetOp(pc, opcode);)
             if (opcode == op)
                 ++nFound;
@@ -682,9 +685,9 @@ class CReserveScript
 {
 public:
     CScript reserveScript;
-    virtual void KeepScript() {}
+    virtual void KeepScript();
     CReserveScript() {}
-    virtual ~CReserveScript() {}
+    virtual ~CReserveScript() = default;
 };
 
 std::string ScriptToAsmStr(const CScript& script, const bool fAttemptSighashDecode = false);

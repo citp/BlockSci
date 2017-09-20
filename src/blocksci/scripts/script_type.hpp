@@ -19,7 +19,7 @@ namespace blocksci {
     
     struct ScriptType {
         
-        enum class Enum {
+        enum Enum {
             #define VAL(x) x
             SCRIPT_TYPE_LIST
             #undef VAL

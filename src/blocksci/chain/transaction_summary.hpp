@@ -29,7 +29,6 @@ namespace blocksci {
         
         TransactionSummary operator+(const TransactionSummary &other) const;
         TransactionSummary operator+(const Transaction &other) const;
-        TransactionSummary operator+(const RawTransaction &other) const;
         TransactionSummary &operator+=(const Transaction &other);
         TransactionSummary &operator+=(const TransactionSummary &other);
         double averageInputs() const;

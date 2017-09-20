@@ -21,7 +21,7 @@ namespace blocksci {
 
     struct AddressType {
         
-        enum class Enum {
+        enum Enum {
             #define VAL(x) x
             ADDRESS_TYPE_LIST
             #undef VAL

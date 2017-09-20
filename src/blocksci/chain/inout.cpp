@@ -26,8 +26,8 @@ namespace blocksci {
         return Address(toAddressNum, getType());
     }
     
-    bool Inout::operator==(const Inout& otherOutput) const {
-        return linkedTxNum == otherOutput.linkedTxNum && toAddressNum == otherOutput.toAddressNum && other == otherOutput.other;
+    bool Inout::operator==(const Inout& otherInout) const {
+        return linkedTxNum == otherInout.linkedTxNum && toAddressNum == otherInout.toAddressNum && other == otherInout.other;
     }
 }
 

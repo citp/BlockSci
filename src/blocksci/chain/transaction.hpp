@@ -9,7 +9,8 @@
 #ifndef transaction_hpp
 #define transaction_hpp
 
-#include <boost/range/adaptor/transformed.hpp>
+#include <boost/range/iterator_range.hpp>
+#include <boost/optional/optional_fwd.hpp>
 
 #include <vector>
 #include <stdio.h>

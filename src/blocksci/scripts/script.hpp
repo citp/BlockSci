@@ -22,19 +22,19 @@ namespace blocksci {
         uint32_t scriptNum;
         
         Script(uint32_t scriptNum_) : scriptNum(scriptNum_) {}
+        Script(const Script &script) = default;
+        virtual ~Script() = default;
         
         virtual ScriptType::Enum type() const = 0;
         
         virtual std::string toString(const DataConfiguration &config) const = 0;
         virtual std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const = 0;
         
-        virtual ~Script() = default;
-        
         virtual bool operator==(const Script &other) = 0;
         
         static std::unique_ptr<Script> create(const ScriptAccess &access, const Address &address);
         
-        virtual void visitPointers(const std::function<void(const Address &)> &) const {}
+        virtual void visitPointers(const std::function<void(const Address &)> &) const;
         
         std::vector<const Output *> getOutputs(const AddressIndex &index, const ChainAccess &chain) const;
         std::vector<const Input *> getInputs(const AddressIndex &index, const ChainAccess &chain) const;

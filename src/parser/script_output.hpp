@@ -126,7 +126,7 @@ template <>
 struct ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD> : public ScriptOutputBase {
     CScript script;
     
-    ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD>() {};
+    ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD>() {}
     ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD>(const CScript &script);
     
     bool isValid() const {

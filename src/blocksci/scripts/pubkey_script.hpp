@@ -13,6 +13,8 @@
 #include "script.hpp"
 #include "bitcoin_pubkey.hpp"
 
+#include <boost/optional/optional_fwd.hpp>
+
 namespace blocksci {
     struct PubkeyData;
     
@@ -38,13 +40,7 @@ namespace blocksci {
         std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const override;
         bool operator==(const Script &other) override;
         
-        boost::optional<CPubKey> getPubkey() const {
-            if (pubkey.IsValid()) {
-                return pubkey;
-            } else {
-                return boost::none;
-            }
-        }
+        boost::optional<CPubKey> getPubkey() const;
         
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
         ScriptAddress<scriptType>(uint32_t addressNum);

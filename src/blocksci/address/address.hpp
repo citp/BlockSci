@@ -11,8 +11,9 @@
 
 #include "address_types.hpp"
 
-#include <boost/optional.hpp>
+#include <boost/optional/optional_fwd.hpp>
 
+#include <functional>
 #include <memory>
 #include <vector>
 

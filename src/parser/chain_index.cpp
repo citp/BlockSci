@@ -144,7 +144,7 @@ int ChainIndex::updateHeight(size_t blockNum, const std::unordered_map<blocksci:
     return block.height;
 }
 
-std::vector<BlockInfo> ChainIndex::generateChain(int maxBlockHeight) const {
+std::vector<BlockInfo> ChainIndex::generateChain(uint32_t maxBlockHeight) const {
     
     std::unordered_map<blocksci::uint256, size_t> indexMap;
     indexMap.reserve(blockList.size());

@@ -13,6 +13,8 @@
 #include "script_access.hpp"
 #include "bitcoin_base58.hpp"
 
+#include <boost/optional/optional.hpp>
+
 namespace blocksci {
     using namespace script;
     
@@ -27,6 +29,14 @@ namespace blocksci {
     
     std::string ScriptHash::addressString(const DataConfiguration &config) const {
         return CBitcoinAddress(address, AddressType::Enum::SCRIPTHASH, config).ToString();
+    }
+    
+    boost::optional<Address> ScriptHash::getWrappedAddress() const {
+        if (wrappedAddress.addressNum != 0) {
+            return wrappedAddress;
+        } else {
+            return boost::none;
+        }
     }
     
     std::string ScriptHash::toString(const DataConfiguration &config) const {

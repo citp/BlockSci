@@ -46,7 +46,7 @@ namespace blocksci {
     }
     
     void TransactionIterator::advance(int amount) {
-        currentTxIndex += amount;
+        currentTxIndex += static_cast<uint32_t>(amount);
         blockNum = access->getBlockHeight(currentTxIndex);
         updateNextBlock();
         updateTxPos();
@@ -60,10 +60,10 @@ namespace blocksci {
         if (blockNum < access->getBlocks().size()) {
             auto &block = access->getBlock(blockNum);
             prevBlockLast = block.firstTxIndex - 1;
-            nextBlockFirst = block.firstTxIndex + block.size();
+            nextBlockFirst = block.firstTxIndex + static_cast<uint32_t>(block.size());
         } else {
             auto &prevBlock = access->getBlock(blockNum - 1);
-            prevBlockLast = prevBlock.firstTxIndex + prevBlock.size() - 1;
+            prevBlockLast = prevBlock.firstTxIndex + static_cast<uint32_t>(prevBlock.size()) - 1;
             nextBlockFirst = std::numeric_limits<decltype(nextBlockFirst)>::max();
         }
     }

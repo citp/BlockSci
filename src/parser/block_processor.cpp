@@ -301,8 +301,6 @@ void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<bl
         
         blockFile.write(getBlock(firstTxIndex, blockTxCount, blockCoinbaseFile.size(), block));
         blockCoinbaseFile.write(coinbase.begin(), coinbase.end());
-        
-        firstTxIndex += blockTxCount;
     }
     
     rawDone = true;

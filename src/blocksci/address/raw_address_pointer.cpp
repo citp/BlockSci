@@ -16,6 +16,8 @@
 #include "scripts/script_data.hpp"
 #include "scripts/bitcoin_base58.hpp"
 
+#include <boost/optional/optional.hpp>
+
 
 namespace blocksci {
     

@@ -31,7 +31,7 @@ namespace blocksci {
     
     std::string GetTxnOutputType(AddressType::Enum type) {
         static auto table = make_static_table<AddressType, TypeNameFunctor>();
-        static constexpr std::size_t size = AddressType::all.size();
+        constexpr static std::size_t size = AddressType::all.size();
         
         auto index = static_cast<size_t>(type);
         if (index >= size)

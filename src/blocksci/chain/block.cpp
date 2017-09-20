@@ -18,8 +18,7 @@
 #include "address/address.hpp"
 #include "scripts/nulldata_script.hpp"
 
-#include <boost/range/algorithm.hpp>
-#include <boost/range/adaptors.hpp>
+#include <boost/range/algorithm/copy.hpp>
 
 #include <numeric>
 #include <fstream>
@@ -27,7 +26,7 @@
 
 namespace blocksci {
     
-    Block::Block(uint32_t firstTxIndex, uint32_t numTxes, uint32_t height, uint256 hash_, int32_t version, uint32_t timestamp, uint32_t bits, uint32_t nonce, uint64_t coinbaseOffset_) : firstTxIndex(firstTxIndex), numTxes(numTxes), height(height), hash(hash_), version(version), timestamp(timestamp), bits(bits), nonce(nonce), coinbaseOffset(coinbaseOffset_) {}
+    Block::Block(uint32_t firstTxIndex_, uint32_t numTxes_, uint32_t height_, uint256 hash_, int32_t version_, uint32_t timestamp_, uint32_t bits_, uint32_t nonce_, uint64_t coinbaseOffset_) : firstTxIndex(firstTxIndex_), numTxes(numTxes_), height(height_), hash(hash_), version(version_), timestamp(timestamp_), bits(bits_), nonce(nonce_), coinbaseOffset(coinbaseOffset_) {}
     
     bool Block::operator==(const Block& other) const {
         return firstTxIndex == other.firstTxIndex

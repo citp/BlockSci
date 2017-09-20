@@ -27,6 +27,9 @@
 
 namespace blocksci {
     
+    
+    void Script::visitPointers(const std::function<void(const Address &)> &) const {}
+    
     template<AddressType::Enum type>
     struct ScriptCreateFunctor {
         static std::unique_ptr<Script> f(const ScriptAccess &access, const Address &address) {

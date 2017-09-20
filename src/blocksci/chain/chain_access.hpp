@@ -18,7 +18,7 @@
 namespace blocksci {
     class ReorgException : public std::runtime_error {
     public:
-        ReorgException() : std::runtime_error("") {}
+        ReorgException();
     };
     
     struct Block;

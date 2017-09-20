@@ -17,12 +17,12 @@ blocksci::uint256 sha256(const uint8_t *data, size_t len) {
     SHA256_CTX sha256;
     SHA256_Init(&sha256);
     SHA256_Update(&sha256, data, len);
-    SHA256_Final((unsigned char *)&hash, &sha256);
+    SHA256_Final(reinterpret_cast<unsigned char *>(&hash), &sha256);
     return hash;
 }
 
 blocksci::uint256 sha256(const unsigned char *begin, const unsigned char *end) {
-    return sha256(static_cast<const uint8_t *>(begin), end - begin);
+    return sha256(static_cast<const uint8_t *>(begin), static_cast<size_t>(end - begin));
 }
 
 bool base58_sha256(void *digest, const void *data, size_t datasz) {
@@ -32,8 +32,8 @@ bool base58_sha256(void *digest, const void *data, size_t datasz) {
 }
 
 blocksci::uint256 doubleSha256(const char *data, unsigned long len) {
-    blocksci::uint256 txHash = sha256((const uint8_t *)data, len);
-    txHash = sha256((const uint8_t *)&txHash, sizeof(blocksci::uint256));
+    blocksci::uint256 txHash = sha256(reinterpret_cast<const uint8_t *>(data), len);
+    txHash = sha256(reinterpret_cast<const uint8_t *>(&txHash), sizeof(blocksci::uint256));
     return txHash;
 }
 
@@ -42,7 +42,7 @@ blocksci::uint160 ripemd160(const char *data, unsigned long len) {
     RIPEMD160_CTX ripemd;
     RIPEMD160_Init(&ripemd);
     RIPEMD160_Update(&ripemd, data, len);
-    RIPEMD160_Final((unsigned char *)&hash, &ripemd);
+    RIPEMD160_Final(reinterpret_cast<unsigned char *>(&hash), &ripemd);
     return hash;
 }
 

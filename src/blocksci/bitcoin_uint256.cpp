@@ -10,6 +10,8 @@
 
 namespace blocksci {
     
+    signed char HexDigit(char c);
+    
     const signed char p_util_hexdigit[256] =
     { -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
         -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
@@ -30,7 +32,7 @@ namespace blocksci {
     
     signed char HexDigit(char c)
     {
-        return p_util_hexdigit[(unsigned char)c];
+        return p_util_hexdigit[static_cast<unsigned char>(c)];
     }
     
     template <unsigned int BITS>
@@ -64,12 +66,12 @@ namespace blocksci {
         while (HexDigit(*psz) != -1)
             psz++;
         psz--;
-        unsigned char* p1 = (unsigned char*)data;
+        unsigned char* p1 = reinterpret_cast<unsigned char *>(data);
         unsigned char* pend = p1 + WIDTH;
         while (psz >= pbegin && p1 < pend) {
-            *p1 = HexDigit(*psz--);
+            *p1 = static_cast<unsigned char>(HexDigit(*psz--));
             if (psz >= pbegin) {
-                *p1 |= ((unsigned char)HexDigit(*psz--) << 4);
+                *p1 |= (static_cast<unsigned char>(HexDigit(*psz--)) << 4);
                 p1++;
             }
         }
