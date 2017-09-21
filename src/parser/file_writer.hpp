@@ -38,7 +38,7 @@ public:
             // re-open
             file.open(path, mainParams | extraParams);
         }
-        lastDataPos = file.tellp();
+        lastDataPos = static_cast<size_t>(file.tellp());
     }
     
     ~SimpleFileWriter() {

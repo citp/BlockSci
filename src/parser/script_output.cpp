@@ -135,6 +135,8 @@ struct ScriptOutputIsValid : public boost::static_visitor<bool> {
     }
 };
 
+bool isValid(const ScriptOutputType &type);
+
 bool isValid(const ScriptOutputType &type) {
     static auto visitor = ScriptOutputIsValid();
     return boost::apply_visitor(visitor, type);
@@ -185,7 +187,7 @@ blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::getHash()
     auto sortedAddresses = addresses;
     std::sort(sortedAddresses.begin(), sortedAddresses.begin() + addressCount);
     
-    for (int i = 0; i < addressCount; i++) {
+    for (size_t i = 0; i < addressCount; i++) {
         auto addressHash = sortedAddresses[i].GetID();
         memcpy(&sigData[sigDataPos], reinterpret_cast<const char *>(&addressHash), sizeof(addressHash));
         sigDataPos += sizeof(addressHash);
@@ -195,7 +197,7 @@ blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::getHash()
 }
 
 void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::processOutput(AddressState &state) {
-    for (int i = 0; i < addressCount; i++) {
+    for (size_t i = 0; i < addressCount; i++) {
         blocksci::RawAddress rawAddress{addresses[i].GetID(), blocksci::ScriptType::Enum::PUBKEY};
         auto addressInfo = state.findAddress(rawAddress);
         auto addrGetRes = state.resolveAddress(addressInfo);
@@ -205,7 +207,7 @@ void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::processOutput(AddressS
 }
 
 void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::checkOutput(const AddressState &state) {
-    for (int i = 0; i < addressCount; i++) {
+    for (size_t i = 0; i < addressCount; i++) {
         blocksci::RawAddress rawAddress{addresses[i].GetID(), blocksci::ScriptType::Enum::PUBKEY};
         auto addressInfo = state.findAddress(rawAddress);
         processedAddresses[i] = addressInfo.addressNum;
@@ -238,11 +240,13 @@ ScriptOutput<blocksci::AddressType::Enum::NULL_DATA>::ScriptOutput(const CScript
 
 // MARK: Script Processing
 
+bool isValidPubkey(std::vector<unsigned char> &vch1);
+
 bool isValidPubkey(std::vector<unsigned char> &vch1) {
     if (vch1.size() < 33 || vch1.size() > 65)
         return false;
     
-    char chHeader = vch1[0];
+    char chHeader = static_cast<char>(vch1[0]);
     if ((chHeader == 2 || chHeader == 3) && vch1.size() == 33) {
         return true;
     } else if ((chHeader == 4 || chHeader == 6 || chHeader == 7) && vch1.size() == 65) {
@@ -287,7 +291,7 @@ ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsig
         opcodetype opcode;
         std::vector<unsigned char> vchSig;
         scriptPubKey.GetOp(pc, opcode, vchSig);
-        uint8_t version = CScript::DecodeOP_N(opcode);
+        uint8_t version = static_cast<uint8_t>(CScript::DecodeOP_N(opcode));
         scriptPubKey.GetOp(pc, opcode, vchSig);
         if (version == 0 && vchSig.size() == 20) {
             return ScriptOutput<AddressType::Enum::WITNESS_PUBKEYHASH>(uint160{vchSig});
@@ -374,11 +378,11 @@ ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsig
             {   // Single-byte small integer pushed onto vSolutions
                 if (opcode1 == OP_0 || (opcode1 >= OP_1 && opcode1 <= OP_16)) {
                     if (isFirstSmallInt) {
-                        numRequired = (char)CScript::DecodeOP_N(opcode1);
+                        numRequired = static_cast<uint8_t>(CScript::DecodeOP_N(opcode1));
                         isFirstSmallInt = false;
                     } else {
                         auto &out = boost::get<ScriptOutput<AddressType::Enum::MULTISIG>>(*type);
-                        out.numTotal = (char)CScript::DecodeOP_N(opcode1);
+                        out.numTotal = static_cast<uint8_t>(CScript::DecodeOP_N(opcode1));
                     }
                 }
                 else

@@ -26,11 +26,11 @@ BloomFilter<Key>::BloomFilter() : maxItems(0), fpRate(1), m_numHashes(0), length
 }
 
 template<class Key>
-BloomFilter<Key>::BloomFilter(uint64_t maxItems_, double fpRate_) : maxItems(maxItems_), fpRate(fpRate_), m_numHashes(static_cast<uint8_t>(std::ceil(-std::log(fpRate) / Log2))), length(std::floor((-std::log(fpRate) * maxItems) / Log2Squared)), addedCount(0), data((length + BlockSize - 1) / BlockSize) {
+BloomFilter<Key>::BloomFilter(uint64_t maxItems_, double fpRate_) : maxItems(maxItems_), fpRate(fpRate_), m_numHashes(static_cast<uint8_t>(std::ceil(-std::log(fpRate) / Log2))), length(static_cast<uint64_t>(std::floor((-std::log(fpRate) * maxItems) / Log2Squared))), addedCount(0), data((length + BlockSize - 1) / BlockSize) {
     
 }
 
-std::array<uint64_t, 2> hash(const uint8_t *data, std::size_t len) {
+inline std::array<uint64_t, 2> hash(const uint8_t *data, int len) {
     std::array<uint64_t, 2> hashValue;
     MurmurHash3_x64_128(data, len, 0, hashValue.data());
     
@@ -43,11 +43,11 @@ inline uint64_t nthHash(uint8_t n, uint64_t hashA, uint64_t hashB, uint64_t filt
 
 template<class Key>
 void BloomFilter<Key>::add(const Key &key) {
-    auto len = sizeof(Key);
+    int len = static_cast<int>(sizeof(Key));
     auto item = reinterpret_cast<const uint8_t *>(&key);
     auto hashValues = hash(item, len);
     
-    for (int n = 0; n < m_numHashes; n++) {
+    for (uint8_t n = 0; n < m_numHashes; n++) {
         auto bitPos = nthHash(n, hashValues[0], hashValues[1], length);
         data[bitPos / BlockSize] |= 1 << (bitPos % BlockSize);
     }
@@ -57,11 +57,11 @@ void BloomFilter<Key>::add(const Key &key) {
 
 template<class Key>
 bool BloomFilter<Key>::possiblyContains(const Key &key) const {
-    auto len = sizeof(Key);
+    auto len = static_cast<int>(sizeof(Key));
     auto item = reinterpret_cast<const uint8_t *>(&key);
     auto hashValues = hash(item, len);
     
-    for (int n = 0; n < m_numHashes; n++) {
+    for (uint8_t n = 0; n < m_numHashes; n++) {
         auto bitPos = nthHash(n, hashValues[0], hashValues[1], length);
         if ((data[bitPos / BlockSize] & (1 << (bitPos % BlockSize))) == 0) {
             return false;

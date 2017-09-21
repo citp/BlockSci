@@ -29,7 +29,7 @@ public:
     
     bool possiblyContains(const Key &key) const;
     
-    uint32_t size() { return addedCount; }
+    size_t size() { return addedCount; }
     
     friend std::ostream &operator<<(std::ostream &output, const BloomFilter &b ) {
         output.write(reinterpret_cast<const char*>(&b.maxItems), sizeof(b.maxItems));
@@ -40,7 +40,7 @@ public:
         
         size_t sz = b.data.size();
         output.write(reinterpret_cast<const char*>(&sz), sizeof(sz));
-        output.write(reinterpret_cast<const char*>(&b.data[0]), sz * sizeof(b.data[0]));
+        output.write(reinterpret_cast<const char*>(&b.data[0]), static_cast<long>(sz * sizeof(b.data[0])));
         return output;
     }
     
@@ -54,7 +54,7 @@ public:
         size_t sz;
         input.read(reinterpret_cast<char*>(&sz), sizeof(sz));
         b.data.resize(sz);
-        input.read(reinterpret_cast<char*>(&b.data[0]), sz * sizeof(b.data[0]));
+        input.read(reinterpret_cast<char*>(&b.data[0]), static_cast<long>(sz * sizeof(b.data[0])));
         return input;
     }
     

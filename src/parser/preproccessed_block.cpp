@@ -23,11 +23,14 @@
 
 #include <iostream>
 
+std::vector<unsigned char> hexStringToVec(const std::string scripthex);
+ScriptOutputType getScriptOutput(const std::vector<unsigned char> &scriptBytes, bool witnessActivated);
+
 std::vector<unsigned char> hexStringToVec(const std::string scripthex) {
     std::vector<unsigned char> scriptBytes;
     for (unsigned int i = 0; i < scripthex.size(); i += 2) {
         std::string byteString = scripthex.substr(i, 2);
-        char byte = (char) strtol(byteString.c_str(), NULL, 16);
+        unsigned char byte = static_cast<unsigned char>(strtol(byteString.c_str(), NULL, 16));
         scriptBytes.push_back(byte);
     }
     return scriptBytes;
@@ -51,7 +54,7 @@ ScriptOutputType getScriptOutput(const std::vector<unsigned char> &scriptBytes, 
     return extractScriptData(scriptBytes.data(), scriptBytes.data() + scriptBytes.size(), witnessActivated);
 }
 
-RawOutput::RawOutput(const std::vector<unsigned char> &scriptBytes, uint64_t value, bool witnessActivated) : RawOutput(getScriptOutput(scriptBytes, witnessActivated), value, scriptBytes.size()) {}
+RawOutput::RawOutput(const std::vector<unsigned char> &scriptBytes_, uint64_t value_, bool witnessActivated_) : RawOutput(getScriptOutput(scriptBytes_, witnessActivated_), value_, static_cast<uint32_t>(scriptBytes_.size())) {}
 
 #ifdef BLOCKSCI_FILE_PARSER
 RawInput::RawInput(const char **buffer) {
@@ -83,11 +86,11 @@ void RawTransaction::load(const char **buffer, uint32_t blockHeight_, bool witne
     txHashStart = *buffer;
     auto inputCount = readVariableLengthInteger(buffer);
     
-    bool isSegwit = false;
+    bool containsSegwit = false;
     if (inputCount == 0) {
         auto flag = readNext<uint8_t>(buffer);
         assert(flag == 1);
-        isSegwit = true;
+        containsSegwit = true;
         txHashStart = *buffer;
         inputCount = readVariableLengthInteger(buffer);
     }
@@ -106,9 +109,9 @@ void RawTransaction::load(const char **buffer, uint32_t blockHeight_, bool witne
         outputs.emplace_back(buffer, witnessActivated);
     }
     
-    txHashLength = *buffer - txHashStart;
+    txHashLength = static_cast<uint32_t>(*buffer - txHashStart);
     
-    if (isSegwit) {
+    if (containsSegwit) {
         for (decltype(inputCount) i = 0; i < inputCount; i++) {
             auto &input = inputs[i];
             uint32_t stackItemCount = readVariableLengthInteger(buffer);
@@ -130,7 +133,7 @@ void RawTransaction::calculateHash() {
         SHA256_Update(&sha256CTX, &version, sizeof(version));
         SHA256_Update(&sha256CTX, txHashStart, txHashLength);
         SHA256_Update(&sha256CTX, &locktime, sizeof(locktime));
-        SHA256_Final((unsigned char *)&hash, &sha256CTX);
+        SHA256_Final(reinterpret_cast<unsigned char *>(&hash), &sha256CTX);
         hash = sha256(reinterpret_cast<const uint8_t *>(&hash), sizeof(hash));
     }
 }
@@ -150,12 +153,12 @@ void RawTransaction::load(const getrawtransaction_t &txinfo, uint32_t blockHeigh
     isSegwit = witnessActivated;
     blockHeight = blockHeight_;
     version = txinfo.version;
-    locktime = txinfo.locktime;
-    sizeBytes = txinfo.hex.size() / 2;
-    unsigned int inputCount = txinfo.vin.size();
+    locktime = static_cast<uint32_t>(txinfo.locktime);
+    sizeBytes = static_cast<uint32_t>(txinfo.hex.size() / 2);
+    auto inputCount = txinfo.vin.size();
     inputs.clear();
     inputs.reserve(inputCount);
-    for (unsigned int i = 0; i < inputCount; i++) {
+    for (size_t i = 0; i < inputCount; i++) {
         inputs.emplace_back(txinfo.vin[i]);
     }
     auto outputCount = txinfo.vout.size();
@@ -208,7 +211,7 @@ struct Serializer {
     
     blocksci::uint256 finalize() {
         blocksci::uint256 hash;
-        SHA256_Final((unsigned char *)&hash, &sha256);
+        SHA256_Final(reinterpret_cast<unsigned char *>(&hash), &sha256);
         return hash;
     }
 };
@@ -255,12 +258,12 @@ blocksci::uint256 RawTransaction::getHash(const InputInfo &info, int hashType) c
             it = itBegin;
             while (scriptCode.GetOp(it, opcode)) {
                 if (opcode == OP_CODESEPARATOR) {
-                    s.serialize(&itBegin[0], it-itBegin-1);
+                    s.serialize(&itBegin[0], static_cast<size_t>(it-itBegin-1));
                     itBegin = it;
                 }
             }
             if (itBegin != scriptCode.end()) {
-                s.serialize(&itBegin[0], it-itBegin);
+                s.serialize(&itBegin[0], static_cast<size_t>(it-itBegin));
             }
         }
         // Serialize the nSequence
@@ -274,7 +277,7 @@ blocksci::uint256 RawTransaction::getHash(const InputInfo &info, int hashType) c
     size_t nOutputs = hashNone ? 0 : (hashSingle ? info.inputNum+1 : outputs.size());
     s.serializeCompact(nOutputs);
     for (unsigned int nOutput = 0; nOutput < nOutputs; nOutput++) {
-        uint64_t value = outputs[nOutput].value;
+        int64_t value = static_cast<int64_t>(outputs[nOutput].value);
         uint32_t scriptLength = outputs[nOutput].scriptLength;
         if (hashSingle && nOutput != info.inputNum) {
             value = -1;

@@ -57,13 +57,13 @@ namespace blocksci {
     
     template <typename EnumStruct, template<typename EnumStruct::Enum> class Functor, class ...Args>
     constexpr auto make_static_table(Args... args) {
-        internal::MakeStaticTableImpl<EnumStruct, Args...> tableMaker;
+        internal::MakeStaticTableImpl<EnumStruct, Args...> tableMaker{};
         return tableMaker.template makeTable<Functor>(std::make_index_sequence<EnumStruct::all.size()>{}, args...);
     }
     
     template <typename EnumStruct, template<typename EnumStruct::Enum> class Functor>
     constexpr auto make_dynamic_table() {
-        internal::MakeDynamicTableImpl<EnumStruct> tableMaker;
+        internal::MakeDynamicTableImpl<EnumStruct> tableMaker{};
         return tableMaker.template makeTable<Functor>(std::make_index_sequence<EnumStruct::all.size()>{});
     }
     

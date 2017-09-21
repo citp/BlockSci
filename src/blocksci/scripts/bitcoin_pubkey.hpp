@@ -57,14 +57,14 @@ private:
     }
 
     //! Set this key data to be invalid
-    void Invalidate()
+    constexpr void Invalidate()
     {
         vch[0] = 0xFF;
     }
 
 public:
     //! Construct an invalid public key.
-    CPubKey() : vch{{0}}
+    constexpr CPubKey() : vch{{0}}
     {
         Invalidate();
     }

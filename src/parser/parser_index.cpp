@@ -41,7 +41,7 @@ void ParserIndex::complete() {
                 updateFuture.get();
             }
             blocksci::ChainAccess chain{config, false, 0};
-            auto maxTxCount = chain.txCount();
+            auto maxTxCount = static_cast<uint32_t>(chain.txCount());
             runUpdate(waitingRevealed, maxTxCount);
             blocksci::ScriptAccess scripts{config};
             tearDown(scripts);
@@ -71,7 +71,7 @@ void ParserIndex::update(const std::vector<uint32_t> &revealed) {
         auto nextRevealed = std::move(waitingRevealed);
         waitingRevealed.clear();
         blocksci::ChainAccess chain{config, false, 0};
-        auto maxTxCount = chain.txCount();
+        auto maxTxCount = static_cast<uint32_t>(chain.txCount());
         blocksci::ScriptAccess scripts{config};
         prepareUpdate(chain, scripts);
         updateFuture = std::async(std::launch::async, [this, nextRevealed, maxTxCount] {
@@ -85,7 +85,7 @@ void ParserIndex::runUpdate(const std::vector<uint32_t> &revealed, uint32_t maxT
     blocksci::ChainAccess chain{config, false, 0};
     blocksci::ScriptAccess scripts{config};
     
-    auto currentCount = chain.txCount();
+    auto currentCount = static_cast<uint32_t>(chain.txCount());
     if (latestTx < currentCount) {
         auto newTransactions = iterateTransactions(chain, latestTx, maxTxCount);
         for (auto tx : newTransactions) {

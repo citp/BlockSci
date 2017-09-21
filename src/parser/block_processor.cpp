@@ -34,31 +34,10 @@
 #include <fstream>
 #include <iostream>
 
+std::vector<unsigned char> ParseHex(const char* psz);
+
 BlockProcessor::BlockProcessor() : rawDone(false), hashDone(false), utxoDone(false) {
     
-}
-
-const signed char p_util_hexdigit[256] =
-{ -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
-    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
-    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
-    0,1,2,3,4,5,6,7,8,9,-1,-1,-1,-1,-1,-1,
-    -1,0xa,0xb,0xc,0xd,0xe,0xf,-1,-1,-1,-1,-1,-1,-1,-1,-1,
-    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
-    -1,0xa,0xb,0xc,0xd,0xe,0xf,-1,-1,-1,-1,-1,-1,-1,-1,-1,
-    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
-    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
-    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
-    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
-    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
-    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
-    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
-    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
-    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1, };
-
-signed char HexDigit(char c)
-{
-    return p_util_hexdigit[(unsigned char)c];
 }
 
 std::vector<unsigned char> ParseHex(const char* psz)
@@ -69,12 +48,12 @@ std::vector<unsigned char> ParseHex(const char* psz)
     {
         while (isspace(*psz))
             psz++;
-        signed char c = HexDigit(*psz++);
-        if (c == (signed char)-1)
+        signed char c = blocksci::HexDigit(*psz++);
+        if (c == static_cast<signed char>(-1))
             break;
-        unsigned char n = (c << 4);
-        c = HexDigit(*psz++);
-        if (c == (signed char)-1)
+        unsigned char n = static_cast<unsigned char>(c << 4);
+        c = blocksci::HexDigit(*psz++);
+        if (c == static_cast<signed char>(-1))
             break;
         n |= c;
         vch.push_back(n);
@@ -83,6 +62,8 @@ std::vector<unsigned char> ParseHex(const char* psz)
 }
 
 #ifdef BLOCKSCI_FILE_PARSER
+
+blocksci::Block getBlock(uint32_t firstTxIndex, uint32_t txCount, size_t coinbasePos, const BlockInfo &block);
 
 blocksci::Block getBlock(uint32_t firstTxIndex, uint32_t txCount, size_t coinbasePos, const BlockInfo &block) {
     return {firstTxIndex, txCount, static_cast<uint32_t>(block.height), block.hash, block.nVersion, block.nTime, block.nBits, block.nNonce, coinbasePos};
@@ -113,9 +94,11 @@ struct SegwitChecker : public boost::static_visitor<bool> {
     }
 };
 
+bool checkSegwit(RawTransaction *tx, const SegwitChecker &checker);
+
 bool checkSegwit(RawTransaction *tx, const SegwitChecker &checker) {
-    for (int i = tx->outputs.size() - 1; i >= 0; i--) {
-        if (boost::apply_visitor(checker, tx->outputs[i].scriptOutput)) {
+    for (int i = static_cast<int>(tx->outputs.size()) - 1; i >= 0; i--) {
+        if (boost::apply_visitor(checker, tx->outputs[static_cast<size_t>(i)].scriptOutput)) {
             return true;
         }
     }
@@ -136,7 +119,7 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
     for (auto &block : blocksToAdd) {
         startingTxCount += block.nTx;
         firstTimeRequired.insert(std::make_pair(block.nFile, block.height));
-        lastBlockRequired[block.nFile] = block.height;
+        lastBlockRequired[block.nFile] = static_cast<uint32_t>(block.height);
         lastTxRequired[block.nFile] = startingTxCount;
         minBlockFile = std::min(block.nFile, minBlockFile);
         maxBlockFile = std::max(block.nFile, maxBlockFile);
@@ -159,8 +142,7 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
         auto fileIt = files.find(block.nFile);
         if (fileIt == files.end()) {
             auto blockPath = config.pathForBlockFile(block.nFile);
-            boost::iostreams::mapped_file blockFile(blockPath, boost::iostreams::mapped_file::readonly);
-            if (!blockFile.is_open()) {
+            if (boost::filesystem::exists(blockPath)) {
                 std::cout << "Error: Failed to open block file " << blockPath << "\n";
                 break;
             }
@@ -183,11 +165,9 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
             closeFinishedFiles(tx->txNum);
         }
         
-        blocksci::uint256 nullHash;
-        nullHash.SetNull();
         bool segwit = false;
         auto segwitPos = startPos;
-        for (uint32_t i = 0; i < txCount; i++) {
+        for (uint32_t j = 0; j < txCount; j++) {
             tx->load(&segwitPos, 0, false);
             if (tx->inputs.size() == 1 && tx->inputs[0].rawOutputPointer.hash == nullHash) {
                 segwit = checkSegwit(tx, checker);
@@ -195,8 +175,8 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
             }
         }
         
-        for (uint32_t i = 0; i < txCount; i++) {
-            tx->load(&startPos, block.height, segwit);
+        for (uint32_t j = 0; j < txCount; j++) {
+            tx->load(&startPos, static_cast<uint32_t>(block.height), segwit);
             tx->txNum = txNum;
             
             sequenceFile.writeIndexGroup();
@@ -232,6 +212,8 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
 
 #ifdef BLOCKSCI_RPC_PARSER
 
+blocksci::Block getBlock(uint32_t firstTxIndex, uint32_t txCount, size_t coinbasePos, const blockinfo_t &block);
+
 blocksci::Block getBlock(uint32_t firstTxIndex, uint32_t txCount, size_t coinbasePos, const blockinfo_t &block) {
     return {firstTxIndex, txCount, static_cast<uint32_t>(block.height), blocksci::uint256S(block.hash), block.version, block.time, static_cast<uint32_t>(std::stoul(block.bits, nullptr, 16)), block.nonce, coinbasePos};
 }
@@ -249,7 +231,7 @@ void BlockProcessor::loadTxRPC(RawTransaction *tx, const blockinfo_t &block, uin
         tx->blockHeight = 0;
     } else {
         auto txinfo = bapi.getrawtransaction(block.tx[txNum], 1);
-        tx->load(txinfo, block.height, witnessActivated);
+        tx->load(txinfo, static_cast<uint32_t>(block.height), witnessActivated);
     }
 }
 
@@ -268,7 +250,7 @@ void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<bl
     SegwitChecker checker;
     
     for (auto &block : blocksToAdd) {
-        uint32_t blockTxCount = block.tx.size();
+        uint32_t blockTxCount = static_cast<uint32_t>(block.tx.size());
         if (!finished_transaction_queue.pop(tx)) {
             tx = new RawTransaction();
         }

@@ -132,7 +132,9 @@ std::pair<uint32_t, bool> AddressState::resolveAddress(const AddressInfo &addres
         case AddressLocation::LevelDb:
             multiAddressMap.insert(std::make_pair(rawAddress, addressInfo.addressNum));
             break;
-        default:
+        case AddressLocation::MultiUseMap:
+            break;
+        case AddressLocation::NotFound:
             break;
     }
     
@@ -182,11 +184,11 @@ void AddressState::removeAddresses(const std::unordered_map<blocksci::ScriptType
     }
     
     leveldb::WriteBatch batch;
-    leveldb::Iterator* it = levelDb->NewIterator(leveldb::ReadOptions());
-    for (it->SeekToFirst(); it->Valid(); it->Next()) {
-        auto key = it->key();
+    leveldb::Iterator* levelDbIt = levelDb->NewIterator(leveldb::ReadOptions());
+    for (levelDbIt->SeekToFirst(); levelDbIt->Valid(); levelDbIt->Next()) {
+        auto key = levelDbIt->key();
         if (key.size() == sizeof(blocksci::RawAddress)) {
-            uint32_t destNum = *reinterpret_cast<const uint32_t *>(it->value().data());
+            uint32_t destNum = *reinterpret_cast<const uint32_t *>(levelDbIt->value().data());
             auto address = *reinterpret_cast<const blocksci::RawAddress *>(key.data());
             auto it = deletedIndex.find(address.type);
             if (it != deletedIndex.end() && singleAddressIt2->second >= destNum) {

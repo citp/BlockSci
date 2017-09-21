@@ -80,7 +80,7 @@ ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::ScriptInput(const InputInf
     
     CScript::const_iterator begin = script.begin();
     wrappedInputBegin = &*begin;
-    wrappedInputLength = std::distance(begin, prevprevpc);
+    wrappedInputLength = static_cast<uint32_t>(std::distance(begin, prevprevpc));
     
     CScript wrappedOutputScript(lastScript.begin(), lastScript.end());
     auto outputScriptBegin = reinterpret_cast<const unsigned char *>(lastScript.data());
@@ -116,7 +116,7 @@ ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInput(const InputInf
         pubkey.Set(vchSig.begin(), vchSig.end());
     } else {
         auto &pubkeyWitness = inputInfo.witnessStack[1];
-        pubkey.Set(pubkeyWitness.itemBegin, pubkeyWitness.itemBegin + pubkeyWitness.length);
+        pubkey.Set(reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin), reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin) + pubkeyWitness.length);
     }
 }
 
@@ -204,7 +204,7 @@ ProcessedInput ScriptInput<blocksci::AddressType::Enum::NULL_DATA>::processInput
 
 ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::ScriptInput(const InputInfo &inputInfo, const RawTransaction &, const AddressWriter &) {
     auto &pubkeyWitness = inputInfo.witnessStack[1];
-    pubkey.Set(pubkeyWitness.itemBegin, pubkeyWitness.itemBegin + pubkeyWitness.length);
+    pubkey.Set(reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin), reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin) + pubkeyWitness.length);
 }
 
 ProcessedInput ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::processInput(const InputInfo &inputInfo, const RawTransaction &, AddressState &, AddressWriter &writer) {

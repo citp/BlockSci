@@ -21,6 +21,8 @@ constexpr auto pubkeyHashTableName = "PUBKEYHASH_ADDRESS";
 
 constexpr auto tableNames = {txTableName, p2shTableName, pubkeyHashTableName};
 
+std::pair<sqlite3 *, bool> openHashDb(boost::filesystem::path hashIndexFilePath);
+
 static int callback(void *, int argc, char **argv, char **azColName){
     int i;
     for(i=0; i<argc; i++){
@@ -55,7 +57,7 @@ std::pair<sqlite3 *, bool> openHashDb(boost::filesystem::path hashIndexFilePath)
             "BLOCKSCI_INDEX INT NOT NULL UNIQUE);";
             
             auto query = ss.str();
-            auto rc = sqlite3_exec(db, query.c_str(), callback, 0, nullptr);
+            rc = sqlite3_exec(db, query.c_str(), callback, 0, nullptr);
             if( rc != SQLITE_OK ){
                 fprintf(stderr, "SQL error: %s\n", sqlite3_errmsg(db));
                 exit(1);
@@ -119,7 +121,7 @@ void HashIndex::tearDown(const blocksci::ScriptAccess &) {
 void HashIndex::processTx(const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &, const blocksci::Transaction &tx) {
     auto hash = tx.getHash(chain);
     sqlite3_bind_blob(txInsertStatement, 1, &hash, sizeof(hash), SQLITE_TRANSIENT);
-    sqlite3_bind_int(txInsertStatement, 2, tx.txNum);
+    sqlite3_bind_int(txInsertStatement, 2, static_cast<int>(tx.txNum));
     
     auto rc = sqlite3_step(txInsertStatement);
     if (rc != SQLITE_DONE) {

@@ -60,8 +60,7 @@ bool AddressWriter::serializeImp<AddressType::Enum::PUBKEY>(const ScriptInput<Ad
     return false;
 }
 
-static std::vector<unsigned char> nullPubkeyVec(64, 0xff);
-static CPubKey nullPubkey{nullPubkeyVec};
+constexpr static CPubKey nullPubkey{};
 
 template<>
 void AddressWriter::serializeImp<AddressType::Enum::PUBKEYHASH>(const ScriptOutput<AddressType::Enum::PUBKEYHASH> &output) {

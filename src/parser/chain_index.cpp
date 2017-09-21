@@ -47,7 +47,7 @@ ChainIndex::ChainIndex(const FileParserConfiguration &config_) : config(config_)
         uint64_t length;
         file.read(reinterpret_cast<char *>(&length), sizeof(length));
         blockList.resize(length);
-        file.read(reinterpret_cast<char *>(blockList.data()), sizeof(BlockInfo) * length);
+        file.read(reinterpret_cast<char *>(blockList.data()), static_cast<long>(sizeof(BlockInfo) * length));
     }
     updateFromFilesystem();
 }
@@ -56,7 +56,7 @@ ChainIndex::~ChainIndex() {
     boost::filesystem::ofstream file(config.blockListPath(), std::ios::binary);
     uint64_t length = blockList.size();
     file.write(reinterpret_cast<char *>(&length), sizeof(length));
-    file.write(reinterpret_cast<char *>(blockList.data()), sizeof(BlockInfo) * length);
+    file.write(reinterpret_cast<char *>(blockList.data()), static_cast<long>(sizeof(BlockInfo) * length));
 }
 
 void ChainIndex::updateFromFilesystem() {
@@ -97,13 +97,13 @@ void ChainIndex::updateFromFilesystem() {
         uint32_t magic = 0;
         while ((magic = readNext<uint32_t>(&startPos)) == config.blockMagic) {
             uint32_t length = readNext<uint32_t>(&startPos);
-            filePos = startPos - fileMap.data();
+            filePos = static_cast<size_t>(startPos - fileMap.data());
             auto header = reinterpret_cast<const CBlockHeader *>(startPos);
             size_t blockHeaderSize = 80;
             const char *buffer = startPos + blockHeaderSize;
             uint32_t numTxes = readVariableLengthInteger(&buffer);
             startPos += length;
-            blockList.push_back(BlockInfo(*header, fileNum, filePos, numTxes, config));
+            blockList.push_back(BlockInfo(*header, fileNum, static_cast<uint32_t>(filePos), numTxes, config));
         }
         fileNum++;
         filePos = 0;
@@ -154,17 +154,17 @@ std::vector<BlockInfo> ChainIndex::generateChain(uint32_t maxBlockHeight) const 
         blockNum++;
     }
     
-    int curMax = maxBlockHeight == 0 ? std::numeric_limits<int>::max() : maxBlockHeight;
+    uint32_t curMax = maxBlockHeight == 0 ? std::numeric_limits<int>::max() : maxBlockHeight;
     
     std::vector<BlockInfo> chain;
     while (true) {
         chain.clear();
         const BlockInfo *maxHeightBlock = nullptr;
-        int maxHeight = 0;
+        uint32_t maxHeight = 0;
         for (auto &possibleMaxBlock : blockList) {
-            if (possibleMaxBlock.height > maxHeight && possibleMaxBlock.height <= curMax) {
+            if (static_cast<uint32_t>(possibleMaxBlock.height) > maxHeight && static_cast<uint32_t>(possibleMaxBlock.height) <= curMax) {
                 maxHeightBlock = &possibleMaxBlock;
-                maxHeight = possibleMaxBlock.height;
+                maxHeight = static_cast<uint32_t>(possibleMaxBlock.height);
             }
         }
         
@@ -174,13 +174,13 @@ std::vector<BlockInfo> ChainIndex::generateChain(uint32_t maxBlockHeight) const 
         
         const BlockInfo *block = maxHeightBlock;
         while (true) {
-            if (block->height < curMax) {
+            if (static_cast<uint32_t>(block->height) < curMax) {
                 chain.push_back(*block);
             }
             if (block->height > 0) {
                 auto it = indexMap.find(block->prevHash);
                 if (it == indexMap.end()) {
-                    curMax = block->height - 2;
+                    curMax = static_cast<uint32_t>(block->height) - 2;
                     break;
                 } else {
                     block = &blockList[it->second];
@@ -191,8 +191,6 @@ std::vector<BlockInfo> ChainIndex::generateChain(uint32_t maxBlockHeight) const 
             }
         }
     }
-    
-    return chain;
 }
 
 #endif

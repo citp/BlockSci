@@ -15,6 +15,8 @@
 
 namespace blocksci {
     
+    signed char HexDigit(char c);
+    
     template<typename T>
     std::string HexStr(const T itbegin, const T itend, bool fSpaces=false)
     {

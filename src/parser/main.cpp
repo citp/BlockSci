@@ -216,7 +216,7 @@ uint32_t txCount(const blockinfo_t &block);
 ChainUpdateInfo<blockinfo_t> prepareChain(const RPCParserConfiguration &config, uint32_t maxBlockNum);
 
 uint32_t txCount(const blockinfo_t &block) {
-    return block.tx.size();
+    return static_cast<uint32_t>(block.tx.size());
 }
 
 ChainUpdateInfo<blockinfo_t> prepareChain(const RPCParserConfiguration &config, uint32_t maxBlockNum) {
@@ -226,8 +226,8 @@ ChainUpdateInfo<blockinfo_t> prepareChain(const RPCParserConfiguration &config, 
     }
     auto blockHeight = std::min(maxBlockNum, static_cast<uint32_t>(bapi.getblockcount()));
     
-    uint32_t splitPoint = findSplitPoint(config, blockHeight, [&](uint32_t blockHeight) {
-        return blocksci::uint256S(bapi.getblockhash(blockHeight));
+    uint32_t splitPoint = findSplitPoint(config, blockHeight, [&](uint32_t h) {
+        return blocksci::uint256S(bapi.getblockhash(static_cast<int>(h)));
     });
     
     std::cout.setf(std::ios::fixed,std::ios::floatfield);
@@ -239,9 +239,9 @@ ChainUpdateInfo<blockinfo_t> prepareChain(const RPCParserConfiguration &config, 
     std::vector<blockinfo_t> blocksToAdd;
     blocksToAdd.reserve(numBlocks);
     for (uint32_t i = splitPoint; i < blockHeight; i++) {
-        std::string blockhash = bapi.getblockhash(i);
+        std::string blockhash = bapi.getblockhash(static_cast<int>(i));
         blocksToAdd.push_back(bapi.getblock(blockhash));
-        int count = i - splitPoint;
+        uint32_t count = i - splitPoint;
         if (count % percentageMarker == 0) {
             std::cout << "\r" << (static_cast<double>(count) / static_cast<double>(numBlocks)) * 100 << "% done fetching block headers" << std::flush;
         }
@@ -322,7 +322,7 @@ void updateChain(const ConfigType &config, uint32_t maxBlockNum) {
     HashIndex hashIndex{config};
     
     uint32_t startingTxCount = getStartingTxCount(config);
-    uint32_t maxBlockHeight = blocksToAdd.back().height;
+    uint32_t maxBlockHeight = static_cast<uint32_t>(blocksToAdd.back().height);
     
     UTXOState utxoState{config};
     AddressState addressState{config};
