@@ -12,7 +12,7 @@
 namespace blocksci {
     ScriptFirstSeenAccess::ScriptFirstSeenAccess(const DataConfiguration &config) :
     scriptFilesFirstSeen(blocksci::apply(blocksci::ScriptInfoList(), [&] (auto tag) {
-        return config.firstSeenDirectory()/blocksci::ScriptInfo<decltype(tag)::type>::name;
+        return config.firstSeenDirectory()/std::string{scriptName(decltype(tag)::type)};
     })) {}
     
     void ScriptFirstSeenAccess::reload() {

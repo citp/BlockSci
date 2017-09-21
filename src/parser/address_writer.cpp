@@ -11,7 +11,7 @@
 
 AddressWriter::AddressWriter(const ParserConfiguration &config) :
 scriptFiles(blocksci::apply(blocksci::ScriptInfoList(), [&] (auto tag) {
-    return config.scriptsDirectory()/blocksci::ScriptInfo<decltype(tag)::type>::name;
+    return config.scriptsDirectory()/ std::string{scriptName(decltype(tag)::type)};
 })) {
 }
 

@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(blocksci)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_MACOSX_RPATH 1)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-padded -Wno-unused-macros -Wno-exit-time-destructors -Wno-undefined-func-template -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wall -Wextra -pedantic")
+# -Weverything
 #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG")
 
 # use, i.e. don't skip the full RPATH for the build tree
@@ -30,15 +31,15 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 find_package( Boost 1.58 COMPONENTS program_options system filesystem thread iostreams REQUIRED )
 add_library(boost INTERFACE)
 target_link_libraries(boost INTERFACE ${Boost_LIBRARIES})
-target_include_directories(boost INTERFACE ${Boost_INCLUDE_DIR})
+target_include_directories(boost INTERFACE SYSTEM ${Boost_INCLUDE_DIR})
 
 find_package(OpenSSL REQUIRED)
 add_library(openssl INTERFACE)
 target_link_libraries(openssl INTERFACE ${OPENSSL_LIBRARIES})
-target_include_directories(openssl INTERFACE ${OPENSSL_INCLUDE_DIR})
+target_include_directories(openssl INTERFACE SYSTEM ${OPENSSL_INCLUDE_DIR})
 
 add_library(sparsepp INTERFACE)
-target_include_directories(sparsepp INTERFACE libs/sparsepp)
+target_include_directories(sparsepp INTERFACE SYSTEM libs/sparsepp)
 
 link_directories(/usr/local/lib)
 include_directories("src")
