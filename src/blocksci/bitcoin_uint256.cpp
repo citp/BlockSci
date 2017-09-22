@@ -106,13 +106,13 @@ namespace blocksci {
     template void base_blob<256>::SetHex(const char*);
     template void base_blob<256>::SetHex(const std::string&);
     
-    inline uint160 uint160S(const char *str) {
+    uint160 uint160S(const char *str) {
         uint160 rv;
         rv.SetHex(str);
         return rv;
     }
     
-    inline uint160 uint160S(const std::string& str) {
+    uint160 uint160S(const std::string& str) {
         uint160 rv;
         rv.SetHex(str);
         return rv;
