@@ -18,6 +18,7 @@
 #include "block_processor.hpp"
 #include "address_db.hpp"
 #include "first_seen_index.hpp"
+#include "parser_index_creator.hpp"
 #include "hash_index.hpp"
 #include "block_replayer.hpp"
 #include "address_writer.hpp"
@@ -273,32 +274,6 @@ void printUpdateInfo(const ParserConfiguration &config, const ChainUpdateInfo<Bl
     std::cout << "Adding " << chainUpdateInfo.blocksToAdd.size() << " blocks" << std::endl;
 }
 
-template <typename ConfigType, typename BlockType>
-std::vector<uint32_t> addNewBlocks(const ConfigType &config, const std::vector<BlockType> &nextBlocks, uint32_t startingTxCount, uint32_t currentCount, uint32_t totalTxCount, uint32_t maxBlockHeight, UTXOState &utxoState, AddressState &addressState) {
-    BlockProcessor processor;
-    
-    auto importer = std::async(std::launch::async, [&] {
-        processor.readNewBlocks(config, nextBlocks, startingTxCount);
-    });
-    
-    auto hashCalculator = std::async(std::launch::async, [&] {
-        processor.calculateHashes(config);
-    });
-    
-    auto utxoProcessor = std::async(std::launch::async, [&] {
-        processor.processUTXOs(config, utxoState);
-    });
-    
-    auto addressProcessor = std::async(std::launch::async, [&] {
-        return processor.processAddresses(config, addressState, currentCount, totalTxCount, maxBlockHeight);
-    });
-    
-    importer.get();
-    hashCalculator.get();
-    utxoProcessor.get();
-    return addressProcessor.get();
-}
-
 template <typename ConfigType>
 void updateChain(const ConfigType &config, uint32_t maxBlockNum) {
     using namespace std::chrono_literals;
@@ -317,22 +292,22 @@ void updateChain(const ConfigType &config, uint32_t maxBlockNum) {
         return;
     }
     
-    AddressDB addressDB{config};
-    FirstSeenIndex firstSeen{config};
-    HashIndex hashIndex{config};
-    
     uint32_t startingTxCount = getStartingTxCount(config);
     uint32_t maxBlockHeight = static_cast<uint32_t>(blocksToAdd.back().height);
-    
-    UTXOState utxoState{config};
-    AddressState addressState{config};
     
     uint32_t totalTxCount = 0;
     for (auto &block : blocksToAdd) {
         totalTxCount += txCount(block);
     }
     
-    uint32_t currentCount = 0;
+    BlockProcessor processor{startingTxCount, totalTxCount, maxBlockHeight};
+    
+    UTXOState utxoState{config};
+    AddressState addressState{config};
+    
+    auto addressDB = ParserIndexCreator::createIndex<AddressDB>(config);
+    auto firstSeen = ParserIndexCreator::createIndex<FirstSeenIndex>(config);
+    auto hashIndex = ParserIndexCreator::createIndex<HashIndex>(config);
     
     auto it = blocksToAdd.begin();
     auto end = blocksToAdd.end();
@@ -346,28 +321,22 @@ void updateChain(const ConfigType &config, uint32_t maxBlockNum) {
         
         decltype(blocksToAdd) nextBlocks{prev, it};
         
-        uint32_t count = 0;
-        for (auto &block : nextBlocks) {
-            count += txCount(block);
-        }
+        auto revealedScriptHashes = processor.addNewBlocks(config, nextBlocks, utxoState, addressState);
         
-        auto revealedScriptHashes = addNewBlocks(config, nextBlocks, startingTxCount, currentCount, totalTxCount, maxBlockHeight, utxoState, addressState);
+        blocksci::ChainAccess chain{config, false, 0};
+        auto maxTxCount = static_cast<uint32_t>(chain.txCount());
         
-        currentCount += newTxCount;
-        startingTxCount += newTxCount;
-        
-        addressDB.update(revealedScriptHashes);
-        firstSeen.update(revealedScriptHashes);
-        hashIndex.update(revealedScriptHashes);
+        addressDB.update(revealedScriptHashes, maxTxCount);
+        firstSeen.update(revealedScriptHashes, maxTxCount);
+        hashIndex.update(revealedScriptHashes, maxTxCount);
     }
     
-    addressDB.complete();
-    firstSeen.complete();
-    hashIndex.complete();
+    blocksci::ChainAccess chain{config, false, 0};
+    auto maxTxCount = static_cast<uint32_t>(chain.txCount());
     
-    addressDB.preDestroy();
-    firstSeen.preDestroy();
-    hashIndex.preDestroy();
+    addressDB.complete(maxTxCount);
+    firstSeen.complete(maxTxCount);
+    hashIndex.complete(maxTxCount);
 }
 
 int main(int argc, const char * argv[]) {

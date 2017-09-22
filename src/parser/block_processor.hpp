@@ -30,47 +30,45 @@ struct blockinfo_t;
 class BitcoinAPI;
 class UTXOState;
 
-struct RevealedScriptHash {
-    uint32_t addressNum;
-    uint32_t txNum;
-    
-    RevealedScriptHash(uint32_t addressNum_, uint32_t txNum_) : addressNum(addressNum_), txNum(txNum_) {}
-};
-
 class BlockProcessor {
     
     boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<50000>> hash_transaction_queue;
-    
     boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<50000>> utxo_transaction_queue;
-    
     boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<50000>> address_transaction_queue;
-    
     boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<50000>> finished_transaction_queue;
     
     boost::unordered_map<int, std::pair<boost::iostreams::mapped_file, uint32_t>> files;
     
-    void closeFinishedFiles(uint32_t txNum);
-    #ifdef BLOCKSCI_RPC_PARSER
-    void loadTxRPC(RawTransaction *tx, const blockinfo_t &block, uint32_t txNum, BitcoinAPI & bapi, bool witnessActivated);
-    #endif
+    uint32_t startingTxCount;
+    uint32_t currentTxNum;
+    uint32_t totalTxCount;
+    uint32_t maxBlockHeight;
     
-public:
     boost::atomic<bool> rawDone;
     boost::atomic<bool> hashDone;
     boost::atomic<bool> utxoDone;
     
-    BlockProcessor();
-    ~BlockProcessor();
+    void closeFinishedFiles(uint32_t txNum);
     
     #ifdef BLOCKSCI_FILE_PARSER
-    void readNewBlocks(FileParserConfiguration config, std::vector<BlockInfo> blocksToAdd, uint32_t startingTxCount);
+    void readNewBlocks(FileParserConfiguration config, std::vector<BlockInfo> blocksToAdd);
     #endif
     #ifdef BLOCKSCI_RPC_PARSER
-    void readNewBlocks(RPCParserConfiguration config, std::vector<blockinfo_t> blocksToAdd, uint32_t startingTxCount);
+    void loadTxRPC(RawTransaction *tx, const blockinfo_t &block, uint32_t txNum, BitcoinAPI & bapi, bool witnessActivated);
+    void readNewBlocks(RPCParserConfiguration config, std::vector<blockinfo_t> blocksToAdd);
     #endif
     void calculateHashes(ParserConfiguration config);
     void processUTXOs(ParserConfiguration config, UTXOState &utxoState);
-    std::vector<uint32_t> processAddresses(ParserConfiguration config, AddressState &addressState, uint32_t currentCount, uint32_t totalTxCount, uint32_t maxBlockHeight);
+    std::vector<uint32_t> processAddresses(ParserConfiguration config, AddressState &addressState);
+    
+    
+public:
+    
+    BlockProcessor(uint32_t startingTxCount, uint32_t totalTxCount, uint32_t maxBlockHeight);
+    ~BlockProcessor();
+    
+    template <typename ConfigType, typename BlockType>
+    std::vector<uint32_t> addNewBlocks(const ConfigType &config, std::vector<BlockType> nextBlocks, UTXOState &utxoState, AddressState &addressState);
 };
 
 

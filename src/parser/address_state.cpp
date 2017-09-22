@@ -209,19 +209,16 @@ AddressInfo AddressState::findAddress(const blocksci::RawAddress &address) const
         return {address, AddressLocation::NotFound, singleAddressMap.end(), 0};
     }
     
-    auto multiAddressIt = multiAddressMap.find(address);
-    if (multiAddressIt != multiAddressMap.end()) {
-        return {address, AddressLocation::MultiUseMap, multiAddressIt, multiAddressIt->second};
+    if (auto it = multiAddressMap.find(address); it != multiAddressMap.end()) {
+        return {address, AddressLocation::MultiUseMap, it, it->second};
     }
     
-    auto singleAddressIt = singleAddressMap.find(address);
-    if (singleAddressIt != singleAddressMap.end()) {
-        return {address, AddressLocation::SingleUseMap, singleAddressIt, singleAddressIt->second};
+    if (auto it = singleAddressMap.find(address); it != singleAddressMap.end()) {
+        return {address, AddressLocation::SingleUseMap, it, it->second};
     }
     
-    auto singleAddressIt2 = oldSingleAddressMap.find(address);
-    if (singleAddressIt2 != oldSingleAddressMap.end()) {
-        return {address, AddressLocation::OldSingleUseMap, singleAddressIt2, singleAddressIt2->second};
+    if (auto it = oldSingleAddressMap.find(address); it != oldSingleAddressMap.end()) {
+        return {address, AddressLocation::OldSingleUseMap, it, it->second};
     }
     
     leveldb::Slice keySlice(reinterpret_cast<const char *>(&address), sizeof(address));

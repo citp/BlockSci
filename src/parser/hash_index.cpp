@@ -91,11 +91,7 @@ HashIndex::HashIndex(const ParserConfiguration &config, std::pair<sqlite3 *, boo
 }
 
 
-void HashIndex::tearDown(const blocksci::ScriptAccess &) {
-    sqlite3_finalize(txInsertStatement);
-    
-    sqlite3_exec(db, "END TRANSACTION;", NULL, NULL, NULL);
-    
+void HashIndex::tearDown() {
     if (firstRun) {
         for (auto &tableName : tableNames) {
             std::stringstream ss;
@@ -114,7 +110,11 @@ void HashIndex::tearDown(const blocksci::ScriptAccess &) {
             }
         }
     }
-    
+}
+
+HashIndex::~HashIndex() {
+    sqlite3_finalize(txInsertStatement);
+    sqlite3_exec(db, "END TRANSACTION;", NULL, NULL, NULL);
     sqlite3_close(db);
 }
 

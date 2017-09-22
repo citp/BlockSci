@@ -57,10 +57,10 @@ namespace blocksci {
         using FileType = boost::iostreams::mapped_file;
     protected:
         FileType file;
-        FileType::mapmode fileMode;
         size_t fileEnd;
     public:
         boost::filesystem::path path;
+        FileType::mapmode fileMode;
         
         void reload() {
             if (boost::filesystem::exists(path)) {
@@ -80,7 +80,7 @@ namespace blocksci {
             }
         }
         
-        SimpleFileMapperBase(boost::filesystem::path path_, FileType::mapmode mode) : fileMode(mode), fileEnd(0), path(path_) {
+        SimpleFileMapperBase(boost::filesystem::path path_, FileType::mapmode mode) : fileEnd(0), path(path_), fileMode(mode) {
             path += ".dat";
             
             if (boost::filesystem::exists(path)) {

@@ -384,7 +384,7 @@ private:
  * Tests in October 2015 showed use of this reduced dbcache memory usage by 23%
  *  and made an initial sync 13% faster.
  */
-typedef boost::container::small_vector<unsigned char, 28> CScriptBase;
+typedef boost::container::small_vector<unsigned char, 31> CScriptBase;
 
 /** Serialized script, used inside transaction inputs and outputs */
 class CScript : public CScriptBase

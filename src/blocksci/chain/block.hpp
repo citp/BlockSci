@@ -49,9 +49,7 @@ namespace blocksci {
         
         bool operator==(const Block& other) const;
         
-        const std::string getHeaderHash() const {
-            return hash.GetHex();
-        }
+        const std::string getHeaderHash() const;
         
         std::chrono::system_clock::time_point getTime() const;
         

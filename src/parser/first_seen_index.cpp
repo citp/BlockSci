@@ -33,7 +33,8 @@ FirstSeenIndex::FirstSeenIndex(const ParserConfiguration &config) : AddressTrave
     }
 }
 
-void FirstSeenIndex::prepareUpdate(const blocksci::ChainAccess &, const blocksci::ScriptAccess &scripts) {
+void FirstSeenIndex::prepareUpdate() {
+    blocksci::ScriptAccess scripts{config};
     for (auto &pair : files) {
         auto &file = pair.second;
         file.truncate(scripts.scriptCount(pair.first));

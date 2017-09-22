@@ -19,6 +19,7 @@ namespace blocksci {
     class ReorgException : public std::runtime_error {
     public:
         ReorgException();
+        virtual ~ReorgException();
     };
     
     struct Block;
@@ -36,16 +37,14 @@ namespace blocksci {
         IndexedFileMapper<boost::iostreams::mapped_file::mapmode::readonly, RawTransaction> txFile;
         FixedSizeFileMapper<uint256> txHashesFile;
         
-        uint32_t _maxLoadedTx;
-        
-        const uint256 *lastBlockHashDisk;
         uint256 lastBlockHash;
+        const uint256 *lastBlockHashDisk;
         uint32_t maxHeight;
+        uint32_t _maxLoadedTx;
+        uint32_t blocksIgnored;
+        bool errorOnReorg;
         
         void reorgCheck() const;
-        
-        bool errorOnReorg;
-        uint32_t blocksIgnored;
         
         const FixedSizeFileMapper<Block> &getBlockFile() const {
             return blockFile;

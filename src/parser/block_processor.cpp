@@ -36,7 +36,7 @@
 
 std::vector<unsigned char> ParseHex(const char* psz);
 
-BlockProcessor::BlockProcessor() : rawDone(false), hashDone(false), utxoDone(false) {
+BlockProcessor::BlockProcessor(uint32_t startingTxCount_, uint32_t totalTxCount_, uint32_t maxBlockHeight_) : startingTxCount(startingTxCount_), currentTxNum(startingTxCount_), totalTxCount(totalTxCount_), maxBlockHeight(maxBlockHeight_) {
     
 }
 
@@ -105,22 +105,22 @@ bool checkSegwit(RawTransaction *tx, const SegwitChecker &checker) {
     return false;
 }
 
-void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<BlockInfo> blocksToAdd, uint32_t startingTxCount) {
+void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<BlockInfo> blocksToAdd) {
     using namespace std::chrono_literals;
     
     boost::unordered_map<int, uint32_t> firstTimeRequired;
     boost::unordered_map<int, uint32_t> lastBlockRequired;
     boost::unordered_map<int, uint32_t> lastTxRequired;
     
-    auto txNum = startingTxCount;
+    auto firstTxNum = currentTxNum;
     
     int maxBlockFile = 0;
     int minBlockFile = std::numeric_limits<int>::max();
     for (auto &block : blocksToAdd) {
-        startingTxCount += block.nTx;
+        firstTxNum += block.nTx;
         firstTimeRequired.insert(std::make_pair(block.nFile, block.height));
         lastBlockRequired[block.nFile] = static_cast<uint32_t>(block.height);
-        lastTxRequired[block.nFile] = startingTxCount;
+        lastTxRequired[block.nFile] = firstTxNum;
         minBlockFile = std::min(block.nFile, minBlockFile);
         maxBlockFile = std::max(block.nFile, maxBlockFile);
     }
@@ -142,7 +142,7 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
         auto fileIt = files.find(block.nFile);
         if (fileIt == files.end()) {
             auto blockPath = config.pathForBlockFile(block.nFile);
-            if (boost::filesystem::exists(blockPath)) {
+            if (!boost::filesystem::exists(blockPath)) {
                 std::cout << "Error: Failed to open block file " << blockPath << "\n";
                 break;
             }
@@ -156,7 +156,7 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
         startPos += blockHeaderSize;
         uint32_t txCount = readVariableLengthInteger(&startPos);
         
-        auto firstTxIndex = txNum;
+        auto firstTxIndex = currentTxNum;
         
         RawTransaction *tx;
         if (!finished_transaction_queue.pop(tx)) {
@@ -177,7 +177,7 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
         
         for (uint32_t j = 0; j < txCount; j++) {
             tx->load(&startPos, static_cast<uint32_t>(block.height), segwit);
-            tx->txNum = txNum;
+            tx->txNum = currentTxNum;
             
             sequenceFile.writeIndexGroup();
             for (auto &input : tx->inputs) {
@@ -193,7 +193,7 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
             while (!hash_transaction_queue.push(tx)) {
                 std::this_thread::sleep_for(100ms);
             }
-            txNum++;
+            currentTxNum++;
             
             if (!finished_transaction_queue.pop(tx)) {
                 tx = new RawTransaction();
@@ -235,9 +235,8 @@ void BlockProcessor::loadTxRPC(RawTransaction *tx, const blockinfo_t &block, uin
     }
 }
 
-void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<blockinfo_t> blocksToAdd, uint32_t startingTxCount) {
+void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<blockinfo_t> blocksToAdd) {
     using namespace std::chrono_literals;
-    auto txNum = startingTxCount;
     
     blocksci::ArbitraryFileMapper<boost::iostreams::mapped_file::readwrite> blockCoinbaseFile(config.blockCoinbaseFilePath());
     blocksci::FixedSizeFileMapper<blocksci::Block, boost::iostreams::mapped_file::readwrite> blockFile(config.blockFilePath());
@@ -260,14 +259,14 @@ void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<bl
         
         
         std::vector<unsigned char> coinbase;
-        auto firstTxIndex = txNum;
+        auto firstTxIndex = currentTxNum;
         for (uint32_t i = 0; i < blockTxCount; i++) {
             
             if (!finished_transaction_queue.pop(tx)) {
                 tx = new RawTransaction();
             }
             loadTxRPC(tx, block, i, bapi, segwit);
-            tx->txNum = txNum;
+            tx->txNum = currentTxNum;
             
             sequenceFile.writeIndexGroup();
             for (auto &input : tx->inputs) {
@@ -278,7 +277,7 @@ void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<bl
             while (!hash_transaction_queue.push(tx)) {
                 std::this_thread::sleep_for(100ms);
             }
-            txNum++;
+            currentTxNum++;
         }
         
         blockFile.write(getBlock(firstTxIndex, blockTxCount, blockCoinbaseFile.size(), block));
@@ -372,7 +371,7 @@ void BlockProcessor::processUTXOs(ParserConfiguration config, UTXOState &utxoSta
     utxoDone = true;
 }
 
-std::vector<uint32_t> BlockProcessor::processAddresses(ParserConfiguration config, AddressState &addressState, uint32_t currentCount, uint32_t totalTxCount, uint32_t maxBlockHeight) {
+std::vector<uint32_t> BlockProcessor::processAddresses(ParserConfiguration config, AddressState &addressState) {
     using namespace std::chrono_literals;
     
     using TxFile = blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction>;
@@ -418,7 +417,7 @@ std::vector<uint32_t> BlockProcessor::processAddresses(ParserConfiguration confi
             }
             i++;
         }
-        // 2,262,720
+
         i = 0;
         for (auto &output : tx->outputs) {
             auto &diskOutput = diskTx->getOutput(i);
@@ -428,8 +427,7 @@ std::vector<uint32_t> BlockProcessor::processAddresses(ParserConfiguration confi
             i++;
         }
         
-        currentCount++;
-        
+        auto currentCount = tx->txNum - startingTxCount;
         if (currentCount % percentageMarker == 0) {
             auto percentDone = (static_cast<double>(currentCount) / static_cast<double>(totalTxCount)) * 100;
             auto blockHeight = tx->blockHeight;
@@ -466,6 +464,43 @@ std::vector<uint32_t> BlockProcessor::processAddresses(ParserConfiguration confi
     return revealed;
 }
 
+template <typename ConfigType, typename BlockType>
+std::vector<uint32_t> BlockProcessor::addNewBlocks(const ConfigType &config, std::vector<BlockType> nextBlocks, UTXOState &utxoState, AddressState &addressState) {
+    
+    rawDone = false;
+    hashDone = false;
+    utxoDone = false;
+    
+    auto importer = std::async(std::launch::async, [&] {
+        readNewBlocks(config, nextBlocks);
+    });
+    
+    auto hashCalculator = std::async(std::launch::async, [&] {
+        calculateHashes(config);
+    });
+    
+    auto utxoProcessor = std::async(std::launch::async, [&] {
+        processUTXOs(config, utxoState);
+    });
+    
+    auto addressProcessor = std::async(std::launch::async, [&] {
+        return processAddresses(config, addressState);
+    });
+    
+    importer.get();
+    hashCalculator.get();
+    utxoProcessor.get();
+    auto ret = addressProcessor.get();
+    files.clear();
+    return ret;
+}
+
+#ifdef BLOCKSCI_FILE_PARSER
+template std::vector<uint32_t> BlockProcessor::addNewBlocks(const FileParserConfiguration &config, std::vector<BlockInfo> nextBlocks, UTXOState &utxoState, AddressState &addressState);
+#endif
+#ifdef BLOCKSCI_RPC_PARSER
+template std::vector<uint32_t> BlockProcessor::addNewBlocks(const RPCParserConfiguration &config, std::vector<blockinfo_t> nextBlocks, UTXOState &utxoState, AddressState &addressState);
+#endif
 
 BlockProcessor::~BlockProcessor() {
     assert(!utxo_transaction_queue.pop());

@@ -25,20 +25,6 @@ namespace blocksci {
     struct DataConfiguration;
     class DataAccess;
     
-    namespace detail {
-        template <typename T>
-        using always_void = void;
-        
-        template <typename Expr, typename Enable = void>
-        struct is_callable_impl : std::false_type {};
-        
-        template <typename F, typename... Args>
-        struct is_callable_impl<F(Args...), always_void<typename std::result_of<F(Args...)>::type>> : std::true_type {};
-    }
-    
-    template <typename Expr, typename... Args>
-    struct is_callable : detail::is_callable_impl<Expr, Args...> {};
-    
     template <typename It, typename MapFunc, typename ReduceFunc, typename ResultType>
     ResultType mapReduceBlocksImp(It begin, It end, MapFunc mapFunc, ReduceFunc reduceFunc, ResultType identity) {
         auto segmentCount = std::distance(begin, end);

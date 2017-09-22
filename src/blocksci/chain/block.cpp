@@ -26,6 +26,8 @@
 
 namespace blocksci {
     
+    extern template std::string base_blob<256>::GetHex() const;
+    
     Block::Block(uint32_t firstTxIndex_, uint32_t numTxes_, uint32_t height_, uint256 hash_, int32_t version_, uint32_t timestamp_, uint32_t bits_, uint32_t nonce_, uint64_t coinbaseOffset_) : firstTxIndex(firstTxIndex_), numTxes(numTxes_), height(height_), hash(hash_), version(version_), timestamp(timestamp_), bits(bits_), nonce(nonce_), coinbaseOffset(coinbaseOffset_) {}
     
     bool Block::operator==(const Block& other) const {
@@ -44,6 +46,10 @@ namespace blocksci {
         std::stringstream ss;
         ss << "Block(numTxes=" << numTxes <<", height=" << height <<", header_hash=" << hash.GetHex() << ", version=" << version <<", timestamp=" << timestamp << ", bits=" << bits << ", nonce=" << nonce << ")";
         return ss.str();
+    }
+    
+    const std::string Block::getHeaderHash() const {
+        return hash.GetHex();
     }
     
     const Block &Block::create(const ChainAccess &access, uint32_t height) {

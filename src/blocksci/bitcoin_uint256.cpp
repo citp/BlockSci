@@ -89,6 +89,9 @@ namespace blocksci {
         return (GetHex());
     }
     
+    uint160::uint160(const std::vector<unsigned char>& vch) : base_blob<160>(vch) {}
+    uint256::uint256(const std::vector<unsigned char>& vch) : base_blob<256>(vch) {}
+    
     // Explicit instantiations for base_blob<160>
     template base_blob<160>::base_blob(const std::vector<unsigned char>&);
     template std::string base_blob<160>::GetHex() const;
@@ -102,6 +105,31 @@ namespace blocksci {
     template std::string base_blob<256>::ToString() const;
     template void base_blob<256>::SetHex(const char*);
     template void base_blob<256>::SetHex(const std::string&);
+    
+    inline uint160 uint160S(const char *str) {
+        uint160 rv;
+        rv.SetHex(str);
+        return rv;
+    }
+    
+    inline uint160 uint160S(const std::string& str) {
+        uint160 rv;
+        rv.SetHex(str);
+        return rv;
+    }
+    
+    uint256 uint256S(const char *str) {
+        uint256 rv;
+        rv.SetHex(str);
+        return rv;
+    }
+    
+    uint256 uint256S(const std::string& str)
+    {
+        uint256 rv;
+        rv.SetHex(str);
+        return rv;
+    }
 
 }
 

@@ -141,13 +141,11 @@ const char* GetOpName(opcodetype opcode)
             
         case OP_INVALIDOPCODE          : return "OP_INVALIDOPCODE";
             
-            // Note:
-            //  The template matching params OP_SMALLINTEGER/etc are defined in opcodetype enum
-            //  as kind of implementation hack, they are *NOT* real opcodes.  If found in real
-            //  Script, just let the default: case deal with them.
-            
-        default:
-            return "OP_UNKNOWN";
+
+        case OP_SMALLINTEGER: return "OP_UNKNOWN";
+        case OP_PUBKEYS: return "OP_UNKNOWN";
+        case OP_PUBKEYHASH: return "OP_UNKNOWN";
+        case OP_PUBKEY: return "OP_UNKNOWN";
     }
 }
 

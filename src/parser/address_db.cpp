@@ -14,6 +14,7 @@
 #include <blocksci/address/address.hpp>
 #include <blocksci/address/address_index.hpp>
 #include <blocksci/address/address_info.hpp>
+#include <blocksci/scripts/script_access.hpp>
 #include <blocksci/scripts/script_info.hpp>
 #include <blocksci/scripts/scripthash_script.hpp>
 #include <blocksci/chain/output_pointer.hpp>
@@ -97,7 +98,7 @@ AddressDB::AddressDB(const ParserConfiguration &config, std::pair<sqlite3 *, boo
     sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
 }
 
-void AddressDB::tearDown(const blocksci::ScriptAccess &scripts) {
+void AddressDB::tearDown() {
     if (firstRun) {
         for (auto script : ScriptType::all) {
             std::stringstream ss;
@@ -125,6 +126,7 @@ void AddressDB::tearDown(const blocksci::ScriptAccess &scripts) {
         fprintf(stderr, "SQL error: %s\n", sqlite3_errmsg(db));
     }
 
+    blocksci::ScriptAccess scripts{config};
     
     for (auto &scriptHash : p2shesToAdd) {
         sqlite3_bind_int(scriptHashQuery, 1, static_cast<int>(scriptHash.scriptNum));
@@ -143,11 +145,13 @@ void AddressDB::tearDown(const blocksci::ScriptAccess &scripts) {
         }
     }
     
+    sqlite3_finalize(scriptHashQuery);
+}
+
+AddressDB::~AddressDB() {
     for (auto &pair : insertStatements) {
         sqlite3_finalize(pair.second);
     }
-    
-    sqlite3_finalize(scriptHashQuery);
     
     sqlite3_exec(db, "END TRANSACTION;", NULL, NULL, NULL);
     

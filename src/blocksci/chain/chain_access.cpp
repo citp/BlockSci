@@ -21,6 +21,8 @@ namespace blocksci {
     
     ReorgException::ReorgException() : std::runtime_error("") {}
     
+    ReorgException::~ReorgException() = default;
+    
     void ChainAccess::setup() {
         maxHeight = static_cast<uint32_t>(blockFile.size()) - blocksIgnored;
         if (errorOnReorg) {
@@ -36,8 +38,8 @@ namespace blocksci {
     blockCoinbaseFile(config.blockCoinbaseFilePath()),
     txFile(config.txFilePath()),
     txHashesFile(config.txHashesFilePath()),
-    errorOnReorg(errorOnReorg_),
-    blocksIgnored(blocksIgnored_) {
+    blocksIgnored(blocksIgnored_),
+    errorOnReorg(errorOnReorg_) {
         setup();
     }
     
