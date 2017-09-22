@@ -115,7 +115,7 @@ Here are the steps for compiling BlockSci on Ubuntu 16.04.
 	
 	git clone https://github.com/citp/BlockSci.git
 	cd BlockSci
-	git submodule init --recursive update
+	git submodule update --init --recursive --checkout
 
 	cd libs/bitcoin-cpp-api
 	mkdir release
