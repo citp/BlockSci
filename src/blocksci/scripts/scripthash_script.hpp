@@ -33,6 +33,8 @@ namespace blocksci {
             return scriptType;
         }
         
+        boost::optional<Transaction> transactionRevealed(const ChainAccess &chain) const;
+        
         std::string addressString(const DataConfiguration &config) const;
         
         std::string toString(const DataConfiguration &config) const override;
@@ -56,6 +58,7 @@ namespace blocksci {
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
         ScriptAddress<ScriptType::Enum::SCRIPTHASH>(uint32_t addressNum);
         std::string addressString() const;
+        boost::optional<Transaction> transactionRevealed() const;
         std::unique_ptr<Script> wrappedScript() const;
         #endif
     };

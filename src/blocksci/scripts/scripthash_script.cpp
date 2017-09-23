@@ -12,6 +12,7 @@
 #include "script_data.hpp"
 #include "script_access.hpp"
 #include "bitcoin_base58.hpp"
+#include "chain/transaction.hpp"
 
 #include <boost/optional/optional.hpp>
 
@@ -34,6 +35,14 @@ namespace blocksci {
     boost::optional<Address> ScriptHash::getWrappedAddress() const {
         if (wrappedAddress.addressNum != 0) {
             return wrappedAddress;
+        } else {
+            return boost::none;
+        }
+    }
+    
+    boost::optional<Transaction> ScriptHash::transactionRevealed(const ChainAccess &chain) const {
+        if (txRevealed != 0) {
+            return Transaction::txWithIndex(chain, txRevealed);
         } else {
             return boost::none;
         }

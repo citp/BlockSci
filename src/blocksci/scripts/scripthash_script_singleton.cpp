@@ -8,6 +8,7 @@
 
 #include "scripthash_script.hpp"
 #include "data_access.hpp"
+#include "chain/transaction.hpp"
 
 namespace blocksci {
     using namespace script;
@@ -18,5 +19,9 @@ namespace blocksci {
     
     std::unique_ptr<Script> ScriptHash::wrappedScript() const {
         return wrappedScript(DataAccess::Instance().scripts);
+    }
+    
+    boost::optional<Transaction> ScriptHash::transactionRevealed() const {
+        return transactionRevealed(DataAccess::Instance().chain);
     }
 }
