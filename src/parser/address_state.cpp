@@ -20,6 +20,7 @@ const auto AddressFalsePositiveRate = .05;
 AddressState::AddressState(const ParserConfiguration &config_) : config(config_)  {
     leveldb::Options options;
     options.create_if_missing = true;
+    options.max_open_files = 64;
     leveldb::DB::Open(options, config.addressDBPath().c_str(), &levelDb);
     
     blocksci::uint160 deletedAddress;

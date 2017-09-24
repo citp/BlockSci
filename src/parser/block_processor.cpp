@@ -447,8 +447,8 @@ std::vector<uint32_t> BlockProcessor::processAddresses(ParserConfiguration confi
     TxFile txFile{config.txFilePath()};
     RawTransaction *rawTx = nullptr;
     while (!utxoDone) {
-        while (address_transaction_queue.write_available() < 10000 && address_transaction_queue.pop(rawTx)) {
-            if (rawTx->txNum + 10000 >= txFile.size()) {
+        while (address_transaction_queue.read_available() > 190000 && address_transaction_queue.pop(rawTx)) {
+            if (rawTx->txNum + 5000 >= txFile.size()) {
                 txFile.reload();
             }
             consume(rawTx, txFile);
