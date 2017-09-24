@@ -52,7 +52,7 @@ namespace blocksci {
             std::function<void(const blocksci::Address &)> nestedVisitor = [&](const blocksci::Address &nestedAddress) {
                 visit(nestedAddress, visitFunc, scripts);
             };
-            script->visitPointers(visitFunc);
+            script->visitPointers(nestedVisitor);
         }
     }
     
