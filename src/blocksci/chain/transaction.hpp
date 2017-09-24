@@ -37,6 +37,7 @@ namespace blocksci {
         uint32_t locktime;
         uint16_t inputCount;
         uint16_t outputCount;
+        uint32_t filler;
         
         RawTransaction(uint32_t sizeBytes, uint32_t locktime, uint16_t inputCount, uint16_t outputCount);
         

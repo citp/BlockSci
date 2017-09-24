@@ -78,7 +78,8 @@ WitnessStackItem::WitnessStackItem(const char **buffer) : length(readVariableLen
     *buffer += length;
 }
 
-void RawTransaction::load(const char **buffer, uint32_t blockHeight_, bool witnessActivated) {
+void RawTransaction::load(const char **buffer, uint32_t txNum_, uint32_t blockHeight_, bool witnessActivated) {
+    txNum = txNum_;
     isSegwit = witnessActivated;
     blockHeight = blockHeight_;
     auto startPos = *buffer;
@@ -149,7 +150,8 @@ RawInput::RawInput(const vin_t &vin) {
 
 RawOutput::RawOutput(const vout_t &vout, bool witnessActivated) : RawOutput(hexStringToVec(vout.scriptPubKey.hex), static_cast<uint64_t>(vout.value * 100000000), witnessActivated) {}
 
-void RawTransaction::load(const getrawtransaction_t &txinfo, uint32_t blockHeight_, bool witnessActivated) {
+void RawTransaction::load(const getrawtransaction_t &txinfo, uint32_t txNum_, uint32_t blockHeight_, bool witnessActivated) {
+    txNum = txNum_;
     isSegwit = witnessActivated;
     blockHeight = blockHeight_;
     version = txinfo.version;

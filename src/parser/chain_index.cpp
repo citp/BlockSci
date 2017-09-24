@@ -98,12 +98,12 @@ void ChainIndex::updateFromFilesystem() {
         while ((magic = readNext<uint32_t>(&startPos)) == config.blockMagic) {
             uint32_t length = readNext<uint32_t>(&startPos);
             filePos = static_cast<size_t>(startPos - fileMap.data());
-            auto header = reinterpret_cast<const CBlockHeader *>(startPos);
-            size_t blockHeaderSize = 80;
-            const char *buffer = startPos + blockHeaderSize;
+            CBlockHeader header;
+            memcpy(&header, startPos, sizeof(header));
+            const char *buffer = startPos + sizeof(header);
             uint32_t numTxes = readVariableLengthInteger(&buffer);
             startPos += length;
-            blockList.push_back(BlockInfo(*header, fileNum, static_cast<uint32_t>(filePos), numTxes, config));
+            blockList.push_back(BlockInfo(header, fileNum, static_cast<uint32_t>(filePos), numTxes, config));
         }
         fileNum++;
         filePos = 0;

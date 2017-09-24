@@ -24,56 +24,62 @@
 class AddressWriter;
 class AddressState;
 
-
-struct ScriptOutputBase {
-    void processOutput(AddressState &) {}
-    void checkOutput(const AddressState &) {}
-};
-
 template<blocksci::AddressType::Enum type>
 struct ScriptOutput;
 
 template <>
-struct ScriptOutput<blocksci::AddressType::Enum::PUBKEY> : public ScriptOutputBase {
+struct ScriptOutput<blocksci::AddressType::Enum::PUBKEY> {
     CPubKey pubkey;
     
     ScriptOutput(const std::vector<unsigned char> &vch1);
     ScriptOutput(const CPubKey &pub) : pubkey(pub) {}
     
+    void processOutput(AddressState &, AddressWriter &writer);
+    void checkOutput(const AddressState &, const AddressWriter &) {}
+    
     bool isValid() const { return true; }
     
     blocksci::uint160 getHash() const;
 };
 
 template <>
-struct ScriptOutput<blocksci::AddressType::Enum::PUBKEYHASH> : public ScriptOutputBase {
+struct ScriptOutput<blocksci::AddressType::Enum::PUBKEYHASH> {
     
     CKeyID hash;
     
     ScriptOutput(blocksci::uint160 &pubkeyHash) : hash{pubkeyHash} {}
     
+    void processOutput(AddressState &, AddressWriter &writer);
+    void checkOutput(const AddressState &, const AddressWriter &) {}
+    
     bool isValid() const { return true; }
     
     blocksci::uint160 getHash() const;
 };
 
 template <>
-struct ScriptOutput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : public ScriptOutputBase {
+struct ScriptOutput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> {
     
     CKeyID hash;
     
     ScriptOutput(blocksci::uint160 &&pubkeyHash) : hash{pubkeyHash} {}
     
+    void processOutput(AddressState &, AddressWriter &writer);
+    void checkOutput(const AddressState &, const AddressWriter &) {}
+    
     bool isValid() const { return true; }
     
     blocksci::uint160 getHash() const;
 };
 
 template <>
-struct ScriptOutput<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptOutputBase {
+struct ScriptOutput<blocksci::AddressType::Enum::SCRIPTHASH> {
     CKeyID hash;
     
     ScriptOutput(blocksci::uint160 hash_) : hash(hash_) {}
+    
+    void processOutput(AddressState &, AddressWriter &writer);
+    void checkOutput(const AddressState &, const AddressWriter &) {}
     
     blocksci::uint160 getHash() const;
     
@@ -83,10 +89,13 @@ struct ScriptOutput<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptOutp
 };
 
 template <>
-struct ScriptOutput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> : public ScriptOutputBase {
+struct ScriptOutput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> {
     blocksci::uint256 hash;
     
     ScriptOutput(blocksci::uint256 hash_) : hash(hash_) {}
+    
+    void processOutput(AddressState &, AddressWriter &writer);
+    void checkOutput(const AddressState &, const AddressWriter &) {}
     
     blocksci::uint160 getHash() const;
     
@@ -100,14 +109,12 @@ struct ScriptOutput<blocksci::AddressType::Enum::MULTISIG> {
     static constexpr int MAX_ADDRESSES = 16;
     using RawAddressArray = std::array<CPubKey, MAX_ADDRESSES>;
     using ProcessedAddressArray = std::array<uint32_t, MAX_ADDRESSES>;
-    using FirstSeenArray = std::array<bool, MAX_ADDRESSES>;
     uint8_t numRequired;
     uint8_t numTotal;
     uint16_t addressCount;
     
     ProcessedAddressArray processedAddresses;
     RawAddressArray addresses;
-    FirstSeenArray firstSeen;
     
     ScriptOutput() : addressCount(0) {}
     
@@ -118,16 +125,19 @@ struct ScriptOutput<blocksci::AddressType::Enum::MULTISIG> {
     }
     
     blocksci::uint160 getHash() const;
-    void processOutput(AddressState &state);
-    void checkOutput(const AddressState &state);
+    void processOutput(AddressState &state, AddressWriter &writer);
+    void checkOutput(const AddressState &state, const AddressWriter &writer);
 };
 
 template <>
-struct ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD> : public ScriptOutputBase {
+struct ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD> {
     CScript script;
     
     ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD>() {}
     ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD>(const CScript &script);
+    
+    void processOutput(AddressState &, AddressWriter &writer);
+    void checkOutput(const AddressState &, const AddressWriter &) {}
     
     bool isValid() const {
         return true;
@@ -135,10 +145,13 @@ struct ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD> : public ScriptOut
 };
 
 template <>
-struct ScriptOutput<blocksci::AddressType::Enum::NULL_DATA> : public ScriptOutputBase {
+struct ScriptOutput<blocksci::AddressType::Enum::NULL_DATA> {
     std::vector<unsigned char> fullData;
     
     ScriptOutput<blocksci::AddressType::Enum::NULL_DATA>(const CScript &script);
+    
+    void processOutput(AddressState &, AddressWriter &writer);
+    void checkOutput(const AddressState &, const AddressWriter &) {}
     
     bool isValid() const {
         return true;
@@ -156,7 +169,7 @@ std::pair<blocksci::Address, bool> checkAddressNum(ScriptOutput<type> &data, con
 blocksci::AddressType::Enum addressType(const ScriptOutputType &type);
 
 blocksci::Address processOutput(ScriptOutputType &scriptOutput, AddressState &state, AddressWriter &addressWriter);
-blocksci::Address checkOutput(ScriptOutputType &scriptOutput, const AddressState &state);
+blocksci::Address checkOutput(ScriptOutputType &scriptOutput, const AddressState &state, const AddressWriter &addressWriter);
 
 ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsigned char *scriptEnd, bool witnessActivated);
 

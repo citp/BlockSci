@@ -231,10 +231,19 @@ namespace blocksci {
         template<class It>
         bool write(It it, It end) {
             auto distance = static_cast<uint32_t>(std::distance(it, end));
+            auto rangeLength = sizeof(typename std::iterator_traits<It>::value_type) * distance;
             bool clearedBuffer = SimpleFileMapper<mode>::writeImp(distance);
             for (; it != end; ++it) {
                 clearedBuffer |= SimpleFileMapper<mode>::writeImp(*it);
             }
+            auto leftover = rangeLength % sizeof(distance);
+            if (leftover != 0) {
+                auto filler = sizeof(distance) - leftover;
+                for (size_t i = 0; i < filler; i++) {
+                    clearedBuffer |= SimpleFileMapper<mode>::writeImp(static_cast<uint8_t>(0));
+                }
+            }
+            
             if (clearedBuffer) {
                 SimpleFileMapper<mode>::clearBuffer();
             }

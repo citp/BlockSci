@@ -25,8 +25,7 @@ struct ProcessOutputVisitor : public boost::static_visitor<blocksci::Address> {
     blocksci::Address operator()(ScriptOutput<type> &scriptOutput) const {
         std::pair<blocksci::Address, bool> processed = getAddressNum(scriptOutput, state);
         if (processed.second) {
-            scriptOutput.processOutput(state);
-            addressWriter.serialize(scriptOutput);
+            scriptOutput.processOutput(state, addressWriter);
         }
         return processed.first;
     }
@@ -39,19 +38,20 @@ blocksci::Address processOutput(ScriptOutputType &scriptOutput, AddressState &st
 
 struct CheckOutputVisitor : public boost::static_visitor<blocksci::Address> {
     const AddressState &state;
-    CheckOutputVisitor(const AddressState &state_) : state(state_) {}
+    const AddressWriter &addressWriter;
+    CheckOutputVisitor(const AddressState &state_, const AddressWriter &addressWriter_) : state(state_), addressWriter(addressWriter_) {}
     template <blocksci::AddressType::Enum type>
     blocksci::Address operator()(ScriptOutput<type> &scriptOutput) const {
         std::pair<blocksci::Address, bool> processed = checkAddressNum(scriptOutput, state);
         if (processed.second) {
-            scriptOutput.checkOutput(state);
+            scriptOutput.checkOutput(state, addressWriter);
         }
         return processed.first;
     }
 };
 
-blocksci::Address checkOutput(ScriptOutputType &scriptOutput, const AddressState &state) {
-    CheckOutputVisitor outputVisitor{state};
+blocksci::Address checkOutput(ScriptOutputType &scriptOutput, const AddressState &state, const AddressWriter &addressWriter) {
+    CheckOutputVisitor outputVisitor{state, addressWriter};
     return boost::apply_visitor(outputVisitor, scriptOutput);
 }
 
@@ -150,10 +150,18 @@ blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::PUBKEY>::getHash() c
     return pubkey.GetID();
 }
 
+void ScriptOutput<blocksci::AddressType::Enum::PUBKEY>::processOutput(AddressState &, AddressWriter &writer) {
+    writer.serialize(*this);
+}
+
 // MARK: TX_PUBKEYHASH
 
 blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::PUBKEYHASH>::getHash() const {
     return hash;
+}
+
+void ScriptOutput<blocksci::AddressType::Enum::PUBKEYHASH>::processOutput(AddressState &, AddressWriter &writer) {
+    writer.serialize(*this);
 }
 
 // MARK: WITNESS_PUBKEYHASH
@@ -162,16 +170,28 @@ blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>:
     return hash;
 }
 
+void ScriptOutput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::processOutput(AddressState &, AddressWriter &writer) {
+    writer.serialize(*this);
+}
+
 // MARK: TX_SCRIPTHASH
 
 blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::SCRIPTHASH>::getHash() const {
     return hash;
 }
 
+void ScriptOutput<blocksci::AddressType::Enum::SCRIPTHASH>::processOutput(AddressState &, AddressWriter &writer) {
+    writer.serialize(*this);
+}
+
 // MARK: WITNESS_SCRIPTHASH
 
 blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::getHash() const {
     return ripemd160(reinterpret_cast<const char *>(&hash), sizeof(hash));
+}
+
+void ScriptOutput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::processOutput(AddressState &, AddressWriter &writer) {
+    writer.serialize(*this);
 }
 
 // MARK: TX_MULTISIG
@@ -196,22 +216,20 @@ blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::getHash()
     return ripemd160(sigData.data(), sigData.size());
 }
 
-void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::processOutput(AddressState &state) {
+void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::processOutput(AddressState &state, AddressWriter &writer) {
     for (size_t i = 0; i < addressCount; i++) {
-        blocksci::RawAddress rawAddress{addresses[i].GetID(), blocksci::ScriptType::Enum::PUBKEY};
-        auto addressInfo = state.findAddress(rawAddress);
-        auto addrGetRes = state.resolveAddress(addressInfo);
-        processedAddresses[i] = addrGetRes.first;
-        firstSeen[i] = addrGetRes.second;
+        ScriptOutputType pubkeyOutput{ScriptOutput<blocksci::AddressType::Enum::PUBKEY>{addresses[i]}};
+        auto processedPubkey = ::processOutput(pubkeyOutput, state, writer);
+        processedAddresses[i] = processedPubkey.addressNum;
     }
+    writer.serialize(*this);
 }
 
-void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::checkOutput(const AddressState &state) {
+void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::checkOutput(const AddressState &state, const AddressWriter &writer) {
     for (size_t i = 0; i < addressCount; i++) {
-        blocksci::RawAddress rawAddress{addresses[i].GetID(), blocksci::ScriptType::Enum::PUBKEY};
-        auto addressInfo = state.findAddress(rawAddress);
-        processedAddresses[i] = addressInfo.addressNum;
-        firstSeen[i] = addressInfo.addressNum == 0;
+        ScriptOutputType pubkeyOutput{ScriptOutput<blocksci::AddressType::Enum::PUBKEY>{addresses[i]}};
+        auto processedPubkey = ::checkOutput(pubkeyOutput, state, writer);
+        processedAddresses[i] = processedPubkey.addressNum;
     }
 }
 
@@ -223,6 +241,10 @@ void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::addAddress(const std::
 // MARK: TX_NONSTANDARD
 
 ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD>::ScriptOutput(const CScript &script_) : script(script_) {}
+
+void ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD>::processOutput(AddressState &, AddressWriter &writer) {
+    writer.serialize(*this);
+}
 
 // MARK: TX_NULL_DATA
 
@@ -236,6 +258,10 @@ ScriptOutput<blocksci::AddressType::Enum::NULL_DATA>::ScriptOutput(const CScript
         }
         fullData.insert(fullData.end(), vch1.begin(), vch1.end());
     }
+}
+
+void ScriptOutput<blocksci::AddressType::Enum::NULL_DATA>::processOutput(AddressState &, AddressWriter &writer) {
+    writer.serialize(*this);
 }
 
 // MARK: Script Processing

@@ -109,11 +109,11 @@ struct RawTransaction {
       blockHeight(0) {}
     
     #ifdef BLOCKSCI_FILE_PARSER
-    void load(const char **buffer, uint32_t blockHeight, bool witnessActivated);
+    void load(const char **buffer, uint32_t txNum, uint32_t blockHeight, bool witnessActivated);
     #endif
     
     #ifdef BLOCKSCI_RPC_PARSER
-    void load(const getrawtransaction_t &txinfo, uint32_t blockHeight, bool witnessActivated);
+    void load(const getrawtransaction_t &txinfo, uint32_t txNum, uint32_t blockHeight, bool witnessActivated);
     #endif
     
     void calculateHash();

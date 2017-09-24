@@ -168,7 +168,7 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
         bool segwit = false;
         auto segwitPos = startPos;
         for (uint32_t j = 0; j < txCount; j++) {
-            tx->load(&segwitPos, 0, false);
+            tx->load(&segwitPos, 0, 0, false);
             if (tx->inputs.size() == 1 && tx->inputs[0].rawOutputPointer.hash == nullHash) {
                 segwit = checkSegwit(tx, checker);
                 break;
@@ -176,8 +176,7 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
         }
         
         for (uint32_t j = 0; j < txCount; j++) {
-            tx->load(&startPos, static_cast<uint32_t>(block.height), segwit);
-            tx->txNum = currentTxNum;
+            tx->load(&startPos, currentTxNum, static_cast<uint32_t>(block.height), segwit);
             
             sequenceFile.writeIndexGroup();
             for (auto &input : tx->inputs) {
@@ -218,7 +217,7 @@ blocksci::Block getBlock(uint32_t firstTxIndex, uint32_t txCount, size_t coinbas
     return {firstTxIndex, txCount, static_cast<uint32_t>(block.height), blocksci::uint256S(block.hash), block.version, block.time, static_cast<uint32_t>(std::stoul(block.bits, nullptr, 16)), block.nonce, coinbasePos};
 }
 
-void BlockProcessor::loadTxRPC(RawTransaction *tx, const blockinfo_t &block, uint32_t txNum, BitcoinAPI & bapi, bool witnessActivated) {
+void BlockProcessor::loadTxRPC(RawTransaction *tx, uint32_t txNum, const blockinfo_t &block, uint32_t txOffset, BitcoinAPI & bapi, bool witnessActivated) {
     if (block.height == 0) {
         tx->outputs.clear();
         tx->outputs.reserve(1);
@@ -229,9 +228,10 @@ void BlockProcessor::loadTxRPC(RawTransaction *tx, const blockinfo_t &block, uin
         tx->outputs.emplace_back(scriptBytes, 50 * 100000000.0, false);
         tx->hash = blocksci::uint256S("0100000000000000000000000000000000000000000000000000000000000000");
         tx->blockHeight = 0;
+        tx->txNum = 0;
     } else {
-        auto txinfo = bapi.getrawtransaction(block.tx[txNum], 1);
-        tx->load(txinfo, static_cast<uint32_t>(block.height), witnessActivated);
+        auto txinfo = bapi.getrawtransaction(block.tx[txOffset], 1);
+        tx->load(txinfo, txNum, static_cast<uint32_t>(block.height), witnessActivated);
     }
 }
 
@@ -254,7 +254,7 @@ void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<bl
             tx = new RawTransaction();
         }
         
-        loadTxRPC(tx, block, 0, bapi, false);
+        loadTxRPC(tx, 0, block, 0, bapi, false);
         bool segwit = checkSegwit(tx, checker);
         
         
@@ -265,8 +265,7 @@ void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<bl
             if (!finished_transaction_queue.pop(tx)) {
                 tx = new RawTransaction();
             }
-            loadTxRPC(tx, block, i, bapi, segwit);
-            tx->txNum = currentTxNum;
+            loadTxRPC(tx, currentTxNum, block, i, bapi, segwit);
             
             sequenceFile.writeIndexGroup();
             for (auto &input : tx->inputs) {

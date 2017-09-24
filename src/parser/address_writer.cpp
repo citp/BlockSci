@@ -148,13 +148,6 @@ void AddressWriter::serializeImp<AddressType::Enum::MULTISIG>(const ScriptOutput
     if (clearedData) {
         file.clearBuffer();
     }
-    
-    for (uint8_t i = 0; i < output.addressCount; i++) {
-        if (output.firstSeen[i]) {
-            auto innerOutput = ScriptOutput<blocksci::AddressType::Enum::PUBKEY>{output.addresses[i]};
-            serialize(innerOutput);
-        }
-    }
 }
 
 template<>
@@ -167,6 +160,7 @@ void AddressWriter::serializeImp<AddressType::Enum::NONSTANDARD>(const ScriptOut
     auto &file = std::get<ScriptFile<ScriptType::Enum::NONSTANDARD>>(scriptFiles);
     file.writeIndexGroup();
     file.write(output.script.begin(), output.script.end());
+    
 }
 
 template<>

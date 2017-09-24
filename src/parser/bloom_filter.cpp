@@ -49,7 +49,7 @@ void BloomFilter<Key>::add(const Key &key) {
     
     for (uint8_t n = 0; n < m_numHashes; n++) {
         auto bitPos = nthHash(n, hashValues[0], hashValues[1], length);
-        data[bitPos / BlockSize] |= 1 << (bitPos % BlockSize);
+        data[bitPos / BlockSize] |= BlockType{1} << (bitPos % BlockSize);
     }
     
     addedCount++;
@@ -63,7 +63,7 @@ bool BloomFilter<Key>::possiblyContains(const Key &key) const {
     
     for (uint8_t n = 0; n < m_numHashes; n++) {
         auto bitPos = nthHash(n, hashValues[0], hashValues[1], length);
-        if ((data[bitPos / BlockSize] & (1 << (bitPos % BlockSize))) == 0) {
+        if ((data[bitPos / BlockSize] & (BlockType{1} << (bitPos % BlockSize))) == 0) {
             return false;
         }
     }

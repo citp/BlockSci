@@ -180,7 +180,7 @@ void printTxInfo(std::string &hexString) {
     auto bytes = HexToBytes(hexString);
     const char *bytesPtr = &bytes[0];
     RawTransaction tx;
-    tx.load(&bytesPtr, 0, true);
+    tx.load(&bytesPtr, 0, 0, true);
     
     std::cout << "Size bytes: " << tx.sizeBytes << std::endl;
     std::cout << "Locktime: " << tx.locktime << std::endl;

@@ -61,7 +61,7 @@ void replayBlock(const FileParserConfiguration &config, uint32_t blockNum) {
         auto realTx = realBlock.getTx(currentChain, txNum);
         
         RawTransaction tx;
-        tx.load(&startPos, blockNum, segwit);
+        tx.load(&startPos, realTx.txNum, blockNum, segwit);
         
         if (tx.inputs.size() == 1 && tx.inputs[0].rawOutputPointer.hash == nullHash) {
             auto scriptBegin = tx.inputs[0].scriptBegin;
@@ -70,7 +70,7 @@ void replayBlock(const FileParserConfiguration &config, uint32_t blockNum) {
         }
         
         for (auto &output : tx.outputs) {
-            auto address = checkOutput(output.scriptOutput, addressState);
+            auto address = checkOutput(output.scriptOutput, addressState, writer);
         }
         
         uint16_t j = 0;

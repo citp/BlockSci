@@ -33,6 +33,7 @@ AddressState::AddressState(const ParserConfiguration &config_) : config(config_)
     auto file = fopen(config.addressCacheFile().c_str(), "rb");
     if (file != NULL) {
         multiAddressMap.unserialize(address_map::NopointerSerializer(), file);
+        fclose(file);
     }
     
     boost::filesystem::ifstream bloomFile(config.addressBloomCacheFile(), std::ofstream::in | std::ofstream::binary);

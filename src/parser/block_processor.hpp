@@ -54,7 +54,7 @@ class BlockProcessor {
     void readNewBlocks(FileParserConfiguration config, std::vector<BlockInfo> blocksToAdd);
     #endif
     #ifdef BLOCKSCI_RPC_PARSER
-    void loadTxRPC(RawTransaction *tx, const blockinfo_t &block, uint32_t txNum, BitcoinAPI & bapi, bool witnessActivated);
+    void loadTxRPC(RawTransaction *tx, uint32_t txNum, const blockinfo_t &block, uint32_t txOffset, BitcoinAPI & bapi, bool witnessActivated);
     void readNewBlocks(RPCParserConfiguration config, std::vector<blockinfo_t> blocksToAdd);
     #endif
     void calculateHashes(ParserConfiguration config);

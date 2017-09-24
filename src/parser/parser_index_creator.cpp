@@ -38,7 +38,7 @@ void ParserIndexCreator::complete(uint32_t maxTxCount) {
     using namespace std::chrono_literals;
     if (!tornDown) {
         tornDown = true;
-        teardownFuture = std::async(std::launch::async, [&] {
+        teardownFuture = std::async(std::launch::async, [&, maxTxCount] {
             while (launchingUpdate) {
                 std::this_thread::sleep_for(100ms);
             }
