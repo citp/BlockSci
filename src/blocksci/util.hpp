@@ -49,16 +49,16 @@ namespace blocksci {
         template <typename EnumStruct, class ...Args>
         struct MakeStaticTableImpl {
             template<template<typename EnumStruct::Enum> class Functor, std::size_t... Is>
-            constexpr auto makeTable(std::index_sequence<Is...>, Args... args) -> std::array<decltype(Functor<EnumStruct::all[0]>::f(args...)), sizeof...(Is)> {
-                return {{Functor<EnumStruct::all[Is]>::f(args...)...}};
+            constexpr auto makeTable(std::index_sequence<Is...>, Args&&... args) -> std::array<decltype(Functor<EnumStruct::all[0]>::f(std::forward<Args>(args)...)), sizeof...(Is)> {
+                return {{Functor<EnumStruct::all[Is]>::f(std::forward<Args>(args)...)...}};
             }
         };
     }
     
     template <typename EnumStruct, template<typename EnumStruct::Enum> class Functor, class ...Args>
-    constexpr auto make_static_table(Args... args) {
+    constexpr auto make_static_table(Args&&... args) {
         internal::MakeStaticTableImpl<EnumStruct, Args...> tableMaker{};
-        return tableMaker.template makeTable<Functor>(std::make_index_sequence<EnumStruct::all.size()>{}, args...);
+        return tableMaker.template makeTable<Functor>(std::make_index_sequence<EnumStruct::all.size()>{}, std::forward<Args>(args)...);
     }
     
     template <typename EnumStruct, template<typename EnumStruct::Enum> class Functor>

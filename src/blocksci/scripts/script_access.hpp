@@ -69,12 +69,14 @@ namespace blocksci {
             return getFile<type>().getData(addressNum - 1);
         }
         
+        
         template<ScriptType::Enum type>
         size_t scriptCount() const {
             return getFile<type>().size();
         }
         
-        size_t scriptCount(ScriptType::Enum type) const;
+        std::array<uint32_t, ScriptType::size> scriptCounts();
+        uint32_t scriptCount(ScriptType::Enum type) const;
         
         size_t totalAddressCount() const;
         

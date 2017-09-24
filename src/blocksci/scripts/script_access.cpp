@@ -25,12 +25,12 @@ namespace blocksci {
     
     template<ScriptType::Enum type>
     struct ScriptCountFunctor {
-        static size_t f(const ScriptAccess &access) {
-            return access.scriptCount<type>();
+        static uint32_t f(const ScriptAccess &access) {
+            return static_cast<uint32_t>(access.scriptCount<type>());
         }
     };
     
-    size_t ScriptAccess::scriptCount(ScriptType::Enum type) const {
+    uint32_t ScriptAccess::scriptCount(ScriptType::Enum type) const {
         static constexpr auto table = make_dynamic_table<ScriptType, ScriptCountFunctor>();
         static constexpr std::size_t size = AddressType::all.size();
         
@@ -40,6 +40,10 @@ namespace blocksci {
             throw std::invalid_argument("combination of enum values is not valid");
         }
         return table[index](*this);
+    }
+    
+    std::array<uint32_t, ScriptType::size> ScriptAccess::scriptCounts() {
+        return make_static_table<ScriptType, ScriptCountFunctor>(*this);
     }
     
     size_t ScriptAccess::totalAddressCount() const {
