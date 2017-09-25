@@ -70,7 +70,7 @@ public:
             *val = static_cast<uint32_t>(part);
             return true;
         } else if (v == 0xFE) {
-            return readNext(&val);
+            return readNext(val);
         } else {
             uint64_t part;
             if (!readNext(&part)) {
