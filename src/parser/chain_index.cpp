@@ -26,6 +26,100 @@
 
 #ifdef BLOCKSCI_FILE_PARSER
 
+class SafeMemReader {
+public:
+    typedef boost::iostreams::mapped_file_source::size_type size_type;
+
+    explicit SafeMemReader(boost::iostreams::mapped_file_source &fileMap) {
+        begin = fileMap.begin();
+        end = fileMap.end();
+        pos = begin;
+    }
+
+    bool has(size_type n) {
+        return pos + n <= end;
+    }
+
+    template<typename Type>
+    bool readNext(Type* val) {
+        auto size = sizeof(Type);
+        if (!has(size)) {
+            return false;
+        }
+        memcpy(val, pos, size);
+        pos += size;
+        return true;
+    }
+
+    // reads a variable length integer.
+    // See the documentation from here:  https://en.bitcoin.it/wiki/Protocol_specification#Variable_length_integer
+    bool readVariableLengthInteger(uint32_t* val) {
+        uint8_t v;
+        if (!readNext(&v)) {
+            return false;
+        };
+
+        if ( v < 0xFD ) { // If it's less than 0xFD use this value as the unsigned integer
+            *val = static_cast<uint32_t>(v);
+            return true;
+        } else if (v == 0xFD) {
+            uint16_t part;
+            if (!readNext(&part)) {
+                return false;
+            };
+            *val = static_cast<uint32_t>(part);
+            return true;
+        } else if (v == 0xFE) {
+            return readNext(&val);
+        } else {
+            uint64_t part;
+            if (!readNext(&part)) {
+                return false;
+            };
+            *val = static_cast<uint32_t>(part); // TODO: maybe we should not support this here, we lose data
+            return true;
+        }
+    }
+
+    bool advance(size_type n) {
+        if (!has(n)) {
+            return false;
+        }
+        pos += n;
+        return true;
+    }
+
+    bool rewind(size_type n) {
+        if (pos < begin + n) {
+            return false;
+        }
+        pos -= n;
+        return true;
+    }
+
+    bool reset() {
+        pos = begin;
+        return true;
+    }
+
+    bool reset(size_type n) {
+        if (begin + n > end) {
+            return false;
+        }
+        pos = begin + n;
+        return true;
+    }
+
+    size_type offset() {
+        return pos - begin;
+    }
+
+protected:
+    boost::iostreams::mapped_file_source::iterator pos;
+    boost::iostreams::mapped_file_source::iterator begin;
+    boost::iostreams::mapped_file_source::iterator end;
+};
+
 struct CBlockHeader
 {
     // header
@@ -61,50 +155,74 @@ ChainIndex::~ChainIndex() {
 
 void ChainIndex::updateFromFilesystem() {
     int fileNum = 0;
-    size_t filePos = 0;
-    
+    unsigned int filePos = 0;
+
     if (!blockList.empty()) {
         auto &lastBlock = blockList.back();
         fileNum = lastBlock.nFile;
         filePos = lastBlock.nDataPos;
     }
-    
-    int firstFile = fileNum;
-    
+
+    auto firstFile = fileNum;
+
     while (true) {
-        auto blockPath = config.pathForBlockFile(fileNum);
-        if (!boost::filesystem::exists(blockPath)) {
-            std::cout << "No block file " << blockPath << "\n";
+        // determine block file path
+        auto blockFilePath = config.pathForBlockFile(fileNum);
+        if (!boost::filesystem::exists(blockFilePath)) {
+            std::cout << "No block file " << blockFilePath << "\n";
             break;
         }
-        
+
+        // map the block file into memory
         boost::iostreams::mapped_file_source fileMap;
-        fileMap.open(blockPath);
-        
-        const char *startPos = fileMap.data() + filePos;
-        assert(filePos <= fileMap.size());
-        if (filePos + 4 > fileMap.size()) {
-            continue;
-        }
+        std::cout << "Reading " << blockFilePath << "...\n";
+        fileMap.open(blockFilePath);
+
+        // setup memory reader
+        auto reader = SafeMemReader(fileMap);
+        auto must = [&reader, &blockFilePath](bool result, const char* operation) {
+            if (!result) {
+                std::cerr << "Failed to " << operation
+                          << " from " << blockFilePath
+                          << " at offset " << reader.offset()
+                          << ".\n";
+                exit(1);
+            }
+        };
+
+        // logic for resume from last processed block, note offsetAfterLength below
+        must(reader.advance(filePos), "advance to resumed file position");
         if (fileNum == firstFile && filePos > 0) {
-            startPos -= sizeof(uint32_t);
-            uint32_t length = readNext<uint32_t>(&startPos);
-            startPos += length;
+            uint32_t length;
+            must(reader.rewind(sizeof(length)), "rewind length field in resumed block");
+            if (!reader.readNext(&length)) {
+                continue;
+            }
+            must(reader.advance(length), "advance after resumed block");
         }
-        // config.blockMagic
-        // 0xdab5bffa
-        // 0x0709110b
-        uint32_t magic = 0;
-        while ((magic = readNext<uint32_t>(&startPos)) == config.blockMagic) {
-            uint32_t length = readNext<uint32_t>(&startPos);
-            filePos = static_cast<size_t>(startPos - fileMap.data());
+
+        // read blocks in loop while we can...
+        while (true) {
+            uint32_t magic;
+            if (!reader.readNext(&magic)) {
+                break;
+            }
+            if (magic != config.blockMagic) {
+                break;
+            }
+            uint32_t length;
+            uint32_t numTxes;
             CBlockHeader header;
-            memcpy(&header, startPos, sizeof(header));
-            const char *buffer = startPos + sizeof(header);
-            uint32_t numTxes = readVariableLengthInteger(&buffer);
-            startPos += length;
-            blockList.push_back(BlockInfo(header, fileNum, static_cast<uint32_t>(filePos), numTxes, config));
+            must(reader.readNext(&length), "read block length");
+            auto offsetAfterLength = reader.offset();
+            must(reader.readNext(&header), "read block header");
+            must(reader.readVariableLengthInteger(&numTxes), "read number of transactions");
+            must(reader.reset(offsetAfterLength), "reset offset after length");
+            must(reader.advance(length), "advance length");
+            blockList.emplace_back(header, fileNum, offsetAfterLength, numTxes, config);
         }
+
+        // move to next block file
         fileNum++;
         filePos = 0;
     }
@@ -117,8 +235,8 @@ void ChainIndex::updateFromFilesystem() {
         blockNum++;
     }
 
-    for (size_t i = 0; i < blockList.size(); i++) {
-        blockList[i].height = -1;
+    for (auto &i : blockList) {
+        i.height = -1;
     }
     
     for (size_t i = 0; i < blockList.size(); i++) {
