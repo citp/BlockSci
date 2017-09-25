@@ -11,6 +11,7 @@
 
 #include "scriptsfwd.hpp"
 #include "script.hpp"
+#include <blocksci/address/address.hpp>
 #include <blocksci/bitcoin_uint256.hpp>
 
 namespace blocksci {

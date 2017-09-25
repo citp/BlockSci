@@ -19,6 +19,7 @@ namespace blocksci {
     class ScriptAccess;
     struct Transaction;
     struct Address;
+    struct State;
 }
 
 class ParserIndex;
@@ -38,8 +39,8 @@ public:
     ParserIndexCreator(const ParserConfiguration &config_, std::unique_ptr<ParserIndex> index_) : config(config_), updateFuture{std::async(std::launch::async, [&] {})}, launchingUpdate(false), tornDown(false), index(std::move(index_)) {}
     ~ParserIndexCreator();
     
-    void update(const std::vector<uint32_t> &revealed, uint32_t maxTxCount);
-    void complete(uint32_t maxTxCount);
+    void update(const std::vector<uint32_t> &revealed, blocksci::State state);
+    void complete(blocksci::State state);
     
     template <typename IndexType>
     static ParserIndexCreator createIndex(const ParserConfiguration &config) {

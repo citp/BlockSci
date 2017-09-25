@@ -10,13 +10,23 @@
 #define script_hpp
 
 #include "script_type.hpp"
-#include <blocksci/address/address.hpp>
 
+#include <functional>
 #include <vector>
 #include <memory>
 #include <stdio.h>
 
 namespace blocksci {
+    
+    struct Address;
+    struct ScriptPointer;
+    struct DataConfiguration;
+    class ScriptAccess;
+    class ChainAccess;
+    class AddressIndex;
+    struct Output;
+    struct Input;
+    struct Transaction;
     
     struct Script {
         uint32_t scriptNum;
@@ -34,6 +44,8 @@ namespace blocksci {
         
         static std::unique_ptr<Script> create(const ScriptAccess &access, const Address &address);
         
+        static std::unique_ptr<Script> create(const ScriptAccess &access, const ScriptPointer &pointer);
+        
         virtual void visitPointers(const std::function<void(const Address &)> &) const;
         
         std::vector<const Output *> getOutputs(const AddressIndex &index, const ChainAccess &chain) const;
@@ -46,6 +58,7 @@ namespace blocksci {
         
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
         static std::unique_ptr<Script> create(const Address &address);
+        static std::unique_ptr<Script> create(const ScriptPointer &pointer);
         std::string toString() const;
         std::string toPrettyString() const;
         

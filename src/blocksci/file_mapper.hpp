@@ -393,7 +393,7 @@ namespace blocksci {
         }
         
         template<size_t indexNum = 0>
-        boost::iterator_range<add_const_ptr_t<nth_element<indexNum>>> getRange() const {
+        auto getRange() const {
             IndexedFileExpander<indexNum, mode, T...> expanded(*this);
             return indexFile.getRange() | boost::adaptors::transformed(expanded);
         }

@@ -1,27 +1,34 @@
 //
-//  update_state.hpp
+//  state.hpp
 //  blocksci
 //
 //  Created by Harry Kalodner on 9/24/17.
 //
 
-#ifndef update_state_hpp
-#define update_state_hpp
+#ifndef state_hpp
+#define state_hpp
 
 #include "scripts/script_type.hpp"
+
+#include <iomanip>
 #include <stdio.h>
+
 
 namespace blocksci {
     class ChainAccess;
     class ScriptAccess;
     
-    struct UpdateState {
+    struct State {
         uint32_t blockCount;
         uint32_t txCount;
         std::array<uint32_t, ScriptType::size> scriptCounts;
         
-        UpdateState(ChainAccess &chain, ScriptAccess &scripts);
+        State(ChainAccess &chain, ScriptAccess &scripts);
+        State();
     };
+    
+    std::ostream& operator<<(std::ostream& s, const State &data);
+    std::istream& operator>>(std::istream& s, State &data);
 }
 
-#endif /* update_state_hpp */
+#endif /* state_hpp */

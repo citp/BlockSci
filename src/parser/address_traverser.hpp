@@ -29,7 +29,9 @@ class AddressTraverser : public ParserIndex {
     
     virtual void sawAddress(const blocksci::Address &address, const blocksci::OutputPointer &outputPointer) = 0;
     
-    void processTx(const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts, const blocksci::Transaction &tx) override;
+    void processTx(const blocksci::Transaction &tx, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override;
+    
+    void processScript(const blocksci::ScriptPointer &, const blocksci::ChainAccess &, const blocksci::ScriptAccess &) override {}
     
 public:
     AddressTraverser(const ParserConfiguration &config, const std::string &resultName);

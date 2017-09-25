@@ -14,8 +14,13 @@
 #include "chain/transaction.hpp"
 
 namespace blocksci {
-    std::unique_ptr<Script> Script::create(const Address &pointer) {
+    
+    std::unique_ptr<Script> Script::create(const ScriptPointer &pointer) {
         return create(DataAccess::Instance().scripts, pointer);
+    }
+    
+    std::unique_ptr<Script> Script::create(const Address &address) {
+        return create(DataAccess::Instance().scripts, address);
     }
     
     std::string Script::toPrettyString() const {

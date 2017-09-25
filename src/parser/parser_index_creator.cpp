@@ -7,17 +7,22 @@
 
 #include "parser_index_creator.hpp"
 #include "parser_index.hpp"
+#include <blocksci/state.hpp>
 
 #include <blocksci/chain/chain_access.hpp>
+#include <blocksci/scripts/script_access.hpp>
 
 ParserIndexCreator::~ParserIndexCreator() {
-    blocksci::ChainAccess chain{config, false, 0};
-    auto maxTxCount = static_cast<uint32_t>(chain.txCount());
-    complete(maxTxCount);
+    if (!tornDown) {
+        blocksci::ChainAccess chain{config, false, 0};
+        blocksci::ScriptAccess scripts{config};
+        blocksci::State updateState{chain, scripts};
+        complete(updateState);
+    }
     teardownFuture.get();
 }
 
-void ParserIndexCreator::update(const std::vector<uint32_t> &revealed, uint32_t maxTxCount) {
+void ParserIndexCreator::update(const std::vector<uint32_t> &revealed, blocksci::State state) {
     using namespace std::chrono_literals;
     
     waitingRevealed.insert(waitingRevealed.end(), revealed.begin(), revealed.end());
@@ -27,26 +32,25 @@ void ParserIndexCreator::update(const std::vector<uint32_t> &revealed, uint32_t 
         auto nextRevealed = std::move(waitingRevealed);
         waitingRevealed.clear();
         index->prepareUpdate();
-        updateFuture = std::async(std::launch::async, [this, nextRevealed, maxTxCount] {
-            index->runUpdate(nextRevealed, maxTxCount);
+        updateFuture = std::async(std::launch::async, [this, nextRevealed, state] {
+            index->runUpdate(nextRevealed, state);
             launchingUpdate = false;
         });
     }
 }
 
-void ParserIndexCreator::complete(uint32_t maxTxCount) {
+void ParserIndexCreator::complete(blocksci::State state) {
     using namespace std::chrono_literals;
-    if (!tornDown) {
-        tornDown = true;
-        teardownFuture = std::async(std::launch::async, [&, maxTxCount] {
-            while (launchingUpdate) {
-                std::this_thread::sleep_for(100ms);
-            }
-            if (updateFuture.valid()) {
-                updateFuture.get();
-            }
-            index->runUpdate(waitingRevealed, maxTxCount);
-            index->tearDown();
-        });
-    }
+    assert(!tornDown);
+    tornDown = true;
+    teardownFuture = std::async(std::launch::async, [&, state] {
+        while (launchingUpdate) {
+            std::this_thread::sleep_for(100ms);
+        }
+        if (updateFuture.valid()) {
+            updateFuture.get();
+        }
+        index->runUpdate(waitingRevealed, state);
+        index->tearDown();
+    });
 }

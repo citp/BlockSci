@@ -18,6 +18,7 @@
 #include "scripts/scriptsfwd.hpp"
 #include "scripts/scripthash_script.hpp"
 #include "scripts/multisig_script.hpp"
+#include "hash_index.hpp"
 
 #include <boost/functional/hash/hash.hpp>
 
@@ -76,32 +77,13 @@ namespace blocksci {
         return ss.str();
     }
     
-    boost::optional<Transaction> Transaction::txWithHash(const ChainAccess &access, uint256 hash) {
-        auto &txHashesFile = access.getTxHashesFile();
-        auto index = txHashesFile.find([&](const uint256 &hash2) { return hash == hash2; });
-        if (index) {
-            return txWithIndex(access, *index);
+    boost::optional<Transaction> Transaction::txWithHash(uint256 hash, const HashIndex &index, const ChainAccess &chain) {
+        auto txXndex = index.getTxIndex(hash);
+        if (txXndex != 0) {
+            return txWithIndex(chain, txXndex);
+        } else {
+            return boost::none;
         }
-        return boost::none;
-    }
-    
-    std::vector<Transaction> getTransactionsFromHashes(const ChainAccess &access, const std::vector<std::string> &txHashes) {
-        std::vector<Transaction> txes;
-        std::unordered_set<uint256> hashes;
-        for (auto &txHash : txHashes) {
-            hashes.insert(uint256S(txHash));
-        }
-        auto &txHashesFile = access.getTxHashesFile();
-        auto indexes = txHashesFile.findAll([&](const uint256 &hash) {
-            return hashes.find(hash) != hashes.end();
-        });
-        
-        txes.reserve(indexes.size());
-        for (auto txNum : indexes) {
-            txes.push_back(Transaction::create(access, txNum));
-        }
-        
-        return txes;
     }
     
     Transaction Transaction::txWithIndex(const ChainAccess &access, uint32_t index) {
@@ -112,8 +94,8 @@ namespace blocksci {
         return {access.getTx(index), index, height};
     }
     
-    boost::optional<Transaction> Transaction::txWithHash(const ChainAccess &access, std::string hash) {
-        return txWithHash(access, uint256S(hash));
+    boost::optional<Transaction> Transaction::txWithHash(std::string hash, const HashIndex &index, const ChainAccess &access) {
+        return txWithHash(uint256S(hash), index, access);
     }
     
     Transaction::output_range Transaction::outputs() const {

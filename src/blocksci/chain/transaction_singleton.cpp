@@ -1,5 +1,5 @@
 //
-//  transaction_access.cpp
+//  transaction_singleton.cpp
 //  blocksci
 //
 //  Created by Harry Kalodner on 7/31/17.
@@ -21,7 +21,7 @@ namespace blocksci {
     }
     
     boost::optional<Transaction> Transaction::txWithHash(uint256 hash) {
-        return txWithHash(DataAccess::Instance().chain, hash);
+//        return txWithHash(DataAccess::Instance().chain, hash);
     }
     
     Transaction Transaction::txWithIndex(uint32_t index) {
@@ -33,15 +33,11 @@ namespace blocksci {
     }
     
     boost::optional<Transaction> Transaction::txWithHash(std::string hash) {
-        return txWithHash(DataAccess::Instance().chain, hash);
+//        return txWithHash(DataAccess::Instance().chain, hash);
     }
     
     const Transaction &Transaction::create(uint32_t index) {
         return create(DataAccess::Instance().chain, index);
-    }
-    
-    std::vector<Transaction> getTransactionsFromHashes(const std::vector<std::string> &txHashes) {
-        return getTransactionsFromHashes(DataAccess::Instance().chain, txHashes);
     }
     
     const Output * getChangeOutput(const Transaction &tx) {

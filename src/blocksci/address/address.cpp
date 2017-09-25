@@ -111,6 +111,8 @@ namespace blocksci {
     std::vector<Transaction> Address::getInputTransactions(const AddressIndex &index, const ChainAccess &chain) const {
         return index.getInputTransactions(*this, chain);
     }
+    
+    
 }
 
 std::ostream &operator<<(std::ostream &os, const blocksci::Address &address) {

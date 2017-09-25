@@ -27,7 +27,7 @@ AddressTraverser::AddressTraverser(const ParserConfiguration &config_, const std
 }
 
 
-void AddressTraverser::processTx(const blocksci::ChainAccess &, const blocksci::ScriptAccess &scripts, const blocksci::Transaction &tx) {
+void AddressTraverser::processTx(const blocksci::Transaction &tx, const blocksci::ChainAccess &, const blocksci::ScriptAccess &scripts) {
     uint16_t outputNum = 0;
     for (auto &output : tx.outputs()) {
         auto address = output.getAddress();

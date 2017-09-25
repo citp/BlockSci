@@ -25,6 +25,7 @@ namespace blocksci {
     class ScriptAccess;
     class ChainAccess;
     class ScriptFirstSeenAccess;
+    class HashIndex;
     struct TransactionSummary;
     struct Input;
     struct Output;
@@ -46,12 +47,12 @@ namespace blocksci {
         RawTransaction &operator=(const RawTransaction &) = delete;
         RawTransaction &operator=(RawTransaction &&) = delete;
         
+        
         Output &getOutput(uint16_t outputNum);
         Input &getInput(uint16_t inputNum);
         
         const Output &getOutput(uint16_t outputNum) const;
         const Input &getInput(uint16_t inputNum) const;
-        
     };
     
     
@@ -70,8 +71,8 @@ namespace blocksci {
         
         static Transaction txWithIndex(const ChainAccess &access, uint32_t index);
         static Transaction txWithIndex(const ChainAccess &access,uint32_t index, uint32_t height);
-        static boost::optional<Transaction> txWithHash(const ChainAccess &access,uint256 hash);
-        static boost::optional<Transaction> txWithHash(const ChainAccess &access, std::string hash);
+        static boost::optional<Transaction> txWithHash(uint256 hash, const HashIndex &index, const ChainAccess &access);
+        static boost::optional<Transaction> txWithHash(std::string hash, const HashIndex &index, const ChainAccess &access);
         
         uint256 getHash(const ChainAccess &access) const;
         std::string getString() const;
@@ -126,8 +127,6 @@ namespace blocksci {
         #endif
     };
     
-    std::vector<Transaction> getTransactionsFromHashes(const ChainAccess &access, const std::vector<std::string> &txHashes);
-    
     bool hasFeeGreaterThan(const Transaction &tx, uint64_t fee);
     
     bool isCoinbase(const Transaction &tx);
@@ -147,7 +146,6 @@ namespace blocksci {
     const Output * getChangeOutput(const ScriptFirstSeenAccess &scripts, const Transaction &tx);
     
     #ifndef BLOCKSCI_WITHOUT_SINGLETON
-    std::vector<Transaction> getTransactionsFromHashes(const std::vector<std::string> &txHashes);
     bool containsKeysetChange(const Transaction &tx);
     
     const Output *getChangeOutput(const Transaction &tx);

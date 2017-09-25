@@ -19,11 +19,12 @@
 #include "address_db.hpp"
 #include "first_seen_index.hpp"
 #include "parser_index_creator.hpp"
-#include "hash_index.hpp"
+#include "hash_index_creator.hpp"
 #include "block_replayer.hpp"
 #include "address_writer.hpp"
 
 #include <blocksci/data_access.hpp>
+#include <blocksci/state.hpp>
 #include <blocksci/address/address_types.hpp>
 #include <blocksci/chain/chain_access.hpp>
 #include <blocksci/chain/input.hpp>
@@ -282,7 +283,7 @@ void updateChain(const ConfigType &config, uint32_t maxBlockNum) {
     
     printUpdateInfo(config, chainUpdateInfo);
     
-    std::ios::sync_with_stdio(false);
+//    std::ios::sync_with_stdio(false);
     
     rollbackTransactions(chainUpdateInfo.splitPoint, config);
     
@@ -324,19 +325,23 @@ void updateChain(const ConfigType &config, uint32_t maxBlockNum) {
         auto revealedScriptHashes = processor.addNewBlocks(config, nextBlocks, utxoState, addressState);
         
         blocksci::ChainAccess chain{config, false, 0};
-        auto maxTxCount = static_cast<uint32_t>(chain.txCount());
+        blocksci::ScriptAccess scripts{config};
         
-        addressDB.update(revealedScriptHashes, maxTxCount);
-        firstSeen.update(revealedScriptHashes, maxTxCount);
-        hashIndex.update(revealedScriptHashes, maxTxCount);
+        blocksci::State updateState{chain, scripts};
+        
+        addressDB.update(revealedScriptHashes, updateState);
+        firstSeen.update(revealedScriptHashes, updateState);
+        hashIndex.update(revealedScriptHashes, updateState);
     }
     
     blocksci::ChainAccess chain{config, false, 0};
-    auto maxTxCount = static_cast<uint32_t>(chain.txCount());
+    blocksci::ScriptAccess scripts{config};
     
-    addressDB.complete(maxTxCount);
-    firstSeen.complete(maxTxCount);
-    hashIndex.complete(maxTxCount);
+    blocksci::State state{chain, scripts};
+    
+    addressDB.complete(state);
+    firstSeen.complete(state);
+    hashIndex.complete(state);
 }
 
 int main(int argc, const char * argv[]) {

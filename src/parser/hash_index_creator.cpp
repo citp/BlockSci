@@ -1,25 +1,22 @@
 //
-//  tx_hash_index.cpp
+//  hash_index_creator.hpp
 //  blocksci
 //
 //  Created by Harry Kalodner on 8/26/17.
 //
 //
 
-#include "hash_index.hpp"
+#include "hash_index_creator.hpp"
 #include "parser_configuration.hpp"
 
+#include <blocksci/hash_index.hpp>
 #include <blocksci/chain/chain_access.hpp>
 #include <blocksci/chain/transaction.hpp>
+#include <blocksci/scripts/script_pointer.hpp>
+#include <blocksci/scripts/pubkey_script.hpp>
+#include <blocksci/scripts/scripthash_script.hpp>
 
 #include <sstream>
-
-
-constexpr auto txTableName = "TXHASH";
-constexpr auto p2shTableName = "P2SH_ADDRESS";
-constexpr auto pubkeyHashTableName = "PUBKEYHASH_ADDRESS";
-
-constexpr auto tableNames = {txTableName, p2shTableName, pubkeyHashTableName};
 
 std::pair<sqlite3 *, bool> openHashDb(boost::filesystem::path hashIndexFilePath);
 
@@ -48,7 +45,7 @@ std::pair<sqlite3 *, bool> openHashDb(boost::filesystem::path hashIndexFilePath)
     if (!dbAlreadyExists) {
         /* Create SQL statement */
         
-        for (auto &table : tableNames) {
+        for (auto &table : blocksci::HashIndex::tableNames) {
             std::stringstream ss;
             ss << "CREATE TABLE ";
             ss << table << "(";
@@ -76,7 +73,7 @@ HashIndex::HashIndex(const ParserConfiguration &config, std::pair<sqlite3 *, boo
     std::array<sqlite3_stmt **, 3> insertStatements{{&txInsertStatement, &p2shInsertStatement, &pubkeyHashInsertStatement}};
     
     size_t i = 0;
-    for (auto &tableName : tableNames) {
+    for (auto &tableName : blocksci::HashIndex::tableNames) {
         std::stringstream ss;
         ss << "INSERT INTO " << tableName << " VALUES (?, ?)";
         auto rc = sqlite3_prepare_v2(db, ss.str().c_str(), -1, insertStatements[i], nullptr);
@@ -93,7 +90,7 @@ HashIndex::HashIndex(const ParserConfiguration &config, std::pair<sqlite3 *, boo
 
 void HashIndex::tearDown() {
     if (firstRun) {
-        for (auto &tableName : tableNames) {
+        for (auto &tableName : blocksci::HashIndex::tableNames) {
             std::stringstream ss;
             ss << "CREATE INDEX ";
             ss << tableName;
@@ -118,7 +115,7 @@ HashIndex::~HashIndex() {
     sqlite3_close(db);
 }
 
-void HashIndex::processTx(const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &, const blocksci::Transaction &tx) {
+void HashIndex::processTx(const blocksci::Transaction &tx, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &) {
     auto hash = tx.getHash(chain);
     sqlite3_bind_blob(txInsertStatement, 1, &hash, sizeof(hash), SQLITE_TRANSIENT);
     sqlite3_bind_int(txInsertStatement, 2, static_cast<int>(tx.txNum));
@@ -129,4 +126,30 @@ void HashIndex::processTx(const blocksci::ChainAccess &chain, const blocksci::Sc
     }
     
     sqlite3_reset(txInsertStatement);
+}
+
+void HashIndex::processScript(const blocksci::ScriptPointer &pointer, const blocksci::ChainAccess &, const blocksci::ScriptAccess &scripts) {
+    if (pointer.type == blocksci::ScriptType::Enum::PUBKEY) {
+        blocksci::script::Pubkey pubkeyScript{scripts, pointer.scriptNum};
+        sqlite3_bind_blob(pubkeyHashInsertStatement, 1, &pubkeyScript.pubkeyhash, sizeof(pubkeyScript.pubkeyhash), SQLITE_TRANSIENT);
+        sqlite3_bind_int(pubkeyHashInsertStatement, 2, static_cast<int>(pointer.scriptNum));
+        
+        auto rc = sqlite3_step(pubkeyHashInsertStatement);
+        if (rc != SQLITE_DONE) {
+            printf("ERROR inserting data: %s\n", sqlite3_errmsg(db));
+        }
+        
+        sqlite3_reset(pubkeyHashInsertStatement);
+    } else if (pointer.type == blocksci::ScriptType::Enum::SCRIPTHASH) {
+        blocksci::script::ScriptHash p2shScript{scripts, pointer.scriptNum};
+        sqlite3_bind_blob(p2shInsertStatement, 1, &p2shScript.address, sizeof(p2shScript.address), SQLITE_TRANSIENT);
+        sqlite3_bind_int(p2shInsertStatement, 2, static_cast<int>(pointer.scriptNum));
+        
+        auto rc = sqlite3_step(p2shInsertStatement);
+        if (rc != SQLITE_DONE) {
+            printf("ERROR inserting data: %s\n", sqlite3_errmsg(db));
+        }
+        
+        sqlite3_reset(p2shInsertStatement);
+    }
 }

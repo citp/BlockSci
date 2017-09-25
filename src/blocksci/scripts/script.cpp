@@ -16,7 +16,9 @@
 #include "scripthash_script.hpp"
 #include "nulldata_script.hpp"
 #include "nonstandard_script.hpp"
+#include "script_pointer.hpp"
 
+#include "address/address.hpp"
 #include "address/address_info.hpp"
 #include "address/address_index.hpp"
 
@@ -30,24 +32,27 @@ namespace blocksci {
     
     void Script::visitPointers(const std::function<void(const Address &)> &) const {}
     
-    template<AddressType::Enum type>
+    template<ScriptType::Enum type>
     struct ScriptCreateFunctor {
-        static std::unique_ptr<Script> f(const ScriptAccess &access, const Address &address) {
-            constexpr auto scriptType = AddressInfo<type>::scriptType;
-            return std::make_unique<ScriptAddress<scriptType>>(access, address.addressNum);
+        static std::unique_ptr<Script> f(const ScriptAccess &access, const ScriptPointer &pointer) {
+            return std::make_unique<ScriptAddress<type>>(access, pointer.scriptNum);
         }
     };
     
-    std::unique_ptr<Script> Script::create(const ScriptAccess &access, const Address &address) {
-        static constexpr auto table = make_dynamic_table<AddressType, ScriptCreateFunctor>();
+    std::unique_ptr<Script> Script::create(const ScriptAccess &access, const ScriptPointer &pointer) {
+        static constexpr auto table = make_dynamic_table<ScriptType, ScriptCreateFunctor>();
         static constexpr std::size_t size = AddressType::all.size();
         
-        auto index = static_cast<size_t>(address.type);
+        auto index = static_cast<size_t>(pointer.type);
         if (index >= size)
         {
             throw std::invalid_argument("combination of enum values is not valid");
         }
-        return table[index](access, address);
+        return table[index](access, pointer);
+    }
+    
+    std::unique_ptr<Script> Script::create(const ScriptAccess &access, const Address &address) {
+        return create(access, ScriptPointer{address});
     }
     
     std::vector<const Output *> Script::getOutputs(const AddressIndex &index, const ChainAccess &chain) const {
