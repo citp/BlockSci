@@ -12,7 +12,7 @@
 namespace blocksci {
     using namespace script;
     
-    Pubkey::ScriptAddress(uint32_t addressNum) : Pubkey(DataAccess::Instance().scripts, addressNum) {}
+    Pubkey::ScriptAddress(uint32_t addressNum) : Pubkey(*DataAccess::Instance().scripts, addressNum) {}
     
     std::string Pubkey::addressString() const {
         return addressString(DataAccess::Instance().config);

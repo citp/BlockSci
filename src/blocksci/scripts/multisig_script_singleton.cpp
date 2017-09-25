@@ -8,9 +8,12 @@
 
 #include "multisig_script.hpp"
 #include "data_access.hpp"
+#include "address/address.hpp"
+
+#include <vector>
 
 namespace blocksci {
     using namespace script;
     
-    Multisig::ScriptAddress(uint32_t addressNum) : Multisig(DataAccess::Instance().scripts, addressNum) {}
+    Multisig::ScriptAddress(uint32_t addressNum) : Multisig(*DataAccess::Instance().scripts, addressNum) {}
 }

@@ -73,8 +73,8 @@ namespace blocksci {
         boost::iterator_range<TransactionIterator> iterateTransactions(uint32_t startBlock, uint32_t endBlock) const {
             auto &startB = this->operator[](startBlock);
             auto &endB = this->operator[](endBlock - 1);
-            auto begin = TransactionIterator(&access.chain, startB.firstTxIndex, startBlock);
-            auto end = TransactionIterator(&access.chain, endB.firstTxIndex + endB.numTxes, endBlock);
+            auto begin = TransactionIterator(access.chain.get(), startB.firstTxIndex, startBlock);
+            auto end = TransactionIterator(access.chain.get(), endB.firstTxIndex + endB.numTxes, endBlock);
             return boost::make_iterator_range(begin, end);
         }
         
@@ -107,7 +107,7 @@ namespace blocksci {
         ResultType mapReduceTransactions(size_t start, size_t stop, MapFunc mapFunc, ReduceFunc reduceFunc, ResultType identity) {
             auto mapF = [&](const Block &block) {
                 ResultType res = identity;
-                for (auto tx : block.txes(access.chain)) {
+                for (auto tx : block.txes(*access.chain)) {
                     auto mapped = mapFunc(tx);
                     res = reduceFunc(res, mapped);
                 }

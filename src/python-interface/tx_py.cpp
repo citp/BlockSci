@@ -41,9 +41,6 @@ void init_tx(py::module &m) {
     )
     .def_static("tx_with_hash", py::overload_cast<uint256>(&Transaction::txWithHash))
     .def_static("tx_with_hash", py::overload_cast<std::string>(&Transaction::txWithHash))
-    .def_static("txes_with_hashes", [](const std::vector<std::string> &txHashes) {
-        return getTransactionsFromHashes(txHashes);
-    })
     .def_property_readonly("num_outs", &Transaction::outputCount, "The number of outputs this transaction has")
     .def_property_readonly("num_ins", &Transaction::inputCount, "The number of inputs this transaction has")
     .def_property_readonly("size", &Transaction::sizeBytes, "The size of this transaction in bytes")

@@ -12,5 +12,5 @@
 namespace blocksci {
     using namespace script;
     
-    OpReturn::ScriptAddress(uint32_t addressNum) : OpReturn(DataAccess::Instance().scripts, addressNum) {}
+    OpReturn::ScriptAddress(uint32_t addressNum) : OpReturn(*DataAccess::Instance().scripts, addressNum) {}
 }

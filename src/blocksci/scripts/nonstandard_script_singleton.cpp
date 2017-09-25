@@ -12,6 +12,6 @@
 namespace blocksci {
     using namespace script;
  
-    Nonstandard::ScriptAddress(uint32_t addressNum) : Nonstandard(DataAccess::Instance().scripts, addressNum) {}
+    Nonstandard::ScriptAddress(uint32_t addressNum) : Nonstandard(*DataAccess::Instance().scripts, addressNum) {}
 }
 

@@ -11,6 +11,8 @@
 #include <blocksci/blocksci.hpp>
 #include <blocksci/data_configuration.hpp>
 #include <blocksci/data_access.hpp>
+#include <blocksci/file_mapper.hpp>
+#include <blocksci/chain/chain_access.hpp>
 
 #include <bitcoinapi/bitcoinapi.h>
 

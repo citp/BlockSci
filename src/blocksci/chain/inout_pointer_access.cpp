@@ -12,6 +12,6 @@
 
 namespace blocksci {
     Transaction InoutPointer::getTransaction() const {
-        return getTransaction(DataAccess::Instance().chain);
+        return getTransaction(*DataAccess::Instance().chain);
     }
 }

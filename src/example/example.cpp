@@ -9,9 +9,9 @@
 #include "performance.hpp"
 
 #include <blocksci/blocksci.hpp>
+#include <blocksci/script.hpp>
 #include <blocksci/hash_index.hpp>
-#include <blocksci/chain/utxo_pool.hpp>
-#include <blocksci/scripts/address_pointer.hpp>
+#include <blocksci/address/address.hpp>
 
 //#include <hsql/SQLParser.h>
 
@@ -99,10 +99,12 @@ int main(int argc, const char * argv[]) {
     Blockchain chain(argv[1]);
     
     
-    UTXOPool pool(5);
-    for (size_t i = 0; i < chain.size(); i++) {
-        pool.advanceBlock();
-    }
+    auto address = chain[chain.size() - 10][0].outputs()[0].getAddress();
+    auto outs = address.getOutputs();
+    
+    auto script = address.getScript();
+    
+    auto outs2 = script->getOutputs();
     
 //    uint64_t count = 0;
 //    for (auto tx : chain.iterateTransactions(0, chain.size())) {
@@ -141,14 +143,14 @@ int main(int argc, const char * argv[]) {
     auto tx = block[0];
     std::cout << tx.getHash().GetHex() << "\n";
     auto &output = tx.outputs()[0];
-    std::cout << *output.getAddressPointer().getAddress() << "\n";
+    std::cout << output.getAddress().getScript()->toString() << "\n";
     
     return 0;
     
     auto mapFunc = [&chain](std::vector<Block> &segment) {
         std::vector<Transaction> txes;
         for (auto &block : segment) {
-            for (auto tx : block.txes(chain.access.chain)) {
+            for (auto tx : block.txes(*chain.access.chain)) {
                 if (isCoinjoin(tx)) {
                     txes.push_back(tx);
                 }
@@ -261,11 +263,11 @@ int main(int argc, const char * argv[]) {
             std::cout << tx.getString() << std::endl;
             for (auto &input : tx.inputs()) {
                 std::cout << input.toString() << std::endl;
-                std::cout << input.getAddressPointer().getAddress()->toString() << std::endl;
+                std::cout << input.getAddress().getScript()->toString() << std::endl;
             }
             for (auto &output : tx.outputs()) {
                 std::cout << output.toString() << std::endl;
-                std::cout << output.getAddressPointer().getAddress()->toString() << std::endl;
+                std::cout << output.getAddress().getScript()->toString() << std::endl;
             }
         }
     }

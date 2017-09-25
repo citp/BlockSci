@@ -12,6 +12,7 @@
 #include "output.hpp"
 
 #include "address/address_index.hpp"
+#include "chain/chain_access.hpp"
 
 #include "data_configuration.hpp"
 #include "data_access.hpp"
@@ -80,16 +81,16 @@ namespace blocksci {
     Blockchain::Blockchain(const DataConfiguration &config, bool errorOnReorg, uint32_t blocksIgnored) : access(DataAccess::Instance(config, errorOnReorg, blocksIgnored)) {}
     
     std::vector<Block>::size_type Blockchain::size() const {
-        return access.chain.getBlocks().size();
+        return access.chain->getBlocks().size();
     }
     boost::iterator_range<const Block *>::const_iterator Blockchain::begin() const {
-        return static_cast<const Block *>(access.chain.getBlocks().begin());
+        return static_cast<const Block *>(access.chain->getBlocks().begin());
     }
     boost::iterator_range<const Block *>::const_iterator Blockchain::end() const {
-        return static_cast<const Block *>(access.chain.getBlocks().end());
+        return static_cast<const Block *>(access.chain->getBlocks().end());
     }
     const Block& Blockchain::operator[] (const uint32_t index) const {
-        return static_cast<const Block &>(access.chain.getBlocks()[index]);
+        return static_cast<const Block &>(access.chain->getBlocks()[index]);
     }
     
     uint32_t txCount(const Blockchain &chain) {
@@ -99,17 +100,17 @@ namespace blocksci {
     }
     
     Transaction Blockchain::txAtIndex(uint32_t index) const {
-        return Transaction::txWithIndex(access.chain, index);
+        return Transaction::txWithIndex(*access.chain, index);
     }
     
     TransactionIterator Blockchain::beginTransactions(uint32_t blockNum) {
         auto &block = this->operator[](blockNum);
-        return TransactionIterator(&access.chain, block.firstTxIndex, blockNum);
+        return TransactionIterator(access.chain.get(), block.firstTxIndex, blockNum);
     }
     
     TransactionIterator Blockchain::endTransactions(uint32_t blockNum) {
         auto &block = this->operator[](blockNum - 1);
-        return TransactionIterator(&access.chain, block.firstTxIndex + block.numTxes, blockNum);
+        return TransactionIterator(access.chain.get(), block.firstTxIndex + block.numTxes, blockNum);
     }
     
     std::vector<Transaction> getCoinjoinTransactions(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock)  {
@@ -124,7 +125,7 @@ namespace blocksci {
             std::vector<Transaction> skipped;
             std::vector<Transaction> txes;
             for (auto &block : segment) {
-                for (auto tx : block.txes(chain.access.chain)) {
+                for (auto tx : block.txes(*chain.access.chain)) {
                     auto label = isPossibleCoinjoin(tx, minBaseFee, percentageFee, maxDepth);
                     if (label == CoinJoinResult::True) {
                         txes.push_back(tx);
@@ -151,7 +152,7 @@ namespace blocksci {
         auto mapFunc = [&chain, &testFunc](std::vector<Block> &segment) {
             std::vector<Transaction> txes;
             for (auto &block : segment) {
-                for (auto tx : block.txes(chain.access.chain)) {
+                for (auto tx : block.txes(*chain.access.chain)) {
                     if (testFunc(tx)) {
                         txes.push_back(tx);
                     }

@@ -16,16 +16,16 @@
 namespace blocksci {
     
     std::unique_ptr<Script> Script::create(const ScriptPointer &pointer) {
-        return create(DataAccess::Instance().scripts, pointer);
+        return create(*DataAccess::Instance().scripts, pointer);
     }
     
     std::unique_ptr<Script> Script::create(const Address &address) {
-        return create(DataAccess::Instance().scripts, address);
+        return create(*DataAccess::Instance().scripts, address);
     }
     
     std::string Script::toPrettyString() const {
         auto &instance = DataAccess::Instance();
-        return toPrettyString(instance.config, instance.scripts);
+        return toPrettyString(instance.config, *instance.scripts);
     }
     
     std::string Script::toString() const {
@@ -34,27 +34,27 @@ namespace blocksci {
     
     std::vector<const Output *> Script::getOutputs() const {
         auto &instance = DataAccess::Instance();
-        return getOutputs(instance.addressIndex, instance.chain);
+        return getOutputs(*instance.addressIndex, *instance.chain);
     }
     
     std::vector<const Input *> Script::getInputs() const {
         auto &instance = DataAccess::Instance();
-        return getInputs(instance.addressIndex, instance.chain);
+        return getInputs(*instance.addressIndex, *instance.chain);
     }
     
     std::vector<Transaction> Script::getTransactions() const {
         auto &instance = DataAccess::Instance();
-        return getTransactions(instance.addressIndex, instance.chain);
+        return getTransactions(*instance.addressIndex, *instance.chain);
     }
     
     std::vector<Transaction> Script::getOutputTransactions() const {
         auto &instance = DataAccess::Instance();
-        return getOutputTransactions(instance.addressIndex, instance.chain);
+        return getOutputTransactions(*instance.addressIndex, *instance.chain);
     }
     
     std::vector<Transaction> Script::getInputTransactions() const {
         auto &instance = DataAccess::Instance();
-        return getInputTransactions(instance.addressIndex, instance.chain);
+        return getInputTransactions(*instance.addressIndex, *instance.chain);
     }
 }
 

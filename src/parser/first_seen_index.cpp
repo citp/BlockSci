@@ -17,9 +17,7 @@
 #include <blocksci/address/address_types.hpp>
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/scripts/scripthash_script.hpp>
-
-
-#include <blocksci/data_access.hpp>
+#include <blocksci/scripts/script_access.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>

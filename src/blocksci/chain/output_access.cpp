@@ -10,13 +10,15 @@
 #include "data_access.hpp"
 #include "transaction.hpp"
 
+#include <boost/optional/optional.hpp>
+
 namespace blocksci {
     
     uint32_t Output::getSpendingTxIndex() const {
-        return getSpendingTxIndex(DataAccess::Instance().chain);
+        return getSpendingTxIndex(*DataAccess::Instance().chain);
     }
     
     boost::optional<Transaction> Output::getSpendingTx() const {
-        return getSpendingTx(DataAccess::Instance().chain);
+        return getSpendingTx(*DataAccess::Instance().chain);
     }
 }

@@ -10,18 +10,20 @@
 #include "data_access.hpp"
 #include "chain/transaction.hpp"
 
+#include <boost/optional/optional.hpp>
+
 namespace blocksci {
     using namespace script;
-    ScriptHash::ScriptAddress(uint32_t addressNum) : ScriptHash(DataAccess::Instance().scripts, addressNum) {}
+    ScriptHash::ScriptAddress(uint32_t addressNum) : ScriptHash(*DataAccess::Instance().scripts, addressNum) {}
     std::string ScriptHash::addressString() const {
         return addressString(DataAccess::Instance().config);
     }
     
     std::unique_ptr<Script> ScriptHash::wrappedScript() const {
-        return wrappedScript(DataAccess::Instance().scripts);
+        return wrappedScript(*DataAccess::Instance().scripts);
     }
     
     boost::optional<Transaction> ScriptHash::transactionRevealed() const {
-        return transactionRevealed(DataAccess::Instance().chain);
+        return transactionRevealed(*DataAccess::Instance().chain);
     }
 }
