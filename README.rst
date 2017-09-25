@@ -43,7 +43,7 @@ Disk mode is optimized for parsing Bitcoin's data files. It reads blockchain dat
 
 ..  code-block:: bash
 
-	blocksci_parser --bitcoin-directory .bitcoin --output-directory bitcoin-data
+	blocksci_parser --coin-directory .bitcoin --output-directory bitcoin-data
 
 RPC mode uses the RPC interface of a cryptocurrency to extract data regarding the blockchain. It works with a variety of cryptocurrencies which have the same general model as Bitcoin, but with minor changes to the serialization format which break the parser in disk mode. One example of this is Namecoin.
 
@@ -115,9 +115,9 @@ Here are the steps for compiling BlockSci on Ubuntu 16.04.
 	
 	git clone https://github.com/citp/BlockSci.git
 	cd BlockSci
-	git submodule init --recursive update
+	git submodule update --init --recursive --checkout
 
-	cd libs/bitcoin-cpp-api
+	cd libs/bitcoin-api-cpp
 	mkdir release
 	cd release
 	cmake --DCMAKE_BUILD_TYPE=Release ..
