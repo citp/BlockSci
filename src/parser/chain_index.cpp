@@ -9,8 +9,8 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "chain_index.hpp"
-#include "utilities.hpp"
 #include "parser_configuration.hpp"
+#include "safe_mem_reader.hpp"
 
 #include <blocksci/hash.hpp>
 
@@ -25,111 +25,6 @@
 #include <iostream>
 
 #ifdef BLOCKSCI_FILE_PARSER
-
-class SafeMemReader {
-public:
-    typedef boost::iostreams::mapped_file_source::size_type size_type;
-
-    explicit SafeMemReader(boost::iostreams::mapped_file_source &fileMap) {
-        begin = fileMap.begin();
-        end = fileMap.end();
-        pos = begin;
-    }
-
-    bool has(size_type n) {
-        return pos + n <= end;
-    }
-
-    template<typename Type>
-    bool readNext(Type* val) {
-        auto size = sizeof(Type);
-        if (!has(size)) {
-            return false;
-        }
-        memcpy(val, pos, size);
-        pos += size;
-        return true;
-    }
-
-    // reads a variable length integer.
-    // See the documentation from here:  https://en.bitcoin.it/wiki/Protocol_specification#Variable_length_integer
-    bool readVariableLengthInteger(uint32_t* val) {
-        uint8_t v;
-        if (!readNext(&v)) {
-            return false;
-        };
-
-        if ( v < 0xFD ) { // If it's less than 0xFD use this value as the unsigned integer
-            *val = static_cast<uint32_t>(v);
-            return true;
-        } else if (v == 0xFD) {
-            uint16_t part;
-            if (!readNext(&part)) {
-                return false;
-            };
-            *val = static_cast<uint32_t>(part);
-            return true;
-        } else if (v == 0xFE) {
-            return readNext(val);
-        } else {
-            uint64_t part;
-            if (!readNext(&part)) {
-                return false;
-            };
-            *val = static_cast<uint32_t>(part); // TODO: maybe we should not support this here, we lose data
-            return true;
-        }
-    }
-
-    bool advance(size_type n) {
-        if (!has(n)) {
-            return false;
-        }
-        pos += n;
-        return true;
-    }
-
-    bool rewind(size_type n) {
-        if (pos < begin + n) {
-            return false;
-        }
-        pos -= n;
-        return true;
-    }
-
-    bool reset() {
-        pos = begin;
-        return true;
-    }
-
-    bool reset(size_type n) {
-        if (begin + n > end) {
-            return false;
-        }
-        pos = begin + n;
-        return true;
-    }
-
-    size_type offset() {
-        return pos - begin;
-    }
-
-protected:
-    boost::iostreams::mapped_file_source::iterator pos;
-    boost::iostreams::mapped_file_source::iterator begin;
-    boost::iostreams::mapped_file_source::iterator end;
-};
-
-struct CBlockHeader
-{
-    // header
-    int32_t nVersion;
-    blocksci::uint256 hashPrevBlock;
-    blocksci::uint256 hashMerkleRoot;
-    uint32_t nTime;
-    uint32_t nBits;
-    uint32_t nNonce;
-};
 
 BlockInfo::BlockInfo(const CBlockHeader &h, int fileNum, unsigned int dataPos, unsigned int numTxes, const FileParserConfiguration &config) : prevHash(h.hashPrevBlock), height(-1), nFile(fileNum), nDataPos(dataPos), nTx(numTxes), nVersion(h.nVersion), hashMerkleRoot(h.hashMerkleRoot), nTime(h.nTime), nBits(h.nBits), nNonce(h.nNonce) {
     hash = config.workHashFunction(reinterpret_cast<const char *>(&h), sizeof(CBlockHeader));
@@ -173,55 +68,44 @@ void ChainIndex::updateFromFilesystem() {
             break;
         }
 
-        // map the block file into memory
-        boost::iostreams::mapped_file_source fileMap;
+        SafeMemReader reader{blockFilePath};
+        
         std::cout << "Reading " << blockFilePath << "...\n";
-        fileMap.open(blockFilePath);
-
-        // setup memory reader
-        auto reader = SafeMemReader(fileMap);
-        auto must = [&reader, &blockFilePath](bool result, const char* operation) {
-            if (!result) {
-                std::cerr << "Failed to " << operation
-                          << " from " << blockFilePath
-                          << " at offset " << reader.offset()
-                          << ".\n";
-                exit(1);
+        
+        try {
+            // logic for resume from last processed block, note offsetAfterLength below
+            reader.advance(filePos);
+            if (fileNum == firstFile && filePos > 0) {
+                uint32_t length;
+                reader.rewind(sizeof(length));
+                length = reader.readNext<uint32_t>();
+                // advance after resumed block
+                reader.advance(length);
             }
-        };
-
-        // logic for resume from last processed block, note offsetAfterLength below
-        must(reader.advance(filePos), "advance to resumed file position");
-        if (fileNum == firstFile && filePos > 0) {
-            uint32_t length;
-            must(reader.rewind(sizeof(length)), "rewind length field in resumed block");
-            if (!reader.readNext(&length)) {
-                continue;
+            
+            // read blocks in loop while we can...
+            while (reader.has(sizeof(uint32_t))) {
+                auto magic = reader.readNext<uint32_t>();
+                if (magic != config.blockMagic) {
+                    break;
+                }
+                auto length = reader.readNext<uint32_t>();
+                auto offsetAfterLength = reader.offset();
+                auto header = reader.readNext<CBlockHeader>();
+                auto numTxes = reader.readVariableLengthInteger();
+                // The next two lines bring the reader to the end of this block
+                reader.reset(offsetAfterLength);
+                reader.advance(length);
+                blockList.emplace_back(header, fileNum, offsetAfterLength, numTxes, config);
             }
-            must(reader.advance(length), "advance after resumed block");
+        } catch (const std::out_of_range &e) {
+            std::cerr << "Failed to read block header information"
+            << " from " << blockFilePath
+            << " at offset " << reader.offset()
+            << ".\n";
+            throw;
         }
-
-        // read blocks in loop while we can...
-        while (true) {
-            uint32_t magic;
-            if (!reader.readNext(&magic)) {
-                break;
-            }
-            if (magic != config.blockMagic) {
-                break;
-            }
-            uint32_t length;
-            uint32_t numTxes;
-            CBlockHeader header;
-            must(reader.readNext(&length), "read block length");
-            auto offsetAfterLength = reader.offset();
-            must(reader.readNext(&header), "read block header");
-            must(reader.readVariableLengthInteger(&numTxes), "read number of transactions");
-            must(reader.reset(offsetAfterLength), "reset offset after length");
-            must(reader.advance(length), "advance length");
-            blockList.emplace_back(header, fileNum, offsetAfterLength, numTxes, config);
-        }
-
+        
         // move to next block file
         fileNum++;
         filePos = 0;

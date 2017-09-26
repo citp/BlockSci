@@ -14,7 +14,7 @@
 #include "script_output.hpp"
 #include "chain_index.hpp"
 #include "preproccessed_block.hpp"
-#include "utilities.hpp"
+#include "safe_mem_reader.hpp"
 
 #include <blocksci/address/address.hpp>
 #include <blocksci/scripts/script_access.hpp>
@@ -33,15 +33,10 @@ void replayBlock(const FileParserConfiguration &config, uint32_t blockNum) {
     auto chain = index.generateChain(blockNum);
     auto block = chain.back();
     auto blockPath = config.pathForBlockFile(block.nFile);
-    boost::iostreams::mapped_file blockFile(blockPath, boost::iostreams::mapped_file::readonly);
-    if (!blockFile.is_open()) {
-        std::cout << "Error: Failed to open block file " << blockPath << "\n";
-        return;
-    }
-    const char *startPos = blockFile.const_data() + block.nDataPos;
-    constexpr size_t blockHeaderSize = 80;
-    startPos += blockHeaderSize;
-    uint32_t txCount = readVariableLengthInteger(&startPos);
+    SafeMemReader reader{blockPath};
+    reader.advance(block.nDataPos);
+    reader.advance(sizeof(CBlockHeader));
+    auto txCount = reader.readVariableLengthInteger();
     blocksci::uint256 nullHash;
     nullHash.SetNull();
     
@@ -61,7 +56,7 @@ void replayBlock(const FileParserConfiguration &config, uint32_t blockNum) {
         auto realTx = realBlock.getTx(currentChain, txNum);
         
         RawTransaction tx;
-        tx.load(&startPos, realTx.txNum, blockNum, segwit);
+        tx.load(reader, realTx.txNum, blockNum, segwit);
         
         if (tx.inputs.size() == 1 && tx.inputs[0].rawOutputPointer.hash == nullHash) {
             auto scriptBegin = tx.inputs[0].scriptBegin;

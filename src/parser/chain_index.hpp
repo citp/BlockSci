@@ -23,7 +23,16 @@
 
 struct FileParserConfiguration;
 class CBlockIndex;
-struct CBlockHeader;
+
+struct CBlockHeader {
+    // header
+    int32_t nVersion;
+    blocksci::uint256 hashPrevBlock;
+    blocksci::uint256 hashMerkleRoot;
+    uint32_t nTime;
+    uint32_t nBits;
+    uint32_t nNonce;
+};
 
 struct BlockInfo {
     //! pointer to the hash of the block, if any. Memory is owned by this CBlockIndex

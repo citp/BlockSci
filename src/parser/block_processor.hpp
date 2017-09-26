@@ -17,10 +17,10 @@
 #include <blocksci/chain/output_pointer.hpp>
 
 #include <boost/iostreams/device/mapped_file.hpp>
-#include <boost/unordered_map.hpp>
 #include <boost/lockfree/spsc_queue.hpp>
 #include <boost/atomic.hpp>
 
+#include <unordered_map>
 #include <vector>
 #include <stdio.h>
 
@@ -29,6 +29,7 @@ struct BlockInfo;
 struct blockinfo_t;
 class BitcoinAPI;
 class UTXOState;
+class SafeMemReader;
 
 class BlockProcessor {
     
@@ -37,7 +38,7 @@ class BlockProcessor {
     boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<200000>> address_transaction_queue;
     boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<50000>> finished_transaction_queue;
     
-    boost::unordered_map<int, std::pair<boost::iostreams::mapped_file, uint32_t>> files;
+    std::unordered_map<int, std::pair<SafeMemReader, uint32_t>> files;
     
     uint32_t startingTxCount;
     uint32_t currentTxNum;

@@ -28,14 +28,14 @@ namespace blocksci {
     struct OutputPointer;
 }
 
-
+class SafeMemReader;
 
 struct WitnessStackItem {
     uint32_t length;
     const char *itemBegin;
     
     #ifdef BLOCKSCI_FILE_PARSER
-    WitnessStackItem(const char **buffer);
+    WitnessStackItem(SafeMemReader &reader);
     #endif
 };
 
@@ -55,7 +55,7 @@ struct RawInput {
     RawInput(){}
     
     #ifdef BLOCKSCI_FILE_PARSER
-    RawInput(const char **buffer);
+    RawInput(SafeMemReader &reader);
     #endif
     
     #ifdef BLOCKSCI_RPC_PARSER
@@ -70,7 +70,7 @@ struct RawOutput {
     ScriptOutputType scriptOutput;
 
     #ifdef BLOCKSCI_FILE_PARSER
-    RawOutput(const char **buffer, bool witnessActivated);
+    RawOutput(SafeMemReader &reader, bool witnessActivated);
     #endif
     
     #ifdef BLOCKSCI_RPC_PARSER
@@ -109,7 +109,7 @@ struct RawTransaction {
       blockHeight(0) {}
     
     #ifdef BLOCKSCI_FILE_PARSER
-    void load(const char **buffer, uint32_t txNum, uint32_t blockHeight, bool witnessActivated);
+    void load(SafeMemReader &reader, uint32_t txNum, uint32_t blockHeight, bool witnessActivated);
     #endif
     
     #ifdef BLOCKSCI_RPC_PARSER

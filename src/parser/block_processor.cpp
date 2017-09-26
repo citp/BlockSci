@@ -11,10 +11,9 @@
 #include "block_processor.hpp"
 #include "script_input.hpp"
 #include "file_writer.hpp"
-
-#include "utilities.hpp"
+#include "safe_mem_reader.hpp"
+#include "chain_index.hpp"
 #include "preproccessed_block.hpp"
-
 #include "chain_index.hpp"
 #include "utxo_state.hpp"
 #include "address_state.hpp"
@@ -74,7 +73,6 @@ void BlockProcessor::closeFinishedFiles(uint32_t txNum) {
     auto it = files.begin();
     while (it != files.end()) {
         if (it->second.second < txNum) {
-            it->second.first.close();
             it = files.erase(it);
         } else {
             ++it;
@@ -108,9 +106,9 @@ bool checkSegwit(RawTransaction *tx, const SegwitChecker &checker) {
 void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<BlockInfo> blocksToAdd) {
     using namespace std::chrono_literals;
     
-    boost::unordered_map<int, uint32_t> firstTimeRequired;
-    boost::unordered_map<int, uint32_t> lastBlockRequired;
-    boost::unordered_map<int, uint32_t> lastTxRequired;
+    std::unordered_map<int, uint32_t> firstTimeRequired;
+    std::unordered_map<int, uint32_t> lastBlockRequired;
+    std::unordered_map<int, uint32_t> lastTxRequired;
     
     auto firstTxNum = currentTxNum;
     
@@ -146,63 +144,73 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
                 std::cout << "Error: Failed to open block file " << blockPath << "\n";
                 break;
             }
-            auto mappedPair = std::make_pair(boost::iostreams::mapped_file(blockPath, boost::iostreams::mapped_file::readonly), lastTxRequired[block.nFile]);
-            files[block.nFile] = mappedPair;
+            files.emplace(std::piecewise_construct, std::forward_as_tuple(block.nFile), std::forward_as_tuple(blockPath, lastTxRequired[block.nFile]));
         }
         
-        const char *startPos = files[block.nFile].first.const_data() + block.nDataPos;
+        auto &reader = files.at(block.nFile).first;
         
-        constexpr size_t blockHeaderSize = 80;
-        startPos += blockHeaderSize;
-        uint32_t txCount = readVariableLengthInteger(&startPos);
-        
-        auto firstTxIndex = currentTxNum;
-        
-        RawTransaction *tx;
-        if (!finished_transaction_queue.pop(tx)) {
-            tx = new RawTransaction();
-        } else {
-            closeFinishedFiles(tx->txNum);
-        }
-        
-        bool segwit = false;
-        auto segwitPos = startPos;
-        for (uint32_t j = 0; j < txCount; j++) {
-            tx->load(&segwitPos, 0, 0, false);
-            if (tx->inputs.size() == 1 && tx->inputs[0].rawOutputPointer.hash == nullHash) {
-                segwit = checkSegwit(tx, checker);
-                break;
-            }
-        }
-        
-        for (uint32_t j = 0; j < txCount; j++) {
-            tx->load(&startPos, currentTxNum, static_cast<uint32_t>(block.height), segwit);
+        try {
+            reader.advance(block.nDataPos);
+            reader.advance(sizeof(CBlockHeader));
+            uint32_t txCount = reader.readVariableLengthInteger();
             
-            sequenceFile.writeIndexGroup();
-            for (auto &input : tx->inputs) {
-                sequenceFile.write(input.sequenceNum);
-            }
+            auto firstTxIndex = currentTxNum;
             
-            if (tx->inputs.size() == 1 && tx->inputs[0].rawOutputPointer.hash == nullHash) {
-                auto scriptBegin = tx->inputs[0].scriptBegin;
-                coinbase.assign(scriptBegin, scriptBegin + tx->inputs[0].scriptLength);
-                tx->inputs.clear();
-            }
-            
-            while (!hash_transaction_queue.push(tx)) {
-                std::this_thread::sleep_for(100ms);
-            }
-            currentTxNum++;
-            
+            RawTransaction *tx;
             if (!finished_transaction_queue.pop(tx)) {
                 tx = new RawTransaction();
             } else {
                 closeFinishedFiles(tx->txNum);
             }
+            
+            bool segwit = false;
+            auto firstTxOffset = reader.offset();
+            for (uint32_t j = 0; j < txCount; j++) {
+                tx->load(reader, 0, 0, false);
+                if (tx->inputs.size() == 1 && tx->inputs[0].rawOutputPointer.hash == nullHash) {
+                    segwit = checkSegwit(tx, checker);
+                    break;
+                }
+            }
+            
+            reader.reset();
+            reader.advance(firstTxOffset);
+            
+            for (uint32_t j = 0; j < txCount; j++) {
+                tx->load(reader, currentTxNum, static_cast<uint32_t>(block.height), segwit);
+                
+                sequenceFile.writeIndexGroup();
+                for (auto &input : tx->inputs) {
+                    sequenceFile.write(input.sequenceNum);
+                }
+                
+                if (tx->inputs.size() == 1 && tx->inputs[0].rawOutputPointer.hash == nullHash) {
+                    auto scriptBegin = tx->inputs[0].scriptBegin;
+                    coinbase.assign(scriptBegin, scriptBegin + tx->inputs[0].scriptLength);
+                    tx->inputs.clear();
+                }
+                
+                while (!hash_transaction_queue.push(tx)) {
+                    std::this_thread::sleep_for(100ms);
+                }
+                currentTxNum++;
+                
+                if (!finished_transaction_queue.pop(tx)) {
+                    tx = new RawTransaction();
+                } else {
+                    closeFinishedFiles(tx->txNum);
+                }
+            }
+            
+            blockFile.write(getBlock(firstTxIndex, txCount, blockCoinbaseFile.size(), block));
+            blockCoinbaseFile.write(coinbase.begin(), coinbase.end());
+        } catch (const std::exception &e) {
+            std::cerr << "Failed to load tx"
+            << " from block" << block.height
+            << " at offset " << reader.offset()
+            << ".\n";
+            throw;
         }
-        
-        blockFile.write(getBlock(firstTxIndex, txCount, blockCoinbaseFile.size(), block));
-        blockCoinbaseFile.write(coinbase.begin(), coinbase.end());
     }
     rawDone = true;
 }

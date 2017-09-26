@@ -9,7 +9,6 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "config.hpp"
-#include "utilities.hpp"
 #include "parser_configuration.hpp"
 #include "utxo_state.hpp"
 #include "address_state.hpp"
@@ -178,24 +177,6 @@ struct ChainUpdateInfo {
 void printTxInfo(std::string &hexString);
 uint32_t txCount(const BlockInfo &block);
 ChainUpdateInfo<BlockInfo> prepareChain(const FileParserConfiguration &config, uint32_t maxBlockNum);
-
-void printTxInfo(std::string &hexString) {
-    auto bytes = HexToBytes(hexString);
-    const char *bytesPtr = &bytes[0];
-    RawTransaction tx;
-    tx.load(&bytesPtr, 0, 0, true);
-    
-    std::cout << "Size bytes: " << tx.sizeBytes << std::endl;
-    std::cout << "Locktime: " << tx.locktime << std::endl;
-    std::cout << "Version: " << tx.version << std::endl;
-    for (auto &input : tx.inputs) {
-        std::cout << "Spending " << input.rawOutputPointer << " sequence : " << input.sequenceNum << std::endl;
-    }
-    
-    for (auto &output : tx.outputs) {
-        std::cout << "Sent " << output.value << "\n";
-    }
-}
 
 uint32_t txCount(const BlockInfo &block) {
     return block.nTx;

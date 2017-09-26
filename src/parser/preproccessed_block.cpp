@@ -9,9 +9,10 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "preproccessed_block.hpp"
-#include "utilities.hpp"
 #include "chain_index.hpp"
 #include "script_input.hpp"
+#include "safe_mem_reader.hpp"
+
 #include <blocksci/hash.hpp>
 #include <blocksci/chain/transaction.hpp>
 
@@ -57,73 +58,74 @@ ScriptOutputType getScriptOutput(const std::vector<unsigned char> &scriptBytes, 
 RawOutput::RawOutput(const std::vector<unsigned char> &scriptBytes_, uint64_t value_, bool witnessActivated_) : RawOutput(getScriptOutput(scriptBytes_, witnessActivated_), value_, static_cast<uint32_t>(scriptBytes_.size())) {}
 
 #ifdef BLOCKSCI_FILE_PARSER
-RawInput::RawInput(const char **buffer) {
-    rawOutputPointer.hash = readNext<blocksci::uint256>(buffer);
-    rawOutputPointer.outputNum = static_cast<uint16_t>(readNext<uint32_t>(buffer));
-    scriptLength = readVariableLengthInteger(buffer);
-    scriptBegin = reinterpret_cast<const unsigned char*>(*buffer);
-    *buffer += scriptLength;
-    sequenceNum = readNext<uint32_t>(buffer);
+RawInput::RawInput(SafeMemReader &reader) {
+    rawOutputPointer.hash = reader.readNext<blocksci::uint256>();
+    rawOutputPointer.outputNum = static_cast<uint16_t>(reader.readNext<uint32_t>());
+    scriptLength = reader.readVariableLengthInteger();
+    scriptBegin = reinterpret_cast<const unsigned char*>(reader.unsafePos());
+    reader.advance(scriptLength);
+    sequenceNum = reader.readNext<uint32_t>();
 }
 
-RawOutput::RawOutput(const char **buffer, bool witnessActivated) :
-value(readNext<uint64_t>(buffer)),
-scriptLength(readVariableLengthInteger(buffer)),
-scriptBegin(reinterpret_cast<const unsigned char*>(*buffer)),
-scriptOutput(extractScriptData(scriptBegin, scriptBegin + scriptLength, witnessActivated)) {
-    *buffer += scriptLength;
+RawOutput::RawOutput(SafeMemReader &reader, bool witnessActivated) {
+    value = reader.readNext<uint64_t>();
+    scriptLength = reader.readVariableLengthInteger();
+    scriptBegin = reinterpret_cast<const unsigned char*>(reader.unsafePos());
+    scriptOutput = extractScriptData(scriptBegin, scriptBegin + scriptLength, witnessActivated);
+    reader.advance(scriptLength);
 }
 
-WitnessStackItem::WitnessStackItem(const char **buffer) : length(readVariableLengthInteger(buffer)), itemBegin(*buffer)  {
-    *buffer += length;
+WitnessStackItem::WitnessStackItem(SafeMemReader &reader) {
+    length = reader.readVariableLengthInteger();
+    itemBegin = reader.unsafePos();
+    reader.advance(length);
 }
 
-void RawTransaction::load(const char **buffer, uint32_t txNum_, uint32_t blockHeight_, bool witnessActivated) {
+void RawTransaction::load(SafeMemReader &reader, uint32_t txNum_, uint32_t blockHeight_, bool witnessActivated) {
     txNum = txNum_;
     isSegwit = witnessActivated;
     blockHeight = blockHeight_;
-    auto startPos = *buffer;
-    version = readNext<int32_t>(buffer);
-    txHashStart = *buffer;
-    auto inputCount = readVariableLengthInteger(buffer);
+    auto startOffset = reader.offset();
+    version = reader.readNext<uint32_t>();
+    txHashStart = reader.unsafePos();
     
+    auto inputCount = reader.readVariableLengthInteger();
     bool containsSegwit = false;
     if (inputCount == 0) {
-        auto flag = readNext<uint8_t>(buffer);
+        auto flag = reader.readNext<uint8_t>();
         assert(flag == 1);
         containsSegwit = true;
-        txHashStart = *buffer;
-        inputCount = readVariableLengthInteger(buffer);
+        txHashStart = reader.unsafePos();
+        inputCount = reader.readVariableLengthInteger();
     }
     
     inputs.clear();
     inputs.reserve(inputCount);
     for (decltype(inputCount) i = 0; i < inputCount; i++) {
-        inputs.emplace_back(buffer);
+        inputs.emplace_back(reader);
     }
     
-    auto outputCount = readVariableLengthInteger(buffer);
+    auto outputCount = reader.readVariableLengthInteger();
     
     outputs.clear();
     outputs.reserve(outputCount);
     for (decltype(outputCount) i = 0; i < outputCount; i++) {
-        outputs.emplace_back(buffer, witnessActivated);
+        outputs.emplace_back(reader, witnessActivated);
     }
     
-    txHashLength = static_cast<uint32_t>(*buffer - txHashStart);
+    txHashLength = static_cast<uint32_t>(reader.unsafePos() - txHashStart);
     
     if (containsSegwit) {
         for (decltype(inputCount) i = 0; i < inputCount; i++) {
             auto &input = inputs[i];
-            uint32_t stackItemCount = readVariableLengthInteger(buffer);
+            auto stackItemCount = reader.readVariableLengthInteger();
             for (uint32_t j = 0; j < stackItemCount; j++) {
-                input.witnessStack.emplace_back(buffer);
+                input.witnessStack.emplace_back(reader);
             }
         }
     }
-    
-    locktime = readNext<uint32_t>(buffer);
-    sizeBytes = static_cast<uint32_t>(*buffer - startPos);
+    locktime = reader.readNext<uint32_t>();
+    sizeBytes = reader.offset() - startOffset;
     hash.SetNull();
 }
 
