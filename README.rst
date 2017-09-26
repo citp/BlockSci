@@ -95,6 +95,8 @@ BlockSci Compilation Instructions
 
 Here are the steps for compiling BlockSci on Ubuntu 16.04.
 
+Note that BlockSci only actively supports python 3.
+
 ..  code-block:: bash
 
 	sudo apt-get update
