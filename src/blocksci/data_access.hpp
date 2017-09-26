@@ -19,6 +19,7 @@ namespace blocksci {
     class ScriptAccess;
     class ScriptFirstSeenAccess;
     class AddressIndex;
+    class HashIndex;
 
     class DataAccess {
     public:
@@ -27,6 +28,7 @@ namespace blocksci {
         std::unique_ptr<ScriptAccess> scripts;
         std::unique_ptr<ScriptFirstSeenAccess> scriptFirstSeen;
         std::unique_ptr<AddressIndex> addressIndex;
+        std::unique_ptr<HashIndex> hashIndex;
         
         static DataAccess &Instance(const DataConfiguration &config, bool errorOnReorg, uint32_t blocksIgnored);
         static DataAccess &Instance();

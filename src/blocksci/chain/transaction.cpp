@@ -86,16 +86,16 @@ namespace blocksci {
         }
     }
     
+    boost::optional<Transaction> Transaction::txWithHash(std::string hash, const HashIndex &index, const ChainAccess &access) {
+        return txWithHash(uint256S(hash), index, access);
+    }
+    
     Transaction Transaction::txWithIndex(const ChainAccess &access, uint32_t index) {
         return txWithIndex(access, index, access.getBlockHeight(index));
     }
     
     Transaction Transaction::txWithIndex(const ChainAccess &access, uint32_t index, uint32_t height) {
         return {access.getTx(index), index, height};
-    }
-    
-    boost::optional<Transaction> Transaction::txWithHash(std::string hash, const HashIndex &index, const ChainAccess &access) {
-        return txWithHash(uint256S(hash), index, access);
     }
     
     Transaction::output_range Transaction::outputs() const {

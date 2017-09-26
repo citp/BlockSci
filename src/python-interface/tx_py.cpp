@@ -39,7 +39,6 @@ void init_tx(py::module &m) {
                 :returns: Tx
                 )docstring"
     )
-    .def_static("tx_with_hash", py::overload_cast<uint256>(&Transaction::txWithHash))
     .def_static("tx_with_hash", py::overload_cast<std::string>(&Transaction::txWithHash))
     .def_property_readonly("num_outs", &Transaction::outputCount, "The number of outputs this transaction has")
     .def_property_readonly("num_ins", &Transaction::inputCount, "The number of inputs this transaction has")

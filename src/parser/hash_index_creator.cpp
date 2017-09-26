@@ -64,11 +64,11 @@ std::pair<sqlite3 *, bool> openHashDb(boost::filesystem::path hashIndexFilePath)
     return std::make_pair(db, !dbAlreadyExists);
 }
 
-HashIndex::HashIndex(const ParserConfiguration &config): HashIndex(config, openHashDb(config.hashIndexFilePath())) {
+HashIndexCreator::HashIndexCreator(const ParserConfiguration &config): HashIndexCreator(config, openHashDb(config.hashIndexFilePath())) {
     
 }
 
-HashIndex::HashIndex(const ParserConfiguration &config, std::pair<sqlite3 *, bool> init) : ParserIndex(config, "hashIndex"), db(init.first), firstRun(init.second) {
+HashIndexCreator::HashIndexCreator(const ParserConfiguration &config, std::pair<sqlite3 *, bool> init) : ParserIndex(config, "hashIndex"), db(init.first), firstRun(init.second) {
     
     std::array<sqlite3_stmt **, 3> insertStatements{{&txInsertStatement, &p2shInsertStatement, &pubkeyHashInsertStatement}};
     
@@ -88,7 +88,7 @@ HashIndex::HashIndex(const ParserConfiguration &config, std::pair<sqlite3 *, boo
 }
 
 
-void HashIndex::tearDown() {
+void HashIndexCreator::tearDown() {
     if (firstRun) {
         for (auto &tableName : blocksci::HashIndex::tableNames) {
             std::stringstream ss;
@@ -109,13 +109,13 @@ void HashIndex::tearDown() {
     }
 }
 
-HashIndex::~HashIndex() {
+HashIndexCreator::~HashIndexCreator() {
     sqlite3_finalize(txInsertStatement);
     sqlite3_exec(db, "END TRANSACTION;", NULL, NULL, NULL);
     sqlite3_close(db);
 }
 
-void HashIndex::processTx(const blocksci::Transaction &tx, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &) {
+void HashIndexCreator::processTx(const blocksci::Transaction &tx, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &) {
     auto hash = tx.getHash(chain);
     sqlite3_bind_blob(txInsertStatement, 1, &hash, sizeof(hash), SQLITE_TRANSIENT);
     sqlite3_bind_int(txInsertStatement, 2, static_cast<int>(tx.txNum));
@@ -128,7 +128,7 @@ void HashIndex::processTx(const blocksci::Transaction &tx, const blocksci::Chain
     sqlite3_reset(txInsertStatement);
 }
 
-void HashIndex::processScript(const blocksci::ScriptPointer &pointer, const blocksci::ChainAccess &, const blocksci::ScriptAccess &scripts) {
+void HashIndexCreator::processScript(const blocksci::ScriptPointer &pointer, const blocksci::ChainAccess &, const blocksci::ScriptAccess &scripts) {
     if (pointer.type == blocksci::ScriptType::Enum::PUBKEY) {
         blocksci::script::Pubkey pubkeyScript{scripts, pointer.scriptNum};
         sqlite3_bind_blob(pubkeyHashInsertStatement, 1, &pubkeyScript.pubkeyhash, sizeof(pubkeyScript.pubkeyhash), SQLITE_TRANSIENT);

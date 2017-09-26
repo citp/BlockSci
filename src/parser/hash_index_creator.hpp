@@ -24,22 +24,22 @@ namespace blocksci {
 
 struct ParserConfiguration;
 
-class HashIndex : public ParserIndex {
+class HashIndexCreator : public ParserIndex {
     sqlite3 *db;
     sqlite3_stmt *txInsertStatement;
     sqlite3_stmt *pubkeyHashInsertStatement;
     sqlite3_stmt *p2shInsertStatement;
     bool firstRun;
     
-    HashIndex(const ParserConfiguration &config, std::pair<sqlite3 *, bool> init);
+    HashIndexCreator(const ParserConfiguration &config, std::pair<sqlite3 *, bool> init);
     
     void processTx(const blocksci::Transaction &tx, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override;
     void processScript(const blocksci::ScriptPointer &pointer, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override;
     void revealedP2SH(blocksci::script::ScriptHash &, const blocksci::ScriptAccess &) override {}
     void tearDown() override;
 public:
-    HashIndex(const ParserConfiguration &config);
-    ~HashIndex();
+    HashIndexCreator(const ParserConfiguration &config);
+    ~HashIndexCreator();
     void processTx(const blocksci::uint256 &hash, uint32_t index);
 };
 

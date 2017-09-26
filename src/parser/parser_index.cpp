@@ -37,8 +37,7 @@ void ParserIndex::runUpdate(const std::vector<uint32_t> &revealed, const State &
     blocksci::ChainAccess chain{config, false, 0};
     blocksci::ScriptAccess scripts{config};
     
-    auto currentCount = static_cast<uint32_t>(chain.txCount());
-    if (latestState.txCount < currentCount) {
+    if (latestState.txCount < state.txCount) {
         auto newTransactions = iterateTransactions(chain, latestState.txCount, state.txCount);
         for (auto tx : newTransactions) {
             processTx(tx, chain, scripts);

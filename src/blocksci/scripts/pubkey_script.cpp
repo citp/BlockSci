@@ -37,7 +37,7 @@ namespace blocksci {
     }
     
     std::string Pubkey::addressString(const DataConfiguration &config) const {
-        return CBitcoinAddress(pubkey.GetID(), AddressType::Enum::PUBKEYHASH, config).ToString();
+        return CBitcoinAddress(pubkeyhash, AddressType::Enum::PUBKEYHASH, config).ToString();
     }
     
     std::string Pubkey::toString(const DataConfiguration &config) const {

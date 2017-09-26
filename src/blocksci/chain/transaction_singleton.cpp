@@ -24,7 +24,11 @@ namespace blocksci {
     }
     
     boost::optional<Transaction> Transaction::txWithHash(uint256 hash) {
-//        return txWithHash(DataAccess::Instance().chain, hash);
+        return txWithHash(hash, *DataAccess::Instance().hashIndex, *DataAccess::Instance().chain);
+    }
+    
+    boost::optional<Transaction> Transaction::txWithHash(std::string hash) {
+        return txWithHash(hash, *DataAccess::Instance().hashIndex, *DataAccess::Instance().chain);
     }
     
     Transaction Transaction::txWithIndex(uint32_t index) {
@@ -33,10 +37,6 @@ namespace blocksci {
     
     Transaction Transaction::txWithIndex(uint32_t index, uint32_t height) {
         return txWithIndex(*DataAccess::Instance().chain, index, height);
-    }
-    
-    boost::optional<Transaction> Transaction::txWithHash(std::string hash) {
-//        return txWithHash(DataAccess::Instance().chain, hash);
     }
     
     const Transaction &Transaction::create(uint32_t index) {

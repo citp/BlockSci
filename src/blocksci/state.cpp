@@ -19,7 +19,7 @@ namespace blocksci {
         scriptCounts = scripts.scriptCounts();
     }
     
-    State::State() : blockCount(0) {
+    State::State() : blockCount(0), txCount(0) {
         scriptCounts.fill(0);
     }
     

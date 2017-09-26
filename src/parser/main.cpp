@@ -310,7 +310,7 @@ void updateChain(const ConfigType &config, uint32_t maxBlockNum) {
     
     auto addressDB = ParserIndexCreator::createIndex<AddressDB>(config);
     auto firstSeen = ParserIndexCreator::createIndex<FirstSeenIndex>(config);
-    auto hashIndex = ParserIndexCreator::createIndex<HashIndex>(config);
+    auto hashIndex = ParserIndexCreator::createIndex<HashIndexCreator>(config);
     
     auto it = blocksToAdd.begin();
     auto end = blocksToAdd.end();
