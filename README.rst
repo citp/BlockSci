@@ -72,12 +72,19 @@ In order to use the C++ library, you must compile your code against the BlockSci
 Python
 -------
 
-To use the python library, you only need to import the BlockSci library. By default the library is installed into BlockSci/Notebooks. To use the library simply open the Python interpreter in that folder and run:
+To use the BlockSci in python, you only need to import the BlockSci library. By default the library is installed into BlockSci/Notebooks. To use the library first open the Python interpreter in that folder:
+
+.. code-block:: bash
+
+	cd BlockSci/Notebooks
+	python3
+	
+With the python interpretter open, the following code will load a Blockchain object created from the data output by the parser:
 
 .. code-block:: python
 
 	import blocksci
-	chain = blocksci.Blockchain("file_path_to_output-directory")
+	chain = blocksci.Blockchain("file_path_to_parser_output-directory")
 
 If you would like to use BlockSci through a web interface, we recommend the use of `Jupyter Notebook`_. Once Jupyter is installed, simply navigate into BlockSci/Notebooks and run:
 
