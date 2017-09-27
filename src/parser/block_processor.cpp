@@ -150,7 +150,7 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
         auto &reader = files.at(block.nFile).first;
         
         try {
-            reader.advance(block.nDataPos);
+            reader.reset(block.nDataPos);
             reader.advance(sizeof(CBlockHeader));
             uint32_t txCount = reader.readVariableLengthInteger();
             
@@ -173,8 +173,7 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
                 }
             }
             
-            reader.reset();
-            reader.advance(firstTxOffset);
+            reader.reset(firstTxOffset);
             
             for (uint32_t j = 0; j < txCount; j++) {
                 tx->load(reader, currentTxNum, static_cast<uint32_t>(block.height), segwit);

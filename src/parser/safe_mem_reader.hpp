@@ -15,21 +15,24 @@
 
 class SafeMemReader {
 public:
+    typedef boost::iostreams::mapped_file_source::iterator iterator;
     typedef boost::iostreams::mapped_file_source::size_type size_type;
+    typedef std::iterator_traits<iterator>::difference_type difference_type;
     
-    explicit SafeMemReader(const boost::filesystem::path &path) : fileMap{path, boost::iostreams::mapped_file::readonly} {
+    explicit SafeMemReader(const boost::filesystem::path &path) {
+        fileMap.open(path);
         begin = fileMap.begin();
         end = fileMap.end();
         pos = begin;
     }
-    
-    bool has(size_type n) {
-        return pos + n <= end;
+
+    bool has(difference_type n) {
+        return n <= std::distance(pos, end);
     }
     
     template<typename Type>
     Type readNext() {
-        auto size = sizeof(Type);
+        constexpr auto size = sizeof(Type);
         if (!has(size)) {
             throw std::out_of_range("Tried to read past end of file");
         }
@@ -87,7 +90,7 @@ public:
     }
     
     size_type offset() {
-        return pos - begin;
+        return std::distance(begin, pos);
     }
     
     boost::iostreams::mapped_file_source::iterator unsafePos() {
@@ -96,9 +99,9 @@ public:
     
 protected:
     boost::iostreams::mapped_file_source fileMap;
-    boost::iostreams::mapped_file_source::iterator pos;
-    boost::iostreams::mapped_file_source::iterator begin;
-    boost::iostreams::mapped_file_source::iterator end;
+    iterator pos;
+    iterator begin;
+    iterator end;
 };
 
 #endif /* safe_mem_reader_hpp */
