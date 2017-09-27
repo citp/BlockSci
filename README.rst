@@ -28,7 +28,22 @@ If you want to start using BlockSci immediately, we have made available an EC2 i
 
 This sets up an SSH tunnel between port 8888 on your remote EC2 instance and port 8888 on your localhost. You can use whichever port you like on your local machine. Next, you can navigate to https://localhost:8888/ (https is required) in your browser and log in with the password 'blocksci'. When connecting to the server, you will receive a certificate error regarding the self-signed certificate. This error is expected and can be safely bypassed. A demo notebook will be available for you to run and you can begin exploring the blockchain. Don't forget to shut down the EC2 instance when you are finished since EC2 charges hourly.
 
+AWS instances suffer from a `known performance issue`_ when starting up from an existing AMI. When the machine starts up it doesn't actually load all of the data on the disk so that startup can be instant. Instead it only loads the data when it is accessed for the first time. Thus without intervention BlockSci will be substantially slower than the benchmarks report when commands are run the first time although subsequent queries will be drastically faster.
+
+If you want to eliminate this performance issue entirely, you can do so using the ``fio`` utility which takes about 12 hours to run.
+
+You'll first need to determine which block device the disk is loaded as using the ``lsblk`` tool. There should only be one devlice listed which is ``xvda`` on our instance. In the final line replace ``xvda`` with the block device listed by ``lsblk``. Further instructions are available from Amazon_.
+
+.. code-block:: bash
+
+	ssh -i .ssh/your_private_key.pem ubuntu@your_url.amazonaws.com
+	lsblk
+	sudo apt-get install -y fio
+	sudo fio --filename=/dev/xvda --rw=read --bs=128k --iodepth=32 --ioengine=libaio --direct=1 --name=volume-initialize
+
 .. _ami-1f9b8364: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-1f9b8364
+.. _known performance issue: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-initialize.html
+.. _Amazon: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-initialize.html
 
 Local Setup
 =====================
