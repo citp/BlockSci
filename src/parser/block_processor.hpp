@@ -12,6 +12,7 @@
 #include "config.hpp"
 #include "parser_configuration.hpp"
 #include "address_writer.hpp"
+#include "safe_mem_reader.hpp"
 
 #include <blocksci/file_mapper.hpp>
 #include <blocksci/chain/output_pointer.hpp>
