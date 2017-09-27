@@ -65,7 +65,7 @@ std::vector<unsigned char> ParseHex(const char* psz)
 blocksci::Block getBlock(uint32_t firstTxIndex, uint32_t txCount, size_t coinbasePos, const BlockInfo &block);
 
 blocksci::Block getBlock(uint32_t firstTxIndex, uint32_t txCount, size_t coinbasePos, const BlockInfo &block) {
-    return {firstTxIndex, txCount, static_cast<uint32_t>(block.height), block.hash, block.nVersion, block.nTime, block.nBits, block.nNonce, coinbasePos};
+    return {firstTxIndex, txCount, static_cast<uint32_t>(block.height), block.hash, block.header.nVersion, block.header.nTime, block.header.nBits, block.header.nNonce, coinbasePos};
 }
 
 

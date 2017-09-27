@@ -46,22 +46,15 @@ public:
     // See the documentation from here:  https://en.bitcoin.it/wiki/Protocol_specification#Variable_length_integer
     uint32_t readVariableLengthInteger() {
         auto v = readNext<uint8_t>();
-        
-        try {
-            if ( v < 0xFD ) { // If it's less than 0xFD use this value as the unsigned integer
-                return static_cast<uint32_t>(v);
-            } else if (v == 0xFD) {
-                return static_cast<uint32_t>(readNext<uint16_t>());
-            } else if (v == 0xFE) {
-                return readNext<uint32_t>();
-            } else {
-                return static_cast<uint32_t>(readNext<uint64_t>()); // TODO: maybe we should not support this here, we lose data
-            }
-        } catch(...) {
-            rewind(sizeof(uint8_t));
-            throw;
+        if ( v < 0xFD ) { // If it's less than 0xFD use this value as the unsigned integer
+            return static_cast<uint32_t>(v);
+        } else if (v == 0xFD) {
+            return static_cast<uint32_t>(readNext<uint16_t>());
+        } else if (v == 0xFE) {
+            return readNext<uint32_t>();
+        } else {
+            return static_cast<uint32_t>(readNext<uint64_t>()); // TODO: maybe we should not support this here, we lose data
         }
-        
     }
     
     void advance(size_type n) {
@@ -69,13 +62,6 @@ public:
             throw std::out_of_range("Tried to advance past end of file");
         }
         pos += n;
-    }
-    
-    void rewind(size_type n) {
-        if (pos < begin + n) {
-            throw std::out_of_range("Tried to rewind past start of file");
-        }
-        pos -= n;
     }
     
     void reset() {

@@ -26,7 +26,7 @@
 
 #ifdef BLOCKSCI_FILE_PARSER
 
-BlockInfo::BlockInfo(const CBlockHeader &h, int fileNum, unsigned int dataPos, unsigned int numTxes, const FileParserConfiguration &config) : prevHash(h.hashPrevBlock), height(-1), nFile(fileNum), nDataPos(dataPos), nTx(numTxes), nVersion(h.nVersion), hashMerkleRoot(h.hashMerkleRoot), nTime(h.nTime), nBits(h.nBits), nNonce(h.nNonce) {
+BlockInfo::BlockInfo(const CBlockHeader &h, int fileNum, unsigned int dataPos, uint32_t length_, unsigned int numTxes, const FileParserConfiguration &config) : height(-1), nFile(fileNum), nDataPos(dataPos), length(length_), nTx(numTxes), header(h) {
     hash = config.workHashFunction(reinterpret_cast<const char *>(&h), sizeof(CBlockHeader));
 }
 
@@ -55,7 +55,7 @@ void ChainIndex::updateFromFilesystem() {
     if (!blockList.empty()) {
         auto &lastBlock = blockList.back();
         fileNum = lastBlock.nFile;
-        filePos = lastBlock.nDataPos;
+        filePos = lastBlock.nDataPos + lastBlock.length;
     }
 
     auto firstFile = fileNum;
@@ -73,14 +73,9 @@ void ChainIndex::updateFromFilesystem() {
         std::cout << "Reading " << blockFilePath << "...\n";
         
         try {
-            // logic for resume from last processed block, note offsetAfterLength below
-            reader.advance(filePos);
+            // logic for resume from last processed block, note blockStartOffset and length below
             if (fileNum == firstFile && filePos > 0) {
-                uint32_t length;
-                reader.rewind(sizeof(length));
-                length = reader.readNext<uint32_t>();
-                // advance after resumed block
-                reader.advance(length);
+                reader.reset(filePos);
             }
             
             // read blocks in loop while we can...
@@ -90,13 +85,13 @@ void ChainIndex::updateFromFilesystem() {
                     break;
                 }
                 auto length = reader.readNext<uint32_t>();
-                auto offsetAfterLength = reader.offset();
+                auto blockStartOffset = reader.offset();
                 auto header = reader.readNext<CBlockHeader>();
                 auto numTxes = reader.readVariableLengthInteger();
                 // The next two lines bring the reader to the end of this block
-                reader.reset(offsetAfterLength);
+                reader.reset(blockStartOffset);
                 reader.advance(length);
-                blockList.emplace_back(header, fileNum, offsetAfterLength, numTxes, config);
+                blockList.emplace_back(header, fileNum, blockStartOffset, length, numTxes, config);
             }
         } catch (const std::out_of_range &e) {
             std::cerr << "Failed to read block header information"
@@ -131,10 +126,10 @@ void ChainIndex::updateFromFilesystem() {
 int ChainIndex::updateHeight(size_t blockNum, const std::unordered_map<blocksci::uint256, size_t> &indexMap) {
     auto &block = blockList[blockNum];
     if (block.height == -1) {
-        if (block.prevHash.IsNull()) {
+        if (block.header.hashPrevBlock.IsNull()) {
             block.height = 0;
         } else {
-            auto it = indexMap.find(block.prevHash);
+            auto it = indexMap.find(block.header.hashPrevBlock);
             if(it != indexMap.end()) {
                 block.height = updateHeight(it->second, indexMap) + 1;
             } else {
@@ -180,7 +175,7 @@ std::vector<BlockInfo> ChainIndex::generateChain(uint32_t maxBlockHeight) const 
                 chain.push_back(*block);
             }
             if (block->height > 0) {
-                auto it = indexMap.find(block->prevHash);
+                auto it = indexMap.find(block->header.hashPrevBlock);
                 if (it == indexMap.end()) {
                     curMax = static_cast<uint32_t>(block->height) - 2;
                     break;
