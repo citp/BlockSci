@@ -10,6 +10,7 @@
 #define address_state_hpp
 
 #include "bloom_filter.hpp"
+#include "parser_fwd.hpp"
 
 #include <blocksci/address/raw_address_pointer.hpp>
 
@@ -19,8 +20,6 @@
 #include <future>
 #include <unordered_map>
 #include <stdio.h>
-
-struct ParserConfiguration;
 
 class CBloomFilter;
 
@@ -40,7 +39,7 @@ class AddressState {
 public:
     using address_map = spp::sparse_hash_map<blocksci::RawAddress, uint32_t, std::hash<blocksci::RawAddress>>;
 private:
-    const ParserConfiguration &config;
+    const ParserConfigurationBase &config;
     leveldb::DB* levelDb;
     
     address_map multiAddressMap;
@@ -63,7 +62,7 @@ private:
     void clearDeletedKeys();
     
 public:
-    AddressState(const ParserConfiguration &config);
+    AddressState(const ParserConfigurationBase &config);
     ~AddressState();
     
     void optionalSave();

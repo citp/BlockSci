@@ -217,24 +217,28 @@ blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::getHash()
 }
 
 void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::processOutput(AddressState &state, AddressWriter &writer) {
+    processedAddresses.clear();
+    processedAddresses.reserve(addressCount);
     for (size_t i = 0; i < addressCount; i++) {
         ScriptOutputType pubkeyOutput{ScriptOutput<blocksci::AddressType::Enum::PUBKEY>{addresses[i]}};
         auto processedPubkey = ::processOutput(pubkeyOutput, state, writer);
-        processedAddresses[i] = processedPubkey.addressNum;
+        processedAddresses.push_back(processedPubkey.addressNum);
     }
     writer.serialize(*this);
 }
 
 void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::checkOutput(const AddressState &state, const AddressWriter &writer) {
+    processedAddresses.clear();
+    processedAddresses.reserve(addressCount);
     for (size_t i = 0; i < addressCount; i++) {
         ScriptOutputType pubkeyOutput{ScriptOutput<blocksci::AddressType::Enum::PUBKEY>{addresses[i]}};
         auto processedPubkey = ::checkOutput(pubkeyOutput, state, writer);
-        processedAddresses[i] = processedPubkey.addressNum;
+        processedAddresses.push_back(processedPubkey.addressNum);
     }
 }
 
 void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::addAddress(const std::vector<unsigned char> &vch1) {
-    addresses[addressCount] = CPubKey(vch1);
+    addresses.push_back(CPubKey(vch1));
     addressCount++;
 }
 

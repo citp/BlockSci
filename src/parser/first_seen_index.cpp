@@ -24,7 +24,7 @@
 
 #include <fstream>
 
-FirstSeenIndex::FirstSeenIndex(const ParserConfiguration &config) : AddressTraverser(config, "first_seen") {
+FirstSeenIndex::FirstSeenIndex(const ParserConfigurationBase &config) : AddressTraverser(config, "first_seen") {
     for (auto type : blocksci::ScriptType::all) {
         auto path = config.firstSeenDirectory()/std::string{scriptName(type)};
         files.emplace(std::piecewise_construct, std::forward_as_tuple(type), std::forward_as_tuple(path));

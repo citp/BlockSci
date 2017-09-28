@@ -21,7 +21,7 @@
 
 using namespace blocksci;
 
-ParserIndex::ParserIndex(const ParserConfiguration &config_, const std::string &resultName) : config(config_), cachePath(config_.parserDirectory()/(resultName + ".txt")) {
+ParserIndex::ParserIndex(const ParserConfigurationBase &config_, const std::string &resultName) : config(config_), cachePath(config_.parserDirectory()/(resultName + ".txt")) {
     if (boost::filesystem::exists(cachePath)) {
         boost::filesystem::ifstream inputFile(cachePath);
         inputFile >> latestState;

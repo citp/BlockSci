@@ -34,7 +34,7 @@ class AddressTraverser : public ParserIndex {
     void processScript(const blocksci::ScriptPointer &, const blocksci::ChainAccess &, const blocksci::ScriptAccess &) override {}
     
 public:
-    AddressTraverser(const ParserConfiguration &config, const std::string &resultName);
+    AddressTraverser(const ParserConfigurationBase &config, const std::string &resultName);
 };
 
 #endif /* address_traverser_hpp */

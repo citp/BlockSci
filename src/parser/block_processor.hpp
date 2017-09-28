@@ -13,6 +13,7 @@
 #include "parser_configuration.hpp"
 #include "address_writer.hpp"
 #include "safe_mem_reader.hpp"
+#include "parser_fwd.hpp"
 
 #include <blocksci/file_mapper.hpp>
 #include <blocksci/chain/output_pointer.hpp>
@@ -26,8 +27,6 @@
 #include <stdio.h>
 
 struct RawTransaction;
-struct BlockInfo;
-struct blockinfo_t;
 class BitcoinAPI;
 class UTXOState;
 class SafeMemReader;
@@ -53,15 +52,15 @@ class BlockProcessor {
     void closeFinishedFiles(uint32_t txNum);
     
     #ifdef BLOCKSCI_FILE_PARSER
-    void readNewBlocks(FileParserConfiguration config, std::vector<BlockInfo> blocksToAdd);
+    void readNewBlocks(const ParserConfiguration<FileTag> &config, std::vector<BlockInfo<FileTag>> blocksToAdd);
     #endif
     #ifdef BLOCKSCI_RPC_PARSER
-    void loadTxRPC(RawTransaction *tx, uint32_t txNum, const blockinfo_t &block, uint32_t txOffset, BitcoinAPI & bapi, bool witnessActivated);
-    void readNewBlocks(RPCParserConfiguration config, std::vector<blockinfo_t> blocksToAdd);
+    void loadTxRPC(RawTransaction *tx, uint32_t txNum, const BlockInfo<RPCTag> &block, uint32_t txOffset, BitcoinAPI & bapi, bool witnessActivated);
+    void readNewBlocks(const ParserConfiguration<RPCTag> &config, std::vector<BlockInfo<RPCTag>> blocksToAdd);
     #endif
-    void calculateHashes(ParserConfiguration config);
-    void processUTXOs(ParserConfiguration config, UTXOState &utxoState);
-    std::vector<uint32_t> processAddresses(ParserConfiguration config, AddressState &addressState);
+    void calculateHashes(const ParserConfigurationBase &config);
+    void processUTXOs(const ParserConfigurationBase &config, UTXOState &utxoState);
+    std::vector<uint32_t> processAddresses(const ParserConfigurationBase &config, AddressState &addressState);
     
     
 public:
@@ -69,8 +68,8 @@ public:
     BlockProcessor(uint32_t startingTxCount, uint32_t totalTxCount, uint32_t maxBlockHeight);
     ~BlockProcessor();
     
-    template <typename ConfigType, typename BlockType>
-    std::vector<uint32_t> addNewBlocks(const ConfigType &config, std::vector<BlockType> nextBlocks, UTXOState &utxoState, AddressState &addressState);
+    template <typename ParseTag>
+    std::vector<uint32_t> addNewBlocks(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> nextBlocks, UTXOState &utxoState, AddressState &addressState);
 };
 
 

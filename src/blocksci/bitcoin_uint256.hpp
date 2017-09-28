@@ -6,6 +6,8 @@
 #ifndef BITCOIN_UINT256_H
 #define BITCOIN_UINT256_H
 
+#include <boost/serialization/access.hpp>
+
 #include <assert.h>
 #include <cstring>
 #include <stdexcept>
@@ -49,6 +51,11 @@ namespace blocksci {
     protected:
         enum { WIDTH=BITS/8 };
         uint8_t data[WIDTH];
+        
+        friend class boost::serialization::access;
+        template<class Archive> void serialize(Archive & ar, const unsigned int) {
+            ar & data;
+        }
     public:
         base_blob()
         {

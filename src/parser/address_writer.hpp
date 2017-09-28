@@ -93,7 +93,7 @@ public:
     void serialize(const ScriptOutputType &output);
     void serialize(const ScriptInputType &input, const InputInfo &inputInfo);
     
-    AddressWriter(const ParserConfiguration &config);
+    AddressWriter(const ParserConfigurationBase &config);
 };
 
 #endif /* address_writer_hpp */

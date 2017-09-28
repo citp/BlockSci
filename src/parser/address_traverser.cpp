@@ -23,7 +23,7 @@
 #include <blocksci/scripts/scripthash_script.hpp>
 #include <blocksci/scripts/script_access.hpp>
 
-AddressTraverser::AddressTraverser(const ParserConfiguration &config_, const std::string &resultName) : ParserIndex(config_, resultName) {
+AddressTraverser::AddressTraverser(const ParserConfigurationBase &config_, const std::string &resultName) : ParserIndex(config_, resultName) {
 }
 
 

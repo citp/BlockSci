@@ -10,14 +10,13 @@
 #define block_replayer_hpp
 
 #include "config.hpp"
+#include "parser_fwd.hpp"
 
 #include <cstdint>
 #include <stdio.h>
 
-struct FileParserConfiguration;
-
 #ifdef BLOCKSCI_FILE_PARSER
-void replayBlock(const FileParserConfiguration &config, uint32_t blockNum);
+void replayBlock(const ParserConfiguration<FileTag> &config, uint32_t blockNum);
 #endif
 
 #endif /* block_replayer_hpp */

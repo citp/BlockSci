@@ -10,14 +10,13 @@
 #define first_seen_index_hpp
 
 #include "address_traverser.hpp"
+#include "parser_fwd.hpp"
 
 #include <blocksci/scripts/script_type.hpp>
 #include <blocksci/file_mapper.hpp>
 
 #include <unordered_map>
 #include <stdio.h>
-
-struct ParserConfiguration;
 
 class FirstSeenIndex : public AddressTraverser {
     std::unordered_map<blocksci::ScriptType::Enum, blocksci::FixedSizeFileMapper<uint32_t, boost::iostreams::mapped_file::readwrite>> files;
@@ -30,7 +29,7 @@ class FirstSeenIndex : public AddressTraverser {
     void prepareUpdate() override;
     
 public:
-    FirstSeenIndex(const ParserConfiguration &config);
+    FirstSeenIndex(const ParserConfigurationBase &config);
 };
 
 #endif /* first_seen_index_hpp */

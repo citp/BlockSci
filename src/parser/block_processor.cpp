@@ -19,6 +19,7 @@
 #include "address_state.hpp"
 
 #include <blocksci/hash.hpp>
+#include <blocksci/bitcoin_uint256.hpp>
 #include <blocksci/chain/block.hpp>
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>
@@ -60,14 +61,13 @@ std::vector<unsigned char> ParseHex(const char* psz)
     return vch;
 }
 
-#ifdef BLOCKSCI_FILE_PARSER
+blocksci::Block getBlock(uint32_t firstTxIndex, uint32_t txCount, size_t coinbasePos, const BlockInfoBase &block);
 
-blocksci::Block getBlock(uint32_t firstTxIndex, uint32_t txCount, size_t coinbasePos, const BlockInfo &block);
-
-blocksci::Block getBlock(uint32_t firstTxIndex, uint32_t txCount, size_t coinbasePos, const BlockInfo &block) {
+blocksci::Block getBlock(uint32_t firstTxIndex, uint32_t txCount, size_t coinbasePos, const BlockInfoBase &block) {
     return {firstTxIndex, txCount, static_cast<uint32_t>(block.height), block.hash, block.header.nVersion, block.header.nTime, block.header.nBits, block.header.nNonce, coinbasePos};
 }
 
+#ifdef BLOCKSCI_FILE_PARSER
 
 void BlockProcessor::closeFinishedFiles(uint32_t txNum) {
     auto it = files.begin();
@@ -103,7 +103,7 @@ bool checkSegwit(RawTransaction *tx, const SegwitChecker &checker) {
     return false;
 }
 
-void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<BlockInfo> blocksToAdd) {
+void BlockProcessor::readNewBlocks(const ParserConfiguration<FileTag> &config, std::vector<BlockInfo<FileTag>> blocksToAdd) {
     using namespace std::chrono_literals;
     
     std::unordered_map<int, uint32_t> firstTimeRequired;
@@ -184,8 +184,8 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
                 }
                 
                 if (tx->inputs.size() == 1 && tx->inputs[0].rawOutputPointer.hash == nullHash) {
-                    auto scriptBegin = tx->inputs[0].scriptBegin;
-                    coinbase.assign(scriptBegin, scriptBegin + tx->inputs[0].scriptLength);
+                    auto scriptBegin = tx->inputs[0].getScriptBegin();
+                    coinbase.assign(scriptBegin, scriptBegin + tx->inputs[0].getScriptLength());
                     tx->inputs.clear();
                 }
                 
@@ -218,13 +218,7 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
 
 #ifdef BLOCKSCI_RPC_PARSER
 
-blocksci::Block getBlock(uint32_t firstTxIndex, uint32_t txCount, size_t coinbasePos, const blockinfo_t &block);
-
-blocksci::Block getBlock(uint32_t firstTxIndex, uint32_t txCount, size_t coinbasePos, const blockinfo_t &block) {
-    return {firstTxIndex, txCount, static_cast<uint32_t>(block.height), blocksci::uint256S(block.hash), block.version, block.time, static_cast<uint32_t>(std::stoul(block.bits, nullptr, 16)), block.nonce, coinbasePos};
-}
-
-void BlockProcessor::loadTxRPC(RawTransaction *tx, uint32_t txNum, const blockinfo_t &block, uint32_t txOffset, BitcoinAPI & bapi, bool witnessActivated) {
+void BlockProcessor::loadTxRPC(RawTransaction *tx, uint32_t txNum, const BlockInfo<RPCTag> &block, uint32_t txOffset, BitcoinAPI & bapi, bool witnessActivated) {
     if (block.height == 0) {
         tx->outputs.clear();
         tx->outputs.reserve(1);
@@ -242,7 +236,7 @@ void BlockProcessor::loadTxRPC(RawTransaction *tx, uint32_t txNum, const blockin
     }
 }
 
-void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<blockinfo_t> blocksToAdd) {
+void BlockProcessor::readNewBlocks(const ParserConfiguration<RPCTag> &config, std::vector<BlockInfo<RPCTag>> blocksToAdd) {
     using namespace std::chrono_literals;
     
     blocksci::ArbitraryFileMapper<boost::iostreams::mapped_file::readwrite> blockCoinbaseFile(config.blockCoinbaseFilePath());
@@ -251,9 +245,12 @@ void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<bl
     
     BitcoinAPI bapi{config.createBitcoinAPI()};
     
+    blocksci::uint256 nullHash;
+    nullHash.SetNull();
     
     RawTransaction *tx;
     SegwitChecker checker;
+    std::vector<unsigned char> coinbase;
     
     for (auto &block : blocksToAdd) {
         uint32_t blockTxCount = static_cast<uint32_t>(block.tx.size());
@@ -264,8 +261,6 @@ void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<bl
         loadTxRPC(tx, 0, block, 0, bapi, false);
         bool segwit = checkSegwit(tx, checker);
         
-        
-        std::vector<unsigned char> coinbase;
         auto firstTxIndex = currentTxNum;
         for (uint32_t i = 0; i < blockTxCount; i++) {
             
@@ -273,6 +268,12 @@ void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<bl
                 tx = new RawTransaction();
             }
             loadTxRPC(tx, currentTxNum, block, i, bapi, segwit);
+            
+            if (tx->inputs.size() == 1 && tx->inputs[0].rawOutputPointer.hash == nullHash) {
+                auto scriptBegin = tx->inputs[0].getScriptBegin();
+                coinbase.assign(scriptBegin, scriptBegin + tx->inputs[0].getScriptLength());
+                tx->inputs.clear();
+            }
             
             sequenceFile.writeIndexGroup();
             for (auto &input : tx->inputs) {
@@ -295,7 +296,7 @@ void BlockProcessor::readNewBlocks(RPCParserConfiguration config, std::vector<bl
 
 #endif
 
-void BlockProcessor::calculateHashes(ParserConfiguration config) {
+void BlockProcessor::calculateHashes(const ParserConfigurationBase &config) {
     using namespace std::chrono_literals;
     blocksci::FixedSizeFileMapper<blocksci::uint256, boost::iostreams::mapped_file::readwrite> hashFile{config.txHashesFilePath()};
     auto consume = [&](RawTransaction *tx) -> void {
@@ -315,7 +316,7 @@ void BlockProcessor::calculateHashes(ParserConfiguration config) {
     hashDone = true;
 }
 
-void BlockProcessor::processUTXOs(ParserConfiguration config, UTXOState &utxoState) {
+void BlockProcessor::processUTXOs(const ParserConfigurationBase &config, UTXOState &utxoState) {
     using namespace std::chrono_literals;
     
     IndexedFileWriter<1> txFile{config.txFilePath()};
@@ -377,7 +378,7 @@ void BlockProcessor::processUTXOs(ParserConfiguration config, UTXOState &utxoSta
     utxoDone = true;
 }
 
-std::vector<uint32_t> BlockProcessor::processAddresses(ParserConfiguration config, AddressState &addressState) {
+std::vector<uint32_t> BlockProcessor::processAddresses(const ParserConfigurationBase &config, AddressState &addressState) {
     using namespace std::chrono_literals;
     
     using TxFile = blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction>;
@@ -470,8 +471,8 @@ std::vector<uint32_t> BlockProcessor::processAddresses(ParserConfiguration confi
     return revealed;
 }
 
-template <typename ConfigType, typename BlockType>
-std::vector<uint32_t> BlockProcessor::addNewBlocks(const ConfigType &config, std::vector<BlockType> nextBlocks, UTXOState &utxoState, AddressState &addressState) {
+template <typename ParseTag>
+std::vector<uint32_t> BlockProcessor::addNewBlocks(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> nextBlocks, UTXOState &utxoState, AddressState &addressState) {
     
     rawDone = false;
     hashDone = false;
@@ -502,10 +503,10 @@ std::vector<uint32_t> BlockProcessor::addNewBlocks(const ConfigType &config, std
 }
 
 #ifdef BLOCKSCI_FILE_PARSER
-template std::vector<uint32_t> BlockProcessor::addNewBlocks(const FileParserConfiguration &config, std::vector<BlockInfo> nextBlocks, UTXOState &utxoState, AddressState &addressState);
+template std::vector<uint32_t> BlockProcessor::addNewBlocks(const ParserConfiguration<FileTag> &config, std::vector<BlockInfo<FileTag>> nextBlocks, UTXOState &utxoState, AddressState &addressState);
 #endif
 #ifdef BLOCKSCI_RPC_PARSER
-template std::vector<uint32_t> BlockProcessor::addNewBlocks(const RPCParserConfiguration &config, std::vector<blockinfo_t> nextBlocks, UTXOState &utxoState, AddressState &addressState);
+template std::vector<uint32_t> BlockProcessor::addNewBlocks(const ParserConfiguration<RPCTag> &config, std::vector<BlockInfo<RPCTag>> nextBlocks, UTXOState &utxoState, AddressState &addressState);
 #endif
 
 BlockProcessor::~BlockProcessor() {

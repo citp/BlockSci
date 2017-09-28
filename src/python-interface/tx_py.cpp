@@ -79,7 +79,7 @@ void init_tx(py::module &m) {
          py::keep_alive<0, 1>())
     .def("__getitem__", [](const Transaction::input_range &range, int64_t i) -> const Input & {
         while (i < 0) {
-            i = range.size() - i;
+            i += range.size();
         }
         uint64_t posIndex = static_cast<uint64_t>(i);
         if (posIndex >= range.size())
@@ -104,7 +104,7 @@ void init_tx(py::module &m) {
          py::return_value_policy::reference, py::keep_alive<0, 1>())
     .def("__getitem__", [](const Transaction::output_range &range, int64_t i) -> const Output & {
         while (i < 0) {
-            i = range.size() - i;
+            i += range.size();
         }
         uint64_t posIndex = static_cast<uint64_t>(i);
         if (posIndex >= range.size())

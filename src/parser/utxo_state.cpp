@@ -15,7 +15,7 @@
 const auto DeletedKeysMaxSize = 5'000'000;
 const auto UTXOMapMaxSize = 10'000'000;
 
-UTXOState::UTXOState(const ParserConfiguration &config_) : config(config_)  {
+UTXOState::UTXOState(const ParserConfigurationBase &config_) : config(config_)  {
     leveldb::Options options;
     options.create_if_missing = true;
     leveldb::DB::Open(options, config.utxoDBPath().c_str(), &levelDb);

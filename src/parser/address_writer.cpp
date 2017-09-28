@@ -9,7 +9,7 @@
 
 #include "address_writer.hpp"
 
-AddressWriter::AddressWriter(const ParserConfiguration &config) :
+AddressWriter::AddressWriter(const ParserConfigurationBase &config) :
 scriptFiles(blocksci::apply(blocksci::ScriptInfoList(), [&] (auto tag) {
     return config.scriptsDirectory()/ std::string{scriptName(decltype(tag)::type)};
 })) {

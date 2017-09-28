@@ -64,11 +64,11 @@ std::pair<sqlite3 *, bool> openHashDb(boost::filesystem::path hashIndexFilePath)
     return std::make_pair(db, !dbAlreadyExists);
 }
 
-HashIndexCreator::HashIndexCreator(const ParserConfiguration &config): HashIndexCreator(config, openHashDb(config.hashIndexFilePath())) {
+HashIndexCreator::HashIndexCreator(const ParserConfigurationBase &config): HashIndexCreator(config, openHashDb(config.hashIndexFilePath())) {
     
 }
 
-HashIndexCreator::HashIndexCreator(const ParserConfiguration &config, std::pair<sqlite3 *, bool> init) : ParserIndex(config, "hashIndex"), db(init.first), firstRun(init.second) {
+HashIndexCreator::HashIndexCreator(const ParserConfigurationBase &config, std::pair<sqlite3 *, bool> init) : ParserIndex(config, "hashIndex"), db(init.first), firstRun(init.second) {
     
     std::array<sqlite3_stmt **, 3> insertStatements{{&txInsertStatement, &p2shInsertStatement, &pubkeyHashInsertStatement}};
     

@@ -10,10 +10,15 @@
 #define data_store_hpp
 
 #include "config.hpp"
-
-#ifdef BLOCKSCI_FILE_PARSER
+#include "parser_fwd.hpp"
 
 #include <blocksci/bitcoin_uint256.hpp>
+
+#include <boost/filesystem/fstream.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
 
 #include <unordered_map>
 #include <vector>
@@ -21,10 +26,20 @@
 #include <fstream>
 #include <stdio.h>
 
-struct FileParserConfiguration;
 class CBlockIndex;
+struct blockinfo_t;
 
 struct CBlockHeader {
+    friend class boost::serialization::access;
+    template<class Archive> void serialize(Archive & ar, const unsigned int) {
+        ar & nVersion;
+        ar & hashPrevBlock;
+        ar & hashMerkleRoot;
+        ar & nTime;
+        ar & nBits;
+        ar & nNonce;
+    }
+    
     // header
     int32_t nVersion;
     blocksci::uint256 hashPrevBlock;
@@ -34,11 +49,39 @@ struct CBlockHeader {
     uint32_t nNonce;
 };
 
-struct BlockInfo {
+struct BlockInfoBase {
     blocksci::uint256 hash;
+    
+    //! block header
+    CBlockHeader header;
     
     //! height of the entry in the chain. The genesis block has height 0
     int height;
+    
+    // Length of block in bytes
+    uint32_t size;
+    
+    //! Number of transactions in this block.
+    unsigned int nTx;
+    
+    BlockInfoBase() {}
+    BlockInfoBase(const blocksci::uint256 &hash, const CBlockHeader &h, uint32_t size, unsigned int numTxes);
+    
+    friend class boost::serialization::access;
+    template<class Archive> void serialize(Archive & ar, const unsigned int) {
+        ar & hash;
+        ar & header;
+        ar & height;
+        ar & size;
+        ar & nTx;
+    }
+};
+
+template <typename ParseType>
+struct BlockInfo;
+
+template <>
+struct BlockInfo<FileTag> : BlockInfoBase {
     
     //! Which # file this block is stored in (blk?????.dat)
     int nFile;
@@ -46,38 +89,83 @@ struct BlockInfo {
     //! Byte offset within blk?????.dat where this block's data is stored
     unsigned int nDataPos;
     
-    // Length of block in bytes
-    uint32_t length;
+    BlockInfo() : BlockInfoBase() {}
+    BlockInfo(const CBlockHeader &h, uint32_t length, unsigned int numTxes, const ParserConfiguration<FileTag> &config, int fileNum, unsigned int dataPos);
     
-    //! Number of transactions in this block.
-    unsigned int nTx;
-    
-    //! block header
-    CBlockHeader header;
-    
-    BlockInfo() {}
-    BlockInfo(const CBlockHeader &h, int fileNum, unsigned int dataPos, uint32_t length, unsigned int numTxes, const FileParserConfiguration &config);
+    friend class boost::serialization::access;
+    template<class Archive> void serialize(Archive & ar, const unsigned int) {
+        ar & boost::serialization::base_object<BlockInfoBase>(*this);
+        ar & nFile;
+        ar & nDataPos;
+    }
 };
 
+template<>
+struct BlockInfo<RPCTag> : BlockInfoBase {
+    std::vector<std::string> tx;
+    
+    BlockInfo() : BlockInfoBase() {}
+    BlockInfo(const blockinfo_t &info, uint32_t height);
+    
+    friend class boost::serialization::access;
+    template<class Archive> void serialize(Archive & ar, const unsigned int) {
+        ar & boost::serialization::base_object<BlockInfoBase>(*this);
+        ar & tx;
+    }
+};
+
+template <typename ParseTag>
 struct ChainIndex {
-    std::vector<BlockInfo> blockList;
-    ChainIndex(const FileParserConfiguration &config);
-    ChainIndex(const FileParserConfiguration &config_, std::vector<BlockInfo> &blockList_) : blockList(blockList_), config(config_) {}
+    using BlockType = BlockInfo<ParseTag>;
+    using ConfigType = ParserConfiguration<ParseTag>;
+    std::vector<BlockType> blockList;
     
-    ~ChainIndex();
+    ChainIndex(const ConfigType &config_) : config(config_) {
+        boost::filesystem::ifstream file(config.blockListPath(), std::ios::binary);
+        if (file.good()) {
+            boost::archive::binary_iarchive ia(file);
+            ia >> *this;
+        }
+        update();
+    }
     
-    const FileParserConfiguration &config;
+    ~ChainIndex() {
+        boost::filesystem::ofstream file(config.blockListPath(), std::ios::binary);
+        boost::archive::binary_oarchive oa(file);
+        oa << *this;
+    }
     
-    void updateFromFilesystem();
+    ChainIndex(const ChainIndex &) = delete;
     
-    std::vector<BlockInfo> generateChain(uint32_t maxBlockHeight) const;
+    const ConfigType &config;
+    
+    void update();
+    std::vector<BlockType> generateChain(uint32_t maxBlockHeight) const;
+    
+    template <typename GetBlockHash>
+    uint32_t findSplitPointIndex(uint32_t blockHeight, GetBlockHash getBlockHash) {
+        auto oldBlocks = generateChain(blockHeight);
+        
+        uint32_t maxSize = std::min(static_cast<uint32_t>(oldBlocks.size()), blockHeight);
+        uint32_t splitPoint = static_cast<uint32_t>(maxSize);
+        for (uint32_t i = 0; i < maxSize; i++) {
+            blocksci::uint256 oldHash = oldBlocks[maxSize - 1 - i].hash;
+            blocksci::uint256 newHash = getBlockHash(maxSize - 1 - i);
+            if (oldHash == newHash) {
+                splitPoint = maxSize - i;
+                break;
+            }
+        }
+        return splitPoint;
+    }
     
 private:
+    friend class boost::serialization::access;
+    template<class Archive> void serialize(Archive & ar, const unsigned int) {
+        ar & blockList;
+    }
+    
     int updateHeight(size_t blockNum, const std::unordered_map<blocksci::uint256, size_t> &indexMap);
 };
-
-std::vector<BlockInfo> generateChain(std::vector<BlockInfo> &blockList, int maxBlockHeight);
-
-#endif
 
 #endif /* data_store_hpp */

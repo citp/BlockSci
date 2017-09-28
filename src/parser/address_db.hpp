@@ -10,13 +10,13 @@
 #define address_db_h
 
 #include "address_traverser.hpp"
+#include "parser_fwd.hpp"
 
 #include <blocksci/scripts/script_type.hpp>
 
 #include <sqlite3.h>
 #include <unordered_map>
 
-struct ParserConfiguration;
 
 class AddressDB : public AddressTraverser {
     sqlite3 *db;
@@ -24,7 +24,7 @@ class AddressDB : public AddressTraverser {
     std::unordered_map<blocksci::ScriptType::Enum,  sqlite3_stmt *> insertStatements;
     std::vector<blocksci::script::ScriptHash> p2shesToAdd;
     
-    AddressDB(const ParserConfiguration &config, std::pair<sqlite3 *, bool> init);
+    AddressDB(const ParserConfigurationBase &config, std::pair<sqlite3 *, bool> init);
     
     void addAddress(const blocksci::Address &address, const blocksci::OutputPointer &pointer);
     
@@ -34,7 +34,7 @@ class AddressDB : public AddressTraverser {
     void tearDown() override;
     
 public:
-    AddressDB(const ParserConfiguration &config);
+    AddressDB(const ParserConfigurationBase &config);
     ~AddressDB();
     
     void rollback(uint32_t maxTxIndex);

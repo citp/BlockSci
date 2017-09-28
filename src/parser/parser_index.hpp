@@ -30,7 +30,7 @@ namespace blocksci {
 
 class ParserIndex {
 protected:
-    ParserConfiguration config;
+    const ParserConfigurationBase &config;
     boost::filesystem::path cachePath;
     blocksci::State latestState;
     
@@ -39,7 +39,7 @@ protected:
     virtual void revealedP2SH(blocksci::script::ScriptHash &scriptHash, const blocksci::ScriptAccess &scripts) = 0;
     
 public:
-    ParserIndex(const ParserConfiguration &config, const std::string &resultName);
+    ParserIndex(const ParserConfigurationBase &config, const std::string &resultName);
     virtual ~ParserIndex();
     
     virtual void prepareUpdate() {}

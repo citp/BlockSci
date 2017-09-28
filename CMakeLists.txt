@@ -3,7 +3,7 @@ project(blocksci)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_MACOSX_RPATH 1)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic-errors")
 # -Weverything
 #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG")
 
@@ -28,7 +28,7 @@ ENDIF("${isSystemDir}" STREQUAL "-1")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-find_package( Boost 1.58 COMPONENTS program_options system filesystem thread iostreams REQUIRED )
+find_package( Boost 1.58 COMPONENTS program_options system filesystem thread iostreams serialization REQUIRED )
 add_library(boost INTERFACE)
 target_link_libraries(boost INTERFACE ${Boost_LIBRARIES})
 target_include_directories(boost INTERFACE SYSTEM ${Boost_INCLUDE_DIR})

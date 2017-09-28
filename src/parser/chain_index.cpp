@@ -12,13 +12,18 @@
 #include "parser_configuration.hpp"
 #include "safe_mem_reader.hpp"
 
+#include <blocksci/chain/chain_access.hpp>
+#include <blocksci/chain/block.hpp>
 #include <blocksci/hash.hpp>
+
+#ifdef BLOCKSCI_RPC_PARSER
+#include <bitcoinapi/bitcoinapi.h>
+#endif
 
 #include <leveldb/db.h>
 
 #include <boost/iostreams/device/mapped_file.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/filesystem/fstream.hpp>
 
 #include <sstream>
 #include <fstream>
@@ -26,36 +31,25 @@
 
 #ifdef BLOCKSCI_FILE_PARSER
 
-BlockInfo::BlockInfo(const CBlockHeader &h, int fileNum, unsigned int dataPos, uint32_t length_, unsigned int numTxes, const FileParserConfiguration &config) : height(-1), nFile(fileNum), nDataPos(dataPos), length(length_), nTx(numTxes), header(h) {
-    hash = config.workHashFunction(reinterpret_cast<const char *>(&h), sizeof(CBlockHeader));
+
+BlockInfoBase::BlockInfoBase(const blocksci::uint256 &hash_, const CBlockHeader &h, uint32_t size_, unsigned int numTxes) : hash(hash_), header(h), height(-1), size(size_), nTx(numTxes) {}
+
+BlockInfo<FileTag>::BlockInfo(const CBlockHeader &h, uint32_t size_, unsigned int numTxes, const ParserConfiguration<FileTag> &config, int fileNum, unsigned int dataPos) : BlockInfoBase(config.workHashFunction(reinterpret_cast<const char *>(&h), sizeof(CBlockHeader)), h, size_, numTxes), nFile(fileNum), nDataPos(dataPos) {}
+
+// The 0 should be replaced with info.bits converted to string
+BlockInfo<RPCTag>::BlockInfo(const blockinfo_t &info, uint32_t height_) : BlockInfoBase(blocksci::uint256S(info.hash), {info.version, blocksci::uint256S(info.previousblockhash), blocksci::uint256S(info.merkleroot), info.time, 0, info.nonce}, info.size, info.tx.size()), tx(info.tx) {
+    height = static_cast<int>(height_);
 }
 
-ChainIndex::ChainIndex(const FileParserConfiguration &config_) : config(config_) {
-    boost::filesystem::ifstream file(config.blockListPath(), std::ios::binary);
-    if (file.good()) {
-        uint64_t length;
-        file.read(reinterpret_cast<char *>(&length), sizeof(length));
-        blockList.resize(length);
-        file.read(reinterpret_cast<char *>(blockList.data()), static_cast<long>(sizeof(BlockInfo) * length));
-    }
-    updateFromFilesystem();
-}
-
-ChainIndex::~ChainIndex() {
-    boost::filesystem::ofstream file(config.blockListPath(), std::ios::binary);
-    uint64_t length = blockList.size();
-    file.write(reinterpret_cast<char *>(&length), sizeof(length));
-    file.write(reinterpret_cast<char *>(blockList.data()), static_cast<long>(sizeof(BlockInfo) * length));
-}
-
-void ChainIndex::updateFromFilesystem() {
+template <>
+void ChainIndex<FileTag>::update() {
     int fileNum = 0;
     unsigned int filePos = 0;
 
     if (!blockList.empty()) {
         auto &lastBlock = blockList.back();
         fileNum = lastBlock.nFile;
-        filePos = lastBlock.nDataPos + lastBlock.length;
+        filePos = lastBlock.nDataPos + lastBlock.size;
     }
 
     auto firstFile = fileNum;
@@ -91,7 +85,7 @@ void ChainIndex::updateFromFilesystem() {
                 // The next two lines bring the reader to the end of this block
                 reader.reset(blockStartOffset);
                 reader.advance(length);
-                blockList.emplace_back(header, fileNum, blockStartOffset, length, numTxes, config);
+                blockList.emplace_back(header, length, numTxes, config, fileNum, blockStartOffset);
             }
         } catch (const std::out_of_range &e) {
             std::cerr << "Failed to read block header information"
@@ -123,7 +117,42 @@ void ChainIndex::updateFromFilesystem() {
     }
 }
 
-int ChainIndex::updateHeight(size_t blockNum, const std::unordered_map<blocksci::uint256, size_t> &indexMap) {
+template<>
+void ChainIndex<RPCTag>::update() {
+    try {
+        BitcoinAPI bapi{config.createBitcoinAPI()};
+        auto blockHeight = static_cast<uint32_t>(bapi.getblockcount());
+
+        
+        uint32_t splitPoint = findSplitPointIndex(blockHeight, [&](uint32_t h) {
+            return blocksci::uint256S(bapi.getblockhash(static_cast<int>(h)));
+        });
+        
+        std::cout.setf(std::ios::fixed,std::ios::floatfield);
+        std::cout.precision(1);
+        uint32_t numBlocks = blockHeight - splitPoint;
+        auto percentage = static_cast<double>(numBlocks) / 1000.0;
+        uint32_t percentageMarker = static_cast<uint32_t>(std::ceil(percentage));
+        
+        for (uint32_t i = splitPoint; i < blockHeight; i++) {
+            std::string blockhash = bapi.getblockhash(static_cast<int>(i));
+            blockList.emplace_back(bapi.getblock(blockhash), i);
+            uint32_t count = i - splitPoint;
+            if (count % percentageMarker == 0) {
+                std::cout << "\r" << (static_cast<double>(count) / static_cast<double>(numBlocks)) * 100 << "% done fetching block headers" << std::flush;
+            }
+        }
+        std::cout << std::endl;
+        blockList = generateChain(0);
+    } catch (const BitcoinException &e) {
+        std::cout << std::endl;
+        std::cerr << "Error while interacting with RPC: " << e.what() << std::endl;
+        throw;
+    }
+}
+
+template<typename ParseTag>
+int ChainIndex<ParseTag>::updateHeight(size_t blockNum, const std::unordered_map<blocksci::uint256, size_t> &indexMap) {
     auto &block = blockList[blockNum];
     if (block.height == -1) {
         if (block.header.hashPrevBlock.IsNull()) {
@@ -141,7 +170,8 @@ int ChainIndex::updateHeight(size_t blockNum, const std::unordered_map<blocksci:
     return block.height;
 }
 
-std::vector<BlockInfo> ChainIndex::generateChain(uint32_t maxBlockHeight) const {
+template<typename ParseTag>
+std::vector<typename ChainIndex<ParseTag>::BlockType> ChainIndex<ParseTag>::generateChain(uint32_t maxBlockHeight) const {
     
     std::unordered_map<blocksci::uint256, size_t> indexMap;
     indexMap.reserve(blockList.size());
@@ -153,10 +183,10 @@ std::vector<BlockInfo> ChainIndex::generateChain(uint32_t maxBlockHeight) const 
     
     uint32_t curMax = maxBlockHeight == 0 ? std::numeric_limits<int>::max() : maxBlockHeight;
     
-    std::vector<BlockInfo> chain;
+    std::vector<BlockType> chain;
     while (true) {
         chain.clear();
-        const BlockInfo *maxHeightBlock = nullptr;
+        const BlockType *maxHeightBlock = nullptr;
         uint32_t maxHeight = 0;
         for (auto &possibleMaxBlock : blockList) {
             if (static_cast<uint32_t>(possibleMaxBlock.height) > maxHeight && static_cast<uint32_t>(possibleMaxBlock.height) <= curMax) {
@@ -169,7 +199,7 @@ std::vector<BlockInfo> ChainIndex::generateChain(uint32_t maxBlockHeight) const 
             return chain;
         }
         
-        const BlockInfo *block = maxHeightBlock;
+        auto block = maxHeightBlock;
         while (true) {
             if (static_cast<uint32_t>(block->height) < curMax) {
                 chain.push_back(*block);
@@ -189,5 +219,8 @@ std::vector<BlockInfo> ChainIndex::generateChain(uint32_t maxBlockHeight) const 
         }
     }
 }
+
+template std::vector<typename ChainIndex<FileTag>::BlockType> ChainIndex<FileTag>::generateChain(uint32_t maxBlockHeight) const;
+template std::vector<typename ChainIndex<RPCTag>::BlockType> ChainIndex<RPCTag>::generateChain(uint32_t maxBlockHeight) const;
 
 #endif

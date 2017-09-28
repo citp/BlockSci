@@ -27,9 +27,9 @@
 #include <boost/variant/variant_fwd.hpp>
 
 #ifdef BLOCKSCI_FILE_PARSER
-void replayBlock(const FileParserConfiguration &config, uint32_t blockNum) {
+void replayBlock(const ParserConfiguration<FileTag> &config, uint32_t blockNum) {
     ECCVerifyHandle handle;
-    ChainIndex index(config);
+    ChainIndex<FileTag> index(config);
     auto chain = index.generateChain(blockNum);
     auto block = chain.back();
     auto blockPath = config.pathForBlockFile(block.nFile);
@@ -59,8 +59,8 @@ void replayBlock(const FileParserConfiguration &config, uint32_t blockNum) {
         tx.load(reader, realTx.txNum, blockNum, segwit);
         
         if (tx.inputs.size() == 1 && tx.inputs[0].rawOutputPointer.hash == nullHash) {
-            auto scriptBegin = tx.inputs[0].scriptBegin;
-            coinbase.assign(scriptBegin, scriptBegin + tx.inputs[0].scriptLength);
+            auto scriptBegin = tx.inputs[0].getScriptBegin();
+            coinbase.assign(scriptBegin, scriptBegin + tx.inputs[0].getScriptLength());
             tx.inputs.clear();
         }
         

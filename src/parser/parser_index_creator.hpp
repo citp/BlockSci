@@ -9,6 +9,7 @@
 #define parser_index_creator_hpp
 
 #include "parser_configuration.hpp"
+#include "parser_fwd.hpp"
 
 #include <future>
 #include <vector>
@@ -26,7 +27,7 @@ class ParserIndex;
 
 class ParserIndexCreator {
 private:
-    ParserConfiguration config;
+    const ParserConfigurationBase &config;
     std::future<void> updateFuture;
     std::future<void> teardownFuture;
     std::atomic<bool> launchingUpdate;
@@ -36,14 +37,14 @@ private:
     std::unique_ptr<ParserIndex> index;
     
 public:
-    ParserIndexCreator(const ParserConfiguration &config_, std::unique_ptr<ParserIndex> index_) : config(config_), updateFuture{std::async(std::launch::async, [&] {})}, launchingUpdate(false), tornDown(false), index(std::move(index_)) {}
+    ParserIndexCreator(const ParserConfigurationBase &config_, std::unique_ptr<ParserIndex> index_) : config(config_), updateFuture{std::async(std::launch::async, [&] {})}, launchingUpdate(false), tornDown(false), index(std::move(index_)) {}
     ~ParserIndexCreator();
     
     void update(const std::vector<uint32_t> &revealed, blocksci::State state);
     void complete(blocksci::State state);
     
     template <typename IndexType>
-    static ParserIndexCreator createIndex(const ParserConfiguration &config) {
+    static ParserIndexCreator createIndex(const ParserConfigurationBase &config) {
         return ParserIndexCreator{config, std::make_unique<IndexType>(config)};
     }
 };

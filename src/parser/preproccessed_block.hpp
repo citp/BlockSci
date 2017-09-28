@@ -40,17 +40,37 @@ struct WitnessStackItem {
 };
 
 struct RawInput {
-    RawOutputPointer rawOutputPointer;
-    uint32_t sequenceNum;
+private:
     const unsigned char *scriptBegin;
     uint32_t scriptLength;
+    
+    std::vector<unsigned char> scriptBytes;
+    
+public:
+    
+    RawOutputPointer rawOutputPointer;
+    uint32_t sequenceNum;
     std::vector<WitnessStackItem> witnessStack;
     uint32_t linkedTxNum;
     blocksci::AddressType::Enum addressType;
     
-    std::vector<unsigned char> scriptBytes;
-    
     InputInfo getInfo(uint16_t i, uint32_t txNum, uint32_t addressNum, bool isSegwit);
+    
+    uint32_t getScriptLength() const {
+        if (scriptLength == 0) {
+            return scriptBytes.size();
+        } else {
+            return scriptLength;
+        }
+    }
+    
+    const unsigned char *getScriptBegin() {
+        if (scriptLength == 0) {
+            return scriptBytes.data();
+        } else {
+            return scriptBegin;
+        }
+    }
     
     RawInput(){}
     

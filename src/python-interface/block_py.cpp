@@ -74,12 +74,19 @@ void init_block(py::module &m) {
     .def("__iter__", [](const Block &block) { return py::make_iterator(block.begin(), block.end()); },
          py::keep_alive<0, 1>() /* Essential: keep object alive while iterator exists */)
     .def("__getitem__", [](const Block &block, int64_t i) {
-        while (i < 0) {
-            i = block.size() - i;
+        if (i < 0) {
+            i += block.size();
         }
-        uint64_t posIndex = static_cast<uint64_t>(i);
-        if (posIndex >= block.size())
+        
+        if (i < 0) {
             throw py::index_error();
+        }
+        
+        uint64_t posIndex = static_cast<uint64_t>(i);
+        if (posIndex >= block.size()) {
+            throw py::index_error();
+        }
+        
         return block[i];
     })
     .def("__getitem__", [](const Block &block, py::slice slice) -> py::list {

@@ -52,11 +52,11 @@
 #include <stdio.h>
 #include <assert.h>
 
-void rollbackTransactions(size_t blockKeepCount, const ParserConfiguration &config);
+void rollbackTransactions(size_t blockKeepCount, const ParserConfigurationBase &config);
 std::vector<char> HexToBytes(const std::string& hex);
-uint32_t getStartingTxCount(const ParserConfiguration &config);
+uint32_t getStartingTxCount(const blocksci::DataConfiguration &config);
 
-void rollbackTransactions(size_t blockKeepCount, const ParserConfiguration &config) {
+void rollbackTransactions(size_t blockKeepCount, const ParserConfigurationBase &config) {
     using namespace blocksci;
     
     blocksci::ChainAccess chain(config, false, 0);
@@ -144,12 +144,14 @@ std::vector<char> HexToBytes(const std::string& hex) {
     return bytes;
 }
 
-/*
- std::string hexString("0100000001dce0625ea257b0f0e772d61050003020bad0dbc42c96a51491d8c8e23698d2d7010000006a473044022027bce535775f7eceec7a6dacef9ae84e3c5279ab83158e5a5472ded772b8206c02207f109a5f01114938f11e4fef3949e6930d2df50d115e6d577a8e07d3a56e14b20121032a0701b1f33f3b38fd23f23633c69a80b1c878b372b342e6bcbe963e2f88f7f5ffffffff01df280300000000001976a914becca086d70b43ee656d48ab038f09ce5ce0b95588ac00000000");
- */
+template <typename BlockType>
+struct ChainUpdateInfo {
+    std::vector<BlockType> blocksToAdd;
+    uint32_t splitPoint;
+};
 
 template <typename GetBlockHash>
-uint32_t findSplitPoint(const ParserConfiguration &config, uint32_t blockHeight, GetBlockHash getBlockHash) {
+uint32_t findSplitPoint(const blocksci::DataConfiguration &config, uint32_t blockHeight, GetBlockHash getBlockHash) {
     blocksci::ChainAccess oldChain(config, false, 0);
     auto oldBlocks = oldChain.getBlocks();
     
@@ -166,80 +168,7 @@ uint32_t findSplitPoint(const ParserConfiguration &config, uint32_t blockHeight,
     return splitPoint;
 }
 
-template <typename BlockType>
-struct ChainUpdateInfo {
-    std::vector<BlockType> blocksToAdd;
-    uint32_t splitPoint;
-};
-
-
-#ifdef BLOCKSCI_FILE_PARSER
-void printTxInfo(std::string &hexString);
-uint32_t txCount(const BlockInfo &block);
-ChainUpdateInfo<BlockInfo> prepareChain(const FileParserConfiguration &config, uint32_t maxBlockNum);
-
-uint32_t txCount(const BlockInfo &block) {
-    return block.nTx;
-}
-
-ChainUpdateInfo<BlockInfo> prepareChain(const FileParserConfiguration &config, uint32_t maxBlockNum) {
-    ChainIndex index(config);
-    
-    auto chain = index.generateChain(maxBlockNum);
-    
-    uint32_t splitPoint = findSplitPoint(config, static_cast<uint32_t>(chain.size()), [&](uint32_t blockHeight) {
-        return chain[blockHeight].hash;
-    });
-    
-    return {{chain.begin() + splitPoint, chain.end()}, splitPoint};
-}
-
-#endif
-
-#ifdef BLOCKSCI_RPC_PARSER
-uint32_t txCount(const blockinfo_t &block);
-ChainUpdateInfo<blockinfo_t> prepareChain(const RPCParserConfiguration &config, uint32_t maxBlockNum);
-
-uint32_t txCount(const blockinfo_t &block) {
-    return static_cast<uint32_t>(block.tx.size());
-}
-
-ChainUpdateInfo<blockinfo_t> prepareChain(const RPCParserConfiguration &config, uint32_t maxBlockNum) {
-    BitcoinAPI bapi{config.createBitcoinAPI()};
-    if (maxBlockNum == 0) {
-        maxBlockNum = std::numeric_limits<uint32_t>::max();
-    }
-    auto blockHeight = std::min(maxBlockNum, static_cast<uint32_t>(bapi.getblockcount()));
-    
-    uint32_t splitPoint = findSplitPoint(config, blockHeight, [&](uint32_t h) {
-        return blocksci::uint256S(bapi.getblockhash(static_cast<int>(h)));
-    });
-    
-    std::cout.setf(std::ios::fixed,std::ios::floatfield);
-    std::cout.precision(1);
-    uint32_t numBlocks = blockHeight - splitPoint;
-    auto percentage = static_cast<double>(numBlocks) / 1000.0;
-    uint32_t percentageMarker = static_cast<uint32_t>(std::ceil(percentage));
-    
-    std::vector<blockinfo_t> blocksToAdd;
-    blocksToAdd.reserve(numBlocks);
-    for (uint32_t i = splitPoint; i < blockHeight; i++) {
-        std::string blockhash = bapi.getblockhash(static_cast<int>(i));
-        blocksToAdd.push_back(bapi.getblock(blockhash));
-        uint32_t count = i - splitPoint;
-        if (count % percentageMarker == 0) {
-            std::cout << "\r" << (static_cast<double>(count) / static_cast<double>(numBlocks)) * 100 << "% done fetching block headers" << std::flush;
-        }
-    }
-    std::cout << std::endl;
-
-    return {blocksToAdd, splitPoint};
-}
-
-#endif
-
-
-uint32_t getStartingTxCount(const ParserConfiguration &config) {
+uint32_t getStartingTxCount(const blocksci::DataConfiguration &config) {
     blocksci::ChainAccess chain(config, false, 0);
     auto blocks = chain.getBlocks();
     if (blocks.size() > 0) {
@@ -249,28 +178,33 @@ uint32_t getStartingTxCount(const ParserConfiguration &config) {
         return 0;
     }
 }
-template <typename BlockType>
-void printUpdateInfo(const ParserConfiguration &config, const ChainUpdateInfo<BlockType> &chainUpdateInfo) {
-    blocksci::ChainAccess chain(config, false, 0);
-    auto blocks = chain.getBlocks();
-    std::cout << "Starting with chain of " << blocks.size() << " blocks" << std::endl;
-    std::cout << "Removing " << blocks.size() - chainUpdateInfo.splitPoint << " blocks" << std::endl;
-    std::cout << "Adding " << chainUpdateInfo.blocksToAdd.size() << " blocks" << std::endl;
-}
 
-template <typename ConfigType>
-void updateChain(const ConfigType &config, uint32_t maxBlockNum) {
+template <typename ParserTag>
+void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlockNum) {
     using namespace std::chrono_literals;
     
-    auto chainUpdateInfo = prepareChain(config, maxBlockNum);
+    auto chainBlocks = [&]() {
+        ChainIndex<ParserTag> index{config};
+        return index.generateChain(maxBlockNum);
+    }();
+
+    uint32_t splitPoint = findSplitPoint(config, static_cast<uint32_t>(chainBlocks.size()), [&](uint32_t blockHeight) {
+        return chainBlocks[blockHeight].hash;
+    });
+
+    std::vector<BlockInfo<ParserTag>> blocksToAdd{chainBlocks.begin() + splitPoint, chainBlocks.end()};
     
-    printUpdateInfo(config, chainUpdateInfo);
+    {
+        blocksci::ChainAccess chain(config, false, 0);
+        auto blocks = chain.getBlocks();
+        std::cout << "Starting with chain of " << blocks.size() << " blocks" << std::endl;
+        std::cout << "Removing " << blocks.size() - splitPoint << " blocks" << std::endl;
+        std::cout << "Adding " << blocksToAdd.size() << " blocks" << std::endl;
+    }
     
-//    std::ios::sync_with_stdio(false);
+    std::ios::sync_with_stdio(false);
     
-    rollbackTransactions(chainUpdateInfo.splitPoint, config);
-    
-    auto blocksToAdd = std::move(chainUpdateInfo.blocksToAdd);
+    rollbackTransactions(splitPoint, config);
     
     if (blocksToAdd.size() == 0) {
         return;
@@ -281,7 +215,7 @@ void updateChain(const ConfigType &config, uint32_t maxBlockNum) {
     
     uint32_t totalTxCount = 0;
     for (auto &block : blocksToAdd) {
-        totalTxCount += txCount(block);
+        totalTxCount += block.nTx;
     }
     
     BlockProcessor processor{startingTxCount, totalTxCount, maxBlockHeight};
@@ -299,7 +233,7 @@ void updateChain(const ConfigType &config, uint32_t maxBlockNum) {
         auto prev = it;
         uint32_t newTxCount = 0;
         while (newTxCount < 1000000 && it != end) {
-            newTxCount += txCount(*it);
+            newTxCount += it->nTx;
             ++it;
         }
         
@@ -317,17 +251,20 @@ void updateChain(const ConfigType &config, uint32_t maxBlockNum) {
         hashIndex.update(revealedScriptHashes, updateState);
     }
     
-    blocksci::ChainAccess chain{config, false, 0};
-    blocksci::ScriptAccess scripts{config};
-    
-    blocksci::State state{chain, scripts};
-    
-    addressDB.complete(state);
-    firstSeen.complete(state);
-    hashIndex.complete(state);
+    {
+        blocksci::ChainAccess chain{config, false, 0};
+        blocksci::ScriptAccess scripts{config};
+        
+        blocksci::State state{chain, scripts};
+        
+        addressDB.complete(state);
+        firstSeen.complete(state);
+        hashIndex.complete(state);
+    }
 }
 
 int main(int argc, const char * argv[]) {
+    
     namespace po = boost::program_options;
     std::string dataDirectoryString;
     uint32_t maxBlockNum;
@@ -472,7 +409,7 @@ int main(int argc, const char * argv[]) {
     
     if (validDisk) {
         #ifdef BLOCKSCI_FILE_PARSER
-        FileParserConfiguration config{bitcoinDirectory, dataDirectory};
+        ParserConfiguration<FileTag> config{bitcoinDirectory, dataDirectory};
 //        if (bitcoinDirectoryString.find("bitcoin") != std::string::npos || bitcoinDirectoryString.find("Bitcoin") != std::string::npos) {
 //            if (maxBlockNum > 478559 || maxBlockNum == 0) {
 //                maxBlockNum = 478559;
@@ -484,7 +421,7 @@ int main(int argc, const char * argv[]) {
         #endif
     } else if (validRPC) {
         #ifdef BLOCKSCI_RPC_PARSER
-        RPCParserConfiguration config(username, password, address, port, dataDirectory);
+        ParserConfiguration<RPCTag> config(username, password, address, port, dataDirectory);
         updateChain(config, maxBlockNum);
         #endif
     }

@@ -17,7 +17,7 @@ const auto SingleAddressMapMaxSize = 10'000'000;
 const auto StartingAddressCount = 500'000'000;
 const auto AddressFalsePositiveRate = .05;
 
-AddressState::AddressState(const ParserConfiguration &config_) : config(config_)  {
+AddressState::AddressState(const ParserConfigurationBase &config_) : config(config_)  {
     leveldb::Options options;
     options.create_if_missing = true;
     leveldb::DB::Open(options, config.addressDBPath().c_str(), &levelDb);

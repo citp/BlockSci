@@ -107,8 +107,8 @@ struct ScriptOutput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> {
 template <>
 struct ScriptOutput<blocksci::AddressType::Enum::MULTISIG> {
     static constexpr int MAX_ADDRESSES = 16;
-    using RawAddressArray = std::array<CPubKey, MAX_ADDRESSES>;
-    using ProcessedAddressArray = std::array<uint32_t, MAX_ADDRESSES>;
+    using RawAddressArray = std::vector<CPubKey>;
+    using ProcessedAddressArray = std::vector<uint32_t>;
     uint8_t numRequired;
     uint8_t numTotal;
     uint16_t addressCount;

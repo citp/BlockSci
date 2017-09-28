@@ -11,14 +11,13 @@
 
 #include "basic_types.hpp"
 #include "utxo.hpp"
+#include "parser_fwd.hpp"
 
 #include <sparsepp/spp.h>
 #include <leveldb/db.h>
 
 #include <future>
 #include <stdio.h>
-
-struct ParserConfiguration;
 
 struct RawOutputPointerHasher {
     size_t operator()(const RawOutputPointer& b) const {
@@ -34,7 +33,7 @@ struct RawOutputPointerHasher {
 class UTXOState {
     using utxo_map = spp::sparse_hash_map<RawOutputPointer, UTXO, RawOutputPointerHasher>;
     
-    const ParserConfiguration &config;
+    const ParserConfigurationBase &config;
     leveldb::DB* levelDb;
     
     utxo_map utxoMap;
@@ -48,7 +47,7 @@ class UTXOState {
     void clearDeletedKeys();
     
 public:
-    UTXOState(const ParserConfiguration &config);
+    UTXOState(const ParserConfigurationBase &config);
     ~UTXOState();
     
     void optionalSave();

@@ -10,6 +10,7 @@
 #define parser_configuration_h
 
 #include "config.hpp"
+#include "parser_fwd.hpp"
 
 #include <blocksci/bitcoin_uint256.hpp>
 #include <blocksci/data_configuration.hpp>
@@ -18,9 +19,9 @@
 
 #include <functional>
 
-struct ParserConfiguration : public blocksci::DataConfiguration {
-    ParserConfiguration();
-    ParserConfiguration(const boost::filesystem::path &dataDirectory_);
+struct ParserConfigurationBase : public blocksci::DataConfiguration {
+    ParserConfigurationBase();
+    ParserConfigurationBase(const boost::filesystem::path &dataDirectory_);
     
     boost::filesystem::path parserDirectory() const {
         return dataDirectory/"parser";
@@ -53,10 +54,14 @@ struct ParserConfiguration : public blocksci::DataConfiguration {
     bool witnessActivatedAtHeight(uint32_t blockHeight) const;
 };
 
+template<typename ParseTag>
+struct ParserConfiguration;
+
 #ifdef BLOCKSCI_FILE_PARSER
-struct FileParserConfiguration : public ParserConfiguration {
-    FileParserConfiguration();
-    FileParserConfiguration(const boost::filesystem::path &bitcoinDirectory_, const boost::filesystem::path &dataDirectory_);
+template<>
+struct ParserConfiguration<FileTag> : public ParserConfigurationBase {
+    ParserConfiguration();
+    ParserConfiguration(const boost::filesystem::path &bitcoinDirectory_, const boost::filesystem::path &dataDirectory_);
     
     boost::filesystem::path bitcoinDirectory;
     uint32_t blockMagic;
@@ -71,9 +76,10 @@ struct FileParserConfiguration : public ParserConfiguration {
 
 class BitcoinAPI;
 
-struct RPCParserConfiguration : public ParserConfiguration {
-    RPCParserConfiguration();
-    RPCParserConfiguration(std::string username, std::string password, std::string address, int port, const boost::filesystem::path &dataDirectory_);
+template<>
+struct ParserConfiguration<RPCTag> : public ParserConfigurationBase {
+    ParserConfiguration();
+    ParserConfiguration(std::string username, std::string password, std::string address, int port, const boost::filesystem::path &dataDirectory_);
     
     std::string username;
     std::string password;
