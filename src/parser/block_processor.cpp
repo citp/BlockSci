@@ -324,7 +324,13 @@ void BlockProcessor::processUTXOs(const ParserConfigurationBase &config, UTXOSta
     auto consume = [&](RawTransaction *tx) -> void {
         
         txFile.writeIndexGroup();
-        txFile.write(tx->getRawTransaction());
+        
+        auto diskTx = tx->getRawTransaction();
+        assert(diskTx.inputCount == tx->inputs.size());
+        assert(diskTx.outputCount == tx->outputs.size());
+        
+        txFile.write(diskTx);
+        
         
         uint16_t i = 0;
         
@@ -455,7 +461,7 @@ std::vector<uint32_t> BlockProcessor::processAddresses(const ParserConfiguration
     TxFile txFile{config.txFilePath()};
     RawTransaction *rawTx = nullptr;
     while (!utxoDone) {
-        while (address_transaction_queue.read_available() > 190000 && address_transaction_queue.pop(rawTx)) {
+        while (address_transaction_queue.read_available() > 10000 && address_transaction_queue.pop(rawTx)) {
             if (rawTx->txNum + 5000 >= txFile.size()) {
                 txFile.reload();
             }
