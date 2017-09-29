@@ -11,7 +11,7 @@
 
 #include <blocksci/address/address_info.hpp>
 
-ClusterManager::ClusterManager(std::string baseDirectory) : clusterOffsetFile(baseDirectory + "clusterOffsets"), clusterAddressesFile(baseDirectory + "clusterAddresses"), scriptClusterIndexFiles(blocksci::apply(blocksci::ScriptInfoList(), [&] (auto tag) {
+ClusterManager::ClusterManager(std::string baseDirectory) : clusterOffsetFile(baseDirectory + "clusterOffsets"), clusterScriptsFile(baseDirectory + "clusterAddresses"), scriptClusterIndexFiles(blocksci::apply(blocksci::ScriptInfoList(), [&] (auto tag) {
     std::stringstream ss;
     ss << baseDirectory << blocksci::scriptName(tag.type) << "_cluster_index";
     return ss.str();
@@ -51,10 +51,10 @@ Cluster ClusterManager::getCluster(const blocksci::Address &address) const {
     return Cluster(getClusterNum(address), *this);
 }
 
-std::vector<TaggedCluster> ClusterManager::taggedClusters(const std::unordered_map<blocksci::Address, std::string> &tags) {
+std::vector<TaggedCluster> ClusterManager::taggedClusters(const std::unordered_map<blocksci::ScriptPointer, std::string> &tags) {
     std::vector<TaggedCluster> taggedClusters;
-    for (auto &cluster : getClusters()) {
-        auto taggedAddresses = cluster.taggedAddresses(tags);
+    for (auto cluster : getClusters()) {
+        auto taggedAddresses = cluster.taggedScripts(tags);
         if (!taggedAddresses.empty()) {
             taggedClusters.emplace_back(cluster, std::move(taggedAddresses));
         }
@@ -84,7 +84,7 @@ std::vector<uint32_t> ClusterManager::getClusterSizes() const {
     return clusterSizes;
 }
 
-boost::iterator_range<const blocksci::Address *> ClusterManager::getClusterAddresses(uint32_t clusterNum) const {
+boost::iterator_range<const blocksci::ScriptPointer *> ClusterManager::getClusterScripts(uint32_t clusterNum) const {
     auto nextClusterOffset = *clusterOffsetFile.getData(clusterNum);
     uint32_t clusterOffset = 0;
     if (clusterNum > 0) {
@@ -92,7 +92,7 @@ boost::iterator_range<const blocksci::Address *> ClusterManager::getClusterAddre
     }
     auto clusterSize = nextClusterOffset - clusterOffset;
     
-    auto firstAddressOffset = clusterAddressesFile.getData(clusterOffset);
+    auto firstAddressOffset = clusterScriptsFile.getData(clusterOffset);
     
     return boost::make_iterator_range_n(firstAddressOffset, clusterSize);
 }

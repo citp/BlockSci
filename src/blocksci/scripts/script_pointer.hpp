@@ -10,11 +10,13 @@
 #define script_pointer_hpp
 
 #include "script_type.hpp"
+#include "scriptsfwd.hpp"
 
 #include <stdio.h>
 
 namespace blocksci {
     struct Address;
+    
     
     struct ScriptPointer {
         uint32_t scriptNum;
@@ -27,7 +29,17 @@ namespace blocksci {
         bool operator==(const ScriptPointer &other) const {
             return scriptNum == other.scriptNum && type == other.type;
         }
+        
+        std::string toString() const;
+        
+        std::unique_ptr<Script> getScript(const ScriptAccess &access) const;
+        
+        #ifndef BLOCKSCI_WITHOUT_SINGLETON
+        std::unique_ptr<Script> getScript() const;
+        #endif
     };
+    
+    std::ostream &operator<<(std::ostream &os, const ScriptPointer &scriptPointer);
 }
 
 namespace std {

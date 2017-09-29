@@ -19,6 +19,7 @@ namespace blocksci {
     struct NonstandardScriptData;
     class ScriptAccess;
     struct DataConfiguration;
+    struct Script;
     
     template <ScriptType::Enum>
     class ScriptAddress;

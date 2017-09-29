@@ -43,7 +43,6 @@ namespace blocksci {
         } else {
             return boost::none;
         }
-        
     }
 }
 

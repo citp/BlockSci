@@ -31,14 +31,14 @@ class ClusterExpander;
 
 struct TaggedCluster {
     Cluster cluster;
-    std::vector<TaggedAddress> taggedAddresses;
+    std::vector<TaggedScriptPointer> taggedScripts;
     
-    TaggedCluster(const Cluster &cluster_, std::vector<TaggedAddress> &&taggedAddresses_) : cluster(cluster_), taggedAddresses(taggedAddresses_) {}
+    TaggedCluster(const Cluster &cluster_, std::vector<TaggedScriptPointer> &&taggedScripts_) : cluster(cluster_), taggedScripts(taggedScripts_) {}
 };
 
 class ClusterManager {
     blocksci::FixedSizeFileMapper<uint32_t> clusterOffsetFile;
-    blocksci::FixedSizeFileMapper<blocksci::Address> clusterAddressesFile;
+    blocksci::FixedSizeFileMapper<blocksci::ScriptPointer> clusterScriptsFile;
     
     using ScriptClusterIndexTuple = blocksci::internal::to_script_type<ScriptClusterIndexFile, blocksci::ScriptInfoList>::type;
     
@@ -58,7 +58,7 @@ public:
     uint32_t getClusterNum(const blocksci::Address &address) const;
     
     uint32_t getClusterSize(uint32_t clusterNum) const;
-    boost::iterator_range<const blocksci::Address *> getClusterAddresses(uint32_t clusterNum) const;
+    boost::iterator_range<const blocksci::ScriptPointer *> getClusterScripts(uint32_t clusterNum) const;
     
     uint32_t clusterCount() const;
     
@@ -66,7 +66,7 @@ public:
     
     std::vector<uint32_t> getClusterSizes() const;
     
-    std::vector<TaggedCluster> taggedClusters(const std::unordered_map<blocksci::Address, std::string> &tags);
+    std::vector<TaggedCluster> taggedClusters(const std::unordered_map<blocksci::ScriptPointer, std::string> &tags);
 };
 
 class ClusterExpander

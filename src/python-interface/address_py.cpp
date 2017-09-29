@@ -39,6 +39,16 @@ void init_address(py::module &m) {
     .def_static("from_string", py::overload_cast<const std::string &>(getAddressFromString), "Construct an address object from an address string")
     ;
     
+    py::class_<ScriptPointer>(m, "ScriptPointer", "Represents an abstract script object which uniquely identifies a given script")
+    .def(py::init<uint32_t, ScriptType::Enum>(), "Can be constructed directly by passing it an address index and address type")
+    .def("__repr__", &ScriptPointer::toString)
+    .def(py::self == py::self)
+    .def(hash(py::self))
+    .def_readonly("script_num", &ScriptPointer::scriptNum)
+    .def_readonly("type", &ScriptPointer::type)
+    .def_property_readonly("script", py::overload_cast<>(&ScriptPointer::getScript, py::const_), "Returns the script associated with this pointer")
+    ;
+    
     py::class_<Script> baseScript(m, "Script", "Class representing a script which coins are sent to");
     baseScript
     .def("__repr__", py::overload_cast<>(&Script::toString, py::const_))
