@@ -105,13 +105,13 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
      })
      ;
      
-     using address_range = boost::iterator_range<const blocksci::Address *>;
-     py::class_<address_range>(m, "AddressRange")
-     .def("__len__", &address_range::size)
+     using script_range = boost::iterator_range<const blocksci::ScriptPointer *>;
+     py::class_<script_range>(m, "ScriptRange")
+     .def("__len__", &script_range::size)
      /// Optional sequence protocol operations
-     .def("__iter__", [](const address_range &range) { return py::make_iterator(range.begin(), range.end()); },
+     .def("__iter__", [](const script_range &range) { return py::make_iterator(range.begin(), range.end()); },
           py::keep_alive<0, 1>() /* Essential: keep object alive while iterator exists */)
-     .def("__getitem__", [](const address_range &range, int64_t i) {
+     .def("__getitem__", [](const script_range &range, int64_t i) {
          while (i < 0) {
              i = range.size() - i;
          }
@@ -120,7 +120,7 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
              throw py::index_error();
          return range[i];
      })
-     .def("__getitem__", [](const address_range &range, py::slice slice) -> py::list {
+     .def("__getitem__", [](const script_range &range, py::slice slice) -> py::list {
          size_t start, stop, step, slicelength;
          if (!slice.compute(range.size(), &start, &stop, &step, &slicelength))
              throw py::error_already_set();
