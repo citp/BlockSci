@@ -153,7 +153,7 @@ void recordOrderedAddresses(const std::vector<uint32_t> &parent, std::vector<uin
         uint32_t &j = clusterPositions[parent[i]];
         auto it = typeIndexes.upper_bound(i);
         it--;
-        uint32_t addressNum = i - it->first + 1;
+        uint32_t addressNum = i - it->first;
         assert(addressNum != 0);
         auto addressType = it->second;
         orderedScripts[j] = ScriptPointer(addressNum, addressType);
