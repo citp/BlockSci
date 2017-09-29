@@ -13,6 +13,7 @@
 
 #include <boost/range/iterator_range.hpp>
 
+#include <vector>
 #include <unordered_map>
 #include <stdio.h>
 #include <cstdint>

@@ -22,7 +22,7 @@ int main(int argc, const char * argv[]) {
     std::vector<uint32_t> sizes;
     sizes.reserve(manager.clusterCount());
     for (auto cluster : manager.getClusters()) {
-        auto size = cluster.getAddressCount(ScriptType::Enum::PUBKEYHASH) + cluster.getAddressCount(ScriptType::Enum::SCRIPTHASH);
+        auto size = cluster.getScriptCount(ScriptType::Enum::PUBKEY) + cluster.getScriptCount(ScriptType::Enum::SCRIPTHASH);
         std::cout << size << "\n";
     }
     

@@ -60,21 +60,21 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
      .def("__hash__", [] (const Cluster &cluster) {
          return cluster.clusterNum;
      })
-     .def_property_readonly("addresses", &Cluster::getAddresses)
-     .def("tagged_addresses", &Cluster::taggedAddresses)
-     .def("address_count", &Cluster::getAddressCount)
+     .def_property_readonly("scripts", &Cluster::getScripts)
+     .def("tagged_scripts", &Cluster::taggedScripts)
+     .def("script_count", &Cluster::getScriptCount)
      ;
      
-     py::class_<TaggedAddress>(m, "TaggedAddress")
-     .def_readonly("address", &TaggedAddress::address)
-     .def_readonly("tag", &TaggedAddress::tag)
+     py::class_<TaggedScriptPointer>(m, "TaggedScriptPointer")
+     .def_readonly("script_pointer", &TaggedScriptPointer::scriptPointer)
+     .def_readonly("tag", &TaggedScriptPointer::tag)
      ;
      
      py::class_<TaggedCluster>(m, "TaggedCluster")
      .def_property_readonly("cluster", [](const TaggedCluster &tc) {
          return tc.cluster;
      })
-     .def_readonly("tagged_addresses", &TaggedCluster::taggedAddresses)
+     .def_readonly("tagged_addresses", &TaggedCluster::taggedScripts)
      ;
      
      using cluster_range = boost::transformed_range<ClusterExpander, const boost::iterator_range<boost::iterators::counting_iterator<unsigned int>>>;
