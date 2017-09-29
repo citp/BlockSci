@@ -36,6 +36,7 @@ void init_address(py::module &m) {
     .def_property_readonly("script", py::overload_cast<>(&Address::getScript, py::const_), "Returns the script associated with this address")
     .def_property_readonly("first_tx", py::overload_cast<>(&Address::getFirstTransaction, py::const_), "Get the first transaction that was sent to this address")
     .def_static("address_count", static_cast<size_t(*)()>(addressCount), "Get the total number of address of a given type")
+    .def_static("from_string", py::overload_cast<const std::string &>(getAddressFromString), "Construct an address object from an address string")
     ;
     
     py::class_<Script> baseScript(m, "Script", "Class representing a script which coins are sent to");
