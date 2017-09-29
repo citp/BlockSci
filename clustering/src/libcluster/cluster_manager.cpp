@@ -12,7 +12,9 @@
 #include <blocksci/address/address_info.hpp>
 
 ClusterManager::ClusterManager(std::string baseDirectory) : clusterOffsetFile(baseDirectory + "clusterOffsets"), clusterAddressesFile(baseDirectory + "clusterAddresses"), scriptClusterIndexFiles(blocksci::apply(blocksci::ScriptInfoList(), [&] (auto tag) {
-    return baseDirectory + blocksci::ScriptInfo<tag.type>::name + "_cluster_index";;
+    std::stringstream ss;
+    ss << baseDirectory << blocksci::scriptName(tag.type) << "_cluster_index";
+    return ss.str();
 }))  {
 }
 
@@ -22,7 +24,7 @@ boost::transformed_range<ClusterExpander, const boost::iterator_range<boost::ite
 }
 
 uint32_t ClusterManager::clusterCount() const {
-    return clusterOffsetFile.size();
+    return static_cast<uint32_t>(clusterOffsetFile.size());
 }
 
 template<blocksci::AddressType::Enum type>

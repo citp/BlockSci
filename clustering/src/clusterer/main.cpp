@@ -22,48 +22,6 @@
 
 using namespace blocksci;
 
-
-bool isCoinjoinFast(const Transaction &tx, const std::vector<const Output *> &spentOutputs) {
-    if (tx.inputCount() < 2 || tx.outputCount() < 3) {
-        return false;
-    }
-    
-    uint16_t participantCount = (tx.outputCount() + 1) / 2;
-    if (participantCount > tx.inputCount()) {
-        return false;
-    }
-    
-    std::unordered_set<ScriptPointer> inputAddresses;
-    for (auto spentOutput : spentOutputs) {
-        inputAddresses.emplace(spentOutput->getAddress());
-    }
-    
-    if (participantCount > inputAddresses.size()) {
-        return false;
-    }
-    
-    std::unordered_map<uint64_t, uint16_t> outputValues;
-    for (auto &output : tx.outputs()) {
-        outputValues[output.getValue()]++;
-    }
-    
-    using pair_type = decltype(outputValues)::value_type;
-    auto pr = std::max_element(std::begin(outputValues), std::end(outputValues),
-                               [] (const pair_type & p1, const pair_type & p2) {
-                                   return p1.second < p2.second;
-                               }
-                               );
-    
-    if (pr->second != participantCount) {
-        return false;
-    }
-    
-    if (pr->first == 546 || pr->first == 2730) {
-        return false;
-    }
-    
-    return true;
-}
 std::vector<std::pair<ScriptPointer, ScriptPointer>> process_transaction(const Transaction &tx) {
     std::vector<std::pair<ScriptPointer, ScriptPointer>> pairsToUnion;
     
