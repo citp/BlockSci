@@ -371,8 +371,6 @@ void BlockProcessor::processUTXOs(const ParserConfigurationBase &config, UTXOSta
             }
             std::this_thread::sleep_for(100ms);
         }
-        
-        utxoState.optionalSave();
     };
     
     while (!hashDone) {

@@ -39,6 +39,11 @@ class AddressState {
 public:
     using address_map = spp::sparse_hash_map<blocksci::RawScript, uint32_t, std::hash<blocksci::RawScript>>;
 private:
+    
+    static constexpr auto SingleAddressMapMaxSize = 100;
+    static constexpr auto StartingAddressCount = 500'000'000;
+    static constexpr auto AddressFalsePositiveRate = .05;
+    
     const ParserConfigurationBase &config;
     leveldb::DB* levelDb;
     

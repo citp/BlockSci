@@ -13,10 +13,6 @@
 
 #include <boost/filesystem/fstream.hpp>
 
-const auto SingleAddressMapMaxSize = 10'000'000;
-const auto StartingAddressCount = 500'000'000;
-const auto AddressFalsePositiveRate = .05;
-
 AddressState::AddressState(const ParserConfigurationBase &config_) : config(config_)  {
     leveldb::Options options;
     options.create_if_missing = true;
@@ -245,14 +241,17 @@ void AddressState::clearAddressCache() {
         addressClearFuture.get();
         oldSingleAddressMap.clear();
         singleAddressMap.swap(oldSingleAddressMap);
+    } else {
+        singleAddressMap.swap(oldSingleAddressMap);
     }
     auto addressesToSave = oldSingleAddressMap;
-    addressClearFuture = std::async(std::launch::async, [&, addressesToSave] {
+    auto database = levelDb;
+    addressClearFuture = std::async(std::launch::async, [database, addressesToSave] {
         leveldb::WriteBatch batch;
         for (auto &entry : addressesToSave) {
             std::string value(reinterpret_cast<char const*>(&entry.second), sizeof(entry.second));
             batch.Put(leveldb::Slice(reinterpret_cast<const char *>(&entry.first), sizeof(entry.first)), value);
         }
-        levelDb->Write(leveldb::WriteOptions(), &batch);
+        database->Write(leveldb::WriteOptions(), &batch);
     });
 }

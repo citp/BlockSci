@@ -34,23 +34,12 @@ class UTXOState {
     using utxo_map = spp::sparse_hash_map<RawOutputPointer, UTXO, RawOutputPointerHasher>;
     
     const ParserConfigurationBase &config;
-    leveldb::DB* levelDb;
     
     utxo_map utxoMap;
-    utxo_map oldUTXOMap;
-    
-    std::vector<RawOutputPointer> deletedKeys;
-    
-    std::future<void> utxoClearFuture;
-    
-    void clearUTXOCache();
-    void clearDeletedKeys();
     
 public:
     UTXOState(const ParserConfigurationBase &config);
     ~UTXOState();
-    
-    void optionalSave();
     
     UTXO spendOutput(const RawOutputPointer &outputPointer);
     void addOutput(UTXO utxo, const RawOutputPointer &outputPointer);
