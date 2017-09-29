@@ -142,14 +142,14 @@ uint32_t remapClusterIds(std::vector<uint32_t> &parents) {
 void recordOrderedAddresses(const std::vector<uint32_t> &parent, std::vector<uint32_t> &clusterPositions, const std::unordered_map<ScriptType::Enum, uint32_t> &scriptStarts) {
     
     std::map<uint32_t, ScriptType::Enum> typeIndexes;
-    for (auto &pair : addressStarts) {
+    for (auto &pair : scriptStarts) {
         typeIndexes[pair.second] = pair.first;
     }
     
     std::vector<ScriptPointer> orderedScripts;
     orderedScripts.resize(parent.size());
     
-    for (size_t i = 0; i < parent.size(); i++) {
+    for (uint32_t i = 0; i < parent.size(); i++) {
         uint32_t &j = clusterPositions[parent[i]];
         auto it = typeIndexes.upper_bound(i);
         it--;
