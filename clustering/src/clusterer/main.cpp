@@ -26,9 +26,10 @@ std::vector<std::pair<ScriptPointer, ScriptPointer>> process_transaction(const T
     std::vector<std::pair<ScriptPointer, ScriptPointer>> pairsToUnion;
     
     if (!isCoinjoin(tx) && !isCoinbase(tx)) {
-        auto firstAddress = tx.inputs()[0].getAddress();
-        for (uint16_t i = 1; i < tx.inputCount(); i++) {
-            pairsToUnion.emplace_back(firstAddress, tx.inputs()[i].getAddress());
+        auto inputs = tx.inputs();
+        auto firstAddress = inputs[0].getAddress();
+        for (uint16_t i = 1; i < inputs.size(); i++) {
+            pairsToUnion.emplace_back(firstAddress, inputs[i].getAddress());
         }
         
         if (auto change = getChangeOutput(tx)) {
@@ -39,8 +40,8 @@ std::vector<std::pair<ScriptPointer, ScriptPointer>> process_transaction(const T
 }
 
 void link_addresses(const ScriptPointer &address1, const ScriptPointer &address2, DisjointSets &sets, const std::unordered_map<ScriptType::Enum, uint32_t> &addressStarts) {
-    auto firstAddressIndex = addressStarts.at(address1.type) + address1.scriptNum;
-    auto secondAddressIndex = addressStarts.at(address2.type) + address2.scriptNum;;
+    auto firstAddressIndex = addressStarts.at(address1.type) + address1.scriptNum - 1;
+    auto secondAddressIndex = addressStarts.at(address2.type) + address2.scriptNum - 1;
     sets.unite(firstAddressIndex, secondAddressIndex);
 }
 
@@ -82,9 +83,9 @@ void segmentWork(uint32_t start, uint32_t end, uint32_t segmentCount, Job job) {
     }
 }
 
-std::vector<uint32_t> getClusters(Blockchain &chain, const std::unordered_map<ScriptType::Enum, uint32_t> &addressStarts, uint32_t totalAddressCount) {
+std::vector<uint32_t> getClusters(Blockchain &chain, const std::unordered_map<ScriptType::Enum, uint32_t> &addressStarts, uint32_t totalScriptCount) {
     
-    DisjointSets ds(totalAddressCount);
+    DisjointSets ds(totalScriptCount);
     
     auto scriptHashCount = chain.access.scripts->scriptCount<ScriptType::Enum::SCRIPTHASH>();
     
@@ -108,13 +109,13 @@ std::vector<uint32_t> getClusters(Blockchain &chain, const std::unordered_map<Sc
     
     chain.mapReduceTransactions(0, chain.size(), extract, [](int,int) {return 0;}, 0);
     
-    segmentWork(0, totalAddressCount, 8, [&ds](uint32_t index) {
+    segmentWork(0, totalScriptCount, 8, [&ds](uint32_t index) {
         ds.find(index);
     });
     
     std::vector<uint32_t> parents;
     parents.reserve(ds.size());
-    for (uint32_t i = 0; i < totalAddressCount; i++) {
+    for (uint32_t i = 0; i < totalScriptCount; i++) {
         parents.push_back(ds.find(i));
     }
     return parents;
@@ -138,14 +139,11 @@ uint32_t remapClusterIds(std::vector<uint32_t> &parents) {
     return clusterCount;
 }
 
-void recordOrderedAddresses(const std::vector<uint32_t> &parent, std::vector<uint32_t> &clusterPositions, const std::unordered_map<ScriptType::Enum, uint32_t> &addressStarts) {
+void recordOrderedAddresses(const std::vector<uint32_t> &parent, std::vector<uint32_t> &clusterPositions, const std::unordered_map<ScriptType::Enum, uint32_t> &scriptStarts) {
     
     std::map<uint32_t, ScriptType::Enum> typeIndexes;
     for (auto &pair : addressStarts) {
-        if (pair.first != ScriptType::Enum::PUBKEY) {
-            typeIndexes[pair.second] = pair.first;
-        }
-        
+        typeIndexes[pair.second] = pair.first;
     }
     
     std::vector<ScriptPointer> orderedScripts;
