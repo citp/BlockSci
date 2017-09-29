@@ -24,6 +24,7 @@ namespace blocksci {
     struct Input;
     class ScriptAccess;
     class ChainAccess;
+    class HashIndex;
     class ScriptFirstSeenAccess;
     class AddressIndex;
     struct DataConfiguration;
@@ -77,6 +78,8 @@ namespace blocksci {
     size_t addressCount(const ScriptAccess &access);
     
     void visit(const Address &address, const std::function<bool(const Address &)> &visitFunc, const ScriptAccess &access);
+    
+    boost::optional<Address> getAddressFromString(const DataConfiguration &config, const HashIndex &index, const std::string &addressString);
     
     // Requires DataAccess
     #ifndef BLOCKSCI_WITHOUT_SINGLETON

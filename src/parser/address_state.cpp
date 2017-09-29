@@ -24,7 +24,7 @@ AddressState::AddressState(const ParserConfigurationBase &config_) : config(conf
     
     blocksci::uint160 deletedAddress;
     deletedAddress.SetHex("FFFFFFFFFFFFFFFFFFFF");
-    blocksci::RawAddress deletedKey{deletedAddress, blocksci::ScriptType::Enum::NULL_DATA};
+    blocksci::RawScript deletedKey{deletedAddress, blocksci::ScriptType::Enum::NULL_DATA};
     
     singleAddressMap.set_deleted_key(deletedKey);
     oldSingleAddressMap.set_deleted_key(deletedKey);
@@ -93,8 +93,8 @@ uint32_t AddressState::getNewAddressIndex(blocksci::ScriptType::Enum type) {
     return ++scriptIndexes[static_cast<uint8_t>(type)];
 }
 
-BloomFilter<blocksci::RawAddress> AddressState::generateAddressBloomFilter(uint64_t maxAddresses, double falsePositiveRate) {
-    BloomFilter<blocksci::RawAddress> bloom{maxAddresses, falsePositiveRate};
+BloomFilter<blocksci::RawScript> AddressState::generateAddressBloomFilter(uint64_t maxAddresses, double falsePositiveRate) {
+    BloomFilter<blocksci::RawScript> bloom{maxAddresses, falsePositiveRate};
     for (auto &pair : singleAddressMap) {
         bloom.add(pair.first);
     }
@@ -110,8 +110,8 @@ BloomFilter<blocksci::RawAddress> AddressState::generateAddressBloomFilter(uint6
     leveldb::Iterator* it = levelDb->NewIterator(leveldb::ReadOptions());
     for (it->SeekToFirst(); it->Valid(); it->Next()) {
         auto key = it->key();
-        if (key.size() == sizeof(blocksci::RawAddress)) {
-            auto address = *reinterpret_cast<const blocksci::RawAddress *>(key.data());
+        if (key.size() == sizeof(blocksci::RawScript)) {
+            auto address = *reinterpret_cast<const blocksci::RawScript *>(key.data());
             bloom.add(address);
         }
     }
@@ -188,9 +188,9 @@ void AddressState::removeAddresses(const std::unordered_map<blocksci::ScriptType
     leveldb::Iterator* levelDbIt = levelDb->NewIterator(leveldb::ReadOptions());
     for (levelDbIt->SeekToFirst(); levelDbIt->Valid(); levelDbIt->Next()) {
         auto key = levelDbIt->key();
-        if (key.size() == sizeof(blocksci::RawAddress)) {
+        if (key.size() == sizeof(blocksci::RawScript)) {
             uint32_t destNum = *reinterpret_cast<const uint32_t *>(levelDbIt->value().data());
-            auto address = *reinterpret_cast<const blocksci::RawAddress *>(key.data());
+            auto address = *reinterpret_cast<const blocksci::RawScript *>(key.data());
             auto it = deletedIndex.find(address.type);
             if (it != deletedIndex.end() && singleAddressIt2->second >= destNum) {
                 batch.Delete(key);
@@ -202,7 +202,7 @@ void AddressState::removeAddresses(const std::unordered_map<blocksci::ScriptType
     addressBloomFilter = generateAddressBloomFilter(addressBloomFilter.getMaxItems(), addressBloomFilter.getFPRate());
 }
 
-AddressInfo AddressState::findAddress(const blocksci::RawAddress &address) const {
+AddressInfo AddressState::findAddress(const blocksci::RawScript &address) const {
     static uint64_t fpcount = 0;
     
     if (!addressBloomFilter.possiblyContains(address)) {

@@ -12,7 +12,7 @@
 #include "bloom_filter.hpp"
 #include "parser_fwd.hpp"
 
-#include <blocksci/address/raw_address_pointer.hpp>
+#include <blocksci/scripts/raw_script.hpp>
 
 #include <sparsepp/spp.h>
 #include <leveldb/db.h>
@@ -37,7 +37,7 @@ struct AddressInfo;
 
 class AddressState {
 public:
-    using address_map = spp::sparse_hash_map<blocksci::RawAddress, uint32_t, std::hash<blocksci::RawAddress>>;
+    using address_map = spp::sparse_hash_map<blocksci::RawScript, uint32_t, std::hash<blocksci::RawScript>>;
 private:
     const ParserConfigurationBase &config;
     leveldb::DB* levelDb;
@@ -45,14 +45,14 @@ private:
     address_map multiAddressMap;
     address_map singleAddressMap;
     address_map oldSingleAddressMap;
-    BloomFilter<blocksci::RawAddress> addressBloomFilter;
+    BloomFilter<blocksci::RawScript> addressBloomFilter;
     
     
     std::vector<uint32_t> scriptIndexes;
     
     std::future<void> addressClearFuture;
     
-    BloomFilter<blocksci::RawAddress> generateAddressBloomFilter(uint64_t maxAddresses, double falsePositiveRate);
+    BloomFilter<blocksci::RawScript> generateAddressBloomFilter(uint64_t maxAddresses, double falsePositiveRate);
     
     void initializeScriptIndexes();
     void saveScriptIndexes();
@@ -67,7 +67,7 @@ public:
     
     void optionalSave();
 
-    AddressInfo findAddress(const blocksci::RawAddress &address) const;
+    AddressInfo findAddress(const blocksci::RawScript &address) const;
     // Bool is true if address is new
     std::pair<uint32_t, bool> resolveAddress(const AddressInfo &addressInfo);
     uint32_t getNewAddressIndex(blocksci::ScriptType::Enum type);
@@ -76,7 +76,7 @@ public:
 };
 
 struct AddressInfo {
-    blocksci::RawAddress rawAddress;
+    blocksci::RawScript rawAddress;
     AddressLocation location;
     AddressState::address_map::const_iterator it;
     uint32_t addressNum;

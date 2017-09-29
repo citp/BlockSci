@@ -18,6 +18,7 @@
 #include "scripts/scripthash_script.hpp"
 #include "scripts/scriptsfwd.hpp"
 #include "chain/transaction.hpp"
+#include "hash_index.hpp"
 
 #include <unordered_set>
 
@@ -112,6 +113,22 @@ namespace blocksci {
         return index.getInputTransactions(*this, chain);
     }
     
+    boost::optional<Address> getAddressFromString(const DataConfiguration &config, const HashIndex &index, const std::string &addressString) {
+        auto rawAddress = RawAddress::create(config, addressString);
+        
+        if (rawAddress) {
+            uint32_t addressNum = 0;
+            if (rawAddress->type == AddressType::Enum::PUBKEYHASH) {
+                addressNum = index.getPubkeyHashIndex(rawAddress->hash);
+            } else if (rawAddress->type == AddressType::Enum::SCRIPTHASH) {
+                addressNum = index.getScriptHashIndex(rawAddress->hash);
+            }
+            if (addressNum > 0) {
+                return Address{addressNum, rawAddress->type};
+            }
+        }
+        return boost::none;
+    }
     
 }
 

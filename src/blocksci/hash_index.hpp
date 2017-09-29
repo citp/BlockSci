@@ -21,16 +21,14 @@ namespace blocksci {
     
     struct DataConfiguration;
     class uint256;
+    class uint160;
+    struct Address;
     
     class HashIndex {
         sqlite3 *db;
         sqlite3_stmt *pubkeyQuery;
         sqlite3_stmt *p2shQuery;
         sqlite3_stmt *txQuery;
-        
-        sqlite3_stmt *pubkeyPrefixQuery;
-        sqlite3_stmt *p2shPrefixQuery;
-        sqlite3_stmt *txPrefixQuery;
         
         std::vector<uint32_t> getMatches(sqlite3_stmt * stmt) const;
         uint32_t getMatch(sqlite3_stmt * stmt) const;
@@ -48,8 +46,9 @@ namespace blocksci {
         HashIndex &operator=(const HashIndex &index) = delete;
         ~HashIndex();
         
+        uint32_t getPubkeyHashIndex(const uint160 &pubkeyhash) const;
+        uint32_t getScriptHashIndex(const uint160 &scripthash) const;
         uint32_t getTxIndex(const uint256 &txHash) const;
-        std::vector<uint32_t> getTxPrefixIndex(const uint256 &txHash) const;
     };
 }
 

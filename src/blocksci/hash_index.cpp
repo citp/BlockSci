@@ -9,6 +9,8 @@
 #include "hash_index.hpp"
 #include "data_configuration.hpp"
 #include "bitcoin_uint256.hpp"
+#include "scripts/bitcoin_base58.hpp"
+#include "address/address.hpp"
 
 #include <array>
 
@@ -31,29 +33,11 @@ namespace blocksci {
             }
             i++;
         }
-        
-        std::array<sqlite3_stmt **, 3> prefixQueryStatements{{&txPrefixQuery, &p2shPrefixQuery, &pubkeyPrefixQuery}};
-        
-        i = 0;
-        for (auto &tableName : tableNames) {
-            std::stringstream ss;
-            ss << "SELECT BLOCKSCI_INDEX FROM " << tableName << " WHERE HASH_INDEX >= ? AND HASH_INDEX < ?" ;
-            auto rc = sqlite3_prepare_v2(db, ss.str().c_str(), -1, prefixQueryStatements[i], nullptr);
-            if (rc != SQLITE_OK) {
-                fprintf(stderr, "Failed to fetch data: %s\n", sqlite3_errmsg(db));
-            }
-            i++;
-        }
     }
     
     HashIndex::~HashIndex() {
         std::array<sqlite3_stmt *, 3> queryStatements{{txQuery, p2shQuery, pubkeyQuery}};
         for (auto &query : queryStatements) {
-            sqlite3_finalize(query);
-        }
-        
-        std::array<sqlite3_stmt *, 3> prefixQueryStatements{{txPrefixQuery, p2shPrefixQuery, pubkeyPrefixQuery}};
-        for (auto &query : prefixQueryStatements) {
             sqlite3_finalize(query);
         }
         
@@ -64,10 +48,10 @@ namespace blocksci {
         std::vector<uint32_t> indexNums;
         int rc = 0;
         while ( (rc = sqlite3_step(stmt)) == SQLITE_ROW) {
-            auto txNum = static_cast<uint32_t>(sqlite3_column_int(txQuery, 0));
+            auto txNum = static_cast<uint32_t>(sqlite3_column_int(stmt, 0));
             indexNums.push_back(txNum);
         }
-        sqlite3_reset(txQuery);
+        sqlite3_reset(stmt);
         return indexNums;
     }
     
@@ -85,9 +69,14 @@ namespace blocksci {
         return getMatch(txQuery);
     }
     
-    std::vector<uint32_t> HashIndex::getTxPrefixIndex(const uint256 &txHash) const {
-        sqlite3_bind_blob(txQuery, 1, &txHash, sizeof(txHash), SQLITE_TRANSIENT);
-        return getMatches(txQuery);
+    uint32_t HashIndex::getPubkeyHashIndex(const uint160 &pubkeyhash) const {
+        sqlite3_bind_blob(pubkeyQuery, 1, &pubkeyhash, sizeof(pubkeyhash), SQLITE_TRANSIENT);
+        return getMatch(pubkeyQuery);
+    }
+    
+    uint32_t HashIndex::getScriptHashIndex(const uint160 &scripthash) const {
+        sqlite3_bind_blob(p2shQuery, 1, &scripthash, sizeof(scripthash), SQLITE_TRANSIENT);
+        return getMatch(p2shQuery);
     }
     
     // DecodeBase58

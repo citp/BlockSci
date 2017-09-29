@@ -9,8 +9,7 @@
 #include "bloom_filter.hpp"
 #include "MurmurHash3.hpp"
 
-#include "address_state.hpp"
-
+#include <blocksci/scripts/raw_script.hpp>
 #include <blocksci/bitcoin_uint256.hpp>
 
 #include <fstream>
@@ -71,4 +70,4 @@ bool BloomFilter<Key>::possiblyContains(const Key &key) const {
     return true;
 }
 
-template class BloomFilter<blocksci::RawAddress>;
+template class BloomFilter<blocksci::RawScript>;

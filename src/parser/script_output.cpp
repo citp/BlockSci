@@ -69,7 +69,7 @@ template <>
 struct AddressNumImp<true> {
     template <blocksci::AddressType::Enum type>
     static std::pair<blocksci::Address, bool> get(ScriptOutput<type> &data, AddressState &state) {
-        blocksci::RawAddress rawAddress{data.getHash(), blocksci::scriptType(type)};
+        blocksci::RawScript rawAddress{data.getHash(), blocksci::scriptType(type)};
         auto addressInfo = state.findAddress(rawAddress);
         auto processed = state.resolveAddress(addressInfo);
         return std::make_pair(blocksci::Address(processed.first, type), processed.second);
@@ -77,7 +77,7 @@ struct AddressNumImp<true> {
     
     template <blocksci::AddressType::Enum type>
     static std::pair<blocksci::Address, bool> check(ScriptOutput<type> &data, const AddressState &state) {
-        blocksci::RawAddress rawAddress{data.getHash(), blocksci::scriptType(type)};
+        blocksci::RawScript rawAddress{data.getHash(), blocksci::scriptType(type)};
         auto addressInfo = state.findAddress(rawAddress);
         return std::make_pair(blocksci::Address(addressInfo.addressNum, type), addressInfo.addressNum == 0);
     }

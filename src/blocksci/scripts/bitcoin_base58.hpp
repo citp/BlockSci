@@ -108,7 +108,7 @@ namespace blocksci {
         CBitcoinAddress(const std::string& strAddress) { SetString(strAddress); }
         CBitcoinAddress(const char* pszAddress) { SetString(pszAddress); }
         
-        std::pair<uint160, ScriptType::Enum> Get(const DataConfiguration &config) const;
+        std::pair<uint160, AddressType::Enum> Get(const DataConfiguration &config) const;
     };
 }
 

@@ -11,6 +11,8 @@
 #include "chain/transaction.hpp"
 #include "scripts/script.hpp"
 
+#include <boost/optional/optional.hpp>
+
 namespace blocksci {
     
     std::unique_ptr<Script> Address::getScript() const {
@@ -49,6 +51,11 @@ namespace blocksci {
     std::vector<Transaction> Address::getInputTransactions() const {
         auto &instance = DataAccess::Instance();
         return getInputTransactions(*instance.addressIndex, *instance.chain);
+    }
+    
+    boost::optional<Address> getAddressFromString(const std::string &addressString) {
+        auto &instance = DataAccess::Instance();
+        return getAddressFromString(instance.config, *instance.hashIndex, addressString);
     }
     
     size_t addressCount() {
