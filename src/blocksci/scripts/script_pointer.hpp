@@ -12,6 +12,7 @@
 #include "script_type.hpp"
 #include "scriptsfwd.hpp"
 
+#include <memory>
 #include <stdio.h>
 
 namespace blocksci {
