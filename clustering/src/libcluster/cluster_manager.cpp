@@ -11,8 +11,8 @@
 
 #include <blocksci/address/address_info.hpp>
 
-ClusterManager::ClusterManager(std::string baseDirectory) : clusterOffsetFile(baseDirectory + "clusterOffsets"), clusterAddressesFile(baseDirectory + "clusterAddresses"), scriptClusterIndexFiles(blocksci::apply(blocksci::AddressInfoList(), [&] (auto tag) {
-    return baseDirectory + blocksci::AddressInfo<tag.type>::typeName + "_cluster_index";;
+ClusterManager::ClusterManager(std::string baseDirectory) : clusterOffsetFile(baseDirectory + "clusterOffsets"), clusterAddressesFile(baseDirectory + "clusterAddresses"), scriptClusterIndexFiles(blocksci::apply(blocksci::ScriptInfoList(), [&] (auto tag) {
+    return baseDirectory + blocksci::ScriptInfo<tag.type>::name + "_cluster_index";;
 }))  {
 }
 
@@ -28,13 +28,13 @@ uint32_t ClusterManager::clusterCount() const {
 template<blocksci::AddressType::Enum type>
 struct ClusterNumFunctor {
     static uint32_t f(const ClusterManager *cm, const blocksci::Address &address) {
-        return cm->getClusterNum<addressAddressType(type)>(address.addressNum);;
+        return cm->getClusterNum<scriptType(type)>(address.addressNum);;
     }
 };
 
 
 uint32_t ClusterManager::getClusterNum(const blocksci::Address &address) const {
-    static auto table = blocksci::make_dynamic_table<ClusterNumFunctor>();
+    static auto table = blocksci::make_dynamic_table<blocksci::AddressType, ClusterNumFunctor>();
     static constexpr std::size_t size = blocksci::AddressType::all.size();
     
     auto index = static_cast<size_t>(address.type);

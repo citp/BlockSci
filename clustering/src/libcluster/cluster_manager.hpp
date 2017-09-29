@@ -12,6 +12,7 @@
 #include "cluster.hpp"
 
 #include <blocksci/file_mapper.hpp>
+#include <blocksci/script.hpp>
 #include <blocksci/address/address_info.hpp>
 
 #include <boost/range/iterator_range.hpp>
@@ -21,7 +22,7 @@
 
 class Cluster;
 
-template<blocksci::AddressType::Enum type>
+template<blocksci::ScriptType::Enum type>
 struct ScriptClusterIndexFile : public blocksci::FixedSizeFileMapper<uint32_t> {
     using blocksci::FixedSizeFileMapper<uint32_t>::FixedSizeFileMapper;
 };
@@ -39,7 +40,7 @@ class ClusterManager {
     blocksci::FixedSizeFileMapper<uint32_t> clusterOffsetFile;
     blocksci::FixedSizeFileMapper<blocksci::Address> clusterAddressesFile;
     
-    using ScriptClusterIndexTuple = blocksci::internal::to_script_type<ScriptClusterIndexFile, blocksci::AddressInfoList>::type;
+    using ScriptClusterIndexTuple = blocksci::internal::to_script_type<ScriptClusterIndexFile, blocksci::ScriptInfoList>::type;
     
     ScriptClusterIndexTuple scriptClusterIndexFiles;
     
@@ -48,7 +49,7 @@ public:
     
     Cluster getCluster(const blocksci::Address &address) const;
     
-    template<blocksci::AddressType::Enum type>
+    template<blocksci::ScriptType::Enum type>
     uint32_t getClusterNum(uint32_t addressNum) const {
         auto &file = std::get<ScriptClusterIndexFile<type>>(scriptClusterIndexFiles);
         return *file.getData(addressNum);
