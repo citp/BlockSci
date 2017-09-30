@@ -12,8 +12,6 @@
 #include <blocksci/address/address_types.hpp>
 #include <blocksci/chain/output.hpp>
 
-#include <stdio.h>
-
 struct UTXO {
     blocksci::Output output;
     blocksci::AddressType::Enum addressType;

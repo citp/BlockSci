@@ -24,7 +24,6 @@
 
 #include <unordered_map>
 #include <vector>
-#include <stdio.h>
 
 struct RawTransaction;
 class BitcoinAPI;

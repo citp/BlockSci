@@ -19,7 +19,6 @@
 #include <string_view>
 #include <tuple>
 #include <sstream>
-#include <stdio.h>
 
 namespace blocksci {
     using namespace std::string_view_literals;

@@ -13,7 +13,6 @@
 #include "parser_fwd.hpp"
 
 #include <cstdint>
-#include <stdio.h>
 
 #ifdef BLOCKSCI_FILE_PARSER
 void replayBlock(const ParserConfiguration<FileTag> &config, uint32_t blockNum);

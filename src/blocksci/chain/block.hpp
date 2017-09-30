@@ -16,7 +16,6 @@
 
 #include <unordered_map>
 #include <chrono>
-#include <stdio.h>
 
 namespace blocksci {
     

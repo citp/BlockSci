@@ -15,11 +15,9 @@
 #include <blocksci/scripts/raw_script.hpp>
 
 #include <sparsepp/spp.h>
-#include <leveldb/db.h>
 
 #include <future>
 #include <unordered_map>
-#include <stdio.h>
 
 class CBloomFilter;
 
@@ -31,7 +29,9 @@ enum class AddressLocation {
     NotFound
 };
 
-
+namespace leveldb {
+    class DB;
+}
 
 struct AddressInfo;
 
@@ -40,7 +40,7 @@ public:
     using address_map = spp::sparse_hash_map<blocksci::RawScript, uint32_t, std::hash<blocksci::RawScript>>;
 private:
     
-    static constexpr auto SingleAddressMapMaxSize = 100;
+    static constexpr auto SingleAddressMapMaxSize = 10'000'000;
     static constexpr auto StartingAddressCount = 500'000'000;
     static constexpr auto AddressFalsePositiveRate = .05;
     

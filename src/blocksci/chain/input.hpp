@@ -13,7 +13,6 @@
 
 #include <cstdint>
 #include <string>
-#include <stdio.h>
 
 
 namespace blocksci {

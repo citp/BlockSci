@@ -13,7 +13,6 @@
 #include <blocksci/bitcoin_uint256.hpp>
 
 #include <boost/range/iterator_range.hpp>
-#include <stdio.h>
 
 namespace blocksci {
     class ReorgException : public std::runtime_error {

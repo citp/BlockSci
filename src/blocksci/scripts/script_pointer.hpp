@@ -13,7 +13,6 @@
 #include "scriptsfwd.hpp"
 
 #include <memory>
-#include <stdio.h>
 
 namespace blocksci {
     struct Address;

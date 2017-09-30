@@ -13,7 +13,6 @@
 
 #include <future>
 #include <vector>
-#include <stdio.h>
 
 namespace blocksci {
     class ChainAccess;

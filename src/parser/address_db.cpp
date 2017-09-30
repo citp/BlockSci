@@ -23,6 +23,8 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/optional/optional.hpp>
 
+#include <sqlite3.h>
+
 #include <string>
 
 using namespace blocksci;

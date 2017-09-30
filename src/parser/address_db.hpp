@@ -14,9 +14,10 @@
 
 #include <blocksci/scripts/script_type.hpp>
 
-#include <sqlite3.h>
 #include <unordered_map>
 
+struct sqlite3;
+struct sqlite3_stmt;
 
 class AddressDB : public AddressTraverser {
     sqlite3 *db;

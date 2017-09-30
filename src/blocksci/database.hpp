@@ -9,8 +9,7 @@
 #ifndef database_hpp
 #define database_hpp
 
-#include <sqlite3.h>
-#include <stdio.h>
+struct sqlite3;
 
 namespace blocksci {
     class Database {

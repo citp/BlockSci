@@ -14,7 +14,6 @@
 #include <functional>
 #include <vector>
 #include <memory>
-#include <stdio.h>
 
 namespace blocksci {
     

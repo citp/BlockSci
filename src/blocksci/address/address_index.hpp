@@ -13,12 +13,11 @@
 #include <blocksci/address/address_types.hpp>
 #include <blocksci/scripts/script_info.hpp>
 
-#include <sqlite3.h>
-
 #include <unordered_set>
 #include <string>
 #include <vector>
-#include <stdio.h>
+
+struct sqlite3_stmt;
 
 namespace blocksci {
     

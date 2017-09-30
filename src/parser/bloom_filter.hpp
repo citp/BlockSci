@@ -11,7 +11,6 @@
 
 #include <fstream>
 #include <vector>
-#include <stdio.h>
 
 template<class Key>
 class BloomFilter {

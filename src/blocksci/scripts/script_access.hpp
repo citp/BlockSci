@@ -16,8 +16,6 @@
 
 #include <blocksci/file_mapper.hpp>
 
-#include <stdio.h>
-
 namespace blocksci {
     
     struct DataConfiguration;

@@ -22,6 +22,8 @@
 
 #include <boost/optional/optional.hpp>
 
+#include <sqlite3.h>
+
 #include <vector>
 #include <sstream>
 #include <iostream>

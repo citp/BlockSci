@@ -10,7 +10,6 @@
 #define file_writer_hpp
 
 #include <boost/filesystem/fstream.hpp>
-#include <stdio.h>
 
 struct SimpleFileWriter {
 protected:

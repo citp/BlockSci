@@ -12,6 +12,8 @@
 #include "scripts/bitcoin_base58.hpp"
 #include "address/address.hpp"
 
+#include <sqlite3.h>
+
 #include <array>
 
 namespace blocksci {

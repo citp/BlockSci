@@ -9,12 +9,12 @@
 #ifndef hash_index_hpp
 #define hash_index_hpp
 
-#include <sqlite3.h>
-
 #include <string_view>
 #include <vector>
 #include <cstdint>
-#include <stdio.h>
+
+struct sqlite3;
+struct sqlite3_stmt;
 
 namespace blocksci {
     using namespace std::string_view_literals;

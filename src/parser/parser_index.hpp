@@ -17,7 +17,6 @@
 #include <boost/filesystem/path.hpp>
 
 #include <future>
-#include <stdio.h>
 
 namespace blocksci {
     class ChainAccess;

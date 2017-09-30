@@ -15,8 +15,6 @@
 #include <boost/optional/optional_fwd.hpp>
 #include <boost/functional/hash.hpp>
 
-#include <stdio.h>
-
 namespace blocksci {
     struct DataConfiguration;
     struct PubkeyData;

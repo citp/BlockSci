@@ -11,8 +11,6 @@
 
 #include <blocksci/data_configuration.hpp>
 
-#include <stdio.h>
-
 namespace blocksci {
     
     class ChainAccess;

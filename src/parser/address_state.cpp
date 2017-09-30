@@ -9,6 +9,7 @@
 #include "address_state.hpp"
 #include "parser_configuration.hpp"
 
+#include <leveldb/db.h>
 #include <leveldb/write_batch.h>
 
 #include <boost/filesystem/fstream.hpp>

@@ -16,8 +16,6 @@
 #include <blocksci/address/address.hpp>
 #include <blocksci/bitcoin_uint256.hpp>
 
-#include <stdio.h>
-
 namespace blocksci {
     struct PubkeyData {
         CPubKey pubkey;

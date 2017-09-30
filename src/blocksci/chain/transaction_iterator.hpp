@@ -11,7 +11,6 @@
 
 #include "transaction.hpp"
 #include <boost/iterator/iterator_facade.hpp>
-#include <stdio.h>
 
 namespace blocksci {
     class ChainAccess;

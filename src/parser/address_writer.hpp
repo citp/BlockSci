@@ -20,8 +20,6 @@
 
 #include <boost/variant/variant.hpp>
 
-#include <stdio.h>
-
 template<typename T>
 struct ScriptFileType;
 

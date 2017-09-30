@@ -11,7 +11,6 @@
 #include "basic_types.hpp"
 
 #include <ostream>
-#include <cstdio>
 
 std::ostream &operator<<(std::ostream &os, RawOutputPointer const &pointer) {
     os << pointer.hash.GetHex();

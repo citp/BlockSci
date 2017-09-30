@@ -8,10 +8,9 @@
 
 #include <boost/serialization/access.hpp>
 
-#include <assert.h>
+#include <cassert>
 #include <cstring>
 #include <stdexcept>
-#include <stdint.h>
 #include <string>
 #include <vector>
 

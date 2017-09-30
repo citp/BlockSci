@@ -13,7 +13,6 @@
 
 #include <string>
 #include <cstdint>
-#include <stdio.h>
 
 namespace blocksci {
     struct OutputPointer;

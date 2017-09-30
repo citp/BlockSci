@@ -14,10 +14,8 @@
 #include "parser_fwd.hpp"
 
 #include <sparsepp/spp.h>
-#include <leveldb/db.h>
 
 #include <future>
-#include <stdio.h>
 
 struct RawOutputPointerHasher {
     size_t operator()(const RawOutputPointer& b) const {

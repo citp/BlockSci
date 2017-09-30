@@ -12,10 +12,10 @@
 #include "parser_index.hpp"
 #include "parser_fwd.hpp"
 
-#include <sqlite3.h>
-
 #include <tuple>
-#include <stdio.h>
+
+struct sqlite3;
+struct sqlite3_stmt;
 
 namespace blocksci {
     class ChainAccess;

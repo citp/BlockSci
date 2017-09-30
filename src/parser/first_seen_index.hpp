@@ -16,7 +16,6 @@
 #include <blocksci/file_mapper.hpp>
 
 #include <unordered_map>
-#include <stdio.h>
 
 class FirstSeenIndex : public AddressTraverser {
     std::unordered_map<blocksci::ScriptType::Enum, blocksci::FixedSizeFileMapper<uint32_t, boost::iostreams::mapped_file::readwrite>> files;

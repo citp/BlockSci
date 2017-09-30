@@ -19,7 +19,6 @@
 #include <boost/variant/variant_fwd.hpp>
 
 #include <array>
-#include <stdio.h>
 
 class AddressWriter;
 class AddressState;

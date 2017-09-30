@@ -8,12 +8,9 @@
 
 #include <boost/container/small_vector.hpp>
 
-#include <assert.h>
-#include <climits>
+#include <cassert>
 #include <limits>
 #include <stdexcept>
-#include <stdint.h>
-#include <string.h>
 #include <string>
 #include <vector>
 

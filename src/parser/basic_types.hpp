@@ -12,10 +12,7 @@
 #include <blocksci/bitcoin_uint256.hpp>
 
 #include <functional>
-
 #include <cstdint>
-#include <cstring>
-#include <stdio.h>
 
 struct RawOutputPointer {
     blocksci::uint256 hash;

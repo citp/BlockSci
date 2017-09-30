@@ -10,8 +10,6 @@
 #define inout_hpp
 
 #include <blocksci/address/address_types.hpp>
-#include <stdio.h>
-
 
 namespace blocksci {
     struct Inout;

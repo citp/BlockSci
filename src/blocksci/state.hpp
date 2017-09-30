@@ -11,7 +11,6 @@
 #include "scripts/script_type.hpp"
 
 #include <iomanip>
-#include <stdio.h>
 
 
 namespace blocksci {

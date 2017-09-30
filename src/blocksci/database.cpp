@@ -8,14 +8,18 @@
 
 #include "database.hpp"
 
+#include <sqlite3.h>
+
+#include <iostream>
+
 namespace blocksci {
     sqlite3 *openDB(const char *filename);
     
     sqlite3 *openDB(const char *filename) {
         sqlite3 *db;
-        auto rc = sqlite3_open_v2(filename, &db, SQLITE_OPEN_READONLY, NULL);
+        auto rc = sqlite3_open_v2(filename, &db, SQLITE_OPEN_READONLY, nullptr);
         if (rc){
-            fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+            std::cerr << "Can't open database: " << sqlite3_errmsg(db) << "\n";
         }
         return db;
     }

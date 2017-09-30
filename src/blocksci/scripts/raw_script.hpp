@@ -13,8 +13,6 @@
 
 #include <boost/functional/hash.hpp>
 
-#include <stdio.h>
-
 namespace blocksci {
     struct RawScript {
         uint160 hash;

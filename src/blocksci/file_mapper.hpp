@@ -21,7 +21,6 @@
 #include <array>
 #include <vector>
 #include <iostream>
-#include <stdio.h>
 
 namespace blocksci {
     

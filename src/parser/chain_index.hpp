@@ -24,7 +24,6 @@
 #include <vector>
 #include <cstdint>
 #include <fstream>
-#include <stdio.h>
 
 class CBlockIndex;
 struct blockinfo_t;

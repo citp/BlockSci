@@ -10,7 +10,6 @@
 #define hash_hpp
 
 #include "bitcoin_uint256.hpp"
-#include <stdio.h>
 
 blocksci::uint256 sha256(const uint8_t *data, size_t len);
 blocksci::uint256 sha256(const unsigned char *begin, const unsigned char *end);

@@ -49,8 +49,7 @@
 #include <future>
 #include <iostream>
 #include <iomanip>
-#include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 void rollbackTransactions(size_t blockKeepCount, const ParserConfigurationBase &config);
 std::vector<char> HexToBytes(const std::string& hex);

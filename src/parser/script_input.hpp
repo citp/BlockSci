@@ -20,7 +20,6 @@
 #include <boost/variant/variant.hpp>
 
 #include <bitset>
-#include <stdio.h>
 
 class AddressWriter;
 struct RawTransaction;

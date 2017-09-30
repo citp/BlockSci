@@ -13,7 +13,6 @@
 #include <blocksci/util.hpp>
 
 #include <string_view>
-#include <stdio.h>
 
 namespace blocksci {
     using namespace std::string_view_literals;

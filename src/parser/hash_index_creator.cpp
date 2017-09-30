@@ -16,6 +16,8 @@
 #include <blocksci/scripts/pubkey_script.hpp>
 #include <blocksci/scripts/scripthash_script.hpp>
 
+#include <sqlite3.h>
+
 #include <sstream>
 
 std::pair<sqlite3 *, bool> openHashDb(boost::filesystem::path hashIndexFilePath);

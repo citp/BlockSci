@@ -5,8 +5,7 @@
 
 #include "bitcoin_uint256.hpp"
 
-#include <stdio.h>
-#include <string.h>
+#include <string>
 
 namespace blocksci {
     

@@ -19,7 +19,6 @@
 #include <boost/range/iterator_range.hpp>
 
 #include <future>
-#include <stdio.h>
 
 namespace blocksci {
     struct DataConfiguration;

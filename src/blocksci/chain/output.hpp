@@ -15,7 +15,6 @@
 #include <boost/optional/optional_fwd.hpp>
 
 #include <memory>
-#include <stdio.h>
 
 namespace blocksci {
     struct Transaction;

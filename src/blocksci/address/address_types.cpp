@@ -11,8 +11,6 @@
 #include "address_types.hpp"
 #include "address_info.hpp"
 #include <iostream>
-#include <stdio.h>
-
 
 namespace blocksci {
     

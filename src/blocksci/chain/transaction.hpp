@@ -13,7 +13,6 @@
 #include <boost/optional/optional_fwd.hpp>
 
 #include <vector>
-#include <stdio.h>
 
 enum class CoinJoinResult {
     True, False, Timeout

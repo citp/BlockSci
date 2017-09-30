@@ -10,7 +10,6 @@
 #define transaction_summary_hpp
 
 #include <cstdint>
-#include <stdio.h>
 
 namespace blocksci {
     

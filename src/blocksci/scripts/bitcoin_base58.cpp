@@ -7,9 +7,8 @@
 #include "hash.hpp"
 #include "bitcoin_uint256.hpp"
 
-#include <assert.h>
-#include <stdint.h>
-#include <string.h>
+#include <cassert>
+#include <string>
 #include <vector>
 #include <string>
 

@@ -11,8 +11,6 @@
 #include <boost/iostreams/device/mapped_file.hpp>
 #include <boost/filesystem/path.hpp>
 
-#include <stdio.h>
-
 class SafeMemReader {
 public:
     typedef boost::iostreams::mapped_file_source::iterator iterator;

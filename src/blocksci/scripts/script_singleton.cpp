@@ -6,8 +6,6 @@
 //
 //
 
-#include <stdio.h>
-
 #include "script.hpp"
 #include "data_access.hpp"
 

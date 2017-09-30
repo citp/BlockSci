@@ -16,8 +16,6 @@
 
 #include <boost/variant/variant.hpp>
 
-#include <stdio.h>
-
 struct InputInfo;
 struct getrawtransaction_t;
 struct vout_t;

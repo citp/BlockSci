@@ -8,8 +8,6 @@
 #ifndef parser_fwd_hpp
 #define parser_fwd_hpp
 
-#include <stdio.h>
-
 struct FileTag{};
 struct RPCTag{};
 
