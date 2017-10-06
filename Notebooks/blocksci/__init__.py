@@ -32,7 +32,7 @@ def mapreduce_block_ranges(chain, mapFunc, reduceFunc, init,  start=None, end=No
         end = blocks[-1].height
 
     if cpu_count == 1:
-        return reduce(reduceFunc, (mapFunc(block) for block in chain[start:end]))
+        return mapFunc(chain[start:end])
 
     segments = chain.segment(start, end, cpu_count)
     with Pool(cpu_count - 1) as p:
