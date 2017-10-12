@@ -41,7 +41,7 @@ std::vector<uint64_t> unspentSums2(Blockchain &chain, uint32_t start, uint32_t s
         return total;
     };
     
-    return chain.mapBlocks(start, stop, func);
+    return chain.map<uint64_t>(start, stop, func);
 }
 
 uint32_t maxSizeTx1(Blockchain &chain, uint32_t start, uint32_t stop) {
@@ -56,10 +56,10 @@ uint32_t maxSizeTx1(Blockchain &chain, uint32_t start, uint32_t stop) {
 }
 
 uint32_t maxSizeTx2(Blockchain &chain, uint32_t start, uint32_t stop) {
-    auto extract = [](Transaction &tx) { return tx.sizeBytes(); };
-    auto combine = [](uint32_t a, uint32_t b) { return std::max(a,b); };
+    auto extract = [](const Transaction &tx) { return tx.sizeBytes(); };
+    auto combine = [](uint32_t &a, uint32_t &b) -> uint32_t & { a = std::max(a,b); return a; };
     
-    return chain.mapReduceTransactions(start, stop, extract, combine, uint32_t(0));
+    return chain.mapReduce<uint32_t, uint32_t>(start, stop, extract, combine, uint32_t(0));
 }
 
 std::unordered_map<uint64_t, uint64_t> getOutputDistribution1(Blockchain &chain, uint32_t start, uint32_t stop) {
@@ -81,7 +81,7 @@ std::unordered_map<uint64_t, uint64_t> getOutputDistribution1(Blockchain &chain,
 }
 
 std::unordered_map<uint64_t, uint64_t> getOutputDistribution2(Blockchain &chain, uint32_t start, uint32_t stop) {
-    auto mapFunc = [](std::vector<Block> &segment) {
+    auto mapFunc = [](const std::vector<Block> &segment) {
         std::unordered_map<uint64_t, uint64_t> distribution;
         for (auto &block : segment) {
             for (auto tx : block) {
@@ -96,7 +96,7 @@ std::unordered_map<uint64_t, uint64_t> getOutputDistribution2(Blockchain &chain,
         return distribution;
     };
     
-    auto reduceFunc = [] (std::unordered_map<uint64_t, uint64_t> &map1, std::unordered_map<uint64_t, uint64_t> &map2) {
+    auto reduceFunc = [] (std::unordered_map<uint64_t, uint64_t> &map1, std::unordered_map<uint64_t, uint64_t> &map2) -> std::unordered_map<uint64_t, uint64_t> & {
         for (auto &pair : map2) {
             auto res = map1.insert(pair);
             if (!res.second) {
@@ -107,7 +107,7 @@ std::unordered_map<uint64_t, uint64_t> getOutputDistribution2(Blockchain &chain,
     };
     
     std::unordered_map<uint64_t, uint64_t>  map;
-    return chain.mapReduceBlockRanges(start, stop, mapFunc, reduceFunc, map);
+    return chain.mapReduce<std::unordered_map<uint64_t, uint64_t>, std::unordered_map<uint64_t, uint64_t>>(start, stop, mapFunc, reduceFunc, map);
 }
 
 uint64_t maxValOutput1(Blockchain &chain, uint32_t start, uint32_t stop) {
@@ -124,7 +124,7 @@ uint64_t maxValOutput1(Blockchain &chain, uint32_t start, uint32_t stop) {
 }
 
 uint64_t maxValOutput2(Blockchain &chain, uint32_t start, uint32_t stop) {
-    auto extract = [](Transaction &tx) {
+    auto extract = [](const Transaction &tx) {
         uint64_t maxValue = 0;
         for(auto &output : tx.outputs()) {
             maxValue = std::max(output.getValue(), maxValue);
@@ -132,7 +132,7 @@ uint64_t maxValOutput2(Blockchain &chain, uint32_t start, uint32_t stop) {
         return maxValue;
     };
     
-    auto combine = [](uint64_t a, uint64_t b) { return std::max(a,b); };
+    auto combine = [](uint64_t &a, uint64_t &b) -> uint64_t & { a = std::max(a,b); return a; };
     
-    return chain.mapReduceTransactions(start, stop, extract, combine, uint64_t(0));
+    return chain.mapReduce<uint64_t, uint64_t>(start, stop, extract, combine, uint64_t(0));
 }

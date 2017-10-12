@@ -98,13 +98,9 @@ int main(int argc, const char * argv[]) {
     
     Blockchain chain(argv[1]);
     
+    auto add = getAddressFromString("13A1W4jLPP75pzvn2qJ5KyyqG3qPSpb9jM");
     
-    auto address = chain[chain.size() - 10][0].outputs()[0].getAddress();
-    auto outs = address.getOutputs();
-    
-    auto script = address.getScript();
-    
-    auto outs2 = script->getOutputs();
+    auto tx2 = Transaction::txWithHash("fe28050b93faea61fa88c4c630f0e1f0a1c24d0082dd0e10d369e13212128f33");
     
 //    uint64_t count = 0;
 //    for (auto tx : chain.iterateTransactions(0, chain.size())) {
@@ -147,7 +143,7 @@ int main(int argc, const char * argv[]) {
     
     return 0;
     
-    auto mapFunc = [&chain](std::vector<Block> &segment) {
+    auto mapFunc = [&chain](const std::vector<Block> &segment) {
         std::vector<Transaction> txes;
         for (auto &block : segment) {
             for (auto tx : block.txes(*chain.access.chain)) {
@@ -159,13 +155,13 @@ int main(int argc, const char * argv[]) {
         return txes;
     };
     
-    auto reduceFunc = [] (std::vector<Transaction> &vec1, std::vector<Transaction> &vec2) {
+    auto reduceFunc = [] (std::vector<Transaction> &vec1, std::vector<Transaction> &vec2) -> std::vector<Transaction> &{
         vec1.insert( vec1.end(), vec2.begin(), vec2.end() );
         return vec1;
     };
     
     std::vector<Transaction> cjvec;
-    auto cjtxes = chain.mapReduceBlockRanges(354416, 464270, mapFunc, reduceFunc, cjvec);
+    auto cjtxes = chain.mapReduce<std::vector<Transaction>, std::vector<Transaction>>(354416, 464270, mapFunc, reduceFunc, cjvec);
     
     cjtxes.erase(std::remove_if(cjtxes.begin(), cjtxes.end(), [](const Transaction &tx) {
         return tx.inputCount() > 15;
@@ -476,7 +472,7 @@ void maxOutput(Blockchain &chain) {
 }
 
 google::dense_hash_map<uint32_t, uint32_t> getAddressDistribution(Blockchain &chain, int start, int stop) {
-    auto mapFunc = [](std::vector<Block> &segment) {
+    auto mapFunc = [](const std::vector<Block> &segment) {
         google::dense_hash_map<uint32_t, uint32_t> distribution;
         distribution.set_empty_key(std::numeric_limits<uint32_t>::max() - 5);
         for (auto &block : segment) {
@@ -490,7 +486,7 @@ google::dense_hash_map<uint32_t, uint32_t> getAddressDistribution(Blockchain &ch
         return distribution;
     };
     
-    auto reduceFunc = [] (google::dense_hash_map<uint32_t, uint32_t> &map1, google::dense_hash_map<uint32_t, uint32_t> &map2) {
+    auto reduceFunc = [] (google::dense_hash_map<uint32_t, uint32_t> &map1, google::dense_hash_map<uint32_t, uint32_t> &map2) -> google::dense_hash_map<uint32_t, uint32_t> & {
         for (auto &pair : map2) {
             auto res = map1.insert(pair);
             if (!res.second) {
@@ -501,7 +497,7 @@ google::dense_hash_map<uint32_t, uint32_t> getAddressDistribution(Blockchain &ch
     };
     
     google::dense_hash_map<uint32_t, uint32_t> map;
-    return chain.mapReduceBlockRanges(start, stop, mapFunc, reduceFunc, map);
+    return chain.mapReduce<google::dense_hash_map<uint32_t, uint32_t>, google::dense_hash_map<uint32_t, uint32_t>>(start, stop, mapFunc, reduceFunc, map);
 }
 
 /*

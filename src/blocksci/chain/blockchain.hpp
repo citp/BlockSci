@@ -86,11 +86,9 @@ namespace blocksci {
             return mapReduceBlocksImp<decltype(segments)::iterator, MapType, ResultType>(segments.begin(), segments.end(), mapFunc, reduceFunc, identity);
         }
         
-        // Use std::function to specify return type
-        // all called mapReduce
         template <typename MapType, typename ResultType = MapType>
         ResultType mapReduce(size_t start, size_t stop, const std::function<MapType(const Block &)> &mapFunc, const std::function<ResultType&(ResultType &, MapType &)> &reduceFunc, ResultType identity) const {
-            auto mapF = [&](std::vector<Block> &segment) {
+            auto mapF = [&](const std::vector<Block> &segment) {
                 ResultType res = identity;
                 for (auto &block : segment) {
                     auto mapped = mapFunc(block);
@@ -99,7 +97,7 @@ namespace blocksci {
                 return res;
             };
             
-            return mapReduceBlockRanges(start, stop, mapF, reduceFunc, identity);
+            return mapReduce<MapType, ResultType>(start, stop, mapF, reduceFunc, identity);
         }
         
         template <typename MapType, typename ResultType = MapType>
@@ -113,12 +111,12 @@ namespace blocksci {
                 return res;
             };
             
-            return mapReduceBlocks(start, stop, mapF, reduceFunc, identity);
+            return mapReduce<MapType, ResultType>(start, stop, mapF, reduceFunc, identity);
         }
         
         template <typename MapType>
         std::vector<MapType> map(size_t start, size_t stop, const std::function<MapType(const Block &)> &mapFunc) const {
-            auto mapF = [&](std::vector<Block> &segment) {
+            auto mapF = [&](const std::vector<Block> &segment) {
                 std::vector<MapType> vec;
                 vec.reserve(segment.size());
                 for (auto &block : segment) {
@@ -127,14 +125,14 @@ namespace blocksci {
                 return vec;
             };
             
-            auto reduceFunc = [](std::vector<MapType> &vec1, std::vector<MapType> &vec2) {
+            auto reduceFunc = [](std::vector<MapType> &vec1, std::vector<MapType> &vec2) -> std::vector<MapType> & {
                 vec1.reserve(vec1.size() + vec2.size());
                 vec1.insert(vec1.end(), std::make_move_iterator(vec2.begin()), std::make_move_iterator(vec2.end()));
                 return vec1;
             };
             
             std::vector<MapType> vec;
-            return mapReduceBlockRanges(start, stop, mapF, reduceFunc, vec);
+            return mapReduce<std::vector<MapType>, std::vector<MapType>>(start, stop, mapF, reduceFunc, vec);
         }
     };
     
