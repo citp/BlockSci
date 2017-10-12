@@ -30,6 +30,16 @@ class BitcoinAPI;
 class UTXOState;
 class SafeMemReader;
 
+struct CompletionGuard {
+    CompletionGuard(boost::atomic<bool> &isDone_) : isDone(isDone_) {}
+    
+    ~CompletionGuard() {
+        isDone = true;
+    }
+private:
+    boost::atomic<bool> &isDone;
+};
+
 class BlockProcessor {
     
     boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<50000>> hash_transaction_queue;
@@ -65,6 +75,10 @@ class BlockProcessor {
 public:
     
     BlockProcessor(uint32_t startingTxCount, uint32_t totalTxCount, uint32_t maxBlockHeight);
+    BlockProcessor(const BlockProcessor &) = delete;
+    BlockProcessor &operator=(const BlockProcessor &) = delete;
+    BlockProcessor(BlockProcessor &&) = delete;
+    BlockProcessor &operator=(BlockProcessor &&) = delete;
     ~BlockProcessor();
     
     template <typename ParseTag>

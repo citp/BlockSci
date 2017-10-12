@@ -11,6 +11,7 @@
 
 #include "basic_types.hpp"
 #include "script_output.hpp"
+#include "script_processor.hpp"
 
 #include <blocksci/address/address_types.hpp>
 #include <blocksci/address/address.hpp>
@@ -39,8 +40,8 @@ struct InputInfo {
     
     InputInfo(uint32_t inputNum_, uint32_t txNum_, uint32_t addressNum_, const unsigned char *scriptBegin_, uint32_t scriptLength_, const std::vector<WitnessStackItem> &witnessStack_, bool witnessActivated_) : inputNum(inputNum_), txNum(txNum_), addressNum(addressNum_), scriptBegin(scriptBegin_), scriptLength(scriptLength_), witnessStack(witnessStack_), witnessActivated(witnessActivated_) {}
     
-    CScript getScript() const {
-        return CScript(scriptBegin, scriptBegin + scriptLength);
+    CScriptView getScript() const {
+        return CScriptView(scriptBegin, scriptBegin + scriptLength);
     }
 };
 

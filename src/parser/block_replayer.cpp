@@ -29,7 +29,14 @@
 #ifdef BLOCKSCI_FILE_PARSER
 void replayBlock(const ParserConfiguration<FileTag> &config, uint32_t blockNum) {
     ECCVerifyHandle handle;
-    ChainIndex<FileTag> index(config);
+    ChainIndex<FileTag> index;
+    boost::filesystem::ifstream inFile(config.blockListPath(), std::ios::binary);
+    if (!inFile.good()) {
+        throw std::runtime_error("Can only replay block that has already been processed");
+    }
+    
+    boost::archive::binary_iarchive ia(inFile);
+    ia >> index;
     auto chain = index.generateChain(blockNum);
     auto block = chain.back();
     auto blockPath = config.pathForBlockFile(block.nFile);
@@ -42,7 +49,7 @@ void replayBlock(const ParserConfiguration<FileTag> &config, uint32_t blockNum) 
     
     std::vector<unsigned char> coinbase;
     
-    AddressState addressState_{config};
+    AddressState addressState_{config.addressPath()};
     AddressWriter addressWriter(config);
     
     const AddressState &addressState = addressState_;

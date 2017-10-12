@@ -114,14 +114,14 @@ namespace blocksci {
     }
     
     std::vector<Transaction> getCoinjoinTransactions(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock)  {
-        return getMatchingTransactions(chain, startBlock, endBlock, [](const Transaction &tx) {
+        return filter(chain, startBlock, endBlock, [](const Transaction &tx) {
             return isCoinjoin(tx);
         });
     }
     
     std::pair<std::vector<Transaction>, std::vector<Transaction>> getPossibleCoinjoinTransactions(const Blockchain &chain, uint64_t minBaseFee, double percentageFee, size_t maxDepth)  {
         
-        auto mapFunc = [&](std::vector<Block> &segment) {
+        auto mapFunc = [&](const std::vector<Block> &segment) {
             std::vector<Transaction> skipped;
             std::vector<Transaction> txes;
             for (auto &block : segment) {
@@ -137,19 +137,42 @@ namespace blocksci {
             return std::make_pair(txes, skipped);
         };
         
-        auto reduceFunc = [] (std::pair<std::vector<Transaction>, std::vector<Transaction>> &a, std::pair<std::vector<Transaction>, std::vector<Transaction>> &b) {
+        using RetType = std::pair<std::vector<Transaction>, std::vector<Transaction>>;
+        
+        auto reduceFunc = [] (RetType &a, RetType &b) -> RetType & {
             a.first.insert(a.first.end(), b.first.begin(), b.first.end());
             a.second.insert(a.second.end(), b.second.begin(), b.second.end());
             return a;
         };
         
         std::pair<std::vector<Transaction>, std::vector<Transaction>> result;
-        chain.mapReduceBlockRanges(0, chain.size(), mapFunc, reduceFunc, result);
+        chain.mapReduce<RetType, RetType>(0, chain.size(), mapFunc, reduceFunc, result);
         return result;
     }
     
-    std::vector<Transaction> getMatchingTransactions(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock, std::function<bool(const Transaction &tx)> testFunc)  {
-        auto mapFunc = [&chain, &testFunc](std::vector<Block> &segment) {
+    std::vector<Block> filter(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock, std::function<bool(const Block &tx)> testFunc)  {
+        auto mapFunc = [&chain, &testFunc](const std::vector<Block> &segment) -> std::vector<Block> {
+            std::vector<Block> blocks;
+            for (auto &block : segment) {
+                if (testFunc(block)) {
+                    blocks.push_back(block);
+                }
+            }
+            return blocks;
+        };
+        
+        auto reduceFunc = [] (std::vector<Block> &vec1, std::vector<Block> &vec2) -> std::vector<Block> & {
+            vec1.reserve(vec1.size() + vec2.size());
+            vec1.insert(vec1.end(), std::make_move_iterator(vec2.begin()), std::make_move_iterator(vec2.end()));
+            return vec1;
+        };
+        
+        std::vector<Block> blocks;
+        return chain.mapReduce<std::vector<Block>, std::vector<Block>>(startBlock, endBlock, mapFunc, reduceFunc, blocks);
+    }
+    
+    std::vector<Transaction> filter(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock, std::function<bool(const Transaction &tx)> testFunc)  {
+        auto mapFunc = [&chain, &testFunc](const std::vector<Block> &segment) -> std::vector<Transaction> {
             std::vector<Transaction> txes;
             for (auto &block : segment) {
                 for (auto tx : block.txes(*chain.access.chain)) {
@@ -161,18 +184,18 @@ namespace blocksci {
             return txes;
         };
         
-        auto reduceFunc = [] (std::vector<Transaction> &vec1, std::vector<Transaction> &vec2) {
+        auto reduceFunc = [] (std::vector<Transaction> &vec1, std::vector<Transaction> &vec2) -> std::vector<Transaction> & {
             vec1.reserve(vec1.size() + vec2.size());
             vec1.insert(vec1.end(), std::make_move_iterator(vec2.begin()), std::make_move_iterator(vec2.end()));
             return vec1;
         };
         
         std::vector<Transaction> txes;
-        return chain.mapReduceBlockRanges(startBlock, endBlock, mapFunc, reduceFunc, txes);
+        return chain.mapReduce<std::vector<Transaction>, std::vector<Transaction>>(startBlock, endBlock, mapFunc, reduceFunc, txes);
     }
     
     std::vector<Transaction> getTransactionIncludingOutput(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock, AddressType::Enum type) {
-        return getMatchingTransactions(chain, startBlock, endBlock, [type](const Transaction &tx) {
+        return filter(chain, startBlock, endBlock, [type](const Transaction &tx) {
             for (auto &output : tx.outputs()) {
                 if (output.getType() == type) {
                     return true;
@@ -183,19 +206,19 @@ namespace blocksci {
     }
     
     std::vector<Transaction> getDeanonTxes(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock) {
-        return getMatchingTransactions(chain, startBlock, endBlock, [](const Transaction &tx) {
+        return filter(chain, startBlock, endBlock, [](const Transaction &tx) {
             return isDeanonTx(tx);
         });
     }
     
     std::vector<Transaction> getChangeOverTxes(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock) {
-        return getMatchingTransactions(chain, startBlock, endBlock, [](const Transaction &tx) {
+        return filter(chain, startBlock, endBlock, [](const Transaction &tx) {
             return isChangeOverTx(tx);
         });
     }
     
     std::vector<Transaction> getKeysetChangeTxes(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock) {
-        return getMatchingTransactions(chain, startBlock, endBlock, [](const Transaction &tx) {
+        return filter(chain, startBlock, endBlock, [](const Transaction &tx) {
             return containsKeysetChange(tx);
         });
     }

@@ -9,15 +9,14 @@
 #ifndef address_index_hpp
 #define address_index_hpp
 
-#include <blocksci/database.hpp>
 #include <blocksci/address/address_types.hpp>
 #include <blocksci/scripts/script_info.hpp>
+
+#include <SQLiteCpp/Database.h>
 
 #include <unordered_set>
 #include <string>
 #include <vector>
-
-struct sqlite3_stmt;
 
 namespace blocksci {
     
@@ -30,21 +29,14 @@ namespace blocksci {
     struct Script;
     class ChainAccess;
     
-    
-    
-    class AddressIndex : Database {
-        std::array<sqlite3_stmt *, AddressType::all.size()> addressQueries;
-        std::array<sqlite3_stmt *, ScriptType::all.size()> scriptQueries;
-        
-        void setupQueries();
-        void teardownQueries();
+    class AddressIndex {
+        SQLite::Database db;
+        mutable std::array<SQLite::Statement, AddressType::size> addressQueries;
+        mutable std::array<SQLite::Statement, ScriptType::size> scriptQueries;
         
     public:
         
         AddressIndex(const DataConfiguration &config);
-        AddressIndex(const AddressIndex &other);
-        AddressIndex& operator=(const AddressIndex& other);
-        ~AddressIndex();
         
         std::vector<OutputPointer> getOutputPointers(const Address &address) const;
         std::vector<OutputPointer> getOutputPointers(const Script &script) const;

@@ -42,7 +42,7 @@ namespace blocksci {
         return table[index](*this);
     }
     
-    std::array<uint32_t, ScriptType::size> ScriptAccess::scriptCounts() {
+    std::array<uint32_t, ScriptType::size> ScriptAccess::scriptCounts() const {
         return make_static_table<ScriptType, ScriptCountFunctor>(*this);
     }
     

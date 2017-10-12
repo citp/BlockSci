@@ -48,6 +48,7 @@ namespace blocksci {
         friend struct std::hash<blocksci::Inout>;
         
         Inout(uint32_t linkedTxNum, const Address &address, uint64_t value);
+        Inout() : linkedTxNum(0), toAddressNum(0), other(0) {}
         
         uint64_t getValue() const {
             uint64_t valueMask = (uint64_t(1) << 60) - 1;

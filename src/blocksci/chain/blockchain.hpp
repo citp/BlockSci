@@ -24,8 +24,8 @@ namespace blocksci {
     struct DataConfiguration;
     class DataAccess;
     
-    template <typename It, typename MapFunc, typename ReduceFunc, typename ResultType>
-    ResultType mapReduceBlocksImp(It begin, It end, MapFunc mapFunc, ReduceFunc reduceFunc, ResultType identity) {
+    template <typename It, typename MapType, typename ResultType>
+    ResultType mapReduceBlocksImp(It begin, It end, const std::function<MapType(const std::vector<Block> &)> &mapFunc, const std::function<ResultType&(ResultType &, MapType &)> &reduceFunc, ResultType identity) {
         auto segmentCount = std::distance(begin, end);
         if(segmentCount == 1) {
             ResultType res = identity;
@@ -35,7 +35,7 @@ namespace blocksci {
         } else {
             auto mid = begin;
             std::advance(mid, segmentCount / 2);
-            auto handle = std::async(std::launch::async, mapReduceBlocksImp<It, MapFunc, ReduceFunc, ResultType>, begin, mid, mapFunc, reduceFunc, identity);
+            auto handle = std::async(std::launch::async, mapReduceBlocksImp<It, MapType, ResultType>, begin, mid, mapFunc, reduceFunc, identity);
             ResultType res = identity;
             auto ret1 = mapReduceBlocksImp(mid, end, mapFunc, reduceFunc, identity);
             res = reduceFunc(res, ret1);
@@ -80,16 +80,16 @@ namespace blocksci {
         TransactionIterator beginTransactions(uint32_t blockNum);
         TransactionIterator endTransactions(uint32_t blockNum);
         
-        template <typename MapFunc, typename ReduceFunc, typename ResultType>
-        auto mapReduceBlockRanges(size_t start, size_t stop, MapFunc mapFunc, ReduceFunc reduceFunc, ResultType identity) const -> decltype(mapFunc(std::declval<std::vector<Block> &>())) {
+        template <typename MapType, typename ResultType = MapType>
+        auto mapReduce(size_t start, size_t stop, const std::function<MapType(const std::vector<Block> &)> &mapFunc, const std::function<ResultType&(ResultType &, MapType &)> &reduceFunc, ResultType identity) const -> decltype(mapFunc(std::declval<std::vector<Block> &>())) {
             auto segments = segmentChain(*this, start, stop, std::thread::hardware_concurrency());
-            return mapReduceBlocksImp(segments.begin(), segments.end(), mapFunc, reduceFunc, identity);
+            return mapReduceBlocksImp<decltype(segments)::iterator, MapType, ResultType>(segments.begin(), segments.end(), mapFunc, reduceFunc, identity);
         }
         
         // Use std::function to specify return type
         // all called mapReduce
-        template <typename MapFunc, typename ReduceFunc, typename ResultType>
-        ResultType mapReduceBlocks(size_t start, size_t stop, MapFunc mapFunc, ReduceFunc reduceFunc, ResultType identity) const {
+        template <typename MapType, typename ResultType = MapType>
+        ResultType mapReduce(size_t start, size_t stop, const std::function<MapType(const Block &)> &mapFunc, const std::function<ResultType&(ResultType &, MapType &)> &reduceFunc, ResultType identity) const {
             auto mapF = [&](std::vector<Block> &segment) {
                 ResultType res = identity;
                 for (auto &block : segment) {
@@ -102,8 +102,8 @@ namespace blocksci {
             return mapReduceBlockRanges(start, stop, mapF, reduceFunc, identity);
         }
         
-        template <typename MapFunc, typename ReduceFunc, typename ResultType>
-        ResultType mapReduceTransactions(size_t start, size_t stop, MapFunc mapFunc, ReduceFunc reduceFunc, ResultType identity) {
+        template <typename MapType, typename ResultType = MapType>
+        ResultType mapReduce(size_t start, size_t stop, const std::function<MapType(const Transaction &)> &mapFunc, const std::function<ResultType&(ResultType &, MapType &)> &reduceFunc, ResultType identity) const {
             auto mapF = [&](const Block &block) {
                 ResultType res = identity;
                 for (auto tx : block.txes(*access.chain)) {
@@ -116,10 +116,10 @@ namespace blocksci {
             return mapReduceBlocks(start, stop, mapF, reduceFunc, identity);
         }
         
-        template <typename MapFunc,  typename ResultType = decltype(std::declval<MapFunc>()(std::declval<const Block &>()))>
-        std::vector<ResultType> mapBlocks(size_t start, size_t stop, MapFunc mapFunc) const {
+        template <typename MapType>
+        std::vector<MapType> map(size_t start, size_t stop, const std::function<MapType(const Block &)> &mapFunc) const {
             auto mapF = [&](std::vector<Block> &segment) {
-                std::vector<ResultType> vec;
+                std::vector<MapType> vec;
                 vec.reserve(segment.size());
                 for (auto &block : segment) {
                     vec.push_back(mapFunc(block));
@@ -127,19 +127,20 @@ namespace blocksci {
                 return vec;
             };
             
-            auto reduceFunc = [](std::vector<ResultType> &vec1, std::vector<ResultType> &vec2) {
+            auto reduceFunc = [](std::vector<MapType> &vec1, std::vector<MapType> &vec2) {
                 vec1.reserve(vec1.size() + vec2.size());
                 vec1.insert(vec1.end(), std::make_move_iterator(vec2.begin()), std::make_move_iterator(vec2.end()));
                 return vec1;
             };
             
-            std::vector<ResultType> vec;
+            std::vector<MapType> vec;
             return mapReduceBlockRanges(start, stop, mapF, reduceFunc, vec);
         }
     };
     
     // filter - Blocks and Txes
-    std::vector<Transaction> getMatchingTransactions(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock, std::function<bool(const Transaction &tx)> testFunc);
+    std::vector<Block> filter(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock, std::function<bool(const Block &block)> testFunc);
+    std::vector<Transaction> filter(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock, std::function<bool(const Transaction &tx)> testFunc);
     
     std::vector<Transaction> getCoinjoinTransactions(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock);
     std::pair<std::vector<Transaction>, std::vector<Transaction>> getPossibleCoinjoinTransactions(const Blockchain &chain, uint64_t minBaseFee, double percentageFee, size_t maxDepth);

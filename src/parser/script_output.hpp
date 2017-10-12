@@ -10,8 +10,8 @@
 #define script_output_hpp
 
 #include "basic_types.hpp"
+#include "script_processor.hpp"
 
-#include <blocksci/scripts/bitcoin_script.hpp>
 #include <blocksci/scripts/bitcoin_pubkey.hpp>
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/address/address.hpp>
@@ -30,7 +30,7 @@ template <>
 struct ScriptOutput<blocksci::AddressType::Enum::PUBKEY> {
     CPubKey pubkey;
     
-    ScriptOutput(const std::vector<unsigned char> &vch1);
+    ScriptOutput(const boost::iterator_range<const unsigned char *> &vch1);
     ScriptOutput(const CPubKey &pub) : pubkey(pub) {}
     
     void processOutput(AddressState &, AddressWriter &writer);
@@ -117,7 +117,7 @@ struct ScriptOutput<blocksci::AddressType::Enum::MULTISIG> {
     
     ScriptOutput() : addressCount(0) {}
     
-    void addAddress(const std::vector<unsigned char> &vch1);
+    void addAddress(const boost::iterator_range<const unsigned char *> &vch1);
     
     bool isValid() const {
         return numRequired <= numTotal && numTotal == addressCount;
@@ -130,10 +130,10 @@ struct ScriptOutput<blocksci::AddressType::Enum::MULTISIG> {
 
 template <>
 struct ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD> {
-    CScript script;
+    CScriptView script;
     
     ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD>() {}
-    ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD>(const CScript &script);
+    ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD>(const CScriptView &script);
     
     void processOutput(AddressState &, AddressWriter &writer);
     void checkOutput(const AddressState &, const AddressWriter &) {}
@@ -147,7 +147,7 @@ template <>
 struct ScriptOutput<blocksci::AddressType::Enum::NULL_DATA> {
     std::vector<unsigned char> fullData;
     
-    ScriptOutput<blocksci::AddressType::Enum::NULL_DATA>(const CScript &script);
+    ScriptOutput<blocksci::AddressType::Enum::NULL_DATA>(const CScriptView &script);
     
     void processOutput(AddressState &, AddressWriter &writer);
     void checkOutput(const AddressState &, const AddressWriter &) {}

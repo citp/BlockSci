@@ -126,5 +126,10 @@ namespace blocksci {
         return boost::make_iterator_range(begin, end);
     }
     
+    boost::iterator_range<TransactionIterator> iterateTransactions(const ChainAccess &chain, const Block &beginBlock, const Block &endBlock) {
+        auto begin = TransactionIterator(&chain, beginBlock.firstTxIndex, beginBlock.height);
+        auto end = TransactionIterator(&chain, endBlock.firstTxIndex + endBlock.numTxes, endBlock.height + 1);
+        return boost::make_iterator_range(begin, end);
+    }
     
 }

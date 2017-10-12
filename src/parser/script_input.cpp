@@ -60,15 +60,15 @@ void checkInput(blocksci::AddressType::Enum type, const InputInfo &info, const R
 }
 
 ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::ScriptInput(const InputInfo &inputInfo, const RawTransaction &, const AddressWriter &) {
-    CScript script(inputInfo.getScript());
+    CScriptView script(inputInfo.getScript());
     
-    CScript::const_iterator pc1 = script.begin();
-    CScript::const_iterator prevpc = script.begin();
-    CScript::const_iterator prevprevpc = script.begin();
+    CScriptView::const_iterator pc1 = script.begin();
+    CScriptView::const_iterator prevpc = script.begin();
+    CScriptView::const_iterator prevprevpc = script.begin();
     opcodetype opcode1;
-    std::vector<unsigned char> vch1;
+    boost::iterator_range<const unsigned char *> vch1;
     
-    std::vector<unsigned char> lastScript;
+    boost::iterator_range<const unsigned char *> lastScript;
     while(true) {
         prevprevpc = prevpc;
         prevpc = pc1;
@@ -78,13 +78,12 @@ ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::ScriptInput(const InputInf
         }
     }
     
-    CScript::const_iterator begin = script.begin();
+    CScriptView::const_iterator begin = script.begin();
     wrappedInputBegin = &*begin;
     wrappedInputLength = static_cast<uint32_t>(std::distance(begin, prevprevpc));
     
-    CScript wrappedOutputScript(lastScript.begin(), lastScript.end());
-    auto outputScriptBegin = reinterpret_cast<const unsigned char *>(lastScript.data());
-    wrappedScriptOutput = extractScriptData(outputScriptBegin, outputScriptBegin + lastScript.size(), inputInfo.witnessActivated);
+    CScriptView wrappedOutputScript(lastScript.begin(), lastScript.end());
+    wrappedScriptOutput = extractScriptData(lastScript.begin(), lastScript.end(), inputInfo.witnessActivated);
 }
 
 ProcessedInput ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::processInput(const InputInfo &inputInfo, const RawTransaction &tx, AddressState &state, AddressWriter &writer) {
@@ -110,7 +109,7 @@ ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInput(const InputInf
         auto script = inputInfo.getScript();
         auto pc = script.begin();
         opcodetype opcode;
-        std::vector<unsigned char> vchSig;
+        boost::iterator_range<const unsigned char *> vchSig;
         script.GetOp(pc, opcode, vchSig);
         script.GetOp(pc, opcode, vchSig);
         pubkey.Set(vchSig.begin(), vchSig.end());
@@ -179,7 +178,8 @@ ProcessedInput ScriptInput<blocksci::AddressType::Enum::MULTISIG>::processInput(
 
 ScriptInput<blocksci::AddressType::Enum::NONSTANDARD>::ScriptInput(const InputInfo &inputInfo, const RawTransaction &, const AddressWriter &) {
     if (inputInfo.scriptLength > 0) {
-        script = inputInfo.getScript();
+        auto scriptView = inputInfo.getScript();
+        script = CScript(scriptView.begin(), scriptView.end());
     } else if (inputInfo.witnessStack.size() > 0) {
         for (size_t i = 0; i < inputInfo.witnessStack.size() - 1; i++) {
             auto &stackItem = inputInfo.witnessStack[i];

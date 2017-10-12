@@ -13,7 +13,7 @@
 
 namespace blocksci {
     
-    State::State(ChainAccess &chain, ScriptAccess &scripts) {
+    State::State(const ChainAccess &chain, const ScriptAccess &scripts) {
         txCount = chain.txCount();
         blockCount = chain.getBlocks().size();
         scriptCounts = scripts.scriptCounts();

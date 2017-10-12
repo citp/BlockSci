@@ -22,8 +22,6 @@
 
 #include <boost/optional/optional.hpp>
 
-#include <sqlite3.h>
-
 #include <vector>
 #include <sstream>
 #include <iostream>
@@ -32,34 +30,20 @@ namespace blocksci {
     
     template<AddressType::Enum type>
     struct AddressQueryFunctor {
-        static sqlite3_stmt *f(sqlite3 *db) {
-            sqlite3_stmt *stmt;
+        static SQLite::Statement f(SQLite::Database &db) {
             std::stringstream ss;
             ss << "SELECT TX_INDEX, OUTPUT_NUM FROM " << scriptName(scriptType(type)) << " WHERE ADDRESS_NUM = ? AND ADDRESS_TYPE = ";
             ss << static_cast<size_t>(type);
-            auto queryString = ss.str();
-            auto rc = sqlite3_prepare_v2(db, queryString.c_str(), -1, &stmt, 0);
-            if( rc != SQLITE_OK ){
-                fprintf(stderr, "SQL error: %s\n", sqlite3_errmsg(db));
-                return nullptr;
-            }
-            sqlite3_bind_int(stmt, 2, static_cast<int>(type));
-            return stmt;
+            return SQLite::Statement{db, ss.str()};
         }
     };
     
     template<ScriptType::Enum type>
     struct ScriptQueryFunctor {
-        static sqlite3_stmt *f(sqlite3 *db) {
-            sqlite3_stmt *stmt;
+        static SQLite::Statement f(SQLite::Database &db) {
             std::stringstream ss;
             ss << "SELECT TX_INDEX, OUTPUT_NUM FROM " << scriptName(type) << " WHERE ADDRESS_NUM = ?";
-            auto rc = sqlite3_prepare_v2(db, ss.str().c_str(), -1, &stmt, 0);
-            if( rc != SQLITE_OK ){
-                fprintf(stderr, "SQL error: %s\n", sqlite3_errmsg(db));
-                return nullptr;
-            }
-            return stmt;
+            return SQLite::Statement{db, ss.str()};
         }
     };
     
@@ -69,35 +53,7 @@ namespace blocksci {
     std::vector<Transaction> getOutputTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
     std::vector<Transaction> getInputTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
     
-    void AddressIndex::setupQueries() {
-        addressQueries = make_static_table<AddressType, AddressQueryFunctor>(db);
-        scriptQueries = make_static_table<ScriptType, ScriptQueryFunctor>(db);
-    }
-    
-    void AddressIndex::teardownQueries() {
-        for_each(addressQueries, [](auto &a) { sqlite3_finalize(a); });
-        for_each(scriptQueries, [](auto &a) { sqlite3_finalize(a); });
-    }
-    
-    AddressIndex::AddressIndex(const DataConfiguration &config) : Database(config.addressDBFilePath().c_str())  {
-        setupQueries();
-    }
-    
-    
-    AddressIndex::AddressIndex(const AddressIndex &other) : Database(other) {
-        setupQueries();
-    }
-    
-    AddressIndex::~AddressIndex() {
-        teardownQueries();
-    }
-    
-    
-    AddressIndex& AddressIndex::operator=(const AddressIndex& other) {
-        teardownQueries();
-        Database::operator=(other);
-        setupQueries();
-        return *this;
+    AddressIndex::AddressIndex(const DataConfiguration &config) : db(config.addressDBFilePath().native()), addressQueries( make_static_table<AddressType, AddressQueryFunctor>(db)), scriptQueries(make_static_table<ScriptType, ScriptQueryFunctor>(db))  {
     }
     
     std::vector<const Output *> getOutputsImp(std::vector<OutputPointer> pointers, const ChainAccess &access) {
@@ -204,39 +160,28 @@ namespace blocksci {
         return getInputTransactionsImp(getOutputPointers(script), access);
     }
     
-    std::vector<OutputPointer> AddressIndex::getOutputPointers(const Address &address) const {
+    std::vector<OutputPointer> getOutputPointersImp(SQLite::Statement &query, uint32_t scriptNum) {
         std::vector<OutputPointer> outputs;
+        query.bind(1, scriptNum);
         
-        auto stmt = addressQueries[static_cast<size_t>(address.type)];
-        sqlite3_bind_int(stmt, 1, static_cast<int32_t>(address.addressNum));
-        
-        int rc = 0;
-        while ( (rc = sqlite3_step(stmt)) == SQLITE_ROW) {
-            auto txNum = sqlite3_column_int64(stmt, 0);
-            auto outputNum = sqlite3_column_int(stmt, 1);
-            outputs.push_back({static_cast<uint32_t>(txNum), static_cast<uint16_t>(outputNum)});
+        while (query.executeStep()) {
+            auto txNum = query.getColumn(0).getUInt();
+            auto outputNum = static_cast<uint16_t>(query.getColumn(0).getUInt());
+            outputs.emplace_back(txNum, outputNum);
         }
-        
-        sqlite3_reset(stmt);
+        query.reset();
         return outputs;
     }
     
+    std::vector<OutputPointer> AddressIndex::getOutputPointers(const Address &address) const {
+        auto &query = addressQueries[static_cast<size_t>(address.type)];
+        return getOutputPointersImp(query, address.addressNum);
+    }
+    
     std::vector<OutputPointer> AddressIndex::getOutputPointers(const Script &script) const {
-        std::vector<OutputPointer> outputs;
-        
         auto scriptType = script.type();
-        auto stmt = scriptQueries[static_cast<size_t>(scriptType)];
-        sqlite3_bind_int(stmt, 1, static_cast<int32_t>(script.scriptNum));
-        
-        int rc = 0;
-        while ( (rc = sqlite3_step(stmt)) == SQLITE_ROW) {
-            auto txNum = sqlite3_column_int64(stmt, 0);
-            auto outputNum = sqlite3_column_int(stmt, 1);
-            outputs.emplace_back(static_cast<uint32_t>(txNum), static_cast<uint16_t>(outputNum));
-        }
-        
-        sqlite3_reset(stmt);
-        return outputs;
+        auto &query = scriptQueries[static_cast<size_t>(scriptType)];
+        return getOutputPointersImp(query, script.scriptNum);
     }
 }
 

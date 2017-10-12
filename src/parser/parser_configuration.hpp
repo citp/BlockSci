@@ -27,20 +27,12 @@ struct ParserConfigurationBase : public blocksci::DataConfiguration {
         return dataDirectory/"parser";
     }
     
-    boost::filesystem::path addressCacheFile() const {
-        return parserDirectory()/"addressCache.dat";
-    }
-    
     boost::filesystem::path utxoCacheFile() const {
         return parserDirectory()/"utxoCache.dat";
     }
     
-    boost::filesystem::path addressBloomCacheFile() const {
-        return parserDirectory()/"addressBloomCache.dat";
-    }
-    
-    boost::filesystem::path addressDBPath() const {
-        return parserDirectory()/"addressDB";
+    boost::filesystem::path addressPath() const {
+        return parserDirectory()/"address";
     }
     
     boost::filesystem::path blockListPath() const {

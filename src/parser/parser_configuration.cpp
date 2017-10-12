@@ -23,6 +23,10 @@ ParserConfigurationBase::ParserConfigurationBase(const boost::filesystem::path &
     if(!(boost::filesystem::exists(dir))){
         boost::filesystem::create_directory(dir);
     }
+    
+    if(!(boost::filesystem::exists(addressPath()))){
+        boost::filesystem::create_directory(addressPath());
+    }
 }
 
 #ifdef BLOCKSCI_FILE_PARSER

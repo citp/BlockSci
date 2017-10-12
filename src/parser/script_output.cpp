@@ -72,7 +72,8 @@ struct AddressNumImp<true> {
         blocksci::RawScript rawAddress{data.getHash(), blocksci::scriptType(type)};
         auto addressInfo = state.findAddress(rawAddress);
         auto processed = state.resolveAddress(addressInfo);
-        return std::make_pair(blocksci::Address(processed.first, type), processed.second);
+        blocksci::Address address(processed.first, type);
+        return std::make_pair(address, processed.second);
     }
     
     template <blocksci::AddressType::Enum type>
@@ -144,7 +145,7 @@ bool isValid(const ScriptOutputType &type) {
 
 // MARK: TX_PUBKEY
 
-ScriptOutput<blocksci::AddressType::Enum::PUBKEY>::ScriptOutput(const std::vector<unsigned char> &vch1) : pubkey(vch1) {}
+ScriptOutput<blocksci::AddressType::Enum::PUBKEY>::ScriptOutput(const boost::iterator_range<const unsigned char *> &vch1) : pubkey(vch1.begin(), vch1.end()) {}
 
 blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::PUBKEY>::getHash() const {
     return pubkey.GetID();
@@ -237,14 +238,14 @@ void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::checkOutput(const Addr
     }
 }
 
-void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::addAddress(const std::vector<unsigned char> &vch1) {
-    addresses.push_back(CPubKey(vch1));
+void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::addAddress(const boost::iterator_range<const unsigned char *> &vch1) {
+    addresses.push_back(CPubKey(vch1.begin(), vch1.end()));
     addressCount++;
 }
 
 // MARK: TX_NONSTANDARD
 
-ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD>::ScriptOutput(const CScript &script_) : script(script_) {}
+ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD>::ScriptOutput(const CScriptView &script_) : script(script_) {}
 
 void ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD>::processOutput(AddressState &, AddressWriter &writer) {
     writer.serialize(*this);
@@ -252,10 +253,10 @@ void ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD>::processOutput(Addre
 
 // MARK: TX_NULL_DATA
 
-ScriptOutput<blocksci::AddressType::Enum::NULL_DATA>::ScriptOutput(const CScript &script){
-    CScript::const_iterator pc1 = script.begin();
+ScriptOutput<blocksci::AddressType::Enum::NULL_DATA>::ScriptOutput(const CScriptView &script){
+    CScriptView::const_iterator pc1 = script.begin();
     opcodetype opcode1;
-    std::vector<unsigned char> vch1;
+    boost::iterator_range<const unsigned char *> vch1;
     while(true) {
         if(!script.GetOp(pc1, opcode1, vch1)) {
             break;
@@ -270,9 +271,9 @@ void ScriptOutput<blocksci::AddressType::Enum::NULL_DATA>::processOutput(Address
 
 // MARK: Script Processing
 
-bool isValidPubkey(std::vector<unsigned char> &vch1);
+bool isValidPubkey(boost::iterator_range<const unsigned char *> &vch1);
 
-bool isValidPubkey(std::vector<unsigned char> &vch1) {
+bool isValidPubkey(boost::iterator_range<const unsigned char *> &vch1) {
     if (vch1.size() < 33 || vch1.size() > 65)
         return false;
     
@@ -305,7 +306,7 @@ ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsig
         auto multisig = std::make_pair(AddressType::Enum::MULTISIG, CScript() << OP_SMALLINTEGER << OP_PUBKEYS << OP_SMALLINTEGER << OP_CHECKMULTISIG);
         mTemplates.push_back(multisig);
     }
-    CScript scriptPubKey(scriptBegin, scriptEnd);
+    CScriptView scriptPubKey(scriptBegin, scriptEnd);
     
     // Shortcut for pay-to-script-hash, which are more constrained than the other types:
     // it is always OP_HASH160 20 [20 byte hash] OP_EQUAL
@@ -319,7 +320,7 @@ ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsig
     if (witnessActivated && scriptPubKey.IsWitnessProgram()) {
         auto pc = scriptPubKey.begin();
         opcodetype opcode;
-        std::vector<unsigned char> vchSig;
+        boost::iterator_range<const unsigned char *> vchSig;
         scriptPubKey.GetOp(pc, opcode, vchSig);
         uint8_t version = static_cast<uint8_t>(CScript::DecodeOP_N(opcode));
         scriptPubKey.GetOp(pc, opcode, vchSig);
@@ -341,7 +342,7 @@ ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsig
     }
     
     // Scan templates
-    const CScript& script1 = scriptPubKey;
+    const CScriptView& script1 = scriptPubKey;
     
     
     boost::optional<ScriptOutputType> type;
@@ -352,10 +353,11 @@ ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsig
         const CScript& script2 = tplate.second;
         
         opcodetype opcode1, opcode2;
-        std::vector<unsigned char> vch1, vch2;
+        boost::iterator_range<const unsigned char *> vch1;
+        std::vector<unsigned char> vch2;
         
         // Compare
-        CScript::const_iterator pc1 = script1.begin();
+        CScriptView::const_iterator pc1 = script1.begin();
         CScript::const_iterator pc2 = script2.begin();
         while (true)
         {

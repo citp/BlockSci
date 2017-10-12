@@ -12,6 +12,9 @@
 #include <blocksci/scripts/raw_script.hpp>
 #include <blocksci/bitcoin_uint256.hpp>
 
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+
 #include <fstream>
 #include <array>
 #include <cmath>
@@ -20,13 +23,58 @@
 constexpr double Log2 = 0.30102999566;
 constexpr double Log2Squared = Log2 * Log2;
 
-template<class Key>
-BloomFilter<Key>::BloomFilter() : maxItems(0), fpRate(1), m_numHashes(0), length(0), addedCount(0), data(0)  {
+BloomStore::BloomStore(const boost::filesystem::path &path, uint64_t length_) : backingFile(path), length(length_) {
+    if (backingFile.size() == 0) {
+        backingFile.truncate(blockCount());
+    }
+    
+    if (backingFile.size() != blockCount()) {
+        throw std::runtime_error("Trying to open bloom filter of wrong size");
+    }
 }
 
-template<class Key>
-BloomFilter<Key>::BloomFilter(uint64_t maxItems_, double fpRate_) : maxItems(maxItems_), fpRate(fpRate_), m_numHashes(static_cast<uint8_t>(std::ceil(-std::log(fpRate) / Log2))), length(static_cast<uint64_t>(std::floor((-std::log(fpRate) * maxItems) / Log2Squared)) / sizeof(BlockType)), addedCount(0), data((length + BlockSize - 1) / BlockSize) {
-    
+uint64_t BloomStore::blockCount() const {
+    return (length + BlockSize - 1) / BlockSize;
+}
+
+void BloomStore::setBit(uint64_t bitPos) {
+    (*backingFile.getData(bitPos / BlockSize)) |= BlockType{1} << (bitPos % BlockSize);
+}
+
+bool BloomStore::isSet(uint64_t bitPos) const {
+    return !(((*backingFile.getData(bitPos / BlockSize)) & (BlockType{1} << (bitPos % BlockSize))) == 0);
+}
+
+void BloomStore::reset(uint64_t length) {
+    backingFile.truncate(0);
+    backingFile.truncate((length + BlockSize - 1) / BlockSize);
+}
+
+BloomFilterData::BloomFilterData() : maxItems(0), fpRate(1), m_numHashes(0), length(0), addedCount(0) {}
+BloomFilterData::BloomFilterData(uint64_t maxItems_, double fpRate_) : maxItems(maxItems_), fpRate(fpRate_), m_numHashes(static_cast<uint8_t>(std::ceil(-std::log(fpRate) / Log2))), length(static_cast<uint64_t>(std::floor((-std::log(fpRate) * maxItems) / Log2Squared))), addedCount(0) {}
+
+
+BloomFilterData loadData(const boost::filesystem::path &path, uint64_t maxItems, double fpRate) {
+    BloomFilterData data{maxItems, fpRate};
+    boost::filesystem::ifstream file(path, std::ios::binary);
+    if (file.good()) {
+        boost::archive::binary_iarchive ia(file);
+        ia >> data;
+    }
+    return data;
+}
+
+BloomFilter::BloomFilter(const boost::filesystem::path &path_, uint64_t maxItems, double fpRate) : path(path_), impData(loadData(metaPath(), maxItems, fpRate)), store(storePath(), impData.length) {}
+
+BloomFilter::~BloomFilter() {
+    boost::filesystem::ofstream file(metaPath(), std::ios::binary);
+    boost::archive::binary_oarchive oa(file);
+    oa << impData;
+}
+
+void BloomFilter::reset(uint64_t maxItems, double fpRate) {
+    impData = BloomFilterData(maxItems, fpRate);
+    store.reset(impData.length);
 }
 
 inline std::array<uint64_t, 2> hash(const uint8_t *data, int len) {
@@ -40,34 +88,26 @@ inline uint64_t nthHash(uint8_t n, uint64_t hashA, uint64_t hashB, uint64_t filt
     return (hashA + n * hashB) % filterSize;
 }
 
-template<class Key>
-void BloomFilter<Key>::add(const Key &key) {
-    int len = static_cast<int>(sizeof(Key));
-    auto item = reinterpret_cast<const uint8_t *>(&key);
-    auto hashValues = hash(item, len);
+void BloomFilter::add(const uint8_t *item, int length) {
+    auto hashValues = hash(item, length);
     
-    for (uint8_t n = 0; n < m_numHashes; n++) {
-        auto bitPos = nthHash(n, hashValues[0], hashValues[1], length);
-        data[bitPos / BlockSize] |= BlockType{1} << (bitPos % BlockSize);
+    for (uint8_t n = 0; n < impData.m_numHashes; n++) {
+        auto bitPos = nthHash(n, hashValues[0], hashValues[1], impData.length);
+        store.setBit(bitPos);
     }
     
-    addedCount++;
+    impData.addedCount++;
 }
 
-template<class Key>
-bool BloomFilter<Key>::possiblyContains(const Key &key) const {
-    auto len = static_cast<int>(sizeof(Key));
-    auto item = reinterpret_cast<const uint8_t *>(&key);
-    auto hashValues = hash(item, len);
+bool BloomFilter::possiblyContains(const uint8_t *item, int length) const {
+    auto hashValues = hash(item, length);
     
-    for (uint8_t n = 0; n < m_numHashes; n++) {
-        auto bitPos = nthHash(n, hashValues[0], hashValues[1], length);
-        if ((data[bitPos / BlockSize] & (BlockType{1} << (bitPos % BlockSize))) == 0) {
+    for (uint8_t n = 0; n < impData.m_numHashes; n++) {
+        auto bitPos = nthHash(n, hashValues[0], hashValues[1], impData.length);
+        if (!store.isSet(bitPos)) {
             return false;
         }
     }
     
     return true;
 }
-
-template class BloomFilter<blocksci::RawScript>;

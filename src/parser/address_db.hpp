@@ -14,15 +14,15 @@
 
 #include <blocksci/scripts/script_type.hpp>
 
+#include <SQLiteCpp/Database.h>
+#include <SQLiteCpp/Transaction.h>
+
 #include <unordered_map>
 
-struct sqlite3;
-struct sqlite3_stmt;
-
 class AddressDB : public AddressTraverser {
-    sqlite3 *db;
-    bool firstRun;
-    std::unordered_map<blocksci::ScriptType::Enum,  sqlite3_stmt *> insertStatements;
+    SQLite::Database db;
+    std::unordered_map<blocksci::ScriptType::Enum,  SQLite::Statement> insertStatements;
+    SQLite::Transaction transaction;
     std::vector<blocksci::script::ScriptHash> p2shesToAdd;
     
     AddressDB(const ParserConfigurationBase &config, std::pair<sqlite3 *, bool> init);
@@ -36,9 +36,8 @@ class AddressDB : public AddressTraverser {
     
 public:
     AddressDB(const ParserConfigurationBase &config);
-    ~AddressDB();
     
-    void rollback(uint32_t maxTxIndex);
+    void rollback(const blocksci::State &state) override;
 };
 
 #endif /* address_db_h */

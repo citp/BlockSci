@@ -40,10 +40,6 @@ public:
         lastDataPos = static_cast<size_t>(file.tellp());
     }
     
-    ~SimpleFileWriter() {
-        file.close();
-    }
-    
     template<typename T, typename = std::enable_if_t<std::is_trivially_copyable<T>::value>>
     void writeImp(const T &t) {
         file.write(reinterpret_cast<const char *>(&t), sizeof(T));

@@ -20,7 +20,7 @@ target_link_libraries( blocksci boost )
 target_link_libraries( blocksci sparsepp)
 target_link_libraries( blocksci secp256k1)
 target_link_libraries( blocksci openssl )
-target_link_libraries( blocksci sqlite3)
+target_link_libraries( blocksci SQLiteCppInclude)
 
 
 target_include_directories(blocksci PUBLIC BEFORE

@@ -39,6 +39,12 @@ void FirstSeenIndex::prepareUpdate() {
     }
 }
 
+void FirstSeenIndex::rollback(const blocksci::State &state) {
+    for (auto &pair : files) {
+        auto &file = pair.second;
+        file.truncate(state.scriptCounts[static_cast<size_t>(pair.first)]);
+    }
+}
 // truncate
 
 void FirstSeenIndex::maybeUpdate(const blocksci::Address &address, uint32_t txNum) {

@@ -15,28 +15,38 @@
 
 #include <sparsepp/spp.h>
 
+#include <boost/functional/hash.hpp>
+
+#include <google/dense_hash_map>
+
+#include <sstream>
 #include <future>
 
-struct RawOutputPointerHasher {
-    size_t operator()(const RawOutputPointer& b) const {
-        std::size_t seed = 123945432;
-        std::hash<blocksci::uint256> hasher1;
-        std::hash<uint16_t> hasher2;
-        seed ^= hasher1(b.hash) + 0x9e3779b9 + (seed<<6) + (seed>>2);
-        seed ^= hasher2(b.outputNum) + 0x9e3779b9 + (seed<<6) + (seed>>2);
-        return seed;
-    }
-};
-
 class UTXOState {
-    using utxo_map = spp::sparse_hash_map<RawOutputPointer, UTXO, RawOutputPointerHasher>;
+    using utxo_map = google::dense_hash_map<RawOutputPointer, UTXO, boost::hash<RawOutputPointer>>;
     
     const ParserConfigurationBase &config;
     
     utxo_map utxoMap;
     
 public:
+    
+    struct UTXOMissingException : public std::runtime_error {
+        UTXOMissingException(const RawOutputPointer &pointer) : std::runtime_error(getMessage(pointer).c_str()) {}
+        
+    private:
+        static std::string getMessage(const RawOutputPointer &pointer) {
+            std::stringstream ss;
+            ss << "Tried to spend missing UTXO " << pointer.hash.GetHex() << ": " << pointer.outputNum;
+            return ss.str();
+        }
+    };
+    
     UTXOState(const ParserConfigurationBase &config);
+    UTXOState(const UTXOState &) = delete;
+    UTXOState &operator=(const UTXOState &) = delete;
+    UTXOState(UTXOState &&) = delete;
+    UTXOState &operator=(UTXOState &&) = delete;
     ~UTXOState();
     
     UTXO spendOutput(const RawOutputPointer &outputPointer);

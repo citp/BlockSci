@@ -12,10 +12,10 @@
 #include "parser_index.hpp"
 #include "parser_fwd.hpp"
 
-#include <tuple>
+#include <SQLiteCpp/Database.h>
+#include <SQLiteCpp/Transaction.h>
 
-struct sqlite3;
-struct sqlite3_stmt;
+#include <tuple>
 
 namespace blocksci {
     class ChainAccess;
@@ -24,13 +24,9 @@ namespace blocksci {
 }
 
 class HashIndexCreator : public ParserIndex {
-    sqlite3 *db;
-    sqlite3_stmt *txInsertStatement;
-    sqlite3_stmt *pubkeyHashInsertStatement;
-    sqlite3_stmt *p2shInsertStatement;
-    bool firstRun;
-    
-    HashIndexCreator(const ParserConfigurationBase &config, std::pair<sqlite3 *, bool> init);
+    SQLite::Database db;
+    std::array<SQLite::Statement, 3> insertStatements;
+    SQLite::Transaction transaction;
     
     void processTx(const blocksci::Transaction &tx, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override;
     void processScript(const blocksci::ScriptPointer &pointer, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override;
@@ -38,8 +34,8 @@ class HashIndexCreator : public ParserIndex {
     void tearDown() override;
 public:
     HashIndexCreator(const ParserConfigurationBase &config);
-    ~HashIndexCreator();
     void processTx(const blocksci::uint256 &hash, uint32_t index);
+    void rollback(const blocksci::State &state) override;
 };
 
 #endif /* hash_index_creator_hpp */

@@ -129,8 +129,14 @@ namespace blocksci {
     struct SimpleFileMapper<boost::iostreams::mapped_file::mapmode::readwrite> : public SimpleFileMapperBase {
         static constexpr size_t maxBufferSize = 50000000;
         std::vector<char> buffer;
+        static constexpr auto mode = boost::iostreams::mapped_file::mapmode::readwrite;
         
         SimpleFileMapper(boost::filesystem::path path) : SimpleFileMapperBase(path, boost::iostreams::mapped_file::mapmode::readwrite) {}
+        
+        SimpleFileMapper(const SimpleFileMapper &) = delete;
+        SimpleFileMapper &operator=(const SimpleFileMapper &) = delete;
+        SimpleFileMapper(SimpleFileMapper &&) = delete;
+        SimpleFileMapper &operator=(SimpleFileMapper &&) = delete;
         
         ~SimpleFileMapper() {
             clearBuffer();
@@ -210,9 +216,13 @@ namespace blocksci {
             } else if (offset > size()) {
                 clearBuffer();
                 if (!boost::filesystem::exists(path)) {
-                    boost::filesystem::fstream{path, std::fstream::out | std::fstream::binary};
+                    boost::filesystem::fstream s{path, std::fstream::out | std::fstream::binary};
+                    s.seekp(offset - 1);
+                    s.write("", 1);
+                } else {
+                    boost::filesystem::resize_file(path, offset);
                 }
-                boost::filesystem::resize_file(path, offset);
+                
                 reload();
             }
         }

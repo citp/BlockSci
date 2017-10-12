@@ -42,6 +42,13 @@ namespace blocksci {
     }
     
     template <unsigned int BITS>
+    base_blob<BITS>::base_blob(const boost::iterator_range<const unsigned char *> &vch)
+    {
+        assert(vch.size() == sizeof(data));
+        memcpy(data, &vch[0], sizeof(data));
+    }
+    
+    template <unsigned int BITS>
     std::string base_blob<BITS>::GetHex() const
     {
         return HexStr(std::reverse_iterator<const uint8_t*>(data + sizeof(data)), std::reverse_iterator<const uint8_t*>(data));
@@ -91,8 +98,12 @@ namespace blocksci {
     uint160::uint160(const std::vector<unsigned char>& vch) : base_blob<160>(vch) {}
     uint256::uint256(const std::vector<unsigned char>& vch) : base_blob<256>(vch) {}
     
+    uint160::uint160(const boost::iterator_range<const unsigned char *> &vch) : base_blob<160>(vch) {}
+    uint256::uint256(const boost::iterator_range<const unsigned char *> &vch) : base_blob<256>(vch) {}
+    
     // Explicit instantiations for base_blob<160>
     template base_blob<160>::base_blob(const std::vector<unsigned char>&);
+    template base_blob<160>::base_blob(const boost::iterator_range<const unsigned char *> &);
     template std::string base_blob<160>::GetHex() const;
     template std::string base_blob<160>::ToString() const;
     template void base_blob<160>::SetHex(const char*);
@@ -100,6 +111,7 @@ namespace blocksci {
     
     // Explicit instantiations for base_blob<256>
     template base_blob<256>::base_blob(const std::vector<unsigned char>&);
+    template base_blob<256>::base_blob(const boost::iterator_range<const unsigned char *> &);
     template std::string base_blob<256>::GetHex() const;
     template std::string base_blob<256>::ToString() const;
     template void base_blob<256>::SetHex(const char*);

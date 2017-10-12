@@ -241,8 +241,8 @@ blocksci::uint256 RawTransaction::getHash(const InputInfo &info, int hashType) c
             s.serializeCompact(0);
         } else {
             auto scriptCode = info.getScript();
-            CScript::const_iterator it = scriptCode.begin();
-            CScript::const_iterator itBegin = it;
+            CScriptView::const_iterator it = scriptCode.begin();
+            CScriptView::const_iterator itBegin = it;
             opcodetype opcode;
             unsigned int nCodeSeparators = 0;
             while (scriptCode.GetOp(it, opcode)) {

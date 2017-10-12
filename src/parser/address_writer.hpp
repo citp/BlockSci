@@ -14,6 +14,7 @@
 #include "script_input.hpp"
 
 #include <blocksci/file_mapper.hpp>
+#include <blocksci/state.hpp>
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/scripts/script_info.hpp>
 #include <blocksci/scripts/script_data.hpp>
@@ -87,6 +88,8 @@ public:
     }
     
     void truncate(blocksci::ScriptType::Enum type, uint32_t index);
+    
+    void rollback(const blocksci::State &state);
     
     void serialize(const ScriptOutputType &output);
     void serialize(const ScriptInputType &input, const InputInfo &inputInfo);

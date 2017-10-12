@@ -202,3 +202,8 @@ void AddressWriter::truncate(blocksci::ScriptType::Enum type, uint32_t addressIn
     return table[index](addressIndex, *this);
 }
 
+void AddressWriter::rollback(const blocksci::State &state) {
+    blocksci::for_each(blocksci::ScriptInfoList(), [&](auto tag) {
+        constexpr auto scriptType = decltype(tag)::type; truncate<scriptType>(state.scriptCounts[static_cast<size_t>(scriptType)]);
+    });
+}

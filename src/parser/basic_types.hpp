@@ -27,5 +27,6 @@ struct RawOutputPointer {
 };
 
 std::ostream &operator<<(std::ostream &os, RawOutputPointer const &pointer);
+std::size_t hash_value(const RawOutputPointer &pointer);
 
 #endif /* utilities_h */

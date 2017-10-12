@@ -20,11 +20,11 @@
 #include <bitcoinapi/bitcoinapi.h>
 #endif
 
-#include <leveldb/db.h>
-
 #include <boost/iostreams/device/mapped_file.hpp>
 #include <boost/filesystem.hpp>
 
+
+#include <future>
 #include <sstream>
 #include <fstream>
 #include <iostream>
@@ -41,84 +41,123 @@ BlockInfo<RPCTag>::BlockInfo(const blockinfo_t &info, uint32_t height_) : BlockI
     height = static_cast<int>(height_);
 }
 
+int maxBlockFileNum(int startFile, const ParserConfiguration<FileTag> &config) {
+    int fileNum = startFile;
+    while (boost::filesystem::exists(config.pathForBlockFile(fileNum))) {
+        fileNum++;
+    }
+    return fileNum - 1;
+}
+
 template <>
-void ChainIndex<FileTag>::update() {
+void ChainIndex<FileTag>::update(const ConfigType &config) {
     int fileNum = 0;
     unsigned int filePos = 0;
 
     if (!blockList.empty()) {
-        auto &lastBlock = blockList.back();
-        fileNum = lastBlock.nFile;
-        filePos = lastBlock.nDataPos + lastBlock.size;
+        fileNum = newestBlock.nFile;
+        filePos = newestBlock.nDataPos + newestBlock.size;
     }
 
     auto firstFile = fileNum;
-
-    while (true) {
-        // determine block file path
-        auto blockFilePath = config.pathForBlockFile(fileNum);
-        if (!boost::filesystem::exists(blockFilePath)) {
-            std::cout << "No block file " << blockFilePath << "\n";
-            break;
-        }
-
-        SafeMemReader reader{blockFilePath};
-        
-        std::cout << "Reading " << blockFilePath << "...\n";
-        
-        try {
-            // logic for resume from last processed block, note blockStartOffset and length below
-            if (fileNum == firstFile && filePos > 0) {
-                reader.reset(filePos);
-            }
-            
-            // read blocks in loop while we can...
-            while (reader.has(sizeof(uint32_t))) {
-                auto magic = reader.readNext<uint32_t>();
-                if (magic != config.blockMagic) {
-                    break;
+    
+    auto maxFileNum = maxBlockFileNum(fileNum, config);
+    
+    auto localConfig = config;
+    
+    std::mutex m;
+    
+    std::cout.setf(std::ios::fixed,std::ios::floatfield);
+    std::cout.precision(1);
+    auto fileCount = maxFileNum - fileNum + 1;
+    auto percentage = static_cast<double>(fileCount) / 1000.0;
+    int percentageMarker = static_cast<int>(std::ceil(percentage));
+    int filesDone = 0;
+    {
+        std::vector<std::future<void>> blockFutures;
+        for (; fileNum <= maxFileNum; fileNum++) {
+            blockFutures.emplace_back(std::async(std::launch::async, [&](int fileNum) {
+                // determine block file path
+                auto blockFilePath = localConfig.pathForBlockFile(fileNum);
+                SafeMemReader reader{blockFilePath};
+                std::vector<BlockInfo<FileTag>> blocks;
+                
+                try {
+                    // logic for resume from last processed block, note blockStartOffset and length below
+                    if (fileNum == firstFile) {
+                        reader.reset(filePos);
+                    }
+                    
+                    // read blocks in loop while we can...
+                    while (reader.has(sizeof(uint32_t))) {
+                        auto magic = reader.readNext<uint32_t>();
+                        if (magic != localConfig.blockMagic) {
+                            break;
+                        }
+                        auto length = reader.readNext<uint32_t>();
+                        auto blockStartOffset = reader.offset();
+                        auto header = reader.readNext<CBlockHeader>();
+                        auto numTxes = reader.readVariableLengthInteger();
+                        // The next two lines bring the reader to the end of this block
+                        reader.reset(blockStartOffset);
+                        reader.advance(length);
+                        blocks.emplace_back(header, length, numTxes, localConfig, fileNum, blockStartOffset);
+                    }
+                } catch (const std::out_of_range &e) {
+                    std::cerr << "Failed to read block header information"
+                    << " from " << blockFilePath
+                    << " at offset " << reader.offset()
+                    << ".\n";
+                    throw;
                 }
-                auto length = reader.readNext<uint32_t>();
-                auto blockStartOffset = reader.offset();
-                auto header = reader.readNext<CBlockHeader>();
-                auto numTxes = reader.readVariableLengthInteger();
-                // The next two lines bring the reader to the end of this block
-                reader.reset(blockStartOffset);
-                reader.advance(length);
-                blockList.emplace_back(header, length, numTxes, config, fileNum, blockStartOffset);
-            }
-        } catch (const std::out_of_range &e) {
-            std::cerr << "Failed to read block header information"
-            << " from " << blockFilePath
-            << " at offset " << reader.offset()
-            << ".\n";
-            throw;
+                
+                if (fileNum == maxFileNum && blocks.size() > 0) {
+                    newestBlock = blocks.back();
+                }
+                
+                std::lock_guard<std::mutex> lock(m);
+                
+                for (auto &block : blocks) {
+                    blockList[block.hash] = block;
+                }
+                
+                filesDone++;
+                if (filesDone % percentageMarker == 0) {
+                    std::cout << "\r" << (static_cast<double>(filesDone) / static_cast<double>(fileCount)) * 100 << "% done fetching block headers" << std::flush;
+                }
+                
+            }, fileNum));
         }
-        
-        // move to next block file
-        fileNum++;
-        filePos = 0;
     }
     
-    std::unordered_map<blocksci::uint256, size_t> indexMap;
-    indexMap.reserve(blockList.size());
-    size_t blockNum = 0;
-    for (const auto &blockInfo : blockList) {
-        indexMap[blockInfo.hash] = blockNum;
-        blockNum++;
-    }
-
-    for (auto &i : blockList) {
-        i.height = -1;
+    std::cout << std::endl;
+    
+    std::unordered_multimap<blocksci::uint256, blocksci::uint256> forwardHashes;
+    
+    for (auto &pair : blockList) {
+        forwardHashes.emplace(pair.second.header.hashPrevBlock, pair.second.hash);
     }
     
-    for (size_t i = 0; i < blockList.size(); i++) {
-        updateHeight(i, indexMap);
+    blocksci::uint256 nullHash;
+    nullHash.SetNull();
+    
+    std::vector<std::pair<blocksci::uint256, int>> queue;
+    
+    queue.emplace_back(nullHash, 0);
+    while (!queue.empty()) {
+        auto [blockHash, height] = queue.back();
+        queue.pop_back();
+        for (auto [it, end] = forwardHashes.equal_range(blockHash) ;it != end; ++it) {
+            auto &block = blockList.at(it->second);
+            block.height = height + 1;
+            queue.emplace_back(block.hash, block.height);
+        }
     }
+    
 }
 
 template<>
-void ChainIndex<RPCTag>::update() {
+void ChainIndex<RPCTag>::update(const ConfigType &config) {
     try {
         BitcoinAPI bapi{config.createBitcoinAPI()};
         auto blockHeight = static_cast<uint32_t>(bapi.getblockcount());
@@ -136,87 +175,55 @@ void ChainIndex<RPCTag>::update() {
         
         for (uint32_t i = splitPoint; i < blockHeight; i++) {
             std::string blockhash = bapi.getblockhash(static_cast<int>(i));
-            blockList.emplace_back(bapi.getblock(blockhash), i);
+            BlockType block{bapi.getblock(blockhash), i};
+            blockList.emplace(block.hash, block);
             uint32_t count = i - splitPoint;
             if (count % percentageMarker == 0) {
                 std::cout << "\r" << (static_cast<double>(count) / static_cast<double>(numBlocks)) * 100 << "% done fetching block headers" << std::flush;
             }
+            if (i == blockHeight - 1) {
+                newestBlock = block;
+            }
         }
+        
         std::cout << std::endl;
-        blockList = generateChain(0);
     } catch (const BitcoinException &e) {
         std::cout << std::endl;
         std::cerr << "Error while interacting with RPC: " << e.what() << std::endl;
         throw;
     }
-}
-
-template<typename ParseTag>
-int ChainIndex<ParseTag>::updateHeight(size_t blockNum, const std::unordered_map<blocksci::uint256, size_t> &indexMap) {
-    auto &block = blockList[blockNum];
-    if (block.height == -1) {
-        if (block.header.hashPrevBlock.IsNull()) {
-            block.height = 0;
-        } else {
-            auto it = indexMap.find(block.header.hashPrevBlock);
-            if(it != indexMap.end()) {
-                block.height = updateHeight(it->second, indexMap) + 1;
-            } else {
-                block.height = -1;
-            }
-            
-        }
-    }
-    return block.height;
+    std::cout << std::endl;
 }
 
 template<typename ParseTag>
 std::vector<typename ChainIndex<ParseTag>::BlockType> ChainIndex<ParseTag>::generateChain(uint32_t maxBlockHeight) const {
     
-    std::unordered_map<blocksci::uint256, size_t> indexMap;
-    indexMap.reserve(blockList.size());
-    size_t blockNum = 0;
-    for (const auto &blockInfo : blockList) {
-        indexMap[blockInfo.hash] = blockNum;
-        blockNum++;
+    const BlockType *maxHeightBlock = nullptr;
+    int maxHeight = 0;
+    for (auto &pair : blockList) {
+        if (pair.second.height > maxHeight) {
+            maxHeightBlock = &pair.second;
+            maxHeight = pair.second.height;
+        }
     }
     
-    uint32_t curMax = maxBlockHeight == 0 ? std::numeric_limits<int>::max() : maxBlockHeight;
+    blocksci::uint256 nullHash;
+    nullHash.SetNull();
     
+    auto hash = maxHeightBlock->hash;
     std::vector<BlockType> chain;
-    while (true) {
-        chain.clear();
-        const BlockType *maxHeightBlock = nullptr;
-        uint32_t maxHeight = 0;
-        for (auto &possibleMaxBlock : blockList) {
-            if (static_cast<uint32_t>(possibleMaxBlock.height) > maxHeight && static_cast<uint32_t>(possibleMaxBlock.height) <= curMax) {
-                maxHeightBlock = &possibleMaxBlock;
-                maxHeight = static_cast<uint32_t>(possibleMaxBlock.height);
-            }
-        }
-        
-        if (maxHeightBlock == nullptr) {
-            return chain;
-        }
-        
-        auto block = maxHeightBlock;
-        while (true) {
-            if (static_cast<uint32_t>(block->height) < curMax) {
-                chain.push_back(*block);
-            }
-            if (block->height > 0) {
-                auto it = indexMap.find(block->header.hashPrevBlock);
-                if (it == indexMap.end()) {
-                    curMax = static_cast<uint32_t>(block->height) - 2;
-                    break;
-                } else {
-                    block = &blockList[it->second];
-                }
-            } else {
-                std::reverse(chain.begin(), chain.end());
-                return chain;
-            }
-        }
+    while (hash != nullHash) {
+        auto &block = blockList.find(hash)->second;
+        chain.push_back(block);
+        hash = block.header.hashPrevBlock;
+    }
+    
+    std::reverse(chain.begin(), chain.end());
+    
+    if (maxBlockHeight == 0 || maxBlockHeight > chain.size()) {
+        return chain;
+    } else {
+        return {chain.begin(), chain.begin() + maxBlockHeight};
     }
 }
 

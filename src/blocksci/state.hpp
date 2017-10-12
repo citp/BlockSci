@@ -22,7 +22,7 @@ namespace blocksci {
         uint32_t txCount;
         std::array<uint32_t, ScriptType::size> scriptCounts;
         
-        State(ChainAccess &chain, ScriptAccess &scripts);
+        State(const ChainAccess &chain, const ScriptAccess &scripts);
         State();
     };
     

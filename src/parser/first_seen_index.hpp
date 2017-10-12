@@ -27,8 +27,11 @@ class FirstSeenIndex : public AddressTraverser {
     
     void prepareUpdate() override;
     
+    
 public:
     FirstSeenIndex(const ParserConfigurationBase &config);
+    
+    void rollback(const blocksci::State &state) override;
 };
 
 #endif /* first_seen_index_hpp */

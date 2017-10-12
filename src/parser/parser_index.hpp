@@ -39,12 +39,17 @@ protected:
     
 public:
     ParserIndex(const ParserConfigurationBase &config, const std::string &resultName);
+    ParserIndex(const ParserIndex &) = delete;
+    ParserIndex &operator=(const ParserIndex &) = delete;
+    ParserIndex(ParserIndex &&) = delete;
+    ParserIndex &operator=(ParserIndex &&) = delete;
     virtual ~ParserIndex();
     
     virtual void prepareUpdate() {}
     void runUpdate(const std::vector<uint32_t> &revealed, const blocksci::State &state);
     virtual void tearDown() {}
     void preDestroy();
+    virtual void rollback(const blocksci::State &state) = 0;
 };
 
 #endif /* parser_index_hpp */

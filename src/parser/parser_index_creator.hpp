@@ -37,6 +37,10 @@ private:
     
 public:
     ParserIndexCreator(const ParserConfigurationBase &config_, std::unique_ptr<ParserIndex> index_) : config(config_), updateFuture{std::async(std::launch::async, [&] {})}, launchingUpdate(false), tornDown(false), index(std::move(index_)) {}
+    ParserIndexCreator(const ParserIndexCreator &) = delete;
+    ParserIndexCreator &operator=(const ParserIndexCreator &) = delete;
+    ParserIndexCreator(ParserIndexCreator &&) = delete;
+    ParserIndexCreator &operator=(ParserIndexCreator &&) = delete;
     ~ParserIndexCreator();
     
     void update(const std::vector<uint32_t> &revealed, blocksci::State state);

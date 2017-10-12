@@ -9,7 +9,10 @@
 #ifndef hash_index_hpp
 #define hash_index_hpp
 
+#include <SQLiteCpp/Database.h>
+
 #include <string_view>
+#include <array>
 #include <vector>
 #include <cstdint>
 
@@ -25,30 +28,26 @@ namespace blocksci {
     struct Address;
     
     class HashIndex {
-        sqlite3 *db;
-        sqlite3_stmt *pubkeyQuery;
-        sqlite3_stmt *p2shQuery;
-        sqlite3_stmt *txQuery;
-        
-        std::vector<uint32_t> getMatches(sqlite3_stmt * stmt) const;
-        uint32_t getMatch(sqlite3_stmt * stmt) const;
-        
     public:
-        
-        static constexpr auto txTableName = "TXHASH"sv;
-        static constexpr auto p2shTableName = "P2SH_ADDRESS"sv;
-        static constexpr auto pubkeyHashTableName = "PUBKEYHASH_ADDRESS"sv;
-        
-        static constexpr auto tableNames = {txTableName, p2shTableName, pubkeyHashTableName};
+        struct IndexType {
+            enum Enum {
+                PubkeyHash, ScriptHash, Tx
+            };
+            static constexpr size_t size = 3;
+            static constexpr std::array<Enum, size> all = {{PubkeyHash, ScriptHash, Tx}};
+            static constexpr std::array<std::string_view, 3> tableNames = {{"PUBKEYHASH_ADDRESS"sv, "P2SH_ADDRESS"sv, "TXHASH"sv}};
+        };
         
         HashIndex(const DataConfiguration &config);
-        HashIndex(const HashIndex &index) = delete;
-        HashIndex &operator=(const HashIndex &index) = delete;
-        ~HashIndex();
         
         uint32_t getPubkeyHashIndex(const uint160 &pubkeyhash) const;
         uint32_t getScriptHashIndex(const uint160 &scripthash) const;
         uint32_t getTxIndex(const uint256 &txHash) const;
+    private:
+        SQLite::Database db;
+        // These are private and mutable so queries can be run with a const reference to this class
+        // This simulates the immutability of the backing data.
+        mutable std::array<SQLite::Statement, IndexType::size> queries;
     };
 }
 

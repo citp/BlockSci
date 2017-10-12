@@ -16,6 +16,7 @@
 
 #include <boost/filesystem/fstream.hpp>
 #include <boost/serialization/base_object.hpp>
+#include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
@@ -117,28 +118,10 @@ template <typename ParseTag>
 struct ChainIndex {
     using BlockType = BlockInfo<ParseTag>;
     using ConfigType = ParserConfiguration<ParseTag>;
-    std::vector<BlockType> blockList;
+    std::unordered_map<blocksci::uint256, BlockType> blockList;
+    BlockType newestBlock;
     
-    ChainIndex(const ConfigType &config_) : config(config_) {
-        boost::filesystem::ifstream file(config.blockListPath(), std::ios::binary);
-        if (file.good()) {
-            boost::archive::binary_iarchive ia(file);
-            ia >> *this;
-        }
-        update();
-    }
-    
-    ~ChainIndex() {
-        boost::filesystem::ofstream file(config.blockListPath(), std::ios::binary);
-        boost::archive::binary_oarchive oa(file);
-        oa << *this;
-    }
-    
-    ChainIndex(const ChainIndex &) = delete;
-    
-    const ConfigType &config;
-    
-    void update();
+    void update(const ConfigType &config);
     std::vector<BlockType> generateChain(uint32_t maxBlockHeight) const;
     
     template <typename GetBlockHash>
@@ -162,6 +145,7 @@ private:
     friend class boost::serialization::access;
     template<class Archive> void serialize(Archive & ar, const unsigned int) {
         ar & blockList;
+        ar & newestBlock;
     }
     
     int updateHeight(size_t blockNum, const std::unordered_map<blocksci::uint256, size_t> &indexMap);

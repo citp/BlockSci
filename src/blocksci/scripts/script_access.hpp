@@ -73,7 +73,7 @@ namespace blocksci {
             return getFile<type>().size();
         }
         
-        std::array<uint32_t, ScriptType::size> scriptCounts();
+        std::array<uint32_t, ScriptType::size> scriptCounts() const;
         uint32_t scriptCount(ScriptType::Enum type) const;
         
         size_t totalAddressCount() const;

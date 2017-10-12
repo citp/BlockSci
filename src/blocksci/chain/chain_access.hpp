@@ -80,6 +80,8 @@ namespace blocksci {
     };
     
     boost::iterator_range<TransactionIterator> iterateTransactions(const ChainAccess &chain, uint32_t startIndex, uint32_t endIndex);
+    
+    boost::iterator_range<TransactionIterator> iterateTransactions(const ChainAccess &chain, const Block &beginBlock, const Block &endBlock);
 }
 
 #endif /* chain_access_hpp */

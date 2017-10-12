@@ -12,9 +12,10 @@
 #include "bloom_filter.hpp"
 #include "parser_fwd.hpp"
 
+#include <blocksci/state.hpp>
 #include <blocksci/scripts/raw_script.hpp>
 
-#include <sparsepp/spp.h>
+#include <google/dense_hash_map>
 
 #include <future>
 #include <unordered_map>
@@ -37,37 +38,39 @@ struct AddressInfo;
 
 class AddressState {
 public:
-    using address_map = spp::sparse_hash_map<blocksci::RawScript, uint32_t, std::hash<blocksci::RawScript>>;
+    using address_map = google::dense_hash_map<blocksci::RawScript, uint32_t, std::hash<blocksci::RawScript>>;
 private:
     
     static constexpr auto SingleAddressMapMaxSize = 10'000'000;
     static constexpr auto StartingAddressCount = 500'000'000;
     static constexpr auto AddressFalsePositiveRate = .05;
     
-    const ParserConfigurationBase &config;
+    boost::filesystem::path path;
+    
     leveldb::DB* levelDb;
     
     address_map multiAddressMap;
     address_map singleAddressMap;
     address_map oldSingleAddressMap;
-    BloomFilter<blocksci::RawScript> addressBloomFilter;
+    BloomFilter addressBloomFilter;
     
     
     std::vector<uint32_t> scriptIndexes;
     
     std::future<void> addressClearFuture;
     
-    BloomFilter<blocksci::RawScript> generateAddressBloomFilter(uint64_t maxAddresses, double falsePositiveRate);
-    
-    void initializeScriptIndexes();
-    void saveScriptIndexes();
+    void reloadBloomFilter();
     
     void clearAddressCache();
     void clearUTXOCache();
     void clearDeletedKeys();
     
 public:
-    AddressState(const ParserConfigurationBase &config);
+    AddressState(const boost::filesystem::path &path);
+    AddressState(const AddressState &) = delete;
+    AddressState &operator=(const AddressState &) = delete;
+    AddressState(AddressState &&) = delete;
+    AddressState &operator=(AddressState &&) = delete;
     ~AddressState();
     
     void optionalSave();
@@ -77,13 +80,13 @@ public:
     std::pair<uint32_t, bool> resolveAddress(const AddressInfo &addressInfo);
     uint32_t getNewAddressIndex(blocksci::ScriptType::Enum type);
     
-    void removeAddresses(const std::unordered_map<blocksci::ScriptType::Enum, uint32_t> &deletedIndex);
+    void rollback(const blocksci::State &state);
 };
 
 struct AddressInfo {
     blocksci::RawScript rawAddress;
     AddressLocation location;
-    AddressState::address_map::const_iterator it;
+    AddressState::address_map::iterator it;
     uint32_t addressNum;
 };
 

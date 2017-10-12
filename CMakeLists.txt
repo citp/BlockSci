@@ -41,8 +41,25 @@ target_include_directories(openssl INTERFACE SYSTEM ${OPENSSL_INCLUDE_DIR})
 add_library(sparsepp INTERFACE)
 target_include_directories(sparsepp INTERFACE SYSTEM libs/sparsepp)
 
+add_library(ThreadPool INTERFACE)
+target_include_directories(ThreadPool INTERFACE SYSTEM libs)
+
 link_directories(/usr/local/lib)
 include_directories("src")
+
+add_subdirectory(libs/SQLiteCpp)
+
+add_library(SQLiteCppInclude INTERFACE)
+if(UNIX AND NOT APPLE)
+   # Linux
+   target_link_libraries(SQLiteCppInclude INTERFACE SQLiteCpp sqlite3 pthread dl)
+elseif(UNIX AND APPLE)
+   # Mac OS
+   target_link_libraries(SQLiteCppInclude INTERFACE SQLiteCpp sqlite3 pthread)
+else()
+   # Windows
+   target_link_libraries(SQLiteCppInclude INTERFACE SQLiteCpp sqlite3)
+endif()
 
 add_subdirectory(libs/pybind11)
 
