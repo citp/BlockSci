@@ -89,7 +89,7 @@ struct ScriptInput<blocksci::AddressType::Enum::NULL_DATA> : public ScriptInputB
     ProcessedInput processInput(const InputInfo &, const RawTransaction &, AddressState &, AddressWriter &);
 };
 
-using ScriptInputType = blocksci::to_script_variant_t<ScriptInput, blocksci::AddressInfoList>;
+using ScriptInputType = blocksci::to_address_variant_t<ScriptInput>;
 
 template<>
 struct ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptInputBase {

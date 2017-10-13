@@ -157,7 +157,7 @@ struct ScriptOutput<blocksci::AddressType::Enum::NULL_DATA> {
     }
 };
 
-using ScriptOutputType = blocksci::to_script_variant_t<ScriptOutput, blocksci::AddressInfoList>;
+using ScriptOutputType = blocksci::to_address_variant_t<ScriptOutput>;
 
 template <blocksci::AddressType::Enum type>
 std::pair<blocksci::Address, bool> getAddressNum(ScriptOutput<type> &data, AddressState &state);

@@ -53,7 +53,19 @@ namespace blocksci {
                 return {{Functor<EnumStruct::all[Is]>::f(std::forward<Args>(args)...)...}};
             }
         };
+        
+        template<typename A, template<typename...> class O>
+        struct to_variadic;
+        
+        template<template<typename...> class V, template<typename...> class O, typename ...A>
+        struct to_variadic<V<A...>, O> {
+            using type = O<A...>;
+        };
+        
     }
+    
+    template<typename A, template<typename...> class O>
+    using to_variadic_t = typename internal::to_variadic<A, O>::type;
     
     template <typename EnumStruct, template<typename EnumStruct::Enum> class Functor, class ...Args>
     constexpr auto make_static_table(Args&&... args) {
