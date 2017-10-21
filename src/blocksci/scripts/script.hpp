@@ -10,6 +10,7 @@
 #define script_hpp
 
 #include "script_type.hpp"
+#include "script_variant.hpp"
 
 #include <functional>
 #include <vector>
@@ -41,11 +42,11 @@ namespace blocksci {
         
         virtual bool operator==(const Script &other) = 0;
         
-        static std::unique_ptr<Script> create(const ScriptAccess &access, const Address &address);
+        static ScriptVariant create(const ScriptAccess &access, const Address &address);
         
-        static std::unique_ptr<Script> create(const ScriptAccess &access, const ScriptPointer &pointer);
+        static ScriptVariant create(const ScriptAccess &access, const ScriptPointer &pointer);
         
-        virtual void visitPointers(const std::function<void(const Address &)> &) const;
+        void visitPointers(const std::function<void(const Address &)> &) const;
         
         std::vector<const Output *> getOutputs(const AddressIndex &index, const ChainAccess &chain) const;
         std::vector<const Input *> getInputs(const AddressIndex &index, const ChainAccess &chain) const;
@@ -56,8 +57,8 @@ namespace blocksci {
         // requires DataAccess
         
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        static std::unique_ptr<Script> create(const Address &address);
-        static std::unique_ptr<Script> create(const ScriptPointer &pointer);
+        static ScriptVariant create(const Address &address);
+        static ScriptVariant create(const ScriptPointer &pointer);
         std::string toString() const;
         std::string toPrettyString() const;
         

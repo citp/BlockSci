@@ -10,6 +10,7 @@
 #define script_pointer_hpp
 
 #include "script_type.hpp"
+#include "script_variant.hpp"
 #include "scriptsfwd.hpp"
 
 #include <memory>
@@ -32,10 +33,10 @@ namespace blocksci {
         
         std::string toString() const;
         
-        std::unique_ptr<Script> getScript(const ScriptAccess &access) const;
+        ScriptVariant getScript(const ScriptAccess &access) const;
         
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        std::unique_ptr<Script> getScript() const;
+        ScriptVariant getScript() const;
         #endif
     };
     

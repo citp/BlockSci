@@ -24,6 +24,8 @@
 
 #include "chain/transaction.hpp"
 
+#include <boost/variant.hpp>
+
 #include <iostream>
 
 
@@ -34,12 +36,12 @@ namespace blocksci {
     
     template<ScriptType::Enum type>
     struct ScriptCreateFunctor {
-        static std::unique_ptr<Script> f(const ScriptAccess &access, const ScriptPointer &pointer) {
-            return std::make_unique<ScriptAddress<type>>(access, pointer.scriptNum);
+        static ScriptVariant f(const ScriptAccess &access, const ScriptPointer &pointer) {
+            return ScriptAddress<type>(access, pointer.scriptNum);
         }
     };
     
-    std::unique_ptr<Script> Script::create(const ScriptAccess &access, const ScriptPointer &pointer) {
+    ScriptVariant Script::create(const ScriptAccess &access, const ScriptPointer &pointer) {
         static constexpr auto table = make_dynamic_table<ScriptType, ScriptCreateFunctor>();
         static constexpr std::size_t size = AddressType::all.size();
         
@@ -51,7 +53,7 @@ namespace blocksci {
         return table[index](access, pointer);
     }
     
-    std::unique_ptr<Script> Script::create(const ScriptAccess &access, const Address &address) {
+    ScriptVariant Script::create(const ScriptAccess &access, const Address &address) {
         return create(access, ScriptPointer{address});
     }
     

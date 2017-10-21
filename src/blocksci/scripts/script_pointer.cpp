@@ -11,6 +11,9 @@
 #include "address/address.hpp"
 #include "script_info.hpp"
 #include "script.hpp"
+#include "scripts.hpp"
+
+#include <boost/variant.hpp>
 
 namespace blocksci {
     ScriptPointer::ScriptPointer(const Address &address) : ScriptPointer(address.addressNum, scriptType(address.type)) {}
@@ -28,12 +31,11 @@ namespace blocksci {
         }
     }
     
-    std::unique_ptr<Script> ScriptPointer::getScript(const ScriptAccess &access) const {
-        if (scriptNum != 0) {
-            return Script::create(access, *this);
-        } else {
-            return nullptr;
+    ScriptVariant ScriptPointer::getScript(const ScriptAccess &access) const {
+        if (scriptNum == 0) {
+            throw std::runtime_error("Tried to get script for bad address");
         }
+        return Script::create(access, *this);
     }
     
     std::ostream &operator<<(std::ostream &os, const ScriptPointer &scriptPointer) {

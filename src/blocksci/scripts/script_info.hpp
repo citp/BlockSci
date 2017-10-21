@@ -12,6 +12,8 @@
 #include "script_type.hpp"
 #include <blocksci/util.hpp>
 
+#include <boost/variant/variant_fwd.hpp>
+
 #include <string_view>
 
 namespace blocksci {
@@ -71,26 +73,13 @@ namespace blocksci {
         static constexpr bool spendable = false;
         using storage = Indexed<RawData>;
     };
+    using ScriptInfoList = array_to_tuple_t<ScriptType::Enum, ScriptType::size, ScriptType::all>;
     
-    template<ScriptType::Enum ScriptType>
-    struct ScriptTag {
-        static constexpr ScriptType::Enum type = ScriptType;
-    };
+    template <template<auto> class K>
+    using to_script_tuple_t = apply_template_t<K, ScriptInfoList>;
     
-    namespace internal {
-        template<template<ScriptType::Enum> class K, typename T>
-        struct to_script_type;
-        
-        template<template<ScriptType::Enum> class K, ScriptType::Enum Type>
-        struct to_script_type<K, ScriptTag<Type>> {
-            using type = K<Type>;
-        };
-        
-        template <template<ScriptType::Enum> class K, typename... Types>
-        struct to_script_type<K, std::tuple<Types...>> {
-            using type = std::tuple<typename to_script_type<K, Types>::type...>;
-        };
-    }
+    template <template<auto> class K>
+    using to_script_variant_t = to_variadic_t<to_script_tuple_t<K>, boost::variant>;
     
     template<ScriptType::Enum type>
     struct SpendableFunctor {
@@ -146,14 +135,6 @@ namespace blocksci {
         }
         return scriptNameTable[index];
     }
-    
-    inline auto getScriptTypes() {
-        return internal::index_apply<ScriptType::all.size()>([](auto... Is) {
-            return std::make_tuple(ScriptTag<std::get<Is>(ScriptType::all)>{}...);
-        });
-    }
-    
-    using ScriptInfoList = decltype(getScriptTypes());
 }
 
 #endif /* script_info_hpp */

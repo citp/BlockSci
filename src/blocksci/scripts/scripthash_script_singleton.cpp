@@ -9,8 +9,10 @@
 #include "scripthash_script.hpp"
 #include "data_access.hpp"
 #include "chain/transaction.hpp"
+#include "scripts.hpp"
 
 #include <boost/optional/optional.hpp>
+#include <boost/variant.hpp>
 
 namespace blocksci {
     using namespace script;
@@ -19,7 +21,7 @@ namespace blocksci {
         return addressString(DataAccess::Instance().config);
     }
     
-    std::unique_ptr<Script> ScriptHash::wrappedScript() const {
+    ScriptVariant ScriptHash::wrappedScript() const {
         return wrappedScript(*DataAccess::Instance().scripts);
     }
     

@@ -14,6 +14,8 @@
 #include <blocksci/address/address.hpp>
 #include <blocksci/bitcoin_uint256.hpp>
 
+
+
 namespace blocksci {
     struct ScriptHashData;
     
@@ -45,22 +47,20 @@ namespace blocksci {
         
         boost::optional<Address> getWrappedAddress() const;
         
-        void visitPointers(const std::function<void(const Address &)> &visitFunc) const override {
+        void visitPointers(const std::function<void(const Address &)> &visitFunc) const {
             if (wrappedAddress.addressNum != 0) {
                 visitFunc(wrappedAddress);
             }
         }
         
         
-        std::unique_ptr<Script> wrappedScript(const ScriptAccess &access) const {
-            return wrappedAddress.getScript(access);
-        }
+        ScriptVariant wrappedScript(const ScriptAccess &access) const;
         
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
         ScriptAddress<ScriptType::Enum::SCRIPTHASH>(uint32_t addressNum);
         std::string addressString() const;
         boost::optional<Transaction> transactionRevealed() const;
-        std::unique_ptr<Script> wrappedScript() const;
+        ScriptVariant wrappedScript() const;
         #endif
     };
 }

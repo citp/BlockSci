@@ -54,6 +54,17 @@ namespace blocksci {
     
     struct SimpleFileMapperBase {
         using FileType = boost::iostreams::mapped_file;
+    private:
+        const char *constData;
+        
+        void openFile(size_t size) {
+            fileEnd = size;
+            if (fileEnd != 0) {
+                file.open(path, fileMode);
+                constData = file.const_data();
+            }
+        }
+        
     protected:
         FileType file;
         size_t fileEnd;
@@ -63,13 +74,12 @@ namespace blocksci {
         
         void reload() {
             if (boost::filesystem::exists(path)) {
-                auto newSize = boost::filesystem::file_size(path);
+                auto newSize = fileSize();
                 if (newSize != fileEnd) {
                     if (file.is_open()) {
                         file.close();
                     }
-                    file.open(path, fileMode);
-                    fileEnd = newSize;
+                    openFile(newSize);
                 }
             } else {
                 if (file.is_open()) {
@@ -83,10 +93,7 @@ namespace blocksci {
             path += ".dat";
             
             if (boost::filesystem::exists(path)) {
-                fileEnd = boost::filesystem::file_size(path);
-                if (fileEnd != 0) {
-                    file.open(path, mode);
-                }
+                openFile(fileSize());
             }
         }
         
@@ -101,7 +108,7 @@ namespace blocksci {
         
         const char *getDataAtOffset(OffsetType offset) const {
             if (offset < size()) {
-                return reinterpret_cast<const char *>(file.const_data()) + offset;
+                return constData + offset;
             } else {
                 return nullptr;
             }
@@ -142,13 +149,62 @@ namespace blocksci {
             clearBuffer();
         }
         
+    private:
+        size_t writePos;
+        
+        char *getWritePos() {
+            if (writePos < fileEnd) {
+                return reinterpret_cast<char *>(file.data()) + writePos;
+            } else if (writePos < fileEnd + buffer.size()) {
+                return reinterpret_cast<char *>(buffer.data()) + (writePos - fileEnd);
+            } else {
+                return nullptr;
+            }
+        }
+        
+        size_t writeSpace() const {
+            if (writePos < fileEnd) {
+                return fileEnd - writePos;
+            } else if (writePos < fileEnd + buffer.size()) {
+                return (writePos - fileEnd) - buffer.size();
+            } else {
+                return 0;
+            }
+        }
+        
     protected:
         
         template<typename T, typename = std::enable_if_t<std::is_trivially_copyable<T>::value>>
         bool writeImp(const T &t) {
-            auto start = reinterpret_cast<const char *>(&t);
-            buffer.insert(buffer.end(), start, start + sizeof(t));
+            size_t amountToWrite = sizeof(T);
+            const char *valuePos = reinterpret_cast<const char *>(&t);
+            if (writePos < fileEnd) {
+                auto writeAmount = std::min(amountToWrite, writeSpace());
+                memcpy(getWritePos(), valuePos, writeAmount);
+                amountToWrite -= writeAmount;
+                writePos += writeAmount;
+                valuePos += writeAmount;
+                if (amountToWrite == 0) {
+                    return false;
+                }
+            }
             
+            if (writePos >= fileEnd && writePos < buffer.size()) {
+                auto writeAmount = std::min(amountToWrite, writeSpace());
+                memcpy(getWritePos(), valuePos, writeAmount);
+                amountToWrite -= writeAmount;
+                writePos += writeAmount;
+                valuePos += writeAmount;
+                
+                if (amountToWrite == 0) {
+                    return false;
+                }
+            }
+            
+            assert(writePos == fileEnd + buffer.size());
+            
+            buffer.insert(buffer.end(), valuePos, valuePos + amountToWrite);
+            writePos += amountToWrite;
             bool bufferFull = buffer.size() > maxBufferSize;
             if (bufferFull) {
                 clearBuffer();
@@ -205,6 +261,14 @@ namespace blocksci {
             return SimpleFileMapperBase::size() + buffer.size();
         }
         
+        void seekEnd() {
+            writePos = fileEnd + buffer.size();
+        }
+        
+        void seek(size_t offset) {
+            writePos = offset;
+        }
+        
         void truncate(OffsetType offset) {
             if (offset < SimpleFileMapperBase::size()) {
                 buffer.clear();
@@ -222,7 +286,6 @@ namespace blocksci {
                 } else {
                     boost::filesystem::resize_file(path, offset);
                 }
-                
                 reload();
             }
         }

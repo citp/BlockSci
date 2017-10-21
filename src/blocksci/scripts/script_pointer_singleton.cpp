@@ -9,9 +9,12 @@
 #include "script_pointer.hpp"
 #include "data_access.hpp"
 #include "script.hpp"
+#include "scripts.hpp"
+
+#include <boost/variant.hpp>
 
 namespace blocksci {
-    std::unique_ptr<Script> ScriptPointer::getScript() const {
+    ScriptVariant ScriptPointer::getScript() const {
         return getScript(*DataAccess::Instance().scripts);
     }
 }

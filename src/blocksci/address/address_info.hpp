@@ -73,41 +73,13 @@ namespace blocksci {
         static constexpr ScriptType::Enum scriptType = ScriptType::Enum::NULL_DATA;
     };
     
-    template<AddressType::Enum AddressType>
-    struct AddressTag {
-        static constexpr AddressType::Enum type = AddressType;
-    };
+    using AddressInfoList = array_to_tuple_t<AddressType::Enum, AddressType::size, AddressType::all>;
     
+    template <template<auto> class K>
+    using to_address_tuple_t = apply_template_t<K, AddressInfoList>;
     
-    namespace internal {
-        
-        template<template<AddressType::Enum> class K, typename T>
-        struct to_address_type;
-        
-        template<template<AddressType::Enum> class K, AddressType::Enum Type>
-        struct to_address_type<K, AddressTag<Type>> {
-            using type = K<Type>;
-        };
-        
-        template <template<AddressType::Enum> class K, typename... Types>
-        struct to_address_type<K, std::tuple<Types...>> {
-            using type = std::tuple<typename to_address_type<K, Types>::type...>;
-        };
-    }
-    
-    inline auto getAddressTypes() {
-        return internal::index_apply<AddressType::all.size()>([](auto... Is) {
-            return std::make_tuple(AddressTag<std::get<Is>(AddressType::all)>{}...);
-        });
-    }
-    
-    using AddressInfoList = decltype(getAddressTypes());
-    
-    template <template<AddressType::Enum> class K, typename... Types>
-    using to_address_type_v = typename internal::to_address_type<K, Types...>::type;
-    
-    template <template<AddressType::Enum> class K>
-    using to_address_variant_t = to_variadic_t<typename internal::to_address_type<K, AddressInfoList>::type, boost::variant>;
+    template <template<auto> class K>
+    using to_address_variant_t = to_variadic_t<to_address_tuple_t<K>, boost::variant>;
     
     template<AddressType::Enum type>
     struct ScriptTypeFunctor {

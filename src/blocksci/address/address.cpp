@@ -15,10 +15,12 @@
 #include "scripts/script_first_seen_access.hpp"
 #include "scripts/script_access.hpp"
 #include "scripts/script.hpp"
-#include "scripts/scripthash_script.hpp"
+#include "scripts/scripts.hpp"
 #include "scripts/scriptsfwd.hpp"
 #include "chain/transaction.hpp"
 #include "hash_index.hpp"
+
+#include <boost/variant.hpp>
 
 #include <unordered_set>
 
@@ -49,11 +51,10 @@ namespace blocksci {
     
     void visit(const Address &address, const std::function<bool(const Address &)> &visitFunc, const ScriptAccess &scripts) {
         if (visitFunc(address)) {
-            auto script = address.getScript(scripts);
             std::function<void(const blocksci::Address &)> nestedVisitor = [&](const blocksci::Address &nestedAddress) {
                 visit(nestedAddress, visitFunc, scripts);
             };
-            script->visitPointers(nestedVisitor);
+            visitPointers(address.getScript(scripts), nestedVisitor);
         }
     }
     
@@ -81,12 +82,8 @@ namespace blocksci {
         return Transaction::txWithIndex(chain, getFirstTransactionIndex(scriptsFirstSeen));
     }
 
-    std::unique_ptr<Script> Address::getScript(const ScriptAccess &access) const {
-        if (addressNum != 0) {
-            return Script::create(access, *this);
-        } else {
-            return nullptr;
-        }
+    ScriptVariant Address::getScript(const ScriptAccess &access) const {
+        return ScriptPointer(*this).getScript(access);
     }
     
     size_t addressCount(const ScriptAccess &access) {

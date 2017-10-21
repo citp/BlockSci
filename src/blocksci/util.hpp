@@ -62,7 +62,30 @@ namespace blocksci {
             using type = O<A...>;
         };
         
+        
+        template<typename T, size_t i, const std::array<T, i> &A>
+        struct TupGen {
+            static auto f() {
+                return internal::index_apply<A.size()>([](auto... Is) {
+                    return std::make_tuple(std::integral_constant<T, std::get<Is>(A)>{}...);
+                });
+            }
+        };
+        
+        template<template<auto> class K, typename T>
+        struct apply_template;
+        
+        template <template<auto> class K, typename... Types>
+        struct apply_template<K, std::tuple<Types...>> {
+            using type = std::tuple<K<Types::value>...>;
+        };
     }
+    
+    template<typename T, size_t i, const std::array<T, i> &A>
+    using array_to_tuple_t = decltype(internal::TupGen<T, i, A>::f());
+    
+    template <template<auto> class K, typename... Types>
+    using apply_template_t = typename internal::apply_template<K, Types...>::type;
     
     template<typename A, template<typename...> class O>
     using to_variadic_t = typename internal::to_variadic<A, O>::type;

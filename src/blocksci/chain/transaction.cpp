@@ -16,10 +16,10 @@
 #include "output_pointer.hpp"
 #include "address/address.hpp"
 #include "scripts/scriptsfwd.hpp"
-#include "scripts/scripthash_script.hpp"
-#include "scripts/multisig_script.hpp"
+#include "scripts/scripts.hpp"
 #include "hash_index.hpp"
 
+#include <boost/variant.hpp>
 #include <boost/functional/hash/hash.hpp>
 
 #include <unordered_map>
@@ -537,9 +537,8 @@ namespace blocksci {
         
         boost::optional<Address> getInsidePointer(const Address &pointer, const blocksci::ScriptAccess &access) {
             if (pointer.type == AddressType::Enum::SCRIPTHASH) {
-                auto address = pointer.getScript(access);
-                auto scriptHashAddress = dynamic_cast<script::ScriptHash *>(address.get());
-                return getInsidePointer(scriptHashAddress->getWrappedAddress(), access);
+                script::ScriptHash scriptHashAddress(access, pointer.addressNum);
+                return getInsidePointer(scriptHashAddress.getWrappedAddress(), access);
             } else {
                 return pointer;
             }
@@ -568,10 +567,9 @@ namespace blocksci {
                 subType = insidePointer->type;
                 hasSubtype = true;
                 if (subType == AddressType::Enum::MULTISIG) {
-                    auto address = insidePointer->getScript(scripts);
-                    auto multisigAddress = dynamic_cast<script::Multisig *>(address.get());
-                    i = multisigAddress->required;
-                    j = static_cast<int>(multisigAddress->addresses.size());
+                    script::Multisig multisigAddress(scripts, insidePointer->addressNum);
+                    i = multisigAddress.required;
+                    j = static_cast<int>(multisigAddress.addresses.size());
                 }
             }
         }
@@ -670,15 +668,13 @@ namespace blocksci {
         
         std::unordered_set<Address> containedOutputs;
         for (auto &pointer : multisigOutputs) {
-            auto script = pointer.getScript(access);
             std::function<void(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &add) {
                 containedOutputs.insert(add);
             };
-            script->visitPointers(visitFunc);
+            visitPointers(pointer.getScript(access), visitFunc);
         }
         
         for (auto &pointer : multisigInputs) {
-            auto script = pointer.getScript(access);
             bool foundMatch = false;
             std::function<void(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &add) {
                 if (containedOutputs.find(add) != containedOutputs.end()) {
@@ -686,7 +682,7 @@ namespace blocksci {
                     return;
                 }
             };
-            script->visitPointers(visitFunc);
+            visitPointers(pointer.getScript(access), visitFunc);
             if (foundMatch) {
                 return true;
             }

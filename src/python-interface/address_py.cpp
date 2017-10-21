@@ -7,6 +7,7 @@
 //
 
 #include "optional_py.hpp"
+#include "variant_py.hpp"
 
 #include <blocksci/address/address.hpp>
 #include <blocksci/chain/chain.hpp>

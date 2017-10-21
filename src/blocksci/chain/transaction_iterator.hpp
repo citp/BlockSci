@@ -42,8 +42,7 @@ namespace blocksci {
         
         void advance(int amount);
         
-        bool equal(TransactionIterator const& other) const
-        {
+        bool equal(TransactionIterator const& other) const {
             return currentTxIndex == other.currentTxIndex;
         }
         
@@ -53,10 +52,7 @@ namespace blocksci {
         
         Transaction dereference() const;
         
-        const char *&getTxPos() const;
-        
         void updateNextBlock();
-        void updateTxPos();
     };
 }
 

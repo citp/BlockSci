@@ -62,8 +62,11 @@ namespace blocksci {
     }
     
     size_t ChainAccess::txCount() const {
-        reorgCheck();
-        return txFile.size();
+        return _maxLoadedTx;
+    }
+    
+    size_t ChainAccess::blockCount() const {
+        return maxHeight;
     }
     
     const char *ChainAccess::getTxPos(uint32_t index) const {
@@ -128,7 +131,7 @@ namespace blocksci {
     
     boost::iterator_range<TransactionIterator> iterateTransactions(const ChainAccess &chain, const Block &beginBlock, const Block &endBlock) {
         auto begin = TransactionIterator(&chain, beginBlock.firstTxIndex, beginBlock.height);
-        auto end = TransactionIterator(&chain, endBlock.firstTxIndex + endBlock.numTxes, endBlock.height + 1);
+        auto end = TransactionIterator(&chain, endBlock.firstTxIndex + endBlock.numTxes, endBlock.height);
         return boost::make_iterator_range(begin, end);
     }
     

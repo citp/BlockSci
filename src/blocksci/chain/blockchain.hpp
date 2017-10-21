@@ -73,7 +73,7 @@ namespace blocksci {
             auto &startB = this->operator[](startBlock);
             auto &endB = this->operator[](endBlock - 1);
             auto begin = TransactionIterator(access.chain.get(), startB.firstTxIndex, startBlock);
-            auto end = TransactionIterator(access.chain.get(), endB.firstTxIndex + endB.numTxes, endBlock);
+            auto end = TransactionIterator(access.chain.get(), endB.firstTxIndex + endB.numTxes, endBlock - 1);
             return boost::make_iterator_range(begin, end);
         }
         

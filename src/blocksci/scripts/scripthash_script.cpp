@@ -11,9 +11,11 @@
 #include "scripthash_script.hpp"
 #include "script_data.hpp"
 #include "script_access.hpp"
+#include "scripts.hpp"
 #include "bitcoin_base58.hpp"
 #include "chain/transaction.hpp"
 
+#include <boost/variant.hpp>
 #include <boost/optional/optional.hpp>
 
 namespace blocksci {
@@ -40,6 +42,10 @@ namespace blocksci {
         }
     }
     
+    ScriptVariant ScriptHash::wrappedScript(const ScriptAccess &access) const {
+        return wrappedAddress.getScript(access);
+    }
+    
     boost::optional<Transaction> ScriptHash::transactionRevealed(const ChainAccess &chain) const {
         if (txRevealed != 0) {
             return Transaction::txWithIndex(chain, txRevealed);
@@ -63,7 +69,7 @@ namespace blocksci {
         ss << "address=" << addressString(config);
         ss << ", wrappedAddress=";
         if (wrappedAddress.addressNum > 0) {
-            ss << wrapped->toPrettyString(config, access);
+            ss << blocksci::toPrettyString(wrapped, config, access);
         } else {
             ss << "unknown";
         }

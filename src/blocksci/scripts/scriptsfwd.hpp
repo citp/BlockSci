@@ -21,7 +21,7 @@ namespace blocksci {
     struct DataConfiguration;
     struct Script;
     
-    template <ScriptType::Enum>
+    template <auto>
     class ScriptAddress;
     
     namespace script {

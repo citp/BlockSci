@@ -16,9 +16,10 @@
 #include "transaction_summary.hpp"
 #include "transaction_iterator.hpp"
 #include "address/address.hpp"
-#include "scripts/nulldata_script.hpp"
+#include "scripts/scripts.hpp"
 
 #include <boost/range/algorithm/copy.hpp>
+#include <boost/variant.hpp>
 
 #include <numeric>
 #include <fstream>
@@ -90,10 +91,8 @@ namespace blocksci {
         for (int i = coinbase.outputCount() - 1; i >= 0; i--) {
             auto &output = coinbase.outputs()[i];
             if (output.getType() == AddressType::Enum::NULL_DATA) {
-                auto rawScript = output.getAddress().getScript(scripts);
-                auto nulldata = dynamic_cast<script::OpReturn *>(rawScript.get());
-                auto data = nulldata->data;
-                uint32_t startVal = *reinterpret_cast<const uint32_t *>(data.c_str());
+                auto nulldata = script::OpReturn(scripts, output.toAddressNum);
+                uint32_t startVal = *reinterpret_cast<const uint32_t *>(nulldata.data.c_str());
                 if (startVal == 0xaa21a9ed) {
                     return true;
                 }

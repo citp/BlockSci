@@ -20,13 +20,17 @@ namespace blocksci {
     TransactionIterator::TransactionIterator(const ChainAccess *access_, uint32_t txIndex_) : TransactionIterator(access_, txIndex_, access_->getBlockHeight(txIndex_)) {}
     
     TransactionIterator::TransactionIterator(const ChainAccess *access_, uint32_t txIndex, uint32_t blockNum_) : access(access_), currentTxPos(nullptr), currentTxIndex(txIndex), blockNum(blockNum_) {
+        if (currentTxIndex < access->txCount()) {
+            currentTxPos = access->getTxPos(currentTxIndex);
+        } else {
+            currentTxPos = nullptr;
+        }
         updateNextBlock();
     }
     
     void TransactionIterator::increment() {
-        auto &txPos = getTxPos();
-        auto tx = reinterpret_cast<const RawTransaction *>(txPos);
-        txPos += sizeof(RawTransaction) +
+        auto tx = reinterpret_cast<const RawTransaction *>(currentTxPos);
+        currentTxPos += sizeof(RawTransaction) +
         static_cast<size_t>(tx->inputCount) * sizeof(Input) +
         static_cast<size_t>(tx->outputCount) * sizeof(Output);
         currentTxIndex++;
@@ -42,41 +46,25 @@ namespace blocksci {
             blockNum--;
             updateNextBlock();
         }
-        updateTxPos();
+        currentTxPos = nullptr;
     }
     
     void TransactionIterator::advance(int amount) {
         currentTxIndex += static_cast<uint32_t>(amount);
         blockNum = access->getBlockHeight(currentTxIndex);
         updateNextBlock();
-        updateTxPos();
+        currentTxPos = nullptr;
     }
     
     Transaction TransactionIterator::dereference() const {
-        return {reinterpret_cast<const RawTransaction *>(getTxPos()), currentTxIndex, blockNum};
+        auto rawTx = reinterpret_cast<const RawTransaction *>(currentTxPos);
+        return {rawTx, currentTxIndex, blockNum};
     }
     
     void TransactionIterator::updateNextBlock() {
-        if (blockNum < access->getBlocks().size()) {
-            auto &block = access->getBlock(blockNum);
-            prevBlockLast = block.firstTxIndex - 1;
-            nextBlockFirst = block.firstTxIndex + static_cast<uint32_t>(block.size());
-        } else {
-            auto &prevBlock = access->getBlock(blockNum - 1);
-            prevBlockLast = prevBlock.firstTxIndex + static_cast<uint32_t>(prevBlock.size()) - 1;
-            nextBlockFirst = std::numeric_limits<decltype(nextBlockFirst)>::max();
-        }
-    }
-    
-    void TransactionIterator::updateTxPos() {
-        currentTxPos = access->getTxPos(currentTxIndex);
-    }
-    
-    const char *&TransactionIterator::getTxPos() const {
-        if (currentTxPos == nullptr) {
-            currentTxPos = access->getTxPos(currentTxIndex);
-        }
-        return currentTxPos;
+        auto &block = access->getBlock(blockNum);
+        prevBlockLast = block.firstTxIndex - 1;
+        nextBlockFirst = blockNum < access->blockCount() - 1 ? block.firstTxIndex + static_cast<uint32_t>(block.size()) : std::numeric_limits<decltype(nextBlockFirst)>::max();
     }
 }
 

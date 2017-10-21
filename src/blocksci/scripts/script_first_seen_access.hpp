@@ -16,13 +16,13 @@ namespace blocksci {
     
     struct DataConfiguration;
     
-    template<ScriptType::Enum type>
+    template<auto>
     struct ScriptFirstSeenFile : public FixedSizeFileMapper<uint32_t> {
         using FixedSizeFileMapper<uint32_t>::FixedSizeFileMapper;
     };
     
     class ScriptFirstSeenAccess {
-        using ScriptFilesFirstSeenTuple = internal::to_script_type<ScriptFirstSeenFile, ScriptInfoList>::type;
+        using ScriptFilesFirstSeenTuple = apply_template_t<ScriptFirstSeenFile, ScriptInfoList>;
         ScriptFilesFirstSeenTuple scriptFilesFirstSeen;
         
     public:

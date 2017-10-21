@@ -35,7 +35,7 @@ namespace blocksci {
         std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const override;
         bool operator==(const Script &other) override;
         
-        void visitPointers(const std::function<void(const Address &)> &visitFunc) const override {
+        void visitPointers(const std::function<void(const Address &)> &visitFunc) const {
             for (auto &address : addresses) {
                 visitFunc(address);
             }

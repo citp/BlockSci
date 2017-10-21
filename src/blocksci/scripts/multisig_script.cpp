@@ -11,6 +11,7 @@
 #include "multisig_script.hpp"
 #include "script_data.hpp"
 #include "script_access.hpp"
+#include "pubkey_script.hpp"
 
 namespace blocksci {
     using namespace script;
@@ -59,7 +60,8 @@ namespace blocksci {
         ss << static_cast<int>(required) << " of " << static_cast<int>(addresses.size()) << " multisig with addresses : [";
         uint32_t i = 0;
         for (auto &address : addresses) {
-            ss << address.getScript(access)->toPrettyString(config, access);
+            script::Pubkey pubkeyScript(access, address.addressNum);
+            ss << pubkeyScript.toPrettyString(config, access);
             if (i < addresses.size() - 1) {
                 ss << ", ";
             }

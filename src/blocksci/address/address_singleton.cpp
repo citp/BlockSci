@@ -10,12 +10,14 @@
 #include "data_access.hpp"
 #include "chain/transaction.hpp"
 #include "scripts/script.hpp"
+#include "scripts/scripts.hpp"
 
+#include <boost/variant.hpp>
 #include <boost/optional/optional.hpp>
 
 namespace blocksci {
     
-    std::unique_ptr<Script> Address::getScript() const {
+    ScriptVariant Address::getScript() const {
         return getScript(*DataAccess::Instance().scripts);
     }
     

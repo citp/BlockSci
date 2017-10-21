@@ -10,6 +10,7 @@
 #define address_pointer_hpp
 
 #include "address_types.hpp"
+#include <blocksci/scripts/script_variant.hpp>
 
 #include <boost/optional/optional_fwd.hpp>
 
@@ -18,7 +19,6 @@
 #include <vector>
 
 namespace blocksci {
-    struct Script;
     struct Transaction;
     struct Output;
     struct Input;
@@ -52,7 +52,7 @@ namespace blocksci {
         Transaction getFirstTransaction(const ChainAccess &chain, const ScriptFirstSeenAccess &scriptsFirstSeen) const;
         uint32_t getFirstTransactionIndex(const ScriptFirstSeenAccess &access) const;
         
-        std::unique_ptr<Script> getScript(const ScriptAccess &access) const;
+        ScriptVariant getScript(const ScriptAccess &access) const;
         
         std::vector<const Output *> getOutputs(const AddressIndex &index, const ChainAccess &chain) const;
         std::vector<const Input *> getInputs(const AddressIndex &index, const ChainAccess &chain) const;
@@ -65,7 +65,7 @@ namespace blocksci {
         Transaction getFirstTransaction() const;
         uint32_t getFirstTransactionIndex() const;
         
-        std::unique_ptr<Script> getScript() const;
+        ScriptVariant getScript() const;
         
         std::vector<const Output *> getOutputs() const;
         std::vector<const Input *> getInputs() const;

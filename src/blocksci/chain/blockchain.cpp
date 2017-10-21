@@ -110,7 +110,7 @@ namespace blocksci {
     
     TransactionIterator Blockchain::endTransactions(uint32_t blockNum) {
         auto &block = this->operator[](blockNum - 1);
-        return TransactionIterator(access.chain.get(), block.firstTxIndex + block.numTxes, blockNum);
+        return TransactionIterator(access.chain.get(), block.firstTxIndex + block.numTxes, blockNum - 1);
     }
     
     std::vector<Transaction> getCoinjoinTransactions(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock)  {

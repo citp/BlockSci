@@ -37,14 +37,14 @@ namespace blocksci {
     using ScriptFileType_t = typename ScriptFileType<T>::type;
     
     
-    template<ScriptType::Enum type>
+    template<auto type>
     struct ScriptFile : public ScriptFileType_t<typename ScriptInfo<type>::storage> {
         using ScriptFileType_t<typename ScriptInfo<type>::storage>::ScriptFileType_t;
     };
 
     class ScriptAccess {
     private:
-        using ScriptFilesTuple = internal::to_script_type<ScriptFile, ScriptInfoList>::type;
+        using ScriptFilesTuple = apply_template_t<ScriptFile, ScriptInfoList>;
         
         ScriptFilesTuple scriptFiles;
         

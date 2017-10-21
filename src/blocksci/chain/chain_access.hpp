@@ -68,6 +68,7 @@ namespace blocksci {
         const Input &getInput(uint32_t txIndex, uint16_t inputNum) const;
         
         size_t txCount() const;
+        size_t blockCount() const;
         
         std::vector<unsigned char> getCoinbase(uint64_t offset) const;
         

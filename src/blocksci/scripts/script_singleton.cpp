@@ -8,16 +8,19 @@
 
 #include "script.hpp"
 #include "data_access.hpp"
+#include "scripts.hpp"
 
 #include "chain/transaction.hpp"
 
+#include <boost/variant.hpp>
+
 namespace blocksci {
     
-    std::unique_ptr<Script> Script::create(const ScriptPointer &pointer) {
+    ScriptVariant Script::create(const ScriptPointer &pointer) {
         return create(*DataAccess::Instance().scripts, pointer);
     }
     
-    std::unique_ptr<Script> Script::create(const Address &address) {
+    ScriptVariant Script::create(const Address &address) {
         return create(*DataAccess::Instance().scripts, address);
     }
     
