@@ -49,7 +49,7 @@ struct ScriptInputBase {
     void checkInput(const InputInfo &, const RawTransaction &, const AddressState &, const AddressWriter &) {}
 };
 
-template<blocksci::AddressType::Enum type>
+template<auto>
 struct ScriptInput;
 
 template<>

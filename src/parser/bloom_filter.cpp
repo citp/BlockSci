@@ -20,7 +20,7 @@
 #include <cmath>
 
 
-constexpr double Log2 = 0.30102999566;
+constexpr double Log2 = 0.69314718056;
 constexpr double Log2Squared = Log2 * Log2;
 
 BloomStore::BloomStore(const boost::filesystem::path &path, uint64_t length_) : backingFile(path), length(length_) {
@@ -50,8 +50,16 @@ void BloomStore::reset(uint64_t length) {
     backingFile.truncate((length + BlockSize - 1) / BlockSize);
 }
 
+uint64_t calculateLength(uint64_t maxItems, double fpRate) {
+    return static_cast<uint64_t>(std::ceil(-(std::log(fpRate) * maxItems) / Log2Squared));
+}
+
+uint8_t calculateHashes(double fpRate) {
+    return static_cast<uint8_t>(std::round(-std::log(fpRate) / Log2));
+}
+
 BloomFilterData::BloomFilterData() : maxItems(0), fpRate(1), m_numHashes(0), length(0), addedCount(0) {}
-BloomFilterData::BloomFilterData(uint64_t maxItems_, double fpRate_) : maxItems(maxItems_), fpRate(fpRate_), m_numHashes(static_cast<uint8_t>(std::ceil(-std::log(fpRate) / Log2))), length(static_cast<uint64_t>(std::floor((-std::log(fpRate) * maxItems) / Log2Squared))), addedCount(0) {}
+BloomFilterData::BloomFilterData(uint64_t maxItems_, double fpRate_) : maxItems(maxItems_), fpRate(fpRate_), m_numHashes(calculateHashes(fpRate_)), length(calculateLength(maxItems_, fpRate_)), addedCount(0) {}
 
 
 BloomFilterData loadData(const boost::filesystem::path &path, uint64_t maxItems, double fpRate) {

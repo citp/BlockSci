@@ -11,7 +11,7 @@
 
 AddressWriter::AddressWriter(const ParserConfigurationBase &config) :
 scriptFiles(blocksci::apply(blocksci::ScriptInfoList(), [&] (auto tag) {
-    return config.scriptsDirectory()/ std::string{scriptName(decltype(tag)::type)};
+    return config.scriptsDirectory()/ std::string{scriptName(tag)};
 })) {
 }
 
@@ -183,27 +183,9 @@ bool AddressWriter::serializeImp<AddressType::Enum::NULL_DATA>(const ScriptInput
     return true;
 }
 
-template<blocksci::ScriptType::Enum type>
-struct ScriptTruncateFunctor {
-    static void f(uint32_t index, AddressWriter &writer) {
-        writer.truncate<type>(index);
-    }
-};
-
-void AddressWriter::truncate(blocksci::ScriptType::Enum type, uint32_t addressIndex) {
-    static constexpr auto table = blocksci::make_dynamic_table<blocksci::ScriptType, ScriptTruncateFunctor>();
-    static constexpr std::size_t size = blocksci::AddressType::all.size();
-    
-    auto index = static_cast<size_t>(type);
-    if (index >= size)
-    {
-        throw std::invalid_argument("combination of enum values is not valid");
-    }
-    return table[index](addressIndex, *this);
-}
-
 void AddressWriter::rollback(const blocksci::State &state) {
     blocksci::for_each(blocksci::ScriptInfoList(), [&](auto tag) {
-        constexpr auto scriptType = decltype(tag)::type; truncate<scriptType>(state.scriptCounts[static_cast<size_t>(scriptType)]);
+        auto &file = std::get<ScriptFile<tag()>>(scriptFiles);
+        file.truncate(state.scriptCounts[static_cast<size_t>(tag)]);
     });
 }

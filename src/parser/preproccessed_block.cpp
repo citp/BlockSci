@@ -25,7 +25,6 @@
 #include <iostream>
 
 std::vector<unsigned char> hexStringToVec(const std::string scripthex);
-ScriptOutputType getScriptOutput(const std::vector<unsigned char> &scriptBytes, bool witnessActivated);
 
 std::vector<unsigned char> hexStringToVec(const std::string scripthex) {
     std::vector<unsigned char> scriptBytes;
@@ -40,12 +39,6 @@ std::vector<unsigned char> hexStringToVec(const std::string scripthex) {
 InputInfo RawInput::getInfo(uint16_t i, uint32_t txNum, uint32_t addressNum, bool isSegwit) {    
     return {i, txNum, addressNum, getScriptBegin(), getScriptLength(), witnessStack, isSegwit};
 }
-
-ScriptOutputType getScriptOutput(const std::vector<unsigned char> &scriptBytes, bool witnessActivated) {
-    return extractScriptData(scriptBytes.data(), scriptBytes.data() + scriptBytes.size(), witnessActivated);
-}
-
-RawOutput::RawOutput(const std::vector<unsigned char> &scriptBytes_, uint64_t value_, bool witnessActivated_) : RawOutput(getScriptOutput(scriptBytes_, witnessActivated_), value_, static_cast<uint32_t>(scriptBytes_.size())) {}
 
 #ifdef BLOCKSCI_FILE_PARSER
 RawInput::RawInput(SafeMemReader &reader) {
@@ -119,6 +112,45 @@ void RawTransaction::load(SafeMemReader &reader, uint32_t txNum_, uint32_t block
     hash.SetNull();
 }
 
+TransactionHeader::TransactionHeader(SafeMemReader &reader) {
+    auto startOffset = reader.offset();
+    version = reader.readNext<uint32_t>();
+    
+    inputCount = reader.readVariableLengthInteger();
+    bool containsSegwit = false;
+    if (inputCount == 0) {
+        auto flag = reader.readNext<uint8_t>();
+        assert(flag == 1);
+        containsSegwit = true;
+        inputCount = reader.readVariableLengthInteger();
+    }
+    
+    for (decltype(inputCount) i = 0; i < inputCount; i++) {
+        reader.advance(sizeof(blocksci::uint256) + sizeof(uint32_t));
+        auto scriptLength = reader.readVariableLengthInteger();
+        reader.advance(scriptLength);
+    }
+    
+    auto outputCount = reader.readVariableLengthInteger();
+    for (decltype(outputCount) i = 0; i < outputCount; i++) {
+        reader.advance(sizeof(uint64_t));
+        auto scriptLength = reader.readVariableLengthInteger();
+        reader.advance(scriptLength);
+    }
+    
+    if (containsSegwit) {
+        for (decltype(inputCount) i = 0; i < inputCount; i++) {
+            auto stackItemCount = reader.readVariableLengthInteger();
+            for (uint32_t j = 0; j < stackItemCount; j++) {
+                auto length = reader.readVariableLengthInteger();
+                reader.advance(length);
+            }
+        }
+    }
+    locktime = reader.readNext<uint32_t>();
+    sizeBytes = reader.offset() - startOffset;
+}
+
 void RawTransaction::calculateHash() {
     if (hash.IsNull()) {
         SHA256_CTX sha256CTX;
@@ -139,6 +171,10 @@ RawInput::RawInput(const vin_t &vin) {
     sequenceNum = vin.sequence;
     scriptBytes = hexStringToVec(vin.scriptSig.hex);
     scriptLength = 0;
+}
+
+RawOutput::RawOutput(std::vector<unsigned char> scriptBytes_, uint64_t value_, bool witnessActivated) : scriptLength(0), scriptBytes(std::move(scriptBytes_)), value(value_)  {
+    scriptOutput = extractScriptData(scriptBegin, scriptBegin + scriptLength, witnessActivated);
 }
 
 RawOutput::RawOutput(const vout_t &vout, bool witnessActivated) : RawOutput(hexStringToVec(vout.scriptPubKey.hex), static_cast<uint64_t>(vout.value * 100000000), witnessActivated) {}
@@ -273,7 +309,7 @@ blocksci::uint256 RawTransaction::getHash(const InputInfo &info, int hashType) c
     s.serializeCompact(nOutputs);
     for (unsigned int nOutput = 0; nOutput < nOutputs; nOutput++) {
         int64_t value = static_cast<int64_t>(outputs[nOutput].value);
-        uint32_t scriptLength = outputs[nOutput].scriptLength;
+        uint32_t scriptLength = outputs[nOutput].getScriptLength();
         if (hashSingle && nOutput != info.inputNum) {
             value = -1;
             scriptLength = 0;
@@ -281,7 +317,7 @@ blocksci::uint256 RawTransaction::getHash(const InputInfo &info, int hashType) c
         s.serialize(value);
         s.serializeCompact(scriptLength);
         if (scriptLength > 0) {
-            s.serialize(outputs[nOutput].scriptBegin, scriptLength);
+            s.serialize(outputs[nOutput].getScriptBegin(), scriptLength);
         }
     }
     s.serialize(locktime);

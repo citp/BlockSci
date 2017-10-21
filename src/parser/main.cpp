@@ -227,13 +227,20 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
     uint32_t maxBlockHeight = static_cast<uint32_t>(blocksToAdd.back().height);
     
     uint32_t totalTxCount = 0;
+    uint32_t totalInputCount = 0;
+    uint32_t totalOutputCount = 0;
     for (auto &block : blocksToAdd) {
         totalTxCount += block.nTx;
+        totalInputCount += block.inputCount;
+        totalOutputCount += block.outputCount;
     }
     
-    auto addressDB = ParserIndexCreator::createIndex<AddressDB>(config);
-    auto firstSeen = ParserIndexCreator::createIndex<FirstSeenIndex>(config);
-    auto hashIndex = ParserIndexCreator::createIndex<HashIndexCreator>(config);
+    uint64_t sizeNeeded = sizeof(blocksci::RawTransaction) * totalTxCount + sizeof(blocksci::Inout) * (totalInputCount + totalOutputCount);
+    
+    
+    ParserIndexCreator<AddressDB> addressDB(config);
+    ParserIndexCreator<FirstSeenIndex> firstSeen(config);
+    ParserIndexCreator<HashIndexCreator> hashIndex(config);
     
     {
         BlockProcessor processor{startingTxCount, totalTxCount, maxBlockHeight};
@@ -262,17 +269,17 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
             firstSeen.update(revealedScriptHashes, updateState);
             hashIndex.update(revealedScriptHashes, updateState);
         }
-    }
-    
-    {
-        blocksci::ChainAccess chain{config, false, 0};
-        blocksci::ScriptAccess scripts{config};
         
-        blocksci::State state{chain, scripts};
-        
-        addressDB.complete(state);
-        firstSeen.complete(state);
-        hashIndex.complete(state);
+        {
+            blocksci::ChainAccess chain{config, false, 0};
+            blocksci::ScriptAccess scripts{config};
+            
+            blocksci::State state{chain, scripts};
+            
+            addressDB.complete(state);
+            firstSeen.complete(state);
+            hashIndex.complete(state);
+        }
     }
 }
 

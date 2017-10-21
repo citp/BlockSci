@@ -11,6 +11,7 @@
 #include "chain_index.hpp"
 #include "parser_configuration.hpp"
 #include "safe_mem_reader.hpp"
+#include "preproccessed_block.hpp"
 
 #include <blocksci/chain/chain_access.hpp>
 #include <blocksci/chain/block.hpp>
@@ -32,12 +33,12 @@
 #ifdef BLOCKSCI_FILE_PARSER
 
 
-BlockInfoBase::BlockInfoBase(const blocksci::uint256 &hash_, const CBlockHeader &h, uint32_t size_, unsigned int numTxes) : hash(hash_), header(h), height(-1), size(size_), nTx(numTxes) {}
+BlockInfoBase::BlockInfoBase(const blocksci::uint256 &hash_, const CBlockHeader &h, uint32_t size_, unsigned int numTxes, uint32_t inputCount_, uint32_t outputCount_) : hash(hash_), header(h), height(-1), size(size_), nTx(numTxes), inputCount(inputCount_), outputCount(outputCount_) {}
 
-BlockInfo<FileTag>::BlockInfo(const CBlockHeader &h, uint32_t size_, unsigned int numTxes, const ParserConfiguration<FileTag> &config, int fileNum, unsigned int dataPos) : BlockInfoBase(config.workHashFunction(reinterpret_cast<const char *>(&h), sizeof(CBlockHeader)), h, size_, numTxes), nFile(fileNum), nDataPos(dataPos) {}
+BlockInfo<FileTag>::BlockInfo(const CBlockHeader &h, uint32_t size_, unsigned int numTxes, uint32_t inputCount_, uint32_t outputCount_, const ParserConfiguration<FileTag> &config, int fileNum, unsigned int dataPos) : BlockInfoBase(config.workHashFunction(reinterpret_cast<const char *>(&h), sizeof(CBlockHeader)), h, size_, numTxes, inputCount_, outputCount_), nFile(fileNum), nDataPos(dataPos) {}
 
 // The 0 should be replaced with info.bits converted to string
-BlockInfo<RPCTag>::BlockInfo(const blockinfo_t &info, uint32_t height_) : BlockInfoBase(blocksci::uint256S(info.hash), {info.version, blocksci::uint256S(info.previousblockhash), blocksci::uint256S(info.merkleroot), info.time, 0, info.nonce}, info.size, info.tx.size()), tx(info.tx) {
+BlockInfo<RPCTag>::BlockInfo(const blockinfo_t &info, uint32_t height_) : BlockInfoBase(blocksci::uint256S(info.hash), {info.version, blocksci::uint256S(info.previousblockhash), blocksci::uint256S(info.merkleroot), info.time, 0, info.nonce}, info.size, info.tx.size(), 0, 0), tx(info.tx) {
     height = static_cast<int>(height_);
 }
 
@@ -81,7 +82,6 @@ void ChainIndex<FileTag>::update(const ConfigType &config) {
                 auto blockFilePath = localConfig.pathForBlockFile(fileNum);
                 SafeMemReader reader{blockFilePath};
                 std::vector<BlockInfo<FileTag>> blocks;
-                
                 try {
                     // logic for resume from last processed block, note blockStartOffset and length below
                     if (fileNum == firstFile) {
@@ -98,10 +98,17 @@ void ChainIndex<FileTag>::update(const ConfigType &config) {
                         auto blockStartOffset = reader.offset();
                         auto header = reader.readNext<CBlockHeader>();
                         auto numTxes = reader.readVariableLengthInteger();
+                        uint32_t inputCount = 0;
+                        uint32_t outputCount = 0;
+                        for (size_t i = 0; i < numTxes; i++) {
+                            TransactionHeader header(reader);
+                            inputCount += header.inputCount;
+                            outputCount += header.outputCount;
+                        }
                         // The next two lines bring the reader to the end of this block
                         reader.reset(blockStartOffset);
                         reader.advance(length);
-                        blocks.emplace_back(header, length, numTxes, localConfig, fileNum, blockStartOffset);
+                        blocks.emplace_back(header, length, numTxes, inputCount, outputCount, localConfig, fileNum, blockStartOffset);
                     }
                 } catch (const std::out_of_range &e) {
                     std::cerr << "Failed to read block header information"

@@ -23,7 +23,7 @@
 class AddressWriter;
 class AddressState;
 
-template<blocksci::AddressType::Enum type>
+template<auto>
 struct ScriptOutput;
 
 template <>

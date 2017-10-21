@@ -46,6 +46,11 @@ public:
         lastDataPos += sizeof(T);
     }
     
+    void expandToFit(size_t size) {
+        file.seekp(size - 1);
+        file.write("", 1);
+    }
+    
     size_t size() const {
         return lastDataPos;
     }
@@ -55,7 +60,7 @@ public:
     }
 };
 
-struct ArbitraryFileWriter : public SimpleFileWriter {
+struct ArbitraryFileWriter : SimpleFileWriter {
     using SimpleFileWriter::SimpleFileWriter;
     
     template<typename T>
@@ -74,12 +79,11 @@ struct ArbitraryFileWriter : public SimpleFileWriter {
 };
 
 template <typename T, typename = typename std::enable_if<std::is_trivially_copyable<T>::value>::type>
-struct FixedSizeFileWriter : public SimpleFileWriter {
+struct FixedSizeFileWriter : SimpleFileWriter {
     using SimpleFileWriter::SimpleFileWriter;
     
     void expandToFit(uint32_t size) {
-        file.seekp(sizeof(T) * size - 1);
-        file.write("", 1);
+        SimpleFileWriter::expandToFit(sizeof(T) * size);
     }
     
     void write(const T &t) {
@@ -111,7 +115,7 @@ template <size_t indexCount>
 using FileIndex = std::array<uint64_t, indexCount>;
 
 template <size_t indexCount>
-struct IndexedFileWriter : public ArbitraryFileWriter {
+struct IndexedFileWriter : ArbitraryFileWriter {
 private:
     using IndexType = uint64_t;
     FixedSizeFileWriter<FileIndex<indexCount>> indexFile;
@@ -126,6 +130,11 @@ public:
             fileIndex[i] = 0;
         }
         indexFile.write(fileIndex);
+    }
+    
+    void expandToFit(size_t length, uint32_t items) {
+        SimpleFileWriter::expandToFit(length);
+        indexFile.expandToFit(items);
     }
     
     template<size_t indexNum>

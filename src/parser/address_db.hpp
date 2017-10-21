@@ -32,12 +32,11 @@ class AddressDB : public AddressTraverser {
     void sawAddress(const blocksci::Address &address, const blocksci::OutputPointer &pointer) override;
     void revealedP2SH(blocksci::script::ScriptHash &scriptHash, const blocksci::ScriptAccess &scripts) override;
     
-    void tearDown() override;
-    
 public:
     AddressDB(const ParserConfigurationBase &config);
     
     void rollback(const blocksci::State &state) override;
+    void tearDown() override;
 };
 
 #endif /* address_db_h */

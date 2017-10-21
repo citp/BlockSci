@@ -35,22 +35,22 @@ struct ScriptFileType<blocksci::Indexed<T...>> {
 };
 
 
-template<blocksci::ScriptType::Enum type>
+template<auto type>
 using ScriptFileType_t = typename ScriptFileType<typename blocksci::ScriptInfo<type>::storage>::type;
 
-template<blocksci::ScriptType::Enum type>
+template<auto type>
 struct ScriptFile : public ScriptFileType_t<type> {
     using ScriptFileType_t<type>::ScriptFileType_t;
 };
 
-template<blocksci::AddressType::Enum type>
+template<auto>
 struct ScriptOutput;
 
-template<blocksci::AddressType::Enum type>
+template<auto>
 struct ScriptInput;
 
 class AddressWriter {
-    using ScriptFilesTuple = blocksci::internal::to_script_type<ScriptFile, blocksci::ScriptInfoList>::type;
+    using ScriptFilesTuple = blocksci::to_script_tuple_t<ScriptFile>;
     
     ScriptFilesTuple scriptFiles;
     
@@ -81,13 +81,6 @@ public:
     bool serialize(const ScriptInput<type> &input, const InputInfo &inputInfo) {
         return serializeImp(input, inputInfo);
     }
-    
-    template<blocksci::ScriptType::Enum type>
-    void truncate(uint32_t index) {
-        getFile<type>().truncate(index);
-    }
-    
-    void truncate(blocksci::ScriptType::Enum type, uint32_t index);
     
     void rollback(const blocksci::State &state);
     

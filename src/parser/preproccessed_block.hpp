@@ -51,6 +51,7 @@ public:
     std::vector<WitnessStackItem> witnessStack;
     uint32_t linkedTxNum;
     blocksci::AddressType::Enum addressType;
+    uint64_t value;
     
     InputInfo getInfo(uint16_t i, uint32_t txNum, uint32_t addressNum, bool isSegwit);
     
@@ -62,7 +63,7 @@ public:
         }
     }
     
-    const unsigned char *getScriptBegin() {
+    const unsigned char *getScriptBegin() const {
         if (scriptLength == 0) {
             return scriptBytes.data();
         } else {
@@ -82,9 +83,13 @@ public:
 };
 
 struct RawOutput {
-    uint64_t value;
-    uint32_t scriptLength;
+private:
     const unsigned char *scriptBegin;
+    uint32_t scriptLength;
+    
+    std::vector<unsigned char> scriptBytes;
+public:
+    uint64_t value;
     ScriptOutputType scriptOutput;
 
     #ifdef BLOCKSCI_FILE_PARSER
@@ -93,14 +98,33 @@ struct RawOutput {
     
     #ifdef BLOCKSCI_RPC_PARSER
     RawOutput(const vout_t &vout, bool witnessActivated);
+    RawOutput(std::vector<unsigned char> scriptBytes_, uint64_t value_, bool witnessActivated);
     #endif
     
-    RawOutput(const std::vector<unsigned char> &scriptBytes, uint64_t value, bool witnessActivated);
+    uint32_t getScriptLength() const {
+        if (scriptLength == 0) {
+            return scriptBytes.size();
+        } else {
+            return scriptLength;
+        }
+    }
     
-    RawOutput(const ScriptOutputType &scriptOutput_, uint64_t value_, uint32_t scriptLength_) : value(value_), scriptLength(scriptLength_), scriptOutput(scriptOutput_) {}
-    
-    RawOutput(uint64_t value, uint32_t scriptLength, const char **buffer);
-    
+    const unsigned char *getScriptBegin() const {
+        if (scriptLength == 0) {
+            return scriptBytes.data();
+        } else {
+            return scriptBegin;
+        }
+    }
+};
+
+struct TransactionHeader {
+    int32_t version;
+    int inputCount;
+    int outputCount;
+    uint32_t sizeBytes;
+    uint32_t locktime;
+    TransactionHeader(SafeMemReader &reader);
 };
 
 struct RawTransaction {
