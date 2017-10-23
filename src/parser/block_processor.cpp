@@ -90,49 +90,38 @@ bool checkSegwit(RawTransaction *tx) {
 }
 
 template <typename ParseTag>
-class BlockReader;
-
-template <typename ParseTag>
 class BlockFileReader;
 
 #ifdef BLOCKSCI_FILE_PARSER
 
 template <>
-class BlockReader<FileTag> {
-    SafeMemReader &reader;
-    bool isSegwit;
-    uint32_t height;
+class BlockFileReader<FileTag> : public BlockFileReaderBase {
+    std::unordered_map<int, std::pair<SafeMemReader, uint32_t>> files;
+    std::unordered_map<int, uint32_t> lastTxRequired;
+    const ParserConfiguration<FileTag> &config;
+    SafeMemReader *reader;
     
-public:
-    BlockReader(SafeMemReader &reader_, BlockInfo<FileTag> &block, uint32_t) : reader(reader_), height(static_cast<uint32_t>(block.height)) {
-        reader.reset(block.nDataPos);
-        reader.advance(sizeof(CBlockHeader));
-        reader.readVariableLengthInteger();
-        auto firstTxOffset = reader.offset();
-        RawTransaction tx;
-        loadNext(&tx, 0);
-        reader.reset(firstTxOffset);
-        isSegwit = checkSegwit(&tx);
-    }
+    uint32_t currentHeight;
+    uint32_t currentTxNum;
     
-    void loadNext(RawTransaction *tx, uint32_t txNum) {
+    template<bool shouldAdvance>
+    void nextTxImp(RawTransaction *tx, bool isSegwit) {
         try {
-            tx->load(reader, txNum, height, isSegwit);
+            auto firstTxOffset = reader->offset();
+            tx->load(*reader, currentTxNum, currentHeight, isSegwit);
+            if constexpr (shouldAdvance) {
+                currentTxNum++;
+            } else {
+                reader->reset(firstTxOffset);
+            }
         } catch (const std::exception &e) {
             std::cerr << "Failed to load tx"
-            << " from block" << height
-            << " at offset " << reader.offset()
+            << " from block" << currentHeight
+            << " at offset " << reader->offset()
             << ".\n";
             throw;
         }
     }
-};
-
-template <>
-class BlockFileReader<FileTag> {
-    std::unordered_map<int, std::pair<SafeMemReader, uint32_t>> files;
-    std::unordered_map<int, uint32_t> lastTxRequired;
-    const ParserConfiguration<FileTag> &config;
     
 public:
     BlockFileReader(const ParserConfiguration<FileTag> &config_, std::vector<BlockInfo<FileTag>> &blocksToAdd, uint32_t firstTxNum) : config(config_) {
@@ -142,7 +131,7 @@ public:
         }
     }
     
-    BlockReader<FileTag> getReader(BlockInfo<FileTag> &block, uint32_t firstTxNum) {
+    void nextBlock(BlockInfo<FileTag> &block, uint32_t firstTxNum) {
         auto fileIt = files.find(block.nFile);
         if (fileIt == files.end()) {
             auto blockPath = config.pathForBlockFile(block.nFile);
@@ -153,10 +142,24 @@ public:
             }
             files.emplace(std::piecewise_construct, std::forward_as_tuple(block.nFile), std::forward_as_tuple(blockPath, lastTxRequired[block.nFile]));
         }
-        return BlockReader<FileTag>(files.at(block.nFile).first, block, firstTxNum);
+        reader = &files.at(block.nFile).first;
+        reader->reset(block.nDataPos);
+        reader->advance(sizeof(CBlockHeader));
+        reader->readVariableLengthInteger();
+        currentHeight = static_cast<uint32_t>(block.height);
+        currentTxNum = firstTxNum;
+        
     }
     
-    void receivedFinishedTx(RawTransaction *tx) {
+    void nextTx(RawTransaction *tx, bool isSegwit) override {
+        nextTxImp<true>(tx, isSegwit);
+    }
+    
+    void nextTxNoAdvance(RawTransaction *tx, bool isSegwit) override {
+        nextTxImp<false>(tx, isSegwit);
+    }
+    
+    void receivedFinishedTx(RawTransaction *tx) override {
         auto it = files.begin();
         while (it != files.end()) {
             if (it->second.second < tx->txNum) {
@@ -173,22 +176,17 @@ public:
 #ifdef BLOCKSCI_RPC_PARSER
 
 template <>
-class BlockReader<RPCTag> {
-    BlockInfo<RPCTag> &block;
-    BitcoinAPI &bapi;
-    bool isSegwit;
+class BlockFileReader<RPCTag> : public BlockFileReaderBase {
+    BitcoinAPI bapi;
+    
     uint32_t firstTxNum;
-    uint32_t height;
+    uint32_t currentTxOffset;
+    uint32_t currentHeight;
+    BlockInfo<RPCTag> block;
     
-public:
-    BlockReader(BitcoinAPI &bapi_, BlockInfo<RPCTag> &block_, uint32_t firstTxNum_) : block(block_), bapi(bapi_), firstTxNum(firstTxNum_), height(static_cast<uint32_t>(block.height)) {
-        RawTransaction tx;
-        loadNext(&tx, 0);
-        isSegwit = checkSegwit(&tx);
-    }
-    
-    void loadNext(RawTransaction *tx, uint32_t txNum) {
-        if (height == 0) {
+    template<bool shouldAdvance>
+    void nextTxImp(RawTransaction *tx, bool isSegwit) {
+        if (currentHeight == 0) {
             tx->outputs.clear();
             tx->outputs.reserve(1);
             
@@ -200,74 +198,77 @@ public:
             tx->blockHeight = 0;
             tx->txNum = 0;
         } else {
-            auto txinfo = bapi.getrawtransaction(block.tx[txNum - firstTxNum], 1);
-            tx->load(txinfo, txNum, height, isSegwit);
+            auto txinfo = bapi.getrawtransaction(block.tx[currentTxOffset], 1);
+            tx->load(txinfo, firstTxNum + currentTxOffset, currentHeight, isSegwit);
+        }
+        if constexpr (shouldAdvance) {
+            currentTxOffset++;
         }
     }
-};
-
-
-template <>
-class BlockFileReader<RPCTag> {
-    BitcoinAPI bapi;
     
 public:
     BlockFileReader(const ParserConfiguration<RPCTag> &config, std::vector<BlockInfo<RPCTag>> &, uint32_t) : bapi(config.createBitcoinAPI()) {}
     
-    BlockReader<RPCTag> getReader(BlockInfo<RPCTag> &block, uint32_t txNum) {
-        return {bapi, block, txNum};
+    void nextBlock(BlockInfo<RPCTag> &block_, uint32_t txNum) {
+        block = block_;
+        currentHeight = static_cast<uint32_t>(block.height);
+        firstTxNum = txNum;
+        currentTxOffset = 0;
     }
     
-    void receivedFinishedTx(RawTransaction *) {}
+    void nextTx(RawTransaction *tx, bool isSegwit) override {
+        nextTxImp<true>(tx, isSegwit);
+    }
+    
+    void nextTxNoAdvance(RawTransaction *tx, bool isSegwit) override {
+        nextTxImp<false>(tx, isSegwit);
+    }
+    
+    void receivedFinishedTx(RawTransaction *) override {}
 };
 
 #endif
 
-template <typename ParseTag, typename LoadFunc, typename OutFunc>
-BlockFileReader<ParseTag> readNewBlocks(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> blocksToAdd, uint32_t currentTxNum, LoadFunc loadFunc, OutFunc outFunc) {
-    
-    ArbitraryFileWriter blockCoinbaseFile(config.blockCoinbaseFilePath());
-    FixedSizeFileWriter<blocksci::Block> blockFile(config.blockFilePath());
-    IndexedFileWriter<1> sequenceFile{config.sequenceFilePath()};
-    
-    BlockFileReader<ParseTag> fileReader(config, blocksToAdd, currentTxNum);
-    
+std::vector<unsigned char> readNewBlock(uint32_t firstTxNum, const BlockInfoBase &block, BlockFileReaderBase &fileReader, NewBlocksFiles &files, const std::function<bool(RawTransaction *&tx)> &loadFunc, const std::function<void(RawTransaction *tx)> &outFunc) {
+    std::vector<unsigned char> coinbase;
+    bool isSegwit = false;
     blocksci::uint256 nullHash;
     nullHash.SetNull();
-    
-    std::vector<unsigned char> coinbase;
-    
-    for (auto &block : blocksToAdd) {
-        blocksci::Block blocksciBlock{currentTxNum, block.nTx, static_cast<uint32_t>(block.height), block.hash, block.header.nVersion, block.header.nTime, block.header.nBits, block.header.nNonce, blockCoinbaseFile.size()};
-        
-        auto blockReader = fileReader.getReader(block, currentTxNum);
-        for (uint32_t j = 0; j < block.nTx; j++) {
-            RawTransaction *tx = nullptr;
-            if (!loadFunc(tx)) {
-                tx = new RawTransaction();
-            } else {
-                fileReader.receivedFinishedTx(tx);
-            }
-            blockReader.loadNext(tx, currentTxNum);
-            
-            sequenceFile.writeIndexGroup();
-            for (auto &input : tx->inputs) {
-                sequenceFile.write(input.sequenceNum);
-            }
-            
-            if (tx->inputs.size() == 1 && tx->inputs[0].rawOutputPointer.hash == nullHash) {
-                auto scriptBegin = tx->inputs[0].getScriptBegin();
-                coinbase.assign(scriptBegin, scriptBegin + tx->inputs[0].getScriptLength());
-                tx->inputs.clear();
-            }
-            
-            outFunc(tx);
-            currentTxNum++;
+    for (uint32_t j = 0; j < block.nTx; j++) {
+        RawTransaction *tx = nullptr;
+        if (!loadFunc(tx)) {
+            tx = new RawTransaction();
+        } else {
+            assert(tx);
+            fileReader.receivedFinishedTx(tx);
         }
-        blockFile.write(blocksciBlock);
-        blockCoinbaseFile.write(coinbase.begin(), coinbase.end());
+        
+        if (j == 0) {
+            fileReader.nextTxNoAdvance(tx, false);
+            isSegwit = checkSegwit(tx);
+        }
+        
+        fileReader.nextTx(tx, isSegwit);
+        
+        files.sequenceFile.writeIndexGroup();
+        for (auto &input : tx->inputs) {
+            files.sequenceFile.write(input.sequenceNum);
+        }
+        
+        if (tx->inputs.size() == 1 && tx->inputs[0].rawOutputPointer.hash == nullHash) {
+            auto scriptBegin = tx->inputs[0].getScriptBegin();
+            coinbase.assign(scriptBegin, scriptBegin + tx->inputs[0].getScriptLength());
+            tx->inputs.clear();
+        }
+        
+        outFunc(tx);
     }
-    return fileReader;
+    blocksci::Block blocksciBlock{firstTxNum, block.nTx, static_cast<uint32_t>(block.height), block.hash, block.header.nVersion, block.header.nTime, block.header.nBits, block.header.nNonce, files.blockCoinbaseFile.size()};
+    firstTxNum += block.nTx;
+    files.blockFile.write(blocksciBlock);
+    files.blockCoinbaseFile.write(coinbase.begin(), coinbase.end());
+    
+    return coinbase;
 }
 
 void calculateHash(RawTransaction *tx, FixedSizeFileWriter<blocksci::uint256> &hashFile) {
@@ -339,6 +340,7 @@ void consumeTxes(boost::atomic<bool> &prevFinished, InputQueue &input, OutputQue
         while (input.pop(rawTx)) {
             processFunc(rawTx);
             if (shouldConsumeFunc(rawTx)) {
+                assert(rawTx);
                 while (!output.push(rawTx)) {
                     std::this_thread::sleep_for(200ms);
                 }
@@ -398,8 +400,10 @@ private:
     boost::atomic<bool> &isDone;
 };
 
+NewBlocksFiles::NewBlocksFiles(const ParserConfigurationBase &config) : blockCoinbaseFile(config.blockCoinbaseFilePath()), blockFile(config.blockFilePath()), sequenceFile(config.sequenceFilePath()) {}
+
 template <typename ParseTag>
-std::vector<uint32_t> BlockProcessor::addNewBlocks(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> blocks, UTXOState &utxoState, AddressState &addressState) {
+std::vector<uint32_t> BlockProcessor::addNewBlocks(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> blocks, UTXOState &utxoState, AddressState &addressState, blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction> &txFile) {
     
     boost::atomic<bool> rawDone{false};
     boost::atomic<bool> hashDone{false};
@@ -412,8 +416,8 @@ std::vector<uint32_t> BlockProcessor::addNewBlocks(const ParserConfiguration<Par
     
     auto importer = std::async(std::launch::async, [&] {
         CompletionGuard guard(rawDone);
-        auto loadFinishedTx = [&](RawTransaction *tx) {
-            return !finished_transaction_queue.pop(tx);
+        auto loadFinishedTx = [&](RawTransaction *&tx) {
+            return finished_transaction_queue.pop(tx);
         };
         
         auto outFunc = [&](RawTransaction *tx) {
@@ -423,7 +427,16 @@ std::vector<uint32_t> BlockProcessor::addNewBlocks(const ParserConfiguration<Par
             }
         };
         
-        return readNewBlocks<ParseTag>(config, blocks, currentTxNum, loadFinishedTx, outFunc);
+        BlockFileReader<ParseTag> fileReader(config, blocks, currentTxNum);
+        NewBlocksFiles files(config);
+        
+        for (auto &block : blocks) {
+            fileReader.nextBlock(block, currentTxNum);
+            readNewBlock(currentTxNum, block, fileReader, files, loadFinishedTx, outFunc);
+            currentTxNum += block.nTx;
+        }
+        
+        return fileReader;
     });
     
     auto hashCalculator = std::async(std::launch::async, [&] {
@@ -446,7 +459,6 @@ std::vector<uint32_t> BlockProcessor::addNewBlocks(const ParserConfiguration<Par
         ECCVerifyHandle handle;
         
         std::vector<uint32_t> revealed;
-        blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction> txFile{config.txFilePath()};
         auto progressBar = makeProgressBar(totalTxCount, [=](RawTransaction *tx) {
             auto blockHeight = tx->blockHeight;
             std::cout << ", Block " << blockHeight << "/" << maxBlockHeight;
@@ -456,9 +468,9 @@ std::vector<uint32_t> BlockProcessor::addNewBlocks(const ParserConfiguration<Par
             revealed.insert(revealed.end(), newRevealed.begin(), newRevealed.end());
             progressBar.update(tx->txNum - startingTxCount, tx);
             addressState.optionalSave();
-        }, [](RawTransaction *tx) {
-            bool shouldSend = tx->sizeBytes > 800;
-            if (shouldSend) delete tx;
+        }, [&](RawTransaction *tx) {
+            bool shouldSend = tx->sizeBytes < 800 && finished_transaction_queue.write_available() >= 1;
+            if (!shouldSend) delete tx;
             return shouldSend;
         });
         return revealed;
@@ -477,8 +489,8 @@ std::vector<uint32_t> BlockProcessor::addNewBlocks(const ParserConfiguration<Par
 }
 
 #ifdef BLOCKSCI_FILE_PARSER
-template std::vector<uint32_t> BlockProcessor::addNewBlocks(const ParserConfiguration<FileTag> &config, std::vector<BlockInfo<FileTag>> nextBlocks, UTXOState &utxoState, AddressState &addressState);
+template std::vector<uint32_t> BlockProcessor::addNewBlocks(const ParserConfiguration<FileTag> &config, std::vector<BlockInfo<FileTag>> nextBlocks, UTXOState &utxoState, AddressState &addressState, blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction> &txFile);
 #endif
 #ifdef BLOCKSCI_RPC_PARSER
-template std::vector<uint32_t> BlockProcessor::addNewBlocks(const ParserConfiguration<RPCTag> &config, std::vector<BlockInfo<RPCTag>> nextBlocks, UTXOState &utxoState, AddressState &addressState);
+template std::vector<uint32_t> BlockProcessor::addNewBlocks(const ParserConfiguration<RPCTag> &config, std::vector<BlockInfo<RPCTag>> nextBlocks, UTXOState &utxoState, AddressState &addressState, blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction> &txFile);
 #endif

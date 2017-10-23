@@ -24,6 +24,10 @@
 
 #include <iostream>
 
+using SequenceNum = uint32_t;
+using Value = uint64_t;
+using Locktime = uint32_t;
+
 std::vector<unsigned char> hexStringToVec(const std::string scripthex);
 
 std::vector<unsigned char> hexStringToVec(const std::string scripthex) {
@@ -47,11 +51,11 @@ RawInput::RawInput(SafeMemReader &reader) {
     scriptLength = reader.readVariableLengthInteger();
     scriptBegin = reinterpret_cast<const unsigned char*>(reader.unsafePos());
     reader.advance(scriptLength);
-    sequenceNum = reader.readNext<uint32_t>();
+    sequenceNum = reader.readNext<SequenceNum>();
 }
 
 RawOutput::RawOutput(SafeMemReader &reader, bool witnessActivated) {
-    value = reader.readNext<uint64_t>();
+    value = reader.readNext<Value>();
     scriptLength = reader.readVariableLengthInteger();
     scriptBegin = reinterpret_cast<const unsigned char*>(reader.unsafePos());
     scriptOutput = extractScriptData(scriptBegin, scriptBegin + scriptLength, witnessActivated);
@@ -107,7 +111,7 @@ void RawTransaction::load(SafeMemReader &reader, uint32_t txNum_, uint32_t block
             }
         }
     }
-    locktime = reader.readNext<uint32_t>();
+    locktime = reader.readNext<Locktime>();
     sizeBytes = reader.offset() - startOffset;
     hash.SetNull();
 }
@@ -128,12 +132,12 @@ TransactionHeader::TransactionHeader(SafeMemReader &reader) {
     for (decltype(inputCount) i = 0; i < inputCount; i++) {
         reader.advance(sizeof(blocksci::uint256) + sizeof(uint32_t));
         auto scriptLength = reader.readVariableLengthInteger();
-        reader.advance(scriptLength);
+        reader.advance(scriptLength + sizeof(SequenceNum));
     }
     
-    auto outputCount = reader.readVariableLengthInteger();
+ outputCount = reader.readVariableLengthInteger();
     for (decltype(outputCount) i = 0; i < outputCount; i++) {
-        reader.advance(sizeof(uint64_t));
+        reader.advance(sizeof(Value));
         auto scriptLength = reader.readVariableLengthInteger();
         reader.advance(scriptLength);
     }
@@ -147,7 +151,7 @@ TransactionHeader::TransactionHeader(SafeMemReader &reader) {
             }
         }
     }
-    locktime = reader.readNext<uint32_t>();
+    locktime = reader.readNext<Locktime>();
     sizeBytes = reader.offset() - startOffset;
 }
 

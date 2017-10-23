@@ -138,7 +138,7 @@ namespace blocksci {
         std::vector<char> buffer;
         static constexpr auto mode = boost::iostreams::mapped_file::mapmode::readwrite;
         
-        SimpleFileMapper(boost::filesystem::path path) : SimpleFileMapperBase(path, boost::iostreams::mapped_file::mapmode::readwrite) {}
+        SimpleFileMapper(boost::filesystem::path path) : SimpleFileMapperBase(path, boost::iostreams::mapped_file::mapmode::readwrite), writePos(size()) {}
         
         SimpleFileMapper(const SimpleFileMapper &) = delete;
         SimpleFileMapper &operator=(const SimpleFileMapper &) = delete;
@@ -150,7 +150,7 @@ namespace blocksci {
         }
         
     private:
-        size_t writePos;
+        OffsetType writePos;
         
         char *getWritePos() {
             if (writePos < fileEnd) {
@@ -173,6 +173,10 @@ namespace blocksci {
         }
         
     protected:
+        
+        OffsetType getWriteOffset() const {
+            return writePos;
+        }
         
         template<typename T, typename = std::enable_if_t<std::is_trivially_copyable<T>::value>>
         bool writeImp(const T &t) {
@@ -211,6 +215,8 @@ namespace blocksci {
             }
             return bufferFull;
         }
+        
+        
         
     public:
         
@@ -324,23 +330,36 @@ namespace blocksci {
     };
     
     template <typename T, boost::iostreams::mapped_file::mapmode mode = boost::iostreams::mapped_file::mapmode::readonly>
-    struct FixedSizeFileMapper : public SimpleFileMapper<mode> {
+    struct FixedSizeFileMapper : SimpleFileMapper<mode> {
+    private:
+        size_t getPos(uint32_t index) const {
+            return static_cast<size_t>(index) * sizeof(T);
+        }
+    public:
         using SimpleFileMapper<mode>::SimpleFileMapper;
         
         add_const_ptr_t<T> getData(size_t index) const {
             assert(index < size());
-            const char *pos = SimpleFileMapper<mode>::getDataAtOffset(index * sizeof(T));
+            const char *pos = SimpleFileMapper<mode>::getDataAtOffset(getPos(index));
             return reinterpret_cast<add_const_ptr_t<T>>(pos);
         }
         
         add_ptr_t<T> getData(size_t index) {
             assert(index < size());
-            char *pos = SimpleFileMapper<mode>::getDataAtOffset(index * sizeof(T));
+            char *pos = SimpleFileMapper<mode>::getDataAtOffset(getPos(index));
             return reinterpret_cast<add_ptr_t<T>>(pos);
         }
         
         void update(uint32_t index, const T &t) {
-            SimpleFileMapper<mode>::update(index * sizeof(T), t);
+            SimpleFileMapper<mode>::update(getPos(index), t);
+        }
+        
+        void seekEnd() {
+            SimpleFileMapper<mode>::seekEnd();
+        }
+        
+        void seek(uint32_t index) {
+            SimpleFileMapper<mode>::seek(getPos(index));
         }
         
         bool write(const T &t) {
@@ -356,7 +375,7 @@ namespace blocksci {
         }
         
         void truncate(size_t index) {
-            SimpleFileMapper<mode>::truncate(index * sizeof(T));
+            SimpleFileMapper<mode>::truncate(getPos(index));
         }
         
         boost::iterator_range<add_const_ptr_t<T>> getRange() const {
@@ -414,7 +433,7 @@ namespace blocksci {
     struct IndexedFileExpander;
     
     template <boost::iostreams::mapped_file::mapmode mode = boost::iostreams::mapped_file::mapmode::readonly, typename... T>
-    struct IndexedFileMapper : public ArbitraryFileMapper<mode> {
+    struct IndexedFileMapper : ArbitraryFileMapper<mode> {
     private:
         template<size_t indexNum>
         using nth_element = std::tuple_element_t<indexNum, std::tuple<T...>>;
@@ -436,10 +455,12 @@ namespace blocksci {
         }
         
         template<size_t indexNum = 0>
-        OffsetType getOffset(size_t offset) const {
+        OffsetType getOffset(uint32_t index) const {
             static_assert(indexNum < sizeof...(T), "Trying to fetch index out of bounds");
-            auto indexData = indexFile.getData(offset);
-            return (*indexData)[indexNum];
+            auto indexData = indexFile.getData(index);
+            auto offset = (*indexData)[indexNum];
+            assert(offset < ArbitraryFileMapper<mode>::size() || offset == InvalidFileIndex);
+            return offset;
         }
         
         FileIndex<sizeof...(T)> getOffsets(uint32_t index) const {
@@ -454,14 +475,29 @@ namespace blocksci {
             return indexFile.fileSize();
         }
         
-        void truncate(uint32_t index) {
-            auto offsets = getOffsets(index);
-            indexFile.truncate(index);
-            uint64_t minOffset = InvalidFileIndex;
-            for (auto &offset : offsets) {
-                 minOffset = std::min(minOffset, offset);
-            }
-            ArbitraryFileMapper<mode>::truncate(minOffset);
+//        void truncate(uint32_t index) {
+//            auto offsets = getOffsets(index);
+//            indexFile.truncate(index);
+//            uint64_t minOffset = InvalidFileIndex;
+//            for (auto &offset : offsets) {
+//                 minOffset = std::min(minOffset, offset);
+//            }
+//            ArbitraryFileMapper<mode>::truncate(minOffset);
+//        }
+        
+        void seekEnd() {
+            indexFile.seekEnd();
+            ArbitraryFileMapper<mode>::seekEnd();
+        }
+        
+        void seek(uint32_t index, size_t dataOffset) {
+            indexFile.seek(index);
+            ArbitraryFileMapper<mode>::seek(dataOffset);
+        }
+
+        void grow(uint32_t indexCount, uint64_t dataSize) {
+            indexFile.truncate(indexFile.size() + indexCount);
+            ArbitraryFileMapper<mode>::truncate(ArbitraryFileMapper<mode>::size() + dataSize);
         }
         
         template<size_t indexNum = 0>
@@ -498,7 +534,7 @@ namespace blocksci {
         
         bool writeIndexGroup() {
             FileIndex<indexCount> fileIndex;
-            fileIndex[0] = ArbitraryFileMapper<mode>::size();
+            fileIndex[0] = ArbitraryFileMapper<mode>::getWriteOffset();
             for(size_t i = 1; i < indexCount; i++) {
                 fileIndex[i] = InvalidFileIndex;
             }
@@ -509,7 +545,7 @@ namespace blocksci {
         void updateIndexGroup(uint32_t addressNum) {
             static_assert(indexNum < indexCount, "Index out of range");
             auto &fileIndex = *indexFile.getData(addressNum);
-            fileIndex[indexNum] = ArbitraryFileMapper<mode>::size();
+            fileIndex[indexNum] = ArbitraryFileMapper<mode>::getWriteOffset();
         }
         
         template<size_t indexNum = 0>

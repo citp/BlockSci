@@ -12,6 +12,8 @@
 #include "parser_index.hpp"
 #include "parser_fwd.hpp"
 
+#include <lmdbxx/lmdb++.h>
+
 #include <SQLiteCpp/Database.h>
 #include <SQLiteCpp/Transaction.h>
 

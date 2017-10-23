@@ -184,8 +184,6 @@ template <typename ParserTag>
 void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlockNum) {
     using namespace std::chrono_literals;
     
-    
-    
     auto chainBlocks = [&]() {
         ChainIndex<ParserTag> index;
         boost::filesystem::ifstream inFile(config.blockListPath(), std::ios::binary);
@@ -237,6 +235,8 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
     
     uint64_t sizeNeeded = sizeof(blocksci::RawTransaction) * totalTxCount + sizeof(blocksci::Inout) * (totalInputCount + totalOutputCount);
     
+    blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction> txFile{config.txFilePath()};
+    txFile.grow(totalTxCount, sizeNeeded);
     
     ParserIndexCreator<AddressDB> addressDB(config);
     ParserIndexCreator<FirstSeenIndex> firstSeen(config);
@@ -258,7 +258,7 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
             
             decltype(blocksToAdd) nextBlocks{prev, it};
             
-            auto revealedScriptHashes = processor.addNewBlocks(config, nextBlocks, utxoState, addressState);
+            auto revealedScriptHashes = processor.addNewBlocks(config, nextBlocks, utxoState, addressState, txFile);
             
             blocksci::ChainAccess chain{config, false, 0};
             blocksci::ScriptAccess scripts{config};

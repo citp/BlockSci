@@ -49,6 +49,8 @@ SQLite::Database createDB(const ParserConfigurationBase &config) {
 
 std::array<SQLite::Statement, blocksci::HashIndex::IndexType::size> setupHashInsertStatements(SQLite::Database &db) {
     db.exec("PRAGMA synchronous = OFF");
+    db.exec("PRAGMA journal_mode = OFF");
+    db.exec("PRAGMA locking_mode = EXCLUSIVE");
     return blocksci::make_static_table<blocksci::HashIndex::IndexType, InsertFunctor>(db);
 }
 

@@ -54,6 +54,8 @@ std::unordered_map<ScriptType::Enum,  SQLite::Statement> setupInsertStatements(S
         insertStatements.emplace(std::piecewise_construct, std::forward_as_tuple(script), std::forward_as_tuple(db, ss.str()));
     }
     db.exec("PRAGMA synchronous = OFF");
+    db.exec("PRAGMA journal_mode = OFF");
+    db.exec("PRAGMA locking_mode = EXCLUSIVE");
     return insertStatements;
 }
 

@@ -25,7 +25,7 @@ namespace blocksci {
     
     void ChainAccess::setup() {
         maxHeight = static_cast<uint32_t>(blockFile.size()) - blocksIgnored;
-        if (errorOnReorg) {
+        if (maxHeight > 0) {
             auto maxLoadedBlock = getBlockFile().getData(maxHeight - 1);
             lastBlockHash = maxLoadedBlock->hash;
             _maxLoadedTx = maxLoadedBlock->firstTxIndex + maxLoadedBlock->numTxes;

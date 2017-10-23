@@ -108,6 +108,7 @@ void ChainIndex<FileTag>::update(const ConfigType &config) {
                         // The next two lines bring the reader to the end of this block
                         reader.reset(blockStartOffset);
                         reader.advance(length);
+                        inputCount--;
                         blocks.emplace_back(header, length, numTxes, inputCount, outputCount, localConfig, fileNum, blockStartOffset);
                     }
                 } catch (const std::out_of_range &e) {

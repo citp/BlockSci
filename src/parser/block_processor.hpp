@@ -16,13 +16,31 @@
 
 #include <blocksci/file_mapper.hpp>
 #include <blocksci/chain/transaction.hpp>
+#include <blocksci/chain/block.hpp>
 #include <blocksci/bitcoin_uint256.hpp>
 
 struct RawTransaction;
+struct BlockInfoBase;
 class UTXOState;
 class AddressState;
 class AddressWriter;
 
+class BlockFileReaderBase {
+public:
+    virtual void nextTx(RawTransaction *tx, bool isSegwit) = 0;
+    virtual void nextTxNoAdvance(RawTransaction *tx, bool isSegwit) = 0;
+    virtual void receivedFinishedTx(RawTransaction *) = 0;
+};
+
+struct NewBlocksFiles {
+    ArbitraryFileWriter blockCoinbaseFile;
+    FixedSizeFileWriter<blocksci::Block> blockFile;
+    IndexedFileWriter<1> sequenceFile;
+    
+    NewBlocksFiles(const ParserConfigurationBase &config);
+};
+
+std::vector<unsigned char> readNewBlock(uint32_t firstTxNum, const BlockInfoBase &block, BlockFileReaderBase &fileReader, NewBlocksFiles &files, const std::function<bool(RawTransaction *&tx)> &loadFunc, const std::function<void(RawTransaction *tx)> &outFunc);
 bool checkSegwit(RawTransaction *tx);
 void calculateHash(RawTransaction *tx, FixedSizeFileWriter<blocksci::uint256> &hashFile);
 void connectUTXOs(RawTransaction *tx, UTXOState &utxoState);
@@ -40,7 +58,7 @@ public:
     BlockProcessor(uint32_t startingTxCount, uint32_t totalTxCount, uint32_t maxBlockHeight);
     
     template <typename ParseTag>
-    std::vector<uint32_t> addNewBlocks(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> nextBlocks, UTXOState &utxoState, AddressState &addressState);
+    std::vector<uint32_t> addNewBlocks(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> nextBlocks, UTXOState &utxoState, AddressState &addressState, blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction> &txFile);
 };
 
 
