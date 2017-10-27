@@ -17,51 +17,41 @@
 
 namespace blocksci {
     
-    template<HashIndex::IndexType::Enum type>
-    struct QueryFunctor {
-        static SQLite::Statement f(SQLite::Database &db) {
-            std::stringstream ss;
-            ss << "SELECT BLOCKSCI_INDEX FROM " << HashIndex::IndexType::tableNames[static_cast<size_t>(type)] << " WHERE HASH_INDEX = ?" ;
-            return SQLite::Statement{db, ss.str()};
-        }
-    };
-    
-    HashIndex::HashIndex(const DataConfiguration &config) : db(config.hashIndexFilePath().native()), queries(make_static_table<IndexType, QueryFunctor>(db)) {}
-    
-    std::vector<uint32_t> getMatches(SQLite::Statement &query) {
-        std::vector<uint32_t> indexNums;
-        while (query.executeStep()) {
-            auto txNum = static_cast<uint32_t>(query.getColumn(0).getInt());
-            indexNums.push_back(txNum);
-        }
-        query.reset();
-        return indexNums;
+    lmdb::env createHashIndexEnviroment(const boost::filesystem::path &path) {
+        auto env = lmdb::env::create();
+        env.set_mapsize(100UL * 1024UL * 1024UL * 1024UL); /* 1 GiB */
+        env.set_max_dbs(5);
+        env.open(path.native().c_str(), MDB_NOSUBDIR, 0664);
+        return env;
     }
     
-    uint32_t getMatch(SQLite::Statement &query) {
-        auto matches = getMatches(query);
-        if (matches.size() == 0) {
-            return 0;
+    HashIndex::HashIndex(const DataConfiguration &config) : env(createHashIndexEnviroment(config.hashIndexFilePath())) {}
+    
+    template <typename T>
+    uint32_t getMatch(const lmdb::env &env, const char *name, const T &t) {
+        auto rtxn = lmdb::txn::begin(env, nullptr, MDB_RDONLY);
+        auto dbi = lmdb::dbi::open(rtxn, name);
+        auto cursor = lmdb::cursor::open(rtxn, dbi);
+        lmdb::val key{&t, sizeof(t)};
+        lmdb::val data;
+        bool found = dbi.get(rtxn, key, data);
+        if (found) {
+            return *data.data<uint32_t>();
         } else {
-            return matches[0];
+            return 0;
         }
     }
     
     uint32_t HashIndex::getTxIndex(const uint256 &txHash) const {
-        auto &query = queries[static_cast<size_t>(IndexType::Tx)];
-        query.bind(1, reinterpret_cast<const void *>(&txHash), sizeof(txHash));
-        return getMatch(query);
+        return getMatch(env, "tx", txHash);
     }
     
     uint32_t HashIndex::getPubkeyHashIndex(const uint160 &pubkeyhash) const {
-        auto &query = queries[static_cast<size_t>(IndexType::PubkeyHash)];
-        query.bind(1, reinterpret_cast<const void *>(&pubkeyhash), sizeof(pubkeyhash));
-        return getMatch(query);
+        return getMatch(env, "pubkey", pubkeyhash);
+        
     }
     
     uint32_t HashIndex::getScriptHashIndex(const uint160 &scripthash) const {
-        auto &query = queries[static_cast<size_t>(IndexType::ScriptHash)];
-        query.bind(1, reinterpret_cast<const void *>(&scripthash), sizeof(scripthash));
-        return getMatch(query);
+        return getMatch(env, "scripthash", scripthash);
     }
 }

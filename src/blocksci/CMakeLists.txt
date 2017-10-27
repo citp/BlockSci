@@ -16,11 +16,12 @@ source_group(blocksci\\address FILES ${ADDRESS_HEADERS} ${ADDRESS_SOURCES})
 source_group(blocksci\\script FILES ${SCRIPT_HEADERS} ${SCRIPT_SOURCES})
 source_group(blocksci FILES ${BLOCKSCI_HEADERS} ${BLOCKSCI_SOURCES})
 
+target_link_libraries( blocksci Threads::Threads)
 target_link_libraries( blocksci boost )
 target_link_libraries( blocksci sparsepp)
 target_link_libraries( blocksci secp256k1)
 target_link_libraries( blocksci openssl )
-target_link_libraries( blocksci SQLiteCppInclude)
+target_link_libraries( blocksci lmbdxx)
 
 
 target_include_directories(blocksci PUBLIC BEFORE

@@ -26,12 +26,14 @@ namespace blocksci {
 }
 
 class HashIndexCreator : public ParserIndex {
-    SQLite::Database db;
-    std::array<SQLite::Statement, 3> insertStatements;
-    SQLite::Transaction transaction;
+    lmdb::env env;
+    lmdb::txn wtxn;
+    lmdb::dbi pubkey_dbi;
+    lmdb::dbi scripthash_dbi;
+    lmdb::dbi tx_dbi;
     
     void processTx(const blocksci::Transaction &tx, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override;
-    void processScript(const blocksci::ScriptPointer &pointer, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override;
+    void processScript(const blocksci::Script &script, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override;
     void revealedP2SH(blocksci::script::ScriptHash &, const blocksci::ScriptAccess &) override {}
     
 public:

@@ -26,16 +26,13 @@ namespace blocksci {
         ScriptAddress<scriptType>(const ScriptAccess &access, uint32_t addressNum);
         std::string data;
         
-        ScriptType::Enum type() const override {
-            return scriptType;
-        }
-        
-        std::string toString(const DataConfiguration &config) const override;
-        std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const override;
-        bool operator==(const Script &other) override;
-        
+        std::string toString(const DataConfiguration &config) const;
+        std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const;
+
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
         ScriptAddress<scriptType>(uint32_t addressNum);
+        std::string toString() const;
+        std::string toPrettyString() const;
         #endif
     };
 }

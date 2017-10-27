@@ -41,8 +41,8 @@ public:
     using address_map = google::dense_hash_map<blocksci::RawScript, uint32_t, std::hash<blocksci::RawScript>>;
 private:
     
-    static constexpr auto SingleAddressMapMaxSize = 10'000'000;
-    static constexpr auto StartingAddressCount = 5'000'000;
+    static constexpr auto SingleAddressMapMaxSize = 20'000'000;
+    static constexpr auto StartingAddressCount = 500'000'000;
     static constexpr auto AddressFalsePositiveRate = .05;
     
     boost::filesystem::path path;

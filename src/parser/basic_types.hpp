@@ -19,7 +19,7 @@ struct RawOutputPointer {
     uint16_t outputNum;
     
     bool operator==(const RawOutputPointer& other) const {
-        return outputNum == other.outputNum && hash == other.hash;
+        return hash == other.hash && outputNum == other.outputNum;
     }
     
     RawOutputPointer() {}

@@ -10,6 +10,7 @@
 #include "data_access.hpp"
 #include "chain/transaction.hpp"
 #include "scripts.hpp"
+#include "script_variant.hpp"
 
 #include <boost/optional/optional.hpp>
 #include <boost/variant.hpp>
@@ -21,11 +22,19 @@ namespace blocksci {
         return addressString(DataAccess::Instance().config);
     }
     
-    ScriptVariant ScriptHash::wrappedScript() const {
+    AnyScript ScriptHash::wrappedScript() const {
         return wrappedScript(*DataAccess::Instance().scripts);
     }
     
     boost::optional<Transaction> ScriptHash::transactionRevealed() const {
         return transactionRevealed(*DataAccess::Instance().chain);
+    }
+    
+    std::string ScriptHash::toString() const {
+        return toString(DataAccess::Instance().config);
+    }
+    
+    std::string ScriptHash::toPrettyString() const {
+        return toPrettyString(DataAccess::Instance().config, *DataAccess::Instance().scripts);
     }
 }

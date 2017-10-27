@@ -12,6 +12,7 @@
 #include "script_data.hpp"
 #include "script_access.hpp"
 #include "scripts.hpp"
+#include "script_variant.hpp"
 #include "bitcoin_base58.hpp"
 #include "chain/transaction.hpp"
 
@@ -21,28 +22,23 @@
 namespace blocksci {
     using namespace script;
     
-    ScriptHash::ScriptAddress(uint32_t scriptNum_, const ScriptHashData *rawData) : Script(scriptNum_), wrappedAddress(rawData->wrappedAddress), txRevealed(rawData->txRevealed), address(rawData->address) {}
+    ScriptHash::ScriptAddress(uint32_t scriptNum_, const ScriptHashData *rawData) : Script(scriptNum_, scriptType), wrappedAddress(rawData->wrappedAddress), txRevealed(rawData->txRevealed), address(rawData->address) {}
     
     ScriptHash::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : ScriptHash(addressNum, access.getScriptData<scriptType>(addressNum)) {}
-    
-    bool ScriptHash::operator==(const Script &other) {
-        auto otherA = dynamic_cast<const ScriptHash *>(&other);
-        return otherA && otherA->address == address;
-    }
     
     std::string ScriptHash::addressString(const DataConfiguration &config) const {
         return CBitcoinAddress(address, AddressType::Enum::SCRIPTHASH, config).ToString();
     }
     
     boost::optional<Address> ScriptHash::getWrappedAddress() const {
-        if (wrappedAddress.addressNum != 0) {
+        if (wrappedAddress.scriptNum != 0) {
             return wrappedAddress;
         } else {
             return boost::none;
         }
     }
     
-    ScriptVariant ScriptHash::wrappedScript(const ScriptAccess &access) const {
+    AnyScript ScriptHash::wrappedScript(const ScriptAccess &access) const {
         return wrappedAddress.getScript(access);
     }
     
@@ -68,8 +64,8 @@ namespace blocksci {
         ss << "P2SHAddress(";
         ss << "address=" << addressString(config);
         ss << ", wrappedAddress=";
-        if (wrappedAddress.addressNum > 0) {
-            ss << blocksci::toPrettyString(wrapped, config, access);
+        if (wrappedAddress.scriptNum > 0) {
+            wrapped.toPrettyString(config, access);
         } else {
             ss << "unknown";
         }

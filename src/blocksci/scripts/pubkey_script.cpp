@@ -19,14 +19,9 @@ namespace blocksci {
     using namespace script;
     
     
-    Pubkey::ScriptAddress(uint32_t scriptNum_, const PubkeyData *rawData) : Script(scriptNum_), pubkey(rawData->pubkey), pubkeyhash(rawData->address) {}
+    Pubkey::ScriptAddress(uint32_t scriptNum_, const PubkeyData *rawData) : Script(scriptNum_, scriptType), pubkey(rawData->pubkey), pubkeyhash(rawData->address) {}
     
     Pubkey::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : Pubkey(addressNum, access.getScriptData<scriptType>(addressNum)) {}
-    
-    bool Pubkey::operator==(const Script &other) {
-        auto otherA = dynamic_cast<const Pubkey *>(&other);
-        return otherA && otherA->pubkey == pubkey;
-    }
     
     boost::optional<CPubKey> Pubkey::getPubkey() const {
         if (pubkey.IsValid()) {

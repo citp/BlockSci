@@ -13,4 +13,12 @@ namespace blocksci {
     using namespace script;
     
     OpReturn::ScriptAddress(uint32_t addressNum) : OpReturn(*DataAccess::Instance().scripts, addressNum) {}
+    
+    std::string OpReturn::toString() const {
+        return toString(DataAccess::Instance().config);
+    }
+    
+    std::string OpReturn::toPrettyString() const {
+        return toPrettyString(DataAccess::Instance().config, *DataAccess::Instance().scripts);
+    }
 }

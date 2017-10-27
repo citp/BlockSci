@@ -45,6 +45,8 @@
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
+#include <gperftools/profiler.h>
+
 #include <unordered_set>
 #include <future>
 #include <iostream>
@@ -75,7 +77,7 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, uint32_t fi
             auto &output = tx->getOutput(i);
             if (output.getAddress().getFirstTransactionIndex(firstSeenIndex) == txNum) {
                 auto &prevValue = state.scriptCounts[static_cast<size_t>(scriptType(output.getType()))];
-                auto addressNum = output.getAddress().addressNum;
+                auto addressNum = output.getAddress().scriptNum;
                 if (addressNum < prevValue) {
                     prevValue = addressNum;
                 }
@@ -238,9 +240,9 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
     blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction> txFile{config.txFilePath()};
     txFile.grow(totalTxCount, sizeNeeded);
     
-    ParserIndexCreator<AddressDB> addressDB(config);
+    // ParserIndexCreator<AddressDB> addressDB(config);
     ParserIndexCreator<FirstSeenIndex> firstSeen(config);
-    ParserIndexCreator<HashIndexCreator> hashIndex(config);
+    // ParserIndexCreator<HashIndexCreator> hashIndex(config);
     
     {
         BlockProcessor processor{startingTxCount, totalTxCount, maxBlockHeight};
@@ -251,7 +253,7 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
         while (it != end) {
             auto prev = it;
             uint32_t newTxCount = 0;
-            while (newTxCount < 1000000 && it != end) {
+            while (newTxCount < 10000000 && it != end) {
                 newTxCount += it->nTx;
                 ++it;
             }
@@ -265,9 +267,9 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
             
             blocksci::State updateState{chain, scripts};
             
-            addressDB.update(revealedScriptHashes, updateState);
+            // addressDB.update(revealedScriptHashes, updateState);
             firstSeen.update(revealedScriptHashes, updateState);
-            hashIndex.update(revealedScriptHashes, updateState);
+            // hashIndex.update(revealedScriptHashes, updateState);
         }
         
         {
@@ -276,9 +278,9 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
             
             blocksci::State state{chain, scripts};
             
-            addressDB.complete(state);
+        //     addressDB.complete(state);
             firstSeen.complete(state);
-            hashIndex.complete(state);
+        //     hashIndex.complete(state);
         }
     }
 }
@@ -436,7 +438,9 @@ int main(int argc, const char * argv[]) {
 //            }
 //        }
         // replayBlock(config, 177618);
-        updateChain(config, maxBlockNum);;
+        ProfilerStart("prof.out");
+        updateChain(config, maxBlockNum);
+        ProfilerStop();
 //        updateFirstSeenIndex(config, 0);
         #endif
     } else if (validRPC) {

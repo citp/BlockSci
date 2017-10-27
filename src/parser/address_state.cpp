@@ -9,8 +9,8 @@
 #include "address_state.hpp"
 #include "parser_configuration.hpp"
 
-#include <leveldb/db.h>
-#include <leveldb/write_batch.h>
+#include <hyperleveldb/db.h>
+#include <hyperleveldb/write_batch.h>
 
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
@@ -22,7 +22,6 @@ namespace {
     using namespace std::string_view_literals;
     
     static constexpr auto singleAddressFileName = "single.dat"sv;
-    static constexpr auto oldSingleAddressFileName = "old_single.dat"sv;
     static constexpr auto multiAddressFileName = "multi.dat"sv;
     static constexpr auto dbFileName = "db"sv;
     static constexpr auto bloomFileName = "bloom"sv;
@@ -32,6 +31,7 @@ namespace {
 AddressState::AddressState(const boost::filesystem::path &path_) : path(path_), addressBloomFilter(path/std::string(bloomFileName), StartingAddressCount, AddressFalsePositiveRate)  {
     leveldb::Options options;
     options.create_if_missing = true;
+    options.write_buffer_size = 128 * 1024* 1024;
     leveldb::DB::Open(options, (path/std::string(dbFileName)).c_str(), &levelDb);
     
     blocksci::uint160 deletedAddress;
@@ -47,14 +47,13 @@ AddressState::AddressState(const boost::filesystem::path &path_) : path(path_), 
     singleAddressMap.set_empty_key(emptyKey);
     oldSingleAddressMap.set_empty_key(emptyKey);
     multiAddressMap.set_empty_key(emptyKey);
+
+    singleAddressMap.resize(SingleAddressMapMaxSize);
+    oldSingleAddressMap.resize(SingleAddressMapMaxSize);
+    multiAddressMap.resize(SingleAddressMapMaxSize);
     
     if (auto file = fopen((path/std::string(singleAddressFileName)).c_str(), "rb"); file != NULL) {
         singleAddressMap.unserialize(address_map::NopointerSerializer(), file);
-        fclose(file);
-    }
-    
-    if (auto file = fopen((path/std::string(oldSingleAddressFileName)).c_str(), "rb"); file != NULL) {
-        oldSingleAddressMap.unserialize(address_map::NopointerSerializer(), file);
         fclose(file);
     }
     
@@ -84,10 +83,6 @@ AddressState::~AddressState() {
     
     if (auto file = fopen((path/std::string(singleAddressFileName)).c_str(), "wb"); file != NULL) {
         singleAddressMap.serialize(address_map::NopointerSerializer(), file);
-        fclose(file);
-    }
-    if (auto file = fopen((path/std::string(oldSingleAddressFileName)).c_str(), "wb"); file != NULL) {
-        oldSingleAddressMap.serialize(address_map::NopointerSerializer(), file);
         fclose(file);
     }
     if (auto file = fopen((path/std::string(multiAddressFileName)).c_str(), "wb"); file != NULL) {
@@ -217,6 +212,8 @@ void AddressState::rollback(const blocksci::State &state) {
 
 AddressInfo AddressState::findAddress(const blocksci::RawScript &address) const {
     static uint64_t fpcount = 0;
+    static uint64_t tpcount = 0;
+    static uint64_t ldbcount = 0;
     
     auto &_singleAddressMap = const_cast<address_map &>(singleAddressMap);
     auto &_oldSingleAddressMap = const_cast<address_map &>(oldSingleAddressMap);
@@ -224,6 +221,7 @@ AddressInfo AddressState::findAddress(const blocksci::RawScript &address) const 
     
     if (!addressBloomFilter.possiblyContains(address)) {
         // Address has definitely never been seen
+        tpcount++;
         return {address, AddressLocation::NotFound, _singleAddressMap.end(), 0};
     }
     
@@ -243,6 +241,7 @@ AddressInfo AddressState::findAddress(const blocksci::RawScript &address) const 
     std::string value;
     leveldb::Status s = levelDb->Get(leveldb::ReadOptions(), keySlice, &value);
     if (s.ok()) {
+        ldbcount++;
         uint32_t destNum = *reinterpret_cast<const uint32_t *>(value.data());
         return {address, AddressLocation::LevelDb, _singleAddressMap.end(), destNum};
     }
@@ -260,19 +259,16 @@ void AddressState::optionalSave() {
 void AddressState::clearAddressCache() {
     if (addressClearFuture.valid()) {
         addressClearFuture.get();
-        oldSingleAddressMap.clear();
-        singleAddressMap.swap(oldSingleAddressMap);
-    } else {
-        singleAddressMap.swap(oldSingleAddressMap);
+        oldSingleAddressMap.clear_no_resize();
     }
-    auto addressesToSave = oldSingleAddressMap;
-    auto database = levelDb;
-    addressClearFuture = std::async(std::launch::async, [database, addressesToSave] {
+    singleAddressMap.swap(oldSingleAddressMap);
+    addressClearFuture = std::async(std::launch::async, [&] {
         leveldb::WriteBatch batch;
-        for (auto &entry : addressesToSave) {
-            std::string value(reinterpret_cast<char const*>(&entry.second), sizeof(entry.second));
-            batch.Put(leveldb::Slice(reinterpret_cast<const char *>(&entry.first), sizeof(entry.first)), value);
+        for (auto &entry : oldSingleAddressMap) {
+            leveldb::Slice key(reinterpret_cast<const char *>(&entry.first), sizeof(entry.first));
+            leveldb::Slice value(reinterpret_cast<const char *>(&entry.second), sizeof(entry.second));
+            batch.Put(key, value);
         }
-        database->Write(leveldb::WriteOptions(), &batch);
+        levelDb->Write(leveldb::WriteOptions(), &batch);
     });
 }

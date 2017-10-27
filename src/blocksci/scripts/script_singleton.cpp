@@ -16,23 +16,6 @@
 
 namespace blocksci {
     
-    ScriptVariant Script::create(const ScriptPointer &pointer) {
-        return create(*DataAccess::Instance().scripts, pointer);
-    }
-    
-    ScriptVariant Script::create(const Address &address) {
-        return create(*DataAccess::Instance().scripts, address);
-    }
-    
-    std::string Script::toPrettyString() const {
-        auto &instance = DataAccess::Instance();
-        return toPrettyString(instance.config, *instance.scripts);
-    }
-    
-    std::string Script::toString() const {
-        return toString(DataAccess::Instance().config);
-    }
-    
     std::vector<const Output *> Script::getOutputs() const {
         auto &instance = DataAccess::Instance();
         return getOutputs(*instance.addressIndex, *instance.chain);
@@ -57,9 +40,4 @@ namespace blocksci {
         auto &instance = DataAccess::Instance();
         return getInputTransactions(*instance.addressIndex, *instance.chain);
     }
-}
-
-std::ostream &operator<<(std::ostream &os, const blocksci::Script &script) {
-    os << script.toString();
-    return os;
 }

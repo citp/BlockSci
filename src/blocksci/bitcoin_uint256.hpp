@@ -8,6 +8,7 @@
 
 #include <boost/range/iterator_range.hpp>
 #include <boost/serialization/access.hpp>
+#include <boost/functional/hash.hpp>
 
 #include <cassert>
 #include <cstring>

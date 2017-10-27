@@ -16,7 +16,6 @@
 #include "scripthash_script.hpp"
 #include "nulldata_script.hpp"
 #include "nonstandard_script.hpp"
-#include "script_pointer.hpp"
 
 #include "address/address.hpp"
 #include "address/address_info.hpp"
@@ -31,30 +30,17 @@
 
 namespace blocksci {
     
-    
-    void Script::visitPointers(const std::function<void(const Address &)> &) const {}
-    
-    template<ScriptType::Enum type>
-    struct ScriptCreateFunctor {
-        static ScriptVariant f(const ScriptAccess &access, const ScriptPointer &pointer) {
-            return ScriptAddress<type>(access, pointer.scriptNum);
+    std::string Script::toString() const {
+        if (scriptNum == 0) {
+            return "InvalidScript()";
+        } else {
+            std::stringstream ss;
+            ss << "Script(";
+            ss << "scriptNum=" << scriptNum;
+            ss << ", type=" << scriptName(type);
+            ss << ")";
+            return ss.str();
         }
-    };
-    
-    ScriptVariant Script::create(const ScriptAccess &access, const ScriptPointer &pointer) {
-        static constexpr auto table = make_dynamic_table<ScriptType, ScriptCreateFunctor>();
-        static constexpr std::size_t size = AddressType::all.size();
-        
-        auto index = static_cast<size_t>(pointer.type);
-        if (index >= size)
-        {
-            throw std::invalid_argument("combination of enum values is not valid");
-        }
-        return table[index](access, pointer);
-    }
-    
-    ScriptVariant Script::create(const ScriptAccess &access, const Address &address) {
-        return create(access, ScriptPointer{address});
     }
     
     std::vector<const Output *> Script::getOutputs(const AddressIndex &index, const ChainAccess &chain) const {

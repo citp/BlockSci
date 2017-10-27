@@ -24,7 +24,7 @@ namespace blocksci {
     struct Transaction;
     struct Address;
     struct State;
-    struct ScriptPointer;
+    struct Script;
 }
 
 class ParserIndex {
@@ -34,7 +34,7 @@ protected:
     blocksci::State latestState;
     
     virtual void processTx(const blocksci::Transaction &tx, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) = 0;
-    virtual void processScript(const blocksci::ScriptPointer &pointer, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) = 0;
+    virtual void processScript(const blocksci::Script &script, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) = 0;
     virtual void revealedP2SH(blocksci::script::ScriptHash &scriptHash, const blocksci::ScriptAccess &scripts) = 0;
     
 public:

@@ -36,7 +36,7 @@ void AddressTraverser::processTx(const blocksci::Transaction &tx, const blocksci
             sawAddress(a, pointer);
             // If address is p2sh then ignore the wrapped address if it was revealed after this transaction
             if (scriptType(a.type) == blocksci::ScriptType::Enum::SCRIPTHASH) {
-                auto p2sh = blocksci::script::ScriptHash{scripts, a.addressNum};
+                auto p2sh = blocksci::script::ScriptHash{scripts, a.scriptNum};
                 if (p2sh.txRevealed == 0 || tx.txNum < p2sh.txRevealed) {
                     return false;
                 }

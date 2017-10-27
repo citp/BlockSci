@@ -89,7 +89,7 @@ ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::ScriptInput(const InputInf
 ProcessedInput ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::processInput(const InputInfo &inputInfo, const RawTransaction &tx, AddressState &state, AddressWriter &writer) {
     wrappedAddress = processOutput(wrappedScriptOutput, state, writer);
     
-    InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.txNum, wrappedAddress.addressNum, wrappedInputBegin, wrappedInputLength, inputInfo.witnessStack, inputInfo.witnessActivated};
+    InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.txNum, wrappedAddress.scriptNum, wrappedInputBegin, wrappedInputLength, inputInfo.witnessStack, inputInfo.witnessActivated};
     ProcessedInput processedInput = ::processInput(wrappedAddress, p2shInputInfo, tx, state, writer);
     bool firstSpend = writer.serialize(*this, inputInfo);
     if (firstSpend) {
@@ -100,7 +100,7 @@ ProcessedInput ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::processInpu
 
 void ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::checkInput(const InputInfo &inputInfo, const RawTransaction &tx, const AddressState &state, const AddressWriter &writer) {
     wrappedAddress = checkOutput(wrappedScriptOutput, state, writer);
-    InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.txNum, wrappedAddress.addressNum, wrappedInputBegin, wrappedInputLength, inputInfo.witnessStack, inputInfo.witnessActivated};
+    InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.txNum, wrappedAddress.scriptNum, wrappedInputBegin, wrappedInputLength, inputInfo.witnessStack, inputInfo.witnessActivated};
     ::checkInput(wrappedAddress.type, p2shInputInfo, tx, state, writer);
 }
 
@@ -223,7 +223,7 @@ ProcessedInput ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::pro
     
     wrappedAddress = processOutput(wrappedScriptOutput, state, writer);
 
-    InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.txNum, wrappedAddress.addressNum, inputInfo.scriptBegin, 0, inputInfo.witnessStack, inputInfo.witnessActivated};
+    InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.txNum, wrappedAddress.scriptNum, inputInfo.scriptBegin, 0, inputInfo.witnessStack, inputInfo.witnessActivated};
     auto processedInput = ::processInput(wrappedAddress, p2shInputInfo, tx, state, writer);
     
     bool firstSpend = writer.serialize(*this, inputInfo);
@@ -235,6 +235,6 @@ ProcessedInput ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::pro
 
 void ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::checkInput(const InputInfo &inputInfo, const RawTransaction &tx, const AddressState &state, const AddressWriter &writer) {
     wrappedAddress = checkOutput(wrappedScriptOutput, state, writer);
-    InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.txNum, wrappedAddress.addressNum, inputInfo.scriptBegin, 0, inputInfo.witnessStack, inputInfo.witnessActivated};
+    InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.txNum, wrappedAddress.scriptNum, inputInfo.scriptBegin, 0, inputInfo.witnessStack, inputInfo.witnessActivated};
     ::checkInput(wrappedAddress.type, p2shInputInfo, tx, state, writer);
 }

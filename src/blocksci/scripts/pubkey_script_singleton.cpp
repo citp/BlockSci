@@ -17,4 +17,12 @@ namespace blocksci {
     std::string Pubkey::addressString() const {
         return addressString(DataAccess::Instance().config);
     }
+    
+    std::string Pubkey::toString() const {
+        return toString(DataAccess::Instance().config);
+    }
+    
+    std::string Pubkey::toPrettyString() const {
+        return toPrettyString(DataAccess::Instance().config, *DataAccess::Instance().scripts);
+    }
 }

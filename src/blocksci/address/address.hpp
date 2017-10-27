@@ -1,16 +1,15 @@
 //
-//  address_pointer.hpp
+//  address.hpp
 //  blocksci
 //
 //  Created by Harry Kalodner on 7/12/17.
 //
 //
 
-#ifndef address_pointer_hpp
-#define address_pointer_hpp
+#ifndef address_hpp
+#define address_hpp
 
 #include "address_types.hpp"
-#include <blocksci/scripts/script_variant.hpp>
 
 #include <boost/optional/optional_fwd.hpp>
 
@@ -22,6 +21,8 @@ namespace blocksci {
     struct Transaction;
     struct Output;
     struct Input;
+    struct Script;
+    class AnyScript;
     class ScriptAccess;
     class ChainAccess;
     class HashIndex;
@@ -31,7 +32,7 @@ namespace blocksci {
     
     struct Address {
         
-        uint32_t addressNum;
+        uint32_t scriptNum;
         AddressType::Enum type;
         
         Address();
@@ -40,19 +41,21 @@ namespace blocksci {
         bool isSpendable() const;
         
         bool operator==(const Address& other) const {
-            return type == other.type && addressNum == other.addressNum;
+            return type == other.type && scriptNum == other.scriptNum;
         }
         
         bool operator!=(const Address& other) const {
             return !operator==(other);
         }
         
+        bool operator!=(const Script &other) const;
+        
         std::string toString() const;
         
         Transaction getFirstTransaction(const ChainAccess &chain, const ScriptFirstSeenAccess &scriptsFirstSeen) const;
         uint32_t getFirstTransactionIndex(const ScriptFirstSeenAccess &access) const;
         
-        ScriptVariant getScript(const ScriptAccess &access) const;
+        AnyScript getScript(const ScriptAccess &access) const;
         
         std::vector<const Output *> getOutputs(const AddressIndex &index, const ChainAccess &chain) const;
         std::vector<const Input *> getInputs(const AddressIndex &index, const ChainAccess &chain) const;
@@ -65,7 +68,7 @@ namespace blocksci {
         Transaction getFirstTransaction() const;
         uint32_t getFirstTransactionIndex() const;
         
-        ScriptVariant getScript() const;
+        AnyScript getScript() const;
         
         std::vector<const Output *> getOutputs() const;
         std::vector<const Input *> getInputs() const;
@@ -96,9 +99,9 @@ namespace std {
         typedef blocksci::Address argument_type;
         typedef size_t  result_type;
         result_type operator()(const argument_type &b) const {
-            return (static_cast<size_t>(b.addressNum) << 32) + static_cast<size_t>(b.type);
+            return (static_cast<size_t>(b.scriptNum) << 32) + static_cast<size_t>(b.type);
         }
     };
 }
 
-#endif /* address_pointer_hpp */
+#endif /* address_hpp */

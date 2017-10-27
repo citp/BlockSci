@@ -9,7 +9,9 @@
 #ifndef hash_index_hpp
 #define hash_index_hpp
 
-#include <SQLiteCpp/Database.h>
+#include <lmdbxx/lmdb++.h>
+
+#include <boost/filesystem/path.hpp>
 
 #include <string_view>
 #include <array>
@@ -26,6 +28,8 @@ namespace blocksci {
     class uint256;
     class uint160;
     struct Address;
+    
+    lmdb::env createHashIndexEnviroment(const boost::filesystem::path &path);
     
     class HashIndex {
     public:
@@ -44,10 +48,7 @@ namespace blocksci {
         uint32_t getScriptHashIndex(const uint160 &scripthash) const;
         uint32_t getTxIndex(const uint256 &txHash) const;
     private:
-        SQLite::Database db;
-        // These are private and mutable so queries can be run with a const reference to this class
-        // This simulates the immutability of the backing data.
-        mutable std::array<SQLite::Statement, IndexType::size> queries;
+        lmdb::env env;
     };
 }
 

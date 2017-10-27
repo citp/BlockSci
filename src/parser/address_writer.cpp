@@ -108,7 +108,7 @@ template<>
 bool AddressWriter::serializeImp<AddressType::Enum::WITNESS_SCRIPTHASH>(const ScriptInput<AddressType::Enum::WITNESS_SCRIPTHASH> &input, const InputInfo &inputInfo) {
     auto &file = std::get<ScriptFile<ScriptType::Enum::SCRIPTHASH>>(scriptFiles);
     auto data = file.getData(inputInfo.addressNum - 1);
-    if (data->wrappedAddress.addressNum == 0) {
+    if (data->wrappedAddress.scriptNum == 0) {
         data->wrappedAddress = input.wrappedAddress;
         data->txRevealed = inputInfo.txNum;
         return true;
@@ -127,7 +127,7 @@ template<>
 bool AddressWriter::serializeImp<AddressType::Enum::SCRIPTHASH>(const ScriptInput<AddressType::Enum::SCRIPTHASH> &input, const InputInfo &inputInfo) {
     auto &file = std::get<ScriptFile<ScriptType::Enum::SCRIPTHASH>>(scriptFiles);
     auto data = file.getData(inputInfo.addressNum - 1);
-    if (data->wrappedAddress.addressNum == 0) {
+    if (data->wrappedAddress.scriptNum == 0) {
         data->wrappedAddress = input.wrappedAddress;
         data->txRevealed = inputInfo.txNum;
         return true;

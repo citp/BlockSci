@@ -14,18 +14,15 @@
 
 #include <blocksci/scripts/script_type.hpp>
 
-#include <SQLiteCpp/Database.h>
-#include <SQLiteCpp/Transaction.h>
+#include <lmdbxx/lmdb++.h>
 
 #include <unordered_map>
 
 class AddressDB : public AddressTraverser {
-    SQLite::Database db;
-    std::unordered_map<blocksci::ScriptType::Enum,  SQLite::Statement> insertStatements;
-    SQLite::Transaction transaction;
-    std::vector<blocksci::script::ScriptHash> p2shesToAdd;
+    lmdb::env env;
+    lmdb::txn wtxn;
     
-    AddressDB(const ParserConfigurationBase &config, std::pair<sqlite3 *, bool> init);
+    std::unordered_map<blocksci::ScriptType::Enum,  lmdb::dbi> scriptDbs;
     
     void addAddress(const blocksci::Address &address, const blocksci::OutputPointer &pointer);
     

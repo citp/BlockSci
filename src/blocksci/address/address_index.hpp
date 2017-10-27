@@ -12,9 +12,12 @@
 #include <blocksci/address/address_types.hpp>
 #include <blocksci/scripts/script_info.hpp>
 
-#include <SQLiteCpp/Database.h>
+#include <lmdbxx/lmdb++.h>
+
+#include <boost/filesystem/path.hpp>
 
 #include <unordered_set>
+#include <unordered_map>
 #include <string>
 #include <vector>
 
@@ -29,11 +32,11 @@ namespace blocksci {
     struct Script;
     class ChainAccess;
     
+    lmdb::env createAddressIndexEnviroment(const boost::filesystem::path &path);
+    
     class AddressIndex {
-        SQLite::Database db;
-        mutable std::array<SQLite::Statement, AddressType::size> addressQueries;
-        mutable std::array<SQLite::Statement, ScriptType::size> scriptQueries;
-        
+        lmdb::env env;
+        std::unordered_map<blocksci::ScriptType::Enum,  lmdb::dbi> scriptDbs;
     public:
         
         AddressIndex(const DataConfiguration &config);

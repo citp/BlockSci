@@ -14,14 +14,9 @@
 
 namespace blocksci {
     using namespace script;
-    OpReturn::ScriptAddress(uint32_t scriptNum_, const RawData *raw) : Script(scriptNum_), data(raw->getData()) {}
+    OpReturn::ScriptAddress(uint32_t scriptNum_, const RawData *raw) : Script(scriptNum_, scriptType), data(raw->getData()) {}
     
     OpReturn::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : OpReturn(addressNum, access.getScriptData<scriptType>(addressNum)) {}
-    
-    bool OpReturn::operator==(const Script &other) {
-        auto otherA = dynamic_cast<const OpReturn *>(&other);
-        return otherA && otherA->data == data;
-    }
     
     std::string OpReturn::toString(const DataConfiguration &) const {
         std::stringstream ss;

@@ -28,6 +28,9 @@ ENDIF("${isSystemDir}" STREQUAL "-1")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
 find_package( Boost 1.58 COMPONENTS program_options system filesystem thread iostreams serialization REQUIRED )
 add_library(boost INTERFACE)
 target_link_libraries(boost INTERFACE ${Boost_LIBRARIES})
@@ -44,22 +47,12 @@ target_include_directories(sparsepp INTERFACE SYSTEM libs/sparsepp)
 add_library(ThreadPool INTERFACE)
 target_include_directories(ThreadPool INTERFACE SYSTEM libs)
 
+add_library(lmbdxx INTERFACE)
+target_include_directories(lmbdxx INTERFACE SYSTEM libs)
+target_link_libraries(lmbdxx INTERFACE lmdb)
+
 link_directories(/usr/local/lib)
 include_directories("src")
-
-add_subdirectory(libs/SQLiteCpp)
-
-add_library(SQLiteCppInclude INTERFACE)
-if(UNIX AND NOT APPLE)
-   # Linux
-   target_link_libraries(SQLiteCppInclude INTERFACE SQLiteCpp sqlite3 pthread dl)
-elseif(UNIX AND APPLE)
-   # Mac OS
-   target_link_libraries(SQLiteCppInclude INTERFACE SQLiteCpp sqlite3 pthread)
-else()
-   # Windows
-   target_link_libraries(SQLiteCppInclude INTERFACE SQLiteCpp sqlite3)
-endif()
 
 add_subdirectory(libs/pybind11)
 

@@ -25,6 +25,13 @@
 #include <vector>
 
 namespace blocksci {
+    
+    class InvalidAddressException : virtual public std::runtime_error {
+    public:
+        InvalidAddressException() : std::runtime_error("Tried to construct invalid address") {}
+        virtual ~InvalidAddressException() = default;
+    };
+    
     /**
      * Encode a byte sequence as a base58-encoded string.
      * pbegin and pend cannot be nullptr, unless both are.

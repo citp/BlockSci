@@ -30,7 +30,7 @@ using namespace blocksci;
 // boost::posix_time::hours(24 * 5)
 class MempoolRecorder {
     uint32_t lastHeight;
-    std::unordered_map<uint256, time_t> mempool;
+    std::unordered_map<uint256, time_t, boost::hash<blocksci::uint256>> mempool;
     const DataConfiguration &config;
     BitcoinAPI &bitcoinAPI;
     blocksci::FixedSizeFileMapper<time_t, boost::iostreams::mapped_file::readwrite> txTimeFile;

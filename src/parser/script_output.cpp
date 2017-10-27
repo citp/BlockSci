@@ -223,7 +223,7 @@ void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::processOutput(AddressS
     for (size_t i = 0; i < addressCount; i++) {
         ScriptOutputType pubkeyOutput{ScriptOutput<blocksci::AddressType::Enum::PUBKEY>{addresses[i]}};
         auto processedPubkey = ::processOutput(pubkeyOutput, state, writer);
-        processedAddresses.push_back(processedPubkey.addressNum);
+        processedAddresses.push_back(processedPubkey.scriptNum);
     }
     writer.serialize(*this);
 }
@@ -234,7 +234,7 @@ void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::checkOutput(const Addr
     for (size_t i = 0; i < addressCount; i++) {
         ScriptOutputType pubkeyOutput{ScriptOutput<blocksci::AddressType::Enum::PUBKEY>{addresses[i]}};
         auto processedPubkey = ::checkOutput(pubkeyOutput, state, writer);
-        processedAddresses.push_back(processedPubkey.addressNum);
+        processedAddresses.push_back(processedPubkey.scriptNum);
     }
 }
 

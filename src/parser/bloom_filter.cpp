@@ -23,6 +23,16 @@
 constexpr double Log2 = 0.69314718056;
 constexpr double Log2Squared = Log2 * Log2;
 
+static constexpr auto calculateBitMask() {
+    std::array<BloomStore::BlockType, BloomStore::BlockSize> masks = std::array<BloomStore::BlockType, BloomStore::BlockSize>();
+    for (size_t i = 0; i < BloomStore::BlockSize; ++i) {
+        masks.at(i) = BloomStore::BlockType{1} << i;
+    }
+    return masks;
+}
+
+static constexpr std::array<BloomStore::BlockType, BloomStore::BlockSize> bitMasks = calculateBitMask();
+
 BloomStore::BloomStore(const boost::filesystem::path &path, uint64_t length_) : backingFile(path), length(length_) {
     if (backingFile.size() == 0) {
         backingFile.truncate(blockCount());
@@ -38,11 +48,11 @@ uint64_t BloomStore::blockCount() const {
 }
 
 void BloomStore::setBit(uint64_t bitPos) {
-    (*backingFile.getData(bitPos / BlockSize)) |= BlockType{1} << (bitPos % BlockSize);
+    (*backingFile.getData(bitPos / BlockSize)) |= bitMasks[bitPos % BlockSize];
 }
 
 bool BloomStore::isSet(uint64_t bitPos) const {
-    return !(((*backingFile.getData(bitPos / BlockSize)) & (BlockType{1} << (bitPos % BlockSize))) == 0);
+    return !(((*backingFile.getData(bitPos / BlockSize)) & bitMasks[bitPos % BlockSize]) == 0);
 }
 
 void BloomStore::reset(uint64_t length) {

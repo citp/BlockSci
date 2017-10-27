@@ -28,32 +28,21 @@
 
 namespace blocksci {
     
-    template<AddressType::Enum type>
-    struct AddressQueryFunctor {
-        static SQLite::Statement f(SQLite::Database &db) {
-            std::stringstream ss;
-            ss << "SELECT TX_INDEX, OUTPUT_NUM FROM " << scriptName(scriptType(type)) << " WHERE ADDRESS_NUM = ? AND ADDRESS_TYPE = ";
-            ss << static_cast<size_t>(type);
-            return SQLite::Statement{db, ss.str()};
-        }
-    };
-    
-    template<ScriptType::Enum type>
-    struct ScriptQueryFunctor {
-        static SQLite::Statement f(SQLite::Database &db) {
-            std::stringstream ss;
-            ss << "SELECT TX_INDEX, OUTPUT_NUM FROM " << scriptName(type) << " WHERE ADDRESS_NUM = ?";
-            return SQLite::Statement{db, ss.str()};
-        }
-    };
-    
     std::vector<const Output *> getOutputsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
     std::vector<const Input *> getInputsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
     std::vector<Transaction> getTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
     std::vector<Transaction> getOutputTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
     std::vector<Transaction> getInputTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
     
-    AddressIndex::AddressIndex(const DataConfiguration &config) : db(config.addressDBFilePath().native()), addressQueries( make_static_table<AddressType, AddressQueryFunctor>(db)), scriptQueries(make_static_table<ScriptType, ScriptQueryFunctor>(db))  {
+    lmdb::env createAddressIndexEnviroment(const boost::filesystem::path &path) {
+        auto env = lmdb::env::create();
+        env.set_mapsize(100UL * 1024UL * 1024UL * 1024UL); /* 1 GiB */
+        env.set_max_dbs(5);
+        env.open(path.native().c_str(), MDB_NOSUBDIR, 0664);
+        return env;
+    }
+    
+    AddressIndex::AddressIndex(const DataConfiguration &config) : env(createAddressIndexEnviroment(config.addressDBFilePath()))  {
     }
     
     std::vector<const Output *> getOutputsImp(std::vector<OutputPointer> pointers, const ChainAccess &access) {
@@ -160,28 +149,37 @@ namespace blocksci {
         return getInputTransactionsImp(getOutputPointers(script), access);
     }
     
-    std::vector<OutputPointer> getOutputPointersImp(SQLite::Statement &query, uint32_t scriptNum) {
-        std::vector<OutputPointer> outputs;
-        query.bind(1, scriptNum);
-        
-        while (query.executeStep()) {
-            auto txNum = query.getColumn(0).getUInt();
-            auto outputNum = static_cast<uint16_t>(query.getColumn(0).getUInt());
-            outputs.emplace_back(txNum, outputNum);
+    template<typename Query>
+    std::vector<OutputPointer> getOutputPointersImp(lmdb::cursor &cursor, lmdb::val &key, const Query &query) {
+        std::vector<OutputPointer> pointers;
+        lmdb::val value;
+        for (bool hasNext = cursor.get(key, value, MDB_SET_RANGE); hasNext; hasNext = cursor.get(key, value, MDB_NEXT)) {
+            Address *address = key.data<Address>();
+            if (*address != query) {
+                break;
+            }
+            OutputPointer *pointer = value.data<OutputPointer>();
+            pointers.push_back(*pointer);
         }
-        query.reset();
-        return outputs;
+        return pointers;
     }
-    
-    std::vector<OutputPointer> AddressIndex::getOutputPointers(const Address &address) const {
-        auto &query = addressQueries[static_cast<size_t>(address.type)];
-        return getOutputPointersImp(query, address.addressNum);
+                                                                      
+    std::vector<OutputPointer> AddressIndex::getOutputPointers(const Address &searchAddress) const {
+        std::vector<OutputPointer> pointers;
+        auto rtxn = lmdb::txn::begin(env, nullptr, MDB_RDONLY);
+        auto dbi = lmdb::dbi::open(rtxn, std::string(scriptName(scriptType(searchAddress.type))).c_str(), MDB_DUPSORT| MDB_DUPFIXED);
+        auto cursor = lmdb::cursor::open(rtxn, dbi);
+        lmdb::val key{&searchAddress, sizeof(searchAddress)};
+        return getOutputPointersImp(cursor, key, searchAddress);
     }
     
     std::vector<OutputPointer> AddressIndex::getOutputPointers(const Script &script) const {
-        auto scriptType = script.type();
-        auto &query = scriptQueries[static_cast<size_t>(scriptType)];
-        return getOutputPointersImp(query, script.scriptNum);
+        std::vector<OutputPointer> pointers;
+        auto rtxn = lmdb::txn::begin(env, nullptr, MDB_RDONLY);
+        auto dbi = lmdb::dbi::open(rtxn, std::string(scriptName(script.type)).c_str(), MDB_DUPSORT| MDB_DUPFIXED);
+        auto cursor = lmdb::cursor::open(rtxn, dbi);
+        lmdb::val key{&script.scriptNum, sizeof(script.scriptNum)};
+        return getOutputPointersImp(cursor, key, script);
     }
 }
 

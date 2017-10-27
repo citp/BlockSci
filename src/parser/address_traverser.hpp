@@ -30,7 +30,7 @@ class AddressTraverser : public ParserIndex {
     
     void processTx(const blocksci::Transaction &tx, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override;
     
-    void processScript(const blocksci::ScriptPointer &, const blocksci::ChainAccess &, const blocksci::ScriptAccess &) override {}
+    void processScript(const blocksci::Script &, const blocksci::ChainAccess &, const blocksci::ScriptAccess &) override {}
     
 public:
     AddressTraverser(const ParserConfigurationBase &config, const std::string &resultName);

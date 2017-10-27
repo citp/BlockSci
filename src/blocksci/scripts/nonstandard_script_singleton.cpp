@@ -13,5 +13,13 @@ namespace blocksci {
     using namespace script;
  
     Nonstandard::ScriptAddress(uint32_t addressNum) : Nonstandard(*DataAccess::Instance().scripts, addressNum) {}
+    
+    std::string Nonstandard::toString() const {
+        return toString(DataAccess::Instance().config);
+    }
+    
+    std::string Nonstandard::toPrettyString() const {
+        return toPrettyString(DataAccess::Instance().config, *DataAccess::Instance().scripts);
+    }
 }
 

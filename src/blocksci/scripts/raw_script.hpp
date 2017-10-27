@@ -29,11 +29,9 @@ namespace std {
     struct hash<blocksci::RawScript> {
     public:
         size_t operator()(const blocksci::RawScript &b) const {
-            std::size_t seed = 123945432;
-            hash<decltype(b.hash)> hasher1;
-            hash<decltype(b.type)> hasher2;
-            seed ^= hasher1(b.hash) + 0x9e3779b9 + (seed<<6) + (seed>>2);
-            seed ^= hasher2(b.type) + 0x9e3779b9 + (seed<<6) + (seed>>2);
+            std::size_t seed = 8957643;
+            boost::hash_combine(seed, b.hash);
+            boost::hash_combine(seed, b.type);
             return seed;
         }
     };

@@ -71,13 +71,17 @@ void ChainIndex<FileTag>::update(const ConfigType &config) {
     std::cout.setf(std::ios::fixed,std::ios::floatfield);
     std::cout.precision(1);
     auto fileCount = maxFileNum - fileNum + 1;
-    auto percentage = static_cast<double>(fileCount) / 1000.0;
-    int percentageMarker = static_cast<int>(std::ceil(percentage));
     int filesDone = 0;
+    using namespace std::chrono_literals;
+    std::atomic<int> activeThreads = 0;
     {
         std::vector<std::future<void>> blockFutures;
         for (; fileNum <= maxFileNum; fileNum++) {
+            while (activeThreads > 20) {
+                std::this_thread::sleep_for(500ms);
+            }
             blockFutures.emplace_back(std::async(std::launch::async, [&](int fileNum) {
+                activeThreads++;
                 // determine block file path
                 auto blockFilePath = localConfig.pathForBlockFile(fileNum);
                 SafeMemReader reader{blockFilePath};
@@ -122,7 +126,7 @@ void ChainIndex<FileTag>::update(const ConfigType &config) {
                 if (fileNum == maxFileNum && blocks.size() > 0) {
                     newestBlock = blocks.back();
                 }
-                
+                activeThreads--;
                 std::lock_guard<std::mutex> lock(m);
                 
                 for (auto &block : blocks) {
@@ -130,9 +134,7 @@ void ChainIndex<FileTag>::update(const ConfigType &config) {
                 }
                 
                 filesDone++;
-                if (filesDone % percentageMarker == 0) {
-                    std::cout << "\r" << (static_cast<double>(filesDone) / static_cast<double>(fileCount)) * 100 << "% done fetching block headers" << std::flush;
-                }
+                std::cout << "\r" << (static_cast<double>(filesDone) / static_cast<double>(fileCount)) * 100 << "% done fetching block headers" << std::flush;
                 
             }, fileNum));
         }
@@ -155,7 +157,7 @@ void ChainIndex<FileTag>::update(const ConfigType &config) {
     while (!queue.empty()) {
         auto [blockHash, height] = queue.back();
         queue.pop_back();
-        for (auto [it, end] = forwardHashes.equal_range(blockHash) ;it != end; ++it) {
+        for (auto [it, end] = forwardHashes.equal_range(blockHash); it != end; ++it) {
             auto &block = blockList.at(it->second);
             block.height = height + 1;
             queue.emplace_back(block.hash, block.height);
@@ -206,8 +208,9 @@ void ChainIndex<RPCTag>::update(const ConfigType &config) {
 template<typename ParseTag>
 std::vector<typename ChainIndex<ParseTag>::BlockType> ChainIndex<ParseTag>::generateChain(uint32_t maxBlockHeight) const {
     
+    std::vector<BlockType> chain;
     const BlockType *maxHeightBlock = nullptr;
-    int maxHeight = 0;
+    int maxHeight = std::numeric_limits<int>::min();
     for (auto &pair : blockList) {
         if (pair.second.height > maxHeight) {
             maxHeightBlock = &pair.second;
@@ -215,11 +218,15 @@ std::vector<typename ChainIndex<ParseTag>::BlockType> ChainIndex<ParseTag>::gene
         }
     }
     
+    if (!maxHeightBlock) {
+        return chain;
+    }
+    
     blocksci::uint256 nullHash;
     nullHash.SetNull();
     
     auto hash = maxHeightBlock->hash;
-    std::vector<BlockType> chain;
+    
     while (hash != nullHash) {
         auto &block = blockList.find(hash)->second;
         chain.push_back(block);

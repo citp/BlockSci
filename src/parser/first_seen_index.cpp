@@ -51,9 +51,9 @@ void FirstSeenIndex::maybeUpdate(const blocksci::Address &address, uint32_t txNu
     auto type = scriptType(address.type);
     auto it = files.find(type);
     auto &file = it->second;
-    auto oldValue = *file.getData(address.addressNum - 1);
+    auto oldValue = *file.getData(address.scriptNum - 1);
     if (oldValue == 0 || txNum < oldValue) {
-        file.update(address.addressNum - 1, txNum);
+        file.update(address.scriptNum - 1, txNum);
     }
 }
 

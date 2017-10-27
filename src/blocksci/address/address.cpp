@@ -17,6 +17,7 @@
 #include "scripts/script.hpp"
 #include "scripts/scripts.hpp"
 #include "scripts/scriptsfwd.hpp"
+#include "scripts/script_variant.hpp"
 #include "chain/transaction.hpp"
 #include "hash_index.hpp"
 
@@ -26,35 +27,37 @@
 
 namespace blocksci {
     
-    Address::Address() : addressNum(0), type(AddressType::Enum::NONSTANDARD) {}
+    Address::Address() : scriptNum(0), type(AddressType::Enum::NONSTANDARD) {}
     
-    Address::Address(uint32_t addressNum_, AddressType::Enum type_) : addressNum(addressNum_), type(type_) {}
+    Address::Address(uint32_t addressNum_, AddressType::Enum type_) : scriptNum(addressNum_), type(type_) {}
     
     bool Address::isSpendable() const {
         return blocksci::isSpendable(scriptType(type));
     }
     
     std::string Address::toString() const {
-        if (addressNum == 0) {
+        if (scriptNum == 0) {
             return "InvalidAddress()";
         } else {
             std::stringstream ss;
             ss << "Address(";
-            ss << "addressNum=" << addressNum;
+            ss << "addressNum=" << scriptNum;
             ss << ", type=" << GetTxnOutputType(type);
             ss << ")";
             return ss.str();
         }
     }
     
-    
+    bool Address::operator!=(const Script &other) const {
+        return scriptNum == other.scriptNum && scriptType(type) == other.type;
+    }
     
     void visit(const Address &address, const std::function<bool(const Address &)> &visitFunc, const ScriptAccess &scripts) {
         if (visitFunc(address)) {
             std::function<void(const blocksci::Address &)> nestedVisitor = [&](const blocksci::Address &nestedAddress) {
                 visit(nestedAddress, visitFunc, scripts);
             };
-            visitPointers(address.getScript(scripts), nestedVisitor);
+            address.getScript(scripts).visitPointers(nestedVisitor);
         }
     }
     
@@ -75,15 +78,15 @@ namespace blocksci {
         {
             throw std::invalid_argument("combination of enum values is not valid");
         }
-        return table[index](access, addressNum);
+        return table[index](access, scriptNum);
     }
     
     Transaction Address::getFirstTransaction(const ChainAccess &chain, const ScriptFirstSeenAccess &scriptsFirstSeen) const {
         return Transaction::txWithIndex(chain, getFirstTransactionIndex(scriptsFirstSeen));
     }
 
-    ScriptVariant Address::getScript(const ScriptAccess &access) const {
-        return ScriptPointer(*this).getScript(access);
+    AnyScript Address::getScript(const ScriptAccess &access) const {
+        return AnyScript{*this, access};
     }
     
     size_t addressCount(const ScriptAccess &access) {

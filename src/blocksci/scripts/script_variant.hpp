@@ -10,17 +10,37 @@
 
 #include "script_info.hpp"
 #include "scriptsfwd.hpp"
+#include "scripts.hpp"
+
+#include <boost/variant/variant.hpp>
 
 #include <functional>
 
 namespace blocksci {
     struct Address;
     
-    using ScriptVariant = to_script_variant_t<ScriptAddress>;
-    
-    void visitPointers(const ScriptVariant &var, const std::function<void(const Address &)> &func);
-    
-    std::string toPrettyString(const ScriptVariant &var, const DataConfiguration &config, const ScriptAccess &access);
+    class AnyScript {
+    public:
+        using ScriptVariant = to_script_variant_t<ScriptAddress>;
+        
+        AnyScript(const Address &address, const ScriptAccess &access);
+        AnyScript(const Script &script, const ScriptAccess &access);
+        
+        std::string toString(const DataConfiguration &config) const;
+        std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const;
+        
+        void visitPointers(const std::function<void(const Address &)> &func);
+        
+        #ifndef BLOCKSCI_WITHOUT_SINGLETON
+        AnyScript(const Address &address);
+        AnyScript(const Script &script);
+        std::string toString() const;
+        std::string toPrettyString() const;
+        #endif
+        
+    private:
+        ScriptVariant script;
+    };
 }
 
 #endif /* script_variant_hpp */

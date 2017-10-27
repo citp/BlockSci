@@ -11,13 +11,13 @@
 
 #include "scriptsfwd.hpp"
 #include "script.hpp"
+
 #include <blocksci/address/address.hpp>
 #include <blocksci/bitcoin_uint256.hpp>
 
-
-
 namespace blocksci {
     struct ScriptHashData;
+    class AnyScript;
     
     template <>
     class ScriptAddress<ScriptType::Enum::SCRIPTHASH> : public Script {
@@ -32,35 +32,31 @@ namespace blocksci {
         ScriptAddress<scriptType>(uint32_t scriptNum, const ScriptHashData *rawData);
         ScriptAddress<scriptType>(const ScriptAccess &access, uint32_t addressNum);
         
-        ScriptType::Enum type() const override {
-            return scriptType;
-        }
-        
         boost::optional<Transaction> transactionRevealed(const ChainAccess &chain) const;
         
         std::string addressString(const DataConfiguration &config) const;
         
-        std::string toString(const DataConfiguration &config) const override;
-        std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const override;
-        
-        bool operator==(const Script &other) override;
+        std::string toString(const DataConfiguration &config) const;
+        std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const;
         
         boost::optional<Address> getWrappedAddress() const;
         
         void visitPointers(const std::function<void(const Address &)> &visitFunc) const {
-            if (wrappedAddress.addressNum != 0) {
+            if (wrappedAddress.scriptNum != 0) {
                 visitFunc(wrappedAddress);
             }
         }
         
         
-        ScriptVariant wrappedScript(const ScriptAccess &access) const;
+        AnyScript wrappedScript(const ScriptAccess &access) const;
         
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
         ScriptAddress<ScriptType::Enum::SCRIPTHASH>(uint32_t addressNum);
         std::string addressString() const;
         boost::optional<Transaction> transactionRevealed() const;
-        ScriptVariant wrappedScript() const;
+        AnyScript wrappedScript() const;
+        std::string toString() const;
+        std::string toPrettyString() const;
         #endif
     };
 }

@@ -14,7 +14,7 @@
 
 namespace blocksci {
     using namespace script;
-    Nonstandard::ScriptAddress(uint32_t scriptNum_, std::tuple<const NonstandardScriptData *, const NonstandardScriptData *> &&rawData) : Script(scriptNum_), outputScript(std::get<0>(rawData)->getScript()) {
+    Nonstandard::ScriptAddress(uint32_t scriptNum_, std::tuple<const NonstandardScriptData *, const NonstandardScriptData *> &&rawData) : Script(scriptNum_, scriptType), outputScript(std::get<0>(rawData)->getScript()) {
         auto inputPointer = std::get<1>(rawData);
         if (inputPointer != nullptr) {
             inputScript = inputPointer->getScript();
@@ -24,11 +24,6 @@ namespace blocksci {
     }
     
     Nonstandard::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : Nonstandard(addressNum, access.getScriptData<scriptType>(addressNum)) {}
-    
-    bool Nonstandard::operator==(const Script &other) {
-        auto otherA = dynamic_cast<const Nonstandard *>(&other);
-        return otherA && otherA->inputString() == inputString() && otherA->outputString() == outputString();
-    }
     
     std::string Nonstandard::inputString() const {
         if (inputScript) {

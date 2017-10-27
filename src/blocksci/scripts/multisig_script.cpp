@@ -16,36 +16,16 @@
 namespace blocksci {
     using namespace script;
     
-    Multisig::ScriptAddress(uint32_t scriptNum_, const MultisigData *rawData) : Script(scriptNum_), required(rawData->m), total(rawData->n), addresses(rawData->getAddresses()) {}
+    Multisig::ScriptAddress(uint32_t scriptNum_, const MultisigData *rawData) : Script(scriptNum_, scriptType), required(rawData->m), total(rawData->n), addresses(rawData->getAddresses()) {}
     
     Multisig::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : Multisig(addressNum, access.getScriptData<Multisig::scriptType>(addressNum)) {}
-    
-    bool Multisig::operator==(const Script &other) {
-        auto multisigOther = dynamic_cast<const Multisig *>(&other);
-        
-        if (!multisigOther) {
-            return false;
-        }
-        
-        if (multisigOther->required != required || multisigOther->addresses.size() != addresses.size()) {
-            return false;
-        }
-        
-        for (size_t i = 0; i < addresses.size(); i++) {
-            if (addresses[i] != multisigOther->addresses[i]) {
-                return false;
-            }
-        }
-        
-        return true;
-    }
     
     std::string Multisig::toString(const DataConfiguration &) const {
         std::stringstream ss;
         ss << "MultisigAddress(required=" << static_cast<int>(required) << ", n=" << static_cast<int>(addresses.size()) << ", address_nums=[";
         uint32_t i = 0;
         for (auto &address : addresses) {
-            ss << address.addressNum;
+            ss << address.scriptNum;
             if (i < addresses.size() - 1) {
                 ss << ", ";
             }
@@ -60,7 +40,7 @@ namespace blocksci {
         ss << static_cast<int>(required) << " of " << static_cast<int>(addresses.size()) << " multisig with addresses : [";
         uint32_t i = 0;
         for (auto &address : addresses) {
-            script::Pubkey pubkeyScript(access, address.addressNum);
+            script::Pubkey pubkeyScript(access, address.scriptNum);
             ss << pubkeyScript.toPrettyString(config, access);
             if (i < addresses.size() - 1) {
                 ss << ", ";

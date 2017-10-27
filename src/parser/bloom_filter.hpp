@@ -19,7 +19,7 @@
 struct BloomStore {
     using BlockType = size_t;
     static constexpr size_t BlockSize = sizeof(BlockType) * 8;
-    
+
     BloomStore(const boost::filesystem::path &path, uint64_t length);
     
     void setBit(uint64_t bitPos);

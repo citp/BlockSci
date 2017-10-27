@@ -30,21 +30,18 @@ namespace blocksci {
         ScriptAddress<scriptType>(uint32_t scriptNum, const PubkeyData *rawData);
         ScriptAddress<scriptType>(const ScriptAccess &access, uint32_t addressNum);
         
-        ScriptType::Enum type() const override {
-            return scriptType;
-        }
-        
         std::string addressString(const DataConfiguration &config) const;
         
-        std::string toString(const DataConfiguration &config) const override;
-        std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const override;
-        bool operator==(const Script &other) override;
+        std::string toString(const DataConfiguration &config) const;
+        std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const;
         
         boost::optional<CPubKey> getPubkey() const;
         
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
         ScriptAddress<scriptType>(uint32_t addressNum);
         std::string addressString() const;
+        std::string toString() const;
+        std::string toPrettyString() const;
         #endif
     };
 }

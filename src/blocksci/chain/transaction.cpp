@@ -16,7 +16,7 @@
 #include "output_pointer.hpp"
 #include "address/address.hpp"
 #include "scripts/scriptsfwd.hpp"
-#include "scripts/scripts.hpp"
+#include "scripts/script_variant.hpp"
 #include "hash_index.hpp"
 
 #include <boost/variant.hpp>
@@ -537,7 +537,7 @@ namespace blocksci {
         
         boost::optional<Address> getInsidePointer(const Address &pointer, const blocksci::ScriptAccess &access) {
             if (pointer.type == AddressType::Enum::SCRIPTHASH) {
-                script::ScriptHash scriptHashAddress(access, pointer.addressNum);
+                script::ScriptHash scriptHashAddress(access, pointer.scriptNum);
                 return getInsidePointer(scriptHashAddress.getWrappedAddress(), access);
             } else {
                 return pointer;
@@ -567,7 +567,7 @@ namespace blocksci {
                 subType = insidePointer->type;
                 hasSubtype = true;
                 if (subType == AddressType::Enum::MULTISIG) {
-                    script::Multisig multisigAddress(scripts, insidePointer->addressNum);
+                    script::Multisig multisigAddress(scripts, insidePointer->scriptNum);
                     i = multisigAddress.required;
                     j = static_cast<int>(multisigAddress.addresses.size());
                 }
@@ -671,7 +671,7 @@ namespace blocksci {
             std::function<void(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &add) {
                 containedOutputs.insert(add);
             };
-            visitPointers(pointer.getScript(access), visitFunc);
+            pointer.getScript(access).visitPointers(visitFunc);
         }
         
         for (auto &pointer : multisigInputs) {
@@ -682,7 +682,7 @@ namespace blocksci {
                     return;
                 }
             };
-            visitPointers(pointer.getScript(access), visitFunc);
+            pointer.getScript(access).visitPointers(visitFunc);
             if (foundMatch) {
                 return true;
             }

@@ -11,6 +11,20 @@
 #include <boost/variant.hpp>
 
 namespace blocksci {
+    
+    template<ScriptType::Enum type>
+    struct ScriptCreateFunctor {
+        static AnyScript::ScriptVariant f(const ScriptAccess &access, const Script &script) {
+            return ScriptAddress<type>(access, script.scriptNum);
+        }
+    };
+    
+    static constexpr auto scriptCreator = make_dynamic_table<ScriptType, ScriptCreateFunctor>();
+    
+    AnyScript::AnyScript(const Script &script, const ScriptAccess &access) :  script(scriptCreator[static_cast<size_t>(script.type)](access, script)) {}
+    
+    AnyScript::AnyScript(const Address &address, const ScriptAccess &access) : AnyScript(Script(address.scriptNum, scriptType(address.type)), access) {}
+    
     struct VisitPointersVisitor : public boost::static_visitor<void> {
         const std::function<void(const Address &)> &func;
         
@@ -22,8 +36,8 @@ namespace blocksci {
         }
     };
     
-    void visitPointers(const ScriptVariant &var, const std::function<void(const Address &)> &func) {
-        boost::apply_visitor(VisitPointersVisitor(func), var);
+    void AnyScript::visitPointers(const std::function<void(const Address &)> &func) {
+        boost::apply_visitor(VisitPointersVisitor(func), script);
     }
     
     struct PrettyPrintVisitor : public boost::static_visitor<std::string> {
@@ -38,7 +52,7 @@ namespace blocksci {
         }
     };
     
-    std::string toPrettyString(const ScriptVariant &var, const DataConfiguration &config, const ScriptAccess &access) {
-        return boost::apply_visitor(PrettyPrintVisitor(config, access), var);
+    std::string AnyScript::toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const {
+        return boost::apply_visitor(PrettyPrintVisitor(config, access), script);
     }
 }

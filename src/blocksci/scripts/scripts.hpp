@@ -6,8 +6,8 @@
 //
 //
 
-#ifndef scripts_h
-#define scripts_h
+#ifndef scripts_scripts_h
+#define scripts_scripts_h
 
 #include "scriptsfwd.hpp"
 #include "script_access.hpp"
@@ -16,6 +16,5 @@
 #include "scripthash_script.hpp"
 #include "nulldata_script.hpp"
 #include "nonstandard_script.hpp"
-#include "script_pointer.hpp"
 
-#endif /* scripts_h */
+#endif /* scripts_scripts_h */

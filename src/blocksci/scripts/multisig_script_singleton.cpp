@@ -16,4 +16,12 @@ namespace blocksci {
     using namespace script;
     
     Multisig::ScriptAddress(uint32_t addressNum) : Multisig(*DataAccess::Instance().scripts, addressNum) {}
+    
+    std::string Multisig::toString() const {
+        return toString(DataAccess::Instance().config);
+    }
+    
+    std::string Multisig::toPrettyString() const {
+        return toPrettyString(DataAccess::Instance().config, *DataAccess::Instance().scripts);
+    }
 }

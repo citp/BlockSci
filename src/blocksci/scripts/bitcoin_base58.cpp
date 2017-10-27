@@ -176,7 +176,7 @@ namespace blocksci {
         if ((!rc58) || (vchTemp.size() < nVersionBytes)) {
             vchData.clear();
             vchVersion.clear();
-            return false;
+            throw InvalidAddressException();
         }
         vchVersion.assign(vchTemp.begin(), vchTemp.begin() + nVersionBytes);
         vchData.resize(vchTemp.size() - nVersionBytes);

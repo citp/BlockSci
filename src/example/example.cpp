@@ -22,6 +22,8 @@
 #include <boost/pending/disjoint_sets.hpp>
 #include <boost/range/counting_range.hpp>
 
+#include <boost/variant.hpp>
+
 #include <numeric>
 #include <chrono>
 #include <unordered_map>
@@ -98,7 +100,7 @@ int main(int argc, const char * argv[]) {
     
     Blockchain chain(argv[1]);
     
-    auto add = getAddressFromString("13A1W4jLPP75pzvn2qJ5KyyqG3qPSpb9jM");
+    auto add = getAddressFromString("13A1W4jLPP75pzvn2qJ5KyyqG3qPSpb9j");
     
     auto tx2 = Transaction::txWithHash("fe28050b93faea61fa88c4c630f0e1f0a1c24d0082dd0e10d369e13212128f33");
     
@@ -139,7 +141,7 @@ int main(int argc, const char * argv[]) {
     auto tx = block[0];
     std::cout << tx.getHash().GetHex() << "\n";
     auto &output = tx.outputs()[0];
-    std::cout << output.getAddress().getScript()->toString() << "\n";
+    std::cout << output.getAddress().getScript().toPrettyString() << "\n";
     
     return 0;
     
@@ -259,11 +261,11 @@ int main(int argc, const char * argv[]) {
             std::cout << tx.getString() << std::endl;
             for (auto &input : tx.inputs()) {
                 std::cout << input.toString() << std::endl;
-                std::cout << input.getAddress().getScript()->toString() << std::endl;
+                std::cout << input.getAddress().getScript().toPrettyString() << std::endl;
             }
             for (auto &output : tx.outputs()) {
                 std::cout << output.toString() << std::endl;
-                std::cout << output.getAddress().getScript()->toString() << std::endl;
+                std::cout << output.getAddress().getScript().toPrettyString() << std::endl;
             }
         }
     }

@@ -36,6 +36,8 @@
 #include <boost/atomic.hpp>
 #include <boost/container/small_vector.hpp>
 
+#include <gperftools/profiler.h>
+
 #include <thread>
 #include <fstream>
 #include <iostream>
@@ -310,7 +312,7 @@ std::vector<uint32_t> connectAddressess(RawTransaction *tx, AddressState &addres
         auto &spentOutput = spentTx->getOutput(input.rawOutputPointer.outputNum);
         auto address = spentOutput.getAddress();
         
-        InputInfo info = input.getInfo(i, tx->txNum, address.addressNum, tx->isSegwit);
+        InputInfo info = input.getInfo(i, tx->txNum, address.scriptNum, tx->isSegwit);
         auto processedInput = processInput(address, info, *tx, addressState, addressWriter);
         
         for (auto &index : processedInput) {
@@ -367,7 +369,7 @@ public:
         auto percentage = static_cast<double>(total) / 1000.0;
         percentageMarker = static_cast<uint64_t>(std::ceil(percentage));
         std::cout.setf(std::ios::fixed,std::ios::floatfield);
-        std::cout.precision(1);
+        std::cout.precision(2);
     }
     
     ~ProgressBar() {
@@ -376,7 +378,7 @@ public:
     
     template <typename... Args>
     void update(uint64_t currentCount, Args... args) {
-        if (currentCount % percentageMarker == 0) {
+        if (currentCount % 10000 == 0) {
             auto percentDone = (static_cast<double>(currentCount) / static_cast<double>(total)) * 100;
             std::cout << "\r" << percentDone << "% done";
             updateFunc(args...);
@@ -415,6 +417,7 @@ std::vector<uint32_t> BlockProcessor::addNewBlocks(const ParserConfiguration<Par
     boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<50000>> finished_transaction_queue;
     
     auto importer = std::async(std::launch::async, [&] {
+        ProfilerRegisterThread();
         CompletionGuard guard(rawDone);
         auto loadFinishedTx = [&](RawTransaction *&tx) {
             return finished_transaction_queue.pop(tx);
@@ -440,6 +443,7 @@ std::vector<uint32_t> BlockProcessor::addNewBlocks(const ParserConfiguration<Par
     });
     
     auto hashCalculator = std::async(std::launch::async, [&] {
+        ProfilerRegisterThread();
         CompletionGuard guard(hashDone);
         FixedSizeFileWriter<blocksci::uint256> hashFile{config.txHashesFilePath()};
         consumeTxes(rawDone, hash_transaction_queue, utxo_transaction_queue, [&](RawTransaction *tx) {
@@ -448,6 +452,7 @@ std::vector<uint32_t> BlockProcessor::addNewBlocks(const ParserConfiguration<Par
     });
     
     auto utxoProcessor = std::async(std::launch::async, [&] {
+        ProfilerRegisterThread();
         CompletionGuard guard(utxoDone);
         consumeTxes(hashDone, utxo_transaction_queue, address_transaction_queue, [&](RawTransaction *tx) {
             connectUTXOs(tx, utxoState);
@@ -455,6 +460,7 @@ std::vector<uint32_t> BlockProcessor::addNewBlocks(const ParserConfiguration<Par
     });
     
     auto addressProcessor = std::async(std::launch::async, [&] {
+        ProfilerRegisterThread();
         AddressWriter addressWriter{config};
         ECCVerifyHandle handle;
         
@@ -488,9 +494,52 @@ std::vector<uint32_t> BlockProcessor::addNewBlocks(const ParserConfiguration<Par
     return ret;
 }
 
+
+template <typename ParseTag>
+std::vector<uint32_t> BlockProcessor::addNewBlocksSingle(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> blocks, UTXOState &utxoState, AddressState &addressState, blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction> &txFile) {
+    
+    RawTransaction realTx;
+    auto loadFinishedTx = [&](RawTransaction *&tx) {
+        tx = &realTx;
+        return true;
+    };
+        
+    FixedSizeFileWriter<blocksci::uint256> hashFile{config.txHashesFilePath()};
+    AddressWriter addressWriter{config};
+    ECCVerifyHandle handle;
+    
+    std::vector<uint32_t> revealed;
+    auto progressBar = makeProgressBar(totalTxCount, [=](RawTransaction *tx) {
+        auto blockHeight = tx->blockHeight;
+        std::cout << ", Block " << blockHeight << "/" << maxBlockHeight;
+    });
+
+    auto outFunc = [&](RawTransaction *tx) {
+        calculateHash(tx, hashFile);
+        connectUTXOs(tx, utxoState);
+        auto newRevealed = connectAddressess(tx, addressState, addressWriter, txFile);
+        revealed.insert(revealed.end(), newRevealed.begin(), newRevealed.end());
+        progressBar.update(tx->txNum - startingTxCount, tx);
+        addressState.optionalSave();
+    };
+        
+    BlockFileReader<ParseTag> fileReader(config, blocks, currentTxNum);
+    NewBlocksFiles files(config);
+    
+    for (auto &block : blocks) {
+        fileReader.nextBlock(block, currentTxNum);
+        readNewBlock(currentTxNum, block, fileReader, files, loadFinishedTx, outFunc);
+        currentTxNum += block.nTx;
+    }
+    
+    return revealed;
+}
+
 #ifdef BLOCKSCI_FILE_PARSER
 template std::vector<uint32_t> BlockProcessor::addNewBlocks(const ParserConfiguration<FileTag> &config, std::vector<BlockInfo<FileTag>> nextBlocks, UTXOState &utxoState, AddressState &addressState, blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction> &txFile);
+template std::vector<uint32_t> BlockProcessor::addNewBlocksSingle(const ParserConfiguration<FileTag> &config, std::vector<BlockInfo<FileTag>> nextBlocks, UTXOState &utxoState, AddressState &addressState, blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction> &txFile);
 #endif
 #ifdef BLOCKSCI_RPC_PARSER
 template std::vector<uint32_t> BlockProcessor::addNewBlocks(const ParserConfiguration<RPCTag> &config, std::vector<BlockInfo<RPCTag>> nextBlocks, UTXOState &utxoState, AddressState &addressState, blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction> &txFile);
+template std::vector<uint32_t> BlockProcessor::addNewBlocksSingle(const ParserConfiguration<RPCTag> &config, std::vector<BlockInfo<RPCTag>> nextBlocks, UTXOState &utxoState, AddressState &addressState, blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction> &txFile);
 #endif
