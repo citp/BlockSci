@@ -63,7 +63,9 @@ struct ScriptInput;
 
 template<>
 struct ScriptInput<blocksci::AddressType::Enum::PUBKEY> : public ScriptInputBase {
-    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, const AddressWriter &) : ScriptInputBase(scriptView.scriptNum, inputView.txNum) {}
+    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &) : ScriptInputBase(scriptView.scriptNum, inputView.txNum) {}
+    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const AddressWriter &) : ScriptInput(inputView, scriptView, tx) {}
+    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const ScriptOutput<blocksci::AddressType::Enum::PUBKEY> &) : ScriptInput(inputView, scriptView, tx) {}
     ProcessedInput processInput(const InputView &, const InputScriptView &, const RawTransaction &, AddressState &, AddressWriter &) {
         return ProcessedInput{};
     }
@@ -73,14 +75,20 @@ template<>
 struct ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH> : public ScriptInputBase {
     CPubKey pubkey;
     
-    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const AddressWriter &);
+    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &);
+    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const AddressWriter &) : ScriptInput(inputView, scriptView, tx) {}
+    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const ScriptOutput<blocksci::AddressType::Enum::PUBKEYHASH> &) : ScriptInput(inputView, scriptView, tx) {}
     ProcessedInput processInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, AddressState &, AddressWriter &);
 };
 
 template<>
 struct ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : public ScriptInputBase {
     CPubKey pubkey;
-    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const AddressWriter &);
+    
+    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &);
+    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const AddressWriter &) : ScriptInput(inputView, scriptView, tx) {}
+    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const ScriptOutput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> &) : ScriptInput(inputView, scriptView, tx) {}
+    
     ProcessedInput processInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, AddressState &, AddressWriter &);
 };
 
@@ -88,13 +96,19 @@ template<>
 struct ScriptInput<blocksci::AddressType::Enum::NONSTANDARD> : public ScriptInputBase {
     CScript script;
     
-    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const AddressWriter &);
+    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &);
+    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const AddressWriter &) : ScriptInput(inputView, scriptView, tx) {}
+    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD> &) : ScriptInput(inputView, scriptView, tx) {}
+    
     ProcessedInput processInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, AddressState &, AddressWriter &);
 };
 
 template <>
 struct ScriptInput<blocksci::AddressType::Enum::NULL_DATA> : public ScriptInputBase {
-    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const AddressWriter &);
+    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &);
+    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const AddressWriter &) : ScriptInput(inputView, scriptView, tx) {}
+    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const ScriptOutput<blocksci::AddressType::Enum::NULL_DATA> &) : ScriptInput(inputView, scriptView, tx) {}
+
     ProcessedInput processInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, AddressState &, AddressWriter &);
 };
 
@@ -106,9 +120,14 @@ struct ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptInput
     ScriptOutputType wrappedScriptOutput;
     const unsigned char *wrappedInputBegin;
     uint32_t wrappedInputLength;
+    bool containsNewOutput;
     
-    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const AddressWriter &);
+    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &);
+    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const AddressWriter &) : ScriptInput(inputView, scriptView, tx) {}
+    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const ScriptOutput<blocksci::AddressType::Enum::SCRIPTHASH> &) : ScriptInput(inputView, scriptView, tx) {}
+
     ProcessedInput processInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, AddressState &state, AddressWriter &writer);
+    
     void checkInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const AddressState &state, const AddressWriter &writer);
 };
 
@@ -117,7 +136,10 @@ struct ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> : public Scr
     blocksci::Address wrappedAddress;
     ScriptOutputType wrappedScriptOutput;
     
-    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const AddressWriter &);
+    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &);
+    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const AddressWriter &) : ScriptInput(inputView, scriptView, tx) {}
+    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const ScriptOutput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> &) : ScriptInput(inputView, scriptView, tx) {}
+    
     ProcessedInput processInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, AddressState &state, AddressWriter &writer);
     void checkInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const AddressState &state, const AddressWriter &writer);
 };
@@ -127,7 +149,9 @@ struct ScriptInput<blocksci::AddressType::Enum::MULTISIG> : public ScriptInputBa
     static constexpr int MAX_ADDRESSES = 16;
     std::bitset<MAX_ADDRESSES> spendSet;
     
-    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const AddressWriter &);
+    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const AddressWriter &writer);
+    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const ScriptOutput<blocksci::AddressType::Enum::MULTISIG> &spentOutput);
+    
     ProcessedInput processInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, AddressState &, AddressWriter &);
 };
 
