@@ -19,16 +19,15 @@
 
 
 template<blocksci::AddressType::Enum type>
-struct ProcessScriptInputFunctor {
-    static ProcessedInput f(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, AddressState &state, AddressWriter &addressWriter) {
-        auto input = ScriptInput<type>(inputView, scriptView, tx, addressWriter);
-        return input.processInput(inputView, scriptView, tx, state, addressWriter);
+struct GenerateScriptInputFunctor {
+    static ScriptInputType f(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, AddressWriter &addressWriter) {
+        return ScriptInput<type>(inputView, scriptView, tx, addressWriter);
     }
 };
 
-ProcessedInput processInput(const blocksci::Address &address, const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, AddressState &state, AddressWriter &addressWriter) {
+ScriptInputType generateScriptInput(const blocksci::Address &address, const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, AddressWriter &addressWriter) {
     
-    static constexpr auto table = blocksci::make_dynamic_table<blocksci::AddressType, ProcessScriptInputFunctor>();
+    static constexpr auto table = blocksci::make_dynamic_table<blocksci::AddressType, GenerateScriptInputFunctor>();
     static constexpr std::size_t size = blocksci::AddressType::all.size();
     
     auto index = static_cast<size_t>(address.type);
@@ -36,7 +35,25 @@ ProcessedInput processInput(const blocksci::Address &address, const InputView &i
     {
         throw std::invalid_argument("combination of enum values is not valid");
     }
-    return table[index](inputView, scriptView, tx, state, addressWriter);
+    return table[index](inputView, scriptView, tx, addressWriter);
+}
+
+struct ScriptInputProcessor : public boost::static_visitor<ProcessedInput> {
+    const InputView &inputView;
+    const InputScriptView &scriptView;
+    const RawTransaction &tx;
+    AddressState &state;
+    AddressWriter &addressWriter;
+    ScriptInputProcessor(const InputView &inputView_, const InputScriptView &scriptView_, const RawTransaction &tx_, AddressState &state_, AddressWriter &addressWriter_) : inputView(inputView_), scriptView(scriptView_), tx(tx_), state(state_), addressWriter(addressWriter_) {}
+    template <blocksci::AddressType::Enum type>
+    ProcessedInput operator()(ScriptInput<type> &input) const {
+        return input.processInput(inputView, scriptView, tx, state, addressWriter);
+    }
+};
+
+ProcessedInput processScriptInput(ScriptInputType &input, const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, AddressState &state, AddressWriter &addressWriter) {
+    ScriptInputProcessor visitor{inputView, scriptView, tx, state, addressWriter};
+    return boost::apply_visitor(visitor, input);
 }
 
 template<blocksci::AddressType::Enum type>
@@ -94,7 +111,8 @@ ProcessedInput ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::processInpu
     wrappedAddress = address;
     
     InputScriptView p2shScriptView{wrappedAddress.scriptNum, wrappedInputBegin, wrappedInputLength};
-    ProcessedInput processedInput = ::processInput(wrappedAddress, inputView, p2shScriptView, tx, state, writer);
+    auto wrappedInputScript = generateScriptInput(wrappedAddress, inputView, p2shScriptView, tx, writer);
+    ProcessedInput processedInput = processScriptInput(wrappedInputScript, inputView, p2shScriptView, tx, state, writer);
     bool firstSpend = writer.serialize(*this, scriptView.scriptNum, inputView.txNum);
     if (firstSpend) {
         processedInput.push_back(scriptView.scriptNum);
@@ -232,7 +250,8 @@ ProcessedInput ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::pro
     wrappedAddress = address;
 
     InputScriptView p2shScriptView{wrappedAddress.scriptNum, scriptView.scriptBegin, 0};
-    auto processedInput = ::processInput(wrappedAddress, inputView, p2shScriptView, tx, state, writer);
+    auto wrappedInputScript = generateScriptInput(wrappedAddress, inputView, p2shScriptView, tx, writer);
+    ProcessedInput processedInput = processScriptInput(wrappedInputScript, inputView, p2shScriptView, tx, state, writer);
     
     bool firstSpend = writer.serialize(*this, scriptView.scriptNum, inputView.txNum);
     if (firstSpend) {

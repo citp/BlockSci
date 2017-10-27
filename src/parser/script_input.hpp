@@ -127,7 +127,9 @@ struct ScriptInput<blocksci::AddressType::Enum::MULTISIG> : public ScriptInputBa
     ProcessedInput processInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, AddressState &, AddressWriter &);
 };
 
-ProcessedInput processInput(const blocksci::Address &address, const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, AddressState &state, AddressWriter &addressWriter);
+ScriptInputType generateScriptInput(const blocksci::Address &address, const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, AddressWriter &addressWriter);
+
+ProcessedInput processScriptInput(ScriptInputType &input, const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, AddressState &state, AddressWriter &addressWriter);
 
 void checkInput(blocksci::AddressType::Enum type, const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const AddressState &state, const AddressWriter &addressWriter);
 
