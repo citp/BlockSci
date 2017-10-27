@@ -51,6 +51,10 @@ struct InputScriptView {
 };
 
 struct ScriptInputBase {
+    uint32_t scriptNum;
+    uint32_t txNum;
+    
+    ScriptInputBase(uint32_t scriptNum_, uint32_t txNum_) : scriptNum(scriptNum_), txNum(txNum_) {}
     void checkInput(const InputView &, const InputScriptView &, const RawTransaction &, const AddressState &, const AddressWriter &) {}
 };
 
@@ -59,7 +63,7 @@ struct ScriptInput;
 
 template<>
 struct ScriptInput<blocksci::AddressType::Enum::PUBKEY> : public ScriptInputBase {
-    ScriptInput(const InputView &, const InputScriptView &, const RawTransaction &, const AddressWriter &) {}
+    ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, const AddressWriter &) : ScriptInputBase(scriptView.scriptNum, inputView.txNum) {}
     ProcessedInput processInput(const InputView &, const InputScriptView &, const RawTransaction &, AddressState &, AddressWriter &) {
         return ProcessedInput{};
     }

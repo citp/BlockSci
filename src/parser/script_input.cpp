@@ -76,7 +76,7 @@ void checkInput(blocksci::AddressType::Enum type, const InputView &inputView, co
     table[index](inputView, scriptView, tx, state, addressWriter);
 }
 
-ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, const AddressWriter &) {
+ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, const AddressWriter &) : ScriptInputBase(scriptView.scriptNum, inputView.txNum) {
     CScriptView script(scriptView.getScript());
     
     CScriptView::const_iterator pc1 = script.begin();
@@ -103,7 +103,7 @@ ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::ScriptInput(const InputVie
     wrappedScriptOutput = extractScriptData(lastScript.begin(), lastScript.end(), inputView.witnessActivated);
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::processInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, AddressState &state, AddressWriter &writer) {
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::processInput(const InputView &inputView, const InputScriptView &, const RawTransaction &tx, AddressState &state, AddressWriter &writer) {
     auto [address, isNew] = resolveAddress(wrappedScriptOutput, state);
     if (isNew) {
         writer.serialize(wrappedScriptOutput);
@@ -113,9 +113,9 @@ ProcessedInput ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::processInpu
     InputScriptView p2shScriptView{wrappedAddress.scriptNum, wrappedInputBegin, wrappedInputLength};
     auto wrappedInputScript = generateScriptInput(wrappedAddress, inputView, p2shScriptView, tx, writer);
     ProcessedInput processedInput = processScriptInput(wrappedInputScript, inputView, p2shScriptView, tx, state, writer);
-    bool firstSpend = writer.serialize(*this, scriptView.scriptNum, inputView.txNum);
+    bool firstSpend = writer.serialize(*this, scriptNum, txNum);
     if (firstSpend) {
-        processedInput.push_back(scriptView.scriptNum);
+        processedInput.push_back(scriptNum);
     }
     return processedInput;
 }
@@ -126,7 +126,7 @@ void ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::checkInput(const Inpu
     ::checkInput(wrappedAddress.type, inputView, p2shScriptView, tx, state, writer);
 }
 
-ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, const AddressWriter &) {
+ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, const AddressWriter &) : ScriptInputBase(scriptView.scriptNum, inputView.txNum) {
     if (scriptView.scriptLength > 0) {
         auto script = scriptView.getScript();
         auto pc = script.begin();
@@ -141,12 +141,12 @@ ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInput(const InputVie
     }
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::processInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, AddressState &, AddressWriter &writer) {
-    writer.serialize(*this, scriptView.scriptNum, inputView.txNum);
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::processInput(const InputView &, const InputScriptView &, const RawTransaction &, AddressState &, AddressWriter &writer) {
+    writer.serialize(*this, scriptNum, txNum);
     return ProcessedInput{};
 }
 
-ScriptInput<blocksci::AddressType::Enum::MULTISIG>::ScriptInput(const InputView &, const InputScriptView &, const RawTransaction &, const AddressWriter &) {
+ScriptInput<blocksci::AddressType::Enum::MULTISIG>::ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, const AddressWriter &) : ScriptInputBase(scriptView.scriptNum, inputView.txNum) {
     // Prelimary work on code to track multisig spend sets
     /*
     auto &multisigFile = writer.getFile<blocksci::AddressType::Enum::MULTISIG>();
@@ -193,12 +193,12 @@ ScriptInput<blocksci::AddressType::Enum::MULTISIG>::ScriptInput(const InputView 
     */
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::MULTISIG>::processInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, AddressState &, AddressWriter &writer) {
-    writer.serialize(*this, scriptView.scriptNum, inputView.txNum);
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::MULTISIG>::processInput(const InputView &, const InputScriptView &, const RawTransaction &, AddressState &, AddressWriter &writer) {
+    writer.serialize(*this, scriptNum, txNum);
     return ProcessedInput{};
 }
 
-ScriptInput<blocksci::AddressType::Enum::NONSTANDARD>::ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, const AddressWriter &) {
+ScriptInput<blocksci::AddressType::Enum::NONSTANDARD>::ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, const AddressWriter &) : ScriptInputBase(scriptView.scriptNum, inputView.txNum) {
     if (scriptView.scriptLength > 0) {
         auto scriptViewer = scriptView.getScript();
         script = CScript(scriptViewer.begin(), scriptViewer.end());
@@ -211,31 +211,31 @@ ScriptInput<blocksci::AddressType::Enum::NONSTANDARD>::ScriptInput(const InputVi
     }
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::NONSTANDARD>::processInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, AddressState &, AddressWriter &writer) {
-    writer.serialize(*this, scriptView.scriptNum, inputView.txNum);
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::NONSTANDARD>::processInput(const InputView &, const InputScriptView &, const RawTransaction &, AddressState &, AddressWriter &writer) {
+    writer.serialize(*this, scriptNum, txNum);
     return ProcessedInput{};
 }
 
-ScriptInput<blocksci::AddressType::Enum::NULL_DATA>::ScriptInput(const InputView &, const InputScriptView &, const RawTransaction &, const AddressWriter &) {
+ScriptInput<blocksci::AddressType::Enum::NULL_DATA>::ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, const AddressWriter &) : ScriptInputBase(scriptView.scriptNum, inputView.txNum) {
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::NULL_DATA>::processInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, AddressState &, AddressWriter &writer) {
-    writer.serialize(*this, scriptView.scriptNum, inputView.txNum);
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::NULL_DATA>::processInput(const InputView &, const InputScriptView &, const RawTransaction &, AddressState &, AddressWriter &writer) {
+    writer.serialize(*this, scriptNum, txNum);
     return ProcessedInput{};
 }
 
-ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::ScriptInput(const InputView &inputView, const InputScriptView &, const RawTransaction &, const AddressWriter &) {
+ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, const AddressWriter &) : ScriptInputBase(scriptView.scriptNum, inputView.txNum) {
     auto &pubkeyWitness = inputView.witnessStack[1];
     pubkey.Set(reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin), reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin) + pubkeyWitness.length);
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::processInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, AddressState &, AddressWriter &writer) {
-    writer.serialize(*this, scriptView.scriptNum, inputView.txNum);
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::processInput(const InputView &, const InputScriptView &, const RawTransaction &, AddressState &, AddressWriter &writer) {
+    writer.serialize(*this, scriptNum, txNum);
     return ProcessedInput{};
 }
 
 
-ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::ScriptInput(const InputView &inputView, const InputScriptView &, const RawTransaction &, const AddressWriter &) {
+ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, const AddressWriter &) : ScriptInputBase(scriptView.scriptNum, inputView.txNum) {
     auto &witnessScriptItem = inputView.witnessStack.back();
     auto outputBegin = reinterpret_cast<const unsigned char *>(witnessScriptItem.itemBegin);
     wrappedScriptOutput = extractScriptData(outputBegin, outputBegin + witnessScriptItem.length, inputView.witnessActivated);
@@ -253,9 +253,9 @@ ProcessedInput ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::pro
     auto wrappedInputScript = generateScriptInput(wrappedAddress, inputView, p2shScriptView, tx, writer);
     ProcessedInput processedInput = processScriptInput(wrappedInputScript, inputView, p2shScriptView, tx, state, writer);
     
-    bool firstSpend = writer.serialize(*this, scriptView.scriptNum, inputView.txNum);
+    bool firstSpend = writer.serialize(*this, scriptNum, txNum);
     if (firstSpend) {
-        processedInput.push_back(scriptView.scriptNum);
+        processedInput.push_back(scriptNum);
     }
     return processedInput;
 }
