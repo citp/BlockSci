@@ -40,10 +40,6 @@ std::vector<unsigned char> hexStringToVec(const std::string scripthex) {
     return scriptBytes;
 }
 
-InputInfo RawInput::getInfo(uint16_t i, uint32_t txNum, uint32_t addressNum, bool isSegwit) {    
-    return {i, txNum, addressNum, getScriptBegin(), getScriptLength(), witnessStack, isSegwit};
-}
-
 #ifdef BLOCKSCI_FILE_PARSER
 RawInput::RawInput(SafeMemReader &reader) {
     rawOutputPointer.hash = reader.readNext<blocksci::uint256>();
@@ -258,7 +254,7 @@ enum {
     SIGHASH_ANYONECANPAY = 0x80,
 };
 
-blocksci::uint256 RawTransaction::getHash(const InputInfo &info, int hashType) const {
+blocksci::uint256 RawTransaction::getHash(const InputView &info, const InputScriptView &scriptView, int hashType) const {
     
     bool anyoneCanPay = !!(hashType & SIGHASH_ANYONECANPAY);
     bool hashSingle = (hashType & 0x1f) == SIGHASH_SINGLE;
@@ -280,7 +276,7 @@ blocksci::uint256 RawTransaction::getHash(const InputInfo &info, int hashType) c
             // Blank out other inputs' signatures
             s.serializeCompact(0);
         } else {
-            auto scriptCode = info.getScript();
+            auto scriptCode = scriptView.getScript();
             CScriptView::const_iterator it = scriptCode.begin();
             CScriptView::const_iterator itBegin = it;
             opcodetype opcode;

@@ -16,10 +16,11 @@
 
 #include <boost/variant/variant.hpp>
 
-struct InputInfo;
 struct getrawtransaction_t;
 struct vout_t;
 struct vin_t;
+struct InputView;
+struct InputScriptView;
 
 namespace blocksci {
     struct RawTransaction;
@@ -52,8 +53,6 @@ public:
     uint32_t linkedTxNum;
     blocksci::AddressType::Enum addressType;
     uint64_t value;
-    
-    InputInfo getInfo(uint16_t i, uint32_t txNum, uint32_t addressNum, bool isSegwit);
     
     uint32_t getScriptLength() const {
         if (scriptLength == 0) {
@@ -160,7 +159,7 @@ struct RawTransaction {
     
     void calculateHash();
     
-    blocksci::uint256 getHash(const InputInfo &info, int hashType) const;
+    blocksci::uint256 getHash(const InputView &info, const InputScriptView &scriptView, int hashType) const;
     blocksci::RawTransaction getRawTransaction() const;
 };
 

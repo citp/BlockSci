@@ -312,8 +312,9 @@ std::vector<uint32_t> connectAddressess(RawTransaction *tx, AddressState &addres
         auto &spentOutput = spentTx->getOutput(input.rawOutputPointer.outputNum);
         auto address = spentOutput.getAddress();
         
-        InputInfo info = input.getInfo(i, tx->txNum, address.scriptNum, tx->isSegwit);
-        auto processedInput = processInput(address, info, *tx, addressState, addressWriter);
+        InputView inputView(i, tx->txNum, input.witnessStack, tx->isSegwit);
+        InputScriptView scriptView(address.scriptNum, input.getScriptBegin(), input.getScriptLength());
+        auto processedInput = processInput(address, inputView, scriptView, *tx, addressState, addressWriter);
         
         for (auto &index : processedInput) {
             revealed.push_back(index);

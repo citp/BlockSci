@@ -20,13 +20,13 @@
 
 template<blocksci::AddressType::Enum type>
 struct ProcessScriptInputFunctor {
-    static ProcessedInput f(const InputInfo &info, const RawTransaction &tx, AddressState &state, AddressWriter &addressWriter) {
-        auto input = ScriptInput<type>(info, tx, addressWriter);
-        return input.processInput(info, tx, state, addressWriter);
+    static ProcessedInput f(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, AddressState &state, AddressWriter &addressWriter) {
+        auto input = ScriptInput<type>(inputView, scriptView, tx, addressWriter);
+        return input.processInput(inputView, scriptView, tx, state, addressWriter);
     }
 };
 
-ProcessedInput processInput(const blocksci::Address &address, const InputInfo &info, const RawTransaction &tx, AddressState &state, AddressWriter &addressWriter) {
+ProcessedInput processInput(const blocksci::Address &address, const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, AddressState &state, AddressWriter &addressWriter) {
     
     static constexpr auto table = blocksci::make_dynamic_table<blocksci::AddressType, ProcessScriptInputFunctor>();
     static constexpr std::size_t size = blocksci::AddressType::all.size();
@@ -36,18 +36,18 @@ ProcessedInput processInput(const blocksci::Address &address, const InputInfo &i
     {
         throw std::invalid_argument("combination of enum values is not valid");
     }
-    return table[index](info, tx, state, addressWriter);
+    return table[index](inputView, scriptView, tx, state, addressWriter);
 }
 
 template<blocksci::AddressType::Enum type>
 struct CheckScriptInputFunctor {
-    static void f(const InputInfo &info, const RawTransaction &tx, const AddressState &state, const AddressWriter &addressWriter) {
-        ScriptInput<type> input(info, tx, addressWriter);
-        input.checkInput(info, tx, state, addressWriter);
+    static void f(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const AddressState &state, const AddressWriter &addressWriter) {
+        ScriptInput<type> input(inputView, scriptView, tx, addressWriter);
+        input.checkInput(inputView, scriptView, tx, state, addressWriter);
     }
 };
 
-void checkInput(blocksci::AddressType::Enum type, const InputInfo &info, const RawTransaction &tx, const AddressState &state, const AddressWriter &addressWriter) {
+void checkInput(blocksci::AddressType::Enum type, const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const AddressState &state, const AddressWriter &addressWriter) {
     static constexpr auto table = blocksci::make_dynamic_table<blocksci::AddressType, CheckScriptInputFunctor>();
     static constexpr std::size_t size = blocksci::AddressType::all.size();
     
@@ -56,11 +56,11 @@ void checkInput(blocksci::AddressType::Enum type, const InputInfo &info, const R
     {
         throw std::invalid_argument("combination of enum values is not valid");
     }
-    table[index](info, tx, state, addressWriter);
+    table[index](inputView, scriptView, tx, state, addressWriter);
 }
 
-ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::ScriptInput(const InputInfo &inputInfo, const RawTransaction &, const AddressWriter &) {
-    CScriptView script(inputInfo.getScript());
+ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, const AddressWriter &) {
+    CScriptView script(scriptView.getScript());
     
     CScriptView::const_iterator pc1 = script.begin();
     CScriptView::const_iterator prevpc = script.begin();
@@ -83,34 +83,34 @@ ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::ScriptInput(const InputInf
     wrappedInputLength = static_cast<uint32_t>(std::distance(begin, prevprevpc));
     
     CScriptView wrappedOutputScript(lastScript.begin(), lastScript.end());
-    wrappedScriptOutput = extractScriptData(lastScript.begin(), lastScript.end(), inputInfo.witnessActivated);
+    wrappedScriptOutput = extractScriptData(lastScript.begin(), lastScript.end(), inputView.witnessActivated);
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::processInput(const InputInfo &inputInfo, const RawTransaction &tx, AddressState &state, AddressWriter &writer) {
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::processInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, AddressState &state, AddressWriter &writer) {
     auto [address, isNew] = resolveAddress(wrappedScriptOutput, state);
     if (isNew) {
         writer.serialize(wrappedScriptOutput);
     }
     wrappedAddress = address;
     
-    InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.txNum, wrappedAddress.scriptNum, wrappedInputBegin, wrappedInputLength, inputInfo.witnessStack, inputInfo.witnessActivated};
-    ProcessedInput processedInput = ::processInput(wrappedAddress, p2shInputInfo, tx, state, writer);
-    bool firstSpend = writer.serialize(*this, inputInfo.addressNum, inputInfo.txNum);
+    InputScriptView p2shScriptView{wrappedAddress.scriptNum, wrappedInputBegin, wrappedInputLength};
+    ProcessedInput processedInput = ::processInput(wrappedAddress, inputView, p2shScriptView, tx, state, writer);
+    bool firstSpend = writer.serialize(*this, scriptView.scriptNum, inputView.txNum);
     if (firstSpend) {
-        processedInput.push_back(inputInfo.addressNum);
+        processedInput.push_back(scriptView.scriptNum);
     }
     return processedInput;
 }
 
-void ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::checkInput(const InputInfo &inputInfo, const RawTransaction &tx, const AddressState &state, const AddressWriter &writer) {
+void ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::checkInput(const InputView &inputView, const InputScriptView &, const RawTransaction &tx, const AddressState &state, const AddressWriter &writer) {
     wrappedAddress = checkOutput(wrappedScriptOutput, state, writer);
-    InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.txNum, wrappedAddress.scriptNum, wrappedInputBegin, wrappedInputLength, inputInfo.witnessStack, inputInfo.witnessActivated};
-    ::checkInput(wrappedAddress.type, p2shInputInfo, tx, state, writer);
+    InputScriptView p2shScriptView{wrappedAddress.scriptNum, wrappedInputBegin, wrappedInputLength};
+    ::checkInput(wrappedAddress.type, inputView, p2shScriptView, tx, state, writer);
 }
 
-ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInput(const InputInfo &inputInfo, const RawTransaction &, const AddressWriter &) {
-    if (inputInfo.scriptLength > 0) {
-        auto script = inputInfo.getScript();
+ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, const AddressWriter &) {
+    if (scriptView.scriptLength > 0) {
+        auto script = scriptView.getScript();
         auto pc = script.begin();
         opcodetype opcode;
         boost::iterator_range<const unsigned char *> vchSig;
@@ -118,17 +118,17 @@ ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInput(const InputInf
         script.GetOp(pc, opcode, vchSig);
         pubkey.Set(vchSig.begin(), vchSig.end());
     } else {
-        auto &pubkeyWitness = inputInfo.witnessStack[1];
+        auto &pubkeyWitness = inputView.witnessStack[1];
         pubkey.Set(reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin), reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin) + pubkeyWitness.length);
     }
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::processInput(const InputInfo &inputInfo, const RawTransaction &, AddressState &, AddressWriter &writer) {
-    writer.serialize(*this, inputInfo.addressNum, inputInfo.txNum);
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::processInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, AddressState &, AddressWriter &writer) {
+    writer.serialize(*this, scriptView.scriptNum, inputView.txNum);
     return ProcessedInput{};
 }
 
-ScriptInput<blocksci::AddressType::Enum::MULTISIG>::ScriptInput(const InputInfo &, const RawTransaction &, const AddressWriter &) {
+ScriptInput<blocksci::AddressType::Enum::MULTISIG>::ScriptInput(const InputView &, const InputScriptView &, const RawTransaction &, const AddressWriter &) {
     // Prelimary work on code to track multisig spend sets
     /*
     auto &multisigFile = writer.getFile<blocksci::AddressType::Enum::MULTISIG>();
@@ -175,55 +175,55 @@ ScriptInput<blocksci::AddressType::Enum::MULTISIG>::ScriptInput(const InputInfo 
     */
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::MULTISIG>::processInput(const InputInfo &inputInfo, const RawTransaction &, AddressState &, AddressWriter &writer) {
-    writer.serialize(*this, inputInfo.addressNum, inputInfo.txNum);
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::MULTISIG>::processInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, AddressState &, AddressWriter &writer) {
+    writer.serialize(*this, scriptView.scriptNum, inputView.txNum);
     return ProcessedInput{};
 }
 
-ScriptInput<blocksci::AddressType::Enum::NONSTANDARD>::ScriptInput(const InputInfo &inputInfo, const RawTransaction &, const AddressWriter &) {
-    if (inputInfo.scriptLength > 0) {
-        auto scriptView = inputInfo.getScript();
-        script = CScript(scriptView.begin(), scriptView.end());
-    } else if (inputInfo.witnessStack.size() > 0) {
-        for (size_t i = 0; i < inputInfo.witnessStack.size() - 1; i++) {
-            auto &stackItem = inputInfo.witnessStack[i];
+ScriptInput<blocksci::AddressType::Enum::NONSTANDARD>::ScriptInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, const AddressWriter &) {
+    if (scriptView.scriptLength > 0) {
+        auto scriptViewer = scriptView.getScript();
+        script = CScript(scriptViewer.begin(), scriptViewer.end());
+    } else if (inputView.witnessStack.size() > 0) {
+        for (size_t i = 0; i < inputView.witnessStack.size() - 1; i++) {
+            auto &stackItem = inputView.witnessStack[i];
             auto itemBegin = reinterpret_cast<const unsigned char *>(stackItem.itemBegin);
             script << std::vector<unsigned char>{itemBegin, itemBegin + stackItem.length};
         }
     }
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::NONSTANDARD>::processInput(const InputInfo &inputInfo, const RawTransaction &, AddressState &, AddressWriter &writer) {
-    writer.serialize(*this, inputInfo.addressNum, inputInfo.txNum);
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::NONSTANDARD>::processInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, AddressState &, AddressWriter &writer) {
+    writer.serialize(*this, scriptView.scriptNum, inputView.txNum);
     return ProcessedInput{};
 }
 
-ScriptInput<blocksci::AddressType::Enum::NULL_DATA>::ScriptInput(const InputInfo &, const RawTransaction &, const AddressWriter &) {
+ScriptInput<blocksci::AddressType::Enum::NULL_DATA>::ScriptInput(const InputView &, const InputScriptView &, const RawTransaction &, const AddressWriter &) {
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::NULL_DATA>::processInput(const InputInfo &inputInfo, const RawTransaction &, AddressState &, AddressWriter &writer) {
-    writer.serialize(*this, inputInfo.addressNum, inputInfo.txNum);
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::NULL_DATA>::processInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, AddressState &, AddressWriter &writer) {
+    writer.serialize(*this, scriptView.scriptNum, inputView.txNum);
     return ProcessedInput{};
 }
 
-ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::ScriptInput(const InputInfo &inputInfo, const RawTransaction &, const AddressWriter &) {
-    auto &pubkeyWitness = inputInfo.witnessStack[1];
+ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::ScriptInput(const InputView &inputView, const InputScriptView &, const RawTransaction &, const AddressWriter &) {
+    auto &pubkeyWitness = inputView.witnessStack[1];
     pubkey.Set(reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin), reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin) + pubkeyWitness.length);
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::processInput(const InputInfo &inputInfo, const RawTransaction &, AddressState &, AddressWriter &writer) {
-    writer.serialize(*this, inputInfo.addressNum, inputInfo.txNum);
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::processInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &, AddressState &, AddressWriter &writer) {
+    writer.serialize(*this, scriptView.scriptNum, inputView.txNum);
     return ProcessedInput{};
 }
 
 
-ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::ScriptInput(const InputInfo &inputInfo, const RawTransaction &, const AddressWriter &) {
-    auto &witnessScriptItem = inputInfo.witnessStack.back();
+ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::ScriptInput(const InputView &inputView, const InputScriptView &, const RawTransaction &, const AddressWriter &) {
+    auto &witnessScriptItem = inputView.witnessStack.back();
     auto outputBegin = reinterpret_cast<const unsigned char *>(witnessScriptItem.itemBegin);
-    wrappedScriptOutput = extractScriptData(outputBegin, outputBegin + witnessScriptItem.length, inputInfo.witnessActivated);
+    wrappedScriptOutput = extractScriptData(outputBegin, outputBegin + witnessScriptItem.length, inputView.witnessActivated);
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::processInput(const InputInfo &inputInfo, const RawTransaction &tx, AddressState &state, AddressWriter &writer) {
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::processInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, AddressState &state, AddressWriter &writer) {
     
     auto [address, isNew] = resolveAddress(wrappedScriptOutput, state);
     if (isNew) {
@@ -231,18 +231,18 @@ ProcessedInput ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::pro
     }
     wrappedAddress = address;
 
-    InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.txNum, wrappedAddress.scriptNum, inputInfo.scriptBegin, 0, inputInfo.witnessStack, inputInfo.witnessActivated};
-    auto processedInput = ::processInput(wrappedAddress, p2shInputInfo, tx, state, writer);
+    InputScriptView p2shScriptView{wrappedAddress.scriptNum, scriptView.scriptBegin, 0};
+    auto processedInput = ::processInput(wrappedAddress, inputView, p2shScriptView, tx, state, writer);
     
-    bool firstSpend = writer.serialize(*this, inputInfo.addressNum, inputInfo.txNum);
+    bool firstSpend = writer.serialize(*this, scriptView.scriptNum, inputView.txNum);
     if (firstSpend) {
-        processedInput.push_back(inputInfo.addressNum);
+        processedInput.push_back(scriptView.scriptNum);
     }
     return processedInput;
 }
 
-void ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::checkInput(const InputInfo &inputInfo, const RawTransaction &tx, const AddressState &state, const AddressWriter &writer) {
+void ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::checkInput(const InputView &inputView, const InputScriptView &scriptView, const RawTransaction &tx, const AddressState &state, const AddressWriter &writer) {
     wrappedAddress = checkOutput(wrappedScriptOutput, state, writer);
-    InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.txNum, wrappedAddress.scriptNum, inputInfo.scriptBegin, 0, inputInfo.witnessStack, inputInfo.witnessActivated};
-    ::checkInput(wrappedAddress.type, p2shInputInfo, tx, state, writer);
+    InputScriptView p2shScriptView{wrappedAddress.scriptNum, scriptView.scriptBegin, 0};
+    ::checkInput(wrappedAddress.type, inputView, p2shScriptView, tx, state, writer);
 }
