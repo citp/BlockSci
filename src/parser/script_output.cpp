@@ -17,24 +17,21 @@
 
 #include <boost/variant/get.hpp>
 
-struct ProcessOutputVisitor : public boost::static_visitor<blocksci::Address> {
+struct AddressNumResolver : public boost::static_visitor<std::pair<blocksci::Address, bool>> {
     AddressState &state;
-    AddressWriter &addressWriter;
-    ProcessOutputVisitor(AddressState &state_, AddressWriter &addressWriter_) : state(state_), addressWriter(addressWriter_) {}
+    AddressNumResolver(AddressState &state_) : state(state_) {}
     template <blocksci::AddressType::Enum type>
-    blocksci::Address operator()(ScriptOutput<type> &scriptOutput) const {
-        std::pair<blocksci::Address, bool> processed = getAddressNum(scriptOutput, state);
-        if (processed.second) {
-            scriptOutput.processOutput(state, addressWriter);
-        }
-        return processed.first;
+    std::pair<blocksci::Address, bool> operator()(ScriptOutput<type> &scriptOutput) const {
+        auto ret = getAddressNum(scriptOutput, state);
+        scriptOutput.processOutput(state);
     }
 };
 
-blocksci::Address processOutput(ScriptOutputType &scriptOutput, AddressState &state, AddressWriter &addressWriter) {
-    ProcessOutputVisitor outputVisitor{state, addressWriter};
-    return boost::apply_visitor(outputVisitor, scriptOutput);
+std::pair<blocksci::Address, bool> resolveAddress(ScriptOutputType &scriptOutput, AddressState &state) {
+    AddressNumResolver visitor{state};
+    return boost::apply_visitor(visitor, scriptOutput);
 }
+
 
 struct CheckOutputVisitor : public boost::static_visitor<blocksci::Address> {
     const AddressState &state;
@@ -55,58 +52,29 @@ blocksci::Address checkOutput(ScriptOutputType &scriptOutput, const AddressState
     return boost::apply_visitor(outputVisitor, scriptOutput);
 }
 
-
-template <bool deduped>
-struct AddressNumImp {
-    template <blocksci::AddressType::Enum type>
-    static std::pair<blocksci::Address, bool> get(ScriptOutput<type> &data, AddressState &state);
-    
-    template <blocksci::AddressType::Enum type>
-    static std::pair<blocksci::Address, bool> check(ScriptOutput<type> &data, const AddressState &state);
-};
-
-template <>
-struct AddressNumImp<true> {
-    template <blocksci::AddressType::Enum type>
-    static std::pair<blocksci::Address, bool> get(ScriptOutput<type> &data, AddressState &state) {
+template <blocksci::AddressType::Enum type>
+std::pair<blocksci::Address, bool> getAddressNum(ScriptOutput<type> &data, AddressState &state) {
+    if constexpr (blocksci::ScriptInfo<blocksci::AddressInfo<type>::scriptType>::deduped) {
         blocksci::RawScript rawAddress{data.getHash(), blocksci::scriptType(type)};
         auto addressInfo = state.findAddress(rawAddress);
         auto processed = state.resolveAddress(addressInfo);
         blocksci::Address address(processed.first, type);
         return std::make_pair(address, processed.second);
-    }
-    
-    template <blocksci::AddressType::Enum type>
-    static std::pair<blocksci::Address, bool> check(ScriptOutput<type> &data, const AddressState &state) {
-        blocksci::RawScript rawAddress{data.getHash(), blocksci::scriptType(type)};
-        auto addressInfo = state.findAddress(rawAddress);
-        return std::make_pair(blocksci::Address(addressInfo.addressNum, type), addressInfo.addressNum == 0);
-    }
-};
-
-template <>
-struct AddressNumImp<false> {
-    template <blocksci::AddressType::Enum type>
-    static std::pair<blocksci::Address, bool> get(ScriptOutput<type> &, AddressState &state) {
+    } else {
         auto index = state.getNewAddressIndex(scriptType(type));
         return std::make_pair(blocksci::Address(index, type), true);
     }
-    
-    template <blocksci::AddressType::Enum type>
-    static std::pair<blocksci::Address, bool> check(ScriptOutput<type> &, const AddressState &) {
-        return std::make_pair(blocksci::Address(0, type), true);
-    }
-};
-
-
-template <blocksci::AddressType::Enum type>
-std::pair<blocksci::Address, bool> getAddressNum(ScriptOutput<type> &data, AddressState &state) {
-    return AddressNumImp<blocksci::ScriptInfo<blocksci::AddressInfo<type>::scriptType>::deduped>::get(data, state);
 }
 
 template <blocksci::AddressType::Enum type>
 std::pair<blocksci::Address, bool> checkAddressNum(ScriptOutput<type> &data, const AddressState &state) {
-    return AddressNumImp<blocksci::ScriptInfo<blocksci::AddressInfo<type>::scriptType>::deduped>::check(data, state);
+    if constexpr (blocksci::ScriptInfo<blocksci::AddressInfo<type>::scriptType>::deduped) {
+        blocksci::RawScript rawAddress{data.getHash(), blocksci::scriptType(type)};
+        auto addressInfo = state.findAddress(rawAddress);
+        return std::make_pair(blocksci::Address(addressInfo.addressNum, type), addressInfo.addressNum == 0);
+    } else {
+        return std::make_pair(blocksci::Address(0, type), true);
+    }
 }
 
 #define VAL(x) template std::pair<blocksci::Address, bool> getAddressNum<blocksci::AddressType::Enum::x>(ScriptOutput<blocksci::AddressType::Enum::x> &data, AddressState &state);
@@ -151,18 +119,10 @@ blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::PUBKEY>::getHash() c
     return pubkey.GetID();
 }
 
-void ScriptOutput<blocksci::AddressType::Enum::PUBKEY>::processOutput(AddressState &, AddressWriter &writer) {
-    writer.serialize(*this);
-}
-
 // MARK: TX_PUBKEYHASH
 
 blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::PUBKEYHASH>::getHash() const {
     return hash;
-}
-
-void ScriptOutput<blocksci::AddressType::Enum::PUBKEYHASH>::processOutput(AddressState &, AddressWriter &writer) {
-    writer.serialize(*this);
 }
 
 // MARK: WITNESS_PUBKEYHASH
@@ -171,28 +131,16 @@ blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>:
     return hash;
 }
 
-void ScriptOutput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::processOutput(AddressState &, AddressWriter &writer) {
-    writer.serialize(*this);
-}
-
 // MARK: TX_SCRIPTHASH
 
 blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::SCRIPTHASH>::getHash() const {
     return hash;
 }
 
-void ScriptOutput<blocksci::AddressType::Enum::SCRIPTHASH>::processOutput(AddressState &, AddressWriter &writer) {
-    writer.serialize(*this);
-}
-
 // MARK: WITNESS_SCRIPTHASH
 
 blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::getHash() const {
     return ripemd160(reinterpret_cast<const char *>(&hash), sizeof(hash));
-}
-
-void ScriptOutput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::processOutput(AddressState &, AddressWriter &writer) {
-    writer.serialize(*this);
 }
 
 // MARK: TX_MULTISIG
@@ -217,15 +165,17 @@ blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::getHash()
     return ripemd160(sigData.data(), sigData.size());
 }
 
-void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::processOutput(AddressState &state, AddressWriter &writer) {
+void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::processOutput(AddressState &state) {
     processedAddresses.clear();
     processedAddresses.reserve(addressCount);
+    firstSeen.clear();
+    firstSeen.reserve(addressCount);
     for (size_t i = 0; i < addressCount; i++) {
-        ScriptOutputType pubkeyOutput{ScriptOutput<blocksci::AddressType::Enum::PUBKEY>{addresses[i]}};
-        auto processedPubkey = ::processOutput(pubkeyOutput, state, writer);
-        processedAddresses.push_back(processedPubkey.scriptNum);
+        ScriptOutput<blocksci::AddressType::Enum::PUBKEY> pubkeyOutput{addresses[i]};
+        auto [address, isNew] = getAddressNum(pubkeyOutput, state);
+        firstSeen.push_back(isNew);
+        processedAddresses.push_back(address.scriptNum);
     }
-    writer.serialize(*this);
 }
 
 void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::checkOutput(const AddressState &state, const AddressWriter &writer) {
@@ -247,10 +197,6 @@ void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::addAddress(const boost
 
 ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD>::ScriptOutput(const CScriptView &script_) : script(script_) {}
 
-void ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD>::processOutput(AddressState &, AddressWriter &writer) {
-    writer.serialize(*this);
-}
-
 // MARK: TX_NULL_DATA
 
 ScriptOutput<blocksci::AddressType::Enum::NULL_DATA>::ScriptOutput(const CScriptView &script){
@@ -263,10 +209,6 @@ ScriptOutput<blocksci::AddressType::Enum::NULL_DATA>::ScriptOutput(const CScript
         }
         fullData.insert(fullData.end(), vch1.begin(), vch1.end());
     }
-}
-
-void ScriptOutput<blocksci::AddressType::Enum::NULL_DATA>::processOutput(AddressState &, AddressWriter &writer) {
-    writer.serialize(*this);
 }
 
 // MARK: Script Processing

@@ -138,15 +138,22 @@ bool AddressWriter::serializeImp<AddressType::Enum::SCRIPTHASH>(const ScriptInpu
 template<>
 void AddressWriter::serializeImp<AddressType::Enum::MULTISIG>(const ScriptOutput<AddressType::Enum::MULTISIG> &output) {
     blocksci::Address wrappedAddress;
-    auto &file = std::get<ScriptFile<ScriptType::Enum::MULTISIG>>(scriptFiles);
-    file.writeIndexGroup();
+    auto &multisigFile = std::get<ScriptFile<ScriptType::Enum::MULTISIG>>(scriptFiles);
+    multisigFile.writeIndexGroup();
     MultisigData data{output.numRequired, output.numTotal, output.addressCount};
-    bool clearedData = file.write(data);
+    bool clearedData = multisigFile.write(data);
     for (uint8_t i = 0; i < output.addressCount; i++) {
-        clearedData |= file.write(output.processedAddresses[i]);
+        clearedData |= multisigFile.write(output.processedAddresses[i]);
     }
     if (clearedData) {
-        file.clearBuffer();
+        multisigFile.clearBuffer();
+    }
+    
+    for (size_t i = 0; i < output.addressCount; i++) {
+        ScriptOutput<blocksci::AddressType::Enum::PUBKEY> pubkeyOutput{output.addresses[i]};
+        if (output.firstSeen[i]) {
+            serialize(pubkeyOutput);
+        }
     }
 }
 

@@ -327,7 +327,10 @@ std::vector<uint32_t> connectAddressess(RawTransaction *tx, AddressState &addres
     }
     
     for (auto &output : tx->outputs) {
-        auto address = processOutput(output.scriptOutput, addressState, addressWriter);
+        auto [address, isNew] = resolveAddress(output.scriptOutput, addressState);
+        if (isNew) {
+            addressWriter.serialize(output.scriptOutput);
+        }
         blocksci::Inout blocksciOutput{0, address, output.value};
         txFile.write(blocksciOutput);
     }
