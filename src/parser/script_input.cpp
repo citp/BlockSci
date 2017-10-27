@@ -95,7 +95,7 @@ ProcessedInput ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::processInpu
     
     InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.txNum, wrappedAddress.scriptNum, wrappedInputBegin, wrappedInputLength, inputInfo.witnessStack, inputInfo.witnessActivated};
     ProcessedInput processedInput = ::processInput(wrappedAddress, p2shInputInfo, tx, state, writer);
-    bool firstSpend = writer.serialize(*this, inputInfo);
+    bool firstSpend = writer.serialize(*this, inputInfo.addressNum, inputInfo.txNum);
     if (firstSpend) {
         processedInput.push_back(inputInfo.addressNum);
     }
@@ -124,7 +124,7 @@ ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInput(const InputInf
 }
 
 ProcessedInput ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::processInput(const InputInfo &inputInfo, const RawTransaction &, AddressState &, AddressWriter &writer) {
-    writer.serialize(*this, inputInfo);
+    writer.serialize(*this, inputInfo.addressNum, inputInfo.txNum);
     return ProcessedInput{};
 }
 
@@ -176,7 +176,7 @@ ScriptInput<blocksci::AddressType::Enum::MULTISIG>::ScriptInput(const InputInfo 
 }
 
 ProcessedInput ScriptInput<blocksci::AddressType::Enum::MULTISIG>::processInput(const InputInfo &inputInfo, const RawTransaction &, AddressState &, AddressWriter &writer) {
-    writer.serialize(*this, inputInfo);
+    writer.serialize(*this, inputInfo.addressNum, inputInfo.txNum);
     return ProcessedInput{};
 }
 
@@ -194,7 +194,7 @@ ScriptInput<blocksci::AddressType::Enum::NONSTANDARD>::ScriptInput(const InputIn
 }
 
 ProcessedInput ScriptInput<blocksci::AddressType::Enum::NONSTANDARD>::processInput(const InputInfo &inputInfo, const RawTransaction &, AddressState &, AddressWriter &writer) {
-    writer.serialize(*this, inputInfo);
+    writer.serialize(*this, inputInfo.addressNum, inputInfo.txNum);
     return ProcessedInput{};
 }
 
@@ -202,7 +202,7 @@ ScriptInput<blocksci::AddressType::Enum::NULL_DATA>::ScriptInput(const InputInfo
 }
 
 ProcessedInput ScriptInput<blocksci::AddressType::Enum::NULL_DATA>::processInput(const InputInfo &inputInfo, const RawTransaction &, AddressState &, AddressWriter &writer) {
-    writer.serialize(*this, inputInfo);
+    writer.serialize(*this, inputInfo.addressNum, inputInfo.txNum);
     return ProcessedInput{};
 }
 
@@ -212,7 +212,7 @@ ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::ScriptInput(const 
 }
 
 ProcessedInput ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::processInput(const InputInfo &inputInfo, const RawTransaction &, AddressState &, AddressWriter &writer) {
-    writer.serialize(*this, inputInfo);
+    writer.serialize(*this, inputInfo.addressNum, inputInfo.txNum);
     return ProcessedInput{};
 }
 
@@ -234,7 +234,7 @@ ProcessedInput ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::pro
     InputInfo p2shInputInfo{inputInfo.inputNum, inputInfo.txNum, wrappedAddress.scriptNum, inputInfo.scriptBegin, 0, inputInfo.witnessStack, inputInfo.witnessActivated};
     auto processedInput = ::processInput(wrappedAddress, p2shInputInfo, tx, state, writer);
     
-    bool firstSpend = writer.serialize(*this, inputInfo);
+    bool firstSpend = writer.serialize(*this, inputInfo.addressNum, inputInfo.txNum);
     if (firstSpend) {
         processedInput.push_back(inputInfo.addressNum);
     }

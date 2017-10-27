@@ -24,6 +24,7 @@ struct AddressNumResolver : public boost::static_visitor<std::pair<blocksci::Add
     std::pair<blocksci::Address, bool> operator()(ScriptOutput<type> &scriptOutput) const {
         auto ret = getAddressNum(scriptOutput, state);
         scriptOutput.processOutput(state);
+        return ret;
     }
 };
 
