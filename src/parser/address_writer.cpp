@@ -28,11 +28,12 @@ struct SerializeOutputVisitor : public boost::static_visitor<void> {
 
 struct SerializeInputVisitor : public boost::static_visitor<void> {
     AddressWriter &writer;
+    uint32_t scriptNum;
     
-    SerializeInputVisitor(AddressWriter &writer_) : writer(writer_) {}
+    SerializeInputVisitor(AddressWriter &writer_, uint32_t scriptNum_) : writer(writer_), scriptNum(scriptNum_) {}
     template <blocksci::AddressType::Enum type>
     void operator()(const ScriptInput<type> &data) const {
-        writer.serialize(data);
+        writer.serialize(data, scriptNum);
     }
 };
 
@@ -41,8 +42,8 @@ void AddressWriter::serialize(const ScriptOutputType &output) {
     boost::apply_visitor(visitor, output);
 }
 
-void AddressWriter::serialize(const ScriptInputType &input) {
-    SerializeInputVisitor visitor(*this);
+void AddressWriter::serialize(const ScriptInputType &input, uint32_t scriptNum) {
+    SerializeInputVisitor visitor(*this, scriptNum);
     boost::apply_visitor(visitor, input);
 }
 
@@ -55,7 +56,7 @@ void AddressWriter::serializeImp<AddressType::Enum::PUBKEY>(const ScriptOutput<A
 }
 
 template<>
-bool AddressWriter::serializeImp<AddressType::Enum::PUBKEY>(const ScriptInput<AddressType::Enum::PUBKEY> &) {
+bool AddressWriter::serializeImp<AddressType::Enum::PUBKEY>(const ScriptInput<AddressType::Enum::PUBKEY> &, uint32_t) {
     return false;
 }
 
@@ -68,9 +69,9 @@ void AddressWriter::serializeImp<AddressType::Enum::PUBKEYHASH>(const ScriptOutp
 }
 
 template<>
-bool AddressWriter::serializeImp<AddressType::Enum::PUBKEYHASH>(const ScriptInput<AddressType::Enum::PUBKEYHASH> &input) {
+bool AddressWriter::serializeImp<AddressType::Enum::PUBKEYHASH>(const ScriptInput<AddressType::Enum::PUBKEYHASH> &input, uint32_t scriptNum) {
     auto &file = std::get<ScriptFile<ScriptType::Enum::PUBKEY>>(scriptFiles);
-    auto data = file.getData(input.scriptNum - 1);
+    auto data = file.getData(scriptNum - 1);
     if (data->pubkey == nullPubkey) {
         data->pubkey = input.pubkey;
         return true;
@@ -86,9 +87,9 @@ void AddressWriter::serializeImp<AddressType::Enum::WITNESS_PUBKEYHASH>(const Sc
 }
 
 template<>
-bool AddressWriter::serializeImp<AddressType::Enum::WITNESS_PUBKEYHASH>(const ScriptInput<AddressType::Enum::WITNESS_PUBKEYHASH> &input) {
+bool AddressWriter::serializeImp<AddressType::Enum::WITNESS_PUBKEYHASH>(const ScriptInput<AddressType::Enum::WITNESS_PUBKEYHASH> &input, uint32_t scriptNum) {
     auto &file = std::get<ScriptFile<ScriptType::Enum::PUBKEY>>(scriptFiles);
-    auto data = file.getData(input.scriptNum - 1);
+    auto data = file.getData(scriptNum - 1);
     if (data->pubkey == nullPubkey) {
         data->pubkey = input.pubkey;
         return true;
@@ -104,13 +105,16 @@ void AddressWriter::serializeImp<AddressType::Enum::WITNESS_SCRIPTHASH>(const Sc
 }
 
 template<>
-bool AddressWriter::serializeImp<AddressType::Enum::WITNESS_SCRIPTHASH>(const ScriptInput<AddressType::Enum::WITNESS_SCRIPTHASH> &input) {
+bool AddressWriter::serializeImp<AddressType::Enum::WITNESS_SCRIPTHASH>(const ScriptInput<AddressType::Enum::WITNESS_SCRIPTHASH> &input, uint32_t scriptNum) {
     auto &file = std::get<ScriptFile<ScriptType::Enum::SCRIPTHASH>>(scriptFiles);
-    auto data = file.getData(input.scriptNum - 1);
+    auto data = file.getData(scriptNum - 1);
     if (data->wrappedAddress.scriptNum == 0) {
         data->wrappedAddress = input.wrappedAddress;
         data->txRevealed = input.txNum;
         return true;
+    }
+    if (input.containsNewOutput) {
+        serialize(input.wrappedScriptOutput);
     }
     return false;
 }
@@ -123,13 +127,16 @@ void AddressWriter::serializeImp<AddressType::Enum::SCRIPTHASH>(const ScriptOutp
 }
 
 template<>
-bool AddressWriter::serializeImp<AddressType::Enum::SCRIPTHASH>(const ScriptInput<AddressType::Enum::SCRIPTHASH> &input) {
+bool AddressWriter::serializeImp<AddressType::Enum::SCRIPTHASH>(const ScriptInput<AddressType::Enum::SCRIPTHASH> &input, uint32_t scriptNum) {
     auto &file = std::get<ScriptFile<ScriptType::Enum::SCRIPTHASH>>(scriptFiles);
-    auto data = file.getData(input.scriptNum - 1);
+    auto data = file.getData(scriptNum - 1);
     if (data->wrappedAddress.scriptNum == 0) {
         data->wrappedAddress = input.wrappedAddress;
         data->txRevealed = input.txNum;
         return true;
+    }
+    if (input.containsNewOutput) {
+        serialize(input.wrappedScriptOutput);
     }
     return false;
 }
@@ -157,7 +164,7 @@ void AddressWriter::serializeImp<AddressType::Enum::MULTISIG>(const ScriptOutput
 }
 
 template<>
-bool AddressWriter::serializeImp<AddressType::Enum::MULTISIG>(const ScriptInput<AddressType::Enum::MULTISIG> &) {
+bool AddressWriter::serializeImp<AddressType::Enum::MULTISIG>(const ScriptInput<AddressType::Enum::MULTISIG> &, uint32_t) {
     return false;
 }
 
@@ -170,9 +177,9 @@ void AddressWriter::serializeImp<AddressType::Enum::NONSTANDARD>(const ScriptOut
 }
 
 template<>
-bool AddressWriter::serializeImp<AddressType::Enum::NONSTANDARD>(const ScriptInput<AddressType::Enum::NONSTANDARD> &input) {
+bool AddressWriter::serializeImp<AddressType::Enum::NONSTANDARD>(const ScriptInput<AddressType::Enum::NONSTANDARD> &input, uint32_t scriptNum) {
     auto &file = std::get<ScriptFile<ScriptType::Enum::NONSTANDARD>>(scriptFiles);
-    file.updateIndexGroup<1>(input.scriptNum - 1);
+    file.updateIndexGroup<1>(scriptNum - 1);
     file.write(input.script.begin(), input.script.end());
     return true;
 }
@@ -185,7 +192,7 @@ void AddressWriter::serializeImp<AddressType::Enum::NULL_DATA>(const ScriptOutpu
 }
 
 template<>
-bool AddressWriter::serializeImp<AddressType::Enum::NULL_DATA>(const ScriptInput<AddressType::Enum::NULL_DATA> &) {
+bool AddressWriter::serializeImp<AddressType::Enum::NULL_DATA>(const ScriptInput<AddressType::Enum::NULL_DATA> &, uint32_t) {
     return true;
 }
 

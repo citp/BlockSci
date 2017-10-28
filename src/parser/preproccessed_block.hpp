@@ -20,7 +20,6 @@ struct getrawtransaction_t;
 struct vout_t;
 struct vin_t;
 struct InputView;
-struct InputScriptView;
 
 namespace blocksci {
     struct RawTransaction;
@@ -159,7 +158,7 @@ struct RawTransaction {
     
     void calculateHash();
     
-    blocksci::uint256 getHash(const InputView &info, const InputScriptView &scriptView, int hashType) const;
+    blocksci::uint256 getHash(const InputView &info, const CScriptView &scriptView, int hashType) const;
     blocksci::RawTransaction getRawTransaction() const;
 };
 

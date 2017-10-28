@@ -254,7 +254,7 @@ enum {
     SIGHASH_ANYONECANPAY = 0x80,
 };
 
-blocksci::uint256 RawTransaction::getHash(const InputView &info, const InputScriptView &scriptView, int hashType) const {
+blocksci::uint256 RawTransaction::getHash(const InputView &info, const CScriptView &scriptView, int hashType) const {
     
     bool anyoneCanPay = !!(hashType & SIGHASH_ANYONECANPAY);
     bool hashSingle = (hashType & 0x1f) == SIGHASH_SINGLE;
@@ -276,24 +276,23 @@ blocksci::uint256 RawTransaction::getHash(const InputView &info, const InputScri
             // Blank out other inputs' signatures
             s.serializeCompact(0);
         } else {
-            auto scriptCode = scriptView.getScript();
-            CScriptView::const_iterator it = scriptCode.begin();
+            CScriptView::const_iterator it = scriptView.begin();
             CScriptView::const_iterator itBegin = it;
             opcodetype opcode;
             unsigned int nCodeSeparators = 0;
-            while (scriptCode.GetOp(it, opcode)) {
+            while (scriptView.GetOp(it, opcode)) {
                 if (opcode == OP_CODESEPARATOR)
                     nCodeSeparators++;
             }
-            s.serializeCompact(scriptCode.size() - nCodeSeparators);
+            s.serializeCompact(scriptView.size() - nCodeSeparators);
             it = itBegin;
-            while (scriptCode.GetOp(it, opcode)) {
+            while (scriptView.GetOp(it, opcode)) {
                 if (opcode == OP_CODESEPARATOR) {
                     s.serialize(&itBegin[0], static_cast<size_t>(it-itBegin-1));
                     itBegin = it;
                 }
             }
-            if (itBegin != scriptCode.end()) {
+            if (itBegin != scriptView.end()) {
                 s.serialize(&itBegin[0], static_cast<size_t>(it-itBegin));
             }
         }
