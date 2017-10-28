@@ -42,7 +42,8 @@ struct ScriptInputBase {
     uint32_t txNum;
     
     ScriptInputBase(const InputView &inputView, const CScriptView &) : txNum(inputView.txNum) {}
-    void checkInput(const InputView &, const CScriptView &, const RawTransaction &, const AddressState &, const AddressWriter &) {}
+    void checkInput(uint32_t, const AddressState &, const AddressWriter &) {}
+    void processInput(AddressState &) {}
 };
 
 template<auto>
@@ -53,9 +54,7 @@ struct ScriptInput<blocksci::AddressType::Enum::PUBKEY> : public ScriptInputBase
     ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &) : ScriptInputBase(inputView, scriptView) {}
     ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const AddressWriter &) : ScriptInput(inputView, scriptView, tx) {}
     ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const ScriptOutput<blocksci::AddressType::Enum::PUBKEY> &) : ScriptInput(inputView, scriptView, tx) {}
-    ProcessedInput processInput(uint32_t, const InputView &, const CScriptView &, const RawTransaction &, AddressState &, AddressWriter &) {
-        return ProcessedInput{};
-    }
+    ProcessedInput serializeInput(uint32_t scriptNum, AddressWriter &writer);
 };
 
 template<>
@@ -65,7 +64,7 @@ struct ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH> : public ScriptInput
     ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &);
     ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const AddressWriter &) : ScriptInput(inputView, scriptView, tx) {}
     ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const ScriptOutput<blocksci::AddressType::Enum::PUBKEYHASH> &) : ScriptInput(inputView, scriptView, tx) {}
-    ProcessedInput processInput(uint32_t scriptNum, const InputView &inputView, const CScriptView &scriptView, const RawTransaction &, AddressState &, AddressWriter &);
+    ProcessedInput serializeInput(uint32_t scriptNum, AddressWriter &);
 };
 
 template<>
@@ -76,7 +75,7 @@ struct ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : public Scr
     ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const AddressWriter &) : ScriptInput(inputView, scriptView, tx) {}
     ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const ScriptOutput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> &) : ScriptInput(inputView, scriptView, tx) {}
     
-    ProcessedInput processInput(uint32_t scriptNum, const InputView &inputView, const CScriptView &scriptView, const RawTransaction &, AddressState &, AddressWriter &);
+    ProcessedInput serializeInput(uint32_t scriptNum, AddressWriter &);
 };
 
 template<>
@@ -87,7 +86,7 @@ struct ScriptInput<blocksci::AddressType::Enum::NONSTANDARD> : public ScriptInpu
     ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const AddressWriter &) : ScriptInput(inputView, scriptView, tx) {}
     ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD> &) : ScriptInput(inputView, scriptView, tx) {}
     
-    ProcessedInput processInput(uint32_t scriptNum, const InputView &inputView, const CScriptView &scriptView, const RawTransaction &, AddressState &, AddressWriter &);
+    ProcessedInput serializeInput(uint32_t scriptNum, AddressWriter &);
 };
 
 template <>
@@ -96,7 +95,7 @@ struct ScriptInput<blocksci::AddressType::Enum::NULL_DATA> : public ScriptInputB
     ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const AddressWriter &) : ScriptInput(inputView, scriptView, tx) {}
     ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const ScriptOutput<blocksci::AddressType::Enum::NULL_DATA> &) : ScriptInput(inputView, scriptView, tx) {}
 
-    ProcessedInput processInput(uint32_t scriptNum, const InputView &inputView, const CScriptView &scriptView, const RawTransaction &, AddressState &, AddressWriter &);
+    ProcessedInput serializeInput(uint32_t scriptNum, AddressWriter &);
 };
 
 using ScriptInputType = blocksci::to_address_variant_t<ScriptInput>;
@@ -114,9 +113,10 @@ struct ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptInput
     ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const AddressWriter &) : ScriptInput(inputView, scriptView, tx) {}
     ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const ScriptOutput<blocksci::AddressType::Enum::SCRIPTHASH> &) : ScriptInput(inputView, scriptView, tx) {}
 
-    ProcessedInput processInput(uint32_t scriptNum, const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, AddressState &state, AddressWriter &writer);
+    void processInput(AddressState &);
+    ProcessedInput serializeInput(uint32_t scriptNum, AddressWriter &writer);
     
-    void checkInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const AddressState &state, const AddressWriter &writer);
+    void checkInput(uint32_t scriptNum, const AddressState &state, const AddressWriter &writer);
 };
 
 template<>
@@ -130,8 +130,9 @@ struct ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> : public Scr
     ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const AddressWriter &) : ScriptInput(inputView, scriptView, tx) {}
     ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const ScriptOutput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> &) : ScriptInput(inputView, scriptView, tx) {}
     
-    ProcessedInput processInput(uint32_t scriptNum, const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, AddressState &state, AddressWriter &writer);
-    void checkInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const AddressState &state, const AddressWriter &writer);
+    void processInput(AddressState &);
+    ProcessedInput serializeInput(uint32_t scriptNum, AddressWriter &writer);
+    void checkInput(uint32_t scriptNum, const AddressState &state, const AddressWriter &writer);
 };
 
 template<>
@@ -142,13 +143,13 @@ struct ScriptInput<blocksci::AddressType::Enum::MULTISIG> : public ScriptInputBa
     ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const AddressWriter &writer);
     ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const ScriptOutput<blocksci::AddressType::Enum::MULTISIG> &spentOutput);
     
-    ProcessedInput processInput(uint32_t scriptNum, const InputView &inputView, const CScriptView &scriptView, const RawTransaction &, AddressState &, AddressWriter &);
+    ProcessedInput serializeInput(uint32_t scriptNum, AddressWriter &);
 };
 
-ScriptInputType generateScriptInput(const blocksci::Address &address, const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, AddressWriter &addressWriter);
+ScriptInputType generateScriptInput(const blocksci::Address &address, const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx);
+void processScriptInput(ScriptInputType &input, AddressState &state);
+ProcessedInput serializeScriptInput(uint32_t scriptNum, ScriptInputType &input, AddressWriter &addressWriter);
 
-ProcessedInput processScriptInput(uint32_t scriptNum, ScriptInputType &input, const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, AddressState &state, AddressWriter &addressWriter);
-
-void checkInput(blocksci::AddressType::Enum type, const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const AddressState &state, const AddressWriter &addressWriter);
+void checkScriptInput(uint32_t scriptNum, ScriptInputType &input, const AddressState &state, const AddressWriter &addressWriter);
 
 #endif /* script_input_hpp */

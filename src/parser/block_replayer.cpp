@@ -79,9 +79,17 @@ void replayBlock(const ParserConfiguration<FileTag> &config, uint32_t blockNum) 
         for (auto &input : tx.inputs) {
             auto &realInput = realTx.inputs()[j];
             InputView inputView(j, txNum, input.witnessStack, segwit);
-            // realInput.toAddressNum
+            
             CScriptView scriptView(input.getScriptBegin(), input.getScriptBegin() + input.getScriptLength());
-            checkInput(realInput.getType(), inputView, scriptView, tx, addressState, writer);
+            auto address = realInput.getAddress();
+            auto scriptInput = [&]() -> ScriptInputType {
+                if (address.type == blocksci::AddressType::Enum::MULTISIG) {
+                    return ScriptInput<blocksci::AddressType::Enum::MULTISIG>(inputView, scriptView, tx, addressWriter);
+                } else {
+                    return generateScriptInput(address, inputView, scriptView, tx);
+                }
+            }();
+            checkScriptInput(realInput.toAddressNum, scriptInput, addressState, addressWriter);
             j++;
         }
     }

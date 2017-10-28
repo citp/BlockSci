@@ -20,12 +20,19 @@
 
 template<blocksci::AddressType::Enum type>
 struct GenerateScriptInputFunctor {
-    static ScriptInputType f(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, AddressWriter &addressWriter) {
-        return ScriptInput<type>(inputView, scriptView, tx, addressWriter);
+    static ScriptInputType f(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx) {
+        return ScriptInput<type>(inputView, scriptView, tx);
     }
 };
 
-ScriptInputType generateScriptInput(const blocksci::Address &address, const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, AddressWriter &addressWriter) {
+template<>
+struct GenerateScriptInputFunctor<blocksci::AddressType::Enum::MULTISIG> {
+    static ScriptInputType f(const InputView &, const CScriptView &, const RawTransaction &) {
+        assert(false);
+    }
+};
+
+ScriptInputType generateScriptInput(const blocksci::Address &address, const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx) {
     
     static constexpr auto table = blocksci::make_dynamic_table<blocksci::AddressType, GenerateScriptInputFunctor>();
     static constexpr std::size_t size = blocksci::AddressType::all.size();
@@ -35,7 +42,7 @@ ScriptInputType generateScriptInput(const blocksci::Address &address, const Inpu
     {
         throw std::invalid_argument("combination of enum values is not valid");
     }
-    return table[index](inputView, scriptView, tx, addressWriter);
+    return table[index](inputView, scriptView, tx);
 }
 
 struct ScriptInputGenerator : public boost::static_visitor<ScriptInputType> {
@@ -54,43 +61,49 @@ ScriptInputType generateScriptInput(const InputView &inputView, const CScriptVie
     return boost::apply_visitor(visitor, output);
 }
 
-struct ScriptInputProcessor : public boost::static_visitor<ProcessedInput> {
-    uint32_t scriptNum;
-    const InputView &inputView;
-    const CScriptView &scriptView;
-    const RawTransaction &tx;
+struct ScriptInputProcessor : public boost::static_visitor<void> {
     AddressState &state;
-    AddressWriter &addressWriter;
-    ScriptInputProcessor(uint32_t scriptNum_, const InputView &inputView_, const CScriptView &scriptView_, const RawTransaction &tx_, AddressState &state_, AddressWriter &addressWriter_) : scriptNum(scriptNum_), inputView(inputView_), scriptView(scriptView_), tx(tx_), state(state_), addressWriter(addressWriter_) {}
+    ScriptInputProcessor(AddressState &state_) : state(state_) {}
     template <blocksci::AddressType::Enum type>
-    ProcessedInput operator()(ScriptInput<type> &input) const {
-        return input.processInput(scriptNum, inputView, scriptView, tx, state, addressWriter);
+    void operator()(ScriptInput<type> &input) const {
+        input.processInput(state);
     }
 };
 
-ProcessedInput processScriptInput(uint32_t scriptNum, ScriptInputType &input, const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, AddressState &state, AddressWriter &addressWriter) {
-    ScriptInputProcessor visitor{scriptNum, inputView, scriptView, tx, state, addressWriter};
+void processScriptInput(ScriptInputType &input, AddressState &state) {
+    ScriptInputProcessor visitor{state};
     return boost::apply_visitor(visitor, input);
 }
 
-template<blocksci::AddressType::Enum type>
-struct CheckScriptInputFunctor {
-    static void f(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const AddressState &state, const AddressWriter &addressWriter) {
-        ScriptInput<type> input(inputView, scriptView, tx, addressWriter);
-        input.checkInput(inputView, scriptView, tx, state, addressWriter);
+struct ScriptInputSerializer : public boost::static_visitor<ProcessedInput> {
+    uint32_t scriptNum;
+    AddressWriter &addressWriter;
+    ScriptInputSerializer(uint32_t scriptNum_, AddressWriter &addressWriter_) : scriptNum(scriptNum_), addressWriter(addressWriter_) {}
+    template <blocksci::AddressType::Enum type>
+    ProcessedInput operator()(ScriptInput<type> &input) const {
+        return input.serializeInput(scriptNum, addressWriter);
     }
 };
 
-void checkInput(blocksci::AddressType::Enum type, const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const AddressState &state, const AddressWriter &addressWriter) {
-    static constexpr auto table = blocksci::make_dynamic_table<blocksci::AddressType, CheckScriptInputFunctor>();
-    static constexpr std::size_t size = blocksci::AddressType::all.size();
-    
-    auto index = static_cast<size_t>(type);
-    if (index >= size)
-    {
-        throw std::invalid_argument("combination of enum values is not valid");
+ProcessedInput serializeScriptInput(uint32_t scriptNum, ScriptInputType &input, AddressWriter &addressWriter) {
+    ScriptInputSerializer visitor{scriptNum, addressWriter};
+    return boost::apply_visitor(visitor, input);
+}
+
+struct ScriptInputChecker : public boost::static_visitor<void> {
+    uint32_t scriptNum;
+    const AddressState &state;
+    const AddressWriter &addressWriter;
+    ScriptInputChecker(uint32_t scriptNum_, const AddressState &state_, const AddressWriter &addressWriter_) : scriptNum(scriptNum_), state(state_), addressWriter(addressWriter_) {}
+    template <blocksci::AddressType::Enum type>
+    void operator()(ScriptInput<type> &input) const {
+        input.checkInput(scriptNum, state, addressWriter);
     }
-    table[index](inputView, scriptView, tx, state, addressWriter);
+};
+
+void checkScriptInput(uint32_t scriptNum, ScriptInputType &input, const AddressState &state, const AddressWriter &addressWriter) {
+    ScriptInputChecker visitor{scriptNum, state, addressWriter};
+    boost::apply_visitor(visitor, input);
 }
 
 ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx) : ScriptInputBase(inputView, scriptView) {
@@ -122,13 +135,13 @@ ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::ScriptInput(const InputVie
     wrappedScriptInput = std::make_unique<ScriptInputType>(generateScriptInput(inputView, p2shScriptView, tx, wrappedScriptOutput));
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::processInput(uint32_t scriptNum, const InputView &inputView, const CScriptView &, const RawTransaction &tx, AddressState &state, AddressWriter &writer) {
-    auto [address, isNew] = resolveAddress(wrappedScriptOutput, state);
-    containsNewOutput = isNew;
-    wrappedAddress = address;
-    
-    CScriptView p2shScriptView{wrappedInputBegin, wrappedInputBegin + wrappedInputLength};
-    ProcessedInput processedInput = processScriptInput(wrappedAddress.scriptNum, *wrappedScriptInput, inputView, p2shScriptView, tx, state, writer);
+void ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::processInput(AddressState &state) {
+    std::tie(wrappedAddress, containsNewOutput) = resolveAddress(wrappedScriptOutput, state);
+    processScriptInput(*wrappedScriptInput, state);
+}
+
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::serializeInput(uint32_t scriptNum, AddressWriter &writer) {
+    ProcessedInput processedInput = serializeScriptInput(wrappedAddress.scriptNum, *wrappedScriptInput, writer);
     bool firstSpend = writer.serialize(*this, scriptNum);
     if (firstSpend) {
         processedInput.push_back(scriptNum);
@@ -136,11 +149,16 @@ ProcessedInput ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::processInpu
     return processedInput;
 }
 
-void ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::checkInput(const InputView &inputView, const CScriptView &, const RawTransaction &tx, const AddressState &state, const AddressWriter &writer) {
+void ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>::checkInput(uint32_t scriptNum, const AddressState &state, const AddressWriter &writer) {
     wrappedAddress = checkOutput(wrappedScriptOutput, state, writer);
-    // wrappedAddress.scriptNum
+    //
     CScriptView p2shScriptView{wrappedInputBegin, wrappedInputBegin + wrappedInputLength};
-    ::checkInput(wrappedAddress.type, inputView, p2shScriptView, tx, state, writer);
+    checkScriptInput(wrappedAddress.scriptNum, *wrappedScriptInput, state, writer);
+}
+
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::PUBKEY>::serializeInput(uint32_t scriptNum, AddressWriter &writer) {
+    writer.serialize(*this, scriptNum);
+    return ProcessedInput{};
 }
 
 ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &) : ScriptInputBase(inputView, scriptView) {
@@ -157,7 +175,7 @@ ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInput(const InputVie
     }
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::processInput(uint32_t scriptNum, const InputView &, const CScriptView &, const RawTransaction &, AddressState &, AddressWriter &writer) {
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH>::serializeInput(uint32_t scriptNum, AddressWriter &writer) {
     writer.serialize(*this, scriptNum);
     return ProcessedInput{};
 }
@@ -248,7 +266,7 @@ ScriptInput<blocksci::AddressType::Enum::MULTISIG>::ScriptInput(const InputView 
     }
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::MULTISIG>::processInput(uint32_t scriptNum, const InputView &, const CScriptView &, const RawTransaction &, AddressState &, AddressWriter &writer) {
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::MULTISIG>::serializeInput(uint32_t scriptNum, AddressWriter &writer) {
     writer.serialize(*this, scriptNum);
     return ProcessedInput{};
 }
@@ -265,7 +283,7 @@ ScriptInput<blocksci::AddressType::Enum::NONSTANDARD>::ScriptInput(const InputVi
     }
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::NONSTANDARD>::processInput(uint32_t scriptNum, const InputView &, const CScriptView &, const RawTransaction &, AddressState &, AddressWriter &writer) {
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::NONSTANDARD>::serializeInput(uint32_t scriptNum, AddressWriter &writer) {
     writer.serialize(*this, scriptNum);
     return ProcessedInput{};
 }
@@ -273,7 +291,7 @@ ProcessedInput ScriptInput<blocksci::AddressType::Enum::NONSTANDARD>::processInp
 ScriptInput<blocksci::AddressType::Enum::NULL_DATA>::ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &) : ScriptInputBase(inputView, scriptView) {
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::NULL_DATA>::processInput(uint32_t scriptNum, const InputView &, const CScriptView &, const RawTransaction &, AddressState &, AddressWriter &writer) {
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::NULL_DATA>::serializeInput(uint32_t scriptNum, AddressWriter &writer) {
     writer.serialize(*this, scriptNum);
     return ProcessedInput{};
 }
@@ -283,7 +301,7 @@ ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::ScriptInput(const 
     pubkey.Set(reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin), reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin) + pubkeyWitness.length);
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::processInput(uint32_t scriptNum, const InputView &, const CScriptView &, const RawTransaction &, AddressState &, AddressWriter &writer) {
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::serializeInput(uint32_t scriptNum, AddressWriter &writer) {
     writer.serialize(*this, scriptNum);
     return ProcessedInput{};
 }
@@ -296,16 +314,15 @@ ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::ScriptInput(const 
     wrappedScriptInput = std::make_unique<ScriptInputType>(generateScriptInput(inputView, scriptView, tx, wrappedScriptOutput));
 }
 
-ProcessedInput ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::processInput(uint32_t scriptNum, const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, AddressState &state, AddressWriter &writer) {
-    
-    auto [address, isNew] = resolveAddress(wrappedScriptOutput, state);
-    containsNewOutput = isNew;
-    wrappedAddress = address;
+void ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::processInput(AddressState &state) {
+    std::tie(wrappedAddress, containsNewOutput) = resolveAddress(wrappedScriptOutput, state);
+    processScriptInput(*wrappedScriptInput, state);
+}
+
+ProcessedInput ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::serializeInput(uint32_t scriptNum, AddressWriter &writer) {
 
     bool firstSpend = writer.serialize(*this, scriptNum);
-    
-    ProcessedInput processedInput = processScriptInput(wrappedAddress.scriptNum, *wrappedScriptInput, inputView, scriptView, tx, state, writer);
-    
+    ProcessedInput processedInput = serializeScriptInput(wrappedAddress.scriptNum, *wrappedScriptInput, writer);
     if (firstSpend) {
         processedInput.push_back(scriptNum);
     }
@@ -313,7 +330,7 @@ ProcessedInput ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::pro
     return processedInput;
 }
 
-void ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::checkInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const AddressState &state, const AddressWriter &writer) {
+void ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::checkInput(uint32_t scriptNum, const AddressState &state, const AddressWriter &writer) {
     wrappedAddress = checkOutput(wrappedScriptOutput, state, writer);
-    ::checkInput(wrappedAddress.type, inputView, scriptView, tx, state, writer);
+    checkScriptInput(scriptNum, *wrappedScriptInput, state, writer);
 }

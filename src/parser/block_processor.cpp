@@ -314,8 +314,15 @@ std::vector<uint32_t> connectAddressess(RawTransaction *tx, AddressState &addres
         
         InputView inputView(i, tx->txNum, input.witnessStack, tx->isSegwit);
         CScriptView scriptView(input.getScriptBegin(), input.getScriptBegin() + input.getScriptLength());
-        auto scriptInput = generateScriptInput(address, inputView, scriptView, *tx, addressWriter);
-        ProcessedInput processedInput = processScriptInput(address.scriptNum, scriptInput, inputView, scriptView, *tx, addressState, addressWriter);
+        auto scriptInput = [&]() -> ScriptInputType {
+            if (address.type == blocksci::AddressType::Enum::MULTISIG) {
+                return ScriptInput<blocksci::AddressType::Enum::MULTISIG>(inputView, scriptView, *tx, addressWriter);
+            } else {
+                return generateScriptInput(address, inputView, scriptView, *tx);
+            }
+        }();
+        processScriptInput(scriptInput, addressState);
+        ProcessedInput processedInput = serializeScriptInput(address.scriptNum, scriptInput, addressWriter);
         
         for (auto &index : processedInput) {
             revealed.push_back(index);
