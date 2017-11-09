@@ -21,6 +21,7 @@
 #include "hash_index_creator.hpp"
 #include "block_replayer.hpp"
 #include "address_writer.hpp"
+#include "utxo_address_state.hpp"
 
 #include <blocksci/data_access.hpp>
 #include <blocksci/state.hpp>
@@ -66,7 +67,8 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, uint32_t fi
     blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction> txFile{config.txFilePath()};
     blocksci::FixedSizeFileMapper<blocksci::uint256, boost::iostreams::mapped_file::readwrite> txHashesFile{config.txHashesFilePath()};
     blocksci::ScriptFirstSeenAccess firstSeenIndex(config);
-    UTXOState utxoState{config};
+    UTXOState utxoState;
+    utxoState.unserialize(config.utxoCacheFile());
     
     uint32_t totalTxCount = static_cast<uint32_t>(txFile.size());
     for (uint32_t txNum = totalTxCount - 1; txNum >= firstDeletedTxNum; txNum--) {
@@ -96,14 +98,14 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, uint32_t fi
                 auto &output = spentTx->getOutput(i);
                 if (output.linkedTxNum == txNum) {
                     output.linkedTxNum = 0;
-                    blocksci::Inout out = output;
-                    out.linkedTxNum = spentTxNum;
-                    UTXO utxo(out, input.getType());
+                    UTXO utxo(spentTxNum, output.getType());
                     utxoState.addOutput(utxo, {*spentHash, i});
                 }
             }
         }
     }
+    
+    utxoState.serialize(config.utxoCacheFile());
     
     return state;
 }
@@ -246,8 +248,13 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
     
     {
         BlockProcessor processor{startingTxCount, totalTxCount, maxBlockHeight};
-        UTXOState utxoState{config};
+        UTXOState utxoState;
+        UTXOAddressState utxoAddressState;
         AddressState addressState{config.addressPath()};
+        
+        utxoAddressState.unserialize(config.utxoAddressStatePath());
+        utxoState.unserialize(config.utxoCacheFile());
+        
         auto it = blocksToAdd.begin();
         auto end = blocksToAdd.end();
         while (it != end) {
@@ -260,7 +267,7 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
             
             decltype(blocksToAdd) nextBlocks{prev, it};
             
-            auto revealedScriptHashes = processor.addNewBlocks(config, nextBlocks, utxoState, addressState, txFile);
+            auto revealedScriptHashes = processor.addNewBlocks(config, nextBlocks, utxoState, utxoAddressState, addressState, txFile);
             
             blocksci::ChainAccess chain{config, false, 0};
             blocksci::ScriptAccess scripts{config};
@@ -282,6 +289,9 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
             firstSeen.complete(state);
         //     hashIndex.complete(state);
         }
+        
+        utxoAddressState.serialize(config.utxoAddressStatePath());
+        utxoState.serialize(config.utxoCacheFile());
     }
 }
 

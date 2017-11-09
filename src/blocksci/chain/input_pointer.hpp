@@ -12,11 +12,6 @@
 #include "inout_pointer.hpp"
 
 namespace blocksci {
-    struct Transaction;
-    struct Input;
-    struct Output;
-    class ChainAccess;
-    
     struct InputPointer : public InoutPointer {
         using InoutPointer::InoutPointer;
         

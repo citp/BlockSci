@@ -9,6 +9,8 @@
 #ifndef transaction_hpp
 #define transaction_hpp
 
+#include "chain_fwd.hpp"
+
 #include <boost/range/iterator_range.hpp>
 #include <boost/optional/optional_fwd.hpp>
 
@@ -22,15 +24,8 @@ namespace blocksci {
     struct Address;
     class uint256;
     class ScriptAccess;
-    class ChainAccess;
     class ScriptFirstSeenAccess;
     class HashIndex;
-    struct TransactionSummary;
-    struct Input;
-    struct Output;
-    struct Block;
-    struct InputPointer;
-    struct OutputPointer;
     
     struct RawTransaction {
         uint32_t sizeBytes;

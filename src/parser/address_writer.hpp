@@ -58,7 +58,7 @@ class AddressWriter {
     bool serializeImp(const ScriptInput<type> &input, uint32_t scriptNum);
     
     template<blocksci::AddressType::Enum type>
-    void serializeImp(const ScriptOutput<type> &output);
+    void serializeImp(const ScriptData<type> &output, ScriptFile<scriptType(type)> &file);
     
 public:
     
@@ -73,8 +73,13 @@ public:
     }
     
     template<blocksci::AddressType::Enum type>
-    void serialize(const ScriptOutput<type> &output) {
-        serializeImp(output);
+    uint32_t serialize(const ScriptOutput<type> &output) {
+        if (output.isNew) {
+            auto &file = std::get<ScriptFile<scriptType(type)>>(scriptFiles);
+            serializeImp(output.data, file);
+            return file.size();
+        }
+        return 0;
     }
     
     template<blocksci::AddressType::Enum type>
@@ -84,7 +89,7 @@ public:
     
     void rollback(const blocksci::State &state);
     
-    void serialize(const ScriptOutputType &output);
+    void serialize(const AnyScriptOutput &output);
     void serialize(const ScriptInputType &input, uint32_t scriptNum);
     
     AddressWriter(const ParserConfigurationBase &config);

@@ -16,9 +16,6 @@
 
 
 namespace blocksci {
-    class ChainAccess;
-    struct Output;
-    
     struct Input : public Inout {
         using Inout::Inout;
         

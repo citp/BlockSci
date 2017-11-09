@@ -35,6 +35,11 @@ namespace blocksci {
     }
 }
 
+std::ostream &operator<<(std::ostream &os, const blocksci::OutputPointer &pointer) {
+    os << pointer.toString();
+    return os;
+}
+
 namespace std
 {
     size_t hash<blocksci::OutputPointer>::operator()(const blocksci::OutputPointer &pointer) const {

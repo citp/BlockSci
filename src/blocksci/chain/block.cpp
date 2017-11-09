@@ -215,6 +215,19 @@ namespace blocksci {
         }
         return net;
     }
+
+    std::unordered_map<std::string, int64_t> netFullTypeValue(const Block &block, const ChainAccess &access, const ScriptAccess &scripts) {
+        std::unordered_map<std::string, int64_t> net;
+        for (auto tx : block.txes(access)) {
+            for (auto &output : tx.outputs()) {
+                net[output.getAddress().fullType(scripts)] += output.getValue();
+            }
+            for (auto &input : tx.inputs()) {
+                net[input.getAddress().fullType(scripts)] -= input.getValue();
+            }
+        }
+        return net;
+    }
     
     uint64_t getTotalSpentOfAge(const Block &block, const ChainAccess &access, uint32_t age) {
         uint64_t total = 0;

@@ -13,11 +13,11 @@
 #include <blocksci/chain/output.hpp>
 
 struct UTXO {
-    blocksci::Output output;
-    blocksci::AddressType::Enum addressType;
+    uint32_t txNum;
+    blocksci::AddressType::Enum type;
     
     UTXO() = default;
-    UTXO(const blocksci::Output &output, blocksci::AddressType::Enum addressType);
+    UTXO(uint32_t txNum, blocksci::AddressType::Enum type);
 };
 
 #endif /* utxo_hpp */

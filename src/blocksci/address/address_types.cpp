@@ -17,6 +17,6 @@ namespace blocksci {
 }
 
 std::ostream &operator<<(std::ostream &os, blocksci::AddressType::Enum const &type) {
-    os << GetTxnOutputType(type);
+    os << addressName(type);
     return os;
 }

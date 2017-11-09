@@ -42,7 +42,7 @@ namespace blocksci {
             std::stringstream ss;
             ss << "Address(";
             ss << "addressNum=" << scriptNum;
-            ss << ", type=" << GetTxnOutputType(type);
+            ss << ", type=" << addressName(type);
             ss << ")";
             return ss.str();
         }
@@ -130,6 +130,33 @@ namespace blocksci {
         return boost::none;
     }
     
+    std::string fullTypeImp(const Address &address, const ScriptAccess &scripts) {
+        std::stringstream ss;
+        ss << addressName(address.type);
+        switch (scriptType(address.type)) {
+            case ScriptType::Enum::SCRIPTHASH: {
+                auto script = script::ScriptHash(scripts, address.scriptNum);
+                auto wrapped = script.getWrappedAddress();
+                if (wrapped) {
+                    ss << "/" << fullTypeImp(*wrapped, scripts);
+                }
+                break;
+            }
+            case ScriptType::Enum::MULTISIG: {
+                auto script = script::Multisig(scripts, address.scriptNum);
+                ss << int(script.required) << "Of" << int(script.total);
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+        return ss.str();
+    }
+
+    std::string Address::fullType(const ScriptAccess &script) const {
+        return fullTypeImp(*this, script);
+    }
 }
 
 std::ostream &operator<<(std::ostream &os, const blocksci::Address &address) {

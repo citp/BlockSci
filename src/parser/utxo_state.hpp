@@ -13,9 +13,8 @@
 #include "utxo.hpp"
 #include "parser_fwd.hpp"
 
-#include <sparsepp/spp.h>
-
 #include <boost/functional/hash.hpp>
+#include <boost/filesystem/path.hpp>
 
 #include <google/dense_hash_map>
 
@@ -24,8 +23,6 @@
 
 class UTXOState {
     using utxo_map = google::dense_hash_map<RawOutputPointer, UTXO, boost::hash<RawOutputPointer>>;
-    
-    const ParserConfigurationBase &config;
     
     utxo_map utxoMap;
     
@@ -42,12 +39,10 @@ public:
         }
     };
     
-    UTXOState(const ParserConfigurationBase &config);
-    UTXOState(const UTXOState &) = delete;
-    UTXOState &operator=(const UTXOState &) = delete;
-    UTXOState(UTXOState &&) = delete;
-    UTXOState &operator=(UTXOState &&) = delete;
-    ~UTXOState();
+    UTXOState();
+    
+    bool unserialize(const boost::filesystem::path &path);
+    bool serialize(const boost::filesystem::path &path);
     
     UTXO spendOutput(const RawOutputPointer &outputPointer);
     void addOutput(UTXO utxo, const RawOutputPointer &outputPointer);

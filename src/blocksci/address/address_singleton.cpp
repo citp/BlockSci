@@ -64,5 +64,9 @@ namespace blocksci {
     size_t addressCount() {
         return addressCount(*DataAccess::Instance().scripts);
     }
+
+    std::string Address::fullType() const {
+        return fullType(*DataAccess::Instance().scripts);
+    }
     
 }

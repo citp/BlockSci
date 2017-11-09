@@ -90,4 +90,8 @@ namespace blocksci {
     std::unordered_map<AddressType::Enum, int64_t> netAddressTypeValue(const Block &block) {
         return netAddressTypeValue(block, *DataAccess::Instance().chain);
     }
+
+    std::unordered_map<std::string, int64_t> netFullTypeValue(const Block &block) {
+        return netFullTypeValue(block, *DataAccess::Instance().chain, *DataAccess::Instance().scripts);
+    }
 }

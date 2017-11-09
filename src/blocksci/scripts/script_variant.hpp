@@ -38,8 +38,7 @@ namespace blocksci {
         std::string toPrettyString() const;
         #endif
         
-    private:
-        ScriptVariant script;
+        ScriptVariant wrapped;
     };
 }
 

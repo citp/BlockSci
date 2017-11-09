@@ -21,7 +21,7 @@ namespace blocksci {
     
     static constexpr auto scriptCreator = make_dynamic_table<ScriptType, ScriptCreateFunctor>();
     
-    AnyScript::AnyScript(const Script &script, const ScriptAccess &access) :  script(scriptCreator[static_cast<size_t>(script.type)](access, script)) {}
+    AnyScript::AnyScript(const Script &script, const ScriptAccess &access) :  wrapped(scriptCreator[static_cast<size_t>(script.type)](access, script)) {}
     
     AnyScript::AnyScript(const Address &address, const ScriptAccess &access) : AnyScript(Script(address.scriptNum, scriptType(address.type)), access) {}
     
@@ -37,7 +37,7 @@ namespace blocksci {
     };
     
     void AnyScript::visitPointers(const std::function<void(const Address &)> &func) {
-        boost::apply_visitor(VisitPointersVisitor(func), script);
+        boost::apply_visitor(VisitPointersVisitor(func), wrapped);
     }
     
     struct PrettyPrintVisitor : public boost::static_visitor<std::string> {
@@ -53,6 +53,6 @@ namespace blocksci {
     };
     
     std::string AnyScript::toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const {
-        return boost::apply_visitor(PrettyPrintVisitor(config, access), script);
+        return boost::apply_visitor(PrettyPrintVisitor(config, access), wrapped);
     }
 }

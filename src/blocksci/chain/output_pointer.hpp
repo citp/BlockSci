@@ -12,10 +12,6 @@
 #include "inout_pointer.hpp"
 
 namespace blocksci {
-    struct Transaction;
-    struct Output;
-    class ChainAccess;
-    
     struct OutputPointer : public InoutPointer {
         using InoutPointer::InoutPointer;
         
@@ -30,6 +26,8 @@ namespace blocksci {
         #endif
     };
 }
+
+std::ostream &operator<<(std::ostream &os, const blocksci::OutputPointer &pointer);
 
 namespace std {
     template<> struct hash<blocksci::OutputPointer> {

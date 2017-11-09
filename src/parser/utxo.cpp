@@ -8,4 +8,4 @@
 
 #include "utxo.hpp"
 
-UTXO::UTXO(const blocksci::Output &output_, blocksci::AddressType::Enum addressType_): output(output_), addressType(addressType_) {}
+UTXO::UTXO(uint32_t txNum_, blocksci::AddressType::Enum type_): txNum(txNum_), type(type_) {}

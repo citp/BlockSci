@@ -13,8 +13,6 @@
 #include <boost/iterator/iterator_facade.hpp>
 
 namespace blocksci {
-    class ChainAccess;
-    struct Transaction;
     
     class TransactionIterator : public boost::iterator_facade<TransactionIterator, Transaction, boost::random_access_traversal_tag, Transaction> {
         const ChainAccess *access;

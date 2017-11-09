@@ -31,6 +31,10 @@ struct ParserConfigurationBase : public blocksci::DataConfiguration {
         return parserDirectory()/"utxoCache.dat";
     }
     
+    boost::filesystem::path utxoAddressStatePath() const {
+        return parserDirectory()/"utxoAddressState";
+    }
+    
     boost::filesystem::path addressPath() const {
         return parserDirectory()/"address";
     }
@@ -45,9 +49,6 @@ struct ParserConfigurationBase : public blocksci::DataConfiguration {
     
     bool witnessActivatedAtHeight(uint32_t blockHeight) const;
 };
-
-template<typename ParseTag>
-struct ParserConfiguration;
 
 #ifdef BLOCKSCI_FILE_PARSER
 template<>

@@ -54,7 +54,7 @@ RawOutput::RawOutput(SafeMemReader &reader, bool witnessActivated) {
     value = reader.readNext<Value>();
     scriptLength = reader.readVariableLengthInteger();
     scriptBegin = reinterpret_cast<const unsigned char*>(reader.unsafePos());
-    scriptOutput = extractScriptData(scriptBegin, scriptBegin + scriptLength, witnessActivated);
+    scriptOutput = AnyScriptOutput(getScriptView(), witnessActivated);
     reader.advance(scriptLength);
 }
 
@@ -131,7 +131,7 @@ TransactionHeader::TransactionHeader(SafeMemReader &reader) {
         reader.advance(scriptLength + sizeof(SequenceNum));
     }
     
- outputCount = reader.readVariableLengthInteger();
+    outputCount = reader.readVariableLengthInteger();
     for (decltype(outputCount) i = 0; i < outputCount; i++) {
         reader.advance(sizeof(Value));
         auto scriptLength = reader.readVariableLengthInteger();
@@ -174,7 +174,7 @@ RawInput::RawInput(const vin_t &vin) {
 }
 
 RawOutput::RawOutput(std::vector<unsigned char> scriptBytes_, uint64_t value_, bool witnessActivated) : scriptLength(0), scriptBytes(std::move(scriptBytes_)), value(value_)  {
-    scriptOutput = extractScriptData(scriptBegin, scriptBegin + scriptLength, witnessActivated);
+    scriptOutput = AnyScriptOutput(getScriptView(), witnessActivated);
 }
 
 RawOutput::RawOutput(const vout_t &vout, bool witnessActivated) : RawOutput(hexStringToVec(vout.scriptPubKey.hex), static_cast<uint64_t>(vout.value * 100000000), witnessActivated) {}
@@ -206,6 +206,10 @@ void RawTransaction::load(const getrawtransaction_t &txinfo, uint32_t txNum_, ui
 
 blocksci::RawTransaction RawTransaction::getRawTransaction() const {
     return {sizeBytes, locktime, static_cast<uint16_t>(inputs.size()), static_cast<uint16_t>(outputs.size())};
+}
+
+blocksci::OutputPointer RawInput::getOutputPointer() const {
+    return {linkedTxNum, rawOutputPointer.outputNum};
 }
 
 struct Serializer {
@@ -308,7 +312,8 @@ blocksci::uint256 RawTransaction::getHash(const InputView &info, const CScriptVi
     s.serializeCompact(nOutputs);
     for (unsigned int nOutput = 0; nOutput < nOutputs; nOutput++) {
         int64_t value = static_cast<int64_t>(outputs[nOutput].value);
-        uint32_t scriptLength = outputs[nOutput].getScriptLength();
+        auto scriptView = outputs[nOutput].getScriptView();
+        uint32_t scriptLength = scriptView.size();
         if (hashSingle && nOutput != info.inputNum) {
             value = -1;
             scriptLength = 0;
@@ -316,7 +321,7 @@ blocksci::uint256 RawTransaction::getHash(const InputView &info, const CScriptVi
         s.serialize(value);
         s.serializeCompact(scriptLength);
         if (scriptLength > 0) {
-            s.serialize(outputs[nOutput].getScriptBegin(), scriptLength);
+            s.serialize(scriptView.begin(), scriptView.size());
         }
     }
     s.serialize(locktime);

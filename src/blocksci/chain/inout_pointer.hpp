@@ -9,17 +9,12 @@
 #ifndef inout_pointer_hpp
 #define inout_pointer_hpp
 
+#include "chain_fwd.hpp"
+
 #include <cstdint>
 #include <string>
 
 namespace blocksci {
-    struct InoutPointer;
-}
-
-namespace blocksci {
-    struct Transaction;
-    struct Input;
-    class ChainAccess;
     
     struct InoutPointer {
         uint32_t txNum;

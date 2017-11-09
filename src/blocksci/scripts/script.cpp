@@ -30,6 +30,8 @@
 
 namespace blocksci {
     
+    Script::Script(const Address &address) : Script(address.scriptNum, scriptType(address.type)) {}
+    
     std::string Script::toString() const {
         if (scriptNum == 0) {
             return "InvalidScript()";

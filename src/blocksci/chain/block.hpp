@@ -9,6 +9,8 @@
 #ifndef block_hpp
 #define block_hpp
 
+#include "chain_fwd.hpp"
+
 #include <blocksci/bitcoin_uint256.hpp>
 #include <blocksci/address/address_types.hpp>
 
@@ -19,11 +21,6 @@
 
 namespace blocksci {
     
-    class TransactionIterator;
-    struct Transaction;
-    struct TransactionSummary;
-    struct Output;
-    class ChainAccess;
     class ScriptAccess;
     
     struct Block {
@@ -113,7 +110,8 @@ namespace blocksci {
     uint64_t getTotalSpentOfAge(const Block &block, const ChainAccess &access, uint32_t age);
     std::vector<uint64_t> getTotalSpentOfAges(const Block &block, const ChainAccess &access, uint32_t maxAge);
     std::unordered_map<AddressType::Enum, int64_t> netAddressTypeValue(const Block &block, const ChainAccess &access);
-    
+    std::unordered_map<std::string, int64_t> netFullTypeValue(const Block &block, const ChainAccess &access, const ScriptAccess &scripts);
+
     #ifndef BLOCKSCI_WITHOUT_SINGLETON
     size_t sizeBytes(const Block &block);
     bool isSegwit(const Block &block);
@@ -127,6 +125,7 @@ namespace blocksci {
     uint64_t getTotalSpentOfAge(const Block &block, uint32_t age);
     std::vector<uint64_t> getTotalSpentOfAges(const Block &block, uint32_t maxAge);
     std::unordered_map<AddressType::Enum, int64_t> netAddressTypeValue(const Block &block);
+    std::unordered_map<std::string, int64_t> netFullTypeValue(const Block &block);
     #endif
 }
 

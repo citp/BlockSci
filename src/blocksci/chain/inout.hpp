@@ -9,11 +9,8 @@
 #ifndef inout_hpp
 #define inout_hpp
 
+#include "chain_fwd.hpp"
 #include <blocksci/address/address_types.hpp>
-
-namespace blocksci {
-    struct Inout;
-}
 
 namespace std
 {
@@ -23,10 +20,8 @@ namespace std
 }
 
 namespace blocksci {
-    class  ChainAccess;
-    struct Transaction;
+    
     struct Address;
-    struct OutputPointer;
     
     struct Inout {
         uint32_t linkedTxNum;

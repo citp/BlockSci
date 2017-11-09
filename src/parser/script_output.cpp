@@ -11,208 +11,21 @@
 #include "script_output.hpp"
 #include "address_writer.hpp"
 
-#include "address_state.hpp"
-
 #include <blocksci/hash.hpp>
 
 #include <boost/variant/get.hpp>
 
-struct AddressNumResolver : public boost::static_visitor<std::pair<blocksci::Address, bool>> {
-    AddressState &state;
-    AddressNumResolver(AddressState &state_) : state(state_) {}
+struct IsValidVisitor : public boost::static_visitor<bool> {
     template <blocksci::AddressType::Enum type>
-    std::pair<blocksci::Address, bool> operator()(ScriptOutput<type> &scriptOutput) const {
-        auto ret = getAddressNum(scriptOutput, state);
-        scriptOutput.processOutput(state);
-        return ret;
-    }
-};
-
-std::pair<blocksci::Address, bool> resolveAddress(ScriptOutputType &scriptOutput, AddressState &state) {
-    AddressNumResolver visitor{state};
-    return boost::apply_visitor(visitor, scriptOutput);
-}
-
-
-struct CheckOutputVisitor : public boost::static_visitor<blocksci::Address> {
-    const AddressState &state;
-    const AddressWriter &addressWriter;
-    CheckOutputVisitor(const AddressState &state_, const AddressWriter &addressWriter_) : state(state_), addressWriter(addressWriter_) {}
-    template <blocksci::AddressType::Enum type>
-    blocksci::Address operator()(ScriptOutput<type> &scriptOutput) const {
-        std::pair<blocksci::Address, bool> processed = checkAddressNum(scriptOutput, state);
-        if (processed.second) {
-            scriptOutput.checkOutput(state, addressWriter);
-        }
-        return processed.first;
-    }
-};
-
-blocksci::Address checkOutput(ScriptOutputType &scriptOutput, const AddressState &state, const AddressWriter &addressWriter) {
-    CheckOutputVisitor outputVisitor{state, addressWriter};
-    return boost::apply_visitor(outputVisitor, scriptOutput);
-}
-
-template <blocksci::AddressType::Enum type>
-std::pair<blocksci::Address, bool> getAddressNum(ScriptOutput<type> &data, AddressState &state) {
-    if constexpr (blocksci::ScriptInfo<blocksci::AddressInfo<type>::scriptType>::deduped) {
-        blocksci::RawScript rawAddress{data.getHash(), blocksci::scriptType(type)};
-        auto addressInfo = state.findAddress(rawAddress);
-        auto processed = state.resolveAddress(addressInfo);
-        blocksci::Address address(processed.first, type);
-        return std::make_pair(address, processed.second);
-    } else {
-        auto index = state.getNewAddressIndex(scriptType(type));
-        return std::make_pair(blocksci::Address(index, type), true);
-    }
-}
-
-template <blocksci::AddressType::Enum type>
-std::pair<blocksci::Address, bool> checkAddressNum(ScriptOutput<type> &data, const AddressState &state) {
-    if constexpr (blocksci::ScriptInfo<blocksci::AddressInfo<type>::scriptType>::deduped) {
-        blocksci::RawScript rawAddress{data.getHash(), blocksci::scriptType(type)};
-        auto addressInfo = state.findAddress(rawAddress);
-        return std::make_pair(blocksci::Address(addressInfo.addressNum, type), addressInfo.addressNum == 0);
-    } else {
-        return std::make_pair(blocksci::Address(0, type), true);
-    }
-}
-
-#define VAL(x) template std::pair<blocksci::Address, bool> getAddressNum<blocksci::AddressType::Enum::x>(ScriptOutput<blocksci::AddressType::Enum::x> &data, AddressState &state);
-ADDRESS_TYPE_SET
-#undef VAL
-
-#define VAL(x) template std::pair<blocksci::Address, bool> checkAddressNum<blocksci::AddressType::Enum::x>(ScriptOutput<blocksci::AddressType::Enum::x> &data, const AddressState &state);
-ADDRESS_TYPE_SET
-#undef VAL
-
-struct ScriptOutputAddressType : public boost::static_visitor<blocksci::AddressType::Enum> {
-    template <blocksci::AddressType::Enum type>
-    blocksci::AddressType::Enum operator()(const ScriptOutput<type> &) const {
-        return type;
-    }
-};
-
-blocksci::AddressType::Enum addressType(const ScriptOutputType &type) {
-    static auto visitor = ScriptOutputAddressType();
-    return boost::apply_visitor(visitor, type);
-}
-
-struct ScriptOutputIsValid : public boost::static_visitor<bool> {
-    template <blocksci::AddressType::Enum type>
-    bool operator()(const ScriptOutput<type> &data) const {
-        return data.isValid();
-    }
-};
-
-bool isValid(const ScriptOutputType &type);
-
-bool isValid(const ScriptOutputType &type) {
-    static auto visitor = ScriptOutputIsValid();
-    return boost::apply_visitor(visitor, type);
-}
-
-// MARK: TX_PUBKEY
-
-ScriptOutput<blocksci::AddressType::Enum::PUBKEY>::ScriptOutput(const boost::iterator_range<const unsigned char *> &vch1) : pubkey(vch1.begin(), vch1.end()) {}
-
-blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::PUBKEY>::getHash() const {
-    return pubkey.GetID();
-}
-
-// MARK: TX_PUBKEYHASH
-
-blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::PUBKEYHASH>::getHash() const {
-    return hash;
-}
-
-// MARK: WITNESS_PUBKEYHASH
-
-blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::getHash() const {
-    return hash;
-}
-
-// MARK: TX_SCRIPTHASH
-
-blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::SCRIPTHASH>::getHash() const {
-    return hash;
-}
-
-// MARK: WITNESS_SCRIPTHASH
-
-blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::getHash() const {
-    return ripemd160(reinterpret_cast<const char *>(&hash), sizeof(hash));
-}
-
-// MARK: TX_MULTISIG
-
-blocksci::uint160 ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::getHash() const {
-    std::vector<char> sigData;
-    sigData.resize(sizeof(numRequired) + sizeof(CKeyID) * addressCount);
-    size_t sigDataPos = 0;
-    
-    memcpy(&sigData[sigDataPos], reinterpret_cast<const char *>(&numRequired), sizeof(numRequired));
-    sigDataPos += sizeof(numRequired);
-    
-    auto sortedAddresses = addresses;
-    std::sort(sortedAddresses.begin(), sortedAddresses.begin() + addressCount);
-    
-    for (size_t i = 0; i < addressCount; i++) {
-        auto addressHash = sortedAddresses[i].GetID();
-        memcpy(&sigData[sigDataPos], reinterpret_cast<const char *>(&addressHash), sizeof(addressHash));
-        sigDataPos += sizeof(addressHash);
+    bool operator()(const ScriptOutput<type> &scriptOutput) const {
+        return scriptOutput.data.isValid();
     }
     
-    return ripemd160(sigData.data(), sigData.size());
-}
-
-void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::processOutput(AddressState &state) {
-    processedAddresses.clear();
-    processedAddresses.reserve(addressCount);
-    firstSeen.clear();
-    firstSeen.reserve(addressCount);
-    for (size_t i = 0; i < addressCount; i++) {
-        ScriptOutput<blocksci::AddressType::Enum::PUBKEY> pubkeyOutput{addresses[i]};
-        auto [address, isNew] = getAddressNum(pubkeyOutput, state);
-        firstSeen.push_back(isNew);
-        processedAddresses.push_back(address.scriptNum);
+    template <blocksci::AddressType::Enum type>
+    bool operator()(const ScriptData<type> &scriptOutput) const {
+        return scriptOutput.isValid();
     }
-}
-
-void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::checkOutput(const AddressState &state, const AddressWriter &writer) {
-    processedAddresses.clear();
-    processedAddresses.reserve(addressCount);
-    for (size_t i = 0; i < addressCount; i++) {
-        ScriptOutputType pubkeyOutput{ScriptOutput<blocksci::AddressType::Enum::PUBKEY>{addresses[i]}};
-        auto processedPubkey = ::checkOutput(pubkeyOutput, state, writer);
-        processedAddresses.push_back(processedPubkey.scriptNum);
-    }
-}
-
-void ScriptOutput<blocksci::AddressType::Enum::MULTISIG>::addAddress(const boost::iterator_range<const unsigned char *> &vch1) {
-    addresses.push_back(CPubKey(vch1.begin(), vch1.end()));
-    addressCount++;
-}
-
-// MARK: TX_NONSTANDARD
-
-ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD>::ScriptOutput(const CScriptView &script_) : script(script_) {}
-
-// MARK: TX_NULL_DATA
-
-ScriptOutput<blocksci::AddressType::Enum::NULL_DATA>::ScriptOutput(const CScriptView &script){
-    CScriptView::const_iterator pc1 = script.begin();
-    opcodetype opcode1;
-    boost::iterator_range<const unsigned char *> vch1;
-    while(true) {
-        if(!script.GetOp(pc1, opcode1, vch1)) {
-            break;
-        }
-        fullData.insert(fullData.end(), vch1.begin(), vch1.end());
-    }
-}
-
-// MARK: Script Processing
+};
 
 bool isValidPubkey(boost::iterator_range<const unsigned char *> &vch1);
 
@@ -230,7 +43,9 @@ bool isValidPubkey(boost::iterator_range<const unsigned char *> &vch1) {
     return false;
 }
 
-ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsigned char *scriptEnd, bool witnessActivated) {
+using ScriptDataType = blocksci::to_address_variant_t<ScriptData>;
+
+ScriptDataType extractScriptData(const CScriptView &scriptPubKey, bool witnessActivated) {
     // Templates
     using namespace blocksci;
     
@@ -249,15 +64,13 @@ ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsig
         auto multisig = std::make_pair(AddressType::Enum::MULTISIG, CScript() << OP_SMALLINTEGER << OP_PUBKEYS << OP_SMALLINTEGER << OP_CHECKMULTISIG);
         mTemplates.push_back(multisig);
     }
-    CScriptView scriptPubKey(scriptBegin, scriptEnd);
     
     // Shortcut for pay-to-script-hash, which are more constrained than the other types:
     // it is always OP_HASH160 20 [20 byte hash] OP_EQUAL
-    if (scriptPubKey.IsPayToScriptHash())
-    {
+    if (scriptPubKey.IsPayToScriptHash()) {
         blocksci::uint160 hash;
         memcpy(&hash, &(*(scriptPubKey.begin()+2)), 20);
-        return ScriptOutput<AddressType::Enum::SCRIPTHASH>{{hash}};
+        return ScriptData<AddressType::Enum::SCRIPTHASH>{{hash}};
     }
     
     if (witnessActivated && scriptPubKey.IsWitnessProgram()) {
@@ -268,9 +81,9 @@ ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsig
         uint8_t version = static_cast<uint8_t>(CScript::DecodeOP_N(opcode));
         scriptPubKey.GetOp(pc, opcode, vchSig);
         if (version == 0 && vchSig.size() == 20) {
-            return ScriptOutput<AddressType::Enum::WITNESS_PUBKEYHASH>(uint160{vchSig});
+            return ScriptData<AddressType::Enum::WITNESS_PUBKEYHASH>(uint160{vchSig});
         } else if (version == 0 && vchSig.size() == 32) {
-            return ScriptOutput<AddressType::Enum::WITNESS_SCRIPTHASH>(uint256{vchSig});
+            return ScriptData<AddressType::Enum::WITNESS_SCRIPTHASH>(uint256{vchSig});
         }
     }
     
@@ -281,14 +94,14 @@ ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsig
     // script.
     
     if (scriptPubKey.size() >= 1 && scriptPubKey[0] == OP_RETURN && scriptPubKey.IsPushOnly(scriptPubKey.begin()+1)) {
-        return ScriptOutput<AddressType::Enum::NULL_DATA>{scriptPubKey};
+        return ScriptData<AddressType::Enum::NULL_DATA>{scriptPubKey};
     }
     
     // Scan templates
     const CScriptView& script1 = scriptPubKey;
     
     
-    boost::optional<ScriptOutputType> type;
+    boost::optional<ScriptDataType> type;
     for (auto &tplate : mTemplates) {
         uint8_t numRequired = 0;
         bool isFirstSmallInt = true;
@@ -304,9 +117,8 @@ ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsig
         CScript::const_iterator pc2 = script2.begin();
         while (true)
         {
-            if (pc1 == script1.end() && pc2 == script2.end())
-            {
-                if (!isValid(*type)) {
+            if (pc1 == script1.end() && pc2 == script2.end()) {
+                if (!boost::apply_visitor(IsValidVisitor(), *type)) {
                     break;
                 }
                 return *type;
@@ -319,7 +131,7 @@ ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsig
             // Template matching opcodes:
             if (opcode2 == OP_PUBKEYS)
             {
-                ScriptOutput<AddressType::Enum::MULTISIG> output;
+                ScriptData<AddressType::Enum::MULTISIG> output;
                 output.numRequired = numRequired;
                 
                 while (vch1.size() >= 33 && vch1.size() <= 65)
@@ -340,14 +152,14 @@ ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsig
                 if (!isValidPubkey(vch1)) {
                     break;
                 }
-                type = ScriptOutput<AddressType::Enum::PUBKEY>{vch1};
+                type = ScriptData<AddressType::Enum::PUBKEY>{vch1};
             }
             else if (opcode2 == OP_PUBKEYHASH)
             {
                 if (vch1.size() != sizeof(uint160))
                     break;
                 auto address = uint160{vch1};
-                type = ScriptOutput<AddressType::Enum::PUBKEYHASH>{address};
+                type = ScriptData<AddressType::Enum::PUBKEYHASH>{address};
             }
             else if (opcode2 == OP_SMALLINTEGER)
             {   // Single-byte small integer pushed onto vSolutions
@@ -356,7 +168,7 @@ ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsig
                         numRequired = static_cast<uint8_t>(CScript::DecodeOP_N(opcode1));
                         isFirstSmallInt = false;
                     } else {
-                        auto &out = boost::get<ScriptOutput<AddressType::Enum::MULTISIG>>(*type);
+                        auto &out = boost::get<ScriptData<AddressType::Enum::MULTISIG>>(*type);
                         out.numTotal = static_cast<uint8_t>(CScript::DecodeOP_N(opcode1));
                     }
                 }
@@ -370,5 +182,171 @@ ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsig
             }
         }
     }
-    return ScriptOutput<AddressType::Enum::NONSTANDARD>{scriptPubKey};
+    return ScriptData<AddressType::Enum::NONSTANDARD>{scriptPubKey};
+}
+
+struct AddressVisitor : public boost::static_visitor<blocksci::Address> {
+    template <blocksci::AddressType::Enum type>
+    blocksci::Address operator()(const ScriptOutput<type> &scriptOutput) {
+        return {scriptOutput.scriptNum, type};
+    }
+};
+
+struct IsNewVisitor : public boost::static_visitor<bool> {
+    template <blocksci::AddressType::Enum type>
+    bool operator()(const ScriptOutput<type> &scriptOutput) const {
+        return scriptOutput.isNew;
+    }
+};
+
+struct OutputAddressTypeVisitor : public boost::static_visitor<blocksci::AddressType::Enum> {
+    template <blocksci::AddressType::Enum type>
+    blocksci::AddressType::Enum operator()(const ScriptOutput<type> &) const {
+        return type;
+    }
+};
+
+struct CheckOutputVisitor : public boost::static_visitor<void> {
+    const AddressState &state;
+    CheckOutputVisitor(const AddressState &state_) : state(state_) {}
+    template <blocksci::AddressType::Enum type>
+    void operator()(ScriptOutput<type> &scriptOutput) const {
+        scriptOutput.check(state);
+    }
+};
+
+struct ResolveOutputVisitor : public boost::static_visitor<void> {
+    AddressState &state;
+    ResolveOutputVisitor(AddressState &state_) : state(state_) {}
+    template <blocksci::AddressType::Enum type>
+    void operator()(ScriptOutput<type> &scriptOutput) const {
+        scriptOutput.resolve(state);
+    }
+};
+
+AnyScriptOutput::AnyScriptOutput(const CScriptView &scriptPubKey, bool witnessActivated) : wrapped(extractScriptData(scriptPubKey, witnessActivated)) {}
+
+blocksci::Address AnyScriptOutput::address() const {
+    AddressVisitor visitor;
+    return boost::apply_visitor(visitor, wrapped);
+}
+
+bool AnyScriptOutput::isNew() const {
+    IsNewVisitor visitor;
+    return boost::apply_visitor(visitor, wrapped);
+}
+
+bool AnyScriptOutput::isValid() const {
+    IsValidVisitor visitor;
+    return boost::apply_visitor(visitor, wrapped);
+}
+
+blocksci::AddressType::Enum AnyScriptOutput::type() const {
+    OutputAddressTypeVisitor visitor;
+    return boost::apply_visitor(visitor, wrapped);
+}
+
+void AnyScriptOutput::check(const AddressState &state) {
+    CheckOutputVisitor visitor{state};
+    boost::apply_visitor(visitor, wrapped);
+}
+
+void AnyScriptOutput::resolve(AddressState &state) {
+    ResolveOutputVisitor visitor{state};
+    boost::apply_visitor(visitor, wrapped);
+}
+
+
+// MARK: TX_PUBKEY
+
+ScriptData<blocksci::AddressType::Enum::PUBKEY>::ScriptData(const boost::iterator_range<const unsigned char *> &vch1) : pubkey(vch1.begin(), vch1.end()) {}
+
+blocksci::uint160 ScriptData<blocksci::AddressType::Enum::PUBKEY>::getHash() const {
+    return pubkey.GetID();
+}
+
+// MARK: TX_PUBKEYHASH
+
+blocksci::uint160 ScriptData<blocksci::AddressType::Enum::PUBKEYHASH>::getHash() const {
+    return hash;
+}
+
+// MARK: WITNESS_PUBKEYHASH
+
+blocksci::uint160 ScriptData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::getHash() const {
+    return hash;
+}
+
+// MARK: TX_SCRIPTHASH
+
+blocksci::uint160 ScriptData<blocksci::AddressType::Enum::SCRIPTHASH>::getHash() const {
+    return hash;
+}
+
+// MARK: WITNESS_SCRIPTHASH
+
+blocksci::uint160 ScriptData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::getHash() const {
+    return ripemd160(reinterpret_cast<const char *>(&hash), sizeof(hash));
+}
+
+// MARK: TX_MULTISIG
+
+blocksci::uint160 ScriptData<blocksci::AddressType::Enum::MULTISIG>::getHash() const {
+    std::vector<char> sigData;
+    sigData.resize(sizeof(numRequired) + sizeof(CKeyID) * addressCount);
+    size_t sigDataPos = 0;
+    
+    memcpy(&sigData[sigDataPos], reinterpret_cast<const char *>(&numRequired), sizeof(numRequired));
+    sigDataPos += sizeof(numRequired);
+    
+    std::vector<CPubKey> pubkeys;
+    pubkeys.reserve(addresses.size());
+    for (auto &output : addresses) {
+        pubkeys.push_back(output.data.pubkey);
+    }
+    
+    std::sort(pubkeys.begin(), pubkeys.begin() + addressCount);
+    
+    for (auto &pubkey : pubkeys) {
+        auto addressHash = pubkey.GetID();
+        memcpy(&sigData[sigDataPos], reinterpret_cast<const char *>(&addressHash), sizeof(addressHash));
+        sigDataPos += sizeof(addressHash);
+    }
+    
+    return ripemd160(sigData.data(), sigData.size());
+}
+
+void ScriptData<blocksci::AddressType::Enum::MULTISIG>::resolve(AddressState &state) {
+    for (auto &address : addresses) {
+        address.resolve(state);
+    }
+}
+
+void ScriptData<blocksci::AddressType::Enum::MULTISIG>::check(const AddressState &state) {
+    for (auto &address : addresses) {
+        address.check(state);
+    }
+}
+
+void ScriptData<blocksci::AddressType::Enum::MULTISIG>::addAddress(const boost::iterator_range<const unsigned char *> &vch1) {
+    addresses.push_back(ScriptData<blocksci::AddressType::Enum::PUBKEY>(CPubKey(vch1.begin(), vch1.end())));
+    addressCount++;
+}
+
+// MARK: TX_NONSTANDARD
+
+ScriptData<blocksci::AddressType::Enum::NONSTANDARD>::ScriptData(const CScriptView &script_) : script(script_) {}
+
+// MARK: TX_NULL_DATA
+
+ScriptData<blocksci::AddressType::Enum::NULL_DATA>::ScriptData(const CScriptView &script){
+    CScriptView::const_iterator pc1 = script.begin();
+    opcodetype opcode1;
+    boost::iterator_range<const unsigned char *> vch1;
+    while(true) {
+        if(!script.GetOp(pc1, opcode1, vch1)) {
+            break;
+        }
+        fullData.insert(fullData.end(), vch1.begin(), vch1.end());
+    }
 }

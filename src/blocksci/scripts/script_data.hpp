@@ -48,10 +48,14 @@ namespace blocksci {
         MultisigData &operator=(const MultisigData &other) = delete;
         MultisigData &operator=(MultisigData &&other) = delete;
         
+        const uint32_t *rawAddressArray() const {
+            return reinterpret_cast<const uint32_t *>(reinterpret_cast<const char *>(this) + sizeof(MultisigData));
+        }
+        
         std::vector<Address> getAddresses() const {
             std::vector<Address> res;
             
-            const uint32_t *addresses = reinterpret_cast<const uint32_t *>(reinterpret_cast<const char *>(this) + sizeof(MultisigData));
+            const uint32_t *addresses = rawAddressArray();
             for (uint32_t i = 0; i < addressCount; i++) {
                 res.emplace_back(addresses[i], AddressType::Enum::PUBKEYHASH);
             }

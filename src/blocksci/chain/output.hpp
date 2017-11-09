@@ -17,11 +17,6 @@
 #include <memory>
 
 namespace blocksci {
-    struct Transaction;
-    struct Address;
-    struct OutputPointer;
-    struct Input;
-    class ChainAccess;
     
     struct Output : public Inout {
         using Inout::Inout;

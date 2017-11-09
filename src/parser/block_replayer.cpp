@@ -15,9 +15,11 @@
 #include "chain_index.hpp"
 #include "preproccessed_block.hpp"
 #include "safe_mem_reader.hpp"
+#include "output_spend_data.hpp"
 
 #include <blocksci/address/address.hpp>
 #include <blocksci/scripts/script_access.hpp>
+#include <blocksci/scripts/script_variant.hpp>
 #include <blocksci/chain/chain_access.hpp>
 #include <blocksci/chain/block.hpp>
 #include <blocksci/chain/transaction.hpp>
@@ -50,10 +52,8 @@ void replayBlock(const ParserConfiguration<FileTag> &config, uint32_t blockNum) 
     std::vector<unsigned char> coinbase;
     
     AddressState addressState_{config.addressPath()};
-    AddressWriter addressWriter(config);
     
     const AddressState &addressState = addressState_;
-    const AddressWriter &writer = addressWriter;
     blocksci::ChainAccess currentChain(config, false, 0);
     blocksci::ScriptAccess scripts(config);
     
@@ -66,30 +66,23 @@ void replayBlock(const ParserConfiguration<FileTag> &config, uint32_t blockNum) 
         tx.load(reader, realTx.txNum, blockNum, segwit);
         
         if (tx.inputs.size() == 1 && tx.inputs[0].rawOutputPointer.hash == nullHash) {
-            auto scriptBegin = tx.inputs[0].getScriptBegin();
-            coinbase.assign(scriptBegin, scriptBegin + tx.inputs[0].getScriptLength());
+            auto scriptView = tx.inputs[0].getScriptView();
+            coinbase.assign(scriptView.begin(), scriptView.end());
             tx.inputs.clear();
         }
         
         for (auto &output : tx.outputs) {
-            auto address = checkOutput(output.scriptOutput, addressState, writer);
+            output.scriptOutput.check(addressState);
         }
         
         uint16_t j = 0;
         for (auto &input : tx.inputs) {
             auto &realInput = realTx.inputs()[j];
             InputView inputView(j, txNum, input.witnessStack, segwit);
-            
-            CScriptView scriptView(input.getScriptBegin(), input.getScriptBegin() + input.getScriptLength());
             auto address = realInput.getAddress();
-            auto scriptInput = [&]() -> ScriptInputType {
-                if (address.type == blocksci::AddressType::Enum::MULTISIG) {
-                    return ScriptInput<blocksci::AddressType::Enum::MULTISIG>(inputView, scriptView, tx, addressWriter);
-                } else {
-                    return generateScriptInput(address, inputView, scriptView, tx);
-                }
-            }();
-            checkScriptInput(realInput.toAddressNum, scriptInput, addressState, addressWriter);
+            AnySpendData spendData(address.getScript(scripts), address.type, scripts);
+            AnyScriptInput scriptInput(inputView, input.getScriptView(), tx, spendData);
+            scriptInput.check(addressState);
             j++;
         }
     }

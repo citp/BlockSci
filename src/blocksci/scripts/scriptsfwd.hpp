@@ -31,6 +31,8 @@ namespace blocksci {
         using OpReturn = ScriptAddress<ScriptType::Enum::NULL_DATA>;
         using Nonstandard = ScriptAddress<ScriptType::Enum::NONSTANDARD>;
     }
+    
+    class AnyScript;
 }
 
 #endif /* scriptsfwd_h */

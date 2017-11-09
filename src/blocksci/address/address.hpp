@@ -63,6 +63,9 @@ namespace blocksci {
         std::vector<Transaction> getOutputTransactions(const AddressIndex &index, const ChainAccess &chain) const;
         std::vector<Transaction> getInputTransactions(const AddressIndex &index, const ChainAccess &chain) const;
         
+
+        std::string fullType(const ScriptAccess &script) const;
+
         // Requires DataAccess
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
         Transaction getFirstTransaction() const;
@@ -75,6 +78,8 @@ namespace blocksci {
         std::vector<Transaction> getTransactions() const;
         std::vector<Transaction> getOutputTransactions() const;
         std::vector<Transaction> getInputTransactions() const;
+
+        std::string fullType() const;
         #endif
     };
     

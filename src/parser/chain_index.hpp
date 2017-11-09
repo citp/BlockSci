@@ -77,6 +77,8 @@ struct BlockInfoBase {
         ar & height;
         ar & size;
         ar & nTx;
+        ar & inputCount;
+        ar & outputCount;
     }
     
     

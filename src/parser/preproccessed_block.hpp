@@ -11,6 +11,7 @@
 
 #include "config.hpp"
 #include "script_output.hpp"
+#include "script_input.hpp"
 
 #include <blocksci/bitcoin_uint256.hpp>
 
@@ -50,22 +51,17 @@ public:
     uint32_t sequenceNum;
     std::vector<WitnessStackItem> witnessStack;
     uint32_t linkedTxNum;
-    blocksci::AddressType::Enum addressType;
-    uint64_t value;
+    blocksci::Address address;
     
-    uint32_t getScriptLength() const {
-        if (scriptLength == 0) {
-            return scriptBytes.size();
-        } else {
-            return scriptLength;
-        }
-    }
+    AnyScriptInput scriptInput;
     
-    const unsigned char *getScriptBegin() const {
+    blocksci::OutputPointer getOutputPointer() const;
+    
+    CScriptView getScriptView() const {
         if (scriptLength == 0) {
-            return scriptBytes.data();
+            return CScriptView(scriptBytes.data(), scriptBytes.data() + scriptBytes.size());
         } else {
-            return scriptBegin;
+            return CScriptView(scriptBegin, scriptBegin + scriptLength);
         }
     }
     
@@ -88,7 +84,7 @@ private:
     std::vector<unsigned char> scriptBytes;
 public:
     uint64_t value;
-    ScriptOutputType scriptOutput;
+    AnyScriptOutput scriptOutput;
 
     #ifdef BLOCKSCI_FILE_PARSER
     RawOutput(SafeMemReader &reader, bool witnessActivated);
@@ -99,19 +95,11 @@ public:
     RawOutput(std::vector<unsigned char> scriptBytes_, uint64_t value_, bool witnessActivated);
     #endif
     
-    uint32_t getScriptLength() const {
+    CScriptView getScriptView() const {
         if (scriptLength == 0) {
-            return scriptBytes.size();
+            return CScriptView(scriptBytes.data(), scriptBytes.data() + scriptBytes.size());
         } else {
-            return scriptLength;
-        }
-    }
-    
-    const unsigned char *getScriptBegin() const {
-        if (scriptLength == 0) {
-            return scriptBytes.data();
-        } else {
-            return scriptBegin;
+            return CScriptView(scriptBegin, scriptBegin + scriptLength);
         }
     }
 };

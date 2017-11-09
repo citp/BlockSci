@@ -109,7 +109,7 @@ namespace blocksci {
     
     static constexpr auto addressNameTable = make_static_table<AddressType, TypeNameFunctor>();
     
-    constexpr std::string_view GetTxnOutputType(AddressType::Enum type) {
+    constexpr std::string_view addressName(AddressType::Enum type) {
         auto index = static_cast<size_t>(type);
         if (index >= AddressType::size)
         {

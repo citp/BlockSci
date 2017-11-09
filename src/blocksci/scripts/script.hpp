@@ -30,7 +30,9 @@ namespace blocksci {
         uint32_t scriptNum;
         ScriptType::Enum type;
         
+        Script() = default;
         Script(uint32_t scriptNum_, ScriptType::Enum type_) : scriptNum(scriptNum_), type(type_) {}
+        Script(const Address &address);
         
         bool operator==(const Script& other) const {
             return type == other.type && scriptNum == other.scriptNum;
