@@ -265,10 +265,19 @@ blocksci::uint160 ScriptData<blocksci::AddressType::Enum::PUBKEY>::getHash() con
     return pubkey.GetID();
 }
 
+blocksci::PubkeyData ScriptData<blocksci::AddressType::Enum::PUBKEY>::getData() const {
+    return {pubkey, pubkey.GetID()};
+}
+
 // MARK: TX_PUBKEYHASH
 
 blocksci::uint160 ScriptData<blocksci::AddressType::Enum::PUBKEYHASH>::getHash() const {
     return hash;
+}
+
+blocksci::PubkeyData ScriptData<blocksci::AddressType::Enum::PUBKEYHASH>::getData() const {
+    constexpr static CPubKey nullPubkey{};
+    return {nullPubkey, hash};
 }
 
 // MARK: WITNESS_PUBKEYHASH
@@ -277,16 +286,31 @@ blocksci::uint160 ScriptData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::g
     return hash;
 }
 
+blocksci::PubkeyData ScriptData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::getData() const {
+    constexpr static CPubKey nullPubkey{};
+    return {nullPubkey, hash};
+}
+
 // MARK: TX_SCRIPTHASH
 
 blocksci::uint160 ScriptData<blocksci::AddressType::Enum::SCRIPTHASH>::getHash() const {
     return hash;
 }
 
+blocksci::ScriptHashData ScriptData<blocksci::AddressType::Enum::SCRIPTHASH>::getData() const {
+    blocksci::Address wrappedAddress;
+    return {hash, wrappedAddress, 0};
+}
+
 // MARK: WITNESS_SCRIPTHASH
 
 blocksci::uint160 ScriptData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::getHash() const {
     return ripemd160(reinterpret_cast<const char *>(&hash), sizeof(hash));
+}
+
+blocksci::ScriptHashData ScriptData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::getData() const {
+    blocksci::Address wrappedAddress;
+    return {getHash(), wrappedAddress, 0};
 }
 
 // MARK: TX_MULTISIG
@@ -333,9 +357,25 @@ void ScriptData<blocksci::AddressType::Enum::MULTISIG>::addAddress(const boost::
     addressCount++;
 }
 
+blocksci::ArbitraryLengthData<blocksci::MultisigData> ScriptData<blocksci::AddressType::Enum::MULTISIG>::getData() const {
+    blocksci::MultisigData multisigData{numRequired, numTotal, addressCount};
+    blocksci::ArbitraryLengthData<blocksci::MultisigData> data(multisigData);
+    for (auto &pubkeyScript : addresses) {
+        data.add(pubkeyScript.scriptNum);
+    }
+    return data;
+}
+
 // MARK: TX_NONSTANDARD
 
 ScriptData<blocksci::AddressType::Enum::NONSTANDARD>::ScriptData(const blocksci::CScriptView &script_) : script(script_) {}
+
+blocksci::ArbitraryLengthData<blocksci::NonstandardScriptData> ScriptData<blocksci::AddressType::Enum::NONSTANDARD>::getData() const {
+    blocksci::NonstandardScriptData scriptData(script);
+    blocksci::ArbitraryLengthData<blocksci::NonstandardScriptData> data(scriptData);
+    data.add(script.begin(), script.end());
+    return data;
+}
 
 // MARK: TX_NULL_DATA
 
@@ -349,4 +389,11 @@ ScriptData<blocksci::AddressType::Enum::NULL_DATA>::ScriptData(const blocksci::C
         }
         fullData.insert(fullData.end(), vch1.begin(), vch1.end());
     }
+}
+
+blocksci::ArbitraryLengthData<blocksci::RawData> ScriptData<blocksci::AddressType::Enum::NULL_DATA>::getData() const {
+    blocksci::RawData scriptData(fullData);
+    blocksci::ArbitraryLengthData<blocksci::RawData> data(scriptData);
+    data.add(fullData.begin(), fullData.end());
+    return data;
 }
