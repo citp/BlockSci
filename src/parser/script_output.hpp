@@ -44,7 +44,7 @@ struct ScriptOutput {
         }
         
         if (isNew) {
-            data.resolve(state);
+            data.visitWrapped([&](auto &output) { output.resolve(state); });
         }
     }
     
@@ -59,8 +59,7 @@ struct ScriptOutput {
             scriptNum = 0;
             isNew = true;
         }
-        
-        data.check(state);
+        data.visitWrapped([&](auto &output) { output.check(state); });
     }
 };
 
@@ -68,6 +67,12 @@ struct ScriptDataBase {
     void resolve(AddressState &) {}
     void check(const AddressState &) {}
     bool isValid() const { return true; }
+    
+    template<typename Func>
+    void visitWrapped(Func func) {}
+    
+    template<typename Func>
+    void visitWrapped(Func func) const {}
 };
 
 template <>
@@ -147,8 +152,20 @@ struct ScriptData<blocksci::AddressType::Enum::MULTISIG> : public ScriptDataBase
     }
     
     blocksci::uint160 getHash() const;
-    void resolve(AddressState &state);
-    void check(const AddressState &state);
+    
+    template<typename Func>
+    void visitWrapped(Func func) {
+        for (auto &pubkey : addresses) {
+            func(pubkey);
+        }
+    }
+    
+    template<typename Func>
+    void visitWrapped(Func func) const {
+        for (auto &pubkey : addresses) {
+            func(pubkey);
+        }
+    }
     
     blocksci::ArbitraryLengthData<blocksci::MultisigData> getData() const;
 };

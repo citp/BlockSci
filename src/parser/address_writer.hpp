@@ -53,21 +53,22 @@ class AddressWriter {
     
     ScriptFilesTuple scriptFiles;
     
-    ProcessedInput serializeImp(const ScriptInput<blocksci::AddressType::Enum::PUBKEY> &input, ScriptFile<blocksci::ScriptType::Enum::PUBKEY> &file);
+    template<auto type>
+    ProcessedInput serializeImp(const ScriptInput<type> &input, ScriptFile<scriptType(type)> &) {
+        return ProcessedInput{blocksci::Script(input.scriptNum, scriptType(type))};
+    }
+    
+    template<auto type>
+    void serializeImp(const ScriptData<type> &data, ScriptFile<scriptType(type)> &file) {
+        file.write(data.getData());
+        data.visitWrapped([&](auto &output) { serialize(output); });
+    }
+    
     ProcessedInput serializeImp(const ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH> &input, ScriptFile<blocksci::ScriptType::Enum::PUBKEY> &file);
     ProcessedInput serializeImp(const ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> &input, ScriptFile<blocksci::ScriptType::Enum::PUBKEY> &file);
     ProcessedInput serializeImp(const ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH> &input, ScriptFile<blocksci::ScriptType::Enum::SCRIPTHASH> &file);
     ProcessedInput serializeImp(const ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> &input, ScriptFile<blocksci::ScriptType::Enum::SCRIPTHASH> &file);
-    ProcessedInput serializeImp(const ScriptInput<blocksci::AddressType::Enum::MULTISIG> &input, ScriptFile<blocksci::ScriptType::Enum::MULTISIG> &file);
-    ProcessedInput serializeImp(const ScriptInput<blocksci::AddressType::Enum::NULL_DATA> &input, ScriptFile<blocksci::ScriptType::Enum::NULL_DATA> &file);
     ProcessedInput serializeImp(const ScriptInput<blocksci::AddressType::Enum::NONSTANDARD> &input, ScriptFile<blocksci::ScriptType::Enum::NONSTANDARD> &file);
-    
-    template<auto type>
-    void serializeImp(const ScriptData<type> &output, ScriptFile<scriptType(type)> &file) {
-        file.write(output.getData());
-    }
-    
-    void serializeImp(const ScriptData<blocksci::AddressType::Enum::MULTISIG> &input, ScriptFile<blocksci::ScriptType::Enum::MULTISIG> &file);
     
 public:
     

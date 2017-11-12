@@ -49,10 +49,6 @@ ProcessedInput AddressWriter::serialize(const AnyScriptInput &input) {
 
 using namespace blocksci;
 
-ProcessedInput AddressWriter::serializeImp(const ScriptInput<AddressType::Enum::PUBKEY> &, ScriptFile<ScriptType::Enum::PUBKEY> &) {
-    return ProcessedInput{};
-}
-
 constexpr static CPubKey nullPubkey{};
 
 ProcessedInput AddressWriter::serializeImp(const ScriptInput<AddressType::Enum::PUBKEYHASH> &input, ScriptFile<ScriptType::Enum::PUBKEY> &file) {
@@ -97,28 +93,12 @@ ProcessedInput AddressWriter::serializeImp(const ScriptInput<AddressType::Enum::
     return processed;
 }
 
-void AddressWriter::serializeImp(const ScriptData<AddressType::Enum::MULTISIG> &output, ScriptFile<ScriptType::Enum::MULTISIG> &file) {
-    file.write(output.getData());
-    
-    for (auto &pubkeyScript : output.addresses) {
-        serialize(pubkeyScript);
-    }
-}
-
-ProcessedInput AddressWriter::serializeImp(const ScriptInput<AddressType::Enum::MULTISIG> &, ScriptFile<ScriptType::Enum::MULTISIG> &) {
-    return ProcessedInput{};
-}
-
 ProcessedInput AddressWriter::serializeImp(const ScriptInput<AddressType::Enum::NONSTANDARD> &input, ScriptFile<ScriptType::Enum::NONSTANDARD> &file) {
     NonstandardScriptData scriptData(input.data.script);
     blocksci::ArbitraryLengthData<NonstandardScriptData> data(scriptData);
     data.add(input.data.script.begin(), input.data.script.end());
     file.write<1>(input.scriptNum - 1, data);
     return ProcessedInput{Script(input.scriptNum, ScriptType::Enum::NONSTANDARD)};
-}
-
-ProcessedInput AddressWriter::serializeImp(const ScriptInput<AddressType::Enum::NULL_DATA> &input, ScriptFile<ScriptType::Enum::NULL_DATA> &) {
-    return ProcessedInput{Script(input.scriptNum, ScriptType::Enum::NULL_DATA)};
 }
 
 void AddressWriter::rollback(const blocksci::State &state) {

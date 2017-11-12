@@ -340,18 +340,6 @@ blocksci::uint160 ScriptData<blocksci::AddressType::Enum::MULTISIG>::getHash() c
     return ripemd160(sigData.data(), sigData.size());
 }
 
-void ScriptData<blocksci::AddressType::Enum::MULTISIG>::resolve(AddressState &state) {
-    for (auto &address : addresses) {
-        address.resolve(state);
-    }
-}
-
-void ScriptData<blocksci::AddressType::Enum::MULTISIG>::check(const AddressState &state) {
-    for (auto &address : addresses) {
-        address.check(state);
-    }
-}
-
 void ScriptData<blocksci::AddressType::Enum::MULTISIG>::addAddress(const boost::iterator_range<const unsigned char *> &vch1) {
     addresses.push_back(ScriptData<blocksci::AddressType::Enum::PUBKEY>(CPubKey(vch1.begin(), vch1.end())));
     addressCount++;
