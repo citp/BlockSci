@@ -23,7 +23,7 @@
 
 template<auto addressType>
 class UTXOAddressTypeState {
-    using utxo_map = google::dense_hash_map<blocksci::OutputPointer, SpendData<addressType>>;
+    using utxo_map = google::dense_hash_map<blocksci::OutputPointer, SpendData<addressType>, std::hash<blocksci::OutputPointer>>;
     
     utxo_map utxoMap;
     

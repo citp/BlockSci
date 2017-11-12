@@ -18,8 +18,12 @@
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/scripts/script_info.hpp>
 #include <blocksci/scripts/script_data.hpp>
+#include <blocksci/scripts/script.hpp>
+#include <blocksci/scripts/scriptsfwd.hpp>
 
 #include <boost/variant/variant.hpp>
+
+using ProcessedInput = boost::container::small_vector<blocksci::Script, 3>;
 
 template<typename T>
 struct ScriptFileType;
@@ -43,22 +47,29 @@ struct ScriptFile : public ScriptFileType_t<type> {
     using ScriptFileType_t<type>::ScriptFileType_t;
 };
 
-template<auto>
-struct ScriptOutput;
-
-template<auto>
-struct ScriptInput;
 
 class AddressWriter {
     using ScriptFilesTuple = blocksci::to_script_tuple_t<ScriptFile>;
     
     ScriptFilesTuple scriptFiles;
     
-    template<blocksci::AddressType::Enum type>
-    bool serializeImp(const ScriptInput<type> &input, uint32_t scriptNum);
+    ProcessedInput serializeImp(const ScriptInput<blocksci::AddressType::Enum::PUBKEY> &input, ScriptFile<blocksci::ScriptType::Enum::PUBKEY> &file);
+    ProcessedInput serializeImp(const ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH> &input, ScriptFile<blocksci::ScriptType::Enum::PUBKEY> &file);
+    ProcessedInput serializeImp(const ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> &input, ScriptFile<blocksci::ScriptType::Enum::PUBKEY> &file);
+    ProcessedInput serializeImp(const ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH> &input, ScriptFile<blocksci::ScriptType::Enum::SCRIPTHASH> &file);
+    ProcessedInput serializeImp(const ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> &input, ScriptFile<blocksci::ScriptType::Enum::SCRIPTHASH> &file);
+    ProcessedInput serializeImp(const ScriptInput<blocksci::AddressType::Enum::MULTISIG> &input, ScriptFile<blocksci::ScriptType::Enum::MULTISIG> &file);
+    ProcessedInput serializeImp(const ScriptInput<blocksci::AddressType::Enum::NULL_DATA> &input, ScriptFile<blocksci::ScriptType::Enum::NULL_DATA> &file);
+    ProcessedInput serializeImp(const ScriptInput<blocksci::AddressType::Enum::NONSTANDARD> &input, ScriptFile<blocksci::ScriptType::Enum::NONSTANDARD> &file);
     
-    template<blocksci::AddressType::Enum type>
-    void serializeImp(const ScriptData<type> &output, ScriptFile<scriptType(type)> &file);
+    void serializeImp(const ScriptData<blocksci::AddressType::Enum::PUBKEY> &input, ScriptFile<blocksci::ScriptType::Enum::PUBKEY> &file);
+    void serializeImp(const ScriptData<blocksci::AddressType::Enum::PUBKEYHASH> &input, ScriptFile<blocksci::ScriptType::Enum::PUBKEY> &file);
+    void serializeImp(const ScriptData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> &input, ScriptFile<blocksci::ScriptType::Enum::PUBKEY> &file);
+    void serializeImp(const ScriptData<blocksci::AddressType::Enum::SCRIPTHASH> &input, ScriptFile<blocksci::ScriptType::Enum::SCRIPTHASH> &file);
+    void serializeImp(const ScriptData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> &input, ScriptFile<blocksci::ScriptType::Enum::SCRIPTHASH> &file);
+    void serializeImp(const ScriptData<blocksci::AddressType::Enum::MULTISIG> &input, ScriptFile<blocksci::ScriptType::Enum::MULTISIG> &file);
+    void serializeImp(const ScriptData<blocksci::AddressType::Enum::NULL_DATA> &input, ScriptFile<blocksci::ScriptType::Enum::NULL_DATA> &file);
+    void serializeImp(const ScriptData<blocksci::AddressType::Enum::NONSTANDARD> &input, ScriptFile<blocksci::ScriptType::Enum::NONSTANDARD> &file);
     
 public:
     
@@ -83,14 +94,15 @@ public:
     }
     
     template<blocksci::AddressType::Enum type>
-    bool serialize(const ScriptInput<type> &input, uint32_t scriptNum) {
-        return serializeImp(input, scriptNum);
+    ProcessedInput serialize(const ScriptInput<type> &input) {
+        auto &file = std::get<ScriptFile<scriptType(type)>>(scriptFiles);
+        return serializeImp(input, file);
     }
     
     void rollback(const blocksci::State &state);
     
-    void serialize(const AnyScriptOutput &output);
-    void serialize(const ScriptInputType &input, uint32_t scriptNum);
+    uint32_t serialize(const AnyScriptOutput &output);
+    ProcessedInput serialize(const AnyScriptInput &input);
     
     AddressWriter(const ParserConfigurationBase &config);
 };

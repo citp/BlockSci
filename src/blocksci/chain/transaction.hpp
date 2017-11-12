@@ -10,6 +10,9 @@
 #define transaction_hpp
 
 #include "chain_fwd.hpp"
+#include "inout.hpp"
+
+#include <blocksci/util.hpp>
 
 #include <boost/range/iterator_range.hpp>
 #include <boost/optional/optional_fwd.hpp>
@@ -32,7 +35,7 @@ namespace blocksci {
         uint32_t locktime;
         uint16_t inputCount;
         uint16_t outputCount;
-        uint32_t filler;
+        InPlaceArray<Inout> inOuts;
         
         RawTransaction(uint32_t sizeBytes, uint32_t locktime, uint16_t inputCount, uint16_t outputCount);
         
@@ -47,8 +50,11 @@ namespace blocksci {
         
         const Output &getOutput(uint16_t outputNum) const;
         const Input &getInput(uint16_t inputNum) const;
+        
+        size_t realSize() const {
+            return sizeof(RawTransaction) + inOuts.extraSize();
+        }
     };
-    
     
     struct Transaction {
     private:

@@ -50,11 +50,10 @@ RawInput::RawInput(SafeMemReader &reader) {
     sequenceNum = reader.readNext<SequenceNum>();
 }
 
-RawOutput::RawOutput(SafeMemReader &reader, bool witnessActivated) {
+RawOutput::RawOutput(SafeMemReader &reader) {
     value = reader.readNext<Value>();
     scriptLength = reader.readVariableLengthInteger();
     scriptBegin = reinterpret_cast<const unsigned char*>(reader.unsafePos());
-    scriptOutput = AnyScriptOutput(getScriptView(), witnessActivated);
     reader.advance(scriptLength);
 }
 
@@ -93,7 +92,7 @@ void RawTransaction::load(SafeMemReader &reader, uint32_t txNum_, uint32_t block
     outputs.clear();
     outputs.reserve(outputCount);
     for (decltype(outputCount) i = 0; i < outputCount; i++) {
-        outputs.emplace_back(reader, witnessActivated);
+        outputs.emplace_back(reader);
     }
     
     txHashLength = static_cast<uint32_t>(reader.unsafePos() - txHashStart);
@@ -173,11 +172,10 @@ RawInput::RawInput(const vin_t &vin) {
     scriptLength = 0;
 }
 
-RawOutput::RawOutput(std::vector<unsigned char> scriptBytes_, uint64_t value_, bool witnessActivated) : scriptLength(0), scriptBytes(std::move(scriptBytes_)), value(value_)  {
-    scriptOutput = AnyScriptOutput(getScriptView(), witnessActivated);
+RawOutput::RawOutput(std::vector<unsigned char> scriptBytes_, uint64_t value_) : scriptLength(0), scriptBytes(std::move(scriptBytes_)), value(value_)  {
 }
 
-RawOutput::RawOutput(const vout_t &vout, bool witnessActivated) : RawOutput(hexStringToVec(vout.scriptPubKey.hex), static_cast<uint64_t>(vout.value * 100000000), witnessActivated) {}
+RawOutput::RawOutput(const vout_t &vout) : RawOutput(hexStringToVec(vout.scriptPubKey.hex), static_cast<uint64_t>(vout.value * 100000000)) {}
 
 void RawTransaction::load(const getrawtransaction_t &txinfo, uint32_t txNum_, uint32_t blockHeight_, bool witnessActivated) {
     txNum = txNum_;
@@ -197,7 +195,7 @@ void RawTransaction::load(const getrawtransaction_t &txinfo, uint32_t txNum_, ui
     outputs.clear();
     outputs.reserve(outputCount);
     for (unsigned int i = 0; i < outputCount; i++) {
-        outputs.emplace_back(txinfo.vout[i], witnessActivated);
+        outputs.emplace_back(txinfo.vout[i]);
     }
     hash = blocksci::uint256S(txinfo.txid);;
 }
@@ -258,7 +256,7 @@ enum {
     SIGHASH_ANYONECANPAY = 0x80,
 };
 
-blocksci::uint256 RawTransaction::getHash(const InputView &info, const CScriptView &scriptView, int hashType) const {
+blocksci::uint256 RawTransaction::getHash(const InputView &info, const blocksci::CScriptView &scriptView, int hashType) const {
     
     bool anyoneCanPay = !!(hashType & SIGHASH_ANYONECANPAY);
     bool hashSingle = (hashType & 0x1f) == SIGHASH_SINGLE;
@@ -280,8 +278,8 @@ blocksci::uint256 RawTransaction::getHash(const InputView &info, const CScriptVi
             // Blank out other inputs' signatures
             s.serializeCompact(0);
         } else {
-            CScriptView::const_iterator it = scriptView.begin();
-            CScriptView::const_iterator itBegin = it;
+            blocksci::CScriptView::const_iterator it = scriptView.begin();
+            blocksci::CScriptView::const_iterator itBegin = it;
             opcodetype opcode;
             unsigned int nCodeSeparators = 0;
             while (scriptView.GetOp(it, opcode)) {

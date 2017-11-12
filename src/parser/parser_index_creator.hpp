@@ -14,6 +14,7 @@
 
 #include <blocksci/state.hpp>
 #include <blocksci/chain/chain_access.hpp>
+#include <blocksci/scripts/script.hpp>
 #include <blocksci/scripts/script_access.hpp>
 
 #include <future>
@@ -57,10 +58,16 @@ public:
         teardownFuture.get();
     }
     
-    void update(const std::vector<uint32_t> &revealed, blocksci::State state) {
+    void update(const std::vector<blocksci::Script> &revealed, blocksci::State state) {
         using namespace std::chrono_literals;
         
-        waitingRevealed.insert(waitingRevealed.end(), revealed.begin(), revealed.end());
+        waitingRevealed.reserve(waitingRevealed.size() + revealed.size());
+        for (auto &script : revealed) {
+            if (script.type == blocksci::ScriptType::Enum::SCRIPTHASH) {
+                waitingRevealed.push_back(script.scriptNum);
+            }
+        }
+        
         if (updateFuture.wait_for(0ms) == std::future_status::ready) {
             updateFuture.get();
             launchingUpdate = true;

@@ -45,7 +45,7 @@ bool isValidPubkey(boost::iterator_range<const unsigned char *> &vch1) {
 
 using ScriptDataType = blocksci::to_address_variant_t<ScriptData>;
 
-ScriptDataType extractScriptData(const CScriptView &scriptPubKey, bool witnessActivated) {
+ScriptDataType extractScriptData(const blocksci::CScriptView &scriptPubKey, bool witnessActivated) {
     // Templates
     using namespace blocksci;
     
@@ -224,7 +224,7 @@ struct ResolveOutputVisitor : public boost::static_visitor<void> {
     }
 };
 
-AnyScriptOutput::AnyScriptOutput(const CScriptView &scriptPubKey, bool witnessActivated) : wrapped(extractScriptData(scriptPubKey, witnessActivated)) {}
+AnyScriptOutput::AnyScriptOutput(const blocksci::CScriptView &scriptPubKey, bool witnessActivated) : wrapped(extractScriptData(scriptPubKey, witnessActivated)) {}
 
 blocksci::Address AnyScriptOutput::address() const {
     AddressVisitor visitor;
@@ -305,7 +305,7 @@ blocksci::uint160 ScriptData<blocksci::AddressType::Enum::MULTISIG>::getHash() c
         pubkeys.push_back(output.data.pubkey);
     }
     
-    std::sort(pubkeys.begin(), pubkeys.begin() + addressCount);
+    std::sort(pubkeys.begin(), pubkeys.end());
     
     for (auto &pubkey : pubkeys) {
         auto addressHash = pubkey.GetID();
@@ -335,12 +335,12 @@ void ScriptData<blocksci::AddressType::Enum::MULTISIG>::addAddress(const boost::
 
 // MARK: TX_NONSTANDARD
 
-ScriptData<blocksci::AddressType::Enum::NONSTANDARD>::ScriptData(const CScriptView &script_) : script(script_) {}
+ScriptData<blocksci::AddressType::Enum::NONSTANDARD>::ScriptData(const blocksci::CScriptView &script_) : script(script_) {}
 
 // MARK: TX_NULL_DATA
 
-ScriptData<blocksci::AddressType::Enum::NULL_DATA>::ScriptData(const CScriptView &script){
-    CScriptView::const_iterator pc1 = script.begin();
+ScriptData<blocksci::AddressType::Enum::NULL_DATA>::ScriptData(const blocksci::CScriptView &script){
+    blocksci::CScriptView::const_iterator pc1 = script.begin();
     opcodetype opcode1;
     boost::iterator_range<const unsigned char *> vch1;
     while(true) {

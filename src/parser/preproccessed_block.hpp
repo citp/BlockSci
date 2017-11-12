@@ -51,17 +51,15 @@ public:
     uint32_t sequenceNum;
     std::vector<WitnessStackItem> witnessStack;
     uint32_t linkedTxNum;
-    blocksci::Address address;
-    
-    AnyScriptInput scriptInput;
+    blocksci::AddressType::Enum type;
     
     blocksci::OutputPointer getOutputPointer() const;
     
-    CScriptView getScriptView() const {
+    blocksci::CScriptView getScriptView() const {
         if (scriptLength == 0) {
-            return CScriptView(scriptBytes.data(), scriptBytes.data() + scriptBytes.size());
+            return blocksci::CScriptView(scriptBytes.data(), scriptBytes.data() + scriptBytes.size());
         } else {
-            return CScriptView(scriptBegin, scriptBegin + scriptLength);
+            return blocksci::CScriptView(scriptBegin, scriptBegin + scriptLength);
         }
     }
     
@@ -84,22 +82,21 @@ private:
     std::vector<unsigned char> scriptBytes;
 public:
     uint64_t value;
-    AnyScriptOutput scriptOutput;
 
     #ifdef BLOCKSCI_FILE_PARSER
-    RawOutput(SafeMemReader &reader, bool witnessActivated);
+    RawOutput(SafeMemReader &reader);
     #endif
     
     #ifdef BLOCKSCI_RPC_PARSER
-    RawOutput(const vout_t &vout, bool witnessActivated);
-    RawOutput(std::vector<unsigned char> scriptBytes_, uint64_t value_, bool witnessActivated);
+    RawOutput(const vout_t &vout);
+    RawOutput(std::vector<unsigned char> scriptBytes_, uint64_t value_);
     #endif
     
-    CScriptView getScriptView() const {
+    blocksci::CScriptView getScriptView() const {
         if (scriptLength == 0) {
-            return CScriptView(scriptBytes.data(), scriptBytes.data() + scriptBytes.size());
+            return blocksci::CScriptView(scriptBytes.data(), scriptBytes.data() + scriptBytes.size());
         } else {
-            return CScriptView(scriptBegin, scriptBegin + scriptLength);
+            return blocksci::CScriptView(scriptBegin, scriptBegin + scriptLength);
         }
     }
 };
@@ -126,6 +123,8 @@ struct RawTransaction {
     
     std::vector<RawInput> inputs;
     std::vector<RawOutput> outputs;
+    std::vector<AnyScriptInput> scriptInputs;
+    std::vector<AnyScriptOutput> scriptOutputs;
     
     
     RawTransaction() :
@@ -146,7 +145,7 @@ struct RawTransaction {
     
     void calculateHash();
     
-    blocksci::uint256 getHash(const InputView &info, const CScriptView &scriptView, int hashType) const;
+    blocksci::uint256 getHash(const InputView &info, const blocksci::CScriptView &scriptView, int hashType) const;
     blocksci::RawTransaction getRawTransaction() const;
 };
 

@@ -40,6 +40,9 @@ template<auto>
 struct ScriptData;
 
 template<auto>
+struct ScriptInputData;
+
+template<auto>
 struct SpendData;
 
 class AnySpendData;

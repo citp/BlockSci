@@ -11,11 +11,11 @@
 
 #include "basic_types.hpp"
 #include "script_output.hpp"
-#include "script_processor.hpp"
 #include "parser_fwd.hpp"
 
 #include <blocksci/address/address_types.hpp>
 #include <blocksci/address/address.hpp>
+#include <blocksci/scripts/script_view.hpp>
 #include <blocksci/chain/output_pointer.hpp>
 
 #include <boost/container/small_vector.hpp>
@@ -23,8 +23,6 @@
 #include <boost/variant/recursive_wrapper.hpp>
 
 #include <bitset>
-
-using ProcessedInput = boost::container::small_vector<uint32_t, 3>;
 
 struct InputView {
     uint32_t inputNum;
@@ -35,64 +33,69 @@ struct InputView {
     InputView(uint32_t inputNum_, uint32_t txNum_, const std::vector<WitnessStackItem> &witnessStack_, bool witnessActivated_) : inputNum(inputNum_), txNum(txNum_), witnessStack(witnessStack_), witnessActivated(witnessActivated_) {}
 };
 
-struct ScriptInputBase {
+template<auto type>
+struct ScriptInput {
+    ScriptInputData<type> data;
+    uint32_t scriptNum;
+    
+    ScriptInput(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<type> &spendData) : data(inputView, scriptView, tx, spendData) {}
+    
+    void process(AddressState &state) {
+        data.process(state);
+    }
+    
+    void check(const AddressState &state) {
+        data.check(state);
+    }
+};
+
+struct ScriptInputDataBase {
     uint32_t txNum;
     
-    ScriptInputBase() = default;
-    ScriptInputBase(const InputView &inputView, const CScriptView &) : txNum(inputView.txNum) {}
+    ScriptInputDataBase() = default;
+    ScriptInputDataBase(const InputView &inputView, const blocksci::CScriptView &) : txNum(inputView.txNum) {}
     void check(const AddressState &) {}
     void process(AddressState &) {}
 };
 
 template<>
-struct ScriptInput<blocksci::AddressType::Enum::PUBKEY> : public ScriptInputBase {
-    ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::PUBKEY> &) : ScriptInputBase(inputView, scriptView) {}
-    ProcessedInput serialize(uint32_t scriptNum, AddressWriter &writer);
+struct ScriptInputData<blocksci::AddressType::Enum::PUBKEY> : public ScriptInputDataBase {
+    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::PUBKEY> &) : ScriptInputDataBase(inputView, scriptView) {}
 };
 
 template<>
-struct ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH> : public ScriptInputBase {
+struct ScriptInputData<blocksci::AddressType::Enum::PUBKEYHASH> : public ScriptInputDataBase {
     CPubKey pubkey;
 
-    ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::PUBKEYHASH> &);
-    
-    ProcessedInput serialize(uint32_t scriptNum, AddressWriter &);
+    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::PUBKEYHASH> &);
 };
 
 template<>
-struct ScriptInput<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : public ScriptInputBase {
+struct ScriptInputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : public ScriptInputDataBase {
     CPubKey pubkey;
     
-    ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> &);
-    
-    ProcessedInput serialize(uint32_t scriptNum, AddressWriter &);
+    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> &);
 };
 
 template<>
-struct ScriptInput<blocksci::AddressType::Enum::NONSTANDARD> : public ScriptInputBase {
+struct ScriptInputData<blocksci::AddressType::Enum::NONSTANDARD> : public ScriptInputDataBase {
     CScript script;
     
-    ScriptInput() = default;
-    ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::NONSTANDARD> &);
-    
-    ProcessedInput serialize(uint32_t scriptNum, AddressWriter &);
+    ScriptInputData() = default;
+    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::NONSTANDARD> &);
 };
 
 template <>
-struct ScriptInput<blocksci::AddressType::Enum::NULL_DATA> : public ScriptInputBase {
-    ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::NULL_DATA> &);
-
-    ProcessedInput serialize(uint32_t scriptNum, AddressWriter &);
+struct ScriptInputData<blocksci::AddressType::Enum::NULL_DATA> : public ScriptInputDataBase {
+    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::NULL_DATA> &);
 };
 
 template<>
-struct ScriptInput<blocksci::AddressType::Enum::MULTISIG> : public ScriptInputBase {
+struct ScriptInputData<blocksci::AddressType::Enum::MULTISIG> : public ScriptInputDataBase {
     static constexpr int MAX_ADDRESSES = 16;
     std::bitset<MAX_ADDRESSES> spendSet;
     
-    ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::MULTISIG> &spendData);
-    
-    ProcessedInput serialize(uint32_t scriptNum, AddressWriter &);
+    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::MULTISIG> &spendData);
 };
 
 template<auto addressType>
@@ -120,43 +123,40 @@ public:
     ScriptInputType wrapped;
     
     AnyScriptInput() = default;
-    AnyScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const AnySpendData &spendData);
+    AnyScriptInput(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const AnySpendData &spendData);
     
     void process(AddressState &state);
     void check(const AddressState &state);
     
-    ProcessedInput serialize(uint32_t scriptNum, AddressWriter &writer);
+    void setScriptNum(uint32_t scriptNum);
 };
 
 template<>
-struct ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptInputBase {
+struct ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptInputDataBase {
     AnyScriptOutput wrappedScriptOutput;
     AnyScriptInput wrappedScriptInput;
     
-    ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::SCRIPTHASH> &);
+    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::SCRIPTHASH> &);
     
     void process(AddressState &state);
     void check(const AddressState &state);
-    ProcessedInput serialize(uint32_t scriptNum, AddressWriter &writer);
     
 private:
-    ScriptInput(const InputView &inputView, const CScriptView &scriptView, const std::pair<AnyScriptOutput, AnyScriptInput> &data);
+    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const std::pair<AnyScriptOutput, AnyScriptInput> &data);
 };
 
 template<>
-struct ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> : public ScriptInputBase {
+struct ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> : public ScriptInputDataBase {
     AnyScriptOutput wrappedScriptOutput;
     AnyScriptInput wrappedScriptInput;
     
-    ScriptInput(const InputView &inputView, const CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> &);
+    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> &);
     
     void process(AddressState &state);
     void check(const AddressState &state);
     
-    ProcessedInput serialize(uint32_t scriptNum, AddressWriter &writer);
-    
 private:
-    ScriptInput(const InputView &inputView, const CScriptView &scriptView, const std::pair<AnyScriptOutput, AnyScriptInput> &data);
+    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const std::pair<AnyScriptOutput, AnyScriptInput> &data);
 };
 
 #endif /* script_input_hpp */

@@ -33,6 +33,7 @@ namespace blocksci {
     }
     
     class AnyScript;
+    class CScriptView;
 }
 
 #endif /* scriptsfwd_h */

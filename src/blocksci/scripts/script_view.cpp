@@ -1,15 +1,17 @@
 //
-//  script_processor.cpp
-//  blocksci_parser
+//  script_view.cpp
+//  blocksci
 //
 //  Created by Harry Kalodner on 10/7/17.
 //
 
-#include "script_processor.hpp"
+#include "script_view.hpp"
 
 #include <blocksci/bitcoin_uint256.hpp>
 
 #include <sstream>
+
+using namespace blocksci;
 
 unsigned int CScriptView::GetSigOpCount(bool fAccurate) const
 {

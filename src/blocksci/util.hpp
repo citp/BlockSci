@@ -113,6 +113,47 @@ namespace blocksci {
             return std::make_tuple(f(std::get<Is>(t))...);
         });
     }
+    
+    template <typename T, typename Index = uint32_t>
+    class InPlaceArray {
+        Index dataSize;
+        
+    public:
+        InPlaceArray(Index size) : dataSize(size) {}
+        
+        Index size() const {
+            return dataSize;
+        }
+        
+        T &operator[](Index index) {
+            return *(reinterpret_cast<T *>(reinterpret_cast<char *>(this) + sizeof(InPlaceArray)) + index);
+        }
+        
+        const T &operator[](Index index) const {
+            return *(reinterpret_cast<const T *>(reinterpret_cast<const char *>(this) + sizeof(InPlaceArray)) + index);
+        }
+        
+        const T *begin() const {
+            return &operator[](Index{0});
+        }
+        
+        const T *end() const {
+            return &operator[](size());
+        }
+        
+        const T *begin() {
+            return &operator[](Index{0});
+        }
+        
+        const T *end() {
+            return &operator[](size());
+        }
+        
+        size_t extraSize() const {
+            return sizeof(T) * size();
+        }
+        
+    };
 }
 
 #endif /* util_h */

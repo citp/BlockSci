@@ -54,6 +54,13 @@ private:
     address_map oldSingleAddressMap;
     BloomFilter addressBloomFilter;
     
+    mutable long bloomNegativeCount = 0;
+    mutable long singleCount = 0;
+    mutable long oldSingleCount = 0;
+    mutable long multiCount = 0;
+    mutable long levelDBCount = 0;
+    mutable long bloomFPCount = 0;
+    
     
     std::vector<uint32_t> scriptIndexes;
     

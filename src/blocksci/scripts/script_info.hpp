@@ -39,6 +39,8 @@ namespace blocksci {
         static constexpr std::string_view name = "pubkey_script"sv;
         static constexpr bool deduped = true;
         static constexpr bool spendable = true;
+        static constexpr bool indexed = false;
+        using outputType = PubkeyData;
         using storage = FixedSize<PubkeyData>;
     };
     
@@ -47,6 +49,8 @@ namespace blocksci {
         static constexpr std::string_view name = "scripthash_script"sv;
         static constexpr bool deduped = true;
         static constexpr bool spendable = true;
+        static constexpr bool indexed = false;
+        using outputType = ScriptHashData;
         using storage = FixedSize<ScriptHashData>;
     };
     
@@ -55,6 +59,8 @@ namespace blocksci {
         static constexpr std::string_view name = "multisig_script"sv;
         static constexpr bool deduped = true;
         static constexpr bool spendable = true;
+        static constexpr bool indexed = true;
+        using outputType = MultisigData;
         using storage = Indexed<MultisigData>;
     };
     
@@ -63,6 +69,8 @@ namespace blocksci {
         static constexpr std::string_view name = "nonstandard_script"sv;
         static constexpr bool deduped = false;
         static constexpr bool spendable = true;
+        static constexpr bool indexed = true;
+        using outputType = NonstandardScriptData;
         using storage = Indexed<NonstandardScriptData,NonstandardScriptData>;
     };
     
@@ -71,6 +79,8 @@ namespace blocksci {
         static constexpr std::string_view name = "null_data_script"sv;
         static constexpr bool deduped = false;
         static constexpr bool spendable = false;
+        static constexpr bool indexed = true;
+        using outputType = RawData;
         using storage = Indexed<RawData>;
     };
     using ScriptInfoList = array_to_tuple_t<ScriptType::Enum, ScriptType::size, ScriptType::all>;

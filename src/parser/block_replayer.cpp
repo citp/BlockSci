@@ -71,19 +71,27 @@ void replayBlock(const ParserConfiguration<FileTag> &config, uint32_t blockNum) 
             tx.inputs.clear();
         }
         
-        for (auto &output : tx.outputs) {
-            output.scriptOutput.check(addressState);
+        uint16_t i = 0;
+        for (auto &input : tx.inputs) {
+            auto &realInput = realTx.inputs()[i];
+            auto address = realInput.getAddress();
+            InputView inputView(i, tx.txNum, input.witnessStack, tx.isSegwit);
+            AnySpendData spendData(address.getScript(scripts), address.type, scripts);
+            tx.scriptInputs.emplace_back(inputView, input.getScriptView(), tx, spendData);
+            i++;
         }
         
-        uint16_t j = 0;
-        for (auto &input : tx.inputs) {
-            auto &realInput = realTx.inputs()[j];
-            InputView inputView(j, txNum, input.witnessStack, segwit);
-            auto address = realInput.getAddress();
-            AnySpendData spendData(address.getScript(scripts), address.type, scripts);
-            AnyScriptInput scriptInput(inputView, input.getScriptView(), tx, spendData);
+        i = 0;
+        for (auto &output : tx.outputs) {
+            tx.scriptOutputs.emplace_back(output.getScriptView(), tx.isSegwit);
+        }
+        
+        for (auto &scriptOutput : tx.scriptOutputs) {
+            scriptOutput.check(addressState);
+        }
+        
+        for (auto &scriptInput : tx.scriptInputs) {
             scriptInput.check(addressState);
-            j++;
         }
     }
 }

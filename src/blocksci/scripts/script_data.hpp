@@ -11,12 +11,16 @@
 
 #include "bitcoin_script.hpp"
 #include "bitcoin_pubkey.hpp"
+#include "scriptsfwd.hpp"
 
+#include <blocksci/util.hpp>
 #include <blocksci/typedefs.hpp>
+#include <blocksci/file_mapper.hpp>
 #include <blocksci/address/address.hpp>
 #include <blocksci/bitcoin_uint256.hpp>
 
 namespace blocksci {
+    
     struct PubkeyData {
         CPubKey pubkey;
         uint160 address;
@@ -41,58 +45,60 @@ namespace blocksci {
     struct MultisigData {
         uint8_t m;
         uint8_t n;
-        uint16_t addressCount;
+        InPlaceArray<uint32_t, uint16_t> addresses;
         
         MultisigData(const MultisigData &other) = delete;
         MultisigData(MultisigData &&other) = delete;
         MultisigData &operator=(const MultisigData &other) = delete;
         MultisigData &operator=(MultisigData &&other) = delete;
         
-        const uint32_t *rawAddressArray() const {
-            return reinterpret_cast<const uint32_t *>(reinterpret_cast<const char *>(this) + sizeof(MultisigData));
-        }
-        
         std::vector<Address> getAddresses() const {
             std::vector<Address> res;
-            
-            const uint32_t *addresses = rawAddressArray();
-            for (uint32_t i = 0; i < addressCount; i++) {
-                res.emplace_back(addresses[i], AddressType::Enum::PUBKEYHASH);
+            res.reserve(addresses.size());
+            for (auto scriptNum : addresses) {
+                res.emplace_back(scriptNum, AddressType::Enum::PUBKEYHASH);
             }
             
             return res;
         }
         
-        size_t size() {
-            return sizeof(MultisigData) + sizeof(uint32_t) * addressCount;
+        size_t realSize() const {
+            return sizeof(MultisigData) + addresses.extraSize();
         }
+        
+        MultisigData(uint8_t m_, uint8_t n_, uint16_t addressCount) : m(m_), n(n_), addresses(addressCount) {}
     };
     
     struct NonstandardScriptData {
-        uint32_t length;
+        InPlaceArray<unsigned char> scriptData;
         
         CScript getScript() const {
-            const unsigned char *start = reinterpret_cast<const unsigned char *>(this) + sizeof(NonstandardScriptData);
-            return CScript(start, start + length);
+            return CScript(scriptData.begin(), scriptData.end());
         }
         
-        size_t size() {
-            return sizeof(NonstandardScriptData) + length;
+        size_t realSize() const {
+            return sizeof(NonstandardScriptData) + scriptData.extraSize();
         }
+        
+        NonstandardScriptData(const CScriptView &scriptView);
+        NonstandardScriptData(const CScript &scriptView);
     };
     
     struct RawData {
-        uint32_t length;
+        InPlaceArray<unsigned char> rawData;
         
         std::string getData() const {
-            const char *start = reinterpret_cast<const char *>(this) + sizeof(RawData);
-            return std::string(start, length);
+            return std::string(rawData.begin(), rawData.end());
         }
         
-        size_t size() {
-            return sizeof(RawData) + length;
+        size_t realSize() const {
+            return sizeof(RawData) + rawData.extraSize();
         }
+        
+        RawData(const std::vector<unsigned char> &fullData) : rawData(fullData.size()) {}
     };
+    
+    
 }
 
 

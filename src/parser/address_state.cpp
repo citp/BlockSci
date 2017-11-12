@@ -9,8 +9,8 @@
 #include "address_state.hpp"
 #include "parser_configuration.hpp"
 
-#include <hyperleveldb/db.h>
-#include <hyperleveldb/write_batch.h>
+#include <pebblesdb/db.h>
+#include <pebblesdb/write_batch.h>
 
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
@@ -77,6 +77,14 @@ AddressState::AddressState(const boost::filesystem::path &path_) : path(path_), 
 }
 
 AddressState::~AddressState() {
+    
+    std::cout << "\nbloomNegativeCount: " << bloomNegativeCount << "\n";
+    std::cout << "singleCount: " << singleCount << "\n";
+    std::cout << "oldSingleCount: " << oldSingleCount << "\n";
+    std::cout << "multiCount: " << multiCount << "\n";
+    std::cout << "levelDBCount: " << levelDBCount << "\n";
+    std::cout << "bloomFPCount: " << bloomFPCount << "\n";
+    
     if (addressClearFuture.valid()) {
         addressClearFuture.get();
     }
@@ -124,6 +132,45 @@ void AddressState::reloadBloomFilter() {
             addressBloomFilter.add(address);
         }
     }
+}
+
+AddressInfo AddressState::findAddress(const blocksci::RawScript &address) const {
+    auto &_singleAddressMap = const_cast<address_map &>(singleAddressMap);
+    auto &_oldSingleAddressMap = const_cast<address_map &>(oldSingleAddressMap);
+    auto &_multiAddressMap = const_cast<address_map &>(multiAddressMap);
+    
+    if (!addressBloomFilter.possiblyContains(address)) {
+        // Address has definitely never been seen
+        bloomNegativeCount++;
+        return {address, AddressLocation::NotFound, _singleAddressMap.end(), 0};
+    }
+    
+    if (auto it = _multiAddressMap.find(address); it != _multiAddressMap.end()) {
+        multiCount++;
+        return {address, AddressLocation::MultiUseMap, it, it->second};
+    }
+    
+    if (auto it = _singleAddressMap.find(address); it != _singleAddressMap.end()) {
+        singleCount++;
+        return {address, AddressLocation::SingleUseMap, it, it->second};
+    }
+    
+    if (auto it = _oldSingleAddressMap.find(address); it != _oldSingleAddressMap.end()) {
+        oldSingleCount++;
+        return {address, AddressLocation::OldSingleUseMap, it, it->second};
+    }
+    
+    leveldb::Slice keySlice(reinterpret_cast<const char *>(&address), sizeof(address));
+    std::string value;
+    leveldb::Status s = levelDb->Get(leveldb::ReadOptions(), keySlice, &value);
+    if (s.ok()) {
+        levelDBCount++;
+        uint32_t destNum = *reinterpret_cast<const uint32_t *>(value.data());
+        return {address, AddressLocation::LevelDb, _singleAddressMap.end(), destNum};
+    }
+    bloomFPCount++;
+    // We must have had a false positive
+    return {address, AddressLocation::NotFound, _singleAddressMap.end(), 0};
 }
 
 std::pair<uint32_t, bool> AddressState::resolveAddress(const AddressInfo &addressInfo) {
@@ -208,46 +255,6 @@ void AddressState::rollback(const blocksci::State &state) {
     for (auto size : state.scriptCounts) {
         scriptIndexes.push_back(size);
     }
-}
-
-AddressInfo AddressState::findAddress(const blocksci::RawScript &address) const {
-    static uint64_t fpcount = 0;
-    static uint64_t tpcount = 0;
-    static uint64_t ldbcount = 0;
-    
-    auto &_singleAddressMap = const_cast<address_map &>(singleAddressMap);
-    auto &_oldSingleAddressMap = const_cast<address_map &>(oldSingleAddressMap);
-    auto &_multiAddressMap = const_cast<address_map &>(multiAddressMap);
-    
-    if (!addressBloomFilter.possiblyContains(address)) {
-        // Address has definitely never been seen
-        tpcount++;
-        return {address, AddressLocation::NotFound, _singleAddressMap.end(), 0};
-    }
-    
-    if (auto it = _multiAddressMap.find(address); it != _multiAddressMap.end()) {
-        return {address, AddressLocation::MultiUseMap, it, it->second};
-    }
-    
-    if (auto it = _singleAddressMap.find(address); it != _singleAddressMap.end()) {
-        return {address, AddressLocation::SingleUseMap, it, it->second};
-    }
-    
-    if (auto it = _oldSingleAddressMap.find(address); it != _oldSingleAddressMap.end()) {
-        return {address, AddressLocation::OldSingleUseMap, it, it->second};
-    }
-    
-    leveldb::Slice keySlice(reinterpret_cast<const char *>(&address), sizeof(address));
-    std::string value;
-    leveldb::Status s = levelDb->Get(leveldb::ReadOptions(), keySlice, &value);
-    if (s.ok()) {
-        ldbcount++;
-        uint32_t destNum = *reinterpret_cast<const uint32_t *>(value.data());
-        return {address, AddressLocation::LevelDb, _singleAddressMap.end(), destNum};
-    }
-    fpcount++;
-    // We must have had a false positive
-    return {address, AddressLocation::NotFound, _singleAddressMap.end(), 0};
 }
 
 void AddressState::optionalSave() {

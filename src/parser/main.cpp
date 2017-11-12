@@ -126,7 +126,7 @@ void rollbackTransactions(size_t blockKeepCount, const ParserConfigurationBase &
         blocksci::IndexedFileMapper<readwrite, blocksci::RawTransaction>(config.txFilePath()).truncate(firstDeletedTxNum);
         blocksci::FixedSizeFileMapper<blocksci::uint256, readwrite>(config.txHashesFilePath()).truncate(firstDeletedTxNum);
         blocksci::IndexedFileMapper<readwrite, uint32_t>(config.sequenceFilePath()).truncate(firstDeletedTxNum);
-        blocksci::ArbitraryFileMapper<readwrite>(config.blockCoinbaseFilePath()).truncate(firstDeletedBlock->coinbaseOffset);
+        blocksci::SimpleFileMapper<readwrite>(config.blockCoinbaseFilePath()).truncate(firstDeletedBlock->coinbaseOffset);
         blockFile.truncate(blockKeepCount);
         
         AddressState(config.addressPath()).rollback(blocksciState);
