@@ -15,18 +15,6 @@
 
 #include <boost/variant/get.hpp>
 
-struct IsValidVisitor : public boost::static_visitor<bool> {
-    template <blocksci::AddressType::Enum type>
-    bool operator()(const ScriptOutput<type> &scriptOutput) const {
-        return scriptOutput.data.isValid();
-    }
-    
-    template <blocksci::AddressType::Enum type>
-    bool operator()(const ScriptData<type> &scriptOutput) const {
-        return scriptOutput.isValid();
-    }
-};
-
 bool isValidPubkey(boost::iterator_range<const unsigned char *> &vch1);
 
 bool isValidPubkey(boost::iterator_range<const unsigned char *> &vch1) {
@@ -118,7 +106,8 @@ ScriptDataType extractScriptData(const blocksci::CScriptView &scriptPubKey, bool
         while (true)
         {
             if (pc1 == script1.end() && pc2 == script2.end()) {
-                if (!boost::apply_visitor(IsValidVisitor(), *type)) {
+                
+                if (!boost::apply_visitor([&](auto &data) { return data.isValid(); }, *type)) {
                     break;
                 }
                 return *type;
@@ -185,77 +174,31 @@ ScriptDataType extractScriptData(const blocksci::CScriptView &scriptPubKey, bool
     return ScriptData<AddressType::Enum::NONSTANDARD>{scriptPubKey};
 }
 
-struct AddressVisitor : public boost::static_visitor<blocksci::Address> {
-    template <blocksci::AddressType::Enum type>
-    blocksci::Address operator()(const ScriptOutput<type> &scriptOutput) {
-        return {scriptOutput.scriptNum, type};
-    }
-};
-
-struct IsNewVisitor : public boost::static_visitor<bool> {
-    template <blocksci::AddressType::Enum type>
-    bool operator()(const ScriptOutput<type> &scriptOutput) const {
-        return scriptOutput.isNew;
-    }
-};
-
-struct OutputAddressTypeVisitor : public boost::static_visitor<blocksci::AddressType::Enum> {
-    template <blocksci::AddressType::Enum type>
-    blocksci::AddressType::Enum operator()(const ScriptOutput<type> &) const {
-        return type;
-    }
-};
-
-struct CheckOutputVisitor : public boost::static_visitor<void> {
-    const AddressState &state;
-    CheckOutputVisitor(const AddressState &state_) : state(state_) {}
-    template <blocksci::AddressType::Enum type>
-    void operator()(ScriptOutput<type> &scriptOutput) const {
-        scriptOutput.check(state);
-    }
-};
-
-struct ResolveOutputVisitor : public boost::static_visitor<void> {
-    AddressState &state;
-    ResolveOutputVisitor(AddressState &state_) : state(state_) {}
-    template <blocksci::AddressType::Enum type>
-    void operator()(ScriptOutput<type> &scriptOutput) const {
-        scriptOutput.resolve(state);
-    }
-};
-
 AnyScriptOutput::AnyScriptOutput(const blocksci::CScriptView &scriptPubKey, bool witnessActivated) : wrapped(extractScriptData(scriptPubKey, witnessActivated)) {}
 
 blocksci::Address AnyScriptOutput::address() const {
-    AddressVisitor visitor;
-    return boost::apply_visitor(visitor, wrapped);
+    return boost::apply_visitor([&](auto &output) { return blocksci::Address{output.scriptNum, output.address_v}; }, wrapped);
 }
 
 bool AnyScriptOutput::isNew() const {
-    IsNewVisitor visitor;
-    return boost::apply_visitor(visitor, wrapped);
+    return boost::apply_visitor([&](auto &output) { return output.isNew; }, wrapped);
 }
 
 bool AnyScriptOutput::isValid() const {
-    IsValidVisitor visitor;
-    return boost::apply_visitor(visitor, wrapped);
+    return boost::apply_visitor([&](auto &output) { return output.data.isValid(); }, wrapped);
 }
 
 blocksci::AddressType::Enum AnyScriptOutput::type() const {
-    OutputAddressTypeVisitor visitor;
-    return boost::apply_visitor(visitor, wrapped);
+    return boost::apply_visitor([&](auto &output) { return output.address_v; }, wrapped);
 }
 
 void AnyScriptOutput::check(const AddressState &state) {
-    CheckOutputVisitor visitor{state};
-    boost::apply_visitor(visitor, wrapped);
+    boost::apply_visitor([&](auto &output) { return output.check(state); }, wrapped);
 }
 
-void AnyScriptOutput::resolve(AddressState &state) {
-    ResolveOutputVisitor visitor{state};
-    boost::apply_visitor(visitor, wrapped);
+uint32_t AnyScriptOutput::resolve(AddressState &state) {
+    return boost::apply_visitor([&](auto &output) { return output.resolve(state); }, wrapped);
 }
-
 
 // MARK: TX_PUBKEY
 

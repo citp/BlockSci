@@ -8,19 +8,8 @@
 #include "utxo_address_state.hpp"
 #include "script_output.hpp"
 
-struct AddOutputVisitor : public boost::static_visitor<void> {
-    UTXOAddressState &state;
-    const blocksci::OutputPointer &pointer;
-    AddOutputVisitor(UTXOAddressState &state_, const blocksci::OutputPointer &pointer_) : state(state_), pointer(pointer_) {}
-    template <blocksci::AddressType::Enum type>
-    void operator()(const SpendData<type> &spendData) const {
-        state.addOutput(spendData, pointer);
-    }
-};
-
 void UTXOAddressState::addOutput(const AnySpendData &spendData, const blocksci::OutputPointer &pointer) {
-    AddOutputVisitor visitor(*this, pointer);
-    boost::apply_visitor(visitor, spendData.wrapped);
+    boost::apply_visitor([&](const auto &spendData) { addOutput(spendData, pointer); }, spendData.wrapped);
 }
 
 template<blocksci::AddressType::Enum type>

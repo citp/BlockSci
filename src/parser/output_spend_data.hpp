@@ -20,6 +20,9 @@
 
 template<auto type>
 struct SpendData {
+    static constexpr auto address_v = type;
+    static constexpr auto script_v = scriptType(type);
+    
     SpendData() = default;
     SpendData(const ScriptOutput<type> &) {}
     SpendData(const blocksci::ScriptAddress<blocksci::scriptType(type)> &, const blocksci::ScriptAccess &) {}
@@ -27,6 +30,9 @@ struct SpendData {
 
 template<>
 struct SpendData<blocksci::AddressType::Enum::MULTISIG> {
+    static constexpr auto address_v = blocksci::AddressType::Enum::MULTISIG;
+    static constexpr auto script_v = blocksci::ScriptType::Enum::MULTISIG;
+    
     uint32_t addressCount;
     std::array<CPubKey, 16> addresses;
     

@@ -16,35 +16,12 @@ scriptFiles(blocksci::apply(blocksci::ScriptInfoList(), [&] (auto tag) {
 })) {
 }
 
-struct SerializeOutputVisitor : public boost::static_visitor<uint32_t> {
-    AddressWriter &writer;
-    
-    SerializeOutputVisitor(AddressWriter &writer_) : writer(writer_) {}
-    template <blocksci::AddressType::Enum type>
-    uint32_t operator()(const ScriptOutput<type> &data) const
-    {
-        return writer.serialize(data);
-    }
-};
-
-struct SerializeInputVisitor : public boost::static_visitor<ProcessedInput> {
-    AddressWriter &writer;
-    
-    SerializeInputVisitor(AddressWriter &writer_) : writer(writer_) {}
-    template <blocksci::AddressType::Enum type>
-    ProcessedInput operator()(const ScriptInput<type> &data) const {
-        return writer.serialize(data);
-    }
-};
-
 uint32_t AddressWriter::serialize(const AnyScriptOutput &output) {
-    SerializeOutputVisitor visitor(*this);
-    return boost::apply_visitor(visitor, output.wrapped);
+    return boost::apply_visitor([&](auto &scriptOutput) { return serialize(scriptOutput); }, output.wrapped);
 }
 
 ProcessedInput AddressWriter::serialize(const AnyScriptInput &input) {
-    SerializeInputVisitor visitor(*this);
-    return boost::apply_visitor(visitor, input.wrapped);
+    return boost::apply_visitor([&](auto &scriptInput) { return serialize(scriptInput); }, input.wrapped);
 }
 
 using namespace blocksci;

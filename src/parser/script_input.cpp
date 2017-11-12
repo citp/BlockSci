@@ -30,48 +30,18 @@ struct ScriptInputGenerator : public boost::static_visitor<ScriptInputType> {
     }
 };
 
-struct ScriptInputProcessor : public boost::static_visitor<void> {
-    AddressState &state;
-    ScriptInputProcessor(AddressState &state_) : state(state_) {}
-    template <blocksci::AddressType::Enum type>
-    void operator()(ScriptInput<type> &input) const {
-        input.process(state);
-    }
-};
-
-struct ScriptInputChecker : public boost::static_visitor<void> {
-    const AddressState &state;
-    ScriptInputChecker(const AddressState &state_) : state(state_) {}
-    template <blocksci::AddressType::Enum type>
-    void operator()(ScriptInput<type> &input) const {
-        input.check(state);
-    }
-};
-
-struct ScriptNumSetter : public boost::static_visitor<void> {
-    uint32_t scriptNum;
-    ScriptNumSetter(uint32_t scriptNum_) : scriptNum(scriptNum_) {}
-    
-    template <blocksci::AddressType::Enum type>
-    void operator()(ScriptInput<type> &input) const {
-        input.scriptNum = scriptNum;
-    }
-};
-
 AnyScriptInput::AnyScriptInput(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const AnySpendData &spendData) : wrapped(boost::apply_visitor(ScriptInputGenerator{inputView, scriptView, tx}, spendData.wrapped)) {}
 
 void AnyScriptInput::process(AddressState &state) {
-    ScriptInputProcessor visitor{state};
-    boost::apply_visitor(visitor, wrapped);
+    boost::apply_visitor([&](auto &scriptInput) { scriptInput.process(state); }, wrapped);
 }
 
 void AnyScriptInput::check(const AddressState &state) {
-    ScriptInputChecker visitor{state};
-    boost::apply_visitor(visitor, wrapped);
+    boost::apply_visitor([&](auto &scriptInput) { scriptInput.check(state); }, wrapped);
 }
 
 void AnyScriptInput::setScriptNum(uint32_t scriptNum) {
-    boost::apply_visitor(ScriptNumSetter(scriptNum), wrapped);
+    boost::apply_visitor([&](auto &input) { input.scriptNum = scriptNum; }, wrapped);
 }
 
 std::pair<AnyScriptOutput, AnyScriptInput> p2shGenerate(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::SCRIPTHASH> &) {
@@ -109,9 +79,9 @@ ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH>::ScriptInputData(const 
 ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::SCRIPTHASH> &spendData) : ScriptInputData(inputView, scriptView, p2shGenerate(inputView, scriptView, tx, spendData)) {}
 
 void ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH>::process(AddressState &state) {
-    wrappedScriptOutput.resolve(state);
+    uint32_t scriptNum = wrappedScriptOutput.resolve(state);
     wrappedScriptInput.process(state);
-    wrappedScriptInput.setScriptNum(wrappedScriptOutput.address().scriptNum);
+    wrappedScriptInput.setScriptNum(scriptNum);
 }
 
 void ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH>::check(const AddressState &state) {
@@ -207,9 +177,9 @@ ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::ScriptInputDat
 ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> &spendData) : ScriptInputData(inputView, scriptView, p2shWitnessGenerate(inputView, scriptView, tx, spendData)) {}
 
 void ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::process(AddressState &state) {
-    wrappedScriptOutput.resolve(state);
+    uint32_t scriptNum = wrappedScriptOutput.resolve(state);
     wrappedScriptInput.process(state);
-    wrappedScriptInput.setScriptNum(wrappedScriptOutput.address().scriptNum);
+    wrappedScriptInput.setScriptNum(scriptNum);
 }
 
 void ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::check(const AddressState &state) {

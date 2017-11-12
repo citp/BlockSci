@@ -30,7 +30,14 @@ namespace blocksci {
         }
     };
     
-    struct ScriptHashData {
+    struct ScriptDataBase {
+        uint32_t txFirstSeen;
+        uint32_t txFirstSpent;
+        
+        ScriptDataBase() : txFirstSeen(std::numeric_limits<uint32_t>::max()), txFirstSpent(std::numeric_limits<uint32_t>::max()) {}
+    };
+    
+    struct ScriptHashData : public ScriptDataBase {
         uint160 address;
         Address wrappedAddress;
         TxIndex txRevealed;
@@ -42,7 +49,7 @@ namespace blocksci {
         }
     };
     
-    struct MultisigData {
+    struct MultisigData : public ScriptDataBase {
         uint8_t m;
         uint8_t n;
         InPlaceArray<uint32_t, uint16_t> addresses;
@@ -69,7 +76,7 @@ namespace blocksci {
         MultisigData(uint8_t m_, uint8_t n_, uint16_t addressCount) : m(m_), n(n_), addresses(addressCount) {}
     };
     
-    struct NonstandardScriptData {
+    struct NonstandardScriptData : public ScriptDataBase {
         InPlaceArray<unsigned char> scriptData;
         
         CScript getScript() const {
@@ -84,7 +91,7 @@ namespace blocksci {
         NonstandardScriptData(const CScript &scriptView);
     };
     
-    struct RawData {
+    struct RawData : public ScriptDataBase {
         InPlaceArray<unsigned char> rawData;
         
         std::string getData() const {

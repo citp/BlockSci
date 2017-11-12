@@ -25,6 +25,8 @@
 
 template<auto type>
 struct ScriptOutput {
+    static constexpr auto address_v = type;
+    static constexpr auto script_v = scriptType(type);
     ScriptData<type> data;
     uint32_t scriptNum;
     bool isNew;
@@ -32,26 +34,25 @@ struct ScriptOutput {
     ScriptOutput() = default;
     ScriptOutput(const ScriptData<type> &data_) : data(data_) {}
     
-    void resolve(AddressState &state) {
-        constexpr auto script = blocksci::scriptType(type);
-        if constexpr (blocksci::ScriptInfo<script>::deduped) {
-            blocksci::RawScript rawAddress{data.getHash(), script};
+    uint32_t resolve(AddressState &state) {
+        if constexpr (blocksci::ScriptInfo<script_v>::deduped) {
+            blocksci::RawScript rawAddress{data.getHash(), script_v};
             auto addressInfo = state.findAddress(rawAddress);
             std::tie(scriptNum, isNew) = state.resolveAddress(addressInfo);
         } else {
-            scriptNum = state.getNewAddressIndex(scriptType(type));
+            scriptNum = state.getNewAddressIndex(script_v);
             isNew = true;
         }
         
         if (isNew) {
             data.visitWrapped([&](auto &output) { output.resolve(state); });
         }
+        return scriptNum;
     }
     
     void check(const AddressState &state) {
-        constexpr auto script = blocksci::scriptType(type);
-        if constexpr (blocksci::ScriptInfo<script>::deduped) {
-            blocksci::RawScript rawAddress{data.getHash(), script};
+        if constexpr (blocksci::ScriptInfo<script_v>::deduped) {
+            blocksci::RawScript rawAddress{data.getHash(), script_v};
             auto addressInfo = state.findAddress(rawAddress);
             scriptNum = addressInfo.addressNum;
             isNew = addressInfo.addressNum == 0;
@@ -64,15 +65,13 @@ struct ScriptOutput {
 };
 
 struct ScriptDataBase {
-    void resolve(AddressState &) {}
-    void check(const AddressState &) {}
     bool isValid() const { return true; }
     
     template<typename Func>
-    void visitWrapped(Func func) {}
+    void visitWrapped(Func) {}
     
     template<typename Func>
-    void visitWrapped(Func func) const {}
+    void visitWrapped(Func) const {}
 };
 
 template <>
@@ -202,7 +201,7 @@ public:
     AnyScriptOutput(const blocksci::CScriptView &scriptPubKey, bool witnessActivated);
     
     void check(const AddressState &state);
-    void resolve(AddressState &state);
+    uint32_t resolve(AddressState &state);
     bool isValid() const;
 };
 
