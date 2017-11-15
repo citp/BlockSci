@@ -3,7 +3,7 @@ project(blocksci)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_MACOSX_RPATH 1)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
+
 # -Weverything
 #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG")
 
@@ -47,6 +47,9 @@ target_include_directories(sparsepp INTERFACE SYSTEM libs/sparsepp)
 add_library(ThreadPool INTERFACE)
 target_include_directories(ThreadPool INTERFACE SYSTEM libs)
 
+add_library(Ranges INTERFACE)
+target_include_directories(Ranges INTERFACE SYSTEM libs/range-v3/include)
+
 add_library(lmbdxx INTERFACE)
 target_include_directories(lmbdxx INTERFACE SYSTEM libs)
 target_link_libraries(lmbdxx INTERFACE lmdb)
@@ -55,6 +58,8 @@ link_directories(/usr/local/lib)
 include_directories("src")
 
 add_subdirectory(libs/pybind11)
+
+add_subdirectory(libs/variant)
 
 add_subdirectory(src/blocksci)
 add_subdirectory(src/parser)

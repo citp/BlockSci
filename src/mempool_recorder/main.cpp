@@ -30,7 +30,7 @@ using namespace blocksci;
 // boost::posix_time::hours(24 * 5)
 class MempoolRecorder {
     uint32_t lastHeight;
-    std::unordered_map<uint256, time_t, boost::hash<blocksci::uint256>> mempool;
+    std::unordered_map<uint256, time_t, std::hash<blocksci::uint256>> mempool;
     const DataConfiguration &config;
     BitcoinAPI &bitcoinAPI;
     blocksci::FixedSizeFileMapper<time_t, boost::iostreams::mapped_file::readwrite> txTimeFile;
@@ -40,16 +40,14 @@ public:
         auto blocks = chain.getBlocks();
         lastHeight = blocks.size();
         
+        auto mostRecentBlock = Block(blocks.size() - 1, chain);
+        auto lastTx = mostRecentBlock.back();
         if (txTimeFile.size() == 0) {
             // Record starting txNum in position 0
-            auto mostRecentBlock = blocks.back();
-            auto lastTx = mostRecentBlock.txes(chain).back();
             txTimeFile.write(lastTx.txNum + 1);
         } else {
             // Fill in 0 timestamp where data is missing
             auto firstNum = *txTimeFile.getData(0);
-            auto mostRecentBlock = blocks.back();
-            auto lastTx = mostRecentBlock.txes(chain).back();
             auto txesSinceStart = static_cast<size_t>(lastTx.txNum - firstNum);
             auto currentTxCount = txTimeFile.size() - 1;
             if (currentTxCount < txesSinceStart) {
@@ -87,8 +85,8 @@ public:
         auto blocks = chain.getBlocks();
         auto blockCount = blocks.size();
         for (uint32_t i = lastHeight; i < blockCount; i++) {
-            auto &block = blocks[i];
-            for (auto tx : block.txes(chain)) {
+            auto block = Block(i, chain);
+            for (auto tx : block) {
                 auto it = mempool.find(tx.getHash(chain));
                 if (it != mempool.end()) {
                     auto &txData = it->second;
