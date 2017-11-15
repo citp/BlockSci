@@ -10,9 +10,7 @@
 
 #include <blocksci/scripts/script_variant.hpp>
 
-#include <boost/variant.hpp>
-
-struct SpendDataGenerator : public boost::static_visitor<SpendDataType> {
+struct SpendDataGenerator {
     template <blocksci::AddressType::Enum type>
     SpendDataType operator()(const ScriptOutput<type> &output) const {
         return SpendData<type>(output);
@@ -22,7 +20,7 @@ struct SpendDataGenerator : public boost::static_visitor<SpendDataType> {
 template<blocksci::AddressType::Enum type>
 struct ScriptAddressGenerator {
     static SpendDataType f(const blocksci::AnyScript &script, const blocksci::ScriptAccess &scripts) {
-        return SpendData<type>(boost::get<blocksci::ScriptAddress<blocksci::scriptType(type)>>(script.wrapped), scripts);
+        return SpendData<type>(mpark::get<blocksci::ScriptAddress<blocksci::scriptType(type)>>(script.wrapped), scripts);
     }
 };
 
@@ -37,7 +35,7 @@ SpendDataType generateFromScriptAddress(const blocksci::AnyScript &scriptData, b
     return scriptAddressGeneratorTable[index](scriptData, scripts);
 }
 
-AnySpendData::AnySpendData(const AnyScriptOutput &output) : wrapped(boost::apply_visitor(SpendDataGenerator(), output.wrapped)) {}
+AnySpendData::AnySpendData(const AnyScriptOutput &output) : wrapped(mpark::visit(SpendDataGenerator(), output.wrapped)) {}
 
 AnySpendData::AnySpendData(const blocksci::AnyScript &scriptData, blocksci::AddressType::Enum addressType, const blocksci::ScriptAccess &scripts) : wrapped(generateFromScriptAddress(scriptData, addressType, scripts)) {}
 

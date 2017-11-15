@@ -11,6 +11,7 @@
 #include "transaction.hpp"
 #include "output.hpp"
 #include "input.hpp"
+#include "block.hpp"
 #include "chain_access.hpp"
 #include "input_pointer.hpp"
 #include "output_pointer.hpp"
@@ -19,8 +20,7 @@
 #include "scripts/script_variant.hpp"
 #include "hash_index.hpp"
 
-#include <boost/variant.hpp>
-#include <boost/functional/hash/hash.hpp>
+#include "hash.hpp"
 
 #include <unordered_map>
 #include <unordered_set>
@@ -50,17 +50,13 @@ namespace blocksci {
     
     Transaction::Transaction(const RawTransaction *data_, uint32_t txNum_, uint32_t blockHeight_) : data(data_), txNum(txNum_), blockHeight(blockHeight_) {}
     
-    const Transaction &Transaction::create(const ChainAccess &access, uint32_t index) {
-        return *reinterpret_cast<const Transaction *>(access.getTxPos(index));
-    }
-    
     uint256 Transaction::getHash(const ChainAccess &access) const {
         auto &txHashesFile = access.getTxHashesFile();
         return *txHashesFile.getData(txNum);
     }
     
-    const Block &Transaction::block(const ChainAccess &access) const {
-        return access.getBlock(blockHeight);
+    Block Transaction::block(const ChainAccess &access) const {
+        return Block(blockHeight, access);
     }
     
     std::string Transaction::getString() const {
@@ -69,16 +65,16 @@ namespace blocksci {
         return ss.str();
     }
     
-    boost::optional<Transaction> Transaction::txWithHash(uint256 hash, const HashIndex &index, const ChainAccess &chain) {
+    ranges::optional<Transaction> Transaction::txWithHash(uint256 hash, const HashIndex &index, const ChainAccess &chain) {
         auto txXndex = index.getTxIndex(hash);
         if (txXndex != 0) {
             return txWithIndex(chain, txXndex);
         } else {
-            return boost::none;
+            return ranges::nullopt;
         }
     }
     
-    boost::optional<Transaction> Transaction::txWithHash(std::string hash, const HashIndex &index, const ChainAccess &access) {
+    ranges::optional<Transaction> Transaction::txWithHash(std::string hash, const HashIndex &index, const ChainAccess &access) {
         return txWithHash(uint256S(hash), index, access);
     }
     
@@ -92,12 +88,12 @@ namespace blocksci {
     
     Transaction::output_range Transaction::outputs() const {
         auto &firstOut = data->getOutput(0);
-        return boost::make_iterator_range_n(&firstOut, outputCount());
+        return ranges::v3::make_iterator_range(&firstOut, &firstOut + outputCount());
     }
     
     Transaction::input_range Transaction::inputs() const {
         auto &firstIn = data->getInput(0);
-        return boost::make_iterator_range_n(&firstIn, inputCount());
+        return ranges::v3::make_iterator_range(&firstIn, &firstIn + inputCount());
     }
     
     std::vector<OutputPointer> Transaction::getOutputPointers(const InputPointer &pointer, const ChainAccess &access) const {
@@ -461,7 +457,7 @@ namespace blocksci {
         return getSumCount(values, bucketGoals, maxDepth);
     }
     
-    const Output *getChangeOutput(const ScriptFirstSeenAccess &scripts, const Transaction &tx) {
+    const Output *getChangeOutput(const Transaction &tx, const ScriptAccess &scripts) {
         if (isCoinjoin(tx)) {
             return nullptr;
         }
@@ -476,7 +472,7 @@ namespace blocksci {
         for (const auto &output : tx.outputs()) {
             if (output.getAddress().isSpendable()) {
                 spendableCount++;
-                if (output.getValue() < smallestInput && output.getAddress().getFirstTransactionIndex(scripts) == tx.txNum) {
+                if (output.getValue() < smallestInput && output.getAddress().getScript(scripts).firstTxIndex() == tx.txNum) {
                     if (change) {
                         return nullptr;
                     }
@@ -525,9 +521,8 @@ namespace blocksci {
     }
     
     namespace {
-        boost::optional<Address> getInsidePointer(const boost::optional<Address> &address, const blocksci::ScriptAccess &access);
-        
-        boost::optional<Address> getInsidePointer(const Address &pointer, const blocksci::ScriptAccess &access) {
+        ranges::optional<Address> getInsidePointer(const ranges::optional<Address> &address, const blocksci::ScriptAccess &access);
+        ranges::optional<Address> getInsidePointer(const Address &pointer, const blocksci::ScriptAccess &access) {
             if (pointer.type == AddressType::Enum::SCRIPTHASH) {
                 script::ScriptHash scriptHashAddress(access, pointer.scriptNum);
                 return getInsidePointer(scriptHashAddress.getWrappedAddress(), access);
@@ -536,11 +531,11 @@ namespace blocksci {
             }
         }
         
-        boost::optional<Address> getInsidePointer(const boost::optional<Address> &address, const blocksci::ScriptAccess &access) {
+        ranges::optional<Address> getInsidePointer(const ranges::optional<Address> &address, const blocksci::ScriptAccess &access) {
             if (address) {
                 return getInsidePointer(*address, access);
             } else {
-                return boost::none;
+                return ranges::nullopt;
             }
         }
     }
@@ -589,13 +584,13 @@ namespace blocksci {
     struct DetailedTypeHasher {
         size_t operator()(const DetailedType& b) const {
             std::size_t seed = 123945432;
-            boost::hash_combine(seed, b.mainType);
+            hash_combine(seed, b.mainType);
             if (b.hasSubtype) {
-                boost::hash_combine(seed, b.subType);
+                hash_combine(seed, b.subType);
             }
             if (b.subType == AddressType::Enum::MULTISIG) {
-                boost::hash_combine(seed, b.i);
-                boost::hash_combine(seed, b.j);
+                hash_combine(seed, b.i);
+                hash_combine(seed, b.j);
             }
             return seed;
         }

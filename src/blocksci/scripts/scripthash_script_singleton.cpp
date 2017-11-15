@@ -12,9 +12,6 @@
 #include "scripts.hpp"
 #include "script_variant.hpp"
 
-#include <boost/optional/optional.hpp>
-#include <boost/variant.hpp>
-
 namespace blocksci {
     using namespace script;
     ScriptHash::ScriptAddress(uint32_t addressNum) : ScriptHash(*DataAccess::Instance().scripts, addressNum) {}
@@ -26,7 +23,7 @@ namespace blocksci {
         return wrappedScript(*DataAccess::Instance().scripts);
     }
     
-    boost::optional<Transaction> ScriptHash::transactionRevealed() const {
+    ranges::optional<Transaction> ScriptHash::transactionRevealed() const {
         return transactionRevealed(*DataAccess::Instance().chain);
     }
     

@@ -16,3 +16,9 @@
 [submodule "libs/ThreadPool"]
 	path = libs/ThreadPool
 	url = https://github.com/progschj/ThreadPool
+[submodule "libs/variant"]
+	path = libs/variant
+	url = https://github.com/mpark/variant.git
+[submodule "libs/range-v3"]
+	path = libs/range-v3
+	url = https://github.com/ericniebler/range-v3.git

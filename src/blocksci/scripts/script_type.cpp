@@ -13,3 +13,9 @@
 namespace blocksci {
     constexpr std::array<ScriptType::Enum, 5> ScriptType::all;
 }
+
+namespace std {
+    size_t hash<blocksci::ScriptType::Enum>:: operator()(blocksci::ScriptType::Enum val) const {
+        return static_cast<size_t>(val);
+    };
+}

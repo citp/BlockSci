@@ -10,24 +10,19 @@
 #include "data_access.hpp"
 #include "output.hpp"
 #include "input.hpp"
+#include "block.hpp"
 #include "bitcoin_uint256.hpp"
-
-#include <boost/optional/optional.hpp>
 
 namespace blocksci {
     uint256 Transaction::getHash() const {
         return getHash(*DataAccess::Instance().chain);
     }
     
-    const Block &Transaction::block() const {
-        return block(*DataAccess::Instance().chain);
-    }
-    
-    boost::optional<Transaction> Transaction::txWithHash(uint256 hash) {
+    ranges::optional<Transaction> Transaction::txWithHash(uint256 hash) {
         return txWithHash(hash, *DataAccess::Instance().hashIndex, *DataAccess::Instance().chain);
     }
     
-    boost::optional<Transaction> Transaction::txWithHash(std::string hash) {
+    ranges::optional<Transaction> Transaction::txWithHash(std::string hash) {
         return txWithHash(hash, *DataAccess::Instance().hashIndex, *DataAccess::Instance().chain);
     }
     
@@ -39,13 +34,8 @@ namespace blocksci {
         return txWithIndex(*DataAccess::Instance().chain, index, height);
     }
     
-    const Transaction &Transaction::create(uint32_t index) {
-        return create(*DataAccess::Instance().chain, index);
-    }
-    
     const Output * getChangeOutput(const Transaction &tx) {
-        auto &instance = DataAccess::Instance();
-        return getChangeOutput(*instance.scriptFirstSeen, tx);
+        return getChangeOutput(tx, *DataAccess::Instance().scripts);
     }
     
     bool isChangeOverTx(const Transaction &tx) {

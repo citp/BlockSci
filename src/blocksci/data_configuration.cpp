@@ -8,7 +8,7 @@
 
 #include "data_configuration.hpp"
 
-#include <boost/filesystem.hpp>
+#include <boost/filesystem/operations.hpp>
 
 namespace blocksci {
     
@@ -42,7 +42,6 @@ namespace blocksci {
         
         createDirectory(dataDirectory);
         createDirectory(scriptsDirectory());
-        createDirectory(firstSeenDirectory());
         createDirectory(chainDirectory());
     }
     

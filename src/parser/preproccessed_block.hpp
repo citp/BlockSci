@@ -12,10 +12,9 @@
 #include "config.hpp"
 #include "script_output.hpp"
 #include "script_input.hpp"
+#include "utxo.hpp"
 
 #include <blocksci/bitcoin_uint256.hpp>
-
-#include <boost/variant/variant.hpp>
 
 struct getrawtransaction_t;
 struct vout_t;
@@ -50,8 +49,7 @@ public:
     RawOutputPointer rawOutputPointer;
     uint32_t sequenceNum;
     std::vector<WitnessStackItem> witnessStack;
-    uint32_t linkedTxNum;
-    blocksci::AddressType::Enum type;
+    UTXO utxo;
     
     blocksci::OutputPointer getOutputPointer() const;
     

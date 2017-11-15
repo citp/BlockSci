@@ -22,6 +22,7 @@ target_link_libraries( blocksci sparsepp)
 target_link_libraries( blocksci secp256k1)
 target_link_libraries( blocksci openssl )
 target_link_libraries( blocksci lmbdxx)
+target_link_libraries (blocksci mpark_variant Ranges)
 
 
 target_include_directories(blocksci PUBLIC BEFORE

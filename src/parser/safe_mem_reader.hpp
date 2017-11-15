@@ -9,7 +9,6 @@
 #define safe_mem_reader_hpp
 
 #include <boost/iostreams/device/mapped_file.hpp>
-#include <boost/filesystem/path.hpp>
 
 class SafeMemReader {
 public:
@@ -17,7 +16,7 @@ public:
     typedef boost::iostreams::mapped_file_source::size_type size_type;
     typedef std::iterator_traits<iterator>::difference_type difference_type;
     
-    explicit SafeMemReader(const boost::filesystem::path &path) {
+    explicit SafeMemReader(const std::string &path) {
         fileMap.open(path);
         begin = fileMap.begin();
         end = fileMap.end();

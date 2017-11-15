@@ -16,7 +16,7 @@
 #include <blocksci/scripts/bitcoin_pubkey.hpp>
 #include <blocksci/scripts/scriptsfwd.hpp>
 
-#include <boost/variant/variant.hpp>
+#include <mpark/variant.hpp>
 
 template<auto type>
 struct SpendData {
@@ -41,7 +41,7 @@ struct SpendData<blocksci::AddressType::Enum::MULTISIG> {
     SpendData(const blocksci::ScriptAddress<blocksci::ScriptType::Enum::MULTISIG> &output, const blocksci::ScriptAccess &scripts);
 };
 
-using SpendDataType = blocksci::to_address_variant_t<SpendData>;
+using SpendDataType = blocksci::to_variadic_t<blocksci::to_address_tuple_t<SpendData>, mpark::variant>;
 
 class AnySpendData {
 public:

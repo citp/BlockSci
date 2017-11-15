@@ -36,13 +36,11 @@ void init_address(py::module &m) {
     .def("in_txes", py::overload_cast<>(&Address::getInputTransactions, py::const_), "Returns a list of all transaction where this address was an input")
     .def("out_txes", py::overload_cast<>(&Address::getOutputTransactions, py::const_), "Returns a list of all transaction where this address was an output")
     .def_property_readonly("script", py::overload_cast<>(&Address::getScript, py::const_), "Returns the script associated with this address")
-    .def_property_readonly("first_tx", py::overload_cast<>(&Address::getFirstTransaction, py::const_), "Get the first transaction that was sent to this address")
     .def_static("address_count", static_cast<size_t(*)()>(addressCount), "Get the total number of address of a given type")
     .def_static("from_string", py::overload_cast<const std::string &>(getAddressFromString), "Construct an address object from an address string")
     ;
     
-    py::class_<Script> baseScript(m, "Script", "Class representing a script which coins are sent to");
-    baseScript
+    py::class_<Script>(m, "Script", "Class representing a script which coins are sent to")
     .def("__repr__", &Script::toString)
     .def(py::self == py::self)
     .def(hash(py::self))
@@ -54,6 +52,11 @@ void init_address(py::module &m) {
     .def("txes", py::overload_cast<>(&Script::getTransactions, py::const_), "Returns a list of all transactions involving this script")
     .def("in_txes", py::overload_cast<>(&Script::getInputTransactions, py::const_), "Returns a list of all transaction where this script was an input")
     .def("out_txes", py::overload_cast<>(&Script::getOutputTransactions, py::const_), "Returns a list of all transaction where this script was an output")
+    ;
+    
+    py::class_<BaseScript> baseScript(m, "BaseScript", "Class representing a script which coins are sent to");
+    baseScript
+    .def_property_readonly("first_tx", py::overload_cast<>(&BaseScript::getFirstTransaction, py::const_), "Get the first transaction that was sent to this address")
     ;
     
     py::class_<script::Pubkey>(m, "PubkeyScript", baseScript, "Extra data about pay to pubkey address")

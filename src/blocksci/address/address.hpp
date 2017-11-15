@@ -11,22 +11,19 @@
 
 #include "address_types.hpp"
 
-#include <boost/optional/optional_fwd.hpp>
+#include <blocksci/chain/chain_fwd.hpp>
+
+#include <range/v3/utility/optional.hpp>
 
 #include <functional>
 #include <memory>
 #include <vector>
 
 namespace blocksci {
-    struct Transaction;
-    struct Output;
-    struct Input;
     struct Script;
     class AnyScript;
     class ScriptAccess;
-    class ChainAccess;
     class HashIndex;
-    class ScriptFirstSeenAccess;
     class AddressIndex;
     struct DataConfiguration;
     
@@ -52,9 +49,6 @@ namespace blocksci {
         
         std::string toString() const;
         
-        Transaction getFirstTransaction(const ChainAccess &chain, const ScriptFirstSeenAccess &scriptsFirstSeen) const;
-        uint32_t getFirstTransactionIndex(const ScriptFirstSeenAccess &access) const;
-        
         AnyScript getScript(const ScriptAccess &access) const;
         
         std::vector<const Output *> getOutputs(const AddressIndex &index, const ChainAccess &chain) const;
@@ -67,10 +61,7 @@ namespace blocksci {
         std::string fullType(const ScriptAccess &script) const;
 
         // Requires DataAccess
-        #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        Transaction getFirstTransaction() const;
-        uint32_t getFirstTransactionIndex() const;
-        
+        #ifndef BLOCKSCI_WITHOUT_SINGLETON        
         AnyScript getScript() const;
         
         std::vector<const Output *> getOutputs() const;
@@ -87,11 +78,11 @@ namespace blocksci {
     
     void visit(const Address &address, const std::function<bool(const Address &)> &visitFunc, const ScriptAccess &access);
     
-    boost::optional<Address> getAddressFromString(const DataConfiguration &config, const HashIndex &index, const std::string &addressString);
+    ranges::optional<Address> getAddressFromString(const DataConfiguration &config, const HashIndex &index, const std::string &addressString);
     
     // Requires DataAccess
     #ifndef BLOCKSCI_WITHOUT_SINGLETON
-    boost::optional<Address> getAddressFromString(const std::string &addressString);
+    ranges::optional<Address> getAddressFromString(const std::string &addressString);
     size_t addressCount();
     #endif
 }

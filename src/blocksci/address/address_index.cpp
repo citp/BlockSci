@@ -20,7 +20,7 @@
 #include "scripts/script.hpp"
 #include "data_configuration.hpp"
 
-#include <boost/optional/optional.hpp>
+#include <range/v3/utility/optional.hpp>
 
 #include <vector>
 #include <sstream>
@@ -34,15 +34,15 @@ namespace blocksci {
     std::vector<Transaction> getOutputTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
     std::vector<Transaction> getInputTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
     
-    lmdb::env createAddressIndexEnviroment(const boost::filesystem::path &path) {
+    lmdb::env createAddressIndexEnviroment(const std::string &path) {
         auto env = lmdb::env::create();
         env.set_mapsize(100UL * 1024UL * 1024UL * 1024UL); /* 1 GiB */
         env.set_max_dbs(5);
-        env.open(path.native().c_str(), MDB_NOSUBDIR, 0664);
+        env.open(path.c_str(), MDB_NOSUBDIR, 0664);
         return env;
     }
     
-    AddressIndex::AddressIndex(const DataConfiguration &config) : env(createAddressIndexEnviroment(config.addressDBFilePath()))  {
+    AddressIndex::AddressIndex(const DataConfiguration &config) : env(createAddressIndexEnviroment(config.addressDBFilePath().native()))  {
     }
     
     std::vector<const Output *> getOutputsImp(std::vector<OutputPointer> pointers, const ChainAccess &access) {

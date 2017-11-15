@@ -14,12 +14,12 @@
 
 namespace blocksci {
     using namespace script;
-    Nonstandard::ScriptAddress(uint32_t scriptNum_, std::tuple<const NonstandardScriptData *, const NonstandardScriptData *> &&rawData) : Script(scriptNum_, scriptType), outputScript(std::get<0>(rawData)->getScript()) {
+    Nonstandard::ScriptAddress(uint32_t scriptNum_, std::tuple<const NonstandardScriptData *, const NonstandardSpendScriptData *> &&rawData) : BaseScript(scriptNum_, scriptType, *std::get<0>(rawData)), outputScript(std::get<0>(rawData)->getScript()) {
         auto inputPointer = std::get<1>(rawData);
         if (inputPointer != nullptr) {
             inputScript = inputPointer->getScript();
         } else {
-            inputScript = boost::none;
+            inputScript = ranges::nullopt;
         }
     }
     

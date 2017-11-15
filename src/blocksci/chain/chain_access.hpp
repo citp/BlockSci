@@ -12,7 +12,7 @@
 #include <blocksci/file_mapper.hpp>
 #include <blocksci/bitcoin_uint256.hpp>
 
-#include <boost/range/iterator_range.hpp>
+#include <range/v3/iterator_range.hpp>
 
 namespace blocksci {
     class ReorgException : public std::runtime_error {
@@ -21,16 +21,15 @@ namespace blocksci {
         virtual ~ReorgException();
     };
     
-    struct Block;
+    struct RawBlock;
     struct Output;
     struct Input;
     struct DataConfiguration;
     struct RawTransaction;
-    class TransactionIterator;
     
     
     class ChainAccess {
-        FixedSizeFileMapper<Block> blockFile;
+        FixedSizeFileMapper<RawBlock> blockFile;
         SimpleFileMapper<> blockCoinbaseFile;
         
         IndexedFileMapper<boost::iostreams::mapped_file::mapmode::readonly, RawTransaction> txFile;
@@ -45,7 +44,7 @@ namespace blocksci {
         
         void reorgCheck() const;
         
-        const FixedSizeFileMapper<Block> &getBlockFile() const {
+        const FixedSizeFileMapper<RawBlock> &getBlockFile() const {
             return blockFile;
         }
         
@@ -57,10 +56,9 @@ namespace blocksci {
         uint32_t maxLoadedTx() const;
         
         uint32_t getBlockHeight(uint32_t txIndex) const;
-        const Block &getBlock(uint32_t blockHeight) const;
-        const boost::iterator_range<const Block *> getBlocks() const;
+        const RawBlock *getBlock(uint32_t blockHeight) const;
         
-        const char *getTxPos(uint32_t index) const;
+        const ranges::v3::iterator_range<const RawBlock *> getBlocks() const;
         
         const RawTransaction *getTx(uint32_t index) const;
         
@@ -79,10 +77,6 @@ namespace blocksci {
         
         void reload();
     };
-    
-    boost::iterator_range<TransactionIterator> iterateTransactions(const ChainAccess &chain, uint32_t startIndex, uint32_t endIndex);
-    
-    boost::iterator_range<TransactionIterator> iterateTransactions(const ChainAccess &chain, const Block &beginBlock, const Block &endBlock);
 }
 
 #endif /* chain_access_hpp */

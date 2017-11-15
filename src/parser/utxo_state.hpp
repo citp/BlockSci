@@ -9,43 +9,20 @@
 #ifndef utxo_state_hpp
 #define utxo_state_hpp
 
+#include "serializable_map.hpp"
 #include "basic_types.hpp"
 #include "utxo.hpp"
-#include "parser_fwd.hpp"
 
-#include <boost/functional/hash.hpp>
-#include <boost/filesystem/path.hpp>
+#include <blocksci/chain/output_pointer.hpp>
 
-#include <google/dense_hash_map>
-
-#include <sstream>
-#include <future>
-
-class UTXOState {
-    using utxo_map = google::dense_hash_map<RawOutputPointer, UTXO, boost::hash<RawOutputPointer>>;
-    
-    utxo_map utxoMap;
-    
+class UTXOState : public SerializableMap<RawOutputPointer, UTXO> {
 public:
-    
-    struct UTXOMissingException : public std::runtime_error {
-        UTXOMissingException(const RawOutputPointer &pointer) : std::runtime_error(getMessage(pointer).c_str()) {}
-        
-    private:
-        static std::string getMessage(const RawOutputPointer &pointer) {
-            std::stringstream ss;
-            ss << "Tried to spend missing UTXO " << pointer.hash.GetHex() << ": " << pointer.outputNum;
-            return ss.str();
-        }
-    };
-    
-    UTXOState();
-    
-    bool unserialize(const boost::filesystem::path &path);
-    bool serialize(const boost::filesystem::path &path);
-    
-    UTXO spendOutput(const RawOutputPointer &outputPointer);
-    void addOutput(UTXO utxo, const RawOutputPointer &outputPointer);
+    UTXOState() : SerializableMap<RawOutputPointer, UTXO>({blocksci::uint256{}, 0}, {blocksci::uint256{}, 1}) {}
+};
+
+class UTXOScriptState : public SerializableMap<blocksci::OutputPointer, uint32_t> {
+public:
+    UTXOScriptState() : SerializableMap<blocksci::OutputPointer, uint32_t>({std::numeric_limits<uint32_t>::max(), 0}, {std::numeric_limits<uint32_t>::max(), 1}) {}
 };
 
 

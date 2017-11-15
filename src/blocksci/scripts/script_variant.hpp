@@ -12,7 +12,7 @@
 #include "scriptsfwd.hpp"
 #include "scripts.hpp"
 
-#include <boost/variant/variant.hpp>
+#include <mpark/variant.hpp>
 
 #include <functional>
 
@@ -21,7 +21,7 @@ namespace blocksci {
     
     class AnyScript {
     public:
-        using ScriptVariant = to_script_variant_t<ScriptAddress>;
+        using ScriptVariant = to_variadic_t<to_script_tuple_t<ScriptAddress>, mpark::variant>;
         
         AnyScript(const Address &address, const ScriptAccess &access);
         AnyScript(const Script &script, const ScriptAccess &access);
@@ -30,6 +30,8 @@ namespace blocksci {
         std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const;
         
         void visitPointers(const std::function<void(const Address &)> &func);
+        
+        uint32_t firstTxIndex();
         
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
         AnyScript(const Address &address);

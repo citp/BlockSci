@@ -12,17 +12,22 @@
 #include "script_type.hpp"
 
 namespace blocksci {
+    struct ScriptDataBase;
     struct PubkeyData;
     struct MultisigData;
     struct ScriptHashData;
     struct RawData;
     struct NonstandardScriptData;
+    struct NonstandardSpendScriptData;
     class ScriptAccess;
     struct DataConfiguration;
     struct Script;
     
     template <auto>
     class ScriptAddress;
+    
+    template <ScriptType::Enum>
+    struct ScriptInfo;
     
     namespace script {
         using Pubkey = ScriptAddress<ScriptType::Enum::PUBKEY>;

@@ -13,9 +13,6 @@
 #include <pybind11/stl.h>
 #include <pybind11/chrono.h>
 
-#include <boost/optional.hpp>
-#include <boost/variant.hpp>
-
 namespace py = pybind11;
 
 void init_address(py::module &m);

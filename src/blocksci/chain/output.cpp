@@ -37,11 +37,11 @@ namespace blocksci {
         }
     }
     
-    boost::optional<Transaction> Output::getSpendingTx(const ChainAccess &access) const {
+    ranges::optional<Transaction> Output::getSpendingTx(const ChainAccess &access) const {
         if (isSpent(access)) {
             return Transaction::txWithIndex(access, getSpendingTxIndex(access));
         } else {
-            return boost::none;
+            return ranges::nullopt;
         }
     }
 }

@@ -14,8 +14,6 @@
 
 #include <lmdbxx/lmdb++.h>
 
-#include <boost/filesystem/path.hpp>
-
 #include <unordered_set>
 #include <unordered_map>
 #include <string>
@@ -32,7 +30,7 @@ namespace blocksci {
     struct Script;
     class ChainAccess;
     
-    lmdb::env createAddressIndexEnviroment(const boost::filesystem::path &path);
+    lmdb::env createAddressIndexEnviroment(const std::string &path);
     
     class AddressIndex {
         lmdb::env env;

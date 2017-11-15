@@ -13,24 +13,14 @@
 #include "scripts/scripts.hpp"
 #include "scripts/script_variant.hpp"
 
-#include <boost/variant.hpp>
-#include <boost/optional/optional.hpp>
+#include <range/v3/utility/optional.hpp>
 
 namespace blocksci {
     
     AnyScript Address::getScript() const {
         return getScript(*DataAccess::Instance().scripts);
     }
-    
-    uint32_t Address::getFirstTransactionIndex() const {
-        return getFirstTransactionIndex(*DataAccess::Instance().scriptFirstSeen);
-    }
-    
-    Transaction Address::getFirstTransaction() const {
-        auto &instance = DataAccess::Instance();
-        return getFirstTransaction(*instance.chain, *instance.scriptFirstSeen);
-    }
-    
+        
     std::vector<const Output *> Address::getOutputs() const {
         auto &instance = DataAccess::Instance();
         return getOutputs(*instance.addressIndex, *instance.chain);
@@ -56,7 +46,7 @@ namespace blocksci {
         return getInputTransactions(*instance.addressIndex, *instance.chain);
     }
     
-    boost::optional<Address> getAddressFromString(const std::string &addressString) {
+    ranges::optional<Address> getAddressFromString(const std::string &addressString) {
         auto &instance = DataAccess::Instance();
         return getAddressFromString(instance.config, *instance.hashIndex, addressString);
     }

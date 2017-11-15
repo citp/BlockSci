@@ -16,7 +16,9 @@
 #include "scripts/script_data.hpp"
 #include "scripts/bitcoin_base58.hpp"
 
-#include <boost/optional/optional.hpp>
+#include "hash.hpp"
+
+#include <range/v3/utility/optional.hpp>
 
 
 namespace blocksci {
@@ -29,13 +31,23 @@ namespace blocksci {
         
     }
     
-    boost::optional<RawAddress> RawAddress::create(const DataConfiguration &config, const std::string &addressString) {
+    ranges::optional<RawAddress> RawAddress::create(const DataConfiguration &config, const std::string &addressString) {
         CBitcoinAddress address{addressString};
         auto ret = address.Get(config);
         if (ret.second != AddressType::Enum::NONSTANDARD) {
             return RawAddress{ret.first, ret.second};
         } else {
-            return boost::none;
+            return ranges::nullopt;
         }
+    }
+}
+
+namespace std {
+    size_t std::hash<blocksci::RawAddress>::operator()(const blocksci::RawAddress &b) const {
+        std::size_t seed = 9765487;
+        
+        hash_combine(seed, b.hash);
+        hash_combine(seed, b.type);
+        return seed;
     }
 }

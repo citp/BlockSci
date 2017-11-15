@@ -10,7 +10,7 @@
 
 #include "bitcoin_script.hpp"
 
-#include <boost/range/iterator_range.hpp>
+#include <range/v3/iterator_range.hpp>
 
 #include <cassert>
 #include <limits>
@@ -21,12 +21,12 @@
 namespace blocksci {
     
     /** Serialized script, used inside transaction inputs and outputs */
-    class CScriptView : public boost::iterator_range<const unsigned char *>  {
+    class CScriptView : public ranges::iterator_range<const unsigned char *>  {
     public:
-        CScriptView() : boost::iterator_range<const unsigned char *>() {}
-        CScriptView(const unsigned char* pbegin, const unsigned char* pend) : boost::iterator_range<const unsigned char *>(pbegin, pend) {}
+        CScriptView() : ranges::iterator_range<const unsigned char *>() {}
+        CScriptView(const unsigned char* pbegin, const unsigned char* pend) : ranges::iterator_range<const unsigned char *>(pbegin, pend) {}
         
-        bool GetOp(const_iterator& pc, opcodetype& opcodeRet, boost::iterator_range<const unsigned char *>& vchRet) const
+        bool GetOp(const_iterator& pc, opcodetype& opcodeRet, ranges::iterator_range<const unsigned char *>& vchRet) const
         {
             return GetOp2(pc, opcodeRet, &vchRet);
         }
@@ -36,11 +36,11 @@ namespace blocksci {
             return GetOp2(pc, opcodeRet, nullptr);
         }
         
-        bool GetOp2(const_iterator& pc, opcodetype& opcodeRet, boost::iterator_range<const unsigned char *>* pvchRet) const
+        bool GetOp2(const_iterator& pc, opcodetype& opcodeRet, ranges::iterator_range<const unsigned char *>* pvchRet) const
         {
             opcodeRet = OP_INVALIDOPCODE;
             if (pvchRet)
-                *pvchRet = boost::iterator_range<const unsigned char *>();
+                *pvchRet = ranges::iterator_range<const unsigned char *>();
             if (pc >= end())
                 return false;
             
@@ -80,7 +80,7 @@ namespace blocksci {
                 if (end() - pc < 0 || static_cast<unsigned int>(end() - pc) < nSize)
                     return false;
                 if (pvchRet)
-                    *pvchRet = boost::iterator_range<const unsigned char *>(pc, pc + nSize);
+                    *pvchRet = ranges::iterator_range<const unsigned char *>(pc, pc + nSize);
                 pc += nSize;
             }
             
@@ -135,6 +135,8 @@ namespace blocksci {
             return (size() > 0 && *begin() == OP_RETURN) || (size() > MAX_SCRIPT_SIZE);
         }
     };
+    
+    std::string ScriptToAsmStr(const CScriptView& script, const bool fAttemptSighashDecode = false);
 }
 
 #endif /* script_view_hpp */

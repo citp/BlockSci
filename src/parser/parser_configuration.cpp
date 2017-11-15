@@ -13,7 +13,7 @@
 #include <bitcoinapi/bitcoinapi.h>
 #endif
 
-#include <boost/filesystem.hpp>
+#include <boost/filesystem/operations.hpp>
 
 ParserConfigurationBase::ParserConfigurationBase() : DataConfiguration() {}
 

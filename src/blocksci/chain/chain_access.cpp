@@ -15,7 +15,6 @@
 #include "transaction.hpp"
 #include "output.hpp"
 #include "input.hpp"
-#include "transaction_iterator.hpp"
 
 namespace blocksci {
     
@@ -69,11 +68,6 @@ namespace blocksci {
         return maxHeight;
     }
     
-    const char *ChainAccess::getTxPos(uint32_t index) const {
-        reorgCheck();
-        return txFile.getPointerAtIndex(index);
-    }
-    
     const RawTransaction *ChainAccess::getTx(uint32_t index) const {
         return txFile.getData(index);
     }
@@ -92,7 +86,7 @@ namespace blocksci {
             throw std::out_of_range("Transaction index out of range");
         }
         auto blockRange = getBlocks();
-        auto it = std::upper_bound(blockRange.begin(), blockRange.end(), txIndex, [](uint32_t index, const Block &b) {
+        auto it = std::upper_bound(blockRange.begin(), blockRange.end(), txIndex, [](uint32_t index, const RawBlock &b) {
             return index < b.firstTxIndex;
         });
         it--;
@@ -100,18 +94,17 @@ namespace blocksci {
         return height;
     }
     
-    const Block &ChainAccess::getBlock(uint32_t blockHeight) const {
+    const RawBlock *ChainAccess::getBlock(uint32_t blockHeight) const {
         reorgCheck();
-        return *blockFile.getData(blockHeight);
+        return blockFile.getData(blockHeight);
     }
     
-    const boost::iterator_range<const Block *> ChainAccess::getBlocks() const {
+    const ranges::v3::iterator_range<const RawBlock *> ChainAccess::getBlocks() const {
         reorgCheck();
         if (blockFile.size() > 0) {
-            auto fullRange = blockFile.getRange();
-            return boost::iterator_range<const Block *>(fullRange.begin(), fullRange.begin() + maxHeight);
+            return ranges::v3::make_iterator_range(blockFile.getData(0), blockFile.getData(maxHeight - 1) + 1);
         } else {
-            return boost::iterator_range<const Block *>{};
+            return ranges::v3::iterator_range<const RawBlock *>{};
         }
     }
     
@@ -121,18 +114,6 @@ namespace blocksci {
         pos += sizeof(uint32_t);
         auto range = boost::make_iterator_range_n(reinterpret_cast<const unsigned char *>(pos), length);
         return std::vector<unsigned char>(range.begin(), range.end());
-    }
-    
-    boost::iterator_range<TransactionIterator> iterateTransactions(const ChainAccess &chain, uint32_t startIndex, uint32_t endIndex) {
-        auto begin = TransactionIterator(&chain, startIndex);
-        auto end = TransactionIterator(&chain, endIndex);
-        return boost::make_iterator_range(begin, end);
-    }
-    
-    boost::iterator_range<TransactionIterator> iterateTransactions(const ChainAccess &chain, const Block &beginBlock, const Block &endBlock) {
-        auto begin = TransactionIterator(&chain, beginBlock.firstTxIndex, beginBlock.height);
-        auto end = TransactionIterator(&chain, endBlock.firstTxIndex + endBlock.numTxes, endBlock.height);
-        return boost::make_iterator_range(begin, end);
     }
     
 }

@@ -14,17 +14,11 @@
 
 #include <blocksci/bitcoin_uint256.hpp>
 
-#include <boost/filesystem/fstream.hpp>
 #include <boost/serialization/base_object.hpp>
-#include <boost/serialization/unordered_map.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
 
 #include <unordered_map>
 #include <vector>
 #include <cstdint>
-#include <fstream>
 
 class CBlockIndex;
 struct blockinfo_t;
@@ -150,10 +144,7 @@ struct ChainIndex {
     
 private:
     friend class boost::serialization::access;
-    template<class Archive> void serialize(Archive & ar, const unsigned int) {
-        ar & blockList;
-        ar & newestBlock;
-    }
+    template<class Archive> void serialize(Archive & ar, const unsigned int);
     
     int updateHeight(size_t blockNum, const std::unordered_map<blocksci::uint256, size_t> &indexMap);
 };

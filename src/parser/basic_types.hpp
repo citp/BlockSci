@@ -26,7 +26,12 @@ struct RawOutputPointer {
     RawOutputPointer(const blocksci::uint256 &hash_, uint16_t outputNum_) : hash(hash_), outputNum(outputNum_) {}
 };
 
+namespace std {
+    template<> struct hash<RawOutputPointer> {
+        size_t operator()(const RawOutputPointer &pointer) const;
+    };
+}
+
 std::ostream &operator<<(std::ostream &os, RawOutputPointer const &pointer);
-std::size_t hash_value(const RawOutputPointer &pointer);
 
 #endif /* utilities_h */

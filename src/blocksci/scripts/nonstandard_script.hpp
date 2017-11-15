@@ -11,20 +11,20 @@
 
 #include "scriptsfwd.hpp"
 #include "script.hpp"
-#include "bitcoin_script.hpp"
+#include "script_view.hpp"
 
-#include <boost/optional/optional.hpp>
+#include <range/v3/utility/optional.hpp>
 
 namespace blocksci {
     template <>
-    class ScriptAddress<ScriptType::Enum::NONSTANDARD> : public Script {
-        boost::optional<CScript> inputScript;
-        CScript outputScript;
+    class ScriptAddress<ScriptType::Enum::NONSTANDARD> : public BaseScript {
+        ranges::optional<CScriptView> inputScript;
+        CScriptView outputScript;
         
     public:
         constexpr static ScriptType::Enum scriptType = ScriptType::Enum::NONSTANDARD;
         
-        ScriptAddress<scriptType>(uint32_t scriptNum, std::tuple<const NonstandardScriptData *, const NonstandardScriptData *> &&rawData);
+        ScriptAddress<scriptType>(uint32_t scriptNum, std::tuple<const NonstandardScriptData *, const NonstandardSpendScriptData *> &&rawData);
         ScriptAddress<scriptType>(const ScriptAccess &access, uint32_t addressNum);
         
         std::string inputString() const;

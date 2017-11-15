@@ -11,7 +11,6 @@
 #include <blocksci/scripts/script_type.hpp>
 #include <blocksci/bitcoin_uint256.hpp>
 
-#include <boost/functional/hash.hpp>
 
 namespace blocksci {
     struct RawScript {
@@ -28,12 +27,7 @@ namespace std {
     template <>
     struct hash<blocksci::RawScript> {
     public:
-        size_t operator()(const blocksci::RawScript &b) const {
-            std::size_t seed = 8957643;
-            boost::hash_combine(seed, b.hash);
-            boost::hash_combine(seed, b.type);
-            return seed;
-        }
+        size_t operator()(const blocksci::RawScript &b) const;
     };
 }
 

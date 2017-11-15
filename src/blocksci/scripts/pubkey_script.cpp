@@ -13,21 +13,21 @@
 #include "script_access.hpp"
 #include "bitcoin_base58.hpp"
 
-#include <boost/optional/optional.hpp>
+#include <range/v3/utility/optional.hpp>
 
 namespace blocksci {
     using namespace script;
     
     
-    Pubkey::ScriptAddress(uint32_t scriptNum_, const PubkeyData *rawData) : Script(scriptNum_, scriptType), pubkey(rawData->pubkey), pubkeyhash(rawData->address) {}
+    Pubkey::ScriptAddress(uint32_t scriptNum_, const PubkeyData *rawData) : BaseScript(scriptNum_, scriptType, *rawData), pubkey(rawData->pubkey), pubkeyhash(rawData->address) {}
     
     Pubkey::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : Pubkey(addressNum, access.getScriptData<scriptType>(addressNum)) {}
     
-    boost::optional<CPubKey> Pubkey::getPubkey() const {
+    ranges::optional<CPubKey> Pubkey::getPubkey() const {
         if (pubkey.IsValid()) {
             return pubkey;
         } else {
-            return boost::none;
+            return ranges::nullopt;
         }
     }
     

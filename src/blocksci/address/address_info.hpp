@@ -14,8 +14,6 @@
 #include <blocksci/util.hpp>
 #include <blocksci/scripts/script_type.hpp>
 
-#include <boost/variant/variant_fwd.hpp>
-
 #include <string_view>
 #include <tuple>
 #include <sstream>
@@ -77,9 +75,6 @@ namespace blocksci {
     
     template <template<auto> class K>
     using to_address_tuple_t = apply_template_t<K, AddressInfoList>;
-    
-    template <template<auto> class K>
-    using to_address_variant_t = to_variadic_t<to_address_tuple_t<K>, boost::variant>;
     
     template<AddressType::Enum type>
     struct ScriptTypeFunctor {

@@ -14,9 +14,17 @@ struct RPCTag{};
 template <typename ParseType>
 struct BlockInfo;
 
+struct RawOutputPointer;
+struct UTXO;
+
+template<typename Key, typename Value>
+class SerializableMap;
+
+class UTXOState;
+class UTXOScriptState;
+
 struct RawTransaction;
 struct BlockInfoBase;
-class UTXOState;
 class UTXOAddressState;
 class AddressState;
 class AddressWriter;
@@ -37,7 +45,7 @@ struct ScriptInput;
 class AnyScriptInput;
 
 template<auto>
-struct ScriptData;
+struct ScriptOutputData;
 
 template<auto>
 struct ScriptInputData;

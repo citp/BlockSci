@@ -12,7 +12,6 @@
 #include "blockchain.hpp"
 #include "block.hpp"
 #include "transaction.hpp"
-#include "transaction_iterator.hpp"
 #include "input.hpp"
 #include "output.hpp"
 #include "input_pointer.hpp"

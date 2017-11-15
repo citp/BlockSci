@@ -9,10 +9,10 @@
 #include "raw_address_pointer.hpp"
 #include "data_access.hpp"
 
-#include <boost/optional/optional.hpp>
+#include <range/v3/utility/optional.hpp>
 
 namespace blocksci {
-    boost::optional<RawAddress> RawAddress::create(const std::string &addressString) {
+    ranges::optional<RawAddress> RawAddress::create(const std::string &addressString) {
         return create(DataAccess::Instance().config, addressString);
     }
 }

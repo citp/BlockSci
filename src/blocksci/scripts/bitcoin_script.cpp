@@ -147,6 +147,8 @@ const char* GetOpName(opcodetype opcode)
         case OP_PUBKEYHASH: return "OP_UNKNOWN";
         case OP_PUBKEY: return "OP_UNKNOWN";
     }
+    // All ops should be covered by the switch statement
+    assert(false);
 }
 
 scriptnum_error::scriptnum_error(const std::string& str) : std::runtime_error(str) {}
@@ -294,36 +296,3 @@ bool CScript::HasValidOps() const
 }
 
 void CReserveScript::KeepScript() {}
-
-std::string ScriptToAsmStr(const CScript& script, const bool fAttemptSighashDecode)
-{
-    std::stringstream ss;
-    opcodetype opcode;
-    std::vector<unsigned char> vch;
-    CScript::const_iterator pc = script.begin();
-    while (pc < script.end()) {
-        if (!ss.str().empty()) {
-            ss << " ";
-        }
-        if (!script.GetOp(pc, opcode, vch)) {
-            ss << "[error]";
-            return ss.str();
-        }
-        if (0 <= opcode && opcode <= OP_PUSHDATA4) {
-            if (vch.size() <= static_cast<std::vector<unsigned char>::size_type>(4)) {
-                ss << CScriptNum(vch, false).getint();
-            } else {
-                // the IsUnspendable check makes sure not to try to decode OP_RETURN data that may match the format of a signature
-                if (fAttemptSighashDecode && !script.IsUnspendable()) {
-                    std::string strSigHashDecode;
-                    ss << blocksci::HexStr(vch) << strSigHashDecode;
-                } else {
-                    ss << blocksci::HexStr(vch);
-                }
-            }
-        } else {
-            ss << GetOpName(opcode);
-        }
-    }
-    return ss.str();
-}

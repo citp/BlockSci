@@ -7,13 +7,13 @@
 //
 
 #include "bloom_filter.hpp"
-#include "MurmurHash3.hpp"
 
 #include <blocksci/scripts/raw_script.hpp>
 #include <blocksci/bitcoin_uint256.hpp>
 
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
+#include <boost/filesystem/fstream.hpp>
 
 #include <fstream>
 #include <array>
@@ -55,9 +55,9 @@ bool BloomStore::isSet(uint64_t bitPos) const {
     return !(((*backingFile.getData(bitPos / BlockSize)) & bitMasks[bitPos % BlockSize]) == 0);
 }
 
-void BloomStore::reset(uint64_t length) {
+void BloomStore::reset(uint64_t newLength) {
     backingFile.truncate(0);
-    backingFile.truncate((length + BlockSize - 1) / BlockSize);
+    backingFile.truncate((newLength + BlockSize - 1) / BlockSize);
 }
 
 uint64_t calculateLength(uint64_t maxItems, double fpRate) {
@@ -96,10 +96,9 @@ void BloomFilter::reset(uint64_t maxItems, double fpRate) {
 }
 
 inline std::array<uint64_t, 2> hash(const uint8_t *data, int len) {
-    std::array<uint64_t, 2> hashValue;
-    MurmurHash3_x64_128(data, len, 0, hashValue.data());
-    
-    return hashValue;
+    uint64_t hashA = *reinterpret_cast<const uint64_t *>(data + len - sizeof(uint64_t));
+    uint64_t hashB = *reinterpret_cast<const uint64_t *>(data + len - 2*sizeof(uint64_t));
+    return {{hashA, hashB}};
 }
 
 inline uint64_t nthHash(uint8_t n, uint64_t hashA, uint64_t hashB, uint64_t filterSize) {

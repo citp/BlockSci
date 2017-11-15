@@ -14,8 +14,8 @@
 
 #include <blocksci/util.hpp>
 
-#include <boost/range/iterator_range.hpp>
-#include <boost/optional/optional_fwd.hpp>
+#include <range/v3/range_fwd.hpp>
+#include <range/v3/utility/optional.hpp>
 
 #include <vector>
 
@@ -27,7 +27,6 @@ namespace blocksci {
     struct Address;
     class uint256;
     class ScriptAccess;
-    class ScriptFirstSeenAccess;
     class HashIndex;
     
     struct RawTransaction {
@@ -64,15 +63,15 @@ namespace blocksci {
         uint32_t txNum;
         uint32_t blockHeight;
         
-        using input_range = boost::iterator_range<const Input *>;
-        using output_range = boost::iterator_range<const Output *>;
+        using input_range = ranges::v3::iterator_range<const Input *>;
+        using output_range = ranges::v3::iterator_range<const Output *>;
         
         Transaction(const RawTransaction *data, uint32_t txNum, uint32_t blockHeight);
         
         static Transaction txWithIndex(const ChainAccess &access, uint32_t index);
         static Transaction txWithIndex(const ChainAccess &access,uint32_t index, uint32_t height);
-        static boost::optional<Transaction> txWithHash(uint256 hash, const HashIndex &index, const ChainAccess &access);
-        static boost::optional<Transaction> txWithHash(std::string hash, const HashIndex &index, const ChainAccess &access);
+        static ranges::optional<Transaction> txWithHash(uint256 hash, const HashIndex &index, const ChainAccess &access);
+        static ranges::optional<Transaction> txWithHash(std::string hash, const HashIndex &index, const ChainAccess &access);
         
         uint256 getHash(const ChainAccess &access) const;
         std::string getString() const;
@@ -88,7 +87,7 @@ namespace blocksci {
             return txNum < other.txNum;
         }
         
-        const Block &block(const ChainAccess &access) const;
+        Block block(const ChainAccess &access) const;
         
         uint32_t sizeBytes() const {
             return data->sizeBytes;
@@ -106,20 +105,16 @@ namespace blocksci {
             return data->outputCount;
         }
         
-        static const Transaction &create(const ChainAccess &access, uint32_t index);
-        
         input_range inputs() const;
         output_range outputs() const;
         
         // Requires DataAccess
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
         
-        static const Transaction &create(uint32_t index);
-        
         static Transaction txWithIndex(uint32_t index);
         static Transaction txWithIndex(uint32_t index, uint32_t height);
-        static boost::optional<Transaction> txWithHash(uint256 hash);
-        static boost::optional<Transaction> txWithHash(std::string hash);
+        static ranges::optional<Transaction> txWithHash(uint256 hash);
+        static ranges::optional<Transaction> txWithHash(std::string hash);
         
         uint256 getHash() const;
         
@@ -143,7 +138,7 @@ namespace blocksci {
     uint64_t fee(const Transaction &tx);
     double feePerByte(const Transaction &tx);
     
-    const Output * getChangeOutput(const ScriptFirstSeenAccess &scripts, const Transaction &tx);
+    const Output * getChangeOutput(const Transaction &tx, const ScriptAccess &scripts);
     
     #ifndef BLOCKSCI_WITHOUT_SINGLETON
     bool containsKeysetChange(const Transaction &tx);

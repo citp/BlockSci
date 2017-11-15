@@ -9,7 +9,7 @@
 #ifndef script_data_hpp
 #define script_data_hpp
 
-#include "bitcoin_script.hpp"
+#include "script_view.hpp"
 #include "bitcoin_pubkey.hpp"
 #include "scriptsfwd.hpp"
 
@@ -21,28 +21,29 @@
 
 namespace blocksci {
     
-    struct PubkeyData {
+    struct ScriptDataBase {
+        uint32_t txFirstSeen;
+        uint32_t txFirstSpent;
+        
+        ScriptDataBase(uint32_t txNum) : txFirstSeen(txNum), txFirstSpent(std::numeric_limits<uint32_t>::max()) {}
+    };
+    
+    struct PubkeyData : public ScriptDataBase {
         CPubKey pubkey;
         uint160 address;
+        
+        PubkeyData(uint32_t txNum, CPubKey pubkey_, uint160 address_) : ScriptDataBase(txNum), pubkey(pubkey_), address(address_) {}
         
         size_t size() {
             return sizeof(PubkeyData);
         }
     };
     
-    struct ScriptDataBase {
-        uint32_t txFirstSeen;
-        uint32_t txFirstSpent;
-        
-        ScriptDataBase() : txFirstSeen(std::numeric_limits<uint32_t>::max()), txFirstSpent(std::numeric_limits<uint32_t>::max()) {}
-    };
-    
     struct ScriptHashData : public ScriptDataBase {
         uint160 address;
         Address wrappedAddress;
-        TxIndex txRevealed;
         
-        ScriptHashData(uint160 address_, Address wrappedAddress_, TxIndex txRevealed_) : address(address_), wrappedAddress(wrappedAddress_), txRevealed(txRevealed_) {}
+        ScriptHashData(uint32_t txNum, uint160 address_, Address wrappedAddress_) : ScriptDataBase(txNum), address(address_), wrappedAddress(wrappedAddress_) {}
         
         size_t size() {
             return sizeof(ScriptHashData);
@@ -73,22 +74,35 @@ namespace blocksci {
             return sizeof(MultisigData) + addresses.extraSize();
         }
         
-        MultisigData(uint8_t m_, uint8_t n_, uint16_t addressCount) : m(m_), n(n_), addresses(addressCount) {}
+        MultisigData(uint32_t txNum, uint8_t m_, uint8_t n_, uint16_t addressCount) : ScriptDataBase(txNum), m(m_), n(n_), addresses(addressCount) {}
     };
     
     struct NonstandardScriptData : public ScriptDataBase {
         InPlaceArray<unsigned char> scriptData;
         
-        CScript getScript() const {
-            return CScript(scriptData.begin(), scriptData.end());
+        CScriptView getScript() const {
+            return CScriptView(scriptData.begin(), scriptData.end());
         }
         
         size_t realSize() const {
             return sizeof(NonstandardScriptData) + scriptData.extraSize();
         }
         
-        NonstandardScriptData(const CScriptView &scriptView);
-        NonstandardScriptData(const CScript &scriptView);
+        NonstandardScriptData(uint32_t txNum, uint32_t scriptLength) : ScriptDataBase(txNum), scriptData(scriptLength) {}
+    };
+    
+    struct NonstandardSpendScriptData {
+        InPlaceArray<unsigned char> scriptData;
+        
+        CScriptView getScript() const {
+            return CScriptView(scriptData.begin(), scriptData.end());
+        }
+        
+        size_t realSize() const {
+            return sizeof(NonstandardScriptData) + scriptData.extraSize();
+        }
+        
+        NonstandardSpendScriptData(uint32_t scriptLength) : scriptData(scriptLength) {}
     };
     
     struct RawData : public ScriptDataBase {
@@ -102,7 +116,7 @@ namespace blocksci {
             return sizeof(RawData) + rawData.extraSize();
         }
         
-        RawData(const std::vector<unsigned char> &fullData) : rawData(fullData.size()) {}
+        RawData(uint32_t txNum, const std::vector<unsigned char> &fullData) : ScriptDataBase(txNum), rawData(static_cast<uint32_t>(fullData.size())) {}
     };
     
     

@@ -53,7 +53,7 @@ void init_inout(py::module &m) {
     .def("__repr__", &Output::toString)
     .def_property_readonly("is_spent", static_cast<bool(Output::*)() const>(&Output::isSpent), "Returns whether this output has been spent")
     .def_property_readonly("spending_tx_index", static_cast<uint32_t(Output::*)() const>(&Output::getSpendingTxIndex), "Returns the index of the tranasction which spent this output or 0 if it is unspent")
-    .def_property_readonly("spending_tx", static_cast<boost::optional<Transaction>(Output::*)() const>(&Output::getSpendingTx), "Returns the transaction that spent this output or None if it is unspent")
+    .def_property_readonly("spending_tx", static_cast<ranges::optional<Transaction>(Output::*)() const>(&Output::getSpendingTx), "Returns the transaction that spent this output or None if it is unspent")
     ;
 
 }

@@ -9,8 +9,6 @@
 #include "scripts.hpp"
 #include "data_access.hpp"
 
-#include <boost/variant.hpp>
-
 namespace blocksci {
     std::string AnyScript::toPrettyString() const {
         auto &instance = DataAccess::Instance();

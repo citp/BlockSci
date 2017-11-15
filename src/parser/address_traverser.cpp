@@ -15,7 +15,6 @@
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output_pointer.hpp>
 #include <blocksci/chain/transaction.hpp>
-#include <blocksci/chain/transaction_iterator.hpp>
 #include <blocksci/chain/chain_access.hpp>
 #include <blocksci/address/address.hpp>
 #include <blocksci/address/address_types.hpp>
@@ -23,12 +22,16 @@
 #include <blocksci/scripts/scripthash_script.hpp>
 #include <blocksci/scripts/script_access.hpp>
 
+#include <unordered_set>
+
 AddressTraverser::AddressTraverser(const ParserConfigurationBase &config_, const std::string &resultName) : ParserIndex(config_, resultName) {
 }
 
 
 void AddressTraverser::processTx(const blocksci::Transaction &tx, const blocksci::ChainAccess &, const blocksci::ScriptAccess &scripts) {
     uint16_t outputNum = 0;
+    std::unordered_set<uint32_t> revealedScripts;
+    
     for (auto &output : tx.outputs()) {
         auto address = output.getAddress();
         blocksci::OutputPointer pointer{tx.txNum, outputNum};
@@ -37,8 +40,13 @@ void AddressTraverser::processTx(const blocksci::Transaction &tx, const blocksci
             // If address is p2sh then ignore the wrapped address if it was revealed after this transaction
             if (scriptType(a.type) == blocksci::ScriptType::Enum::SCRIPTHASH) {
                 auto p2sh = blocksci::script::ScriptHash{scripts, a.scriptNum};
-                if (p2sh.txRevealed == 0 || tx.txNum < p2sh.txRevealed) {
+                if (!p2sh.hasBeenSpent() || tx.txNum < p2sh.txRevealed) {
                     return false;
+                }
+                
+                if (tx.txNum == p2sh.txRevealed && revealedScripts.find(a.scriptNum) == revealedScripts.end()) {
+                    revealedP2SH(p2sh, scripts);
+                    revealedScripts.insert(a.scriptNum);
                 }
             }
             return true;

@@ -12,7 +12,7 @@
 #include "inout.hpp"
 #include <blocksci/address/address_types.hpp>
 
-#include <boost/optional/optional_fwd.hpp>
+#include <range/v3/utility/optional.hpp>
 
 #include <memory>
 
@@ -33,13 +33,13 @@ namespace blocksci {
         
         std::string toString() const;
         
-        boost::optional<Transaction> getSpendingTx(const ChainAccess &access) const;
+        ranges::optional<Transaction> getSpendingTx(const ChainAccess &access) const;
         
         // Requires DataAccess
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
         
         uint32_t getSpendingTxIndex() const;
-        boost::optional<Transaction> getSpendingTx() const;
+        ranges::optional<Transaction> getSpendingTx() const;
         
         bool isSpent() const {
             return getSpendingTxIndex() != 0;

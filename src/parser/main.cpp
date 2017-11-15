@@ -16,7 +16,6 @@
 #include "preproccessed_block.hpp"
 #include "block_processor.hpp"
 #include "address_db.hpp"
-#include "first_seen_index.hpp"
 #include "parser_index_creator.hpp"
 #include "hash_index_creator.hpp"
 #include "block_replayer.hpp"
@@ -30,21 +29,23 @@
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/transaction.hpp>
-#include <blocksci/chain/transaction_iterator.hpp>
 #include <blocksci/chain/block.hpp>
+#include <blocksci/scripts/script_variant.hpp>
 #include <blocksci/scripts/script_access.hpp>
-#include <blocksci/scripts/script_first_seen_access.hpp>
 #include <blocksci/scripts/scripthash_script.hpp>
 
 #ifdef BLOCKSCI_RPC_PARSER
 #include <bitcoinapi/bitcoinapi.h>
 #endif
 
-#include <boost/filesystem.hpp>
+#include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/program_options.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
 
 #include <gperftools/profiler.h>
 
@@ -59,16 +60,16 @@ std::vector<char> HexToBytes(const std::string& hex);
 uint32_t getStartingTxCount(const blocksci::DataConfiguration &config);
 
 
-blocksci::State rollbackState(const ParserConfigurationBase &config, uint32_t firstDeletedBlock, uint32_t firstDeletedTxNum) {
+blocksci::State rollbackState(const ParserConfigurationBase &config, size_t firstDeletedBlock, uint32_t firstDeletedTxNum) {
     blocksci::State state{blocksci::ChainAccess{config, false, 0}, blocksci::ScriptAccess{config}};
-    state.blockCount = firstDeletedBlock;
+    state.blockCount = static_cast<uint32_t>(firstDeletedBlock);
     state.txCount = firstDeletedTxNum;
     
     blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction> txFile{config.txFilePath()};
     blocksci::FixedSizeFileMapper<blocksci::uint256, boost::iostreams::mapped_file::readwrite> txHashesFile{config.txHashesFilePath()};
-    blocksci::ScriptFirstSeenAccess firstSeenIndex(config);
+    blocksci::ScriptAccess scripts(config);
     UTXOState utxoState;
-    utxoState.unserialize(config.utxoCacheFile());
+    utxoState.unserialize(config.utxoCacheFile().native());
     
     uint32_t totalTxCount = static_cast<uint32_t>(txFile.size());
     for (uint32_t txNum = totalTxCount - 1; txNum >= firstDeletedTxNum; txNum--) {
@@ -77,7 +78,7 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, uint32_t fi
         
         for (uint16_t i = 0; i < tx->outputCount; i++) {
             auto &output = tx->getOutput(i);
-            if (output.getAddress().getFirstTransactionIndex(firstSeenIndex) == txNum) {
+            if (output.getAddress().getScript(scripts).firstTxIndex() == txNum) {
                 auto &prevValue = state.scriptCounts[static_cast<size_t>(scriptType(output.getType()))];
                 auto addressNum = output.getAddress().scriptNum;
                 if (addressNum < prevValue) {
@@ -85,7 +86,7 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, uint32_t fi
                 }
             }
             if (output.linkedTxNum != 0) {
-                utxoState.spendOutput({*hash, i});
+                utxoState.erase({*hash, i});
             }
         }
         
@@ -94,18 +95,18 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, uint32_t fi
             auto spentTxNum = input.spentTxIndex();
             auto spentTx = txFile.getData(spentTxNum);
             auto spentHash = txHashesFile.getData(spentTxNum);
-            for (uint16_t i = 0; i < spentTx->outputCount; i++) {
+            for (uint16_t j = 0; i < spentTx->outputCount; i++) {
                 auto &output = spentTx->getOutput(i);
                 if (output.linkedTxNum == txNum) {
                     output.linkedTxNum = 0;
-                    UTXO utxo(spentTxNum, output.getType());
-                    utxoState.addOutput(utxo, {*spentHash, i});
+                    UTXO utxo(output.getValue(), spentTxNum, output.getType());
+                    utxoState.add({*spentHash, j}, utxo);
                 }
             }
         }
     }
     
-    utxoState.serialize(config.utxoCacheFile());
+    utxoState.serialize(config.utxoCacheFile().native());
     
     return state;
 }
@@ -114,7 +115,7 @@ void rollbackTransactions(size_t blockKeepCount, const ParserConfigurationBase &
     using namespace blocksci;
     
     constexpr auto readwrite = boost::iostreams::mapped_file::readwrite;
-    blocksci::FixedSizeFileMapper<blocksci::Block, readwrite> blockFile(config.blockFilePath());
+    blocksci::FixedSizeFileMapper<blocksci::RawBlock, readwrite> blockFile(config.blockFilePath());
     
     if (blockFile.size() > blockKeepCount) {
         
@@ -131,8 +132,7 @@ void rollbackTransactions(size_t blockKeepCount, const ParserConfigurationBase &
         
         AddressState(config.addressPath()).rollback(blocksciState);
         AddressWriter(config).rollback(blocksciState);
-        FirstSeenIndex(config).rollback(blocksciState);
-        AddressDB(config).rollback(blocksciState);
+        AddressDB(config.addressDBFilePath().native()).rollback(blocksciState);
         HashIndexCreator(config).rollback(blocksciState);
     }
 }
@@ -154,24 +154,6 @@ struct ChainUpdateInfo {
     std::vector<BlockType> blocksToAdd;
     uint32_t splitPoint;
 };
-
-template <typename GetBlockHash>
-uint32_t findSplitPoint(const blocksci::DataConfiguration &config, uint32_t blockHeight, GetBlockHash getBlockHash) {
-    blocksci::ChainAccess oldChain(config, false, 0);
-    auto oldBlocks = oldChain.getBlocks();
-    
-    uint32_t maxSize = std::min(static_cast<uint32_t>(oldBlocks.size()), blockHeight);
-    uint32_t splitPoint = static_cast<uint32_t>(maxSize);
-    for (uint32_t i = 0; i < maxSize; i++) {
-        blocksci::uint256 oldHash = oldBlocks[maxSize - 1 - i].hash;
-        blocksci::uint256 newHash = getBlockHash(maxSize - 1 - i);
-        if (!(oldHash == newHash)) {
-            splitPoint = maxSize - 1 - i;
-            break;
-        }
-    }
-    return splitPoint;
-}
 
 uint32_t getStartingTxCount(const blocksci::DataConfiguration &config) {
     blocksci::ChainAccess chain(config, false, 0);
@@ -203,19 +185,29 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
         return blocks;
     }();
 
-    uint32_t splitPoint = findSplitPoint(config, static_cast<uint32_t>(chainBlocks.size()), [&](uint32_t blockHeight) {
-        return chainBlocks[blockHeight].hash;
-    });
+    size_t splitPoint = [&]() {
+        blocksci::ChainAccess oldChain(config, false, 0);
+        auto oldBlocks = oldChain.getBlocks();
+        
+        auto maxSize = std::min(oldBlocks.size(), chainBlocks.size());
+        size_t splitPoint = maxSize;
+        for (size_t i = 0; i < maxSize; i++) {
+            blocksci::uint256 oldHash = oldBlocks[maxSize - 1 - i].hash;
+            blocksci::uint256 newHash = chainBlocks[maxSize - 1 - i].hash;
+            if (!(oldHash == newHash)) {
+                splitPoint = maxSize - 1 - i;
+                break;
+            }
+        }
+        
+        std::cout << "Starting with chain of " << oldBlocks.size() << " blocks" << std::endl;
+        std::cout << "Removing " << oldBlocks.size() - splitPoint << " blocks" << std::endl;
+        std::cout << "Adding " << chainBlocks.size() - splitPoint << " blocks" << std::endl;
+        
+        return splitPoint;
+    }();
 
     std::vector<BlockInfo<ParserTag>> blocksToAdd{chainBlocks.begin() + splitPoint, chainBlocks.end()};
-    
-    {
-        blocksci::ChainAccess chain(config, false, 0);
-        auto blocks = chain.getBlocks();
-        std::cout << "Starting with chain of " << blocks.size() << " blocks" << std::endl;
-        std::cout << "Removing " << blocks.size() - splitPoint << " blocks" << std::endl;
-        std::cout << "Adding " << blocksToAdd.size() << " blocks" << std::endl;
-    }
     
     std::ios::sync_with_stdio(false);
     
@@ -237,13 +229,12 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
         totalOutputCount += block.outputCount;
     }
     
-    uint64_t sizeNeeded = sizeof(blocksci::RawTransaction) * totalTxCount + sizeof(blocksci::Inout) * (totalInputCount + totalOutputCount);
+//    uint64_t sizeNeeded = sizeof(blocksci::RawTransaction) * totalTxCount + sizeof(blocksci::Inout) * (totalInputCount + totalOutputCount);
+//
+//    blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction> txFile{config.txFilePath()};
+//    txFile.grow(totalTxCount, sizeNeeded);
     
-    blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction> txFile{config.txFilePath()};
-    txFile.grow(totalTxCount, sizeNeeded);
-    
-    // ParserIndexCreator<AddressDB> addressDB(config);
-    ParserIndexCreator<FirstSeenIndex> firstSeen(config);
+    // ParserIndexCreator<AddressDB> addressDB(config.addressDBFilePath().native());
     // ParserIndexCreator<HashIndexCreator> hashIndex(config);
     
     {
@@ -251,9 +242,11 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
         UTXOState utxoState;
         UTXOAddressState utxoAddressState;
         AddressState addressState{config.addressPath()};
+        UTXOScriptState utxoScriptState;
         
         utxoAddressState.unserialize(config.utxoAddressStatePath());
-        utxoState.unserialize(config.utxoCacheFile());
+        utxoState.unserialize(config.utxoCacheFile().native());
+        utxoScriptState.unserialize(config.utxoScriptStatePath().native());
         
         auto it = blocksToAdd.begin();
         auto end = blocksToAdd.end();
@@ -267,16 +260,17 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
             
             decltype(blocksToAdd) nextBlocks{prev, it};
             
-            auto revealedScriptHashes = processor.addNewBlocks(config, nextBlocks, utxoState, utxoAddressState, addressState, txFile);
+            processor.addNewBlocks(config, nextBlocks, utxoState, utxoAddressState, addressState, utxoScriptState);
+            
+            backUpdateTxes(config);
             
             blocksci::ChainAccess chain{config, false, 0};
             blocksci::ScriptAccess scripts{config};
             
             blocksci::State updateState{chain, scripts};
             
-            // addressDB.update(revealedScriptHashes, updateState);
-            firstSeen.update(revealedScriptHashes, updateState);
-            // hashIndex.update(revealedScriptHashes, updateState);
+            // addressDB.update(updateState);
+            // hashIndex.update(updateState);
         }
         
         {
@@ -286,12 +280,12 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
             blocksci::State state{chain, scripts};
             
         //     addressDB.complete(state);
-            firstSeen.complete(state);
         //     hashIndex.complete(state);
         }
         
         utxoAddressState.serialize(config.utxoAddressStatePath());
-        utxoState.serialize(config.utxoCacheFile());
+        utxoState.serialize(config.utxoCacheFile().native());
+        utxoScriptState.serialize(config.utxoScriptStatePath().native());
     }
 }
 

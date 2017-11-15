@@ -9,16 +9,14 @@
 
 #include <blocksci/chain/block.hpp>
 #include <blocksci/chain/transaction.hpp>
-#include <blocksci/chain/transaction_iterator.hpp>
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>
+#include <blocksci/data_access.hpp>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
 #include <pybind11/chrono.h>
-
-#include <boost/range/numeric.hpp>
 
 namespace py = pybind11;
 
@@ -56,20 +54,22 @@ void init_block(py::module &m) {
     ;
     
     py::class_<Block>(m, "Block", "Class representing a block in the blockchain")
-    .def(py::init<uint32_t, uint32_t, uint32_t, uint256, int32_t, uint32_t, uint32_t, uint32_t, uint64_t>())
+    .def(py::init<uint32_t>())
     .def(py::pickle(
         [](const Block &block) {
-            return py::make_tuple(block.firstTxIndex, block.numTxes, block.height, block.hash, block.version, block.timestamp, block.bits, block.nonce, block.coinbaseOffset);
+            return py::make_tuple(block.height());
         },
         [](py::tuple t) {
-            if (t.size() != 9)
+            if (t.size() != 1)
                 throw std::runtime_error("Invalid state!");
 
-            return Block(t[0].cast<uint32_t>(), t[1].cast<uint32_t>(), t[2].cast<uint32_t>(), t[3].cast<uint256>(), t[4].cast<uint32_t>(), t[5].cast<uint32_t>(), t[6].cast<uint32_t>(), t[7].cast<uint32_t>(), t[8].cast<uint64_t>());
+            return Block(t[0].cast<uint32_t>(), *DataAccess::Instance().chain);
         }
     ))
     .def("__repr__", &Block::getString)
-    .def("__len__", &Block::size)
+    .def("__len__", [](const Block &block) {
+        return block.size();
+    })
     /// Optional sequence protocol operations
     .def("__iter__", [](const Block &block) { return py::make_iterator(block.begin(), block.end()); },
          py::keep_alive<0, 1>() /* Essential: keep object alive while iterator exists */)
@@ -101,12 +101,12 @@ void init_block(py::module &m) {
         return txList;
     })
     .def_property_readonly("header_hash", &Block::getHeaderHash, "Hash of this block")
-    .def_readonly("version", &Block::version, "Protocol version specified in block header")
-    .def_readonly("timestamp", &Block::timestamp, "Creation timestamp specified in block header")
+    .def_property_readonly("version", &Block::version, "Protocol version specified in block header")
+    .def_property_readonly("timestamp", &Block::timestamp, "Creation timestamp specified in block header")
     .def_property_readonly("time", &Block::getTime, "Datetime object created from creation timestamp")
-    .def_readonly("bits", &Block::bits, "Difficulty threshold specified in block header")
-    .def_readonly("nonce", &Block::bits, "Nonce specified in block header")
-    .def_readonly("height", &Block::height, "Height of the block in the blockchain")
+    .def_property_readonly("bits", &Block::bits, "Difficulty threshold specified in block header")
+    .def_property_readonly("nonce", &Block::nonce, "Nonce specified in block header")
+    .def_property_readonly("height", &Block::height, "Height of the block in the blockchain")
     .def_property_readonly("coinbase_param", [](const Block &block) {
         return py::bytes(block.coinbaseParam());
     }, "Data contained within the coinbase transaction of this block")
@@ -122,5 +122,6 @@ void init_block(py::module &m) {
     .def("total_spent_of_age", py::overload_cast<const Block &, uint32_t>(getTotalSpentOfAge), "Returns the sum of all the outputs in the block that were spent within the given number of blocks")
     .def("total_spent_of_ages", py::overload_cast<const Block &, uint32_t>(getTotalSpentOfAges), "Returns a list of sum of all the outputs in the block that were spent within a certain of blocks, up to the max age given")
     .def("net_address_type_value", py::overload_cast<const Block &>(netAddressTypeValue), "Returns a set of the net change in the utxo pool after this block split up by address type")
+    .def("net_full_type_value", py::overload_cast<const Block &>(netFullTypeValue), "Returns a set of the net change in the utxo pool after this block split up by full type")
     ;
 }

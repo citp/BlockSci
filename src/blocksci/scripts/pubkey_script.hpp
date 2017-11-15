@@ -13,13 +13,13 @@
 #include "script.hpp"
 #include "bitcoin_pubkey.hpp"
 
-#include <boost/optional/optional_fwd.hpp>
+#include <range/v3/utility/optional.hpp>
 
 namespace blocksci {
     struct PubkeyData;
     
     template <>
-    class ScriptAddress<ScriptType::Enum::PUBKEY> : public Script {
+    class ScriptAddress<ScriptType::Enum::PUBKEY> : public BaseScript {
     private:
         CPubKey pubkey;
     public:
@@ -35,7 +35,7 @@ namespace blocksci {
         std::string toString(const DataConfiguration &config) const;
         std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const;
         
-        boost::optional<CPubKey> getPubkey() const;
+        ranges::optional<CPubKey> getPubkey() const;
         
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
         ScriptAddress<scriptType>(uint32_t addressNum);

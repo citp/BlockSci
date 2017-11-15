@@ -8,7 +8,7 @@
 #ifndef parallel_hpp
 #define parallel_hpp
 
-#include <blocksci/chain/transaction_iterator.hpp>
+#include <blocksci/chain/chain_fwd.hpp>
 
 #include <future>
 #include <thread>

@@ -34,8 +34,7 @@ class HashIndexCreator : public ParserIndex {
     
     void processTx(const blocksci::Transaction &tx, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override;
     void processScript(const blocksci::Script &script, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override;
-    void revealedP2SH(blocksci::script::ScriptHash &, const blocksci::ScriptAccess &) override {}
-    
+
 public:
     HashIndexCreator(const ParserConfigurationBase &config);
     void processTx(const blocksci::uint256 &hash, uint32_t index);

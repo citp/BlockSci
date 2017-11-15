@@ -6,7 +6,6 @@ add_executable(blocksci_parser ${PARSER_SOURCES} ${PARSER_HEADERS})
 source_group(blocksci_parser FILES ${PARSER_SOURCES} ${PARSER_HEADERS})
 
 target_link_libraries( blocksci_parser profiler)
-target_link_libraries( blocksci_parser rt)
 target_link_libraries( blocksci_parser bitcoinapi ThreadPool sparsepp)
 target_link_libraries( blocksci_parser secp256k1)
 target_link_libraries( blocksci_parser leveldb)

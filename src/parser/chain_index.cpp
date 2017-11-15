@@ -21,9 +21,12 @@
 #include <bitcoinapi/bitcoinapi.h>
 #endif
 
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/serialization/unordered_map.hpp>
+#include <boost/serialization/vector.hpp>
 #include <boost/iostreams/device/mapped_file.hpp>
-#include <boost/filesystem.hpp>
-
+#include <boost/filesystem/operations.hpp>
 
 #include <future>
 #include <sstream>
@@ -38,7 +41,7 @@ BlockInfoBase::BlockInfoBase(const blocksci::uint256 &hash_, const CBlockHeader 
 BlockInfo<FileTag>::BlockInfo(const CBlockHeader &h, uint32_t size_, unsigned int numTxes, uint32_t inputCount_, uint32_t outputCount_, const ParserConfiguration<FileTag> &config, int fileNum, unsigned int dataPos) : BlockInfoBase(config.workHashFunction(reinterpret_cast<const char *>(&h), sizeof(CBlockHeader)), h, size_, numTxes, inputCount_, outputCount_), nFile(fileNum), nDataPos(dataPos) {}
 
 // The 0 should be replaced with info.bits converted to string
-BlockInfo<RPCTag>::BlockInfo(const blockinfo_t &info, uint32_t height_) : BlockInfoBase(blocksci::uint256S(info.hash), {info.version, blocksci::uint256S(info.previousblockhash), blocksci::uint256S(info.merkleroot), info.time, 0, info.nonce}, info.size, info.tx.size(), 0, 0), tx(info.tx) {
+BlockInfo<RPCTag>::BlockInfo(const blockinfo_t &info, uint32_t height_) : BlockInfoBase(blocksci::uint256S(info.hash), {info.version, blocksci::uint256S(info.previousblockhash), blocksci::uint256S(info.merkleroot), info.time, 0, info.nonce}, info.size, static_cast<uint32_t>(info.tx.size()), 0, 0), tx(info.tx) {
     height = static_cast<int>(height_);
 }
 
@@ -49,6 +52,18 @@ int maxBlockFileNum(int startFile, const ParserConfiguration<FileTag> &config) {
     }
     return fileNum - 1;
 }
+
+template<typename ParseTag>
+template<class Archive>
+void ChainIndex<ParseTag>::serialize(Archive & ar, const unsigned int) {
+    ar & blockList;
+    ar & newestBlock;
+}
+
+template void ChainIndex<FileTag>::serialize(boost::archive::binary_iarchive& archive, const unsigned int version);
+template void ChainIndex<FileTag>::serialize(boost::archive::binary_oarchive& archive, const unsigned int version);
+template void ChainIndex<RPCTag>::serialize(boost::archive::binary_iarchive& archive, const unsigned int version);
+template void ChainIndex<RPCTag>::serialize(boost::archive::binary_oarchive& archive, const unsigned int version);
 
 template <>
 void ChainIndex<FileTag>::update(const ConfigType &config) {
@@ -84,7 +99,7 @@ void ChainIndex<FileTag>::update(const ConfigType &config) {
                 activeThreads++;
                 // determine block file path
                 auto blockFilePath = localConfig.pathForBlockFile(fileNum);
-                SafeMemReader reader{blockFilePath};
+                SafeMemReader reader{blockFilePath.native()};
                 std::vector<BlockInfo<FileTag>> blocks;
                 try {
                     // logic for resume from last processed block, note blockStartOffset and length below
@@ -105,9 +120,9 @@ void ChainIndex<FileTag>::update(const ConfigType &config) {
                         uint32_t inputCount = 0;
                         uint32_t outputCount = 0;
                         for (size_t i = 0; i < numTxes; i++) {
-                            TransactionHeader header(reader);
-                            inputCount += header.inputCount;
-                            outputCount += header.outputCount;
+                            TransactionHeader h(reader);
+                            inputCount += h.inputCount;
+                            outputCount += h.outputCount;
                         }
                         // The next two lines bring the reader to the end of this block
                         reader.reset(blockStartOffset);

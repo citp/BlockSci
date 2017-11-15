@@ -15,12 +15,14 @@
 #include <blocksci/address/address.hpp>
 #include <blocksci/bitcoin_uint256.hpp>
 
+#include <range/v3/utility/optional.hpp>
+
 namespace blocksci {
     struct ScriptHashData;
     class AnyScript;
     
     template <>
-    class ScriptAddress<ScriptType::Enum::SCRIPTHASH> : public Script {
+    class ScriptAddress<ScriptType::Enum::SCRIPTHASH> : public BaseScript {
     private:
         Address wrappedAddress;
     public:
@@ -32,17 +34,17 @@ namespace blocksci {
         ScriptAddress<scriptType>(uint32_t scriptNum, const ScriptHashData *rawData);
         ScriptAddress<scriptType>(const ScriptAccess &access, uint32_t addressNum);
         
-        boost::optional<Transaction> transactionRevealed(const ChainAccess &chain) const;
+        ranges::optional<Transaction> transactionRevealed(const ChainAccess &chain) const;
         
         std::string addressString(const DataConfiguration &config) const;
         
         std::string toString(const DataConfiguration &config) const;
         std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const;
         
-        boost::optional<Address> getWrappedAddress() const;
+        ranges::optional<Address> getWrappedAddress() const;
         
         void visitPointers(const std::function<void(const Address &)> &visitFunc) const {
-            if (wrappedAddress.scriptNum != 0) {
+            if (hasBeenSpent()) {
                 visitFunc(wrappedAddress);
             }
         }
@@ -53,7 +55,7 @@ namespace blocksci {
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
         ScriptAddress<ScriptType::Enum::SCRIPTHASH>(uint32_t addressNum);
         std::string addressString() const;
-        boost::optional<Transaction> transactionRevealed() const;
+        ranges::optional<Transaction> transactionRevealed() const;
         AnyScript wrappedScript() const;
         std::string toString() const;
         std::string toPrettyString() const;

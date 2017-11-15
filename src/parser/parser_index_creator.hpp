@@ -38,7 +38,6 @@ private:
     std::future<void> teardownFuture;
     std::atomic<bool> launchingUpdate;
     std::atomic<bool> tornDown;
-    std::vector<uint32_t> waitingRevealed;
     IndexType index;
     
 public:
@@ -58,24 +57,15 @@ public:
         teardownFuture.get();
     }
     
-    void update(const std::vector<blocksci::Script> &revealed, blocksci::State state) {
+    void update(blocksci::State state) {
         using namespace std::chrono_literals;
-        
-        waitingRevealed.reserve(waitingRevealed.size() + revealed.size());
-        for (auto &script : revealed) {
-            if (script.type == blocksci::ScriptType::Enum::SCRIPTHASH) {
-                waitingRevealed.push_back(script.scriptNum);
-            }
-        }
         
         if (updateFuture.wait_for(0ms) == std::future_status::ready) {
             updateFuture.get();
             launchingUpdate = true;
-            auto nextRevealed = std::move(waitingRevealed);
-            waitingRevealed.clear();
             index.prepareUpdate();
-            updateFuture = std::async(std::launch::async, [this, nextRevealed, state] {
-                index.runUpdate(nextRevealed, state);
+            updateFuture = std::async(std::launch::async, [this, state] {
+                index.runUpdate(state);
                 launchingUpdate = false;
             });
         }
@@ -92,7 +82,7 @@ public:
             if (updateFuture.valid()) {
                 updateFuture.get();
             }
-            index.runUpdate(waitingRevealed, state);
+            index.runUpdate(state);
             index.tearDown();
         });
     }

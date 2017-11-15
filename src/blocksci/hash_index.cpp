@@ -17,15 +17,15 @@
 
 namespace blocksci {
     
-    lmdb::env createHashIndexEnviroment(const boost::filesystem::path &path) {
+    lmdb::env createHashIndexEnviroment(const std::string &path) {
         auto env = lmdb::env::create();
         env.set_mapsize(100UL * 1024UL * 1024UL * 1024UL); /* 1 GiB */
         env.set_max_dbs(5);
-        env.open(path.native().c_str(), MDB_NOSUBDIR, 0664);
+        env.open(path.c_str(), MDB_NOSUBDIR, 0664);
         return env;
     }
     
-    HashIndex::HashIndex(const DataConfiguration &config) : env(createHashIndexEnviroment(config.hashIndexFilePath())) {}
+    HashIndex::HashIndex(const std::string &path) : env(createHashIndexEnviroment(path)) {}
     
     template <typename T>
     uint32_t getMatch(const lmdb::env &env, const char *name, const T &t) {

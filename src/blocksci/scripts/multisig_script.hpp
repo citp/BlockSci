@@ -16,7 +16,7 @@ namespace blocksci {
     struct MultisigData;
     
     template <>
-    class ScriptAddress<ScriptType::Enum::MULTISIG> : public Script {
+    class ScriptAddress<ScriptType::Enum::MULTISIG> : public BaseScript {
         
     public:
         constexpr static ScriptType::Enum scriptType = ScriptType::Enum::MULTISIG;

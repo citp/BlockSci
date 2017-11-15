@@ -10,6 +10,8 @@
 #include "transaction.hpp"
 #include "output.hpp"
 
+#include <range/v3/iterator_range.hpp>
+
 namespace blocksci {
     
     TransactionSummary::TransactionSummary(uint64_t totalInputs_, uint64_t totalOutputs_, uint64_t totalSize_, uint64_t totalCount_, uint64_t totalOutputValue_) : totalInputs(totalInputs_), totalOutputs(totalOutputs_), totalSize(totalSize_), totalCount(totalCount_), totalOutputValue(totalOutputValue_) {}

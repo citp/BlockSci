@@ -11,8 +11,6 @@
 
 #include <lmdbxx/lmdb++.h>
 
-#include <boost/filesystem/path.hpp>
-
 #include <string_view>
 #include <array>
 #include <vector>
@@ -29,7 +27,7 @@ namespace blocksci {
     class uint160;
     struct Address;
     
-    lmdb::env createHashIndexEnviroment(const boost::filesystem::path &path);
+    lmdb::env createHashIndexEnviroment(const std::string &path);
     
     class HashIndex {
     public:
@@ -42,7 +40,7 @@ namespace blocksci {
             static constexpr std::array<std::string_view, 3> tableNames = {{"PUBKEYHASH_ADDRESS"sv, "P2SH_ADDRESS"sv, "TXHASH"sv}};
         };
         
-        HashIndex(const DataConfiguration &config);
+        HashIndex(const std::string &path);
         
         uint32_t getPubkeyHashIndex(const uint160 &pubkeyhash) const;
         uint32_t getScriptHashIndex(const uint160 &scripthash) const;

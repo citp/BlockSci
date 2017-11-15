@@ -12,9 +12,11 @@
 
 #include "chain/transaction.hpp"
 
-#include <boost/variant.hpp>
-
 namespace blocksci {
+    
+    Transaction BaseScript::getFirstTransaction() const {
+        return getFirstTransaction(*DataAccess::Instance().chain);
+    }
     
     std::vector<const Output *> Script::getOutputs() const {
         auto &instance = DataAccess::Instance();

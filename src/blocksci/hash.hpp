@@ -11,6 +11,12 @@
 
 #include "bitcoin_uint256.hpp"
 
+template <class T>
+inline void hash_combine(std::size_t& seed, const T& v) {
+    std::hash<T> hasher;
+    seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
+}
+
 blocksci::uint256 sha256(const uint8_t *data, size_t len);
 blocksci::uint256 sha256(const unsigned char *begin, const unsigned char *end);
 blocksci::uint256 doubleSha256(const char *data, unsigned long len);

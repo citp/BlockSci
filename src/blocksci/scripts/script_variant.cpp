@@ -8,8 +8,6 @@
 #include "script_variant.hpp"
 #include "scripts.hpp"
 
-#include <boost/variant.hpp>
-
 namespace blocksci {
     
     template<ScriptType::Enum type>
@@ -26,10 +24,14 @@ namespace blocksci {
     AnyScript::AnyScript(const Address &address, const ScriptAccess &access) : AnyScript(Script(address.scriptNum, scriptType(address.type)), access) {}
     
     void AnyScript::visitPointers(const std::function<void(const Address &)> &func) {
-        boost::apply_visitor([&](auto &scriptAddress) { scriptAddress.visitPointers(func); }, wrapped);
+        mpark::visit([&](auto &scriptAddress) { scriptAddress.visitPointers(func); }, wrapped);
+    }
+    
+    uint32_t AnyScript::firstTxIndex() {
+        return mpark::visit([&](auto &scriptAddress) { return scriptAddress.firstTxIndex; }, wrapped);
     }
     
     std::string AnyScript::toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const {
-        return boost::apply_visitor([&](auto &scriptAddress) { return scriptAddress.toPrettyString(config, access); }, wrapped);
+        return mpark::visit([&](auto &scriptAddress) { return scriptAddress.toPrettyString(config, access); }, wrapped);
     }
 }

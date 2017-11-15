@@ -14,9 +14,11 @@
 #include "parser_configuration.hpp"
 #include "file_writer.hpp"
 
+
 #include <blocksci/file_mapper.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/block.hpp>
+#include <blocksci/chain/output_pointer.hpp>
 #include <blocksci/scripts/scriptsfwd.hpp>
 #include <blocksci/bitcoin_uint256.hpp>
 
@@ -29,20 +31,28 @@ public:
 
 struct NewBlocksFiles {
     ArbitraryFileWriter blockCoinbaseFile;
-    FixedSizeFileWriter<blocksci::Block> blockFile;
+    FixedSizeFileWriter<blocksci::RawBlock> blockFile;
     IndexedFileWriter<1> sequenceFile;
     
     NewBlocksFiles(const ParserConfigurationBase &config);
+};
+
+struct OutputLinkData {
+    blocksci::OutputPointer pointer;
+    uint32_t txNum;
 };
 
 std::vector<unsigned char> readNewBlock(uint32_t firstTxNum, const BlockInfoBase &block, BlockFileReaderBase &fileReader, NewBlocksFiles &files, const std::function<bool(RawTransaction *&tx)> &loadFunc, const std::function<void(RawTransaction *tx)> &outFunc);
 void calculateHash(RawTransaction *tx, FixedSizeFileWriter<blocksci::uint256> &hashFile);
 void generateScriptOutputs(RawTransaction *tx);
 void connectUTXOs(RawTransaction *tx, UTXOState &utxoState);
-void serializeTransaction(RawTransaction *tx, blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction> &txFile);
+void serializeTransaction(RawTransaction *tx, IndexedFileWriter<1> &txFile, FixedSizeFileWriter<OutputLinkData> &linkDataFile);
 void generateScriptInput(RawTransaction *tx, UTXOAddressState &utxoAddressState);
 void processAddresses(RawTransaction *tx, AddressState &addressState);
-std::vector<blocksci::Script> serializeAddressess(RawTransaction *tx, AddressWriter &addressWriter);
+void recordAddresses(RawTransaction *tx, UTXOScriptState &state);
+void serializeAddressess(RawTransaction *tx, AddressWriter &addressWriter);
+void backUpdateTxes(const ParserConfigurationBase &config);
+
 
 class BlockProcessor {
     
@@ -56,10 +66,10 @@ public:
     BlockProcessor(uint32_t startingTxCount, uint32_t totalTxCount, uint32_t maxBlockHeight);
     
     template <typename ParseTag>
-    std::vector<blocksci::Script> addNewBlocks(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> nextBlocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction> &txFile);
+    void addNewBlocks(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> nextBlocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState);
 
     template <typename ParseTag>
-    std::vector<blocksci::Script> addNewBlocksSingle(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> nextBlocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction> &txFile);
+    void addNewBlocksSingle(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> nextBlocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState);
 };
 
 

@@ -18,9 +18,7 @@
 #include <blocksci/scripts/script_view.hpp>
 #include <blocksci/chain/output_pointer.hpp>
 
-#include <boost/container/small_vector.hpp>
-#include <boost/variant/variant.hpp>
-#include <boost/variant/recursive_wrapper.hpp>
+#include <mpark/variant.hpp>
 
 #include <bitset>
 
@@ -35,8 +33,11 @@ struct InputView {
 
 template<auto type>
 struct ScriptInput {
+    static constexpr auto address_v = type;
+    
     ScriptInputData<type> data;
     uint32_t scriptNum;
+    
     
     ScriptInput(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<type> &spendData) : data(inputView, scriptView, tx, spendData) {}
     
@@ -50,17 +51,13 @@ struct ScriptInput {
 };
 
 struct ScriptInputDataBase {
-    uint32_t txNum;
-    
-    ScriptInputDataBase() = default;
-    ScriptInputDataBase(const InputView &inputView, const blocksci::CScriptView &) : txNum(inputView.txNum) {}
     void check(const AddressState &) {}
     void process(AddressState &) {}
 };
 
 template<>
 struct ScriptInputData<blocksci::AddressType::Enum::PUBKEY> : public ScriptInputDataBase {
-    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::PUBKEY> &) : ScriptInputDataBase(inputView, scriptView) {}
+    ScriptInputData(const InputView &, const blocksci::CScriptView &, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::PUBKEY> &) {}
 };
 
 template<>
@@ -98,25 +95,37 @@ struct ScriptInputData<blocksci::AddressType::Enum::MULTISIG> : public ScriptInp
     ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::MULTISIG> &spendData);
 };
 
-template<auto addressType>
-struct VariantMemberType {
-    using type = ScriptInput<addressType>;
+class AnyScriptInput;
+
+template<>
+struct ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptInputDataBase {
+    AnyScriptOutput wrappedScriptOutput;
+    std::unique_ptr<AnyScriptInput> wrappedScriptInput;
+    
+    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::SCRIPTHASH> &);
+    
+    void process(AddressState &state);
+    void check(const AddressState &state);
+    
+private:
+    ScriptInputData(std::pair<AnyScriptOutput, std::unique_ptr<AnyScriptInput>> data);
 };
 
 template<>
-struct VariantMemberType<blocksci::AddressType::Enum::SCRIPTHASH> {
-    using type = boost::recursive_wrapper<ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH>>;
+struct ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> : public ScriptInputDataBase {
+    AnyScriptOutput wrappedScriptOutput;
+    std::unique_ptr<AnyScriptInput> wrappedScriptInput;
+    
+    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> &);
+    
+    void process(AddressState &state);
+    void check(const AddressState &state);
+    
+private:
+    ScriptInputData(std::pair<AnyScriptOutput, std::unique_ptr<AnyScriptInput>> data);
 };
 
-template<>
-struct VariantMemberType<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> {
-    using type = boost::recursive_wrapper<ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>>;
-};
-
-template<auto addressType>
-using VariantMemberType_t = typename VariantMemberType<addressType>::type;
-
-using ScriptInputType = blocksci::to_address_variant_t<VariantMemberType_t>;
+using ScriptInputType = blocksci::to_variadic_t<blocksci::to_address_tuple_t<ScriptInput>, mpark::variant>;
 
 class AnyScriptInput {
 public:
@@ -129,34 +138,8 @@ public:
     void check(const AddressState &state);
     
     void setScriptNum(uint32_t scriptNum);
-};
-
-template<>
-struct ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptInputDataBase {
-    AnyScriptOutput wrappedScriptOutput;
-    AnyScriptInput wrappedScriptInput;
     
-    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::SCRIPTHASH> &);
-    
-    void process(AddressState &state);
-    void check(const AddressState &state);
-    
-private:
-    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const std::pair<AnyScriptOutput, AnyScriptInput> &data);
-};
-
-template<>
-struct ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> : public ScriptInputDataBase {
-    AnyScriptOutput wrappedScriptOutput;
-    AnyScriptInput wrappedScriptInput;
-    
-    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> &);
-    
-    void process(AddressState &state);
-    void check(const AddressState &state);
-    
-private:
-    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const std::pair<AnyScriptOutput, AnyScriptInput> &data);
+    blocksci::Address address() const;
 };
 
 #endif /* script_input_hpp */

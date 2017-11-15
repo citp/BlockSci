@@ -11,9 +11,9 @@
 namespace blocksci {
     class ChainAccess;
     
-    struct Block;
+    class Block;
     struct Transaction;
-    class TransactionIterator;
+    class TransactionRange;
     struct TransactionSummary;
     struct Inout;
     struct Output;

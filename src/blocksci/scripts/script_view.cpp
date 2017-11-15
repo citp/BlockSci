@@ -46,7 +46,7 @@ unsigned int CScriptView::GetSigOpCount(const CScriptView& scriptSig) const
     // get the last item that the scriptSig
     // pushes onto the stack:
     const_iterator pc = scriptSig.begin();
-    boost::iterator_range<const unsigned char *> vData;
+    ranges::iterator_range<const unsigned char *> vData;
     while (pc < scriptSig.end())
     {
         opcodetype opcode;
@@ -134,10 +134,46 @@ bool CScriptView::HasValidOps() const
     const_iterator it = begin();
     while (it < end()) {
         opcodetype opcode;
-        boost::iterator_range<const unsigned char *> item;
+        ranges::iterator_range<const unsigned char *> item;
         if (!GetOp(it, opcode, item) || opcode > MAX_OPCODE || item.size() > MAX_SCRIPT_ELEMENT_SIZE) {
             return false;
         }
     }
     return true;
 }
+
+namespace blocksci {
+    std::string ScriptToAsmStr(const CScriptView& script, const bool fAttemptSighashDecode) {
+        std::stringstream ss;
+        opcodetype opcode;
+        ranges::iterator_range<const unsigned char *> vch;
+        CScriptView::const_iterator pc = script.begin();
+        while (pc < script.end()) {
+            if (!ss.str().empty()) {
+                ss << " ";
+            }
+            if (!script.GetOp(pc, opcode, vch)) {
+                ss << "[error]";
+                return ss.str();
+            }
+            if (0 <= opcode && opcode <= OP_PUSHDATA4) {
+                if (vch.size() <= static_cast<std::vector<unsigned char>::size_type>(4)) {
+                    ss << CScriptNum(vch, false).getint();
+                } else {
+                    // the IsUnspendable check makes sure not to try to decode OP_RETURN data that may match the format of a signature
+                    if (fAttemptSighashDecode && !script.IsUnspendable()) {
+                        std::string strSigHashDecode;
+                        ss << blocksci::HexStr(vch) << strSigHashDecode;
+                    } else {
+                        ss << blocksci::HexStr(vch);
+                    }
+                }
+            } else {
+                ss << GetOpName(opcode);
+            }
+        }
+        return ss.str();
+    }
+}
+
+

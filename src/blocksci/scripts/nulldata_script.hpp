@@ -11,13 +11,14 @@
 
 #include "scriptsfwd.hpp"
 #include "script.hpp"
-#include "bitcoin_script.hpp"
+
+#include <string>
 
 namespace blocksci {
     struct RawData;
     
     template <>
-    class ScriptAddress<ScriptType::Enum::NULL_DATA> : public Script {
+    class ScriptAddress<ScriptType::Enum::NULL_DATA> : public BaseScript {
         
     public:
         constexpr static ScriptType::Enum scriptType = ScriptType::Enum::NULL_DATA;

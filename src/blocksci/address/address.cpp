@@ -12,7 +12,6 @@
 #include "address_index.hpp"
 #include "address_info.hpp"
 #include "raw_address_pointer.hpp"
-#include "scripts/script_first_seen_access.hpp"
 #include "scripts/script_access.hpp"
 #include "scripts/script.hpp"
 #include "scripts/scripts.hpp"
@@ -20,8 +19,6 @@
 #include "scripts/script_variant.hpp"
 #include "chain/transaction.hpp"
 #include "hash_index.hpp"
-
-#include <boost/variant.hpp>
 
 #include <unordered_set>
 
@@ -60,30 +57,6 @@ namespace blocksci {
             address.getScript(scripts).visitPointers(nestedVisitor);
         }
     }
-    
-    template<AddressType::Enum type>
-    struct FirstSeenFunctor {
-        static uint32_t f(const ScriptFirstSeenAccess &access, uint32_t addressNum) {
-            constexpr auto t = scriptType(type);
-            return access.getFirstTxNum<t>(addressNum);
-        }
-    };
-    
-    uint32_t Address::getFirstTransactionIndex(const ScriptFirstSeenAccess &access) const {
-        static constexpr auto table = make_dynamic_table<AddressType, FirstSeenFunctor>();
-        static constexpr std::size_t size = AddressType::all.size();
-        
-        auto index = static_cast<size_t>(type);
-        if (index >= size)
-        {
-            throw std::invalid_argument("combination of enum values is not valid");
-        }
-        return table[index](access, scriptNum);
-    }
-    
-    Transaction Address::getFirstTransaction(const ChainAccess &chain, const ScriptFirstSeenAccess &scriptsFirstSeen) const {
-        return Transaction::txWithIndex(chain, getFirstTransactionIndex(scriptsFirstSeen));
-    }
 
     AnyScript Address::getScript(const ScriptAccess &access) const {
         return AnyScript{*this, access};
@@ -113,7 +86,7 @@ namespace blocksci {
         return index.getInputTransactions(*this, chain);
     }
     
-    boost::optional<Address> getAddressFromString(const DataConfiguration &config, const HashIndex &index, const std::string &addressString) {
+    ranges::optional<Address> getAddressFromString(const DataConfiguration &config, const HashIndex &index, const std::string &addressString) {
         auto rawAddress = RawAddress::create(config, addressString);
         
         if (rawAddress) {
@@ -127,7 +100,7 @@ namespace blocksci {
                 return Address{addressNum, rawAddress->type};
             }
         }
-        return boost::none;
+        return ranges::nullopt;
     }
     
     std::string fullTypeImp(const Address &address, const ScriptAccess &scripts) {

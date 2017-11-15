@@ -32,10 +32,6 @@ namespace blocksci {
             return dataDirectory/"scripts";
         }
         
-        boost::filesystem::path firstSeenDirectory() const {
-            return dataDirectory/"first_seen";
-        }
-        
         boost::filesystem::path chainDirectory() const {
             return dataDirectory/"chain";
         }

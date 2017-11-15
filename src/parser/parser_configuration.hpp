@@ -15,7 +15,7 @@
 #include <blocksci/bitcoin_uint256.hpp>
 #include <blocksci/data_configuration.hpp>
 
-#include <boost/filesystem.hpp>
+#include <boost/filesystem/path.hpp>
 
 #include <functional>
 
@@ -34,6 +34,12 @@ struct ParserConfigurationBase : public blocksci::DataConfiguration {
     boost::filesystem::path utxoAddressStatePath() const {
         return parserDirectory()/"utxoAddressState";
     }
+    
+    boost::filesystem::path utxoScriptStatePath() const {
+        return parserDirectory()/"utxoScriptState";
+    }
+    
+    
     
     boost::filesystem::path addressPath() const {
         return parserDirectory()/"address";

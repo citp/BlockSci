@@ -6,12 +6,11 @@
 #ifndef BITCOIN_SCRIPT_SCRIPT_H
 #define BITCOIN_SCRIPT_SCRIPT_H
 
-#include <boost/container/small_vector.hpp>
-
 #include <cassert>
 #include <limits>
 #include <stdexcept>
 #include <string>
+#include <cstring>
 #include <vector>
 
 // Maximum number of bytes pushable to the stack
@@ -381,7 +380,7 @@ private:
  * Tests in October 2015 showed use of this reduced dbcache memory usage by 23%
  *  and made an initial sync 13% faster.
  */
-typedef boost::container::small_vector<unsigned char, 31> CScriptBase;
+typedef std::vector<unsigned char> CScriptBase;
 
 /** Serialized script, used inside transaction inputs and outputs */
 class CScript : public CScriptBase
@@ -408,9 +407,8 @@ public:
     CScript(const_iterator pbegin, const_iterator pend) : CScriptBase() {
         insert(end(), pbegin, pend);
     }
-    CScript(std::vector<unsigned char>::const_iterator pbegin, std::vector<unsigned char>::const_iterator pend) : CScriptBase() {
-        insert(end(), pbegin, pend);
-    }
+
+    
     CScript(const unsigned char* pbegin, const unsigned char* pend) : CScriptBase() {
         insert(end(), pbegin, pend);
     }
@@ -467,7 +465,7 @@ public:
             insert(end(), OP_PUSHDATA2);
             uint8_t data[2];
             uint16_t size = static_cast<uint16_t>(b.size());
-            memcpy(&data[0], &size, sizeof(size));
+            std::memcpy(&data[0], &size, sizeof(size));
             insert(end(), data, data + sizeof(data));
         }
         else
@@ -475,7 +473,7 @@ public:
             insert(end(), OP_PUSHDATA4);
             uint8_t data[4];
             uint32_t size = static_cast<uint32_t>(b.size());
-            memcpy(&data[0], &size, sizeof(size));
+            std::memcpy(&data[0], &size, sizeof(size));
             insert(end(), data, data + sizeof(data));
         }
         insert(end(), b.begin(), b.end());
@@ -692,7 +690,5 @@ public:
     CReserveScript() {}
     virtual ~CReserveScript() = default;
 };
-
-std::string ScriptToAsmStr(const CScript& script, const bool fAttemptSighashDecode = false);
 
 #endif // BITCOIN_SCRIPT_SCRIPT_H

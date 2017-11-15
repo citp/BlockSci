@@ -11,12 +11,11 @@
 
 #include "block.hpp"
 #include "transaction.hpp"
-#include "transaction_iterator.hpp"
+#include "transaction_range.hpp"
+
 #include <blocksci/data_access.hpp>
 
-#include <boost/type_traits/function_traits.hpp>
-#include <boost/range/counting_range.hpp>
-#include <boost/range/iterator_range.hpp>
+#include <range/v3/view_facade.hpp>
 
 #include <future>
 
@@ -47,47 +46,62 @@ namespace blocksci {
     
     class Blockchain;
     
-    std::vector<std::vector<Block>> segmentChain(const Blockchain &chain, size_t startBlock, size_t endBlock, unsigned int segmentCount);
+    std::vector<std::vector<Block>> segmentChain(const Blockchain &chain, int startBlock, int endBlock, unsigned int segmentCount);
     uint32_t txCount(const Blockchain &chain);
     
-    class Blockchain {
-    public:
-        using value_type = const Block;
-        using const_iterator = std::vector<Block>::const_iterator;
-        using iterator = std::vector<Block>::iterator;
-        using size_type = std::vector<Block>::size_type;
+    class Blockchain : public ranges::view_facade<Blockchain> {
+        friend ranges::range_access;
         
+        struct cursor {
+        private:
+            const Blockchain *chain;
+            uint32_t currentBlockHeight;
+        public:
+            cursor() = default;
+            cursor(const Blockchain &chain_, uint32_t height) : chain(&chain_), currentBlockHeight(height) {}
+            Block read() const;
+            bool equal(ranges::default_sentinel) const;
+            bool equal(const cursor &other) const;
+            void next();
+            void prev();
+            int distance_to(cursor const &that) const;
+            void advance(int amount);
+        };
+        
+        cursor begin_cursor() const {
+            return cursor(*this, 0);
+        }
+        
+        cursor end_cursor() const {
+            return cursor(*this, lastBlockHeight);
+        }
+        
+        uint32_t lastBlockHeight;
+
+    public:
+        Blockchain();
         Blockchain(const DataConfiguration &config, bool errorOnReorg, uint32_t blocksIgnored);
         Blockchain(const std::string &dataDirectory);
         
-        const DataAccess &access;
+        const DataAccess *access;
         
-        Transaction txAtIndex(uint32_t index) const;
+        uint32_t firstTxIndex() const;
+        uint32_t endTxIndex() const;
         
-        std::vector<Block>::size_type size() const;
-        boost::iterator_range<const Block *>::const_iterator begin() const;
-        boost::iterator_range<const Block *>::const_iterator end() const;
-        const Block& operator[] (const uint32_t index) const;
-        
-        boost::iterator_range<TransactionIterator> iterateTransactions(uint32_t startBlock, uint32_t endBlock) const {
-            auto &startB = this->operator[](startBlock);
-            auto &endB = this->operator[](endBlock - 1);
-            auto begin = TransactionIterator(access.chain.get(), startB.firstTxIndex, startBlock);
-            auto end = TransactionIterator(access.chain.get(), endB.firstTxIndex + endB.numTxes, endBlock - 1);
-            return boost::make_iterator_range(begin, end);
+        TransactionRange iterateTransactions(int startBlock, int endBlock) const {
+            auto startB = this->operator[](startBlock);
+            auto endB = this->operator[](endBlock - 1);
+            return TransactionRange(*access->chain, startB.firstTxIndex(), endB.endTxIndex());
         }
         
-        TransactionIterator beginTransactions(uint32_t blockNum);
-        TransactionIterator endTransactions(uint32_t blockNum);
-        
         template <typename MapType, typename ResultType = MapType>
-        auto mapReduce(size_t start, size_t stop, const std::function<MapType(const std::vector<Block> &)> &mapFunc, const std::function<ResultType&(ResultType &, MapType &)> &reduceFunc, ResultType identity) const -> decltype(mapFunc(std::declval<std::vector<Block> &>())) {
+        auto mapReduce(int start, int stop, const std::function<MapType(const std::vector<Block> &)> &mapFunc, const std::function<ResultType&(ResultType &, MapType &)> &reduceFunc, ResultType identity) const -> decltype(mapFunc(std::declval<std::vector<Block> &>())) {
             auto segments = segmentChain(*this, start, stop, std::thread::hardware_concurrency());
             return mapReduceBlocksImp<decltype(segments)::iterator, MapType, ResultType>(segments.begin(), segments.end(), mapFunc, reduceFunc, identity);
         }
         
         template <typename MapType, typename ResultType = MapType>
-        ResultType mapReduce(size_t start, size_t stop, const std::function<MapType(const Block &)> &mapFunc, const std::function<ResultType&(ResultType &, MapType &)> &reduceFunc, ResultType identity) const {
+        ResultType mapReduce(int start, int stop, const std::function<MapType(const Block &)> &mapFunc, const std::function<ResultType&(ResultType &, MapType &)> &reduceFunc, ResultType identity) const {
             auto mapF = [&](const std::vector<Block> &segment) {
                 ResultType res = identity;
                 for (auto &block : segment) {
@@ -101,10 +115,10 @@ namespace blocksci {
         }
         
         template <typename MapType, typename ResultType = MapType>
-        ResultType mapReduce(size_t start, size_t stop, const std::function<MapType(const Transaction &)> &mapFunc, const std::function<ResultType&(ResultType &, MapType &)> &reduceFunc, ResultType identity) const {
+        ResultType mapReduce(int start, int stop, const std::function<MapType(const Transaction &)> &mapFunc, const std::function<ResultType&(ResultType &, MapType &)> &reduceFunc, ResultType identity) const {
             auto mapF = [&](const Block &block) {
                 ResultType res = identity;
-                for (auto tx : block.txes(*access.chain)) {
+                for (auto tx : block) {
                     auto mapped = mapFunc(tx);
                     res = reduceFunc(res, mapped);
                 }
@@ -115,7 +129,7 @@ namespace blocksci {
         }
         
         template <typename MapType>
-        std::vector<MapType> map(size_t start, size_t stop, const std::function<MapType(const Block &)> &mapFunc) const {
+        std::vector<MapType> map(int start, int stop, const std::function<MapType(const Block &)> &mapFunc) const {
             auto mapF = [&](const std::vector<Block> &segment) {
                 std::vector<MapType> vec;
                 vec.reserve(segment.size());
@@ -137,16 +151,16 @@ namespace blocksci {
     };
     
     // filter - Blocks and Txes
-    std::vector<Block> filter(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock, std::function<bool(const Block &block)> testFunc);
-    std::vector<Transaction> filter(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock, std::function<bool(const Transaction &tx)> testFunc);
+    std::vector<Block> filter(const Blockchain &chain, int startBlock, int endBlock, std::function<bool(const Block &block)> testFunc);
+    std::vector<Transaction> filter(const Blockchain &chain, int startBlock, int endBlock, std::function<bool(const Transaction &tx)> testFunc);
     
-    std::vector<Transaction> getCoinjoinTransactions(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock);
+    std::vector<Transaction> getCoinjoinTransactions(const Blockchain &chain, int startBlock, int endBlock);
     std::pair<std::vector<Transaction>, std::vector<Transaction>> getPossibleCoinjoinTransactions(const Blockchain &chain, uint64_t minBaseFee, double percentageFee, size_t maxDepth);
-    std::vector<Transaction> getTransactionIncludingOutput(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock, AddressType::Enum type);
+    std::vector<Transaction> getTransactionIncludingOutput(const Blockchain &chain, int startBlock, int endBlock, AddressType::Enum type);
     
-    std::vector<Transaction> getDeanonTxes(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock);
-    std::vector<Transaction> getChangeOverTxes(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock);
-    std::vector<Transaction> getKeysetChangeTxes(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock);
+    std::vector<Transaction> getDeanonTxes(const Blockchain &chain, int startBlock, int endBlock);
+    std::vector<Transaction> getChangeOverTxes(const Blockchain &chain, int startBlock, int endBlock);
+    std::vector<Transaction> getKeysetChangeTxes(const Blockchain &chain, int startBlock, int endBlock);
 }
 
 

@@ -10,29 +10,19 @@
 #define script_info_hpp
 
 #include "script_type.hpp"
+#include "scriptsfwd.hpp"
 #include <blocksci/util.hpp>
-
-#include <boost/variant/variant_fwd.hpp>
 
 #include <string_view>
 
 namespace blocksci {
     using namespace std::string_view_literals;
     
-    struct PubkeyData;
-    struct ScriptHashData;
-    struct MultisigData;
-    struct NonstandardScriptData;
-    struct RawData;
-    
     template <typename T>
     struct FixedSize;
     
     template <typename ...T>
     struct Indexed;
-    
-    template <ScriptType::Enum>
-    struct ScriptInfo;
     
     template <>
     struct ScriptInfo<ScriptType::Enum::PUBKEY> {
@@ -71,7 +61,7 @@ namespace blocksci {
         static constexpr bool spendable = true;
         static constexpr bool indexed = true;
         using outputType = NonstandardScriptData;
-        using storage = Indexed<NonstandardScriptData,NonstandardScriptData>;
+        using storage = Indexed<NonstandardScriptData,NonstandardSpendScriptData>;
     };
     
     template <>
@@ -87,9 +77,6 @@ namespace blocksci {
     
     template <template<auto> class K>
     using to_script_tuple_t = apply_template_t<K, ScriptInfoList>;
-    
-    template <template<auto> class K>
-    using to_script_variant_t = to_variadic_t<to_script_tuple_t<K>, boost::variant>;
     
     template<ScriptType::Enum type>
     struct SpendableFunctor {

@@ -26,7 +26,10 @@
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>
 
-#include <boost/variant/variant_fwd.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+
+#include <boost/filesystem/fstream.hpp>
 
 #ifdef BLOCKSCI_FILE_PARSER
 void replayBlock(const ParserConfiguration<FileTag> &config, uint32_t blockNum) {
@@ -42,7 +45,7 @@ void replayBlock(const ParserConfiguration<FileTag> &config, uint32_t blockNum) 
     auto chain = index.generateChain(blockNum);
     auto block = chain.back();
     auto blockPath = config.pathForBlockFile(block.nFile);
-    SafeMemReader reader{blockPath};
+    SafeMemReader reader{blockPath.native()};
     reader.advance(block.nDataPos);
     reader.advance(sizeof(CBlockHeader));
     auto txCount = reader.readVariableLengthInteger();
@@ -57,10 +60,10 @@ void replayBlock(const ParserConfiguration<FileTag> &config, uint32_t blockNum) 
     blocksci::ChainAccess currentChain(config, false, 0);
     blocksci::ScriptAccess scripts(config);
     
-    auto realBlock = currentChain.getBlock(blockNum);
-    auto segwit = isSegwit(realBlock, currentChain, scripts);
+    auto realBlock = blocksci::Block(blockNum, currentChain);
+    auto segwit = isSegwit(realBlock, scripts);
     for (uint32_t txNum = 0; txNum < txCount; txNum++) {
-        auto realTx = realBlock.getTx(currentChain, txNum);
+        auto realTx = realBlock[txNum];
         
         RawTransaction tx;
         tx.load(reader, realTx.txNum, blockNum, segwit);

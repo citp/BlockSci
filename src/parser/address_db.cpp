@@ -9,8 +9,6 @@
 
 #include "address_db.hpp"
 
-#include "parser_configuration.hpp"
-
 #include <blocksci/address/address.hpp>
 #include <blocksci/address/address_index.hpp>
 #include <blocksci/address/address_info.hpp>
@@ -20,11 +18,6 @@
 #include <blocksci/scripts/scripts.hpp>
 #include <blocksci/scripts/scripthash_script.hpp>
 #include <blocksci/chain/output_pointer.hpp>
-
-#include <boost/filesystem/path.hpp>
-#include <boost/filesystem/operations.hpp>
-#include <boost/optional/optional.hpp>
-#include <boost/variant/variant.hpp>
 
 #include <string>
 
@@ -39,7 +32,7 @@ std::unordered_map<ScriptType::Enum,  lmdb::dbi> setupInsertStatements(lmdb::txn
     return scriptDbs;
 }
 
-AddressDB::AddressDB(const ParserConfigurationBase &config) : AddressTraverser(config, "addressDB"), env(createAddressIndexEnviroment(config.addressDBFilePath())), wtxn(lmdb::txn::begin(env)), scriptDbs(setupInsertStatements(wtxn)) {
+AddressDB::AddressDB(const std::string &path) : AddressTraverser(config, "addressDB"), env(createAddressIndexEnviroment(path)), wtxn(lmdb::txn::begin(env)), scriptDbs(setupInsertStatements(wtxn)) {
 }
 
 void AddressDB::tearDown() {    

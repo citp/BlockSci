@@ -10,16 +10,20 @@
 
 #include "basic_types.hpp"
 
-#include <boost/functional/hash.hpp>
+#include <blocksci/hash.hpp>
 
 #include <ostream>
 
-std::size_t hash_value(const RawOutputPointer &pointer) {
-    std::size_t seed = 5764245;
-    boost::hash_combine(seed, pointer.hash);
-    boost::hash_combine(seed, pointer.outputNum);
-    return seed;
+namespace std
+{
+    size_t hash<RawOutputPointer>::operator()(const RawOutputPointer &pointer) const {
+        std::size_t seed = 5764245;
+        hash_combine(seed, pointer.hash);
+        hash_combine(seed, pointer.outputNum);
+        return seed;
+    }
 }
+
 
 std::ostream &operator<<(std::ostream &os, RawOutputPointer const &pointer) {
     os << pointer.hash.GetHex();

@@ -19,7 +19,7 @@
 #include <blocksci/scripts/script_info.hpp>
 #include <blocksci/scripts/script_view.hpp>
 
-#include <boost/variant/variant.hpp>
+#include <mpark/variant.hpp>
 
 #include <array>
 
@@ -27,12 +27,12 @@ template<auto type>
 struct ScriptOutput {
     static constexpr auto address_v = type;
     static constexpr auto script_v = scriptType(type);
-    ScriptData<type> data;
+    ScriptOutputData<type> data;
     uint32_t scriptNum;
     bool isNew;
     
     ScriptOutput() = default;
-    ScriptOutput(const ScriptData<type> &data_) : data(data_) {}
+    ScriptOutput(const ScriptOutputData<type> &data_) : data(data_) {}
     
     uint32_t resolve(AddressState &state) {
         if constexpr (blocksci::ScriptInfo<script_v>::deduped) {
@@ -64,7 +64,7 @@ struct ScriptOutput {
     }
 };
 
-struct ScriptDataBase {
+struct ScriptOutputDataBase {
     bool isValid() const { return true; }
     
     template<typename Func>
@@ -75,66 +75,66 @@ struct ScriptDataBase {
 };
 
 template <>
-struct ScriptData<blocksci::AddressType::Enum::PUBKEY> : public ScriptDataBase {
+struct ScriptOutputData<blocksci::AddressType::Enum::PUBKEY> : public ScriptOutputDataBase {
     CPubKey pubkey;
     
-    ScriptData(const boost::iterator_range<const unsigned char *> &vch1);
-    ScriptData(const CPubKey &pub) : pubkey(pub) {}
-    ScriptData() = default;
+    ScriptOutputData(const boost::iterator_range<const unsigned char *> &vch1);
+    ScriptOutputData(const CPubKey &pub) : pubkey(pub) {}
+    ScriptOutputData() = default;
     
     blocksci::uint160 getHash() const;
     
-    blocksci::PubkeyData getData() const;
+    blocksci::PubkeyData getData(uint32_t txNum) const;
 };
 
 template <>
-struct ScriptData<blocksci::AddressType::Enum::PUBKEYHASH> : public ScriptDataBase {
+struct ScriptOutputData<blocksci::AddressType::Enum::PUBKEYHASH> : public ScriptOutputDataBase {
     
     CKeyID hash;
     
-    ScriptData(blocksci::uint160 &pubkeyHash) : hash{pubkeyHash} {}
+    ScriptOutputData(blocksci::uint160 &pubkeyHash) : hash{pubkeyHash} {}
     
     blocksci::uint160 getHash() const;
     
-    blocksci::PubkeyData getData() const;
+    blocksci::PubkeyData getData(uint32_t txNum) const;
 };
 
 template <>
-struct ScriptData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : public ScriptDataBase {
+struct ScriptOutputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : public ScriptOutputDataBase {
     
     CKeyID hash;
     
-    ScriptData(blocksci::uint160 &&pubkeyHash) : hash{pubkeyHash} {}
+    ScriptOutputData(blocksci::uint160 &&pubkeyHash) : hash{pubkeyHash} {}
     
     blocksci::uint160 getHash() const;
     
-    blocksci::PubkeyData getData() const;
+    blocksci::PubkeyData getData(uint32_t txNum) const;
 };
 
 template <>
-struct ScriptData<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptDataBase {
+struct ScriptOutputData<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptOutputDataBase {
     CKeyID hash;
     
-    ScriptData(blocksci::uint160 hash_) : hash(hash_) {}
+    ScriptOutputData(blocksci::uint160 hash_) : hash(hash_) {}
     
     blocksci::uint160 getHash() const;
     
-    blocksci::ScriptHashData getData() const;
+    blocksci::ScriptHashData getData(uint32_t txNum) const;
 };
 
 template <>
-struct ScriptData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> : public ScriptDataBase {
+struct ScriptOutputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> : public ScriptOutputDataBase {
     blocksci::uint256 hash;
     
-    ScriptData(blocksci::uint256 hash_) : hash(hash_) {}
+    ScriptOutputData(blocksci::uint256 hash_) : hash(hash_) {}
     
     blocksci::uint160 getHash() const;
     
-    blocksci::ScriptHashData getData() const;
+    blocksci::ScriptHashData getData(uint32_t txNum) const;
 };
 
 template <>
-struct ScriptData<blocksci::AddressType::Enum::MULTISIG> : public ScriptDataBase {
+struct ScriptOutputData<blocksci::AddressType::Enum::MULTISIG> : public ScriptOutputDataBase {
     static constexpr int MAX_ADDRESSES = 16;
     uint8_t numRequired;
     uint8_t numTotal;
@@ -142,7 +142,7 @@ struct ScriptData<blocksci::AddressType::Enum::MULTISIG> : public ScriptDataBase
     
     std::vector<ScriptOutput<blocksci::AddressType::Enum::PUBKEY>> addresses;
     
-    ScriptData() : addressCount(0) {}
+    ScriptOutputData() : addressCount(0) {}
     
     void addAddress(const boost::iterator_range<const unsigned char *> &vch1);
     
@@ -166,29 +166,29 @@ struct ScriptData<blocksci::AddressType::Enum::MULTISIG> : public ScriptDataBase
         }
     }
     
-    blocksci::ArbitraryLengthData<blocksci::MultisigData> getData() const;
+    blocksci::ArbitraryLengthData<blocksci::MultisigData> getData(uint32_t txNum) const;
 };
 
 template <>
-struct ScriptData<blocksci::AddressType::Enum::NONSTANDARD> : public ScriptDataBase {
+struct ScriptOutputData<blocksci::AddressType::Enum::NONSTANDARD> : public ScriptOutputDataBase {
     blocksci::CScriptView script;
     
-    ScriptData() {}
-    ScriptData(const blocksci::CScriptView &script);
+    ScriptOutputData() {}
+    ScriptOutputData(const blocksci::CScriptView &script);
     
-    blocksci::ArbitraryLengthData<blocksci::NonstandardScriptData> getData() const;
+    blocksci::ArbitraryLengthData<blocksci::NonstandardScriptData> getData(uint32_t txNum) const;
 };
 
 template <>
-struct ScriptData<blocksci::AddressType::Enum::NULL_DATA> : public ScriptDataBase {
+struct ScriptOutputData<blocksci::AddressType::Enum::NULL_DATA> : public ScriptOutputDataBase {
     std::vector<unsigned char> fullData;
     
-    ScriptData(const blocksci::CScriptView &script);
+    ScriptOutputData(const blocksci::CScriptView &script);
     
-    blocksci::ArbitraryLengthData<blocksci::RawData> getData() const;
+    blocksci::ArbitraryLengthData<blocksci::RawData> getData(uint32_t txNum) const;
 };
 
-using ScriptOutputType = blocksci::to_address_variant_t<ScriptOutput>;
+using ScriptOutputType = blocksci::to_variadic_t<blocksci::to_address_tuple_t<ScriptOutput>, mpark::variant>;
 
 class AnyScriptOutput {
 public:

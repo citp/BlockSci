@@ -16,13 +16,10 @@
 #include "bitcoin_base58.hpp"
 #include "chain/transaction.hpp"
 
-#include <boost/variant.hpp>
-#include <boost/optional/optional.hpp>
-
 namespace blocksci {
     using namespace script;
     
-    ScriptHash::ScriptAddress(uint32_t scriptNum_, const ScriptHashData *rawData) : Script(scriptNum_, scriptType), wrappedAddress(rawData->wrappedAddress), txRevealed(rawData->txRevealed), address(rawData->address) {}
+    ScriptHash::ScriptAddress(uint32_t scriptNum_, const ScriptHashData *rawData) : BaseScript(scriptNum_, scriptType, *rawData), wrappedAddress(rawData->wrappedAddress), address(rawData->address) {}
     
     ScriptHash::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : ScriptHash(addressNum, access.getScriptData<scriptType>(addressNum)) {}
     
@@ -30,11 +27,11 @@ namespace blocksci {
         return CBitcoinAddress(address, AddressType::Enum::SCRIPTHASH, config).ToString();
     }
     
-    boost::optional<Address> ScriptHash::getWrappedAddress() const {
+    ranges::optional<Address> ScriptHash::getWrappedAddress() const {
         if (wrappedAddress.scriptNum != 0) {
             return wrappedAddress;
         } else {
-            return boost::none;
+            return ranges::nullopt;
         }
     }
     
@@ -42,11 +39,11 @@ namespace blocksci {
         return wrappedAddress.getScript(access);
     }
     
-    boost::optional<Transaction> ScriptHash::transactionRevealed(const ChainAccess &chain) const {
+    ranges::optional<Transaction> ScriptHash::transactionRevealed(const ChainAccess &chain) const {
         if (txRevealed != 0) {
             return Transaction::txWithIndex(chain, txRevealed);
         } else {
-            return boost::none;
+            return ranges::nullopt;
         }
     }
     

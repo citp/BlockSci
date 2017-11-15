@@ -10,6 +10,9 @@
 #define script_hpp
 
 #include "script_type.hpp"
+#include "scriptsfwd.hpp"
+
+#include <blocksci/chain/chain_fwd.hpp>
 
 #include <functional>
 #include <vector>
@@ -20,11 +23,7 @@ namespace blocksci {
     struct Address;
     struct DataConfiguration;
     class ScriptAccess;
-    class ChainAccess;
     class AddressIndex;
-    struct Output;
-    struct Input;
-    struct Transaction;
     
     struct Script {
         uint32_t scriptNum;
@@ -55,7 +54,24 @@ namespace blocksci {
         std::vector<Transaction> getOutputTransactions() const;
         std::vector<Transaction> getInputTransactions() const;
         #endif
+    };
+    
+    struct BaseScript : public Script {
+        uint32_t firstTxIndex;
+        uint32_t txRevealed;
         
+        BaseScript(uint32_t scriptNum_, ScriptType::Enum type_, const ScriptDataBase &data);
+        BaseScript(const Address &address, const ScriptDataBase &data);
+        
+        Transaction getFirstTransaction(const ChainAccess &chain) const;
+
+        bool hasBeenSpent() const {
+            return txRevealed != std::numeric_limits<uint32_t>::max();
+        }
+        
+        #ifndef BLOCKSCI_WITHOUT_SINGLETON
+        Transaction getFirstTransaction() const;
+        #endif
     };
 }
 

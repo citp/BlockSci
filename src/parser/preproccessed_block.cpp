@@ -107,7 +107,7 @@ void RawTransaction::load(SafeMemReader &reader, uint32_t txNum_, uint32_t block
         }
     }
     locktime = reader.readNext<Locktime>();
-    sizeBytes = reader.offset() - startOffset;
+    sizeBytes = static_cast<uint32_t>(reader.offset() - startOffset);
     hash.SetNull();
 }
 
@@ -147,7 +147,7 @@ TransactionHeader::TransactionHeader(SafeMemReader &reader) {
         }
     }
     locktime = reader.readNext<Locktime>();
-    sizeBytes = reader.offset() - startOffset;
+    sizeBytes = static_cast<uint32_t>(reader.offset() - startOffset);
 }
 
 void RawTransaction::calculateHash() {
@@ -207,7 +207,7 @@ blocksci::RawTransaction RawTransaction::getRawTransaction() const {
 }
 
 blocksci::OutputPointer RawInput::getOutputPointer() const {
-    return {linkedTxNum, rawOutputPointer.outputNum};
+    return {utxo.txNum, rawOutputPointer.outputNum};
 }
 
 struct Serializer {
@@ -310,8 +310,8 @@ blocksci::uint256 RawTransaction::getHash(const InputView &info, const blocksci:
     s.serializeCompact(nOutputs);
     for (unsigned int nOutput = 0; nOutput < nOutputs; nOutput++) {
         int64_t value = static_cast<int64_t>(outputs[nOutput].value);
-        auto scriptView = outputs[nOutput].getScriptView();
-        uint32_t scriptLength = scriptView.size();
+        auto script = outputs[nOutput].getScriptView();
+        uint32_t scriptLength = static_cast<uint32_t>(script.size());
         if (hashSingle && nOutput != info.inputNum) {
             value = -1;
             scriptLength = 0;
@@ -319,7 +319,7 @@ blocksci::uint256 RawTransaction::getHash(const InputView &info, const blocksci:
         s.serialize(value);
         s.serializeCompact(scriptLength);
         if (scriptLength > 0) {
-            s.serialize(scriptView.begin(), scriptView.size());
+            s.serialize(script.begin(), script.size());
         }
     }
     s.serialize(locktime);

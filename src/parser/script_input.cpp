@@ -18,7 +18,7 @@
 
 #include <iostream>
 
-struct ScriptInputGenerator : public boost::static_visitor<ScriptInputType> {
+struct ScriptInputGenerator {
     const InputView &inputView;
     const blocksci::CScriptView &scriptView;
     const RawTransaction &tx;
@@ -30,28 +30,32 @@ struct ScriptInputGenerator : public boost::static_visitor<ScriptInputType> {
     }
 };
 
-AnyScriptInput::AnyScriptInput(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const AnySpendData &spendData) : wrapped(boost::apply_visitor(ScriptInputGenerator{inputView, scriptView, tx}, spendData.wrapped)) {}
+AnyScriptInput::AnyScriptInput(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const AnySpendData &spendData) : wrapped(mpark::visit(ScriptInputGenerator(inputView, scriptView, tx), spendData.wrapped)) {}
 
 void AnyScriptInput::process(AddressState &state) {
-    boost::apply_visitor([&](auto &scriptInput) { scriptInput.process(state); }, wrapped);
+    mpark::visit([&](auto &scriptInput) { scriptInput.process(state); }, wrapped);
 }
 
 void AnyScriptInput::check(const AddressState &state) {
-    boost::apply_visitor([&](auto &scriptInput) { scriptInput.check(state); }, wrapped);
+    mpark::visit([&](auto &scriptInput) { scriptInput.check(state); }, wrapped);
 }
 
 void AnyScriptInput::setScriptNum(uint32_t scriptNum) {
-    boost::apply_visitor([&](auto &input) { input.scriptNum = scriptNum; }, wrapped);
+    mpark::visit([&](auto &input) { input.scriptNum = scriptNum; }, wrapped);
 }
 
-std::pair<AnyScriptOutput, AnyScriptInput> p2shGenerate(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::SCRIPTHASH> &) {
+blocksci::Address AnyScriptInput::address() const {
+    return mpark::visit([&](auto &input) { return blocksci::Address{input.scriptNum, input.address_v}; }, wrapped);
+}
+
+std::pair<AnyScriptOutput, std::unique_ptr<AnyScriptInput>> p2shGenerate(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::SCRIPTHASH> &) {
     blocksci::CScriptView::const_iterator pc1 = scriptView.begin();
     blocksci::CScriptView::const_iterator prevpc = scriptView.begin();
     blocksci::CScriptView::const_iterator prevprevpc = scriptView.begin();
     opcodetype opcode1;
-    boost::iterator_range<const unsigned char *> vch1;
+    ranges::iterator_range<const unsigned char *> vch1;
     
-    boost::iterator_range<const unsigned char *> lastScript;
+    ranges::iterator_range<const unsigned char *> lastScript;
     while(true) {
         prevprevpc = prevpc;
         prevpc = pc1;
@@ -66,34 +70,31 @@ std::pair<AnyScriptOutput, AnyScriptInput> p2shGenerate(const InputView &inputVi
     auto wrappedInputLength = static_cast<uint32_t>(std::distance(begin, prevprevpc));
     
     blocksci::CScriptView wrappedOutputScript(lastScript.begin(), lastScript.end());
-    auto wrappedScriptOutput = AnyScriptOutput(wrappedOutputScript, inputView.witnessActivated);
-    
     blocksci::CScriptView p2shScriptView{wrappedInputBegin, wrappedInputBegin + wrappedInputLength};
-    auto spendData = AnySpendData(wrappedScriptOutput);
-    auto wrappedScriptInput = AnyScriptInput(inputView, p2shScriptView, tx, spendData);
-    return std::make_pair(wrappedScriptOutput, wrappedScriptInput);
+    AnyScriptOutput wrappedScriptOutput(wrappedOutputScript, inputView.witnessActivated);
+    return std::make_pair(wrappedScriptOutput, std::make_unique<AnyScriptInput>(inputView, p2shScriptView, tx, wrappedScriptOutput));
 }
 
-ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView,const std::pair<AnyScriptOutput, AnyScriptInput> &data) : ScriptInputDataBase(inputView, scriptView), wrappedScriptOutput(data.first), wrappedScriptInput(data.second) {}
+ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH>::ScriptInputData(std::pair<AnyScriptOutput, std::unique_ptr<AnyScriptInput>> data) : wrappedScriptOutput(data.first), wrappedScriptInput(std::move(data.second)) {}
 
-ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::SCRIPTHASH> &spendData) : ScriptInputData(inputView, scriptView, p2shGenerate(inputView, scriptView, tx, spendData)) {}
+ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::SCRIPTHASH> &spendData) : ScriptInputData(p2shGenerate(inputView, scriptView, tx, spendData)) {}
 
 void ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH>::process(AddressState &state) {
     uint32_t scriptNum = wrappedScriptOutput.resolve(state);
-    wrappedScriptInput.process(state);
-    wrappedScriptInput.setScriptNum(scriptNum);
+    wrappedScriptInput->process(state);
+    wrappedScriptInput->setScriptNum(scriptNum);
 }
 
 void ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH>::check(const AddressState &state) {
     wrappedScriptOutput.check(state);
-    wrappedScriptInput.check(state);
+    wrappedScriptInput->check(state);
 }
 
-ScriptInputData<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::PUBKEYHASH> &) : ScriptInputDataBase(inputView, scriptView) {
+ScriptInputData<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::PUBKEYHASH> &) {
     if (scriptView.size() > 0) {
         auto pc = scriptView.begin();
         opcodetype opcode;
-        boost::iterator_range<const unsigned char *> vchSig;
+        ranges::iterator_range<const unsigned char *> vchSig;
         scriptView.GetOp(pc, opcode, vchSig);
         scriptView.GetOp(pc, opcode, vchSig);
         pubkey.Set(vchSig.begin(), vchSig.end());
@@ -103,7 +104,7 @@ ScriptInputData<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInputData(const 
     }
 }
 
-ScriptInputData<blocksci::AddressType::Enum::MULTISIG>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::MULTISIG> &spendData) : ScriptInputDataBase(inputView, scriptView) {
+ScriptInputData<blocksci::AddressType::Enum::MULTISIG>::ScriptInputData(const InputView &, const blocksci::CScriptView &, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::MULTISIG> &) {
     // Prelimary work on code to track multisig spend sets
     
 //    CScriptView::const_iterator pc1 = scriptView.begin();
@@ -142,7 +143,7 @@ ScriptInputData<blocksci::AddressType::Enum::MULTISIG>::ScriptInputData(const In
 //    }
 }
 
-ScriptInputData<blocksci::AddressType::Enum::NONSTANDARD>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::NONSTANDARD> &) : ScriptInputDataBase(inputView, scriptView) {
+ScriptInputData<blocksci::AddressType::Enum::NONSTANDARD>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::NONSTANDARD> &) {
     if (scriptView.size() > 0) {
         script = CScript(scriptView.begin(), scriptView.end());
     } else if (inputView.witnessStack.size() > 0) {
@@ -154,35 +155,34 @@ ScriptInputData<blocksci::AddressType::Enum::NONSTANDARD>::ScriptInputData(const
     }
 }
 
-ScriptInputData<blocksci::AddressType::Enum::NULL_DATA>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::NULL_DATA> &) : ScriptInputDataBase(inputView, scriptView) {
+ScriptInputData<blocksci::AddressType::Enum::NULL_DATA>::ScriptInputData(const InputView &, const blocksci::CScriptView &, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::NULL_DATA> &) {
 }
 
-ScriptInputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> &) : ScriptInputDataBase(inputView, scriptView) {
+ScriptInputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> &) {
     auto &pubkeyWitness = inputView.witnessStack[1];
     pubkey.Set(reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin), reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin) + pubkeyWitness.length);
 }
 
-std::pair<AnyScriptOutput, AnyScriptInput> p2shWitnessGenerate(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> &) {
+std::pair<AnyScriptOutput, std::unique_ptr<AnyScriptInput>> p2shWitnessGenerate(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> &) {
     auto &witnessScriptItem = inputView.witnessStack.back();
     auto outputBegin = reinterpret_cast<const unsigned char *>(witnessScriptItem.itemBegin);
     blocksci::CScriptView witnessView(outputBegin, outputBegin + witnessScriptItem.length);
-    auto wrappedScriptOutput = AnyScriptOutput(witnessView, inputView.witnessActivated);
-    auto wrappedScriptInput = AnyScriptInput(inputView, scriptView, tx, wrappedScriptOutput);
-    return std::make_pair(wrappedScriptOutput, wrappedScriptInput);
+    AnyScriptOutput wrappedScriptOutput(witnessView, inputView.witnessActivated);
+    return std::make_pair(wrappedScriptOutput, std::make_unique<AnyScriptInput>(inputView, scriptView, tx, wrappedScriptOutput));
 }
 
-ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const std::pair<AnyScriptOutput, AnyScriptInput> &data) : ScriptInputDataBase(inputView, scriptView), wrappedScriptOutput(data.first), wrappedScriptInput(data.second) {
+ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::ScriptInputData(std::pair<AnyScriptOutput, std::unique_ptr<AnyScriptInput>> data) : wrappedScriptOutput(data.first), wrappedScriptInput(std::move(data.second)) {
 }
 
-ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> &spendData) : ScriptInputData(inputView, scriptView, p2shWitnessGenerate(inputView, scriptView, tx, spendData)) {}
+ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> &spendData) : ScriptInputData(p2shWitnessGenerate(inputView, scriptView, tx, spendData)) {}
 
 void ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::process(AddressState &state) {
     uint32_t scriptNum = wrappedScriptOutput.resolve(state);
-    wrappedScriptInput.process(state);
-    wrappedScriptInput.setScriptNum(scriptNum);
+    wrappedScriptInput->process(state);
+    wrappedScriptInput->setScriptNum(scriptNum);
 }
 
 void ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::check(const AddressState &state) {
     wrappedScriptOutput.check(state);
-    wrappedScriptInput.check(state);
+    wrappedScriptInput->check(state);
 }

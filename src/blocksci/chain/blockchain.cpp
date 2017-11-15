@@ -17,24 +17,26 @@
 #include "data_configuration.hpp"
 #include "data_access.hpp"
 
+#include <range/v3/all.hpp>
+#include <range/v3/view/drop.hpp>
+
 #include <fstream>
 #include <iostream>
 
 namespace blocksci {
     // [start, end)
-    std::vector<std::vector<Block>> segmentChain(const Blockchain &chain, size_t startBlock, size_t endBlock, unsigned int segmentCount) {
-        auto &firstBlock = *(chain.begin() + startBlock);
-        auto lastBlockIt = chain.begin();
-        std::advance(lastBlockIt, static_cast<int64_t>(endBlock));
-        auto lastTx = (lastBlockIt - 1)->firstTxIndex + (lastBlockIt - 1)->numTxes;
-        auto firstTx = firstBlock.firstTxIndex;
+    std::vector<std::vector<Block>> segmentChain(const Blockchain &chain, int startBlock, int endBlock, unsigned int segmentCount) {
+        auto firstBlock = chain[startBlock];
+        auto lastBlock = chain[endBlock - 1];
+        auto lastTx = lastBlock.endTxIndex();
+        auto firstTx = firstBlock.firstTxIndex();
         auto totalTxCount = lastTx - firstTx;
         double segmentSize = static_cast<double>(totalTxCount) / segmentCount;
         
         std::vector<uint32_t> txIndexes;
         txIndexes.reserve(chain.size());
         for (uint32_t i = 0; i < chain.size(); i++) {
-            txIndexes.push_back(chain[i].firstTxIndex);
+            txIndexes.push_back(chain[i].firstTxIndex());
         }
         
         std::vector<std::vector<Block>> segments;
@@ -48,13 +50,14 @@ namespace blocksci {
             std::advance(endIt, static_cast<int64_t>(endBlock));
             it = std::lower_bound(it, endIt, breakPoint);
             auto segmentEnd = std::distance(txIndexes.begin(), it);
-            segments.push_back(std::vector<Block>(chain.begin() + segmentStart, chain.begin() + segmentEnd));
+            segments.push_back(chain | ranges::view::drop(segmentStart) | ranges::view::take(segmentStart - segmentEnd) | ranges::to_vector);
         }
         auto segmentStart = std::distance(txIndexes.begin(), it);
+        auto remainingRange = chain | ranges::view::drop(segmentStart) | ranges::view::take(endBlock - segmentStart);
         if (segments.size() == segmentCount) {
-            segments.back().insert(segments.back().end(), chain.begin() + segmentStart, lastBlockIt);
+            ranges::insert(segments.back(), segments.back().end(), remainingRange);
         } else {
-            segments.push_back(std::vector<Block>(chain.begin() + segmentStart, lastBlockIt));
+            segments.push_back(remainingRange | ranges::to_vector);
         }
         
         decltype(totalTxCount) totalCount = 0;
@@ -63,57 +66,54 @@ namespace blocksci {
         for (auto &segment : segments) {
             uint32_t count = 0;
             for (auto &block : segment) {
-                count += block.numTxes;
+                count += block.size();
             }
             segmentSizes.push_back(count);
             totalCount += count;
         }
         
         assert(totalCount == totalTxCount);
-        
-        
-        
         return segments;
     }
     
     Blockchain::Blockchain(const std::string &dataDirectory) : Blockchain(DataConfiguration{dataDirectory}, true, 0) {}
     
-    Blockchain::Blockchain(const DataConfiguration &config, bool errorOnReorg, uint32_t blocksIgnored) : access(DataAccess::Instance(config, errorOnReorg, blocksIgnored)) {}
+    Blockchain::Blockchain(const DataConfiguration &config, bool errorOnReorg, uint32_t blocksIgnored) : access(&DataAccess::Instance(config, errorOnReorg, blocksIgnored)) {}
     
-    std::vector<Block>::size_type Blockchain::size() const {
-        return access.chain->getBlocks().size();
-    }
-    boost::iterator_range<const Block *>::const_iterator Blockchain::begin() const {
-        return static_cast<const Block *>(access.chain->getBlocks().begin());
-    }
-    boost::iterator_range<const Block *>::const_iterator Blockchain::end() const {
-        return static_cast<const Block *>(access.chain->getBlocks().end());
-    }
-    const Block& Blockchain::operator[] (const uint32_t index) const {
-        return static_cast<const Block &>(access.chain->getBlocks()[index]);
+    Block Blockchain::cursor::read() const {
+        return Block(currentBlockHeight, *chain->access->chain);
     }
     
+    bool Blockchain::cursor::equal(ranges::default_sentinel) const {
+        return currentBlockHeight == chain->lastBlockHeight;
+    }
+    
+    void Blockchain::cursor::next() {
+        currentBlockHeight++;
+    }
+    
+    void Blockchain::cursor::prev() {
+        currentBlockHeight--;
+    }
+    
+    bool Blockchain::cursor::equal(const cursor &other) const {
+        return currentBlockHeight == other.currentBlockHeight;
+    }
+    
+    int Blockchain::cursor::distance_to(cursor const &that) const {
+        return static_cast<int>(currentBlockHeight) - static_cast<int>(that.currentBlockHeight);
+    }
+    
+    void Blockchain::cursor::advance(int amount) {
+        currentBlockHeight += amount;
+    }
+
     uint32_t txCount(const Blockchain &chain) {
-        auto lastBlock = chain.end();
-        lastBlock--;
-        return lastBlock->firstTxIndex + lastBlock->numTxes;
+        auto lastBlock = chain[chain.size() - 1];
+        return lastBlock.endTxIndex();
     }
     
-    Transaction Blockchain::txAtIndex(uint32_t index) const {
-        return Transaction::txWithIndex(*access.chain, index);
-    }
-    
-    TransactionIterator Blockchain::beginTransactions(uint32_t blockNum) {
-        auto &block = this->operator[](blockNum);
-        return TransactionIterator(access.chain.get(), block.firstTxIndex, blockNum);
-    }
-    
-    TransactionIterator Blockchain::endTransactions(uint32_t blockNum) {
-        auto &block = this->operator[](blockNum - 1);
-        return TransactionIterator(access.chain.get(), block.firstTxIndex + block.numTxes, blockNum - 1);
-    }
-    
-    std::vector<Transaction> getCoinjoinTransactions(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock)  {
+    std::vector<Transaction> getCoinjoinTransactions(const Blockchain &chain, int startBlock, int endBlock)  {
         return filter(chain, startBlock, endBlock, [](const Transaction &tx) {
             return isCoinjoin(tx);
         });
@@ -125,7 +125,7 @@ namespace blocksci {
             std::vector<Transaction> skipped;
             std::vector<Transaction> txes;
             for (auto &block : segment) {
-                for (auto tx : block.txes(*chain.access.chain)) {
+                for (auto tx : block) {
                     auto label = isPossibleCoinjoin(tx, minBaseFee, percentageFee, maxDepth);
                     if (label == CoinJoinResult::True) {
                         txes.push_back(tx);
@@ -150,7 +150,7 @@ namespace blocksci {
         return result;
     }
     
-    std::vector<Block> filter(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock, std::function<bool(const Block &tx)> testFunc)  {
+    std::vector<Block> filter(const Blockchain &chain, int startBlock, int endBlock, std::function<bool(const Block &tx)> testFunc)  {
         auto mapFunc = [&chain, &testFunc](const std::vector<Block> &segment) -> std::vector<Block> {
             std::vector<Block> blocks;
             for (auto &block : segment) {
@@ -171,11 +171,11 @@ namespace blocksci {
         return chain.mapReduce<std::vector<Block>, std::vector<Block>>(startBlock, endBlock, mapFunc, reduceFunc, blocks);
     }
     
-    std::vector<Transaction> filter(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock, std::function<bool(const Transaction &tx)> testFunc)  {
+    std::vector<Transaction> filter(const Blockchain &chain, int startBlock, int endBlock, std::function<bool(const Transaction &tx)> testFunc)  {
         auto mapFunc = [&chain, &testFunc](const std::vector<Block> &segment) -> std::vector<Transaction> {
             std::vector<Transaction> txes;
             for (auto &block : segment) {
-                for (auto tx : block.txes(*chain.access.chain)) {
+                for (auto tx : block) {
                     if (testFunc(tx)) {
                         txes.push_back(tx);
                     }
@@ -194,7 +194,7 @@ namespace blocksci {
         return chain.mapReduce<std::vector<Transaction>, std::vector<Transaction>>(startBlock, endBlock, mapFunc, reduceFunc, txes);
     }
     
-    std::vector<Transaction> getTransactionIncludingOutput(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock, AddressType::Enum type) {
+    std::vector<Transaction> getTransactionIncludingOutput(const Blockchain &chain, int startBlock, int endBlock, AddressType::Enum type) {
         return filter(chain, startBlock, endBlock, [type](const Transaction &tx) {
             for (auto &output : tx.outputs()) {
                 if (output.getType() == type) {
@@ -205,19 +205,19 @@ namespace blocksci {
         });
     }
     
-    std::vector<Transaction> getDeanonTxes(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock) {
+    std::vector<Transaction> getDeanonTxes(const Blockchain &chain, int startBlock, int endBlock) {
         return filter(chain, startBlock, endBlock, [](const Transaction &tx) {
             return isDeanonTx(tx);
         });
     }
     
-    std::vector<Transaction> getChangeOverTxes(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock) {
+    std::vector<Transaction> getChangeOverTxes(const Blockchain &chain, int startBlock, int endBlock) {
         return filter(chain, startBlock, endBlock, [](const Transaction &tx) {
             return isChangeOverTx(tx);
         });
     }
     
-    std::vector<Transaction> getKeysetChangeTxes(const Blockchain &chain, uint32_t startBlock, uint32_t endBlock) {
+    std::vector<Transaction> getKeysetChangeTxes(const Blockchain &chain, int startBlock, int endBlock) {
         return filter(chain, startBlock, endBlock, [](const Transaction &tx) {
             return containsKeysetChange(tx);
         });

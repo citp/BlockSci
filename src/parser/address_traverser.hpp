@@ -19,7 +19,6 @@ namespace blocksci {
     struct Address;
     struct Transaction;
     class ScriptAccess;
-    class ScriptFirstSeenAccess;
     class ScriptAccess;
 }
 
@@ -27,6 +26,8 @@ namespace blocksci {
 class AddressTraverser : public ParserIndex {
     
     virtual void sawAddress(const blocksci::Address &address, const blocksci::OutputPointer &outputPointer) = 0;
+    
+    virtual void revealedP2SH(blocksci::script::ScriptHash &scriptHash, const blocksci::ScriptAccess &scripts) = 0;
     
     void processTx(const blocksci::Transaction &tx, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override;
     

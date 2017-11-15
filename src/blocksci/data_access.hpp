@@ -15,7 +15,6 @@ namespace blocksci {
     
     class ChainAccess;
     class ScriptAccess;
-    class ScriptFirstSeenAccess;
     class AddressIndex;
     class HashIndex;
 
@@ -24,7 +23,6 @@ namespace blocksci {
         const DataConfiguration config;
         std::unique_ptr<ChainAccess> chain;
         std::unique_ptr<ScriptAccess> scripts;
-        std::unique_ptr<ScriptFirstSeenAccess> scriptFirstSeen;
         std::unique_ptr<AddressIndex> addressIndex;
         std::unique_ptr<HashIndex> hashIndex;
         

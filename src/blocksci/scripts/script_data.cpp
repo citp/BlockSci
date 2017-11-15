@@ -10,9 +10,5 @@
 
 #include "script_data.hpp"
 #include "script_view.hpp"
-#include "bitcoin_script.hpp"
 
 using namespace blocksci;
-
-NonstandardScriptData::NonstandardScriptData(const CScriptView &scriptView) : scriptData(scriptView.size()) {}
-NonstandardScriptData::NonstandardScriptData(const CScript &scriptView) : scriptData(scriptView.size()) {}

@@ -16,7 +16,7 @@
 namespace blocksci {
     using namespace script;
     
-    Multisig::ScriptAddress(uint32_t scriptNum_, const MultisigData *rawData) : Script(scriptNum_, scriptType), required(rawData->m), total(rawData->n), addresses(rawData->getAddresses()) {}
+    Multisig::ScriptAddress(uint32_t scriptNum_, const MultisigData *rawData) : BaseScript(scriptNum_, scriptType, *rawData), required(rawData->m), total(rawData->n), addresses(rawData->getAddresses()) {}
     
     Multisig::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : Multisig(addressNum, access.getScriptData<Multisig::scriptType>(addressNum)) {}
     

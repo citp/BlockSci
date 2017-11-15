@@ -11,7 +11,7 @@
 #include "chain_access.hpp"
 #include "address/address.hpp"
 
-#include <boost/functional/hash.hpp>
+#include "hash.hpp"
 
 #include <sstream>
 
@@ -35,9 +35,9 @@ namespace std
 {
     size_t hash<blocksci::Inout>::operator()(const blocksci::Inout &inout) const {
         std::size_t seed = 65246342;
-        boost::hash_combine(seed, inout.linkedTxNum);
-        boost::hash_combine(seed, inout.toAddressNum);
-        boost::hash_combine(seed, inout.other);
+        hash_combine(seed, inout.linkedTxNum);
+        hash_combine(seed, inout.toAddressNum);
+        hash_combine(seed, inout.other);
         return seed;
     }
 }

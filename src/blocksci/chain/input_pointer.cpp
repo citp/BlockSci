@@ -11,7 +11,7 @@
 #include "input.hpp"
 #include "output.hpp"
 
-#include <boost/functional/hash.hpp>
+#include "hash.hpp"
 
 #include <sstream>
 
@@ -35,8 +35,8 @@ namespace std
 {
     size_t hash<blocksci::InputPointer>::operator()(const blocksci::InputPointer &pointer) const {
         std::size_t seed = 41352363;
-        boost::hash_combine(seed, pointer.txNum);
-        boost::hash_combine(seed, pointer.inoutNum);
+        hash_combine(seed, pointer.txNum);
+        hash_combine(seed, pointer.inoutNum);
         return seed;
     }
 }

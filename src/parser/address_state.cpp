@@ -12,11 +12,10 @@
 #include <pebblesdb/db.h>
 #include <pebblesdb/write_batch.h>
 
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
 #include <boost/filesystem/fstream.hpp>
 
 #include <string_view>
+#include <iostream>
 
 namespace {
     using namespace std::string_view_literals;

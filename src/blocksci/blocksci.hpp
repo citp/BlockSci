@@ -13,7 +13,6 @@
 
 #include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/block.hpp>
-#include <blocksci/chain/transaction_iterator.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>

@@ -19,7 +19,7 @@
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
 
-#include <boost/range/numeric.hpp>
+#include <range/v3/iterator_range.hpp>
 
 namespace py = pybind11;
 
@@ -74,7 +74,9 @@ void init_tx(py::module &m) {
     ;
     
     py::class_<Transaction::input_range>(m, "InputRange", "Class representing a range of transaction inputs")
-    .def("__len__", &Transaction::input_range::size)
+    .def("__len__", [](const Transaction::input_range &range) {
+        return range.size();
+    })
     .def("__iter__", [](const Transaction::input_range &range) { return py::make_iterator(range.begin(), range.end()); },
          py::keep_alive<0, 1>())
     .def("__getitem__", [](const Transaction::input_range &range, int64_t i) -> const Input & {
@@ -99,7 +101,9 @@ void init_tx(py::module &m) {
     });
     
     py::class_<Transaction::output_range>(m, "OutputRange", "Class representing a range of transaction outputs")
-    .def("__len__", &Transaction::output_range::size)
+    .def("__len__", [](const Transaction::output_range &range) {
+        return range.size();
+    })
     .def("__iter__", [](const Transaction::output_range &range) { return py::make_iterator(range.begin(), range.end()); },
          py::return_value_policy::reference, py::keep_alive<0, 1>())
     .def("__getitem__", [](const Transaction::output_range &range, int64_t i) -> const Output & {

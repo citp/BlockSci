@@ -11,13 +11,12 @@
 
 #include <blocksci/scripts/script_access.hpp>
 #include <blocksci/address/address_index.hpp>
-#include <blocksci/scripts/script_first_seen_access.hpp>
 #include <blocksci/chain/chain_access.hpp>
 #include <blocksci/hash_index.hpp>
 
 namespace blocksci {
     
-    DataAccess::DataAccess(const DataConfiguration &config_, bool errorOnReorg_, uint32_t blocksIgnored_) : config(config_), chain{std::make_unique<ChainAccess>(config, errorOnReorg_, blocksIgnored_)}, scripts{std::make_unique<ScriptAccess>(config)}, scriptFirstSeen{std::make_unique<ScriptFirstSeenAccess>(config)}, addressIndex{std::make_unique<AddressIndex>(config)}, hashIndex{std::make_unique<HashIndex>(config)} {}
+    DataAccess::DataAccess(const DataConfiguration &config_, bool errorOnReorg_, uint32_t blocksIgnored_) : config(config_), chain{std::make_unique<ChainAccess>(config, errorOnReorg_, blocksIgnored_)}, scripts{std::make_unique<ScriptAccess>(config)}, addressIndex{std::make_unique<AddressIndex>(config)}, hashIndex{std::make_unique<HashIndex>(config.hashIndexFilePath().native())} {}
     
     DataAccess &DataAccess::Instance(const DataConfiguration &config_, bool errorOnReorg, uint32_t blocksIgnored) {
         // Since it's a static variable, if the class has already been created,
@@ -31,7 +30,6 @@ namespace blocksci {
             config = config_;
             myInstance.chain->reload();
             myInstance.scripts->reload();
-            myInstance.scriptFirstSeen->reload();
         }
         
         // Return a reference to our instance.

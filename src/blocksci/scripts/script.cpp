@@ -10,6 +10,7 @@
 
 #include "util.hpp"
 #include "script.hpp"
+#include "script_data.hpp"
 
 #include "pubkey_script.hpp"
 #include "multisig_script.hpp"
@@ -23,14 +24,21 @@
 
 #include "chain/transaction.hpp"
 
-#include <boost/variant.hpp>
-
 #include <iostream>
 
 
 namespace blocksci {
     
     Script::Script(const Address &address) : Script(address.scriptNum, scriptType(address.type)) {}
+    
+    BaseScript::BaseScript(uint32_t scriptNum_, ScriptType::Enum type_, const ScriptDataBase &data) : Script(scriptNum_, type_), firstTxIndex(data.txFirstSeen), txRevealed(data.txFirstSpent) {}
+    
+    BaseScript::BaseScript(const Address &address, const ScriptDataBase &data) : BaseScript(address.scriptNum, scriptType(address.type), data) {}
+    
+    
+    Transaction BaseScript::getFirstTransaction(const ChainAccess &chain) const {
+        return Transaction::txWithIndex(chain, firstTxIndex);
+    }
     
     std::string Script::toString() const {
         if (scriptNum == 0) {
