@@ -34,7 +34,6 @@ struct ScriptFileType<blocksci::Indexed<T...>> {
     using type = blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, T...>;
 };
 
-
 template<auto type>
 using ScriptFileType_t = typename ScriptFileType<typename blocksci::ScriptInfo<type>::storage>::type;
 

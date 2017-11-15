@@ -19,7 +19,7 @@
 
 #include <sstream>
 
-HashIndexCreator::HashIndexCreator(const ParserConfigurationBase &config) : ParserIndex(config, "hashIndex"), env(blocksci::createHashIndexEnviroment(config.hashIndexFilePath().native())), wtxn(lmdb::txn::begin(env)), pubkey_dbi(lmdb::dbi::open(wtxn, "pubkey", MDB_CREATE)), scripthash_dbi(lmdb::dbi::open(wtxn, "scripthash", MDB_CREATE)), tx_dbi(lmdb::dbi::open(wtxn, "tx", MDB_CREATE)) {
+HashIndexCreator::HashIndexCreator(const ParserConfigurationBase &config_, const std::string &path) : ParserIndex(config_, "hashIndex"), env(blocksci::createHashIndexEnviroment(path)), wtxn(lmdb::txn::begin(env)), pubkey_dbi(lmdb::dbi::open(wtxn, "pubkey", MDB_CREATE)), scripthash_dbi(lmdb::dbi::open(wtxn, "scripthash", MDB_CREATE)), tx_dbi(lmdb::dbi::open(wtxn, "tx", MDB_CREATE)) {
 }
 
 void HashIndexCreator::tearDown() {

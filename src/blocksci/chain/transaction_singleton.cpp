@@ -26,13 +26,9 @@ namespace blocksci {
         return txWithHash(hash, *DataAccess::Instance().hashIndex, *DataAccess::Instance().chain);
     }
     
-    Transaction Transaction::txWithIndex(uint32_t index) {
-        return txWithIndex(*DataAccess::Instance().chain, index);
-    }
+    Transaction::Transaction(uint32_t index) : Transaction(*DataAccess::Instance().chain, index) {}
     
-    Transaction Transaction::txWithIndex(uint32_t index, uint32_t height) {
-        return txWithIndex(*DataAccess::Instance().chain, index, height);
-    }
+    Transaction::Transaction(uint32_t index, uint32_t height) : Transaction(*DataAccess::Instance().chain, index, height) {}
     
     const Output * getChangeOutput(const Transaction &tx) {
         return getChangeOutput(tx, *DataAccess::Instance().scripts);

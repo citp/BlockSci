@@ -23,8 +23,6 @@ namespace blocksci {
         
         Output(const Inout &other) : Inout(other) {}
         
-        Input matchedInput(uint32_t txIndex) const;
-        
         uint32_t getSpendingTxIndex(const ChainAccess &access) const;
         
         bool isSpent(const ChainAccess &access) const {

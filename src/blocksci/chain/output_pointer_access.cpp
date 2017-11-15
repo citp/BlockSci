@@ -15,8 +15,4 @@ namespace blocksci {
     const Output &OutputPointer::getOutput() const {
         return getOutput(*DataAccess::Instance().chain);
     }
-    
-    Input OutputPointer::getInput() const {
-        return getInput(*DataAccess::Instance().chain);
-    }
 }

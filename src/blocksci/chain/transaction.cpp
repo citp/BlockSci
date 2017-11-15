@@ -48,7 +48,11 @@ namespace blocksci {
     }
     
     
-    Transaction::Transaction(const RawTransaction *data_, uint32_t txNum_, uint32_t blockHeight_) : data(data_), txNum(txNum_), blockHeight(blockHeight_) {}
+    Transaction::Transaction(const ChainAccess &access_, const RawTransaction *data_, uint32_t txNum_, uint32_t blockHeight_) : access(&access_), data(data_), txNum(txNum_), blockHeight(blockHeight_) {}
+    
+    Transaction::Transaction(const ChainAccess &access_, uint32_t index) : Transaction(access_, index, access_.getBlockHeight(index)) {}
+    
+    Transaction::Transaction(const ChainAccess &access_, uint32_t index, uint32_t height) : Transaction(access_, access_.getTx(index), index, height) {}
     
     uint256 Transaction::getHash(const ChainAccess &access) const {
         auto &txHashesFile = access.getTxHashesFile();
@@ -68,7 +72,7 @@ namespace blocksci {
     ranges::optional<Transaction> Transaction::txWithHash(uint256 hash, const HashIndex &index, const ChainAccess &chain) {
         auto txXndex = index.getTxIndex(hash);
         if (txXndex != 0) {
-            return txWithIndex(chain, txXndex);
+            return Transaction(chain, txXndex);
         } else {
             return ranges::nullopt;
         }
@@ -76,14 +80,6 @@ namespace blocksci {
     
     ranges::optional<Transaction> Transaction::txWithHash(std::string hash, const HashIndex &index, const ChainAccess &access) {
         return txWithHash(uint256S(hash), index, access);
-    }
-    
-    Transaction Transaction::txWithIndex(const ChainAccess &access, uint32_t index) {
-        return txWithIndex(access, index, access.getBlockHeight(index));
-    }
-    
-    Transaction Transaction::txWithIndex(const ChainAccess &access, uint32_t index, uint32_t height) {
-        return {access.getTx(index), index, height};
     }
     
     Transaction::output_range Transaction::outputs() const {
@@ -98,7 +94,8 @@ namespace blocksci {
     
     std::vector<OutputPointer> Transaction::getOutputPointers(const InputPointer &pointer, const ChainAccess &access) const {
         std::vector<OutputPointer> pointers;
-        auto search = pointer.getOutput(access);
+        auto &input = pointer.getInput(access);
+        auto search = Output{pointer.txNum, input.getAddress(), input.getValue()};
         uint16_t i = 0;
         for (auto &output : outputs()) {
             if (output == search) {
@@ -111,7 +108,8 @@ namespace blocksci {
     
     std::vector<InputPointer> Transaction::getInputPointers(const OutputPointer &pointer, const ChainAccess &access) const {
         std::vector<InputPointer> pointers;
-        auto search = pointer.getInput(access);
+        auto &output = pointer.getOutput(access);
+        auto search = Input{pointer.txNum, output.getAddress(), output.getValue()};
         uint16_t i = 0;
         for (auto &input : inputs()) {
             if (input == search) {

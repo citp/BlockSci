@@ -36,7 +36,7 @@ class HashIndexCreator : public ParserIndex {
     void processScript(const blocksci::Script &script, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override;
 
 public:
-    HashIndexCreator(const ParserConfigurationBase &config);
+    HashIndexCreator(const ParserConfigurationBase &config, const std::string &path);
     void processTx(const blocksci::uint256 &hash, uint32_t index);
     void rollback(const blocksci::State &state) override;
     void tearDown() override;

@@ -132,8 +132,8 @@ void rollbackTransactions(size_t blockKeepCount, const ParserConfigurationBase &
         
         AddressState(config.addressPath()).rollback(blocksciState);
         AddressWriter(config).rollback(blocksciState);
-        AddressDB(config.addressDBFilePath().native()).rollback(blocksciState);
-        HashIndexCreator(config).rollback(blocksciState);
+        AddressDB(config, config.addressDBFilePath().native()).rollback(blocksciState);
+        HashIndexCreator(config, config.hashIndexFilePath().native()).rollback(blocksciState);
     }
 }
 
@@ -234,8 +234,8 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
 //    blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction> txFile{config.txFilePath()};
 //    txFile.grow(totalTxCount, sizeNeeded);
     
-    // ParserIndexCreator<AddressDB> addressDB(config.addressDBFilePath().native());
-    // ParserIndexCreator<HashIndexCreator> hashIndex(config);
+//     ParserIndexCreator<AddressDB> addressDB(config.addressDBFilePath().native());
+//     ParserIndexCreator<HashIndexCreator> hashIndex(config);
     
     {
         BlockProcessor processor{startingTxCount, totalTxCount, maxBlockHeight};
@@ -279,8 +279,8 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
             
             blocksci::State state{chain, scripts};
             
-        //     addressDB.complete(state);
-        //     hashIndex.complete(state);
+//             addressDB.complete(state);
+//             hashIndex.complete(state);
         }
         
         utxoAddressState.serialize(config.utxoAddressStatePath());
@@ -299,6 +299,7 @@ int main(int argc, const char * argv[]) {
     ("help", "Print help messages")
     ("output-directory", po::value<std::string>(&dataDirectoryString)->required(), "Path to output parsed data")
     ("max-block", po::value<uint32_t>(&maxBlockNum)->default_value(0), "Max block to scan up to")
+    ("update-indexes", "Update indexes to latest chain state")
     ;
 
     std::string username;
@@ -370,6 +371,22 @@ int main(int argc, const char * argv[]) {
         #ifdef BLOCKSCI_RPC_PARSER
         rpcEnabled = true;
         #endif
+        
+        if (vm.count("update-indexes")) {
+            ParserConfigurationBase config{dataDirectory};
+            blocksci::ChainAccess chain{config, false, 0};
+            blocksci::ScriptAccess scripts{config};
+            
+            blocksci::State updateState{chain, scripts};
+            
+            ParserIndexCreator<AddressDB> addressDB(config, config.addressDBFilePath().native());
+            ParserIndexCreator<HashIndexCreator> hashIndex(config, config.hashIndexFilePath().native());
+            addressDB.update(updateState);
+            hashIndex.update(updateState);
+            addressDB.complete(updateState);
+            hashIndex.complete(updateState);
+            return 0;
+        }
         
         if (diskEnabled) {
             if (vm.count("coin-directory")) {

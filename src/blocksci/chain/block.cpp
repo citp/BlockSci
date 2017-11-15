@@ -58,7 +58,7 @@ namespace blocksci {
     }
     
     int Block::cursor::distance_to(cursor const &that) const {
-        return static_cast<int>(currentTxIndex) - static_cast<int>(that.currentTxIndex);
+        return static_cast<int>(that.currentTxIndex) - static_cast<int>(currentTxIndex);
     }
     
     void Block::cursor::next() {
@@ -84,7 +84,7 @@ namespace blocksci {
             currentTxPos = reinterpret_cast<const char *>(block->access->getTx(currentTxIndex));
         }
         auto rawTx = reinterpret_cast<const RawTransaction *>(currentTxPos);
-        return {rawTx, currentTxIndex, block->height()};
+        return {*block->access, rawTx, currentTxIndex, block->height()};
     }
     
     const std::string Block::getHeaderHash() const {

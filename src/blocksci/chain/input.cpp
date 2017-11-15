@@ -19,7 +19,7 @@
 namespace blocksci {
     
     Transaction Input::getSpentTx(const ChainAccess &access) const {
-        return Transaction::txWithIndex(access, linkedTxNum);
+        return Transaction(access, linkedTxNum);
     }
     
     std::string Input::toString() const {
@@ -27,10 +27,6 @@ namespace blocksci {
         auto address = getAddress();
         ss << "TxIn(tx_index_to=" << linkedTxNum << ", address=" << address <<", satoshis=" << getValue() << ")";
         return ss.str();
-    }
-    
-    Output Input::matchedOutput(uint32_t txIndex) const {
-        return {txIndex, getAddress(), getValue()};
     }
 }
 

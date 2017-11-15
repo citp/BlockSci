@@ -30,7 +30,7 @@ class AddressDB : public AddressTraverser {
     void revealedP2SH(blocksci::script::ScriptHash &scriptHash, const blocksci::ScriptAccess &scripts) override;
     
 public:
-    AddressDB(const std::string &path);
+    AddressDB(const ParserConfigurationBase &config, const std::string &path);
     
     void rollback(const blocksci::State &state) override;
     void tearDown() override;

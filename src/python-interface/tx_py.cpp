@@ -31,14 +31,12 @@ void init_tx(py::module &m) {
     .def("__repr__", &Transaction::getString)
     .def(py::self == py::self)
     .def(hash(py::self))
-    .def_static("tx_with_index", py::overload_cast<uint32_t>(&Transaction::txWithIndex),
-                R"docstring(
-                This functions gets the transaction with given index.
-                
-                :param int index: The index of the transation.
-                :returns: Tx
-                )docstring"
-    )
+    .def(py::init<uint32_t>(), R"docstring(
+         This functions gets the transaction with given index.
+         
+         :param int index: The index of the transation.
+         :returns: Tx
+         )docstring")
     .def_static("tx_with_hash", py::overload_cast<std::string>(&Transaction::txWithHash))
     .def_property_readonly("num_outs", &Transaction::outputCount, "The number of outputs this transaction has")
     .def_property_readonly("num_ins", &Transaction::inputCount, "The number of inputs this transaction has")

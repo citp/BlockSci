@@ -79,7 +79,7 @@ namespace blocksci {
         uint32_t lastBlockHeight;
 
     public:
-        Blockchain();
+        Blockchain() = default;
         Blockchain(const DataConfiguration &config, bool errorOnReorg, uint32_t blocksIgnored);
         Blockchain(const std::string &dataDirectory);
         
@@ -88,10 +88,20 @@ namespace blocksci {
         uint32_t firstTxIndex() const;
         uint32_t endTxIndex() const;
         
+        uint32_t size() const {
+            return lastBlockHeight;
+        }
+        
         TransactionRange iterateTransactions(int startBlock, int endBlock) const {
             auto startB = this->operator[](startBlock);
             auto endB = this->operator[](endBlock - 1);
             return TransactionRange(*access->chain, startB.firstTxIndex(), endB.endTxIndex());
+        }
+
+        RawTransactionRange iterateRawTransactions(int startBlock, int endBlock) const {
+            auto startB = this->operator[](startBlock);
+            auto endB = this->operator[](endBlock - 1);
+            return RawTransactionRange(*access->chain, startB.firstTxIndex(), endB.endTxIndex());
         }
         
         template <typename MapType, typename ResultType = MapType>

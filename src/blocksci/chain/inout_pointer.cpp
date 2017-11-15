@@ -12,6 +12,6 @@
 
 namespace blocksci {
     Transaction InoutPointer::getTransaction(const ChainAccess &access) const {
-        return Transaction(access.getTx(txNum), txNum, access.getBlockHeight(txNum));
+        return Transaction(access, access.getTx(txNum), txNum, access.getBlockHeight(txNum));
     }
 }

@@ -18,11 +18,9 @@ namespace blocksci {
         std::string toString() const;
         
         const Output &getOutput(const ChainAccess &access) const;
-        Input getInput(const ChainAccess &access) const;
         
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
         const Output &getOutput() const;
-        Input getInput() const;
         #endif
     };
 }

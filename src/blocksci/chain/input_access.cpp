@@ -12,6 +12,6 @@
 
 namespace blocksci {
     Transaction Input::getSpentTx() const {
-        return Transaction::txWithIndex(*DataAccess::Instance().chain, linkedTxNum);
+    	return getSpentTx(*DataAccess::Instance().chain);
     }
 }

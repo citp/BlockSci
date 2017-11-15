@@ -37,7 +37,7 @@ namespace blocksci {
     
     
     Transaction BaseScript::getFirstTransaction(const ChainAccess &chain) const {
-        return Transaction::txWithIndex(chain, firstTxIndex);
+        return Transaction(chain, firstTxIndex);
     }
     
     std::string Script::toString() const {

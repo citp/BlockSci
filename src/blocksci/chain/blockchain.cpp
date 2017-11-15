@@ -50,7 +50,7 @@ namespace blocksci {
             std::advance(endIt, static_cast<int64_t>(endBlock));
             it = std::lower_bound(it, endIt, breakPoint);
             auto segmentEnd = std::distance(txIndexes.begin(), it);
-            segments.push_back(chain | ranges::view::drop(segmentStart) | ranges::view::take(segmentStart - segmentEnd) | ranges::to_vector);
+            segments.push_back(chain | ranges::view::drop(segmentStart) | ranges::view::take(segmentEnd - segmentStart) | ranges::to_vector);
         }
         auto segmentStart = std::distance(txIndexes.begin(), it);
         auto remainingRange = chain | ranges::view::drop(segmentStart) | ranges::view::take(endBlock - segmentStart);
@@ -78,7 +78,9 @@ namespace blocksci {
     
     Blockchain::Blockchain(const std::string &dataDirectory) : Blockchain(DataConfiguration{dataDirectory}, true, 0) {}
     
-    Blockchain::Blockchain(const DataConfiguration &config, bool errorOnReorg, uint32_t blocksIgnored) : access(&DataAccess::Instance(config, errorOnReorg, blocksIgnored)) {}
+    Blockchain::Blockchain(const DataConfiguration &config, bool errorOnReorg, uint32_t blocksIgnored) : access(&DataAccess::Instance(config, errorOnReorg, blocksIgnored)) {
+        lastBlockHeight = access->chain->blockCount();
+    }
     
     Block Blockchain::cursor::read() const {
         return Block(currentBlockHeight, *chain->access->chain);
@@ -101,7 +103,7 @@ namespace blocksci {
     }
     
     int Blockchain::cursor::distance_to(cursor const &that) const {
-        return static_cast<int>(currentBlockHeight) - static_cast<int>(that.currentBlockHeight);
+        return static_cast<int>(that.currentBlockHeight) - static_cast<int>(currentBlockHeight);
     }
     
     void Blockchain::cursor::advance(int amount) {

@@ -41,7 +41,7 @@ private:
     IndexType index;
     
 public:
-    ParserIndexCreator(const ParserConfigurationBase &config_) : config(config_), updateFuture{std::async(std::launch::async, [&] {})}, launchingUpdate(false), tornDown(false), index(config_) {}
+    ParserIndexCreator(const ParserConfigurationBase &config_, const std::string &path) : config(config_), updateFuture{std::async(std::launch::async, [&] {})}, launchingUpdate(false), tornDown(false), index(config, path) {}
     ParserIndexCreator(const ParserIndexCreator &) = delete;
     ParserIndexCreator &operator=(const ParserIndexCreator &) = delete;
     ParserIndexCreator(ParserIndexCreator &&) = delete;

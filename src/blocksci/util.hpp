@@ -79,6 +79,14 @@ namespace blocksci {
         struct apply_template<K, std::tuple<Types...>> {
             using type = std::tuple<K<Types::value>...>;
         };
+        
+        template<template<class> class K, typename T>
+        struct map_variadic;
+        
+        template <template<class> class K, typename... Types>
+        struct map_variadic<K, std::tuple<Types...>> {
+            using type = std::tuple<K<Types>...>;
+        };
     }
     
     template<typename T, size_t i, const std::array<T, i> &A>

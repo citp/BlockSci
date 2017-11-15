@@ -18,10 +18,6 @@
 
 namespace blocksci {
     
-    Input Output::matchedInput(uint32_t txIndex) const {
-        return {txIndex, getAddress(), getValue()};
-    }
-    
     std::string Output::toString() const {
         std::stringstream ss;
         auto address = getAddress();
@@ -39,7 +35,7 @@ namespace blocksci {
     
     ranges::optional<Transaction> Output::getSpendingTx(const ChainAccess &access) const {
         if (isSpent(access)) {
-            return Transaction::txWithIndex(access, getSpendingTxIndex(access));
+            return Transaction(access, getSpendingTxIndex(access));
         } else {
             return ranges::nullopt;
         }

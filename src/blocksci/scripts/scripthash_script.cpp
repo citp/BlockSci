@@ -41,7 +41,7 @@ namespace blocksci {
     
     ranges::optional<Transaction> ScriptHash::transactionRevealed(const ChainAccess &chain) const {
         if (txRevealed != 0) {
-            return Transaction::txWithIndex(chain, txRevealed);
+            return Transaction(chain, txRevealed);
         } else {
             return ranges::nullopt;
         }

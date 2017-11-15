@@ -24,10 +24,6 @@ namespace blocksci {
         return access.getOutput(txNum, inoutNum);
     }
     
-    Input OutputPointer::getInput(const ChainAccess &access) const {
-        return getOutput(access).matchedInput(txNum);
-    }
-    
     std::string OutputPointer::toString() const {
         std::stringstream ss;
         ss << "OutputPointer(tx_index_from=" << txNum << ", output_index_from=" << inoutNum << ")";

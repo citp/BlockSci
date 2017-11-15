@@ -57,6 +57,7 @@ namespace blocksci {
     
     struct Transaction {
     private:
+        const ChainAccess *access;
         const RawTransaction *data;
         friend TransactionSummary;
     public:
@@ -66,10 +67,10 @@ namespace blocksci {
         using input_range = ranges::v3::iterator_range<const Input *>;
         using output_range = ranges::v3::iterator_range<const Output *>;
         
-        Transaction(const RawTransaction *data, uint32_t txNum, uint32_t blockHeight);
+        Transaction(const ChainAccess &access, const RawTransaction *data, uint32_t txNum, uint32_t blockHeight);
+        Transaction(const ChainAccess &access, uint32_t index);
+        Transaction(const ChainAccess &access, uint32_t index, uint32_t height);
         
-        static Transaction txWithIndex(const ChainAccess &access, uint32_t index);
-        static Transaction txWithIndex(const ChainAccess &access,uint32_t index, uint32_t height);
         static ranges::optional<Transaction> txWithHash(uint256 hash, const HashIndex &index, const ChainAccess &access);
         static ranges::optional<Transaction> txWithHash(std::string hash, const HashIndex &index, const ChainAccess &access);
         
@@ -110,9 +111,8 @@ namespace blocksci {
         
         // Requires DataAccess
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        
-        static Transaction txWithIndex(uint32_t index);
-        static Transaction txWithIndex(uint32_t index, uint32_t height);
+        Transaction(uint32_t index);
+        Transaction(uint32_t index, uint32_t height);
         static ranges::optional<Transaction> txWithHash(uint256 hash);
         static ranges::optional<Transaction> txWithHash(std::string hash);
         

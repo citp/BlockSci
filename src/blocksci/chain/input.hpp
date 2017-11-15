@@ -19,8 +19,6 @@ namespace blocksci {
     struct Input : public Inout {
         using Inout::Inout;
         
-        Output matchedOutput(uint32_t txIndex) const;
-        
         std::string toString() const;
         
         uint32_t spentTxIndex() const {
