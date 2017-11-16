@@ -9,8 +9,8 @@
 #include <libcluster/cluster.hpp>
 #include <libcluster/cluster_manager.hpp>
 
-#include <blocksci/chain/transaction_iterator.hpp>
 #include <blocksci/chain/block.hpp>
+#include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>
 
@@ -23,16 +23,16 @@ using namespace blocksci;
 
 uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
     uint64_t total = 0;
-    for (auto tx : block.txes()) {
+    for (auto tx : block) {
         std::set<uint32_t> inputClusters;
-        for (auto &input : tx.inputs()) {
+        for (auto input : tx.inputs()) {
             auto cluster = manager.getCluster(input.getAddress());
             if (cluster.getSize() < 30000) {
                 inputClusters.insert(cluster.clusterNum);
             }
         }
-        for (auto &output : tx.outputs()) {
-            if ((!output.isSpent() || output.getSpendingTx()->blockHeight - block.height > 3) && inputClusters.find(manager.getCluster(output.getAddress()).clusterNum) == inputClusters.end()) {
+        for (auto output : tx.outputs()) {
+            if ((!output.isSpent() || output.getSpendingTx()->blockHeight - block.height() > 3) && inputClusters.find(manager.getCluster(output.getAddress()).clusterNum) == inputClusters.end()) {
                 total += output.getValue();
             }
         }
@@ -65,9 +65,9 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
      .def("script_count", &Cluster::getScriptCount)
      ;
      
-     py::class_<TaggedScriptPointer>(m, "TaggedScriptPointer")
-     .def_readonly("script_pointer", &TaggedScriptPointer::scriptPointer)
-     .def_readonly("tag", &TaggedScriptPointer::tag)
+     py::class_<TaggedScript>(m, "TaggedScript")
+     .def_readonly("script", &TaggedScript::script)
+     .def_readonly("tag", &TaggedScript::tag)
      ;
      
      py::class_<TaggedCluster>(m, "TaggedCluster")
@@ -77,9 +77,10 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
      .def_readonly("tagged_addresses", &TaggedCluster::taggedScripts)
      ;
      
-     using cluster_range = boost::transformed_range<ClusterExpander, const boost::iterator_range<boost::iterators::counting_iterator<unsigned int>>>;
      py::class_<cluster_range>(m, "ClusterRange")
-     .def("__len__", &cluster_range::size)
+     .def("__len__", [](const cluster_range &range) {
+        return range.size();
+     })
      /// Optional sequence protocol operations
      .def("__iter__", [](const cluster_range &range) { return py::make_iterator(range.begin(), range.end()); },
           py::keep_alive<0, 1>() /* Essential: keep object alive while iterator exists */)
@@ -105,7 +106,7 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
      })
      ;
      
-     using script_range = boost::iterator_range<const blocksci::ScriptPointer *>;
+     using script_range = boost::iterator_range<const blocksci::Script *>;
      py::class_<script_range>(m, "ScriptRange")
      .def("__len__", &script_range::size)
      /// Optional sequence protocol operations

@@ -13,14 +13,9 @@
 
 ClusterManager::ClusterManager(std::string baseDirectory) : clusterOffsetFile(baseDirectory + "clusterOffsets"), clusterScriptsFile(baseDirectory + "clusterAddresses"), scriptClusterIndexFiles(blocksci::apply(blocksci::ScriptInfoList(), [&] (auto tag) {
     std::stringstream ss;
-    ss << baseDirectory << blocksci::scriptName(tag.type) << "_cluster_index";
+    ss << baseDirectory << blocksci::scriptName(tag) << "_cluster_index";
     return ss.str();
 }))  {
-}
-
-boost::transformed_range<ClusterExpander, const boost::iterator_range<boost::iterators::counting_iterator<unsigned int>>> ClusterManager::getClusters() const {
-    ClusterExpander expander(*this);
-    return boost::counting_range(0u, clusterCount()) | boost::adaptors::transformed(expander);
 }
 
 uint32_t ClusterManager::clusterCount() const {
@@ -30,7 +25,7 @@ uint32_t ClusterManager::clusterCount() const {
 template<blocksci::AddressType::Enum type>
 struct ClusterNumFunctor {
     static uint32_t f(const ClusterManager *cm, const blocksci::Address &address) {
-        return cm->getClusterNum<scriptType(type)>(address.addressNum);;
+        return cm->getClusterNum<scriptType(type)>(address.scriptNum);
     }
 };
 
@@ -51,7 +46,7 @@ Cluster ClusterManager::getCluster(const blocksci::Address &address) const {
     return Cluster(getClusterNum(address), *this);
 }
 
-std::vector<TaggedCluster> ClusterManager::taggedClusters(const std::unordered_map<blocksci::ScriptPointer, std::string> &tags) {
+std::vector<TaggedCluster> ClusterManager::taggedClusters(const std::unordered_map<blocksci::Script, std::string> &tags) {
     std::vector<TaggedCluster> taggedClusters;
     for (auto cluster : getClusters()) {
         auto taggedAddresses = cluster.taggedScripts(tags);
@@ -84,7 +79,7 @@ std::vector<uint32_t> ClusterManager::getClusterSizes() const {
     return clusterSizes;
 }
 
-boost::iterator_range<const blocksci::ScriptPointer *> ClusterManager::getClusterScripts(uint32_t clusterNum) const {
+boost::iterator_range<const blocksci::Script *> ClusterManager::getClusterScripts(uint32_t clusterNum) const {
     auto nextClusterOffset = *clusterOffsetFile.getData(clusterNum);
     uint32_t clusterOffset = 0;
     if (clusterNum > 0) {

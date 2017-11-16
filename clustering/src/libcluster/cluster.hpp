@@ -9,7 +9,7 @@
 #ifndef cluster_hpp
 #define cluster_hpp
 
-#include <blocksci/scripts/script_pointer.hpp>
+#include <blocksci/scripts/script.hpp>
 
 #include <boost/range/iterator_range.hpp>
 
@@ -20,15 +20,11 @@
 
 class ClusterManager;
 
-namespace blocksci {
-    struct ScriptPointer;
-}
-
-struct TaggedScriptPointer {
-    blocksci::ScriptPointer scriptPointer;
+struct TaggedScript {
+    blocksci::Script script;
     std::string tag;
     
-    TaggedScriptPointer(const blocksci::ScriptPointer &scriptPointer_, const std::string &tag_) : scriptPointer(scriptPointer_), tag(tag_) {}
+    TaggedScript(const blocksci::Script &script_, const std::string &tag_) : script(script_), tag(tag_) {}
 };
 
 class Cluster {
@@ -38,9 +34,9 @@ public:
     uint32_t clusterNum;
     
     Cluster(uint32_t clusterNum_, const ClusterManager &manager_) : manager(manager_), clusterNum(clusterNum_) {}
-    boost::iterator_range<const blocksci::ScriptPointer *> getScripts() const;
+    boost::iterator_range<const blocksci::Script *> getScripts() const;
     
-    std::vector<TaggedScriptPointer> taggedScripts(const std::unordered_map<blocksci::ScriptPointer, std::string> &tags) const;
+    std::vector<TaggedScript> taggedScripts(const std::unordered_map<blocksci::Script, std::string> &tags) const;
     
     uint32_t getScriptCount(blocksci::ScriptType::Enum type) const;
     

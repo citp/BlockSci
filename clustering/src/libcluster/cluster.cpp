@@ -13,7 +13,7 @@
 
 #include "cluster_manager.hpp"
 
-boost::iterator_range<const blocksci::ScriptPointer *> Cluster::getScripts() const {
+boost::iterator_range<const blocksci::Script *> Cluster::getScripts() const {
     return manager.getClusterScripts(clusterNum);
 }
 
@@ -21,8 +21,8 @@ uint32_t Cluster::getSize() const {
     return manager.getClusterSize(clusterNum);
 }
 
-std::vector<TaggedScriptPointer> Cluster::taggedScripts(const std::unordered_map<blocksci::ScriptPointer, std::string> &tags) const {
-    std::vector<TaggedScriptPointer> tagged;
+std::vector<TaggedScript> Cluster::taggedScripts(const std::unordered_map<blocksci::Script, std::string> &tags) const {
+    std::vector<TaggedScript> tagged;
     for (auto &address : getScripts()) {
         auto it = tags.find(address);
         if (it != tags.end()) {

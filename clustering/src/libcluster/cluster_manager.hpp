@@ -14,9 +14,10 @@
 #include <blocksci/file_mapper.hpp>
 #include <blocksci/script.hpp>
 #include <blocksci/address/address_info.hpp>
+#include <blocksci/scripts/script_info.hpp>
 
-#include <boost/range/iterator_range.hpp>
-#include <boost/range/counting_range.hpp>
+#include <range/v3/view/transform.hpp>
+#include <range/v3/view/iota.hpp>
 
 #include <stdio.h>
 
@@ -31,16 +32,16 @@ class ClusterExpander;
 
 struct TaggedCluster {
     Cluster cluster;
-    std::vector<TaggedScriptPointer> taggedScripts;
+    std::vector<TaggedScript> taggedScripts;
     
-    TaggedCluster(const Cluster &cluster_, std::vector<TaggedScriptPointer> &&taggedScripts_) : cluster(cluster_), taggedScripts(taggedScripts_) {}
+    TaggedCluster(const Cluster &cluster_, std::vector<TaggedScript> &&taggedScripts_) : cluster(cluster_), taggedScripts(taggedScripts_) {}
 };
 
 class ClusterManager {
     blocksci::FixedSizeFileMapper<uint32_t> clusterOffsetFile;
-    blocksci::FixedSizeFileMapper<blocksci::ScriptPointer> clusterScriptsFile;
+    blocksci::FixedSizeFileMapper<blocksci::Script> clusterScriptsFile;
     
-    using ScriptClusterIndexTuple = blocksci::internal::to_script_type<ScriptClusterIndexFile, blocksci::ScriptInfoList>::type;
+    using ScriptClusterIndexTuple = blocksci::to_script_tuple_t<ScriptClusterIndexFile>;
     
     ScriptClusterIndexTuple scriptClusterIndexFiles;
     
@@ -58,28 +59,20 @@ public:
     uint32_t getClusterNum(const blocksci::Address &address) const;
     
     uint32_t getClusterSize(uint32_t clusterNum) const;
-    boost::iterator_range<const blocksci::ScriptPointer *> getClusterScripts(uint32_t clusterNum) const;
+    boost::iterator_range<const blocksci::Script *> getClusterScripts(uint32_t clusterNum) const;
     
     uint32_t clusterCount() const;
-    
-    boost::transformed_range<ClusterExpander, const boost::iterator_range<boost::iterators::counting_iterator<unsigned int>>> getClusters() const;
+
+    auto getClusters() const {
+        return ranges::view::ints(0u,clusterCount()) 
+        | ranges::view::transform([&](uint32_t clusterNum) { return Cluster(clusterNum, *this); });
+    }
     
     std::vector<uint32_t> getClusterSizes() const;
     
-    std::vector<TaggedCluster> taggedClusters(const std::unordered_map<blocksci::ScriptPointer, std::string> &tags);
+    std::vector<TaggedCluster> taggedClusters(const std::unordered_map<blocksci::Script, std::string> &tags);
 };
 
-class ClusterExpander
-{
-public:
-    typedef const Cluster result_type;
-    
-    const ClusterManager &manager;
-    ClusterExpander(const ClusterManager &manager_) : manager(manager_) {}
-    
-    result_type operator()(uint32_t clusterNum) const {
-        return Cluster(clusterNum, manager);
-    }
-};
+using cluster_range = decltype(std::declval<ClusterManager>().getClusters());
 
 #endif /* cluster_manager_hpp */
