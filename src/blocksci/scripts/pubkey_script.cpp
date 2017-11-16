@@ -19,9 +19,9 @@ namespace blocksci {
     using namespace script;
     
     
-    Pubkey::ScriptAddress(uint32_t scriptNum_, const PubkeyData *rawData) : BaseScript(scriptNum_, scriptType, *rawData), pubkey(rawData->pubkey), pubkeyhash(rawData->address) {}
+    Pubkey::ScriptAddress(uint32_t scriptNum_, const PubkeyData *rawData, const ScriptAccess &access) : BaseScript(scriptNum_, scriptType, *rawData, access), pubkey(rawData->pubkey), pubkeyhash(rawData->address) {}
     
-    Pubkey::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : Pubkey(addressNum, access.getScriptData<scriptType>(addressNum)) {}
+    Pubkey::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : Pubkey(addressNum, access.getScriptData<scriptType>(addressNum), access) {}
     
     ranges::optional<CPubKey> Pubkey::getPubkey() const {
         if (pubkey.IsValid()) {
@@ -31,19 +31,19 @@ namespace blocksci {
         }
     }
     
-    std::string Pubkey::addressString(const DataConfiguration &config) const {
-        return CBitcoinAddress(pubkeyhash, AddressType::Enum::PUBKEYHASH, config).ToString();
+    std::string Pubkey::addressString() const {
+        return CBitcoinAddress(pubkeyhash, AddressType::Enum::PUBKEYHASH, access->config).ToString();
     }
     
-    std::string Pubkey::toString(const DataConfiguration &config) const {
+    std::string Pubkey::toString() const {
         std::stringstream ss;
         ss << "PubkeyAddress(";
-        ss << "address=" << addressString(config);
+        ss << "address=" << addressString();
         ss << ")";
         return ss.str();
     }
     
-    std::string Pubkey::toPrettyString(const DataConfiguration &config, const ScriptAccess &) const {
-        return addressString(config);
+    std::string Pubkey::toPrettyString() const {
+        return addressString();
     }
 }

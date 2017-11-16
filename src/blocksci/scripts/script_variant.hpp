@@ -26,8 +26,8 @@ namespace blocksci {
         AnyScript(const Address &address, const ScriptAccess &access);
         AnyScript(const Script &script, const ScriptAccess &access);
         
-        std::string toString(const DataConfiguration &config) const;
-        std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const;
+        std::string toString() const;
+        std::string toPrettyString() const;
         
         void visitPointers(const std::function<void(const Address &)> &func);
         
@@ -36,8 +36,6 @@ namespace blocksci {
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
         AnyScript(const Address &address);
         AnyScript(const Script &script);
-        std::string toString() const;
-        std::string toPrettyString() const;
         #endif
         
         ScriptVariant wrapped;

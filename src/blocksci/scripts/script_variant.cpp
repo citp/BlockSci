@@ -7,6 +7,7 @@
 
 #include "script_variant.hpp"
 #include "scripts.hpp"
+#include <blocksci/address/address_info.hpp>
 
 namespace blocksci {
     
@@ -31,7 +32,7 @@ namespace blocksci {
         return mpark::visit([&](auto &scriptAddress) { return scriptAddress.firstTxIndex; }, wrapped);
     }
     
-    std::string AnyScript::toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const {
-        return mpark::visit([&](auto &scriptAddress) { return scriptAddress.toPrettyString(config, access); }, wrapped);
+    std::string AnyScript::toPrettyString() const {
+        return mpark::visit([&](auto &scriptAddress) { return scriptAddress.toPrettyString(); }, wrapped);
     }
 }

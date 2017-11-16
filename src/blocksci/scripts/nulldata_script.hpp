@@ -9,32 +9,24 @@
 #ifndef nulldata_script_hpp
 #define nulldata_script_hpp
 
-#include "scriptsfwd.hpp"
 #include "script.hpp"
 
 #include <string>
 
 namespace blocksci {
-    struct RawData;
-    
+ 
     template <>
     class ScriptAddress<ScriptType::Enum::NULL_DATA> : public BaseScript {
         
     public:
         constexpr static ScriptType::Enum scriptType = ScriptType::Enum::NULL_DATA;
         
-        ScriptAddress<scriptType>(uint32_t scriptNum, const RawData *rawData);
+        ScriptAddress<scriptType>(uint32_t scriptNum, const RawData *rawData, const ScriptAccess &access);
         ScriptAddress<scriptType>(const ScriptAccess &access, uint32_t addressNum);
         std::string data;
         
-        std::string toString(const DataConfiguration &config) const;
-        std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const;
-
-        #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        ScriptAddress<scriptType>(uint32_t addressNum);
         std::string toString() const;
         std::string toPrettyString() const;
-        #endif
     };
 }
 

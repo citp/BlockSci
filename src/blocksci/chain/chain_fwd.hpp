@@ -11,13 +11,18 @@
 namespace blocksci {
     class ChainAccess;
     
+    struct RawBlock;
     class Block;
+    struct RawTransaction;
     struct Transaction;
+    class RawTransactionRange;
     class TransactionRange;
     struct TransactionSummary;
     struct Inout;
-    struct Output;
-    struct Input;
+    class Output;
+    class Input;
+    
+    
     
     struct InoutPointer;
     struct OutputPointer;

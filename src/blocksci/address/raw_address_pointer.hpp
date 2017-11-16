@@ -36,10 +36,6 @@ namespace blocksci {
         RawAddress(const ScriptHashData &data);
         
         static ranges::optional<RawAddress> create(const DataConfiguration &config, const std::string &addressString);
-        
-        #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        static ranges::optional<RawAddress> create(const std::string &addressString);
-        #endif
     };
 }
 

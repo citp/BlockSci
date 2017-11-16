@@ -11,6 +11,7 @@
 #include "scripts.hpp"
 
 #include "chain/transaction.hpp"
+#include "chain/output.hpp"
 
 namespace blocksci {
     
@@ -18,12 +19,16 @@ namespace blocksci {
         return getFirstTransaction(*DataAccess::Instance().chain);
     }
     
-    std::vector<const Output *> Script::getOutputs() const {
+    ranges::optional<Transaction> BaseScript::getTransactionRevealed() const {
+        return getTransactionRevealed(*DataAccess::Instance().chain);
+    }
+    
+    std::vector<Output> Script::getOutputs() const {
         auto &instance = DataAccess::Instance();
         return getOutputs(*instance.addressIndex, *instance.chain);
     }
     
-    std::vector<const Input *> Script::getInputs() const {
+    std::vector<Input> Script::getInputs() const {
         auto &instance = DataAccess::Instance();
         return getInputs(*instance.addressIndex, *instance.chain);
     }

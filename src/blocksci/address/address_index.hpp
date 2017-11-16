@@ -10,11 +10,11 @@
 #define address_index_hpp
 
 #include <blocksci/address/address_types.hpp>
-#include <blocksci/scripts/script_info.hpp>
+#include <blocksci/scripts/script_type.hpp>
+#include <blocksci/chain/chain_fwd.hpp>
 
 #include <lmdbxx/lmdb++.h>
 
-#include <unordered_set>
 #include <unordered_map>
 #include <string>
 #include <vector>
@@ -22,10 +22,6 @@
 namespace blocksci {
     
     struct DataConfiguration;
-    struct OutputPointer;
-    struct Output;
-    struct Input;
-    struct Transaction;
     struct Address;
     struct Script;
     class ChainAccess;
@@ -42,31 +38,17 @@ namespace blocksci {
         std::vector<OutputPointer> getOutputPointers(const Address &address) const;
         std::vector<OutputPointer> getOutputPointers(const Script &script) const;
         
-        std::vector<const Output *> getOutputs(const Address &address, const ChainAccess &access) const;
-        std::vector<const Input *> getInputs(const Address &address, const ChainAccess &access) const;
+        std::vector<Output> getOutputs(const Address &address, const ChainAccess &access) const;
+        std::vector<Input> getInputs(const Address &address, const ChainAccess &access) const;
         std::vector<Transaction> getTransactions(const Address &address, const ChainAccess &access) const;
         std::vector<Transaction> getOutputTransactions(const Address &address, const ChainAccess &access) const;
         std::vector<Transaction> getInputTransactions(const Address &address, const ChainAccess &access) const;
         
-        std::vector<const Output *> getOutputs(const Script &script, const ChainAccess &access) const;
-        std::vector<const Input *> getInputs(const Script &script, const ChainAccess &access) const;
+        std::vector<Output> getOutputs(const Script &script, const ChainAccess &access) const;
+        std::vector<Input> getInputs(const Script &script, const ChainAccess &access) const;
         std::vector<Transaction> getTransactions(const Script &script, const ChainAccess &access) const;
         std::vector<Transaction> getOutputTransactions(const Script &script, const ChainAccess &access) const;
         std::vector<Transaction> getInputTransactions(const Script &script, const ChainAccess &access) const;
-        
-        #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        std::vector<const Output *> getOutputs(const Address &address) const;
-        std::vector<const Input *> getInputs(const Address &address) const;
-        std::vector<Transaction> getTransactions(const Address &address) const;
-        std::vector<Transaction> getOutputTransactions(const Address &address) const;
-        std::vector<Transaction> getInputTransactions(const Address &address) const;
-        
-        std::vector<const Output *> getOutputs(const Script &script) const;
-        std::vector<const Input *> getInputs(const Script &script) const;
-        std::vector<Transaction> getTransactions(const Script &script) const;
-        std::vector<Transaction> getOutputTransactions(const Script &script) const;
-        std::vector<Transaction> getInputTransactions(const Script &script) const;
-        #endif
     };
 }
 

@@ -35,12 +35,16 @@ void init_address(py::module &m) {
     .def("txes", py::overload_cast<>(&Address::getTransactions, py::const_), "Returns a list of all transactions involving this address")
     .def("in_txes", py::overload_cast<>(&Address::getInputTransactions, py::const_), "Returns a list of all transaction where this address was an input")
     .def("out_txes", py::overload_cast<>(&Address::getOutputTransactions, py::const_), "Returns a list of all transaction where this address was an output")
-    .def_property_readonly("script", py::overload_cast<>(&Address::getScript, py::const_), "Returns the script associated with this address")
+    .def_property_readonly("script", [](const Address &address) {
+        return address.getScript().wrapped;
+    }, "Returns the script associated with this address")
     .def_static("address_count", static_cast<size_t(*)()>(addressCount), "Get the total number of address of a given type")
     .def_static("from_string", py::overload_cast<const std::string &>(getAddressFromString), "Construct an address object from an address string")
+    .def_static("with_prefix", py::overload_cast<const std::string &>(getAddressesWithPrefix))
     ;
     
     py::class_<Script>(m, "Script", "Class representing a script which coins are sent to")
+    .def(py::init<uint32_t, ScriptType::Enum>(), "Can be constructed directly by passing it an address index and address type")
     .def("__repr__", &Script::toString)
     .def(py::self == py::self)
     .def(hash(py::self))
@@ -57,6 +61,7 @@ void init_address(py::module &m) {
     py::class_<BaseScript> baseScript(m, "BaseScript", "Class representing a script which coins are sent to");
     baseScript
     .def_property_readonly("first_tx", py::overload_cast<>(&BaseScript::getFirstTransaction, py::const_), "Get the first transaction that was sent to this address")
+    .def_property_readonly("tx_revealed",py::overload_cast<>(&BaseScript::getTransactionRevealed, py::const_), "The transaction where this wrapped script was first revealed")
     ;
     
     py::class_<script::Pubkey>(m, "PubkeyScript", baseScript, "Extra data about pay to pubkey address")
@@ -81,8 +86,6 @@ void init_address(py::module &m) {
     .def_property_readonly("wrapped_address", &script::ScriptHash::getWrappedAddress, "The address inside this P2SH address")
     .def_readonly("raw_address",  &script::ScriptHash::address, "The 160 bit P2SH address hash")
     .def_property_readonly("wrapped_script",py::overload_cast<>(&script::ScriptHash::wrappedScript, py::const_), "The script inside this P2SH address")
-    .def_property_readonly("tx_revealed",py::overload_cast<>(&script::ScriptHash::transactionRevealed, py::const_), "The transaction where this wrapped script was first revealed")
-    
     .def_property_readonly("address", py::overload_cast<>(&script::ScriptHash::addressString, py::const_), "Bitcoin address string")
     ;
     
@@ -110,7 +113,6 @@ void init_address(py::module &m) {
     .value("nulldata", AddressType::Enum::NULL_DATA)
     .value("witness_pubkeyhash", AddressType::Enum::WITNESS_PUBKEYHASH)
     .value("witness_scripthash", AddressType::Enum::WITNESS_SCRIPTHASH)
-    .export_values()
     .def_property_readonly_static("types", [](py::object) -> std::array<AddressType::Enum, 6> {
         return {{AddressType::Enum::PUBKEY, AddressType::Enum::PUBKEYHASH, AddressType::Enum::SCRIPTHASH,
             AddressType::Enum::MULTISIG, AddressType::Enum::NULL_DATA, AddressType::Enum::NONSTANDARD}};
@@ -128,6 +130,30 @@ void init_address(py::module &m) {
             case AddressType::Enum::NONSTANDARD:
                 return "Nonstandard";
             case AddressType::Enum::NULL_DATA:
+                return "Null data";
+            default:
+                return "Unknown Address Type";
+        }
+    })
+    ;
+    
+    py::enum_<ScriptType::Enum>(m, "script_type", py::arithmetic(), "Enumeration of all address types")
+    .value("nonstandard", ScriptType::Enum::NONSTANDARD)
+    .value("pubkey", ScriptType::Enum::PUBKEY)
+    .value("scripthash", ScriptType::Enum::SCRIPTHASH)
+    .value("multisig", ScriptType::Enum::MULTISIG)
+    .value("nulldata", ScriptType::Enum::NULL_DATA)
+    .def("pretty_name", [](AddressType::Enum val) {
+        switch (val) {
+            case ScriptType::Enum::PUBKEY:
+                return "Pay to pubkey";
+            case ScriptType::Enum::SCRIPTHASH:
+                return "Pay to script hash";
+            case ScriptType::Enum::MULTISIG:
+                return "Multisig";
+            case ScriptType::Enum::NONSTANDARD:
+                return "Nonstandard";
+            case ScriptType::Enum::NULL_DATA:
                 return "Null data";
             default:
                 return "Unknown Address Type";

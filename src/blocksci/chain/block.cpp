@@ -43,13 +43,13 @@ namespace blocksci {
         && coinbaseOffset == other.coinbaseOffset;
     }
     
-    std::string RawBlock::getString() const {
+    std::string Block::getString() const {
         std::stringstream ss;
-        ss << "Block(numTxes=" << numTxes <<", height=" << height <<", header_hash=" << hash.GetHex() << ", version=" << version <<", timestamp=" << timestamp << ", bits=" << bits << ", nonce=" << nonce << ")";
+        ss << "Block(numTxes=" << rawBlock->numTxes <<", height=" << blockNum <<", header_hash=" << rawBlock->hash.GetHex() << ", version=" << rawBlock->version <<", timestamp=" << rawBlock->timestamp << ", bits=" << rawBlock->bits << ", nonce=" << rawBlock->nonce << ")";
         return ss.str();
     }
     
-    Block::Block(uint32_t blockNum, const ChainAccess &access_) : access(&access_), rawBlock(access->getBlock(blockNum)) {
+    Block::Block(uint32_t blockNum_, const ChainAccess &access_) : access(&access_), rawBlock(access->getBlock(blockNum_)), blockNum(blockNum_) {
         
     }
     
@@ -84,7 +84,7 @@ namespace blocksci {
             currentTxPos = reinterpret_cast<const char *>(block->access->getTx(currentTxIndex));
         }
         auto rawTx = reinterpret_cast<const RawTransaction *>(currentTxPos);
-        return {*block->access, rawTx, currentTxIndex, block->height()};
+        return {rawTx, currentTxIndex, block->height(), *block->access};
     }
     
     const std::string Block::getHeaderHash() const {
@@ -106,9 +106,9 @@ namespace blocksci {
     bool isSegwit(const Block &block, const ScriptAccess &scripts) {
         auto coinbase = block.coinbaseTx();
         for (int i = coinbase.outputCount() - 1; i >= 0; i--) {
-            auto &output = coinbase.outputs()[i];
+            auto output = coinbase.outputs()[i];
             if (output.getType() == AddressType::Enum::NULL_DATA) {
-                auto nulldata = script::OpReturn(scripts, output.toAddressNum);
+                auto nulldata = script::OpReturn(scripts, output.getAddress().scriptNum);
                 uint32_t startVal = *reinterpret_cast<const uint32_t *>(nulldata.data.c_str());
                 if (startVal == 0xaa21a9ed) {
                     return true;
@@ -154,67 +154,46 @@ namespace blocksci {
         
     }
     
-    std::vector<const Output *> getUnspentOutputs(const Block &block, const ChainAccess &access) {
-        std::vector<const Output *> outputs;
-        for (auto tx : block) {
-            for (auto &output : tx.outputs()) {
-                if (!output.isSpent(access)) {
-                    outputs.push_back(&output);
-                }
-            }
-        }
-        return outputs;
+    std::vector<Output> getUnspentOutputs(const Block &block) {
+        return block.allOutputs() | ranges::view::remove_if([](const Output &output) { return output.isSpent(); }) | ranges::to_vector;
     }
     
-    std::vector<const Output *> getOutputsSpentByHeight(const Block &block, uint32_t height, const ChainAccess &access) {
-        std::vector<const Output *> outputs;
+    std::vector<Output> getOutputsSpentByHeight(const Block &block, uint32_t height, const ChainAccess &access) {
         auto lastTxIndex = Block(height, access).endTxIndex();
-        for (auto tx : block) {
-            for (auto &output : tx.outputs()) {
-                auto spentIndex = output.getSpendingTxIndex(access);
-                if (spentIndex > 0 && spentIndex < lastTxIndex) {
-                    outputs.push_back(&output);
-                }
-            }
-        }
-        return outputs;
+        auto outputSpentByHeight = [&](const Output &output) {
+            return output.isSpent() && output.getSpendingTx()->blockHeight < lastTxIndex;
+        };
+        return block.allOutputs() | ranges::view::remove_if(ranges::not_fn(outputSpentByHeight)) | ranges::to_vector;
+        
     }
     
     uint64_t totalOut(const Block &block) {
-        uint64_t total = 0;
-        for (auto tx : block) {
-            total += totalOut(tx);
-        }
-        return total;
+        auto values = block | ranges::view::transform([](const Transaction &tx) { return totalOut(tx);});
+        return ranges::accumulate(values ,uint64_t{0});
     }
     
     uint64_t totalIn(const Block &block) {
-        uint64_t total = 0;
-        for (auto tx : block) {
-            total += totalIn(tx);
-        }
-        return total;
+        auto values = block | ranges::view::transform([](const Transaction &tx) { return totalIn(tx);});
+        return ranges::accumulate(values,uint64_t{0});
     }
     
-    uint64_t totalOutAfterHeight(const Block &block, uint32_t height, const ChainAccess &access) {
-        uint64_t total = 0;
-        for (auto tx : block) {
-            for (auto &output : tx.outputs()) {
-                if (!output.isSpent(access) || output.getSpendingTx(access)->blockHeight > height) {
-                    total += output.getValue();
-                }
-            }
-        }
-        return total;
+    uint64_t totalOutAfterHeight(const Block &block, uint32_t height) {
+        auto outputSpentBeforeHeight = [&](const Output &output) {
+            return output.isSpent() && output.getSpendingTx()->blockHeight <= height;
+        };
+        auto values = block.allOutputs()
+        | ranges::view::remove_if(outputSpentBeforeHeight)
+        | ranges::view::transform([](const Output &output) { return output.getValue();});
+        return ranges::accumulate(values, uint64_t{0});
     }
     
     std::unordered_map<AddressType::Enum, int64_t> netAddressTypeValue(const Block &block) {
         std::unordered_map<AddressType::Enum, int64_t> net;
         for (auto tx : block) {
-            for (auto &output : tx.outputs()) {
+            for (auto output : tx.outputs()) {
                 net[output.getType()] += output.getValue();
             }
-            for (auto &input : tx.inputs()) {
+            for (auto input : tx.inputs()) {
                 net[input.getType()] -= input.getValue();
             }
         }
@@ -224,10 +203,10 @@ namespace blocksci {
     std::unordered_map<std::string, int64_t> netFullTypeValue(const Block &block, const ScriptAccess &scripts) {
         std::unordered_map<std::string, int64_t> net;
         for (auto tx : block) {
-            for (auto &output : tx.outputs()) {
+            for (auto output : tx.outputs()) {
                 net[output.getAddress().fullType(scripts)] += output.getValue();
             }
-            for (auto &input : tx.inputs()) {
+            for (auto input : tx.inputs()) {
                 net[input.getAddress().fullType(scripts)] -= input.getValue();
             }
         }
@@ -235,28 +214,21 @@ namespace blocksci {
     }
     
     uint64_t getTotalSpentOfAge(const Block &block, const ChainAccess &access, uint32_t age) {
-        uint64_t total = 0;
         uint32_t newestTxNum = Block(block.height() - age, access).endTxIndex() - 1;
-        for (auto tx : block) {
-            for (auto &input : tx.inputs()) {
-                if (input.spentTxIndex() <= newestTxNum) {
-                    total += input.getValue();
-                }
-            }
-        }
-        return total;
+        auto values = block.allInputs()
+            | ranges::view::remove_if([&](const Input &input) { return input.spentTxIndex() > newestTxNum; })
+            | ranges::view::transform([](const Input &input) { return input.getValue(); });
+        return ranges::accumulate(values, uint64_t{0});
     }
     
     std::vector<uint64_t> getTotalSpentOfAges(const Block &block, const ChainAccess &access, uint32_t maxAge) {
         std::vector<uint64_t> totals(maxAge);
         uint32_t newestTxNum = Block(block.height() - 1, access).endTxIndex() - 1;
-        for (auto tx : block) {
-            for (auto &input : tx.inputs()) {
-                if (input.spentTxIndex() <= newestTxNum) {
-                    uint32_t age = std::min(maxAge, block.height() - input.getSpentTx(access).block(access).height()) - 1;
-                    totals[age] += input.getValue();
-                }
-            }
+        auto inputs = block.allInputs()
+        | ranges::view::remove_if([&](const Input &input) { return input.spentTxIndex() > newestTxNum; });
+        for (auto input : inputs) {
+            uint32_t age = std::min(maxAge, block.height() - input.getSpentTx().block().height()) - 1;
+            totals[age] += input.getValue();
         }
         for (size_t i = 1; i < maxAge; i++) {
             totals[maxAge - i - 1] += totals[maxAge - i];

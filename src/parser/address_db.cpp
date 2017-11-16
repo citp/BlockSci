@@ -17,7 +17,7 @@
 #include <blocksci/scripts/script_variant.hpp>
 #include <blocksci/scripts/scripts.hpp>
 #include <blocksci/scripts/scripthash_script.hpp>
-#include <blocksci/chain/output_pointer.hpp>
+#include <blocksci/chain/inout_pointer.hpp>
 
 #include <string>
 

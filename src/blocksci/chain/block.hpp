@@ -10,12 +10,14 @@
 #define block_hpp
 
 #include "chain_fwd.hpp"
+#include "transaction.hpp"
 
 #include <blocksci/bitcoin_uint256.hpp>
 #include <blocksci/address/address_types.hpp>
 
-#include <range/v3/all.hpp>
-
+#include <range/v3/view_facade.hpp>
+#include <range/v3/view/transform.hpp>
+#include <range/v3/view/join.hpp>
 
 #include <unordered_map>
 #include <chrono>
@@ -38,8 +40,6 @@ namespace blocksci {
         RawBlock(uint32_t firstTxIndex, uint32_t numTxes, uint32_t height, uint256 hash, int32_t version, uint32_t timestamp, uint32_t bits, uint32_t nonce, uint64_t coinbaseOffset);
         
         bool operator==(const RawBlock& other) const;
-        
-        std::string getString() const;
     };
     
     class Block : public ranges::view_facade<Block> {
@@ -47,6 +47,7 @@ namespace blocksci {
         
         const ChainAccess *access;
         const RawBlock *rawBlock;
+        uint32_t blockNum;
         
         struct cursor {
         private:
@@ -77,6 +78,14 @@ namespace blocksci {
         Block() = default;
         Block(uint32_t blockNum, const ChainAccess &access);
         
+        auto allInputs() const {
+            return *this | ranges::view::transform([](const Transaction &tx) { return tx.inputs(); }) | ranges::view::join;
+        }
+        
+        auto allOutputs() const {
+            return *this | ranges::view::transform([](const Transaction &tx) { return tx.outputs(); }) | ranges::view::join;
+        }
+        
         uint32_t firstTxIndex() const {
             return rawBlock->firstTxIndex;
         }
@@ -86,7 +95,7 @@ namespace blocksci {
         }
         
         uint32_t height() const {
-            return rawBlock->height;
+            return blockNum;
         }
         
         int32_t version() const {
@@ -109,9 +118,7 @@ namespace blocksci {
         
         std::chrono::system_clock::time_point getTime() const;
         
-        std::string getString() const {
-            return rawBlock->getString();
-        }
+        std::string getString() const;
         
         const std::string coinbaseParam() const {
             auto coinbase = getCoinbase();
@@ -120,7 +127,6 @@ namespace blocksci {
         
         std::vector<unsigned char> getCoinbase() const;
         Transaction coinbaseTx() const;
-        bool isSegwit(const ChainAccess &access) const;
         
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
         Block(uint32_t blockNum);
@@ -136,10 +142,11 @@ namespace blocksci {
     size_t sizeBytes(const Block &block);
     bool isSegwit(const Block &block, const ScriptAccess &scripts);
     
-    uint64_t totalOutAfterHeight(const Block &block, uint32_t height, const ChainAccess &access);
+    uint64_t totalOutAfterHeight(const Block &block, uint32_t height);
+    std::vector<Output> getUnspentOutputs(const Block &block);
+    
     TransactionSummary transactionStatistics(const Block &block, const ChainAccess &access);
-    std::vector<const Output *> getUnspentOutputs(const Block &block, const ChainAccess &access);
-    std::vector<const Output *> getOutputsSpentByHeight(const Block &block, uint32_t height, const ChainAccess &access);
+    std::vector<Output> getOutputsSpentByHeight(const Block &block, uint32_t height, const ChainAccess &access);
     uint64_t getTotalSpentOfAge(const Block &block, const ChainAccess &access, uint32_t age);
     std::vector<uint64_t> getTotalSpentOfAges(const Block &block, const ChainAccess &access, uint32_t maxAge);
     std::unordered_map<AddressType::Enum, int64_t> netAddressTypeValue(const Block &block);
@@ -147,9 +154,7 @@ namespace blocksci {
 
     #ifndef BLOCKSCI_WITHOUT_SINGLETON
     bool isSegwit(const Block &block);
-    uint64_t totalOutAfterHeight(const Block &block, uint32_t height);
-    std::vector<const Output *> getUnspentOutputs(const Block &block);
-    std::vector<const Output *> getOutputsSpentByHeight(const Block &block, uint32_t height);
+    std::vector<Output> getOutputsSpentByHeight(const Block &block, uint32_t height);
     uint64_t getTotalSpentOfAge(const Block &block, uint32_t age);
     std::vector<uint64_t> getTotalSpentOfAges(const Block &block, uint32_t maxAge);
     std::unordered_map<std::string, int64_t> netFullTypeValue(const Block &block);

@@ -16,7 +16,6 @@
 #include <range/v3/utility/optional.hpp>
 
 #include <functional>
-#include <memory>
 #include <vector>
 
 namespace blocksci {
@@ -45,14 +44,15 @@ namespace blocksci {
             return !operator==(other);
         }
         
+        bool operator==(const Script &other) const;
         bool operator!=(const Script &other) const;
         
         std::string toString() const;
         
         AnyScript getScript(const ScriptAccess &access) const;
         
-        std::vector<const Output *> getOutputs(const AddressIndex &index, const ChainAccess &chain) const;
-        std::vector<const Input *> getInputs(const AddressIndex &index, const ChainAccess &chain) const;
+        std::vector<Output> getOutputs(const AddressIndex &index, const ChainAccess &chain) const;
+        std::vector<Input> getInputs(const AddressIndex &index, const ChainAccess &chain) const;
         std::vector<Transaction> getTransactions(const AddressIndex &index, const ChainAccess &chain) const;
         std::vector<Transaction> getOutputTransactions(const AddressIndex &index, const ChainAccess &chain) const;
         std::vector<Transaction> getInputTransactions(const AddressIndex &index, const ChainAccess &chain) const;
@@ -64,8 +64,8 @@ namespace blocksci {
         #ifndef BLOCKSCI_WITHOUT_SINGLETON        
         AnyScript getScript() const;
         
-        std::vector<const Output *> getOutputs() const;
-        std::vector<const Input *> getInputs() const;
+        std::vector<Output> getOutputs() const;
+        std::vector<Input> getInputs() const;
         std::vector<Transaction> getTransactions() const;
         std::vector<Transaction> getOutputTransactions() const;
         std::vector<Transaction> getInputTransactions() const;
@@ -80,9 +80,12 @@ namespace blocksci {
     
     ranges::optional<Address> getAddressFromString(const DataConfiguration &config, const HashIndex &index, const std::string &addressString);
     
+    std::vector<Address> getAddressesWithPrefix(const std::string &prefix, const ScriptAccess &scripts);
+    
     // Requires DataAccess
     #ifndef BLOCKSCI_WITHOUT_SINGLETON
     ranges::optional<Address> getAddressFromString(const std::string &addressString);
+    std::vector<Address> getAddressesWithPrefix(const std::string &prefix);
     size_t addressCount();
     #endif
 }

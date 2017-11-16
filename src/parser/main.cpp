@@ -92,7 +92,7 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, size_t firs
         
         for (uint16_t i = 0; i < tx->inputCount; i++) {
             auto &input = tx->getInput(i);
-            auto spentTxNum = input.spentTxIndex();
+            auto spentTxNum = input.linkedTxNum;
             auto spentTx = txFile.getData(spentTxNum);
             auto spentHash = txHashesFile.getData(spentTxNum);
             for (uint16_t j = 0; i < spentTx->outputCount; i++) {
@@ -157,10 +157,9 @@ struct ChainUpdateInfo {
 
 uint32_t getStartingTxCount(const blocksci::DataConfiguration &config) {
     blocksci::ChainAccess chain(config, false, 0);
-    auto blocks = chain.getBlocks();
-    if (blocks.size() > 0) {
-        auto &lastBlock = chain.getBlocks().back();
-        return lastBlock.firstTxIndex + lastBlock.numTxes;
+    if (chain.blockCount() > 0) {
+        auto lastBlock = chain.getBlock(chain.blockCount() - 1);
+        return lastBlock->firstTxIndex + lastBlock->numTxes;
     } else {
         return 0;
     }
@@ -187,12 +186,10 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
 
     size_t splitPoint = [&]() {
         blocksci::ChainAccess oldChain(config, false, 0);
-        auto oldBlocks = oldChain.getBlocks();
-        
-        auto maxSize = std::min(oldBlocks.size(), chainBlocks.size());
+        auto maxSize = std::min(oldChain.blockCount(), chainBlocks.size());
         size_t splitPoint = maxSize;
         for (size_t i = 0; i < maxSize; i++) {
-            blocksci::uint256 oldHash = oldBlocks[maxSize - 1 - i].hash;
+            blocksci::uint256 oldHash = oldChain.getBlock(maxSize - 1 - i)->hash;
             blocksci::uint256 newHash = chainBlocks[maxSize - 1 - i].hash;
             if (!(oldHash == newHash)) {
                 splitPoint = maxSize - 1 - i;
@@ -200,8 +197,8 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
             }
         }
         
-        std::cout << "Starting with chain of " << oldBlocks.size() << " blocks" << std::endl;
-        std::cout << "Removing " << oldBlocks.size() - splitPoint << " blocks" << std::endl;
+        std::cout << "Starting with chain of " << oldChain.blockCount() << " blocks" << std::endl;
+        std::cout << "Removing " << oldChain.blockCount() - splitPoint << " blocks" << std::endl;
         std::cout << "Adding " << chainBlocks.size() - splitPoint << " blocks" << std::endl;
         
         return splitPoint;

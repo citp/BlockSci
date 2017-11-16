@@ -16,7 +16,7 @@
 #include <blocksci/address/address_types.hpp>
 #include <blocksci/address/address.hpp>
 #include <blocksci/scripts/script_view.hpp>
-#include <blocksci/chain/output_pointer.hpp>
+#include <blocksci/chain/inout_pointer.hpp>
 
 #include <mpark/variant.hpp>
 

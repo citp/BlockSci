@@ -14,17 +14,17 @@
 
 namespace blocksci {
     using namespace script;
-    OpReturn::ScriptAddress(uint32_t scriptNum_, const RawData *raw) : BaseScript(scriptNum_, scriptType, *raw), data(raw->getData()) {}
+    OpReturn::ScriptAddress(uint32_t scriptNum_, const RawData *raw, const ScriptAccess &access) : BaseScript(scriptNum_, scriptType, *raw, access), data(raw->getData()) {}
     
-    OpReturn::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : OpReturn(addressNum, access.getScriptData<scriptType>(addressNum)) {}
+    OpReturn::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : OpReturn(addressNum, access.getScriptData<scriptType>(addressNum), access) {}
     
-    std::string OpReturn::toString(const DataConfiguration &) const {
+    std::string OpReturn::toString() const {
         std::stringstream ss;
         ss << "NulldataAddressData()";
         return ss.str();
     }
     
-    std::string OpReturn::toPrettyString(const DataConfiguration &config, const ScriptAccess &) const {
-        return toString(config);
+    std::string OpReturn::toPrettyString() const {
+        return toString();
     }
 }

@@ -33,7 +33,7 @@ namespace blocksci {
         totalOutputs += other.outputCount();
         totalSize += other.sizeBytes();
         totalCount += 1;
-        for (auto &output : other.outputs()) {
+        for (auto output : other.outputs()) {
             totalOutputValue += output.getValue();
         }
         return *this;

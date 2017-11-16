@@ -9,15 +9,13 @@
 #ifndef pubkey_script_hpp
 #define pubkey_script_hpp
 
-#include "scriptsfwd.hpp"
 #include "script.hpp"
 #include "bitcoin_pubkey.hpp"
 
 #include <range/v3/utility/optional.hpp>
 
 namespace blocksci {
-    struct PubkeyData;
-    
+
     template <>
     class ScriptAddress<ScriptType::Enum::PUBKEY> : public BaseScript {
     private:
@@ -27,22 +25,15 @@ namespace blocksci {
         
         constexpr static ScriptType::Enum scriptType = ScriptType::Enum::PUBKEY;
         
-        ScriptAddress<scriptType>(uint32_t scriptNum, const PubkeyData *rawData);
+        ScriptAddress<scriptType>(uint32_t scriptNum, const PubkeyData *rawData, const ScriptAccess &access);
         ScriptAddress<scriptType>(const ScriptAccess &access, uint32_t addressNum);
         
-        std::string addressString(const DataConfiguration &config) const;
-        
-        std::string toString(const DataConfiguration &config) const;
-        std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const;
-        
-        ranges::optional<CPubKey> getPubkey() const;
-        
-        #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        ScriptAddress<scriptType>(uint32_t addressNum);
         std::string addressString() const;
+        
         std::string toString() const;
         std::string toPrettyString() const;
-        #endif
+        
+        ranges::optional<CPubKey> getPubkey() const;
     };
 }
 

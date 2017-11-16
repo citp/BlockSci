@@ -12,17 +12,12 @@
 #include <blocksci/script.hpp>
 #include <blocksci/hash_index.hpp>
 #include <blocksci/address/address.hpp>
+#include <blocksci/chain/transaction_range.hpp>
 
 //#include <hsql/SQLParser.h>
 
 #include <google/sparse_hash_map>
 #include <google/dense_hash_map>
-
-#include <boost/optional/optional_io.hpp>
-#include <boost/pending/disjoint_sets.hpp>
-#include <boost/range/counting_range.hpp>
-
-#include <boost/variant.hpp>
 
 #include <numeric>
 #include <chrono>
@@ -99,11 +94,9 @@ int main(int argc, const char * argv[]) {
     assert(argc == 2);
     
     Blockchain chain(argv[1]);
-    
-    auto add = getAddressFromString("13A1W4jLPP75pzvn2qJ5KyyqG3qPSpb9j");
-    
-    auto tx2 = Transaction::txWithHash("fe28050b93faea61fa88c4c630f0e1f0a1c24d0082dd0e10d369e13212128f33");
-    
+    auto outputsA = Address(10, AddressType::Enum::PUBKEY).getOutputs();
+    auto outputsB = Script(10, ScriptType::Enum::PUBKEY).getOutputs();
+    return 0;
 //    uint64_t count = 0;
 //    for (auto tx : chain.iterateTransactions(0, chain.size())) {
 //        auto change = getChangeOutput(tx);
@@ -140,7 +133,7 @@ int main(int argc, const char * argv[]) {
     auto block = chain[100000];
     auto tx = block[0];
     std::cout << tx.getHash().GetHex() << "\n";
-    auto &output = tx.outputs()[0];
+    auto output = tx.outputs()[0];
     std::cout << output.getAddress().getScript().toPrettyString() << "\n";
     
     return 0;
@@ -148,7 +141,7 @@ int main(int argc, const char * argv[]) {
     auto mapFunc = [&chain](const std::vector<Block> &segment) {
         std::vector<Transaction> txes;
         for (auto &block : segment) {
-            for (auto tx : block.txes(*chain.access.chain)) {
+            for (auto tx : block) {
                 if (isCoinjoin(tx)) {
                     txes.push_back(tx);
                 }
@@ -259,11 +252,11 @@ int main(int argc, const char * argv[]) {
         std::cout << block.getString() << std::endl;
         for (auto tx : block) {
             std::cout << tx.getString() << std::endl;
-            for (auto &input : tx.inputs()) {
+            for (auto input : tx.inputs()) {
                 std::cout << input.toString() << std::endl;
                 std::cout << input.getAddress().getScript().toPrettyString() << std::endl;
             }
-            for (auto &output : tx.outputs()) {
+            for (auto output : tx.outputs()) {
                 std::cout << output.toString() << std::endl;
                 std::cout << output.getAddress().getScript().toPrettyString() << std::endl;
             }
@@ -277,7 +270,7 @@ int main(int argc, const char * argv[]) {
     
     
     begin = std::chrono::steady_clock::now();
-    for (const auto tx : chain.iterateTransactions(0, chain.size())) {
+    for (auto tx : chain.iterateTransactions(0, chain.size())) {
         maxSize = std::max(maxSize, tx.sizeBytes());
     }
     
@@ -457,9 +450,9 @@ void maxOutput(Blockchain &chain) {
     uint64_t maxValue = 0;
     uint32_t txNum = 0;
     uint32_t curTx = 0;
-    for (auto &block : chain) {
+    for (auto block : chain) {
         for (auto tx : block) {
-            for (auto &output : tx.outputs()) {
+            for (auto output : tx.outputs()) {
                 if (output.getValue() > maxValue) {
                     maxValue = output.getValue();
                     txNum = curTx;
@@ -470,7 +463,7 @@ void maxOutput(Blockchain &chain) {
     }
     std::cout << "Max value is " << maxValue << " in tx " << txNum << std::endl;
     
-    std::cout << "Tx has hash " << Transaction::txWithIndex(txNum).getHash().GetHex() << std::endl;
+    std::cout << "Tx has hash " << Transaction(txNum).getHash().GetHex() << std::endl;
 }
 
 google::dense_hash_map<uint32_t, uint32_t> getAddressDistribution(Blockchain &chain, int start, int stop) {
@@ -479,7 +472,7 @@ google::dense_hash_map<uint32_t, uint32_t> getAddressDistribution(Blockchain &ch
         distribution.set_empty_key(std::numeric_limits<uint32_t>::max() - 5);
         for (auto &block : segment) {
             for (auto tx : block) {
-                for(auto &output : tx.outputs()) {
+                for(auto output : tx.outputs()) {
                     auto it = distribution.insert(std::make_pair(output.getSpendingTxIndex(), 0));
                     it.first->second++;
                 }

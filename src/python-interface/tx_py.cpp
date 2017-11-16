@@ -71,13 +71,13 @@ void init_tx(py::module &m) {
     .value("Timeout", CoinJoinResult::Timeout)
     ;
     
-    py::class_<Transaction::input_range>(m, "InputRange", "Class representing a range of transaction inputs")
-    .def("__len__", [](const Transaction::input_range &range) {
+    py::class_<input_range>(m, "InputRange", "Class representing a range of transaction inputs")
+    .def("__len__", [](const input_range &range) {
         return range.size();
     })
-    .def("__iter__", [](const Transaction::input_range &range) { return py::make_iterator(range.begin(), range.end()); },
+    .def("__iter__", [](const input_range &range) { return py::make_iterator(range.begin(), range.end()); },
          py::keep_alive<0, 1>())
-    .def("__getitem__", [](const Transaction::input_range &range, int64_t i) -> const Input & {
+    .def("__getitem__", [](const input_range &range, int64_t i) -> Input {
         while (i < 0) {
             i += range.size();
         }
@@ -86,7 +86,7 @@ void init_tx(py::module &m) {
             throw py::index_error();
         return range[i];
     }, py::return_value_policy::reference)
-    .def("__getitem__", [](const Transaction::input_range &range, py::slice slice) -> py::list {
+    .def("__getitem__", [](const input_range &range, py::slice slice) -> py::list {
         size_t start, stop, step, slicelength;
         if (!slice.compute(range.size(), &start, &stop, &step, &slicelength))
             throw py::error_already_set();
@@ -98,13 +98,13 @@ void init_tx(py::module &m) {
         return txList;
     });
     
-    py::class_<Transaction::output_range>(m, "OutputRange", "Class representing a range of transaction outputs")
-    .def("__len__", [](const Transaction::output_range &range) {
+    py::class_<output_range>(m, "OutputRange", "Class representing a range of transaction outputs")
+    .def("__len__", [](const output_range &range) {
         return range.size();
     })
-    .def("__iter__", [](const Transaction::output_range &range) { return py::make_iterator(range.begin(), range.end()); },
+    .def("__iter__", [](const output_range &range) { return py::make_iterator(range.begin(), range.end()); },
          py::return_value_policy::reference, py::keep_alive<0, 1>())
-    .def("__getitem__", [](const Transaction::output_range &range, int64_t i) -> const Output & {
+    .def("__getitem__", [](const output_range &range, int64_t i) -> Output {
         while (i < 0) {
             i += range.size();
         }
@@ -113,7 +113,7 @@ void init_tx(py::module &m) {
             throw py::index_error();
         return range[i];
     }, py::return_value_policy::reference)
-    .def("__getitem__", [](const Transaction::output_range &range, py::slice slice) -> py::list {
+    .def("__getitem__", [](const output_range &range, py::slice slice) -> py::list {
         size_t start, stop, step, slicelength;
         if (!slice.compute(range.size(), &start, &stop, &step, &slicelength))
             throw py::error_already_set();

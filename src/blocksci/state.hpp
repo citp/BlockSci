@@ -10,9 +10,6 @@
 
 #include "scripts/script_type.hpp"
 
-#include <iomanip>
-
-
 namespace blocksci {
     class ChainAccess;
     class ScriptAccess;

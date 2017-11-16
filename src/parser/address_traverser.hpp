@@ -29,7 +29,7 @@ class AddressTraverser : public ParserIndex {
     
     virtual void revealedP2SH(blocksci::script::ScriptHash &scriptHash, const blocksci::ScriptAccess &scripts) = 0;
     
-    void processTx(const blocksci::Transaction &tx, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override;
+    void processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &scripts) override;
     
     void processScript(const blocksci::Script &, const blocksci::ChainAccess &, const blocksci::ScriptAccess &) override {}
     

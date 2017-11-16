@@ -9,26 +9,34 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "input.hpp"
-#include "chain_access.hpp"
-#include "output.hpp"
+#include "inout.hpp"
 #include "transaction.hpp"
+#include "inout_pointer.hpp"
+#include "chain_access.hpp"
 #include "address/address.hpp"
+#include "hash.hpp"
 
 #include <sstream>
 
 namespace blocksci {
     
-    Transaction Input::getSpentTx(const ChainAccess &access) const {
-        return Transaction(access, linkedTxNum);
+    Input::Input(const InputPointer &pointer, const ChainAccess &access_) : Input(access_.getTx(pointer.txNum)->getInput(pointer.inoutNum), access_) {}
+    
+    Transaction Input::getSpentTx() const {
+        return Transaction(inout->linkedTxNum, *access);
     }
     
     std::string Input::toString() const {
         std::stringstream ss;
-        auto address = getAddress();
-        ss << "TxIn(tx_index_to=" << linkedTxNum << ", address=" << address <<", satoshis=" << getValue() << ")";
+        ss << "TxIn(tx_index_to=" << inout->linkedTxNum << ", address=" << inout->getAddress() <<", satoshis=" << inout->getValue() << ")";
         return ss.str();
     }
 }
 
-
-
+namespace std {
+    size_t hash<blocksci::Input>::operator()(const blocksci::Input &input) const {
+        std::size_t seed = 3458697;
+        hash_combine(seed, *input.inout);
+        return seed;
+    }
+}

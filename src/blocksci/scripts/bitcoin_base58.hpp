@@ -16,15 +16,14 @@
 
 
 #include <blocksci/address/address_types.hpp>
-#include <blocksci/scripts/script_type.hpp>
-#include <blocksci/data_configuration.hpp>
-
-#include "bitcoin_pubkey.hpp"
 
 #include <string>
 #include <vector>
 
 namespace blocksci {
+    
+    struct DataConfiguration;
+    class uint160;
     
     class InvalidAddressException : virtual public std::runtime_error {
     public:

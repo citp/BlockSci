@@ -14,6 +14,8 @@
 
 #include <blocksci/chain/chain_fwd.hpp>
 
+#include <range/v3/utility/optional.hpp>
+
 #include <functional>
 #include <vector>
 #include <memory>
@@ -39,8 +41,8 @@ namespace blocksci {
         
         void visitPointers(const std::function<void(const Address &)> &) const {}
 
-        std::vector<const Output *> getOutputs(const AddressIndex &index, const ChainAccess &chain) const;
-        std::vector<const Input *> getInputs(const AddressIndex &index, const ChainAccess &chain) const;
+        std::vector<Output> getOutputs(const AddressIndex &index, const ChainAccess &chain) const;
+        std::vector<Input> getInputs(const AddressIndex &index, const ChainAccess &chain) const;
         std::vector<Transaction> getTransactions(const AddressIndex &index, const ChainAccess &chain) const;
         std::vector<Transaction> getOutputTransactions(const AddressIndex &index, const ChainAccess &chain) const;
         std::vector<Transaction> getInputTransactions(const AddressIndex &index, const ChainAccess &chain) const;
@@ -48,8 +50,8 @@ namespace blocksci {
         std::string toString() const;
         
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        std::vector<const Output *> getOutputs() const;
-        std::vector<const Input *> getInputs() const;
+        std::vector<Output> getOutputs() const;
+        std::vector<Input> getInputs() const;
         std::vector<Transaction> getTransactions() const;
         std::vector<Transaction> getOutputTransactions() const;
         std::vector<Transaction> getInputTransactions() const;
@@ -57,13 +59,15 @@ namespace blocksci {
     };
     
     struct BaseScript : public Script {
+        const ScriptAccess *access;
         uint32_t firstTxIndex;
         uint32_t txRevealed;
         
-        BaseScript(uint32_t scriptNum_, ScriptType::Enum type_, const ScriptDataBase &data);
-        BaseScript(const Address &address, const ScriptDataBase &data);
+        BaseScript(uint32_t scriptNum_, ScriptType::Enum type_, const ScriptDataBase &data, const ScriptAccess &scripts);
+        BaseScript(const Address &address, const ScriptDataBase &data, const ScriptAccess &scripts);
         
         Transaction getFirstTransaction(const ChainAccess &chain) const;
+        ranges::optional<Transaction> getTransactionRevealed(const ChainAccess &chain) const;
 
         bool hasBeenSpent() const {
             return txRevealed != std::numeric_limits<uint32_t>::max();
@@ -71,6 +75,7 @@ namespace blocksci {
         
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
         Transaction getFirstTransaction() const;
+        ranges::optional<Transaction> getTransactionRevealed() const;
         #endif
     };
 }

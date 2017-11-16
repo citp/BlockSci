@@ -9,13 +9,11 @@
 #ifndef script_data_hpp
 #define script_data_hpp
 
-#include "script_view.hpp"
 #include "bitcoin_pubkey.hpp"
 #include "scriptsfwd.hpp"
 
 #include <blocksci/util.hpp>
 #include <blocksci/typedefs.hpp>
-#include <blocksci/file_mapper.hpp>
 #include <blocksci/address/address.hpp>
 #include <blocksci/bitcoin_uint256.hpp>
 
@@ -80,9 +78,7 @@ namespace blocksci {
     struct NonstandardScriptData : public ScriptDataBase {
         InPlaceArray<unsigned char> scriptData;
         
-        CScriptView getScript() const {
-            return CScriptView(scriptData.begin(), scriptData.end());
-        }
+        CScriptView getScript() const;
         
         size_t realSize() const {
             return sizeof(NonstandardScriptData) + scriptData.extraSize();
@@ -94,9 +90,7 @@ namespace blocksci {
     struct NonstandardSpendScriptData {
         InPlaceArray<unsigned char> scriptData;
         
-        CScriptView getScript() const {
-            return CScriptView(scriptData.begin(), scriptData.end());
-        }
+        CScriptView getScript() const;
         
         size_t realSize() const {
             return sizeof(NonstandardScriptData) + scriptData.extraSize();

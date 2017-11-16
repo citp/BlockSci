@@ -9,6 +9,7 @@
 #include "blockchain.hpp"
 #include "block.hpp"
 #include "transaction.hpp"
+#include "transaction_range.hpp"
 #include "output.hpp"
 
 #include "address/address_index.hpp"
@@ -26,53 +27,28 @@
 namespace blocksci {
     // [start, end)
     std::vector<std::vector<Block>> segmentChain(const Blockchain &chain, int startBlock, int endBlock, unsigned int segmentCount) {
-        auto firstBlock = chain[startBlock];
-        auto lastBlock = chain[endBlock - 1];
-        auto lastTx = lastBlock.endTxIndex();
-        auto firstTx = firstBlock.firstTxIndex();
+        auto lastTx = chain[endBlock - 1].endTxIndex();
+        auto firstTx = chain[startBlock].firstTxIndex();
         auto totalTxCount = lastTx - firstTx;
         double segmentSize = static_cast<double>(totalTxCount) / segmentCount;
         
-        std::vector<uint32_t> txIndexes;
-        txIndexes.reserve(chain.size());
-        for (uint32_t i = 0; i < chain.size(); i++) {
-            txIndexes.push_back(chain[i].firstTxIndex());
-        }
-        
         std::vector<std::vector<Block>> segments;
-        
-        auto it = txIndexes.begin();
+        auto it = chain.begin();
         std::advance(it, static_cast<int64_t>(startBlock));
-        while(lastTx - *it > segmentSize) {
-            auto segmentStart = std::distance(txIndexes.begin(), it);
-            auto breakPoint = *it + segmentSize;
-            auto endIt = txIndexes.begin();
-            std::advance(endIt, static_cast<int64_t>(endBlock));
-            it = std::lower_bound(it, endIt, breakPoint);
-            auto segmentEnd = std::distance(txIndexes.begin(), it);
-            segments.push_back(chain | ranges::view::drop(segmentStart) | ranges::view::take(segmentEnd - segmentStart) | ranges::to_vector);
+        auto chainEnd = chain.begin();
+        std::advance(chainEnd, static_cast<int64_t>(endBlock));
+        while(lastTx - (*it).firstTxIndex() > segmentSize) {
+            auto endIt = std::lower_bound(it, chainEnd, (*it).firstTxIndex() + segmentSize, [](const Block &block, uint32_t txNum) {
+                return block.firstTxIndex() < txNum;
+            });
+            segments.push_back(std::vector<Block>(it, endIt));
+            it = endIt;
         }
-        auto segmentStart = std::distance(txIndexes.begin(), it);
-        auto remainingRange = chain | ranges::view::drop(segmentStart) | ranges::view::take(endBlock - segmentStart);
         if (segments.size() == segmentCount) {
-            ranges::insert(segments.back(), segments.back().end(), remainingRange);
+            segments.back().insert(segments.back().end(), it, chainEnd);
         } else {
-            segments.push_back(remainingRange | ranges::to_vector);
+            segments.push_back(std::vector<Block>(it, chainEnd));
         }
-        
-        decltype(totalTxCount) totalCount = 0;
-        
-        std::vector<size_t> segmentSizes;
-        for (auto &segment : segments) {
-            uint32_t count = 0;
-            for (auto &block : segment) {
-                count += block.size();
-            }
-            segmentSizes.push_back(count);
-            totalCount += count;
-        }
-        
-        assert(totalCount == totalTxCount);
         return segments;
     }
     
@@ -110,6 +86,18 @@ namespace blocksci {
         currentBlockHeight += amount;
     }
 
+    TransactionRange Blockchain::iterateTransactions(int startBlock, int endBlock) const {
+        auto startB = this->operator[](startBlock);
+        auto endB = this->operator[](endBlock - 1);
+        return TransactionRange(*access->chain, startB.firstTxIndex(), endB.endTxIndex());
+    }
+    
+    RawTransactionRange Blockchain::iterateRawTransactions(int startBlock, int endBlock) const {
+        auto startB = this->operator[](startBlock);
+        auto endB = this->operator[](endBlock - 1);
+        return RawTransactionRange(*access->chain, startB.firstTxIndex(), endB.endTxIndex());
+    }
+    
     uint32_t txCount(const Blockchain &chain) {
         auto lastBlock = chain[chain.size() - 1];
         return lastBlock.endTxIndex();
@@ -198,7 +186,7 @@ namespace blocksci {
     
     std::vector<Transaction> getTransactionIncludingOutput(const Blockchain &chain, int startBlock, int endBlock, AddressType::Enum type) {
         return filter(chain, startBlock, endBlock, [type](const Transaction &tx) {
-            for (auto &output : tx.outputs()) {
+            for (auto output : tx.outputs()) {
                 if (output.getType() == type) {
                     return true;
                 }

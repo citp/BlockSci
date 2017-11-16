@@ -47,7 +47,7 @@ namespace blocksci {
     
     Transaction TransactionRange::read() const {
         auto rawTx = reinterpret_cast<const RawTransaction *>(currentTxPos);
-        return {*access, rawTx, currentTxIndex, blockNum};
+        return {rawTx, currentTxIndex, blockNum, *access};
     }
     
     void TransactionRange::updateNextBlock() {

@@ -9,7 +9,6 @@
 #ifndef scripthash_script_hpp
 #define scripthash_script_hpp
 
-#include "scriptsfwd.hpp"
 #include "script.hpp"
 
 #include <blocksci/address/address.hpp>
@@ -31,15 +30,15 @@ namespace blocksci {
         
         constexpr static ScriptType::Enum scriptType = ScriptType::Enum::SCRIPTHASH;
         
-        ScriptAddress<scriptType>(uint32_t scriptNum, const ScriptHashData *rawData);
+        ScriptAddress<scriptType>(uint32_t scriptNum, const ScriptHashData *rawData, const ScriptAccess &access);
         ScriptAddress<scriptType>(const ScriptAccess &access, uint32_t addressNum);
         
         ranges::optional<Transaction> transactionRevealed(const ChainAccess &chain) const;
         
-        std::string addressString(const DataConfiguration &config) const;
+        std::string addressString() const;
         
-        std::string toString(const DataConfiguration &config) const;
-        std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const;
+        std::string toString() const;
+        std::string toPrettyString() const;
         
         ranges::optional<Address> getWrappedAddress() const;
         
@@ -49,17 +48,7 @@ namespace blocksci {
             }
         }
         
-        
-        AnyScript wrappedScript(const ScriptAccess &access) const;
-        
-        #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        ScriptAddress<ScriptType::Enum::SCRIPTHASH>(uint32_t addressNum);
-        std::string addressString() const;
-        ranges::optional<Transaction> transactionRevealed() const;
         AnyScript wrappedScript() const;
-        std::string toString() const;
-        std::string toPrettyString() const;
-        #endif
     };
 }
 

@@ -14,9 +14,6 @@
 #include "bitcoin_uint256.hpp"
 
 namespace blocksci {
-    uint256 Transaction::getHash() const {
-        return getHash(*DataAccess::Instance().chain);
-    }
     
     ranges::optional<Transaction> Transaction::txWithHash(uint256 hash) {
         return txWithHash(hash, *DataAccess::Instance().hashIndex, *DataAccess::Instance().chain);
@@ -26,11 +23,11 @@ namespace blocksci {
         return txWithHash(hash, *DataAccess::Instance().hashIndex, *DataAccess::Instance().chain);
     }
     
-    Transaction::Transaction(uint32_t index) : Transaction(*DataAccess::Instance().chain, index) {}
+    Transaction::Transaction(uint32_t index) : Transaction(index, *DataAccess::Instance().chain) {}
     
-    Transaction::Transaction(uint32_t index, uint32_t height) : Transaction(*DataAccess::Instance().chain, index, height) {}
+    Transaction::Transaction(uint32_t index, uint32_t height) : Transaction(index, height, *DataAccess::Instance().chain) {}
     
-    const Output * getChangeOutput(const Transaction &tx) {
+    ranges::optional<Output> getChangeOutput(const Transaction &tx) {
         return getChangeOutput(tx, *DataAccess::Instance().scripts);
     }
     

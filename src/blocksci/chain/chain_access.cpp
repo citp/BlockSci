@@ -11,10 +11,11 @@
 #include "chain_access.hpp"
 #include "data_configuration.hpp"
 #include "block.hpp"
-#include "output_pointer.hpp"
 #include "transaction.hpp"
 #include "output.hpp"
 #include "input.hpp"
+
+#include <range/v3/iterator_range.hpp>
 
 namespace blocksci {
     
@@ -72,20 +73,12 @@ namespace blocksci {
         return txFile.getData(index);
     }
     
-    const Output &ChainAccess::getOutput(uint32_t txIndex, uint16_t outputNum) const {
-        return getTx(txIndex)->getOutput(outputNum);
-    }
-    
-    const Input &ChainAccess::getInput(uint32_t txIndex, uint16_t inputNum) const {
-        return getTx(txIndex)->getInput(inputNum);
-    }
-    
     uint32_t ChainAccess::getBlockHeight(uint32_t txIndex) const {
         reorgCheck();
         if (errorOnReorg && txIndex >= _maxLoadedTx) {
             throw std::out_of_range("Transaction index out of range");
         }
-        auto blockRange = getBlocks();
+        auto blockRange = ranges::make_iterator_range(blockFile.getData(0), blockFile.getData(maxHeight - 1) + 1);
         auto it = std::upper_bound(blockRange.begin(), blockRange.end(), txIndex, [](uint32_t index, const RawBlock &b) {
             return index < b.firstTxIndex;
         });
@@ -97,15 +90,6 @@ namespace blocksci {
     const RawBlock *ChainAccess::getBlock(uint32_t blockHeight) const {
         reorgCheck();
         return blockFile.getData(blockHeight);
-    }
-    
-    const ranges::v3::iterator_range<const RawBlock *> ChainAccess::getBlocks() const {
-        reorgCheck();
-        if (blockFile.size() > 0) {
-            return ranges::v3::make_iterator_range(blockFile.getData(0), blockFile.getData(maxHeight - 1) + 1);
-        } else {
-            return ranges::v3::iterator_range<const RawBlock *>{};
-        }
     }
     
     std::vector<unsigned char> ChainAccess::getCoinbase(uint64_t offset) const {

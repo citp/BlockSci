@@ -14,7 +14,7 @@
 
 namespace blocksci {
     using namespace script;
-    Nonstandard::ScriptAddress(uint32_t scriptNum_, std::tuple<const NonstandardScriptData *, const NonstandardSpendScriptData *> &&rawData) : BaseScript(scriptNum_, scriptType, *std::get<0>(rawData)), outputScript(std::get<0>(rawData)->getScript()) {
+    Nonstandard::ScriptAddress(uint32_t scriptNum_, std::tuple<const NonstandardScriptData *, const NonstandardSpendScriptData *> &&rawData, const ScriptAccess &access) : BaseScript(scriptNum_, scriptType, *std::get<0>(rawData), access), outputScript(std::get<0>(rawData)->getScript()) {
         auto inputPointer = std::get<1>(rawData);
         if (inputPointer != nullptr) {
             inputScript = inputPointer->getScript();
@@ -23,7 +23,7 @@ namespace blocksci {
         }
     }
     
-    Nonstandard::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : Nonstandard(addressNum, access.getScriptData<scriptType>(addressNum)) {}
+    Nonstandard::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : Nonstandard(addressNum, access.getScriptData<scriptType>(addressNum), access) {}
     
     std::string Nonstandard::inputString() const {
         if (inputScript) {
@@ -37,13 +37,13 @@ namespace blocksci {
         return ScriptToAsmStr(outputScript);
     }
     
-    std::string Nonstandard::toString(const DataConfiguration &) const {
+    std::string Nonstandard::toString() const {
         std::stringstream ss;
         ss << "NonStandardScript()";
         return ss.str();
     }
     
-    std::string Nonstandard::toPrettyString(const DataConfiguration &config, const ScriptAccess &) const {
-        return toString(config);
+    std::string Nonstandard::toPrettyString() const {
+        return toString();
     }
 }

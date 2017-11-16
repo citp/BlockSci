@@ -32,7 +32,7 @@ class HashIndexCreator : public ParserIndex {
     lmdb::dbi scripthash_dbi;
     lmdb::dbi tx_dbi;
     
-    void processTx(const blocksci::Transaction &tx, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override;
+    void processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &scripts) override;
     void processScript(const blocksci::Script &script, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override;
 
 public:

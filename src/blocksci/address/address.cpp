@@ -13,11 +13,10 @@
 #include "address_info.hpp"
 #include "raw_address_pointer.hpp"
 #include "scripts/script_access.hpp"
-#include "scripts/script.hpp"
-#include "scripts/scripts.hpp"
 #include "scripts/scriptsfwd.hpp"
 #include "scripts/script_variant.hpp"
 #include "chain/transaction.hpp"
+#include "chain/output.hpp"
 #include "hash_index.hpp"
 
 #include <unordered_set>
@@ -45,8 +44,12 @@ namespace blocksci {
         }
     }
     
-    bool Address::operator!=(const Script &other) const {
+    bool Address::operator==(const Script &other) const {
         return scriptNum == other.scriptNum && scriptType(type) == other.type;
+    }
+    
+    bool Address::operator!=(const Script &other) const {
+        return !operator==(other);
     }
     
     void visit(const Address &address, const std::function<bool(const Address &)> &visitFunc, const ScriptAccess &scripts) {
@@ -66,11 +69,11 @@ namespace blocksci {
         return access.totalAddressCount();
     }
     
-    std::vector<const Output *> Address::getOutputs(const AddressIndex &index, const ChainAccess &chain) const {
+    std::vector<Output> Address::getOutputs(const AddressIndex &index, const ChainAccess &chain) const {
         return index.getOutputs(*this, chain);
     }
     
-    std::vector<const Input *> Address::getInputs(const AddressIndex &index, const ChainAccess &chain) const {
+    std::vector<Input> Address::getInputs(const AddressIndex &index, const ChainAccess &chain) const {
         return index.getInputs(*this, chain);
     }
     
@@ -101,6 +104,29 @@ namespace blocksci {
             }
         }
         return ranges::nullopt;
+    }
+    
+    template<AddressType::Enum type>
+    std::vector<Address> getAddressesWithPrefixImp(const std::string &prefix, const ScriptAccess &scripts) {
+        std::vector<Address> addresses;
+        auto count = scripts.scriptCount(scriptType(type));
+        for (uint32_t scriptNum = 1; scriptNum <= count; scriptNum++) {
+            ScriptAddress<scriptType(type)> script(scripts, scriptNum);
+            if (script.addressString().compare(0, prefix.length(), prefix) == 0) {
+                addresses.push_back(Address(scriptNum, type));
+            }
+        }
+        return addresses;
+    }
+    
+    std::vector<Address> getAddressesWithPrefix(const std::string &prefix, const ScriptAccess &scripts) {
+        if (prefix.compare(0, 1, "1") == 0) {
+            return getAddressesWithPrefixImp<AddressType::Enum::PUBKEYHASH>(prefix, scripts);
+        } else if (prefix.compare(0, 1, "3") == 0) {
+            return getAddressesWithPrefixImp<AddressType::Enum::SCRIPTHASH>(prefix, scripts);
+        } else {
+            return {};
+        }
     }
     
     std::string fullTypeImp(const Address &address, const ScriptAccess &scripts) {

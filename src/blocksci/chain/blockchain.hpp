@@ -11,9 +11,6 @@
 
 #include "block.hpp"
 #include "transaction.hpp"
-#include "transaction_range.hpp"
-
-#include <blocksci/data_access.hpp>
 
 #include <range/v3/view_facade.hpp>
 
@@ -92,17 +89,8 @@ namespace blocksci {
             return lastBlockHeight;
         }
         
-        TransactionRange iterateTransactions(int startBlock, int endBlock) const {
-            auto startB = this->operator[](startBlock);
-            auto endB = this->operator[](endBlock - 1);
-            return TransactionRange(*access->chain, startB.firstTxIndex(), endB.endTxIndex());
-        }
-
-        RawTransactionRange iterateRawTransactions(int startBlock, int endBlock) const {
-            auto startB = this->operator[](startBlock);
-            auto endB = this->operator[](endBlock - 1);
-            return RawTransactionRange(*access->chain, startB.firstTxIndex(), endB.endTxIndex());
-        }
+        TransactionRange iterateTransactions(int startBlock, int endBlock) const;
+        RawTransactionRange iterateRawTransactions(int startBlock, int endBlock) const;
         
         template <typename MapType, typename ResultType = MapType>
         auto mapReduce(int start, int stop, const std::function<MapType(const std::vector<Block> &)> &mapFunc, const std::function<ResultType&(ResultType &, MapType &)> &reduceFunc, ResultType identity) const -> decltype(mapFunc(std::declval<std::vector<Block> &>())) {

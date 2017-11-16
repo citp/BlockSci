@@ -13,7 +13,7 @@
 #include "serializable_map.hpp"
 
 #include <blocksci/chain/chain_fwd.hpp>
-#include <blocksci/chain/output_pointer.hpp>
+#include <blocksci/chain/inout_pointer.hpp>
 #include <blocksci/address/address_info.hpp>
 #include <boost/filesystem/path.hpp>
 

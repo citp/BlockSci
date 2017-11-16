@@ -10,9 +10,6 @@
 #include "data_access.hpp"
 
 namespace blocksci {
-    std::string AnyScript::toPrettyString() const {
-        auto &instance = DataAccess::Instance();
-        return toPrettyString(instance.config, *instance.scripts);
-    }
-
+    AnyScript::AnyScript(const Address &address) : AnyScript(address, *DataAccess::Instance().scripts) {}
+    AnyScript::AnyScript(const Script &script) : AnyScript(script, *DataAccess::Instance().scripts) {}
 }

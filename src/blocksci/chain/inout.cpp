@@ -7,8 +7,6 @@
 //
 
 #include "inout.hpp"
-#include "transaction.hpp"
-#include "chain_access.hpp"
 #include "address/address.hpp"
 
 #include "hash.hpp"

@@ -9,13 +9,10 @@
 #ifndef transaction_summary_hpp
 #define transaction_summary_hpp
 
+#include "chain_fwd.hpp"
 #include <cstdint>
 
 namespace blocksci {
-    
-    struct Transaction;
-    struct RawTransaction;
-    
     struct TransactionSummary {
         uint64_t totalInputs;
         uint64_t totalOutputs;

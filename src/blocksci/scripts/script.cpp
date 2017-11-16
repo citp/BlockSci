@@ -11,6 +11,7 @@
 #include "util.hpp"
 #include "script.hpp"
 #include "script_data.hpp"
+#include "script_info.hpp"
 
 #include "pubkey_script.hpp"
 #include "multisig_script.hpp"
@@ -23,6 +24,7 @@
 #include "address/address_index.hpp"
 
 #include "chain/transaction.hpp"
+#include "chain/output.hpp"
 
 #include <iostream>
 
@@ -31,13 +33,21 @@ namespace blocksci {
     
     Script::Script(const Address &address) : Script(address.scriptNum, scriptType(address.type)) {}
     
-    BaseScript::BaseScript(uint32_t scriptNum_, ScriptType::Enum type_, const ScriptDataBase &data) : Script(scriptNum_, type_), firstTxIndex(data.txFirstSeen), txRevealed(data.txFirstSpent) {}
+    BaseScript::BaseScript(uint32_t scriptNum_, ScriptType::Enum type_, const ScriptDataBase &data, const ScriptAccess &scripts_) : Script(scriptNum_, type_), access(&scripts_), firstTxIndex(data.txFirstSeen), txRevealed(data.txFirstSpent) {}
     
-    BaseScript::BaseScript(const Address &address, const ScriptDataBase &data) : BaseScript(address.scriptNum, scriptType(address.type), data) {}
+    BaseScript::BaseScript(const Address &address, const ScriptDataBase &data, const ScriptAccess &scripts) : BaseScript(address.scriptNum, scriptType(address.type), data, scripts) {}
     
     
     Transaction BaseScript::getFirstTransaction(const ChainAccess &chain) const {
-        return Transaction(chain, firstTxIndex);
+        return Transaction(firstTxIndex, chain);
+    }
+    
+    ranges::optional<Transaction> BaseScript::getTransactionRevealed(const ChainAccess &chain) const {
+        if (txRevealed != 0) {
+            return Transaction(txRevealed, chain);
+        } else {
+            return ranges::nullopt;
+        }
     }
     
     std::string Script::toString() const {
@@ -53,11 +63,11 @@ namespace blocksci {
         }
     }
     
-    std::vector<const Output *> Script::getOutputs(const AddressIndex &index, const ChainAccess &chain) const {
+    std::vector<Output> Script::getOutputs(const AddressIndex &index, const ChainAccess &chain) const {
         return index.getOutputs(*this, chain);
     }
     
-    std::vector<const Input *> Script::getInputs(const AddressIndex &index, const ChainAccess &chain) const {
+    std::vector<Input> Script::getInputs(const AddressIndex &index, const ChainAccess &chain) const {
         return index.getInputs(*this, chain);
     }
     

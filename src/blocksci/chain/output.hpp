@@ -10,39 +10,59 @@
 #define output_hpp
 
 #include "inout.hpp"
+#include <blocksci/address/address.hpp>
 #include <blocksci/address/address_types.hpp>
 
 #include <range/v3/utility/optional.hpp>
 
-#include <memory>
+namespace std {
+    template<> struct hash<blocksci::Output> {
+        size_t operator()(const blocksci::Output &input) const;
+    };
+}
 
 namespace blocksci {
     
-    struct Output : public Inout {
-        using Inout::Inout;
+    struct Address;
+    
+    class Output {
+        const ChainAccess *access;
+        const Inout *inout;
         
-        Output(const Inout &other) : Inout(other) {}
-        
-        uint32_t getSpendingTxIndex(const ChainAccess &access) const;
-        
-        bool isSpent(const ChainAccess &access) const {
-            return getSpendingTxIndex(access) != 0;
-        }
-        
-        std::string toString() const;
-        
-        ranges::optional<Transaction> getSpendingTx(const ChainAccess &access) const;
-        
-        // Requires DataAccess
-        #ifndef BLOCKSCI_WITHOUT_SINGLETON
+        friend size_t std::hash<Output>::operator()(const Output &) const;
+    public:
+        Output(const Inout &inout_, const ChainAccess &access_) : access(&access_), inout(&inout_) {}
+        Output(const OutputPointer &pointer, const ChainAccess &access_);
         
         uint32_t getSpendingTxIndex() const;
-        ranges::optional<Transaction> getSpendingTx() const;
         
         bool isSpent() const {
             return getSpendingTxIndex() != 0;
         }
         
+        bool operator==(const Output &other) const;
+        
+        bool operator==(const Inout &other) const {
+            return *inout == other;
+        }
+        
+        blocksci::AddressType::Enum getType() const {
+            return inout->getType();
+        }
+        
+        uint64_t getValue() const {
+            return inout->getValue();
+        }
+        
+        Address getAddress() const {
+            return inout->getAddress();
+        }
+
+        std::string toString() const;
+        ranges::optional<Transaction> getSpendingTx() const;
+        
+        #ifndef BLOCKSCI_WITHOUT_SINGLETON
+        Output(const OutputPointer &pointer);
         #endif
     };
 }

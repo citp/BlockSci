@@ -37,10 +37,9 @@ class MempoolRecorder {
 public:
     MempoolRecorder(const DataConfiguration &config_, BitcoinAPI &bitcoinAPI_) : config(config_), bitcoinAPI(bitcoinAPI_), txTimeFile(config.dataDirectory/"mempool") {
         blocksci::ChainAccess chain(config, false, 0);
-        auto blocks = chain.getBlocks();
-        lastHeight = blocks.size();
+        lastHeight = chain.blockCount();
         
-        auto mostRecentBlock = Block(blocks.size() - 1, chain);
+        auto mostRecentBlock = Block(chain.blockCount() - 1, chain);
         auto lastTx = mostRecentBlock.back();
         if (txTimeFile.size() == 0) {
             // Record starting txNum in position 0
@@ -82,12 +81,11 @@ public:
     
     void recordMempool() {
         blocksci::ChainAccess chain(config, false, 0);
-        auto blocks = chain.getBlocks();
-        auto blockCount = blocks.size();
+        auto blockCount = chain.blockCount();
         for (uint32_t i = lastHeight; i < blockCount; i++) {
             auto block = Block(i, chain);
             for (auto tx : block) {
-                auto it = mempool.find(tx.getHash(chain));
+                auto it = mempool.find(tx.getHash());
                 if (it != mempool.end()) {
                     auto &txData = it->second;
                     txTimeFile.write(txData);

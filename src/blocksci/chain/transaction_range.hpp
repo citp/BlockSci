@@ -8,7 +8,7 @@
 #ifndef transaction_range_hpp
 #define transaction_range_hpp
 
-#include "transaction.hpp"
+#include "chain_fwd.hpp"
 #include <range/v3/view_facade.hpp>
 
 namespace blocksci {

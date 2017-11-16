@@ -4,6 +4,7 @@
 
 #include "bitcoin_pubkey.hpp"
 
+#include <blocksci/hash.hpp>
 #include <secp256k1.h>
 #include <secp256k1_recovery.h>
 
@@ -162,6 +163,14 @@ static int ecdsa_signature_parse_der_lax(const secp256k1_context* ctx, secp256k1
         secp256k1_ecdsa_signature_parse_compact(ctx, sig, tmpsig);
     }
     return 1;
+}
+
+CKeyID CPubKey::GetID() const {
+    return CKeyID(hash160(vch.data(), size()));
+}
+
+blocksci::uint256 CPubKey::GetHash() const {
+    return sha256(vch.data(), size());
 }
 
 bool CPubKey::Verify(const blocksci::uint256 &hash, const std::vector<unsigned char>& vchSig) const {

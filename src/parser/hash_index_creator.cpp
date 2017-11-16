@@ -26,8 +26,8 @@ void HashIndexCreator::tearDown() {
     wtxn.commit();
 }
 
-void HashIndexCreator::processTx(const blocksci::Transaction &tx, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &) {
-    auto hash = tx.getHash(chain);
+void HashIndexCreator::processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &) {
+    auto hash = tx.getHash();
     tx_dbi.put(wtxn, hash, tx.txNum, lmdb::dbi::default_put_flags);
 }
 

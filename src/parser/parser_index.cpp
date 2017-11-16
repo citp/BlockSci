@@ -40,7 +40,7 @@ void ParserIndex::runUpdate(const State &state) {
     if (latestState.txCount < state.txCount) {
         auto newTransactions = TransactionRange(chain, latestState.txCount, state.txCount);
         for (auto tx : newTransactions) {
-            processTx(tx, chain, scripts);
+            processTx(tx, scripts);
         }
     }
     

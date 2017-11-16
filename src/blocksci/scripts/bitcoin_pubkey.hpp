@@ -6,7 +6,6 @@
 #ifndef BITCOIN_PUBKEY_H
 #define BITCOIN_PUBKEY_H
 
-#include <blocksci/hash.hpp>
 #include <blocksci/bitcoin_uint256.hpp>
 
 #include <array>
@@ -116,16 +115,10 @@ public:
     }
 
     //! Get the KeyID of this public key (hash of its serialization)
-    CKeyID GetID() const
-    {
-        return CKeyID(hash160(vch.data(), size()));
-    }
+    CKeyID GetID() const;
 
     //! Get the 256-bit hash of this public key.
-    blocksci::uint256 GetHash() const
-    {
-        return sha256(vch.data(), size());
-    }
+    blocksci::uint256 GetHash() const;
 
     /*
      * Check syntactic correctness.

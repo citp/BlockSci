@@ -40,8 +40,6 @@ namespace blocksci {
             other |= (intType & uint64_t(0b1111)) << 60;
         }
         
-        friend struct std::hash<blocksci::Inout>;
-        
         Inout(uint32_t linkedTxNum, const Address &address, uint64_t value);
         Inout() : linkedTxNum(0), toAddressNum(0), other(0) {}
         

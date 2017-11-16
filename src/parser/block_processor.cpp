@@ -40,6 +40,7 @@
 
 #include <gperftools/profiler.h>
 
+#include <cmath>
 #include <atomic>
 #include <thread>
 #include <fstream>

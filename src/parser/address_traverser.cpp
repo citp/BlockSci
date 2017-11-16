@@ -13,7 +13,7 @@
 
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/input.hpp>
-#include <blocksci/chain/output_pointer.hpp>
+#include <blocksci/chain/inout_pointer.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/chain_access.hpp>
 #include <blocksci/address/address.hpp>
@@ -28,11 +28,11 @@ AddressTraverser::AddressTraverser(const ParserConfigurationBase &config_, const
 }
 
 
-void AddressTraverser::processTx(const blocksci::Transaction &tx, const blocksci::ChainAccess &, const blocksci::ScriptAccess &scripts) {
+void AddressTraverser::processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &scripts) {
     uint16_t outputNum = 0;
     std::unordered_set<uint32_t> revealedScripts;
     
-    for (auto &output : tx.outputs()) {
+    for (auto output : tx.outputs()) {
         auto address = output.getAddress();
         blocksci::OutputPointer pointer{tx.txNum, outputNum};
         std::function<bool(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {

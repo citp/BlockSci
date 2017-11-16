@@ -10,8 +10,7 @@
 
 #include "address_index.hpp"
 #include "chain/transaction.hpp"
-#include "chain/output_pointer.hpp"
-#include "chain/input_pointer.hpp"
+#include "chain/inout_pointer.hpp"
 #include "chain/output.hpp"
 #include "chain/input.hpp"
 #include "address.hpp"
@@ -21,22 +20,29 @@
 #include "data_configuration.hpp"
 
 #include <range/v3/utility/optional.hpp>
+#include <range/v3/view/transform.hpp>
+#include <range/v3/view/filter.hpp>
+#include <range/v3/action/transform.hpp>
+#include <range/v3/action/unique.hpp>
+#include <range/v3/action/sort.hpp>
+#include <range/v3/to_container.hpp>
 
+#include <unordered_set>
 #include <vector>
 #include <sstream>
 #include <iostream>
 
 namespace blocksci {
     
-    std::vector<const Output *> getOutputsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
-    std::vector<const Input *> getInputsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
+    std::vector<Output> getOutputsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
+    std::vector<Input> getInputsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
     std::vector<Transaction> getTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
     std::vector<Transaction> getOutputTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
     std::vector<Transaction> getInputTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
     
     lmdb::env createAddressIndexEnviroment(const std::string &path) {
         auto env = lmdb::env::create();
-        env.set_mapsize(100UL * 1024UL * 1024UL * 1024UL); /* 1 GiB */
+        env.set_mapsize(40UL * 1024UL * 1024UL * 1024UL); /* 1 GiB */
         env.set_max_dbs(5);
         env.open(path.c_str(), MDB_NOSUBDIR, 0664);
         return env;
@@ -45,58 +51,52 @@ namespace blocksci {
     AddressIndex::AddressIndex(const DataConfiguration &config) : env(createAddressIndexEnviroment(config.addressDBFilePath().native()))  {
     }
     
-    std::vector<const Output *> getOutputsImp(std::vector<OutputPointer> pointers, const ChainAccess &access) {
-        std::vector<const Output *> outputs;
-        outputs.reserve(pointers.size());
-        for (auto &pointer : pointers) {
-            outputs.push_back(&pointer.getOutput(access));
-        }
-        return outputs;
+    std::vector<Output> getOutputsImp(std::vector<OutputPointer> pointers, const ChainAccess &access) {
+        return pointers
+        | ranges::view::transform([&](const OutputPointer &pointer) { return Output(pointer, access); })
+        | ranges::to_vector;
     }
     
-    std::vector<const Output *> AddressIndex::getOutputs(const Address &address, const ChainAccess &access) const {
+    std::vector<Output> AddressIndex::getOutputs(const Address &address, const ChainAccess &access) const {
         return getOutputsImp(getOutputPointers(address), access);
     }
     
-    std::vector<const Output *> AddressIndex::getOutputs(const Script &script, const ChainAccess &access) const {
+    std::vector<Output> AddressIndex::getOutputs(const Script &script, const ChainAccess &access) const {
         return getOutputsImp(getOutputPointers(script), access);
     }
     
-    std::vector<const Input *> getInputsImp(std::vector<OutputPointer> pointers, const ChainAccess &access) {
+    std::vector<Input> getInputsImp(std::vector<OutputPointer> pointers, const ChainAccess &access) {
         std::unordered_set<InputPointer> allPointers;
         allPointers.reserve(pointers.size());
         for (auto &pointer : pointers) {
-            auto inputTx = pointer.getOutput(access).getSpendingTx(access);
+            auto inputTx = Output(pointer, access).getSpendingTx();
             if(inputTx) {
-                auto inputPointers = inputTx->getInputPointers(pointer, access);
+                auto inputPointers = inputTx->getInputPointers(pointer);
                 for (auto &inputPointer : inputPointers) {
                     allPointers.insert(inputPointer);
                 }
             }
         }
-        std::vector<const Input *> inputs;
-        inputs.reserve(allPointers.size());
-        for (auto &pointer : allPointers) {
-            inputs.push_back(&pointer.getInput(access));
-        }
-        
-        return inputs;
+        return allPointers
+        | ranges::view::transform([&](const InputPointer &pointer) { return Input(pointer, access); })
+        | ranges::to_vector;
     }
     
-    std::vector<const Input *> AddressIndex::getInputs(const Address &address, const ChainAccess &access) const {
+    std::vector<Input> AddressIndex::getInputs(const Address &address, const ChainAccess &access) const {
         return getInputsImp(getOutputPointers(address), access);
     }
     
-    std::vector<const Input *> AddressIndex::getInputs(const Script &script, const ChainAccess &access) const {
+    std::vector<Input> AddressIndex::getInputs(const Script &script, const ChainAccess &access) const {
         return getInputsImp(getOutputPointers(script), access);
     }
     
     std::vector<Transaction> getTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access) {
+        
         std::unordered_set<blocksci::Transaction> txes;
         txes.reserve(pointers.size() * 2);
         for (auto &pointer : pointers) {
-            txes.insert(pointer.getTransaction(access));
-            auto inputTx = pointer.getOutput(access).getSpendingTx(access);
+            txes.insert(Transaction(pointer.txNum, access));
+            auto inputTx = Output(pointer, access).getSpendingTx();
             if (inputTx) {
                 txes.insert(*inputTx);
             }
@@ -113,12 +113,9 @@ namespace blocksci {
     }
     
     std::vector<Transaction> getOutputTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access) {
-        std::unordered_set<blocksci::Transaction> txes;
-        txes.reserve(pointers.size());
-        for (auto &pointer : pointers) {
-            txes.insert(pointer.getTransaction(access));
-        }
-        return {txes.begin(), txes.end()};
+        auto txNums = pointers | ranges::view::transform([](const OutputPointer &pointer) { return pointer.txNum; }) | ranges::to_vector;
+        txNums |= ranges::action::sort | ranges::action::unique;
+        return txNums | ranges::view::transform([&](uint32_t txNum) { return Transaction(txNum, access); }) | ranges::to_vector;
     }
     
     std::vector<Transaction> AddressIndex::getOutputTransactions(const Address &address, const ChainAccess &access) const {
@@ -129,16 +126,16 @@ namespace blocksci {
         return getOutputTransactionsImp(getOutputPointers(script), access);
     }
     
+    
+    auto flatMap() {
+        return ranges::view::filter([](const auto &optional) { return static_cast<bool>(optional); })
+        | ranges::view::transform([](const auto &optional) { return *optional; });
+    }
+    
     std::vector<Transaction> getInputTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access) {
-        std::unordered_set<blocksci::Transaction> txes;
-        txes.reserve(pointers.size());
-        for (auto &pointer : pointers) {
-            auto inputTx = pointer.getOutput(access).getSpendingTx(access);
-            if (inputTx) {
-                txes.insert(*inputTx);
-            }
-        }
-        return {txes.begin(), txes.end()};
+        auto txes = pointers | ranges::view::transform([&](const OutputPointer &pointer) { return Output(pointer, access).getSpendingTx(); }) | flatMap() | ranges::to_vector;
+        txes |= ranges::action::sort(operator<) | ranges::action::unique(operator==);
+        return txes;
     }
     
     std::vector<Transaction> AddressIndex::getInputTransactions(const Address &address, const ChainAccess &access) const {

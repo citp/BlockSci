@@ -10,13 +10,11 @@
 
 #include "script_access.hpp"
 
-#include "data_configuration.hpp"
-
 namespace blocksci {
-    ScriptAccess::ScriptAccess(const DataConfiguration &config) :
+    ScriptAccess::ScriptAccess(const DataConfiguration &config_) :
     scriptFiles(blocksci::apply(blocksci::ScriptInfoList(), [&] (auto tag) {
-        return config.scriptsDirectory()/ std::string{scriptName(tag)};
-    })) {}
+        return config_.scriptsDirectory()/ std::string{scriptName(tag)};
+    })), config(config_) {}
     
     void ScriptAccess::reload() {
         for_each(scriptFiles, [&](auto& file) -> decltype(auto) { file.reload(); });

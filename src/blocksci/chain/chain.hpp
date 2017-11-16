@@ -14,7 +14,6 @@
 #include "transaction.hpp"
 #include "input.hpp"
 #include "output.hpp"
-#include "input_pointer.hpp"
-#include "output_pointer.hpp"
+#include "inout_pointer.hpp"
 
 #endif /* chain_h */

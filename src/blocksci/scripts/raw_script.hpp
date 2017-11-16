@@ -8,7 +8,8 @@
 #ifndef raw_script_hpp
 #define raw_script_hpp
 
-#include <blocksci/scripts/script_type.hpp>
+#include "script_type.hpp"
+
 #include <blocksci/bitcoin_uint256.hpp>
 
 

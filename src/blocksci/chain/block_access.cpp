@@ -8,7 +8,6 @@
 
 #include "block.hpp"
 #include "data_access.hpp"
-#include "transaction.hpp"
 #include "output.hpp"
 
 #include <range/v3/iterator_range.hpp>
@@ -21,15 +20,7 @@ namespace blocksci {
         return isSegwit(block, *DataAccess::Instance().scripts);
     }
     
-    std::vector<const Output *> getUnspentOutputs(const Block &block) {
-        return getUnspentOutputs(block, *DataAccess::Instance().chain);
-    }
-    
-    uint64_t totalOutAfterHeight(const Block &block, uint32_t height) {
-        return totalOutAfterHeight(block, height, *DataAccess::Instance().chain);
-    }
-    
-    std::vector<const Output *> getOutputsSpentByHeight(const Block &block, uint32_t height) {
+    std::vector<Output> getOutputsSpentByHeight(const Block &block, uint32_t height) {
         return getOutputsSpentByHeight(block, height, *DataAccess::Instance().chain);
     }
     

@@ -13,8 +13,7 @@
 #include "input.hpp"
 #include "block.hpp"
 #include "chain_access.hpp"
-#include "input_pointer.hpp"
-#include "output_pointer.hpp"
+#include "inout_pointer.hpp"
 #include "address/address.hpp"
 #include "scripts/scriptsfwd.hpp"
 #include "scripts/script_variant.hpp"
@@ -31,36 +30,36 @@ namespace blocksci {
     
     RawTransaction::RawTransaction(uint32_t sizeBytes_, uint32_t locktime_, uint16_t inputCount_, uint16_t outputCount_) : sizeBytes(sizeBytes_), locktime(locktime_), inputCount(inputCount_), outputCount(outputCount_), inOuts(static_cast<uint32_t>(inputCount_ + outputCount_)) {}
     
-    Output &RawTransaction::getOutput(uint16_t outputNum) {
-        return reinterpret_cast<Output &>(inOuts[inputCount + outputNum]);
+    Inout &RawTransaction::getOutput(uint16_t outputNum) {
+        return reinterpret_cast<Inout &>(inOuts[inputCount + outputNum]);
     }
     
-    Input &RawTransaction::getInput(uint16_t inputNum) {
-        return reinterpret_cast<Input &>(inOuts[inputNum]);
+    Inout &RawTransaction::getInput(uint16_t inputNum) {
+        return reinterpret_cast<Inout &>(inOuts[inputNum]);
     }
     
-    const Output &RawTransaction::getOutput(uint16_t outputNum) const {
-        return reinterpret_cast<const Output &>(inOuts[inputCount + outputNum]);
+    const Inout &RawTransaction::getOutput(uint16_t outputNum) const {
+        return reinterpret_cast<const Inout &>(inOuts[inputCount + outputNum]);
     }
     
-    const Input &RawTransaction::getInput(uint16_t inputNum) const {
-        return reinterpret_cast<const Input &>(inOuts[inputNum]);
+    const Inout &RawTransaction::getInput(uint16_t inputNum) const {
+        return reinterpret_cast<const Inout &>(inOuts[inputNum]);
     }
     
     
-    Transaction::Transaction(const ChainAccess &access_, const RawTransaction *data_, uint32_t txNum_, uint32_t blockHeight_) : access(&access_), data(data_), txNum(txNum_), blockHeight(blockHeight_) {}
+    Transaction::Transaction(const RawTransaction *data_, uint32_t txNum_, uint32_t blockHeight_, const ChainAccess &access_) : access(&access_), data(data_), txNum(txNum_), blockHeight(blockHeight_) {}
     
-    Transaction::Transaction(const ChainAccess &access_, uint32_t index) : Transaction(access_, index, access_.getBlockHeight(index)) {}
+    Transaction::Transaction(uint32_t index, const ChainAccess &access_) : Transaction(index, access_.getBlockHeight(index), access_) {}
     
-    Transaction::Transaction(const ChainAccess &access_, uint32_t index, uint32_t height) : Transaction(access_, access_.getTx(index), index, height) {}
+    Transaction::Transaction(uint32_t index, uint32_t height, const ChainAccess &access_) : Transaction(access_.getTx(index), index, height, access_) {}
     
-    uint256 Transaction::getHash(const ChainAccess &access) const {
-        auto &txHashesFile = access.getTxHashesFile();
+    uint256 Transaction::getHash() const {
+        auto &txHashesFile = access->getTxHashesFile();
         return *txHashesFile.getData(txNum);
     }
     
-    Block Transaction::block(const ChainAccess &access) const {
-        return Block(blockHeight, access);
+    Block Transaction::block() const {
+        return Block(blockHeight, *access);
     }
     
     std::string Transaction::getString() const {
@@ -70,9 +69,9 @@ namespace blocksci {
     }
     
     ranges::optional<Transaction> Transaction::txWithHash(uint256 hash, const HashIndex &index, const ChainAccess &chain) {
-        auto txXndex = index.getTxIndex(hash);
-        if (txXndex != 0) {
-            return Transaction(chain, txXndex);
+        auto txIndex = index.getTxIndex(hash);
+        if (txIndex != 0) {
+            return Transaction(txIndex, chain);
         } else {
             return ranges::nullopt;
         }
@@ -82,22 +81,12 @@ namespace blocksci {
         return txWithHash(uint256S(hash), index, access);
     }
     
-    Transaction::output_range Transaction::outputs() const {
-        auto &firstOut = data->getOutput(0);
-        return ranges::v3::make_iterator_range(&firstOut, &firstOut + outputCount());
-    }
-    
-    Transaction::input_range Transaction::inputs() const {
-        auto &firstIn = data->getInput(0);
-        return ranges::v3::make_iterator_range(&firstIn, &firstIn + inputCount());
-    }
-    
-    std::vector<OutputPointer> Transaction::getOutputPointers(const InputPointer &pointer, const ChainAccess &access) const {
+    std::vector<OutputPointer> Transaction::getOutputPointers(const InputPointer &pointer) const {
         std::vector<OutputPointer> pointers;
-        auto &input = pointer.getInput(access);
-        auto search = Output{pointer.txNum, input.getAddress(), input.getValue()};
+        auto input = Input(pointer, *access);
+        auto search = Inout{pointer.txNum, input.getAddress(), input.getValue()};
         uint16_t i = 0;
-        for (auto &output : outputs()) {
+        for (auto output : outputs()) {
             if (output == search) {
                 pointers.emplace_back(txNum, i);
             }
@@ -106,12 +95,12 @@ namespace blocksci {
         return pointers;
     }
     
-    std::vector<InputPointer> Transaction::getInputPointers(const OutputPointer &pointer, const ChainAccess &access) const {
+    std::vector<InputPointer> Transaction::getInputPointers(const OutputPointer &pointer) const {
         std::vector<InputPointer> pointers;
-        auto &output = pointer.getOutput(access);
-        auto search = Input{pointer.txNum, output.getAddress(), output.getValue()};
+        auto output = Output(pointer, *access);
+        auto search = Inout{pointer.txNum, output.getAddress(), output.getValue()};
         uint16_t i = 0;
-        for (auto &input : inputs()) {
+        for (auto input : inputs()) {
             if (input == search) {
                 pointers.emplace_back(txNum, i);
             }
@@ -120,41 +109,13 @@ namespace blocksci {
         return pointers;
     }
     
-    bool isCoinbase(const Transaction &tx) {
-        return tx.inputCount() == 0;
-    }
-    
-    const Output *getOpReturn(const Transaction &tx) {
-        for (auto &output : tx.outputs()) {
+    ranges::optional<Output> getOpReturn(const Transaction &tx) {
+        for (auto output : tx.outputs()) {
             if (output.getType() == AddressType::Enum::NULL_DATA) {
-                return &output;
+                return output;
             }
         }
-        return nullptr;
-    }
-    
-    uint64_t totalOut(const Transaction &tx) {
-        uint64_t total = 0;
-        for (auto &output : tx.outputs()) {
-            total += output.getValue();
-        }
-        return total;
-    }
-    
-    uint64_t totalIn(const Transaction &tx) {
-        uint64_t total = 0;
-        for (auto &input : tx.inputs()) {
-            total += input.getValue();
-        }
-        return total;
-    }
-    
-    uint64_t fee(const Transaction &tx) {
-        if (isCoinbase(tx)) {
-            return 0;
-        } else {
-            return totalIn(tx) - totalOut(tx);
-        }
+        return ranges::nullopt;
     }
     
     bool hasFeeGreaterThan(const Transaction &tx, uint64_t txFee) {
@@ -176,7 +137,7 @@ namespace blocksci {
         }
         
         std::unordered_set<Address> inputAddresses;
-        for (auto &input : tx.inputs()) {
+        for (auto input : tx.inputs()) {
             inputAddresses.insert(input.getAddress());
         }
         
@@ -185,7 +146,7 @@ namespace blocksci {
         }
         
         std::unordered_map<uint64_t, uint16_t> outputValues;
-        for (auto &output : tx.outputs()) {
+        for (auto output : tx.outputs()) {
             outputValues[output.getValue()]++;
         }
         
@@ -317,7 +278,7 @@ namespace blocksci {
         }
         
         std::unordered_map<Address, uint64_t> inputValues;
-        for (auto &input : tx.inputs()) {
+        for (auto input : tx.inputs()) {
             inputValues[input.getAddress()] += input.getValue();
         }
         
@@ -326,7 +287,7 @@ namespace blocksci {
         }
         
         std::unordered_map<uint64_t, std::unordered_set<Address>> outputValues;
-        for (auto &output : tx.outputs()) {
+        for (auto output : tx.outputs()) {
             outputValues[output.getValue()].insert(output.getAddress());
         }
         
@@ -363,7 +324,7 @@ namespace blocksci {
         }
         
         size_t j = 0;
-        for (auto &output : tx.outputs()) {
+        for (auto output : tx.outputs()) {
             if (output.getValue() != goalValue) {
                 bucketGoals[j] += output.getValue();
                 j++;
@@ -388,7 +349,7 @@ namespace blocksci {
         }
         
         std::unordered_map<uint64_t, uint16_t> outputValues;
-        for (auto &output : tx.outputs()) {
+        for (auto output : tx.outputs()) {
             outputValues[output.getValue()]++;
         }
         
@@ -405,7 +366,7 @@ namespace blocksci {
         }
         
         std::unordered_map<Address, uint64_t> inputValues;
-        for (auto &input : tx.inputs()) {
+        for (auto input : tx.inputs()) {
             inputValues[input.getAddress()] += input.getValue();
         }
         
@@ -413,10 +374,10 @@ namespace blocksci {
             return CoinJoinResult::False;
         }
         
-        std::vector<const Output *> unknownOutputs;
-        for (auto &output : tx.outputs()) {
+        std::vector<Output> unknownOutputs;
+        for (auto output : tx.outputs()) {
             if (inputValues.find(output.getAddress()) == inputValues.end()) {
-                unknownOutputs.push_back(&output);
+                unknownOutputs.push_back(output);
             }
         }
         
@@ -426,7 +387,7 @@ namespace blocksci {
         
         outputValues.clear();
         for (auto &output : unknownOutputs) {
-            outputValues[output->getValue()]++;
+            outputValues[output.getValue()]++;
         }
         pr = std::max_element(std::begin(outputValues), std::end(outputValues),
                                    [] (const pair_type & p1, const pair_type & p2) {
@@ -455,33 +416,33 @@ namespace blocksci {
         return getSumCount(values, bucketGoals, maxDepth);
     }
     
-    const Output *getChangeOutput(const Transaction &tx, const ScriptAccess &scripts) {
+    ranges::optional<Output> getChangeOutput(const Transaction &tx, const ScriptAccess &scripts) {
         if (isCoinjoin(tx)) {
-            return nullptr;
+            return ranges::nullopt;
         }
         
         uint64_t smallestInput = std::numeric_limits<uint64_t>::max();
-        for (auto &input : tx.inputs()) {
+        for (auto input : tx.inputs()) {
             smallestInput = std::min(smallestInput, input.getValue());
         }
         
         uint16_t spendableCount = 0;
-        const Output *change = nullptr;
+        ranges::optional<Output> change;
         for (const auto &output : tx.outputs()) {
             if (output.getAddress().isSpendable()) {
                 spendableCount++;
                 if (output.getValue() < smallestInput && output.getAddress().getScript(scripts).firstTxIndex() == tx.txNum) {
                     if (change) {
-                        return nullptr;
+                        return ranges::nullopt;
                     }
-                    change = &output;
+                    change = output;
                 }
             }
         }
         if (change && spendableCount > 1) {
             return change;
         } else {
-            return nullptr;
+            return ranges::nullopt;
         }
     }
     
@@ -495,7 +456,7 @@ namespace blocksci {
         }
         
         std::unordered_set<AddressType::Enum> inputCounts;
-        for (auto &input : tx.inputs()) {
+        for (auto input : tx.inputs()) {
             inputCounts.insert(input.getAddress().type);
         }
         
@@ -506,7 +467,7 @@ namespace blocksci {
         AddressType::Enum inputType = *inputCounts.begin();
         
         bool seenType = false;
-        for (auto &output : tx.outputs()) {
+        for (auto output : tx.outputs()) {
             if (output.getType() == inputType) {
                 if (seenType) {
                     return false;
@@ -600,7 +561,7 @@ namespace blocksci {
         }
         
         std::unordered_set<DetailedType, DetailedTypeHasher> outputTypes;
-        for (auto &output : tx.outputs()) {
+        for (auto output : tx.outputs()) {
             outputTypes.insert(DetailedType{output.getAddress(), scripts});
         }
         
@@ -609,7 +570,7 @@ namespace blocksci {
         }
         
         std::unordered_set<DetailedType, DetailedTypeHasher> inputTypes;
-        for (auto &input : tx.inputs()) {
+        for (auto input : tx.inputs()) {
             inputTypes.insert(DetailedType{input.getAddress(), scripts});
         }
         
@@ -626,7 +587,7 @@ namespace blocksci {
         }
         
         std::unordered_set<Address> multisigOutputs;
-        for (auto &output : tx.outputs()) {
+        for (auto output : tx.outputs()) {
             auto pointer = getInsidePointer(output.getAddress(), access);
             if (pointer && pointer->type == AddressType::Enum::MULTISIG) {
                 multisigOutputs.insert(*pointer);
@@ -638,7 +599,7 @@ namespace blocksci {
         }
         
         std::unordered_set<Address> multisigInputs;
-        for (auto &input : tx.inputs()) {
+        for (auto input : tx.inputs()) {
             auto pointer = getInsidePointer(input.getAddress(), access);
             if (pointer && pointer->type == AddressType::Enum::MULTISIG) {
                 if (multisigOutputs.find(*pointer) == multisigOutputs.end()) {

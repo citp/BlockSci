@@ -9,6 +9,7 @@
 #include "address.hpp"
 #include "data_access.hpp"
 #include "chain/transaction.hpp"
+#include "chain/output.hpp"
 #include "scripts/script.hpp"
 #include "scripts/scripts.hpp"
 #include "scripts/script_variant.hpp"
@@ -21,12 +22,12 @@ namespace blocksci {
         return getScript(*DataAccess::Instance().scripts);
     }
         
-    std::vector<const Output *> Address::getOutputs() const {
+    std::vector<Output> Address::getOutputs() const {
         auto &instance = DataAccess::Instance();
         return getOutputs(*instance.addressIndex, *instance.chain);
     }
     
-    std::vector<const Input *> Address::getInputs() const {
+    std::vector<Input> Address::getInputs() const {
         auto &instance = DataAccess::Instance();
         return getInputs(*instance.addressIndex, *instance.chain);
     }
@@ -49,6 +50,10 @@ namespace blocksci {
     ranges::optional<Address> getAddressFromString(const std::string &addressString) {
         auto &instance = DataAccess::Instance();
         return getAddressFromString(instance.config, *instance.hashIndex, addressString);
+    }
+    
+    std::vector<Address> getAddressesWithPrefix(const std::string &prefix) {
+        return getAddressesWithPrefix(prefix, *DataAccess::Instance().scripts);
     }
     
     size_t addressCount() {

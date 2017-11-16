@@ -12,14 +12,11 @@
 #include "script_info.hpp"
 #include "script_data.hpp"
 
-#include <blocksci/address/address_info.hpp>
+#include <blocksci/data_configuration.hpp>
 
 #include <blocksci/file_mapper.hpp>
 
 namespace blocksci {
-    
-    struct DataConfiguration;
-    
     template<typename T>
     struct ScriptFileType;
     
@@ -51,6 +48,8 @@ namespace blocksci {
         
     public:
         ScriptAccess(const DataConfiguration &config);
+        
+        DataConfiguration config;
         
         template <ScriptType::Enum type>
         ScriptFile<type> &getFile() {

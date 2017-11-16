@@ -13,7 +13,7 @@
 #include "basic_types.hpp"
 #include "utxo.hpp"
 
-#include <blocksci/chain/output_pointer.hpp>
+#include <blocksci/chain/inout_pointer.hpp>
 
 class UTXOState : public SerializableMap<RawOutputPointer, UTXO> {
 public:
