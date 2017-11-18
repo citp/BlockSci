@@ -10,7 +10,7 @@
 
 #include "basic_types.hpp"
 
-#include <blocksci/hash.hpp>
+#include <blocksci/util/hash.hpp>
 
 #include <ostream>
 

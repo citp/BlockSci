@@ -11,11 +11,10 @@
 
 #include "bloom_filter.hpp"
 #include "parser_fwd.hpp"
+#include "serializable_map.hpp"
 
-#include <blocksci/state.hpp>
-#include <blocksci/scripts/raw_script.hpp>
-
-#include <google/dense_hash_map>
+#include <blocksci/util/state.hpp>
+#include <blocksci/util/bitcoin_uint256.hpp>
 
 #include <future>
 #include <unordered_map>
@@ -30,15 +29,38 @@ enum class AddressLocation {
     NotFound
 };
 
+struct RawScript {
+    blocksci::uint160 hash;
+    blocksci::ScriptType::Enum type;
+    
+    bool operator==(const RawScript& other) const {
+        return type == other.type && hash == other.hash;
+    }
+};
+
+namespace std {
+    template <>
+    struct hash<RawScript> {
+    public:
+        size_t operator()(const RawScript &b) const;
+    };
+}
+
 namespace leveldb {
     class DB;
 }
+
+
 
 struct AddressInfo;
 
 class AddressState {
 public:
-    using address_map = google::dense_hash_map<blocksci::RawScript, uint32_t, std::hash<blocksci::RawScript>>;
+    class AddressMap : public SerializableMap<RawScript, uint32_t> {
+    public:
+        AddressMap();
+    };
+    
 private:
     
     static constexpr auto SingleAddressMapMaxSize = 20'000'000;
@@ -49,9 +71,9 @@ private:
     
     leveldb::DB* levelDb;
     
-    address_map multiAddressMap;
-    address_map singleAddressMap;
-    address_map oldSingleAddressMap;
+    AddressMap multiAddressMap;
+    AddressMap singleAddressMap;
+    AddressMap oldSingleAddressMap;
     BloomFilter addressBloomFilter;
     
     mutable long bloomNegativeCount = 0;
@@ -82,7 +104,7 @@ public:
     
     void optionalSave();
 
-    AddressInfo findAddress(const blocksci::RawScript &address) const;
+    AddressInfo findAddress(const RawScript &address) const;
     // Bool is true if address is new
     std::pair<uint32_t, bool> resolveAddress(const AddressInfo &addressInfo);
     uint32_t getNewAddressIndex(blocksci::ScriptType::Enum type);
@@ -91,9 +113,9 @@ public:
 };
 
 struct AddressInfo {
-    blocksci::RawScript rawAddress;
+    RawScript rawScript;
     AddressLocation location;
-    AddressState::address_map::iterator it;
+    AddressState::AddressMap::const_iterator it;
     uint32_t addressNum;
 };
 

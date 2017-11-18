@@ -8,20 +8,16 @@
 
 #define BLOCKSCI_WITHOUT_SINGLETON
 
-#include "util.hpp"
+#include "util/util.hpp"
 #include "script.hpp"
 #include "script_data.hpp"
 #include "script_info.hpp"
 
-#include "pubkey_script.hpp"
-#include "multisig_script.hpp"
-#include "scripthash_script.hpp"
-#include "nulldata_script.hpp"
-#include "nonstandard_script.hpp"
+#include "script_variant.hpp"
 
 #include "address/address.hpp"
 #include "address/address_info.hpp"
-#include "address/address_index.hpp"
+#include "index/address_index.hpp"
 
 #include "chain/transaction.hpp"
 #include "chain/output.hpp"
@@ -61,6 +57,10 @@ namespace blocksci {
             ss << ")";
             return ss.str();
         }
+    }
+    
+    AnyScript Script::getScript(const ScriptAccess &scripts) const {
+        return AnyScript(*this, scripts);
     }
     
     std::vector<Output> Script::getOutputs(const AddressIndex &index, const ChainAccess &chain) const {

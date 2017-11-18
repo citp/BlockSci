@@ -11,7 +11,8 @@
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>
-#include <blocksci/data_access.hpp>
+#include <blocksci/chain/algorithms.hpp>
+#include <blocksci/util/data_access.hpp>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -111,12 +112,12 @@ void init_block(py::module &m) {
         return py::bytes(block.coinbaseParam());
     }, "Data contained within the coinbase transaction of this block")
     .def_property_readonly("coinbase_tx", py::overload_cast<>(&Block::coinbaseTx, py::const_), "Return the coinbase transcation in this block")
-    .def_property_readonly("fees", py::overload_cast<const Block &>(fees), "Return a list of the fees in this block")
-    .def_property_readonly("fees_per_byte", py::overload_cast<const Block &>(feesPerByte), "Return a list of fees per byte in this block")
+    .def_property_readonly("fees", [](const Block &block) { return fees(block); }, "Return a list of the fees in this block")
+    .def_property_readonly("fees_per_byte", [](const Block &block) { return feesPerByte(block); }, "Return a list of fees per byte in this block")
     .def_property_readonly("size_bytes", py::overload_cast<const Block &>(sizeBytes), "Returns the total size of the block in bytes")
-    .def_property_readonly("value_in", py::overload_cast<const Block &>(totalIn), "Returns the sum of the value of all of the inputs included in this block")
-    .def_property_readonly("value_out", py::overload_cast<const Block &>(totalOut), "Returns the sum of the value of all of the outputs included in this block")
-    .def_property_readonly("unspent_outputs", py::overload_cast<const Block &>(getUnspentOutputs), "Returns a list of all of the outputs in this block that are still unspent")
+    .def_property_readonly("value_in", totalIn<Block>, "Returns the sum of the value of all of the inputs included in this block")
+    .def_property_readonly("value_out", totalOut<Block>, "Returns the sum of the value of all of the outputs included in this block")
+    .def_property_readonly("outputs_unspent", [](const Block &block) { return outputsUnspent(block); }, "Returns a list of all of the outputs in this block that are still unspent")
     .def("value_out_after_height", py::overload_cast<const Block &, uint32_t>(totalOutAfterHeight), "Returns the sum of all of the outputs that were not spent until after the given height")
     .def("outputs_spent_by_height", py::overload_cast<const Block &, uint32_t>(getOutputsSpentByHeight), "Returns a list of all of the outputs that were spent by the given height")
     .def("total_spent_of_age", py::overload_cast<const Block &, uint32_t>(getTotalSpentOfAge), "Returns the sum of all the outputs in the block that were spent within the given number of blocks")

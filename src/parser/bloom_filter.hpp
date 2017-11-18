@@ -9,7 +9,7 @@
 #ifndef bloom_filter_hpp
 #define bloom_filter_hpp
 
-#include <blocksci/file_mapper.hpp>
+#include <blocksci/util/file_mapper.hpp>
 
 #include <boost/serialization/access.hpp>
 
@@ -28,7 +28,7 @@ struct BloomStore {
     void reset(uint64_t length);
     
 private:
-    blocksci::FixedSizeFileMapper<BlockType, boost::iostreams::mapped_file::readwrite> backingFile;
+    blocksci::FixedSizeFileMapper<BlockType, blocksci::AccessMode::readwrite> backingFile;
     uint64_t length;
     
     uint64_t blockCount() const;

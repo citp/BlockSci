@@ -7,7 +7,7 @@
 //
 
 #include <blocksci/chain/blockchain.hpp>
-#include <blocksci/address/address_index.hpp>
+#include <blocksci/index/address_index.hpp>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>

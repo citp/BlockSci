@@ -15,7 +15,7 @@
 #include "input.hpp"
 #include "transaction_summary.hpp"
 #include "address/address.hpp"
-#include "scripts/scripts.hpp"
+#include "scripts/nulldata_script.hpp"
 
 #include <range/v3/view/transform.hpp>
 #include <range/v3/to_container.hpp>
@@ -53,12 +53,22 @@ namespace blocksci {
         
     }
     
+    Block::cursor::cursor(const Block &block_, uint32_t txNum) : block(&block_), currentTxPos(reinterpret_cast<const char *>(block->access->getTx(txNum))), currentTxIndex(txNum) {}
+    
     bool Block::cursor::equal(cursor const &that) const {
         return currentTxIndex == that.currentTxIndex;
     }
     
+    bool Block::cursor::equal(ranges::default_sentinel) const {
+        return currentTxIndex == block->endTxIndex();
+    }
+    
     int Block::cursor::distance_to(cursor const &that) const {
-        return static_cast<int>(that.currentTxIndex) - static_cast<int>(currentTxIndex);
+        return static_cast<int>(currentTxIndex) - static_cast<int>(that.currentTxIndex);
+    }
+    
+    int Block::cursor::distance_to(ranges::default_sentinel) const {
+        return static_cast<int>(block->endTxIndex()) - static_cast<int>(currentTxIndex);
     }
     
     void Block::cursor::next() {
@@ -71,18 +81,15 @@ namespace blocksci {
     
     void Block::cursor::prev() {
         currentTxIndex--;
-        currentTxPos = nullptr;
+        currentTxPos = reinterpret_cast<const char *>(block->access->getTx(currentTxIndex));
     }
     
     void Block::cursor::advance(int amount) {
         currentTxIndex += static_cast<uint32_t>(amount);
-        currentTxPos = nullptr;
+        currentTxPos = reinterpret_cast<const char *>(block->access->getTx(currentTxIndex));
     }
     
     Transaction Block::cursor::read() const {
-        if (currentTxPos == nullptr) {
-            currentTxPos = reinterpret_cast<const char *>(block->access->getTx(currentTxIndex));
-        }
         auto rawTx = reinterpret_cast<const RawTransaction *>(currentTxPos);
         return {rawTx, currentTxIndex, block->height(), *block->access};
     }
@@ -141,21 +148,8 @@ namespace blocksci {
         return size;
     }
     
-    std::vector<uint64_t> fees(const Block &block) {
-        return block | ranges::view::transform(fee) | ranges::to_vector;
-    }
-    
-    std::vector<double> feesPerByte(const Block &block) {
-        return block | ranges::view::transform(feePerByte) | ranges::to_vector;
-    }
-    
     TransactionSummary transactionStatistics(const Block &block) {
         return ranges::accumulate(block, TransactionSummary{});
-        
-    }
-    
-    std::vector<Output> getUnspentOutputs(const Block &block) {
-        return block.allOutputs() | ranges::view::remove_if([](const Output &output) { return output.isSpent(); }) | ranges::to_vector;
     }
     
     std::vector<Output> getOutputsSpentByHeight(const Block &block, uint32_t height, const ChainAccess &access) {
@@ -165,16 +159,6 @@ namespace blocksci {
         };
         return block.allOutputs() | ranges::view::remove_if(ranges::not_fn(outputSpentByHeight)) | ranges::to_vector;
         
-    }
-    
-    uint64_t totalOut(const Block &block) {
-        auto values = block | ranges::view::transform([](const Transaction &tx) { return totalOut(tx);});
-        return ranges::accumulate(values ,uint64_t{0});
-    }
-    
-    uint64_t totalIn(const Block &block) {
-        auto values = block | ranges::view::transform([](const Transaction &tx) { return totalIn(tx);});
-        return ranges::accumulate(values,uint64_t{0});
     }
     
     uint64_t totalOutAfterHeight(const Block &block, uint32_t height) {

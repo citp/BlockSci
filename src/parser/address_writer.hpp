@@ -13,25 +13,25 @@
 #include "script_output.hpp"
 #include "script_input.hpp"
 
-#include <blocksci/file_mapper.hpp>
-#include <blocksci/state.hpp>
+#include <blocksci/util/file_mapper.hpp>
+#include <blocksci/util/state.hpp>
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/scripts/script_info.hpp>
 #include <blocksci/scripts/script_data.hpp>
 #include <blocksci/scripts/script.hpp>
-#include <blocksci/scripts/scriptsfwd.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
 
 template<typename T>
 struct ScriptFileType;
 
 template<typename T>
 struct ScriptFileType<blocksci::FixedSize<T>> {
-    using type = blocksci::FixedSizeFileMapper<T, boost::iostreams::mapped_file::readwrite>;
+    using type = blocksci::FixedSizeFileMapper<T, blocksci::AccessMode::readwrite>;
 };
 
 template<typename ...T>
 struct ScriptFileType<blocksci::Indexed<T...>> {
-    using type = blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, T...>;
+    using type = blocksci::IndexedFileMapper<blocksci::AccessMode::readwrite, T...>;
 };
 
 template<auto type>

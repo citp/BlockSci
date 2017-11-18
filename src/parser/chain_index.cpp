@@ -15,7 +15,7 @@
 
 #include <blocksci/chain/chain_access.hpp>
 #include <blocksci/chain/block.hpp>
-#include <blocksci/hash.hpp>
+#include <blocksci/util/hash.hpp>
 
 #ifdef BLOCKSCI_RPC_PARSER
 #include <bitcoinapi/bitcoinapi.h>

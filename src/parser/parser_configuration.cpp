@@ -7,7 +7,7 @@
 //
 
 #include "parser_configuration.hpp"
-#include <blocksci/hash.hpp>
+#include <blocksci/util/hash.hpp>
 
 #ifdef BLOCKSCI_RPC_PARSER
 #include <bitcoinapi/bitcoinapi.h>

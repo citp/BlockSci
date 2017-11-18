@@ -7,7 +7,7 @@
 //
 
 #include "inout_pointer.hpp"
-#include "hash.hpp"
+#include "util/hash.hpp"
 
 #include <sstream>
 

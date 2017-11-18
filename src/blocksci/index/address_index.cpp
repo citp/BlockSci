@@ -13,11 +13,10 @@
 #include "chain/inout_pointer.hpp"
 #include "chain/output.hpp"
 #include "chain/input.hpp"
-#include "address.hpp"
-#include "address_info.hpp"
+#include "address/address.hpp"
+#include "address/address_info.hpp"
 #include "scripts/script_info.hpp"
 #include "scripts/script.hpp"
-#include "data_configuration.hpp"
 
 #include <range/v3/utility/optional.hpp>
 #include <range/v3/view/transform.hpp>
@@ -48,7 +47,7 @@ namespace blocksci {
         return env;
     }
     
-    AddressIndex::AddressIndex(const DataConfiguration &config) : env(createAddressIndexEnviroment(config.addressDBFilePath().native()))  {
+    AddressIndex::AddressIndex(const std::string &path) : env(createAddressIndexEnviroment(path))  {
     }
     
     std::vector<Output> getOutputsImp(std::vector<OutputPointer> pointers, const ChainAccess &access) {

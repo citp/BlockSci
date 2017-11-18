@@ -8,12 +8,11 @@
 #ifndef state_hpp
 #define state_hpp
 
-#include "scripts/script_type.hpp"
+#include <blocksci/scripts/script_type.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
+#include <blocksci/chain/chain_fwd.hpp>
 
 namespace blocksci {
-    class ChainAccess;
-    class ScriptAccess;
-    
     struct State {
         uint32_t blockCount;
         uint32_t txCount;

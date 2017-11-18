@@ -9,13 +9,12 @@
 
 #include "address_db.hpp"
 
+#include <blocksci/index/address_index.hpp>
 #include <blocksci/address/address.hpp>
-#include <blocksci/address/address_index.hpp>
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/scripts/script_access.hpp>
 #include <blocksci/scripts/script_info.hpp>
 #include <blocksci/scripts/script_variant.hpp>
-#include <blocksci/scripts/scripts.hpp>
 #include <blocksci/scripts/scripthash_script.hpp>
 #include <blocksci/chain/inout_pointer.hpp>
 

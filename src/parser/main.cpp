@@ -22,8 +22,7 @@
 #include "address_writer.hpp"
 #include "utxo_address_state.hpp"
 
-#include <blocksci/data_access.hpp>
-#include <blocksci/state.hpp>
+#include <blocksci/util/state.hpp>
 #include <blocksci/address/address_types.hpp>
 #include <blocksci/chain/chain_access.hpp>
 #include <blocksci/chain/input.hpp>
@@ -65,8 +64,8 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, size_t firs
     state.blockCount = static_cast<uint32_t>(firstDeletedBlock);
     state.txCount = firstDeletedTxNum;
     
-    blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction> txFile{config.txFilePath()};
-    blocksci::FixedSizeFileMapper<blocksci::uint256, boost::iostreams::mapped_file::readwrite> txHashesFile{config.txHashesFilePath()};
+    blocksci::IndexedFileMapper<blocksci::AccessMode::readwrite, blocksci::RawTransaction> txFile{config.txFilePath()};
+    blocksci::FixedSizeFileMapper<blocksci::uint256, blocksci::AccessMode::readwrite> txHashesFile{config.txHashesFilePath()};
     blocksci::ScriptAccess scripts(config);
     UTXOState utxoState;
     utxoState.unserialize(config.utxoCacheFile().native());
@@ -114,7 +113,7 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, size_t firs
 void rollbackTransactions(size_t blockKeepCount, const ParserConfigurationBase &config) {
     using namespace blocksci;
     
-    constexpr auto readwrite = boost::iostreams::mapped_file::readwrite;
+    constexpr auto readwrite = blocksci::AccessMode::readwrite;
     blocksci::FixedSizeFileMapper<blocksci::RawBlock, readwrite> blockFile(config.blockFilePath());
     
     if (blockFile.size() > blockKeepCount) {
@@ -228,7 +227,7 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
     
 //    uint64_t sizeNeeded = sizeof(blocksci::RawTransaction) * totalTxCount + sizeof(blocksci::Inout) * (totalInputCount + totalOutputCount);
 //
-//    blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction> txFile{config.txFilePath()};
+//    blocksci::IndexedFileMapper<blocksci::AccessMode::readwrite, blocksci::RawTransaction> txFile{config.txFilePath()};
 //    txFile.grow(totalTxCount, sizeNeeded);
     
 //     ParserIndexCreator<AddressDB> addressDB(config.addressDBFilePath().native());

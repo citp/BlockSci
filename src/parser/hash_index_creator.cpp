@@ -9,8 +9,8 @@
 #include "hash_index_creator.hpp"
 #include "parser_configuration.hpp"
 
-#include <blocksci/util.hpp>
-#include <blocksci/hash_index.hpp>
+#include <blocksci/util/util.hpp>
+#include <blocksci/index/hash_index.hpp>
 #include <blocksci/chain/chain_access.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/scripts/script.hpp>

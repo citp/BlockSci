@@ -11,15 +11,14 @@
 
 #include "parser_index.hpp"
 
+#include <blocksci/chain/chain_fwd.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
+
 #include <string>
 #include <cstdint>
 
 namespace blocksci {
-    struct OutputPointer;
     struct Address;
-    struct Transaction;
-    class ScriptAccess;
-    class ScriptAccess;
 }
 
 

@@ -11,10 +11,13 @@
 
 #include "chain_fwd.hpp"
 
-#include <blocksci/file_mapper.hpp>
-#include <blocksci/bitcoin_uint256.hpp>
+#include <blocksci/util/file_mapper_fwd.hpp>
+#include <blocksci/util/bitcoin_uint256.hpp>
+
+#include <memory>
 
 namespace blocksci {
+    
     class ReorgException : public std::runtime_error {
     public:
         ReorgException();
@@ -24,11 +27,11 @@ namespace blocksci {
     struct DataConfiguration;
     
     class ChainAccess {
-        FixedSizeFileMapper<RawBlock> blockFile;
-        SimpleFileMapper<> blockCoinbaseFile;
+        std::unique_ptr<FixedSizeFileMapper<RawBlock>> blockFile;
+        std::unique_ptr<SimpleFileMapper<>> blockCoinbaseFile;
         
-        IndexedFileMapper<boost::iostreams::mapped_file::mapmode::readonly, RawTransaction> txFile;
-        FixedSizeFileMapper<uint256> txHashesFile;
+        std::unique_ptr<IndexedFileMapper<AccessMode::readonly, RawTransaction>> txFile;
+        std::unique_ptr<FixedSizeFileMapper<uint256>> txHashesFile;
         
         uint256 lastBlockHash;
         const uint256 *lastBlockHashDisk;
@@ -38,10 +41,6 @@ namespace blocksci {
         bool errorOnReorg;
         
         void reorgCheck() const;
-        
-        const FixedSizeFileMapper<RawBlock> &getBlockFile() const {
-            return blockFile;
-        }
         
         void setup();
         
@@ -60,10 +59,7 @@ namespace blocksci {
         
         std::vector<unsigned char> getCoinbase(uint64_t offset) const;
         
-        const FixedSizeFileMapper<uint256> &getTxHashesFile() const {
-            reorgCheck();
-            return txHashesFile;
-        }
+        const uint256 *getTxHash(uint32_t index) const;
         
         void reload();
     };

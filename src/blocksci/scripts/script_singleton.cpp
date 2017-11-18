@@ -7,13 +7,16 @@
 //
 
 #include "script.hpp"
-#include "data_access.hpp"
-#include "scripts.hpp"
-
+#include "util/data_access.hpp"
+#include "script_variant.hpp"
 #include "chain/transaction.hpp"
 #include "chain/output.hpp"
 
 namespace blocksci {
+    
+    AnyScript Script::getScript() const {
+        return getScript(*DataAccess::Instance().scripts);
+    }
     
     Transaction BaseScript::getFirstTransaction() const {
         return getFirstTransaction(*DataAccess::Instance().chain);

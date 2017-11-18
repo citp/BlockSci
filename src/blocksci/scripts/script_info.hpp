@@ -10,8 +10,8 @@
 #define script_info_hpp
 
 #include "script_type.hpp"
-#include "scriptsfwd.hpp"
-#include <blocksci/util.hpp>
+#include "scripts_fwd.hpp"
+#include <blocksci/util/util.hpp>
 
 #include <string_view>
 

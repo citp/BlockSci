@@ -10,10 +10,9 @@
 #include "variant_py.hpp"
 
 #include <blocksci/address/address.hpp>
-#include <blocksci/chain/chain.hpp>
 #include <blocksci/address/address_info.hpp>
-#include <blocksci/scripts/scripts.hpp>
-#include <blocksci/scripts/script_variant.hpp>
+#include <blocksci/chain.hpp>
+#include <blocksci/script.hpp>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
@@ -43,11 +42,16 @@ void init_address(py::module &m) {
     .def_static("with_prefix", py::overload_cast<const std::string &>(getAddressesWithPrefix))
     ;
     
-    py::class_<Script>(m, "Script", "Class representing a script which coins are sent to")
+    py::class_<Script> script(m, "Script", "Class representing a script which coins are sent to");
+    
+    script
     .def(py::init<uint32_t, ScriptType::Enum>(), "Can be constructed directly by passing it an address index and address type")
     .def("__repr__", &Script::toString)
     .def(py::self == py::self)
     .def(hash(py::self))
+    .def_property_readonly("script", [](const Script &script) {
+        return script.getScript().wrapped;
+    }, "Returns the script data associated with this script")
     .def_readonly("script_num", &Script::scriptNum)
     .def_readonly("type", &Script::type)
     .def(py::init<uint32_t, ScriptType::Enum>(), "Can be constructed directly by passing it an address index and address type")
@@ -58,10 +62,10 @@ void init_address(py::module &m) {
     .def("out_txes", py::overload_cast<>(&Script::getOutputTransactions, py::const_), "Returns a list of all transaction where this script was an output")
     ;
     
-    py::class_<BaseScript> baseScript(m, "BaseScript", "Class representing a script which coins are sent to");
+    py::class_<BaseScript> baseScript(m, "BaseScript", script, "Class representing a script which coins are sent to");
     baseScript
     .def_property_readonly("first_tx", py::overload_cast<>(&BaseScript::getFirstTransaction, py::const_), "Get the first transaction that was sent to this address")
-    .def_property_readonly("tx_revealed",py::overload_cast<>(&BaseScript::getTransactionRevealed, py::const_), "The transaction where this wrapped script was first revealed")
+    .def_property_readonly("revealed_tx",py::overload_cast<>(&BaseScript::getTransactionRevealed, py::const_), "The transaction where this wrapped script was first revealed")
     ;
     
     py::class_<script::Pubkey>(m, "PubkeyScript", baseScript, "Extra data about pay to pubkey address")

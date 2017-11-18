@@ -6,8 +6,7 @@
 //
 
 #include "script_variant.hpp"
-#include "scripts.hpp"
-#include "data_access.hpp"
+#include "util/data_access.hpp"
 
 namespace blocksci {
     AnyScript::AnyScript(const Address &address) : AnyScript(address, *DataAccess::Instance().scripts) {}

@@ -10,7 +10,7 @@
 #define script_hpp
 
 #include "script_type.hpp"
-#include "scriptsfwd.hpp"
+#include "scripts_fwd.hpp"
 
 #include <blocksci/chain/chain_fwd.hpp>
 
@@ -24,7 +24,6 @@ namespace blocksci {
     
     struct Address;
     struct DataConfiguration;
-    class ScriptAccess;
     class AddressIndex;
     
     struct Script {
@@ -34,6 +33,8 @@ namespace blocksci {
         Script() = default;
         Script(uint32_t scriptNum_, ScriptType::Enum type_) : scriptNum(scriptNum_), type(type_) {}
         Script(const Address &address);
+        
+        AnyScript getScript(const ScriptAccess &access) const;
         
         bool operator==(const Script& other) const {
             return type == other.type && scriptNum == other.scriptNum;
@@ -50,6 +51,7 @@ namespace blocksci {
         std::string toString() const;
         
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
+        AnyScript getScript() const;
         std::vector<Output> getOutputs() const;
         std::vector<Input> getInputs() const;
         std::vector<Transaction> getTransactions() const;

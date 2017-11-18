@@ -6,7 +6,7 @@
 //
 
 #include "output.hpp"
-#include "data_access.hpp"
+#include "util/data_access.hpp"
 
 namespace blocksci {
     Output::Output(const OutputPointer &pointer) : Output(pointer, *DataAccess::Instance().chain) {}

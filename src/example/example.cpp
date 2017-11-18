@@ -10,7 +10,7 @@
 
 #include <blocksci/blocksci.hpp>
 #include <blocksci/script.hpp>
-#include <blocksci/hash_index.hpp>
+#include <blocksci/index/hash_index.hpp>
 #include <blocksci/address/address.hpp>
 #include <blocksci/chain/transaction_range.hpp>
 
@@ -94,8 +94,7 @@ int main(int argc, const char * argv[]) {
     assert(argc == 2);
     
     Blockchain chain(argv[1]);
-    auto outputsA = Address(10, AddressType::Enum::PUBKEY).getOutputs();
-    auto outputsB = Script(10, ScriptType::Enum::PUBKEY).getOutputs();
+    auto outputs = getUnspentOutputs(chain[chain.size() - 1]);
     return 0;
 //    uint64_t count = 0;
 //    for (auto tx : chain.iterateTransactions(0, chain.size())) {

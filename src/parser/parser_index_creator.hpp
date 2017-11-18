@@ -12,8 +12,10 @@
 #include "parser_fwd.hpp"
 #include "parser_index.hpp"
 
-#include <blocksci/state.hpp>
+#include <blocksci/util/state.hpp>
 #include <blocksci/chain/chain_access.hpp>
+#include <blocksci/chain/chain_fwd.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
 #include <blocksci/scripts/script.hpp>
 #include <blocksci/scripts/script_access.hpp>
 
@@ -21,9 +23,6 @@
 #include <vector>
 
 namespace blocksci {
-    class ChainAccess;
-    class ScriptAccess;
-    struct Transaction;
     struct Address;
     struct State;
 }

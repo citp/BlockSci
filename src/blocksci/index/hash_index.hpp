@@ -9,6 +9,8 @@
 #ifndef hash_index_hpp
 #define hash_index_hpp
 
+#include <blocksci/blocksci_fwd.hpp>
+
 #include <lmdbxx/lmdb++.h>
 
 #include <string_view>
@@ -16,15 +18,10 @@
 #include <vector>
 #include <cstdint>
 
-struct sqlite3;
-struct sqlite3_stmt;
 
 namespace blocksci {
     using namespace std::string_view_literals;
     
-    struct DataConfiguration;
-    class uint256;
-    class uint160;
     struct Address;
     
     lmdb::env createHashIndexEnviroment(const std::string &path);

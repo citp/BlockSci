@@ -6,7 +6,7 @@
 //
 
 #include "input.hpp"
-#include "data_access.hpp"
+#include "util/data_access.hpp"
 
 namespace blocksci {
     Input::Input(const InputPointer &pointer) : Input(pointer, *DataAccess::Instance().chain) {}

@@ -9,7 +9,7 @@
 #include "chain/chain_access.hpp"
 #include "chain/block.hpp"
 #include "scripts/script_access.hpp"
-#include "util.hpp"
+#include "util/util.hpp"
 
 namespace blocksci {
     

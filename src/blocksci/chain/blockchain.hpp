@@ -62,6 +62,8 @@ namespace blocksci {
             void next();
             void prev();
             int distance_to(cursor const &that) const;
+            int distance_to(ranges::default_sentinel) const;
+            
             void advance(int amount);
         };
         
@@ -69,8 +71,8 @@ namespace blocksci {
             return cursor(*this, 0);
         }
         
-        cursor end_cursor() const {
-            return cursor(*this, lastBlockHeight);
+        ranges::default_sentinel end_cursor() const {
+            return {};
         }
         
         uint32_t lastBlockHeight;

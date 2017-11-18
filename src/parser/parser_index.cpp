@@ -9,7 +9,7 @@
 #include "parser_index.hpp"
 #include "block_processor.hpp"
 
-#include <blocksci/util.hpp>
+#include <blocksci/util/util.hpp>
 #include <blocksci/chain/chain_access.hpp>
 #include <blocksci/chain/transaction_range.hpp>
 #include <blocksci/scripts/script_access.hpp>

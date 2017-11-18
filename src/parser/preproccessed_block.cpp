@@ -13,7 +13,7 @@
 #include "script_input.hpp"
 #include "safe_mem_reader.hpp"
 
-#include <blocksci/hash.hpp>
+#include <blocksci/util/hash.hpp>
 #include <blocksci/chain/transaction.hpp>
 
 #ifdef BLOCKSCI_RPC_PARSER

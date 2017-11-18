@@ -9,9 +9,9 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include <blocksci/blocksci.hpp>
-#include <blocksci/data_configuration.hpp>
-#include <blocksci/data_access.hpp>
-#include <blocksci/file_mapper.hpp>
+#include <blocksci/util/data_configuration.hpp>
+#include <blocksci/util/data_access.hpp>
+#include <blocksci/util/file_mapper.hpp>
 #include <blocksci/chain/chain_access.hpp>
 
 #include <bitcoinapi/bitcoinapi.h>
@@ -33,21 +33,21 @@ class MempoolRecorder {
     std::unordered_map<uint256, time_t, std::hash<blocksci::uint256>> mempool;
     const DataConfiguration &config;
     BitcoinAPI &bitcoinAPI;
-    blocksci::FixedSizeFileMapper<time_t, boost::iostreams::mapped_file::readwrite> txTimeFile;
+    blocksci::FixedSizeFileMapper<time_t, blocksci::AccessMode::readwrite> txTimeFile;
 public:
     MempoolRecorder(const DataConfiguration &config_, BitcoinAPI &bitcoinAPI_) : config(config_), bitcoinAPI(bitcoinAPI_), txTimeFile(config.dataDirectory/"mempool") {
         blocksci::ChainAccess chain(config, false, 0);
         lastHeight = chain.blockCount();
         
         auto mostRecentBlock = Block(chain.blockCount() - 1, chain);
-        auto lastTx = mostRecentBlock.back();
+        auto lastTxIndex = mostRecentBlock.endTxIndex() - 1;
         if (txTimeFile.size() == 0) {
             // Record starting txNum in position 0
-            txTimeFile.write(lastTx.txNum + 1);
+            txTimeFile.write(lastTxIndex + 1);
         } else {
             // Fill in 0 timestamp where data is missing
             auto firstNum = *txTimeFile.getData(0);
-            auto txesSinceStart = static_cast<size_t>(lastTx.txNum - firstNum);
+            auto txesSinceStart = static_cast<size_t>(lastTxIndex - firstNum);
             auto currentTxCount = txTimeFile.size() - 1;
             if (currentTxCount < txesSinceStart) {
                 for (size_t i = currentTxCount; i < txesSinceStart; i++) {

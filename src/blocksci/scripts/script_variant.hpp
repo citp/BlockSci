@@ -9,8 +9,12 @@
 #define script_variant_hpp
 
 #include "script_info.hpp"
-#include "scriptsfwd.hpp"
-#include "scripts.hpp"
+#include "scripts_fwd.hpp"
+#include "pubkey_script.hpp"
+#include "scripthash_script.hpp"
+#include "multisig_script.hpp"
+#include "nulldata_script.hpp"
+#include "nonstandard_script.hpp"
 
 #include <mpark/variant.hpp>
 

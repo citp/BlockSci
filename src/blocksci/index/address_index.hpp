@@ -12,6 +12,7 @@
 #include <blocksci/address/address_types.hpp>
 #include <blocksci/scripts/script_type.hpp>
 #include <blocksci/chain/chain_fwd.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
 
 #include <lmdbxx/lmdb++.h>
 
@@ -20,11 +21,7 @@
 #include <vector>
 
 namespace blocksci {
-    
-    struct DataConfiguration;
     struct Address;
-    struct Script;
-    class ChainAccess;
     
     lmdb::env createAddressIndexEnviroment(const std::string &path);
     
@@ -33,7 +30,7 @@ namespace blocksci {
         std::unordered_map<blocksci::ScriptType::Enum,  lmdb::dbi> scriptDbs;
     public:
         
-        AddressIndex(const DataConfiguration &config);
+        AddressIndex(const std::string &path);
         
         std::vector<OutputPointer> getOutputPointers(const Address &address) const;
         std::vector<OutputPointer> getOutputPointers(const Script &script) const;

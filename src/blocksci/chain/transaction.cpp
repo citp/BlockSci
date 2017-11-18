@@ -15,11 +15,10 @@
 #include "chain_access.hpp"
 #include "inout_pointer.hpp"
 #include "address/address.hpp"
-#include "scripts/scriptsfwd.hpp"
 #include "scripts/script_variant.hpp"
-#include "hash_index.hpp"
+#include "index/hash_index.hpp"
 
-#include "hash.hpp"
+#include "util/hash.hpp"
 
 #include <unordered_map>
 #include <unordered_set>
@@ -54,8 +53,7 @@ namespace blocksci {
     Transaction::Transaction(uint32_t index, uint32_t height, const ChainAccess &access_) : Transaction(access_.getTx(index), index, height, access_) {}
     
     uint256 Transaction::getHash() const {
-        auto &txHashesFile = access->getTxHashesFile();
-        return *txHashesFile.getData(txNum);
+        return *access->getTxHash(txNum);
     }
     
     Block Transaction::block() const {

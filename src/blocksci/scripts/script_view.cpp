@@ -6,7 +6,7 @@
 //
 
 #include "script_view.hpp"
-#include <blocksci/bitcoin_uint256.hpp>
+#include <blocksci/util/bitcoin_uint256.hpp>
 
 #include <sstream>
 

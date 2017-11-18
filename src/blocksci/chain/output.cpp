@@ -12,7 +12,7 @@
 #include "inout_pointer.hpp"
 #include "chain_access.hpp"
 #include "transaction.hpp"
-#include "hash.hpp"
+#include "util/hash.hpp"
 
 #include <sstream>
 

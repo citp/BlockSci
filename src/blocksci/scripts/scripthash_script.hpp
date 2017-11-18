@@ -10,16 +10,13 @@
 #define scripthash_script_hpp
 
 #include "script.hpp"
-
+#include "scripts_fwd.hpp"
 #include <blocksci/address/address.hpp>
-#include <blocksci/bitcoin_uint256.hpp>
+#include <blocksci/util/bitcoin_uint256.hpp>
 
 #include <range/v3/utility/optional.hpp>
 
 namespace blocksci {
-    struct ScriptHashData;
-    class AnyScript;
-    
     template <>
     class ScriptAddress<ScriptType::Enum::SCRIPTHASH> : public BaseScript {
     private:

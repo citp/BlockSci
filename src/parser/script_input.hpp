@@ -62,14 +62,14 @@ struct ScriptInputData<blocksci::AddressType::Enum::PUBKEY> : public ScriptInput
 
 template<>
 struct ScriptInputData<blocksci::AddressType::Enum::PUBKEYHASH> : public ScriptInputDataBase {
-    CPubKey pubkey;
+    blocksci::CPubKey pubkey;
 
     ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::PUBKEYHASH> &);
 };
 
 template<>
 struct ScriptInputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : public ScriptInputDataBase {
-    CPubKey pubkey;
+    blocksci::CPubKey pubkey;
     
     ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> &);
 };

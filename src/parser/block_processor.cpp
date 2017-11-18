@@ -22,8 +22,8 @@
 #include "output_spend_data.hpp"
 #include "serializable_map.hpp"
 
-#include <blocksci/hash.hpp>
-#include <blocksci/bitcoin_uint256.hpp>
+#include <blocksci/util/hash.hpp>
+#include <blocksci/util/bitcoin_uint256.hpp>
 #include <blocksci/chain/block.hpp>
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>
@@ -420,7 +420,7 @@ void serializeAddressess(RawTransaction *tx, AddressWriter &addressWriter) {
 
 void backUpdateTxes(const ParserConfigurationBase &config) {
     {
-        blocksci::IndexedFileMapper<boost::iostreams::mapped_file::readwrite, blocksci::RawTransaction> txFile(config.txFilePath());
+        blocksci::IndexedFileMapper<blocksci::AccessMode::readwrite, blocksci::RawTransaction> txFile(config.txFilePath());
         
         blocksci::FixedSizeFileMapper<OutputLinkData> linkDataFile_(config.txUpdatesFilePath());
         const auto &linkDataFile = linkDataFile_;
@@ -635,12 +635,11 @@ void BlockProcessor::addNewBlocks(const ParserConfiguration<ParseTag> &config, s
     });
     
     auto generateScriptInputStepFuture = std::async(std::launch::async, [&] {
-        ECCVerifyHandle handle;
+        blocksci::ECCVerifyHandle handle;
         generateScriptInputStep();
     });
     
     auto processAddressStepFuture = std::async(std::launch::async, [&] {
-        ECCVerifyHandle handle;
         processAddressStep();
     });
     
@@ -693,7 +692,7 @@ void BlockProcessor::addNewBlocksSingle(const ParserConfiguration<ParseTag> &con
         
     FixedSizeFileWriter<blocksci::uint256> hashFile{config.txHashesFilePath()};
     AddressWriter addressWriter{config};
-    ECCVerifyHandle handle;
+    blocksci::ECCVerifyHandle handle;
     
     auto progressBar = makeProgressBar(totalTxCount, [=](RawTransaction *tx) {
         auto blockHeight = tx->blockHeight;

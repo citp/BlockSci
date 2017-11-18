@@ -12,7 +12,7 @@
 #include "config.hpp"
 #include "parser_fwd.hpp"
 
-#include <blocksci/bitcoin_uint256.hpp>
+#include <blocksci/util/bitcoin_uint256.hpp>
 
 #include <boost/serialization/base_object.hpp>
 

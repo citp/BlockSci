@@ -7,11 +7,10 @@
 //
 
 #include "address.hpp"
-#include "data_access.hpp"
+#include "util/data_access.hpp"
 #include "chain/transaction.hpp"
 #include "chain/output.hpp"
 #include "scripts/script.hpp"
-#include "scripts/scripts.hpp"
 #include "scripts/script_variant.hpp"
 
 #include <range/v3/utility/optional.hpp>

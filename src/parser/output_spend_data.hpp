@@ -14,7 +14,7 @@
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/scripts/script_info.hpp>
 #include <blocksci/scripts/bitcoin_pubkey.hpp>
-#include <blocksci/scripts/scriptsfwd.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
 
 #include <mpark/variant.hpp>
 
@@ -34,7 +34,7 @@ struct SpendData<blocksci::AddressType::Enum::MULTISIG> {
     static constexpr auto script_v = blocksci::ScriptType::Enum::MULTISIG;
     
     uint32_t addressCount;
-    std::array<CPubKey, 16> addresses;
+    std::array<blocksci::CPubKey, 16> addresses;
     
     SpendData() = default;
     SpendData(const ScriptOutput<blocksci::AddressType::Enum::MULTISIG> &output);

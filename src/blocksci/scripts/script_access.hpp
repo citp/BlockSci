@@ -12,9 +12,9 @@
 #include "script_info.hpp"
 #include "script_data.hpp"
 
-#include <blocksci/data_configuration.hpp>
+#include <blocksci/util/data_configuration.hpp>
 
-#include <blocksci/file_mapper.hpp>
+#include <blocksci/util/file_mapper.hpp>
 
 namespace blocksci {
     template<typename T>
@@ -27,7 +27,7 @@ namespace blocksci {
     
     template<typename ...T>
     struct ScriptFileType<Indexed<T...>> {
-        using type = IndexedFileMapper<boost::iostreams::mapped_file::mapmode::readonly, T...>;
+        using type = IndexedFileMapper<AccessMode::readonly, T...>;
     };
     
     template<typename T>
@@ -35,13 +35,14 @@ namespace blocksci {
     
     
     template<auto type>
-    struct ScriptFile : public ScriptFileType_t<typename ScriptInfo<type>::storage> {
-        using ScriptFileType_t<typename ScriptInfo<type>::storage>::ScriptFileType_t;
-    };
+    using ScriptFile = ScriptFileType_t<typename ScriptInfo<type>::storage>;
+    
+    template<auto type>
+    using ScriptFilePtr = std::unique_ptr<ScriptFile<type>>;
 
     class ScriptAccess {
     private:
-        using ScriptFilesTuple = apply_template_t<ScriptFile, ScriptInfoList>;
+        using ScriptFilesTuple = apply_template_t<ScriptFilePtr, ScriptInfoList>;
         
         ScriptFilesTuple scriptFiles;
         
@@ -53,12 +54,12 @@ namespace blocksci {
         
         template <ScriptType::Enum type>
         ScriptFile<type> &getFile() {
-            return std::get<ScriptFile<type>>(scriptFiles);
+            return *std::get<ScriptFile<type>>(scriptFiles);
         }
         
         template <ScriptType::Enum type>
         const ScriptFile<type> &getFile() const {
-            return std::get<ScriptFile<type>>(scriptFiles);
+            return *std::get<ScriptFilePtr<type>>(scriptFiles);
         }
         
         template <ScriptType::Enum type>

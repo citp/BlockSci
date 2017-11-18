@@ -14,11 +14,15 @@
 #include "input.hpp"
 #include "inout.hpp"
 
-#include <blocksci/util.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
+#include <blocksci/util/util.hpp>
+#include <blocksci/address/address_info.hpp>
 
 #include <range/v3/iterator_range.hpp>
 #include <range/v3/numeric/accumulate.hpp>
 #include <range/v3/view/transform.hpp>
+#include <range/v3/view/remove_if.hpp>
+#include <range/v3/view/filter.hpp>
 #include <range/v3/utility/optional.hpp>
 
 #include <vector>
@@ -30,7 +34,6 @@ enum class CoinJoinResult {
 namespace blocksci {
     struct Address;
     class uint256;
-    class ScriptAccess;
     class HashIndex;
     
     struct RawTransaction {
@@ -59,7 +62,7 @@ namespace blocksci {
         }
     };
     
-    struct Transaction {
+    class Transaction {
     private:
         const ChainAccess *access;
         const RawTransaction *data;
@@ -150,6 +153,34 @@ namespace blocksci {
     CoinJoinResult isPossibleCoinjoin(const Transaction &tx, uint64_t minBaseFee, double percentageFee, size_t maxDepth);
     CoinJoinResult isCoinjoinExtra(const Transaction &tx, uint64_t minBaseFee, double percentageFee, size_t maxDepth);
     ranges::optional<Output> getOpReturn(const Transaction &tx);
+    
+    inline auto inputs(const Transaction &tx) {
+        return tx.inputs();
+    }
+    
+    inline auto outputs(const Transaction &tx) {
+        return tx.outputs();
+    }
+    
+    inline auto outputsUnspent(const Transaction &tx) {
+        return tx.outputs() | ranges::view::remove_if([](const Output &output) { return output.isSpent(); });
+    }
+    
+    inline auto outputsOfAddressType(const Transaction &tx, AddressType::Enum type) {
+        return tx.outputs() | ranges::view::filter([&](const Output &output) { return output.getType() == type; });
+    }
+    
+    inline auto outputsOfScriptType(const Transaction &tx, ScriptType::Enum type) {
+        return tx.outputs() | ranges::view::filter([&](const Output &output) { return scriptType(output.getType()) == type; });
+    }
+    
+    inline uint64_t inputCount(const Transaction &tx) {
+        return tx.inputCount();
+    }
+    
+    inline uint64_t outputCount(const Transaction &tx) {
+        return tx.outputCount();
+    }
     
     inline uint64_t totalOut(const Transaction &tx) {
         auto values = tx.outputs() | ranges::view::transform([](const Output &output) { return output.getValue(); });

@@ -9,6 +9,8 @@
 #include "address_state.hpp"
 #include "parser_configuration.hpp"
 
+#include <blocksci/util/hash.hpp>
+
 #include <pebblesdb/db.h>
 #include <pebblesdb/write_batch.h>
 
@@ -27,39 +29,31 @@ namespace {
     static constexpr auto scriptCountsFileName = "scriptCounts.txt"sv;
 }
 
+namespace std {
+    size_t hash<RawScript>::operator()(const RawScript &b) const {
+        std::size_t seed = 8957643;
+        
+        hash_combine(seed, b.hash);
+        hash_combine(seed, b.type);
+        return seed;
+    };
+}
+
+AddressState::AddressMap::AddressMap() : SerializableMap<RawScript, uint32_t>({blocksci::uint160S("FFFFFFFFFFFFFFFFFFFF"), blocksci::ScriptType::Enum::NULL_DATA}, {blocksci::uint160S("FFFFFFFFFFFFFFFFFFFF"), blocksci::ScriptType::Enum::SCRIPTHASH}) {}
+
+
 AddressState::AddressState(const boost::filesystem::path &path_) : path(path_), addressBloomFilter(path/std::string(bloomFileName), StartingAddressCount, AddressFalsePositiveRate)  {
     leveldb::Options options;
     options.create_if_missing = true;
     options.write_buffer_size = 128 * 1024* 1024;
     leveldb::DB::Open(options, (path/std::string(dbFileName)).c_str(), &levelDb);
     
-    blocksci::uint160 deletedAddress;
-    deletedAddress.SetHex("FFFFFFFFFFFFFFFFFFFF");
-    blocksci::RawScript deletedKey{deletedAddress, blocksci::ScriptType::Enum::NULL_DATA};
-    
-    singleAddressMap.set_deleted_key(deletedKey);
-    oldSingleAddressMap.set_deleted_key(deletedKey);
-    multiAddressMap.set_deleted_key(deletedKey);
-    
-    blocksci::RawScript emptyKey{deletedAddress, blocksci::ScriptType::Enum::SCRIPTHASH};
-    
-    singleAddressMap.set_empty_key(emptyKey);
-    oldSingleAddressMap.set_empty_key(emptyKey);
-    multiAddressMap.set_empty_key(emptyKey);
-
     singleAddressMap.resize(SingleAddressMapMaxSize);
     oldSingleAddressMap.resize(SingleAddressMapMaxSize);
     multiAddressMap.resize(SingleAddressMapMaxSize);
     
-    if (auto file = fopen((path/std::string(singleAddressFileName)).c_str(), "rb"); file != NULL) {
-        singleAddressMap.unserialize(address_map::NopointerSerializer(), file);
-        fclose(file);
-    }
-    
-    if (auto file = fopen((path/std::string(multiAddressFileName)).c_str(), "rb"); file != NULL) {
-        multiAddressMap.unserialize(address_map::NopointerSerializer(), file);
-        fclose(file);
-    }
+    singleAddressMap.unserialize((path/std::string(singleAddressFileName)).native());
+    multiAddressMap.unserialize((path/std::string(multiAddressFileName)).native());
     
     boost::filesystem::ifstream inputFile(path/std::string(scriptCountsFileName));
     
@@ -88,14 +82,8 @@ AddressState::~AddressState() {
         addressClearFuture.get();
     }
     
-    if (auto file = fopen((path/std::string(singleAddressFileName)).c_str(), "wb"); file != NULL) {
-        singleAddressMap.serialize(address_map::NopointerSerializer(), file);
-        fclose(file);
-    }
-    if (auto file = fopen((path/std::string(multiAddressFileName)).c_str(), "wb"); file != NULL) {
-        multiAddressMap.serialize(address_map::NopointerSerializer(), file);
-        fclose(file);
-    }
+    singleAddressMap.serialize((path/std::string(singleAddressFileName)).native());
+    multiAddressMap.serialize((path/std::string(multiAddressFileName)).native());
     
     boost::filesystem::ofstream outputFile(path/std::string(scriptCountsFileName));
     for (auto value : scriptIndexes) {
@@ -126,35 +114,32 @@ void AddressState::reloadBloomFilter() {
     leveldb::Iterator* it = levelDb->NewIterator(leveldb::ReadOptions());
     for (it->SeekToFirst(); it->Valid(); it->Next()) {
         auto key = it->key();
-        if (key.size() == sizeof(blocksci::RawScript)) {
-            auto address = *reinterpret_cast<const blocksci::RawScript *>(key.data());
+        if (key.size() == sizeof(RawScript)) {
+            auto address = *reinterpret_cast<const RawScript *>(key.data());
             addressBloomFilter.add(address);
         }
     }
 }
 
-AddressInfo AddressState::findAddress(const blocksci::RawScript &address) const {
-    auto &_singleAddressMap = const_cast<address_map &>(singleAddressMap);
-    auto &_oldSingleAddressMap = const_cast<address_map &>(oldSingleAddressMap);
-    auto &_multiAddressMap = const_cast<address_map &>(multiAddressMap);
+AddressInfo AddressState::findAddress(const RawScript &address) const {
     
     if (!addressBloomFilter.possiblyContains(address)) {
         // Address has definitely never been seen
         bloomNegativeCount++;
-        return {address, AddressLocation::NotFound, _singleAddressMap.end(), 0};
+        return {address, AddressLocation::NotFound, singleAddressMap.end(), 0};
     }
     
-    if (auto it = _multiAddressMap.find(address); it != _multiAddressMap.end()) {
+    if (auto it = multiAddressMap.find(address); it != multiAddressMap.end()) {
         multiCount++;
         return {address, AddressLocation::MultiUseMap, it, it->second};
     }
     
-    if (auto it = _singleAddressMap.find(address); it != _singleAddressMap.end()) {
+    if (auto it = singleAddressMap.find(address); it != singleAddressMap.end()) {
         singleCount++;
         return {address, AddressLocation::SingleUseMap, it, it->second};
     }
     
-    if (auto it = _oldSingleAddressMap.find(address); it != _oldSingleAddressMap.end()) {
+    if (auto it = oldSingleAddressMap.find(address); it != oldSingleAddressMap.end()) {
         oldSingleCount++;
         return {address, AddressLocation::OldSingleUseMap, it, it->second};
     }
@@ -165,29 +150,29 @@ AddressInfo AddressState::findAddress(const blocksci::RawScript &address) const 
     if (s.ok()) {
         levelDBCount++;
         uint32_t destNum = *reinterpret_cast<const uint32_t *>(value.data());
-        return {address, AddressLocation::LevelDb, _singleAddressMap.end(), destNum};
+        return {address, AddressLocation::LevelDb, singleAddressMap.end(), destNum};
     }
     bloomFPCount++;
     // We must have had a false positive
-    return {address, AddressLocation::NotFound, _singleAddressMap.end(), 0};
+    return {address, AddressLocation::NotFound, singleAddressMap.end(), 0};
 }
 
 std::pair<uint32_t, bool> AddressState::resolveAddress(const AddressInfo &addressInfo) {
-    auto rawAddress = addressInfo.rawAddress;
+    auto rawScript = addressInfo.rawScript;
     bool existingAddress = false;
     switch (addressInfo.location) {
         case AddressLocation::SingleUseMap:
             singleAddressMap.erase(addressInfo.it);
-            multiAddressMap.insert(std::make_pair(rawAddress, addressInfo.addressNum));
+            multiAddressMap.add(rawScript, addressInfo.addressNum);
             existingAddress = true;
             break;
         case AddressLocation::OldSingleUseMap:
             oldSingleAddressMap.erase(addressInfo.it);
-            multiAddressMap.insert(std::make_pair(rawAddress, addressInfo.addressNum));
+            multiAddressMap.add(rawScript, addressInfo.addressNum);
             existingAddress = true;
             break;
         case AddressLocation::LevelDb:
-            multiAddressMap.insert(std::make_pair(rawAddress, addressInfo.addressNum));
+            multiAddressMap.add(rawScript, addressInfo.addressNum);
             existingAddress = true;
             break;
         case AddressLocation::MultiUseMap:
@@ -200,9 +185,9 @@ std::pair<uint32_t, bool> AddressState::resolveAddress(const AddressInfo &addres
     
     uint32_t addressNum = addressInfo.addressNum;
     if (!existingAddress) {
-        addressNum = getNewAddressIndex(rawAddress.type);
-        addressBloomFilter.add(rawAddress);
-        singleAddressMap.insert(std::make_pair(rawAddress, addressNum));
+        addressNum = getNewAddressIndex(rawScript.type);
+        addressBloomFilter.add(rawScript);
+        singleAddressMap.add(rawScript, addressInfo.addressNum);
         
         if (addressBloomFilter.isFull()) {
             addressBloomFilter.reset(addressBloomFilter.getMaxItems() * 2, addressBloomFilter.getFPRate());
@@ -238,9 +223,9 @@ void AddressState::rollback(const blocksci::State &state) {
     leveldb::Iterator* levelDbIt = levelDb->NewIterator(leveldb::ReadOptions());
     for (levelDbIt->SeekToFirst(); levelDbIt->Valid(); levelDbIt->Next()) {
         auto key = levelDbIt->key();
-        if (key.size() == sizeof(blocksci::RawScript)) {
+        if (key.size() == sizeof(RawScript)) {
             uint32_t destNum = *reinterpret_cast<const uint32_t *>(levelDbIt->value().data());
-            auto address = *reinterpret_cast<const blocksci::RawScript *>(key.data());
+            auto address = *reinterpret_cast<const RawScript *>(key.data());
             auto count = state.scriptCounts[static_cast<size_t>(address.type)];
             if (destNum >= count) {
                 batch.Delete(key);

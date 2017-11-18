@@ -13,7 +13,7 @@
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/block.hpp>
 #include <blocksci/address/address.hpp>
-#include <blocksci/bitcoin_uint256.hpp>
+#include <blocksci/util/bitcoin_uint256.hpp>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>

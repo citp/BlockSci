@@ -4,9 +4,9 @@
 
 #include "bitcoin_base58.hpp"
 
-#include <blocksci/bitcoin_uint256.hpp>
-#include <blocksci/hash.hpp>
-#include <blocksci/data_configuration.hpp>
+#include <blocksci/util/bitcoin_uint256.hpp>
+#include <blocksci/util/hash.hpp>
+#include <blocksci/util/data_configuration.hpp>
 
 #include <cassert>
 #include <string>

@@ -14,7 +14,7 @@
 #include "inout_pointer.hpp"
 #include "chain_access.hpp"
 #include "address/address.hpp"
-#include "hash.hpp"
+#include "util/hash.hpp"
 
 #include <sstream>
 

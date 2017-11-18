@@ -11,17 +11,14 @@
 
 #include "parser_configuration.hpp"
 
-#include <blocksci/scripts/scriptsfwd.hpp>
-#include <blocksci/state.hpp>
+#include <blocksci/chain/chain_fwd.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
+#include <blocksci/util/state.hpp>
 
 #include <future>
 
 namespace blocksci {
-    class ChainAccess;
-    class ScriptAccess;
-    struct Transaction;
     struct Address;
-    struct State;
 }
 
 class ParserIndex {

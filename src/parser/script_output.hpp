@@ -36,8 +36,8 @@ struct ScriptOutput {
     
     uint32_t resolve(AddressState &state) {
         if constexpr (blocksci::ScriptInfo<script_v>::deduped) {
-            blocksci::RawScript rawAddress{data.getHash(), script_v};
-            auto addressInfo = state.findAddress(rawAddress);
+            RawScript rawScript{data.getHash(), script_v};
+            auto addressInfo = state.findAddress(rawScript);
             std::tie(scriptNum, isNew) = state.resolveAddress(addressInfo);
         } else {
             scriptNum = state.getNewAddressIndex(script_v);
@@ -52,8 +52,8 @@ struct ScriptOutput {
     
     void check(const AddressState &state) {
         if constexpr (blocksci::ScriptInfo<script_v>::deduped) {
-            blocksci::RawScript rawAddress{data.getHash(), script_v};
-            auto addressInfo = state.findAddress(rawAddress);
+            RawScript rawScript{data.getHash(), script_v};
+            auto addressInfo = state.findAddress(rawScript);
             scriptNum = addressInfo.addressNum;
             isNew = addressInfo.addressNum == 0;
         } else {
@@ -76,10 +76,10 @@ struct ScriptOutputDataBase {
 
 template <>
 struct ScriptOutputData<blocksci::AddressType::Enum::PUBKEY> : public ScriptOutputDataBase {
-    CPubKey pubkey;
+    blocksci::CPubKey pubkey;
     
     ScriptOutputData(const boost::iterator_range<const unsigned char *> &vch1);
-    ScriptOutputData(const CPubKey &pub) : pubkey(pub) {}
+    ScriptOutputData(const blocksci::CPubKey &pub) : pubkey(pub) {}
     ScriptOutputData() = default;
     
     blocksci::uint160 getHash() const;
@@ -90,7 +90,7 @@ struct ScriptOutputData<blocksci::AddressType::Enum::PUBKEY> : public ScriptOutp
 template <>
 struct ScriptOutputData<blocksci::AddressType::Enum::PUBKEYHASH> : public ScriptOutputDataBase {
     
-    CKeyID hash;
+    blocksci::CKeyID hash;
     
     ScriptOutputData(blocksci::uint160 &pubkeyHash) : hash{pubkeyHash} {}
     
@@ -102,7 +102,7 @@ struct ScriptOutputData<blocksci::AddressType::Enum::PUBKEYHASH> : public Script
 template <>
 struct ScriptOutputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : public ScriptOutputDataBase {
     
-    CKeyID hash;
+    blocksci::CKeyID hash;
     
     ScriptOutputData(blocksci::uint160 &&pubkeyHash) : hash{pubkeyHash} {}
     
@@ -113,7 +113,7 @@ struct ScriptOutputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : publi
 
 template <>
 struct ScriptOutputData<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptOutputDataBase {
-    CKeyID hash;
+    blocksci::CKeyID hash;
     
     ScriptOutputData(blocksci::uint160 hash_) : hash(hash_) {}
     

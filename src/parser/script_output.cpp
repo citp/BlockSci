@@ -11,7 +11,7 @@
 #include "script_output.hpp"
 #include "address_writer.hpp"
 
-#include <blocksci/hash.hpp>
+#include <blocksci/util/hash.hpp>
 
 bool isValidPubkey(ranges::iterator_range<const unsigned char *> &vch1);
 
@@ -224,7 +224,7 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::PUBKEYHASH>::get
 }
 
 blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::PUBKEYHASH>::getData(uint32_t txNum) const {
-    constexpr static CPubKey nullPubkey{};
+    constexpr static blocksci::CPubKey nullPubkey{};
     return {txNum, nullPubkey, hash};
 }
 
@@ -235,7 +235,7 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHA
 }
 
 blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::getData(uint32_t txNum) const {
-    constexpr static CPubKey nullPubkey{};
+    constexpr static blocksci::CPubKey nullPubkey{};
     return {txNum, nullPubkey, hash};
 }
 
@@ -265,13 +265,13 @@ blocksci::ScriptHashData ScriptOutputData<blocksci::AddressType::Enum::WITNESS_S
 
 blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::MULTISIG>::getHash() const {
     std::vector<char> sigData;
-    sigData.resize(sizeof(numRequired) + sizeof(CKeyID) * addressCount);
+    sigData.resize(sizeof(numRequired) + sizeof(blocksci::CKeyID) * addressCount);
     size_t sigDataPos = 0;
     
     memcpy(&sigData[sigDataPos], reinterpret_cast<const char *>(&numRequired), sizeof(numRequired));
     sigDataPos += sizeof(numRequired);
     
-    std::vector<CPubKey> pubkeys;
+    std::vector<blocksci::CPubKey> pubkeys;
     pubkeys.reserve(addresses.size());
     for (auto &output : addresses) {
         pubkeys.push_back(output.data.pubkey);
@@ -289,7 +289,7 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::MULTISIG>::getHa
 }
 
 void ScriptOutputData<blocksci::AddressType::Enum::MULTISIG>::addAddress(const boost::iterator_range<const unsigned char *> &vch1) {
-    addresses.push_back(ScriptOutputData<blocksci::AddressType::Enum::PUBKEY>(CPubKey(vch1.begin(), vch1.end())));
+    addresses.push_back(ScriptOutputData<blocksci::AddressType::Enum::PUBKEY>(blocksci::CPubKey(vch1.begin(), vch1.end())));
     addressCount++;
 }
 

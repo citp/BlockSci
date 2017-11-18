@@ -12,7 +12,8 @@
 #include "chain_fwd.hpp"
 #include "transaction.hpp"
 
-#include <blocksci/bitcoin_uint256.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
+#include <blocksci/util/bitcoin_uint256.hpp>
 #include <blocksci/address/address_types.hpp>
 
 #include <range/v3/view_facade.hpp>
@@ -23,9 +24,6 @@
 #include <chrono>
 
 namespace blocksci {
-    
-    class ScriptAccess;
-    
     struct RawBlock {
         uint32_t firstTxIndex;
         uint32_t numTxes;
@@ -56,13 +54,14 @@ namespace blocksci {
             uint32_t currentTxIndex;
         public:
             cursor() = default;
-            cursor(const Block &block_, uint32_t txNum) : block(&block_), currentTxPos(nullptr), currentTxIndex(txNum) {}
+            cursor(const Block &block_, uint32_t txNum);
             Transaction read() const;
-            bool equal(cursor const &that) const;
             bool equal(ranges::default_sentinel) const;
+            bool equal(const cursor &other) const;
             void next();
             void prev();
             int distance_to(cursor const &that) const;
+            int distance_to(ranges::default_sentinel) const;
             void advance(int amount);
         };
         
@@ -70,8 +69,8 @@ namespace blocksci {
             return cursor(*this, firstTxIndex());
         }
         
-        cursor end_cursor() const {
-            return cursor(*this, endTxIndex());
+        ranges::default_sentinel end_cursor() const {
+            return {};
         }
         
     public:
@@ -133,17 +132,18 @@ namespace blocksci {
         #endif
     };
     
-    std::vector<uint64_t> fees(const Block &block);
-    std::vector<double> feesPerByte(const Block &block);
-    uint64_t totalOut(const Block &block);
-    uint64_t totalIn(const Block &block);
+    inline auto fees(const Block &block) {
+        return block | ranges::view::transform(fee);
+    }
     
+    inline auto feesPerByte(const Block &block) {
+        return block | ranges::view::transform(feePerByte);
+    }
     
     size_t sizeBytes(const Block &block);
     bool isSegwit(const Block &block, const ScriptAccess &scripts);
     
     uint64_t totalOutAfterHeight(const Block &block, uint32_t height);
-    std::vector<Output> getUnspentOutputs(const Block &block);
     
     TransactionSummary transactionStatistics(const Block &block, const ChainAccess &access);
     std::vector<Output> getOutputsSpentByHeight(const Block &block, uint32_t height, const ChainAccess &access);

@@ -13,7 +13,19 @@
 
 using namespace blocksci;
 
-SimpleFileMapperBase::SimpleFileMapperBase(boost::filesystem::path path_, FileType::mapmode mode) : fileEnd(0), path(path_), fileMode(mode) {
+namespace {
+    boost::iostreams::mapped_file::mapmode getMapMode(AccessMode mode) {
+        switch (mode) {
+            case AccessMode::readwrite:
+                return boost::iostreams::mapped_file::mapmode::readwrite;
+            case AccessMode::readonly:
+                return boost::iostreams::mapped_file::mapmode::readonly;
+        }
+        assert(false);
+    }
+}
+
+SimpleFileMapperBase::SimpleFileMapperBase(boost::filesystem::path path_, AccessMode mode) : fileEnd(0), path(path_), fileMode(mode) {
     path += ".dat";
     
     if (boost::filesystem::exists(path)) {
@@ -24,7 +36,7 @@ SimpleFileMapperBase::SimpleFileMapperBase(boost::filesystem::path path_, FileTy
 void SimpleFileMapperBase::openFile(size_t size) {
     fileEnd = size;
     if (fileEnd != 0) {
-        file.open(path, fileMode);
+        file.open(path, getMapMode(fileMode));
         constData = file.const_data();
     }
 }
@@ -58,7 +70,7 @@ size_t SimpleFileMapperBase::fileSize() const {
     return boost::filesystem::file_size(path);
 }
 
-char *SimpleFileMapper<boost::iostreams::mapped_file::mapmode::readwrite>::getWritePos() {
+char *SimpleFileMapper<AccessMode::readwrite>::getWritePos() {
     if (writePos < fileEnd) {
         return reinterpret_cast<char *>(file.data()) + writePos;
     } else if (writePos < fileEnd + buffer.size()) {
@@ -68,7 +80,7 @@ char *SimpleFileMapper<boost::iostreams::mapped_file::mapmode::readwrite>::getWr
     }
 }
 
-size_t SimpleFileMapper<boost::iostreams::mapped_file::mapmode::readwrite>::writeSpace() const {
+size_t SimpleFileMapper<AccessMode::readwrite>::writeSpace() const {
     if (writePos < fileEnd) {
         return fileEnd - writePos;
     } else if (writePos < fileEnd + buffer.size()) {
@@ -78,7 +90,7 @@ size_t SimpleFileMapper<boost::iostreams::mapped_file::mapmode::readwrite>::writ
     }
 }
 
-bool SimpleFileMapper<boost::iostreams::mapped_file::mapmode::readwrite>::write(const char *valuePos, size_t amountToWrite) {
+bool SimpleFileMapper<AccessMode::readwrite>::write(const char *valuePos, size_t amountToWrite) {
     if (writePos < fileEnd) {
         auto writeAmount = std::min(amountToWrite, writeSpace());
         memcpy(getWritePos(), valuePos, writeAmount);
@@ -113,7 +125,7 @@ bool SimpleFileMapper<boost::iostreams::mapped_file::mapmode::readwrite>::write(
     return bufferFull;
 }
 
-void SimpleFileMapper<boost::iostreams::mapped_file::mapmode::readwrite>::clearBuffer() {
+void SimpleFileMapper<AccessMode::readwrite>::clearBuffer() {
     if (buffer.size() > 0) {
         if (!file.is_open()) {
             boost::iostreams::mapped_file_params params{path.native()};
@@ -129,7 +141,7 @@ void SimpleFileMapper<boost::iostreams::mapped_file::mapmode::readwrite>::clearB
     }
 }
 
-char *SimpleFileMapper<boost::iostreams::mapped_file::mapmode::readwrite>::getDataAtOffset(OffsetType offset) {
+char *SimpleFileMapper<AccessMode::readwrite>::getDataAtOffset(OffsetType offset) {
     assert(offset < fileEnd + buffer.size() || offset == InvalidFileIndex);
     if (offset == InvalidFileIndex) {
         return nullptr;
@@ -140,7 +152,7 @@ char *SimpleFileMapper<boost::iostreams::mapped_file::mapmode::readwrite>::getDa
     }
 }
 
-const char *SimpleFileMapper<boost::iostreams::mapped_file::mapmode::readwrite>::getDataAtOffset(OffsetType offset) const {
+const char *SimpleFileMapper<AccessMode::readwrite>::getDataAtOffset(OffsetType offset) const {
     assert(offset < fileEnd + buffer.size() || offset == InvalidFileIndex);
     if (offset == InvalidFileIndex) {
         return nullptr;
@@ -151,7 +163,7 @@ const char *SimpleFileMapper<boost::iostreams::mapped_file::mapmode::readwrite>:
     }
 }
 
-void SimpleFileMapper<boost::iostreams::mapped_file::mapmode::readwrite>::truncate(OffsetType offset) {
+void SimpleFileMapper<AccessMode::readwrite>::truncate(OffsetType offset) {
     if (offset < SimpleFileMapperBase::size()) {
         buffer.clear();
         boost::filesystem::resize_file(path, offset);

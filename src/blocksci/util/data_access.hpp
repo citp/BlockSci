@@ -9,14 +9,13 @@
 #ifndef data_access_hpp
 #define data_access_hpp
 
-#include <blocksci/data_configuration.hpp>
+#include <blocksci/blocksci_fwd.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
+#include <blocksci/chain/chain_fwd.hpp>
+#include <blocksci/util/data_configuration.hpp>
 
 namespace blocksci {
-    
-    class ChainAccess;
-    class ScriptAccess;
     class AddressIndex;
-    class HashIndex;
 
     class DataAccess {
     public:

@@ -6,7 +6,6 @@
 //
 
 #include "script_variant.hpp"
-#include "scripts.hpp"
 #include <blocksci/address/address_info.hpp>
 
 namespace blocksci {

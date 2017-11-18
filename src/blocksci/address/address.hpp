@@ -12,6 +12,7 @@
 #include "address_types.hpp"
 
 #include <blocksci/chain/chain_fwd.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
 
 #include <range/v3/utility/optional.hpp>
 
@@ -19,9 +20,6 @@
 #include <vector>
 
 namespace blocksci {
-    struct Script;
-    class AnyScript;
-    class ScriptAccess;
     class HashIndex;
     class AddressIndex;
     struct DataConfiguration;

@@ -6,7 +6,7 @@
 //
 //
 
-#include "data_configuration.hpp"
+#include "util/data_configuration.hpp"
 
 #include <boost/filesystem/operations.hpp>
 

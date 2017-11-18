@@ -15,12 +15,12 @@
 #include "file_writer.hpp"
 
 
-#include <blocksci/file_mapper.hpp>
+#include <blocksci/util/file_mapper.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/block.hpp>
 #include <blocksci/chain/inout_pointer.hpp>
-#include <blocksci/scripts/scriptsfwd.hpp>
-#include <blocksci/bitcoin_uint256.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
+#include <blocksci/util/bitcoin_uint256.hpp>
 
 class BlockFileReaderBase {
 public:

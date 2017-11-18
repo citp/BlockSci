@@ -9,15 +9,15 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "address.hpp"
-#include "address_index.hpp"
 #include "address_info.hpp"
-#include "raw_address_pointer.hpp"
+#include "scripts/bitcoin_base58.hpp"
 #include "scripts/script_access.hpp"
-#include "scripts/scriptsfwd.hpp"
+#include "scripts/scripts_fwd.hpp"
 #include "scripts/script_variant.hpp"
 #include "chain/transaction.hpp"
 #include "chain/output.hpp"
-#include "hash_index.hpp"
+#include "index/address_index.hpp"
+#include "index/hash_index.hpp"
 
 #include <unordered_set>
 
@@ -90,18 +90,19 @@ namespace blocksci {
     }
     
     ranges::optional<Address> getAddressFromString(const DataConfiguration &config, const HashIndex &index, const std::string &addressString) {
-        auto rawAddress = RawAddress::create(config, addressString);
-        
-        if (rawAddress) {
-            uint32_t addressNum = 0;
-            if (rawAddress->type == AddressType::Enum::PUBKEYHASH) {
-                addressNum = index.getPubkeyHashIndex(rawAddress->hash);
-            } else if (rawAddress->type == AddressType::Enum::SCRIPTHASH) {
-                addressNum = index.getScriptHashIndex(rawAddress->hash);
-            }
-            if (addressNum > 0) {
-                return Address{addressNum, rawAddress->type};
-            }
+        CBitcoinAddress address{addressString};
+        auto [hash, type] = address.Get(config);
+        if (type == AddressType::Enum::NONSTANDARD) {
+            return ranges::nullopt;
+        }
+        uint32_t addressNum = 0;
+        if (type == AddressType::Enum::PUBKEYHASH) {
+            addressNum = index.getPubkeyHashIndex(hash);
+        } else if (type == AddressType::Enum::SCRIPTHASH) {
+            addressNum = index.getScriptHashIndex(hash);
+        }
+        if (addressNum > 0) {
+            return Address{addressNum, type};
         }
         return ranges::nullopt;
     }

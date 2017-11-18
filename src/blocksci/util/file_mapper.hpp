@@ -9,6 +9,8 @@
 #ifndef file_mapper_hpp
 #define file_mapper_hpp
 
+#include <blocksci/util/file_mapper_fwd.hpp>
+
 #include <boost/iostreams/device/mapped_file.hpp>
 #include <boost/filesystem/path.hpp>
 
@@ -46,7 +48,7 @@ namespace blocksci {
     
     using OffsetType = uint64_t;
     constexpr OffsetType InvalidFileIndex = std::numeric_limits<OffsetType>::max();
-    
+
     struct SimpleFileMapperBase {
         using FileType = boost::iostreams::mapped_file;
     private:
@@ -59,11 +61,11 @@ namespace blocksci {
         size_t fileEnd;
     public:
         boost::filesystem::path path;
-        FileType::mapmode fileMode;
+        AccessMode fileMode;
         
         void reload();
         
-        SimpleFileMapperBase(boost::filesystem::path path_, FileType::mapmode mode);
+        SimpleFileMapperBase(boost::filesystem::path path_, AccessMode mode);
         
         SimpleFileMapperBase(const SimpleFileMapperBase &) = delete;
         SimpleFileMapperBase &operator=(const SimpleFileMapperBase &) = delete;
@@ -83,12 +85,9 @@ namespace blocksci {
         size_t fileSize() const;
     };
     
-    template<boost::iostreams::mapped_file::mapmode mode = boost::iostreams::mapped_file::mapmode::readonly>
-    struct SimpleFileMapper;
-    
     template <>
-    struct SimpleFileMapper<boost::iostreams::mapped_file::mapmode::readonly> : public SimpleFileMapperBase {
-        SimpleFileMapper(boost::filesystem::path path) : SimpleFileMapperBase(path, boost::iostreams::mapped_file::mapmode::readonly) {}
+    struct SimpleFileMapper<AccessMode::readonly> : public SimpleFileMapperBase {
+        SimpleFileMapper(boost::filesystem::path path) : SimpleFileMapperBase(path, AccessMode::readonly) {}
     };
     
     template <typename MainType>
@@ -124,12 +123,12 @@ namespace blocksci {
     };
     
     template <>
-    struct SimpleFileMapper<boost::iostreams::mapped_file::mapmode::readwrite> : public SimpleFileMapperBase {
+    struct SimpleFileMapper<AccessMode::readwrite> : public SimpleFileMapperBase {
         static constexpr size_t maxBufferSize = 50000000;
         std::vector<char> buffer;
-        static constexpr auto mode = boost::iostreams::mapped_file::mapmode::readwrite;
+        static constexpr auto mode = AccessMode::readwrite;
         
-        SimpleFileMapper(boost::filesystem::path path) : SimpleFileMapperBase(path, boost::iostreams::mapped_file::mapmode::readwrite), writePos(size()) {}
+        SimpleFileMapper(boost::filesystem::path path) : SimpleFileMapperBase(path, AccessMode::readwrite), writePos(size()) {}
         
         SimpleFileMapper(const SimpleFileMapper &) = delete;
         SimpleFileMapper &operator=(const SimpleFileMapper &) = delete;
@@ -191,7 +190,7 @@ namespace blocksci {
         void truncate(OffsetType offset);
     };
     
-    template <typename T, boost::iostreams::mapped_file::mapmode mode = boost::iostreams::mapped_file::mapmode::readonly>
+    template <typename T, AccessMode mode>
     struct FixedSizeFileMapper {
     private:
         SimpleFileMapper<mode> dataFile;
@@ -305,8 +304,8 @@ namespace blocksci {
         static_assert(sizeof...(A) == N, "The tuple sizes must be the same");
         return tuple_cast_helper<add_ptr_t<std::tuple<A...>>>( t1, std::make_index_sequence<N>{} );
     }
-        
-    template <boost::iostreams::mapped_file::mapmode mode = boost::iostreams::mapped_file::mapmode::readonly, typename... T>
+    
+    template <AccessMode mode, typename... T>
     struct IndexedFileMapper {
     private:
         template<size_t indexNum>

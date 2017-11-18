@@ -7,7 +7,7 @@
 //
 
 #include "block.hpp"
-#include "data_access.hpp"
+#include "util/data_access.hpp"
 #include "output.hpp"
 
 #include <range/v3/iterator_range.hpp>

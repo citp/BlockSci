@@ -33,7 +33,7 @@
 
 #ifdef BLOCKSCI_FILE_PARSER
 void replayBlock(const ParserConfiguration<FileTag> &config, uint32_t blockNum) {
-    ECCVerifyHandle handle;
+    blocksci::ECCVerifyHandle handle;
     ChainIndex<FileTag> index;
     boost::filesystem::ifstream inFile(config.blockListPath(), std::ios::binary);
     if (!inFile.good()) {

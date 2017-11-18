@@ -11,7 +11,7 @@
 
 #include "address_types.hpp"
 
-#include <blocksci/util.hpp>
+#include <blocksci/util/util.hpp>
 #include <blocksci/scripts/script_type.hpp>
 
 #include <string_view>

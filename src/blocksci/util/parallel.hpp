@@ -17,8 +17,6 @@
 
 namespace blocksci {
     
-    struct Transaction;
-    
     template <typename It, typename MapType, typename ResultType>
     ResultType mapReduceTransactionsImp(It begin, It end, const std::function<MapType(const std::vector<Block> &)> &mapFunc, const std::function<ResultType&(ResultType &, MapType &)> &reduceFunc, ResultType identity) {
         auto segmentCount = std::distance(begin, end);

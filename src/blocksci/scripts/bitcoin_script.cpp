@@ -4,7 +4,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "bitcoin_script.hpp"
-#include "bitcoin_uint256.hpp"
+#include "util/bitcoin_uint256.hpp"
 
 #include <sstream>
 

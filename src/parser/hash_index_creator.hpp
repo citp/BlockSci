@@ -12,6 +12,8 @@
 #include "parser_index.hpp"
 #include "parser_fwd.hpp"
 
+#include <blocksci/chain/chain_fwd.hpp>
+
 #include <lmdbxx/lmdb++.h>
 
 #include <SQLiteCpp/Database.h>
@@ -20,8 +22,6 @@
 #include <tuple>
 
 namespace blocksci {
-    class ChainAccess;
-    struct Transaction;
     class uint256;
 }
 

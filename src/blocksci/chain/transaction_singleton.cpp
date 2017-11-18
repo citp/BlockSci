@@ -7,11 +7,11 @@
 //
 
 #include "transaction.hpp"
-#include "data_access.hpp"
+#include "util/data_access.hpp"
 #include "output.hpp"
 #include "input.hpp"
 #include "block.hpp"
-#include "bitcoin_uint256.hpp"
+#include "util/bitcoin_uint256.hpp"
 
 namespace blocksci {
     

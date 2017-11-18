@@ -10,12 +10,11 @@
 #define script_data_hpp
 
 #include "bitcoin_pubkey.hpp"
-#include "scriptsfwd.hpp"
 
-#include <blocksci/util.hpp>
-#include <blocksci/typedefs.hpp>
+#include <blocksci/util/util.hpp>
+#include <blocksci/blocksci_fwd.hpp>
 #include <blocksci/address/address.hpp>
-#include <blocksci/bitcoin_uint256.hpp>
+#include <blocksci/util/bitcoin_uint256.hpp>
 
 namespace blocksci {
     

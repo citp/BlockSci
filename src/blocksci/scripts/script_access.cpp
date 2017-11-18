@@ -13,11 +13,11 @@
 namespace blocksci {
     ScriptAccess::ScriptAccess(const DataConfiguration &config_) :
     scriptFiles(blocksci::apply(blocksci::ScriptInfoList(), [&] (auto tag) {
-        return config_.scriptsDirectory()/ std::string{scriptName(tag)};
+        return std::make_unique<ScriptFile<tag.value>>(config_.scriptsDirectory()/ std::string{scriptName(tag)});
     })), config(config_) {}
     
     void ScriptAccess::reload() {
-        for_each(scriptFiles, [&](auto& file) -> decltype(auto) { file.reload(); });
+        for_each(scriptFiles, [&](auto& file) -> decltype(auto) { file->reload(); });
     }
     
     
@@ -46,7 +46,7 @@ namespace blocksci {
     
     size_t ScriptAccess::totalAddressCount() const {
         uint32_t count = 0;
-        for_each(scriptFiles, [&count](auto& obj) -> decltype(auto) {count += obj.size();});
+        for_each(scriptFiles, [&count](auto& obj) -> decltype(auto) {count += obj->size();});
         return count;
     }
 }

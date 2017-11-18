@@ -12,6 +12,9 @@
 #include "script_type.hpp"
 
 namespace blocksci {
+    class CBitcoinAddress;
+    class CKeyID;
+    class CPubKey;
     struct ScriptDataBase;
     struct PubkeyData;
     struct MultisigData;
@@ -22,6 +25,8 @@ namespace blocksci {
     class ScriptAccess;
     struct DataConfiguration;
     struct Script;
+    class AnyScript;
+    class CScriptView;
     
     template <auto>
     class ScriptAddress;
@@ -36,9 +41,6 @@ namespace blocksci {
         using OpReturn = ScriptAddress<ScriptType::Enum::NULL_DATA>;
         using Nonstandard = ScriptAddress<ScriptType::Enum::NONSTANDARD>;
     }
-    
-    class AnyScript;
-    class CScriptView;
 }
 
 #endif /* scriptsfwd_h */

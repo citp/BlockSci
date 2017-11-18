@@ -12,11 +12,10 @@
 #include "transaction_range.hpp"
 #include "output.hpp"
 
-#include "address/address_index.hpp"
 #include "chain/chain_access.hpp"
 
-#include "data_configuration.hpp"
-#include "data_access.hpp"
+#include "util/data_configuration.hpp"
+#include "util/data_access.hpp"
 
 #include <range/v3/all.hpp>
 #include <range/v3/view/drop.hpp>
@@ -66,6 +65,10 @@ namespace blocksci {
         return currentBlockHeight == chain->lastBlockHeight;
     }
     
+    bool Blockchain::cursor::equal(const cursor &other) const {
+        return currentBlockHeight == other.currentBlockHeight;
+    }
+    
     void Blockchain::cursor::next() {
         currentBlockHeight++;
     }
@@ -74,8 +77,8 @@ namespace blocksci {
         currentBlockHeight--;
     }
     
-    bool Blockchain::cursor::equal(const cursor &other) const {
-        return currentBlockHeight == other.currentBlockHeight;
+    int Blockchain::cursor::distance_to(ranges::default_sentinel) const {
+        return static_cast<int>(chain->lastBlockHeight) - static_cast<int>(currentBlockHeight);
     }
     
     int Blockchain::cursor::distance_to(cursor const &that) const {
