@@ -48,7 +48,7 @@ add_library(Ranges INTERFACE)
 target_include_directories(Ranges INTERFACE SYSTEM libs/range-v3/include)
 
 add_library(lmdbxx INTERFACE)
-target_include_directories(lmbdxx INTERFACE SYSTEM libs)
+target_include_directories(lmdbxx INTERFACE SYSTEM libs)
 target_link_libraries(lmdbxx INTERFACE lmdb)
 
 link_directories(/usr/local/lib)
