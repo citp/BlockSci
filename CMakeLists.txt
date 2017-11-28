@@ -47,9 +47,9 @@ target_include_directories(sparsepp INTERFACE SYSTEM libs/sparsepp)
 add_library(Ranges INTERFACE)
 target_include_directories(Ranges INTERFACE SYSTEM libs/range-v3/include)
 
-add_library(lmbdxx INTERFACE)
+add_library(lmdbxx INTERFACE)
 target_include_directories(lmbdxx INTERFACE SYSTEM libs)
-target_link_libraries(lmbdxx INTERFACE lmdb)
+target_link_libraries(lmdbxx INTERFACE lmdb)
 
 link_directories(/usr/local/lib)
 include_directories("src")
