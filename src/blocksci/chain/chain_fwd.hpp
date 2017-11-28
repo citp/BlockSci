@@ -15,6 +15,7 @@ namespace blocksci {
     struct RawTransaction;
     struct Inout;
     
+    class Blockchain;
     class Block;
     class Transaction;
     class Output;

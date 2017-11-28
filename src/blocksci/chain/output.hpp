@@ -9,7 +9,9 @@
 #ifndef output_hpp
 #define output_hpp
 
-#include "inout.hpp"
+#include <blocksci/chain/inout.hpp>
+#include <blocksci/chain/inout_pointer.hpp>
+#include <blocksci/chain/chain_access.hpp>
 #include <blocksci/address/address.hpp>
 #include <blocksci/address/address_types.hpp>
 
@@ -28,19 +30,48 @@ namespace blocksci {
     class Output {
         const ChainAccess *access;
         const Inout *inout;
+        uint32_t spendingTxIndex;
+        OutputPointer pointer;
         
         friend size_t std::hash<Output>::operator()(const Output &) const;
     public:
-        Output(const Inout &inout_, const ChainAccess &access_) : access(&access_), inout(&inout_) {}
-        Output(const OutputPointer &pointer, const ChainAccess &access_);
+        uint32_t blockHeight;
+        Output(const OutputPointer &pointer_, uint32_t blockHeight_, const Inout &inout_, const ChainAccess &access_) : 
+        access(&access_), inout(&inout_), pointer(pointer_), blockHeight(blockHeight_) {
+            assert(pointer.isValid(access_));
+            if (inout->linkedTxNum < access->maxLoadedTx()) {
+                spendingTxIndex = inout->linkedTxNum;
+            } else {
+                spendingTxIndex = 0;
+            }
+        }
         
-        uint32_t getSpendingTxIndex() const;
+        Output(const OutputPointer &pointer_, const ChainAccess &access_) :
+        Output(pointer_, access_.getBlockHeight(pointer_.txNum), access_.getTx(pointer_.txNum)->getOutput(pointer_.inoutNum), access_) {}
+        
+        uint32_t getSpendingTxIndex() const {
+            return spendingTxIndex;
+        }
+
+        uint32_t txIndex() const {
+            return pointer.txNum;
+        }
+
+        uint32_t outputIndex() const {
+            return pointer.inoutNum;
+        }
         
         bool isSpent() const {
             return getSpendingTxIndex() != 0;
         }
         
-        bool operator==(const Output &other) const;
+        bool operator==(const Output &other) const {
+            return pointer == other.pointer;
+        }
+
+        bool operator!=(const Output &other) const {
+            return pointer != other.pointer;
+        }
         
         bool operator==(const Inout &other) const {
             return *inout == other;

@@ -1,0 +1,21 @@
+# Maintainer: Arto Bendiken <arto@bendiken.net>
+
+pkgname=liblmdb++
+pkgver=0.9.14.0
+pkgrel=1
+pkgdesc="C++11 wrapper for the LMDB database library"
+arch=('any')
+url="http://lmdbxx.sourceforge.net/"
+license=('custom:Public Domain')
+depends=('liblmdb')
+source=("http://download.sourceforge.net/sourceforge/lmdbxx/lmdbxx-$pkgver.tar.gz")
+sha256sums=('f74c55184bff19de607948a5f00fe1073de5b59c4309ab2e8ebc488cf675f419')
+
+package() {
+	cd "$srcdir/lmdbxx-$pkgver"
+	make PREFIX=/usr DESTDIR="$pkgdir" install
+	install -m644 -D UNLICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
+
+
+# vim: ts=2 sw=2 et:

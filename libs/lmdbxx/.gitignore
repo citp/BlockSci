@@ -1,0 +1,13 @@
+.DS_Store
+.doxygen
+*~
+*.o
+README.html
+README.md
+a.out
+check
+example
+example.mdb
+lmdbxx-*.tar.bz2
+lmdbxx-*.tar.gz
+lmdbxx-*.tar.xz

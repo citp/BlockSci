@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE repositories SYSTEM "/dtd/repositories.dtd">
+<repositories xmlns="" version="1.0">
+  <repo quality="experimental" status="unofficial">
+    <name>lmdbxx</name>
+    <description lang="en">
+      <![CDATA[C++11 wrapper for the LMDB database library]]>
+    </description>
+    <homepage>https://github.com/bendiken/lmdbxx</homepage>
+    <owner type="person">
+      <email>arto@bendiken.net</email>
+      <name><![CDATA[Arto Bendiken]]></name>
+    </owner>
+    <source type="git">https://github.com/bendiken/lmdbxx.git</source>
+    <feed>https://github.com/bendiken/lmdbxx/commits/master.atom</feed>
+  </repo>
+</repositories>

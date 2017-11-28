@@ -225,14 +225,6 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
         totalOutputCount += block.outputCount;
     }
     
-//    uint64_t sizeNeeded = sizeof(blocksci::RawTransaction) * totalTxCount + sizeof(blocksci::Inout) * (totalInputCount + totalOutputCount);
-//
-//    blocksci::IndexedFileMapper<blocksci::AccessMode::readwrite, blocksci::RawTransaction> txFile{config.txFilePath()};
-//    txFile.grow(totalTxCount, sizeNeeded);
-    
-//     ParserIndexCreator<AddressDB> addressDB(config.addressDBFilePath().native());
-//     ParserIndexCreator<HashIndexCreator> hashIndex(config);
-    
     {
         BlockProcessor processor{startingTxCount, totalTxCount, maxBlockHeight};
         UTXOState utxoState;
@@ -259,24 +251,6 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
             processor.addNewBlocks(config, nextBlocks, utxoState, utxoAddressState, addressState, utxoScriptState);
             
             backUpdateTxes(config);
-            
-            blocksci::ChainAccess chain{config, false, 0};
-            blocksci::ScriptAccess scripts{config};
-            
-            blocksci::State updateState{chain, scripts};
-            
-            // addressDB.update(updateState);
-            // hashIndex.update(updateState);
-        }
-        
-        {
-            blocksci::ChainAccess chain{config, false, 0};
-            blocksci::ScriptAccess scripts{config};
-            
-            blocksci::State state{chain, scripts};
-            
-//             addressDB.complete(state);
-//             hashIndex.complete(state);
         }
         
         utxoAddressState.serialize(config.utxoAddressStatePath());
@@ -296,6 +270,7 @@ int main(int argc, const char * argv[]) {
     ("output-directory", po::value<std::string>(&dataDirectoryString)->required(), "Path to output parsed data")
     ("max-block", po::value<uint32_t>(&maxBlockNum)->default_value(0), "Max block to scan up to")
     ("update-indexes", "Update indexes to latest chain state")
+    ("update-address-index", "Update address index to latest state")
     ;
 
     std::string username;
@@ -381,6 +356,19 @@ int main(int argc, const char * argv[]) {
             hashIndex.update(updateState);
             addressDB.complete(updateState);
             hashIndex.complete(updateState);
+            return 0;
+        }
+        
+        if (vm.count("update-address-index")) {
+            ParserConfigurationBase config{dataDirectory};
+            blocksci::ChainAccess chain{config, false, 0};
+            blocksci::ScriptAccess scripts{config};
+            
+            blocksci::State updateState{chain, scripts};
+            AddressDB addressDB(config, config.addressDBFilePath().native());
+            addressDB.prepareUpdate();
+            addressDB.runUpdate(updateState);
+            addressDB.tearDown();
             return 0;
         }
         

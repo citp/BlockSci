@@ -9,15 +9,12 @@
 #include "blockchain.hpp"
 #include "block.hpp"
 #include "transaction.hpp"
-#include "transaction_range.hpp"
 #include "output.hpp"
 
 #include "chain/chain_access.hpp"
 
 #include "util/data_configuration.hpp"
-#include "util/data_access.hpp"
 
-#include <range/v3/all.hpp>
 #include <range/v3/view/drop.hpp>
 
 #include <fstream>
@@ -57,50 +54,6 @@ namespace blocksci {
         lastBlockHeight = access->chain->blockCount();
     }
     
-    Block Blockchain::cursor::read() const {
-        return Block(currentBlockHeight, *chain->access->chain);
-    }
-    
-    bool Blockchain::cursor::equal(ranges::default_sentinel) const {
-        return currentBlockHeight == chain->lastBlockHeight;
-    }
-    
-    bool Blockchain::cursor::equal(const cursor &other) const {
-        return currentBlockHeight == other.currentBlockHeight;
-    }
-    
-    void Blockchain::cursor::next() {
-        currentBlockHeight++;
-    }
-    
-    void Blockchain::cursor::prev() {
-        currentBlockHeight--;
-    }
-    
-    int Blockchain::cursor::distance_to(ranges::default_sentinel) const {
-        return static_cast<int>(chain->lastBlockHeight) - static_cast<int>(currentBlockHeight);
-    }
-    
-    int Blockchain::cursor::distance_to(cursor const &that) const {
-        return static_cast<int>(that.currentBlockHeight) - static_cast<int>(currentBlockHeight);
-    }
-    
-    void Blockchain::cursor::advance(int amount) {
-        currentBlockHeight += amount;
-    }
-
-    TransactionRange Blockchain::iterateTransactions(int startBlock, int endBlock) const {
-        auto startB = this->operator[](startBlock);
-        auto endB = this->operator[](endBlock - 1);
-        return TransactionRange(*access->chain, startB.firstTxIndex(), endB.endTxIndex());
-    }
-    
-    RawTransactionRange Blockchain::iterateRawTransactions(int startBlock, int endBlock) const {
-        auto startB = this->operator[](startBlock);
-        auto endB = this->operator[](endBlock - 1);
-        return RawTransactionRange(*access->chain, startB.firstTxIndex(), endB.endTxIndex());
-    }
-    
     uint32_t txCount(const Blockchain &chain) {
         auto lastBlock = chain[chain.size() - 1];
         return lastBlock.endTxIndex();
@@ -138,9 +91,7 @@ namespace blocksci {
             return a;
         };
         
-        std::pair<std::vector<Transaction>, std::vector<Transaction>> result;
-        chain.mapReduce<RetType, RetType>(0, chain.size(), mapFunc, reduceFunc, result);
-        return result;
+        return chain.mapReduce<RetType>(0, chain.size(), mapFunc, reduceFunc);
     }
     
     std::vector<Block> filter(const Blockchain &chain, int startBlock, int endBlock, std::function<bool(const Block &tx)> testFunc)  {
@@ -160,8 +111,7 @@ namespace blocksci {
             return vec1;
         };
         
-        std::vector<Block> blocks;
-        return chain.mapReduce<std::vector<Block>, std::vector<Block>>(startBlock, endBlock, mapFunc, reduceFunc, blocks);
+        return chain.mapReduce<std::vector<Block>>(startBlock, endBlock, mapFunc, reduceFunc);
     }
     
     std::vector<Transaction> filter(const Blockchain &chain, int startBlock, int endBlock, std::function<bool(const Transaction &tx)> testFunc)  {
@@ -183,8 +133,7 @@ namespace blocksci {
             return vec1;
         };
         
-        std::vector<Transaction> txes;
-        return chain.mapReduce<std::vector<Transaction>, std::vector<Transaction>>(startBlock, endBlock, mapFunc, reduceFunc, txes);
+        return chain.mapReduce<std::vector<Transaction>>(startBlock, endBlock, mapFunc, reduceFunc);
     }
     
     std::vector<Transaction> getTransactionIncludingOutput(const Blockchain &chain, int startBlock, int endBlock, AddressType::Enum type) {

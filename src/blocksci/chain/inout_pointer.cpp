@@ -8,6 +8,7 @@
 
 #include "inout_pointer.hpp"
 #include "util/hash.hpp"
+#include "chain_access.hpp"
 
 #include <sstream>
 
@@ -22,6 +23,14 @@ namespace blocksci {
         std::stringstream ss;
         ss << "OutputPointer(tx_index_from=" << txNum << ", output_index_from=" << inoutNum << ")";
         return ss.str();
+    }
+    
+    bool InputPointer::isValid(const ChainAccess &access) {
+        return inoutNum < access.getTx(txNum)->inputCount;
+    }
+    
+    bool OutputPointer::isValid(const ChainAccess &access) {
+        return inoutNum < access.getTx(txNum)->outputCount;
     }
 }
 

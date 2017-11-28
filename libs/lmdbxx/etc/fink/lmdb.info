@@ -1,0 +1,73 @@
+Package: lmdb
+Version: 0.9.14
+Revision: 1
+Description: Lightning Memory-Mapped Database
+DescDetail: <<
+  LMDB is an ultra-fast, ultra-compact key-value embedded data store
+  developed by Symas for the OpenLDAP Project. It uses memory-mapped files,
+  so it has the read performance of a pure in-memory database while still
+  offering the persistence of standard disk-based databases, and is only
+  limited to the size of the virtual address space (it is not limited to
+  the size of physical RAM).
+<<
+License: DFSG-Approved
+Homepage: http://symas.com/mdb/
+Maintainer: Arto Bendiken <arto@bendiken.net>
+
+# Dependencies:
+Depends: %N1-shlibs (= %v-%r)
+
+# Unpack:
+Source: https://github.com/LMDB/lmdb/archive/LMDB_%v.tar.gz
+SourceDirectory: lmdb-LMDB_%v/libraries/liblmdb
+SourceRename: %n-%v.tar.gz
+Source-MD5: 11be69064d4c6eb003f934cf09a00537
+
+# Patch:
+PatchFile: %n.patch
+PatchFile-MD5: bf1ebbea9cd8627d997b0c833e4ca875
+PatchScript: patch -p0 < %{PatchFile}
+
+# Compile:
+CompileScript: make prefix=%p PACKAGE_VERSION=%v
+
+# Install:
+InstallScript: <<
+#!/bin/sh -ev
+  mkdir -p -m0755 %i/bin %i/lib %i/include %i/share/man/man1
+  make install prefix=%p DESTDIR=%d
+  ln -sf %p/lib/liblmdb.1.dylib %i/lib/liblmdb.dylib
+<<
+DocFiles: CHANGES COPYRIGHT LICENSE
+
+# Build lmdb1-shlibs:
+SplitOff: <<
+  Package: %N1-shlibs
+  Description: LMDB shared library
+  Provides: lmdb-shlibs
+  Files: <<
+    lib/liblmdb.1.dylib
+  <<
+  Shlibs: <<
+    %p/lib/liblmdb.1.dylib 0.9.14 %n (>= 0.9.14-1)
+  <<
+  DocFiles: CHANGES COPYRIGHT LICENSE
+<<
+
+# Build lmdb1-dev:
+SplitOff2: <<
+  Package: %N1-dev
+  Description: LMDB development files
+  BuildDependsOnly: True
+  Depends: %N1-shlibs (= %v-%r)
+  Provides: lmdb-dev
+  Files: <<
+    include
+    lib/liblmdb.{a,dylib}
+  <<
+  DocFiles: CHANGES COPYRIGHT LICENSE
+<<
+
+DescPackaging: <<
+  See: https://sourceforge.net/p/fink/package-submissions/4487/
+<<

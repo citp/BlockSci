@@ -20,14 +20,6 @@ namespace blocksci {
         return isSegwit(block, *DataAccess::Instance().scripts);
     }
     
-    std::vector<Output> getOutputsSpentByHeight(const Block &block, uint32_t height) {
-        return getOutputsSpentByHeight(block, height, *DataAccess::Instance().chain);
-    }
-    
-    uint64_t getTotalSpentOfAge(const Block &block, uint32_t age) {
-        return getTotalSpentOfAge(block, *DataAccess::Instance().chain, age);
-    }
-    
     std::vector<uint64_t> getTotalSpentOfAges(const Block &block, uint32_t maxAge) {
         return getTotalSpentOfAges(block, *DataAccess::Instance().chain, maxAge);
     }

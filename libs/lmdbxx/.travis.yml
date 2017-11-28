@@ -1,0 +1,32 @@
+# https://travis-ci.org/bendiken/lmdbxx
+language: cpp
+compiler:
+  - clang
+  - gcc
+before_install:
+  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+  - sudo add-apt-repository -y ppa:cz.nic-labs/knot-dns
+  - sudo apt-get update -qq
+  - if [ "$CXX" = "clang++" ]; then sudo apt-get install -qq libstdc++-4.8-dev; fi
+  - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+  - sudo apt-get install -qq liblmdb-dev
+script:
+  - if [ "$COVERITY_SCAN_BRANCH" != 1 ]; then make && make check; fi
+branches:
+  only:
+    - master
+    - coverity
+
+# https://scan.coverity.com/projects/4900
+env:
+  global:
+  - secure: "M986syRyX99UdzyWZ2FSODYif/a74Ih6tDG1o3SgVfkjxQ5EdjsBjBa6A2YAYCwefM7UU1pjFvCxdJSr6skbttnBPTsWM2ipgcuC1etYJ+LI+tpjv+IJRGgmDnAW5yuyTDICqLBDo5eCGgce0TA5o0OceudoO/9cVYLdoKo8GA4=" # COVERITY_SCAN_TOKEN
+addons:
+  coverity_scan:
+    project:
+      name: bendiken/lmdbxx
+    notification_email: arto@bendiken.net
+    build_command_prepend: cov-configure --comptype gcc --compiler $CC
+    build_command: make check
+    branch_pattern: coverity

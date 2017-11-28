@@ -11,7 +11,9 @@
 
 #include "chain_fwd.hpp"
 
-#include <blocksci/util/file_mapper_fwd.hpp>
+#include <blocksci/chain/raw_transaction.hpp>
+#include <blocksci/chain/raw_block.hpp>
+#include <blocksci/util/file_mapper.hpp>
 #include <blocksci/util/bitcoin_uint256.hpp>
 
 #include <memory>
@@ -27,11 +29,11 @@ namespace blocksci {
     struct DataConfiguration;
     
     class ChainAccess {
-        std::unique_ptr<FixedSizeFileMapper<RawBlock>> blockFile;
-        std::unique_ptr<SimpleFileMapper<>> blockCoinbaseFile;
+        FixedSizeFileMapper<RawBlock> blockFile;
+        SimpleFileMapper<> blockCoinbaseFile;
         
-        std::unique_ptr<IndexedFileMapper<AccessMode::readonly, RawTransaction>> txFile;
-        std::unique_ptr<FixedSizeFileMapper<uint256>> txHashesFile;
+        IndexedFileMapper<AccessMode::readonly, RawTransaction> txFile;
+        FixedSizeFileMapper<uint256> txHashesFile;
         
         uint256 lastBlockHash;
         const uint256 *lastBlockHashDisk;
@@ -40,7 +42,11 @@ namespace blocksci {
         uint32_t blocksIgnored;
         bool errorOnReorg;
         
-        void reorgCheck() const;
+        void reorgCheck() const {
+            if (errorOnReorg && lastBlockHash != *lastBlockHashDisk) {
+                throw ReorgException();
+            }
+        }
         
         void setup();
         
@@ -50,16 +56,28 @@ namespace blocksci {
         uint32_t maxLoadedTx() const;
         
         uint32_t getBlockHeight(uint32_t txIndex) const;
-        const RawBlock *getBlock(uint32_t blockHeight) const;
         
-        const RawTransaction *getTx(uint32_t index) const;
+        const RawBlock *getBlock(uint32_t blockHeight) const {
+            reorgCheck();
+            return blockFile.getData(blockHeight);
+        }
+        
+        const uint256 *getTxHash(uint32_t index) const {
+            reorgCheck();
+            return txHashesFile.getData(index);
+        }
+        
+        const RawTransaction *getTx(uint32_t index) const {
+            return txFile.getData(index);
+        }
         
         size_t txCount() const;
-        size_t blockCount() const;
+        
+        size_t blockCount() const {
+            return maxHeight;
+        }
         
         std::vector<unsigned char> getCoinbase(uint64_t offset) const;
-        
-        const uint256 *getTxHash(uint32_t index) const;
         
         void reload();
     };

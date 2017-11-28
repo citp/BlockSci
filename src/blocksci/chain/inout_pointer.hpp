@@ -26,6 +26,10 @@ namespace blocksci {
         bool operator==(const InoutPointer& other) const {
             return txNum == other.txNum && inoutNum == other.inoutNum;
         }
+        
+        bool operator!=(const InoutPointer& other) const {
+            return txNum != other.txNum || inoutNum != other.inoutNum;
+        }
     };
     
     struct InputPointer : public InoutPointer {
@@ -38,6 +42,8 @@ namespace blocksci {
                 return inoutNum < other.inoutNum;
             }
         }
+        
+        bool isValid(const ChainAccess &access);
         
         std::string toString() const;
     };
@@ -52,6 +58,8 @@ namespace blocksci {
                 return inoutNum < other.inoutNum;
             }
         }
+        
+        bool isValid(const ChainAccess &access);
         
         std::string toString() const;
     };

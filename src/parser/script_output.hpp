@@ -43,7 +43,7 @@ struct ScriptOutput {
             scriptNum = state.getNewAddressIndex(script_v);
             isNew = true;
         }
-        
+        assert(scriptNum > 0);
         if (isNew) {
             data.visitWrapped([&](auto &output) { output.resolve(state); });
         }

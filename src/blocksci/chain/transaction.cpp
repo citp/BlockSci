@@ -14,6 +14,7 @@
 #include "block.hpp"
 #include "chain_access.hpp"
 #include "inout_pointer.hpp"
+#include "algorithms.hpp"
 #include "address/address.hpp"
 #include "scripts/script_variant.hpp"
 #include "index/hash_index.hpp"
@@ -26,31 +27,6 @@
 #include <sstream>
 
 namespace blocksci {
-    
-    RawTransaction::RawTransaction(uint32_t sizeBytes_, uint32_t locktime_, uint16_t inputCount_, uint16_t outputCount_) : sizeBytes(sizeBytes_), locktime(locktime_), inputCount(inputCount_), outputCount(outputCount_), inOuts(static_cast<uint32_t>(inputCount_ + outputCount_)) {}
-    
-    Inout &RawTransaction::getOutput(uint16_t outputNum) {
-        return reinterpret_cast<Inout &>(inOuts[inputCount + outputNum]);
-    }
-    
-    Inout &RawTransaction::getInput(uint16_t inputNum) {
-        return reinterpret_cast<Inout &>(inOuts[inputNum]);
-    }
-    
-    const Inout &RawTransaction::getOutput(uint16_t outputNum) const {
-        return reinterpret_cast<const Inout &>(inOuts[inputCount + outputNum]);
-    }
-    
-    const Inout &RawTransaction::getInput(uint16_t inputNum) const {
-        return reinterpret_cast<const Inout &>(inOuts[inputNum]);
-    }
-    
-    
-    Transaction::Transaction(const RawTransaction *data_, uint32_t txNum_, uint32_t blockHeight_, const ChainAccess &access_) : access(&access_), data(data_), txNum(txNum_), blockHeight(blockHeight_) {}
-    
-    Transaction::Transaction(uint32_t index, const ChainAccess &access_) : Transaction(index, access_.getBlockHeight(index), access_) {}
-    
-    Transaction::Transaction(uint32_t index, uint32_t height, const ChainAccess &access_) : Transaction(access_.getTx(index), index, height, access_) {}
     
     uint256 Transaction::getHash() const {
         return *access->getTxHash(txNum);
@@ -116,12 +92,8 @@ namespace blocksci {
         return ranges::nullopt;
     }
     
-    bool hasFeeGreaterThan(const Transaction &tx, uint64_t txFee) {
+    bool hasFeeGreaterThan(Transaction &tx, uint64_t txFee) {
         return fee(tx) > txFee;
-    }
-    
-    double feePerByte(const Transaction &tx) {
-        return static_cast<double>(fee(tx)) / static_cast<double>(tx.sizeBytes());
     }
     
     bool isCoinjoin(const Transaction &tx) {
@@ -445,7 +417,7 @@ namespace blocksci {
     }
     
     bool isDeanonTx(const Transaction &tx) {
-        if (isCoinbase(tx)) {
+        if (tx.isCoinbase()) {
             return false;
         }
         
@@ -554,7 +526,7 @@ namespace blocksci {
     };
     
     bool isChangeOverTx(const Transaction &tx, const ScriptAccess &scripts) {
-        if (isCoinbase(tx)) {
+        if (tx.isCoinbase()) {
             return false;
         }
         
@@ -580,7 +552,7 @@ namespace blocksci {
     }
     
     bool containsKeysetChange(const Transaction &tx, const blocksci::ScriptAccess &access) {
-        if (isCoinbase(tx)) {
+        if (tx.isCoinbase()) {
             return false;
         }
         

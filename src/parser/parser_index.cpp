@@ -8,6 +8,7 @@
 
 #include "parser_index.hpp"
 #include "block_processor.hpp"
+#include "progress_bar.hpp"
 
 #include <blocksci/util/util.hpp>
 #include <blocksci/chain/chain_access.hpp>
@@ -18,6 +19,8 @@
 
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/operations.hpp>
+
+#include <iostream>
 
 using namespace blocksci;
 
@@ -38,17 +41,27 @@ void ParserIndex::runUpdate(const State &state) {
     blocksci::ScriptAccess scripts{config};
     
     if (latestState.txCount < state.txCount) {
+        std::cout << "Updating index with txes\n";
+        auto progress = makeProgressBar(state.txCount - latestState.txCount, [=]() {});
         auto newTransactions = TransactionRange(chain, latestState.txCount, state.txCount);
+        uint32_t num = 0;
         for (auto tx : newTransactions) {
             processTx(tx, scripts);
+            progress.update(num);
+            num++;
         }
     }
     
     for_each(ScriptType::all, [&](auto type) {
         auto typeIndex = static_cast<size_t>(type);
+        auto progress = makeProgressBar(state.scriptCounts[typeIndex] - latestState.scriptCounts[typeIndex], [=]() {});
+        uint32_t num = 0;
+        std::cout << "Updating index with scripts of type " << scriptName(type) << "\n";
         for (uint32_t i = latestState.scriptCounts[typeIndex]; i < state.scriptCounts[typeIndex]; i++) {
             auto pointer = Script{i + 1, type};
             processScript(pointer, chain, scripts);
+            progress.update(num);
+            num++;
         }
     });
     

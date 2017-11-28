@@ -9,7 +9,7 @@
 #include "dset/dset.h"
 
 #include <blocksci/blocksci.hpp>
-#include <blocksci/data_access.hpp>
+#include <blocksci/util/data_access.hpp>
 #include <blocksci/script.hpp>
 
 #include <unordered_map>
@@ -24,7 +24,7 @@ using namespace blocksci;
 std::vector<std::pair<Script, Script>> process_transaction(const Transaction &tx) {
     std::vector<std::pair<Script, Script>> pairsToUnion;
     
-    if (!isCoinjoin(tx) && !isCoinbase(tx)) {
+    if (!isCoinjoin(tx) && !tx.isCoinbase()) {
         auto inputs = tx.inputs();
         auto firstAddress = inputs[0].getAddress();
         for (uint16_t i = 1; i < inputs.size(); i++) {
@@ -77,29 +77,29 @@ void segmentWork(uint32_t start, uint32_t end, uint32_t segmentCount, Job job) {
 }
 
 struct AddressDisjointSets {
-    DisjointSets ds;
+    DisjointSets disjoinSets;
     std::unordered_map<ScriptType::Enum, uint32_t> addressStarts;
 
-    AddressDisjointSets(uint32_t totalSize, std::unordered_map<ScriptType::Enum, uint32_t> addressStarts_), ds(totalSize), addressStarts(std::move(addressStarts)) {}
+    AddressDisjointSets(uint32_t totalSize, std::unordered_map<ScriptType::Enum, uint32_t> addressStarts_) : disjoinSets{totalSize}, addressStarts{std::move(addressStarts_)} {}
 
     uint32_t size() const {
-        return ds.size();
+        return disjoinSets.size();
     }
 
-    void link_addresses(const Script &address1, const Script &address2, DisjointSets &sets, const std::unordered_map<ScriptType::Enum, uint32_t> &addressStarts) {
+    void link_addresses(const Script &address1, const Script &address2) {
         auto firstAddressIndex = addressStarts.at(address1.type) + address1.scriptNum - 1;
         auto secondAddressIndex = addressStarts.at(address2.type) + address2.scriptNum - 1;
-        ds.unite(firstAddressIndex, secondAddressIndex);
+        disjoinSets.unite(firstAddressIndex, secondAddressIndex);
     }
 
     void resolveAll() {
-        segmentWork(0, ds.size(), 8, [&ds](uint32_t index) {
-            ds.find(index);
+        segmentWork(0, disjoinSets.size(), 8, [&](uint32_t index) {
+            disjoinSets.find(index);
         });
     }
 
     uint32_t find(uint32_t index) {
-        return ds.find(index);
+        return disjoinSets.find(index);
     }
 };
 
@@ -129,7 +129,7 @@ std::vector<uint32_t> getClusters(Blockchain &chain, std::unordered_map<ScriptTy
         return 0;
     };
     
-    chain.mapReduce<int, int>(0, chain.size() - 10, extract, [](int &a,int &) -> int & {return a;}, 0);
+    chain.mapReduce<int>(0, chain.size() - 10, extract, [](int &a,int &) -> int & {return a;});
     
     ds.resolveAll();
     

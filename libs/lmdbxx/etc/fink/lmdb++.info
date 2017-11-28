@@ -1,0 +1,35 @@
+Package: lmdb++
+Version: 0.9.14.0
+Revision: 1
+Description: C++11 wrapper for the LMDB database library
+DescDetail: <<
+  This is a comprehensive C++ wrapper for the LMDB embedded database
+  library, offering both an error-checked procedural interface and an
+  object-oriented resource interface with RAII semantics.
+<<
+License: Public Domain
+Homepage: http://lmdbxx.sourceforge.net/
+Maintainer: Arto Bendiken <arto@bendiken.net>
+
+# Dependencies:
+BuildDependsOnly: True
+Depends: lmdb1-shlibs
+Enhances: lmdb1-dev
+
+# Unpack:
+Source: mirror:sourceforge:lmdbxx/%v/lmdbxx-%v.tar.gz
+Source-MD5: e672c3d6140b78327a02c0b36ab4cba0
+
+# Compile:
+CompileScript: make
+
+# Install:
+InstallScript: <<
+#!/bin/sh -ev
+  make install PREFIX=%p DESTDIR=%d
+<<
+DocFiles: AUTHORS CREDITS INSTALL README TODO UNLICENSE VERSION
+
+DescPackaging: <<
+  See: https://sourceforge.net/p/fink/package-submissions/4487/
+<<

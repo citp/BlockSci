@@ -9,7 +9,9 @@
 #ifndef raw_input_hpp
 #define raw_input_hpp
 
-#include "inout.hpp"
+#include <blocksci/chain/inout.hpp>
+#include <blocksci/chain/inout_pointer.hpp>
+#include <blocksci/chain/chain_access.hpp>
 #include <blocksci/address/address.hpp>
 #include <blocksci/address/address_types.hpp>
 
@@ -28,18 +30,38 @@ namespace blocksci {
     class Input {
         const ChainAccess *access;
         const Inout *inout;
+        InputPointer pointer;
         
         friend size_t std::hash<Input>::operator()(const Input &) const;
     public:
-        Input(const Inout &inout_, const ChainAccess &access_) : access(&access_), inout(&inout_) {}
-        Input(const InputPointer &pointer, const ChainAccess &access_);
+        uint32_t blockHeight;
+
+        Input(const InputPointer &pointer_, uint32_t blockHeight_, const Inout &inout_, const ChainAccess &access_) : 
+        access(&access_), inout(&inout_), pointer(pointer_), blockHeight(blockHeight_) {
+            assert(pointer.isValid(access_));
+        }
+        Input(const InputPointer &pointer_, const ChainAccess &access_) : 
+        Input(pointer_, access_.getBlockHeight(pointer_.txNum), access_.getTx(pointer_.txNum)->getInput(pointer_.inoutNum), access_) {}
         
+
+        uint32_t txIndex() const {
+            return pointer.txNum;
+        }
+
+        uint32_t inputIndex() const {
+            return pointer.inoutNum;
+        }
+
         bool operator==(const Inout &other) const {
             return *inout == other;
         }
         
         bool operator==(const Input &other) const {
             return *inout == *other.inout;
+        }
+
+        bool operator!=(const Input &other) const {
+            return !(*inout == *other.inout);
         }
         
         AddressType::Enum getType() const {

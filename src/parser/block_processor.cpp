@@ -21,6 +21,7 @@
 #include "utxo_address_state.hpp"
 #include "output_spend_data.hpp"
 #include "serializable_map.hpp"
+#include "progress_bar.hpp"
 
 #include <blocksci/util/hash.hpp>
 #include <blocksci/util/bitcoin_uint256.hpp>
@@ -45,40 +46,6 @@
 #include <thread>
 #include <fstream>
 #include <iostream>
-
-template<typename UpdateFunc>
-class ProgressBar {
-    uint64_t total;
-    uint64_t percentageMarker;
-    UpdateFunc updateFunc;
-    
-public:
-    ProgressBar(uint64_t total_, UpdateFunc updateFunc_) : total(total_), updateFunc(updateFunc_) {
-        auto percentage = static_cast<double>(total) / 1000.0;
-        percentageMarker = static_cast<uint64_t>(std::ceil(percentage));
-        std::cout.setf(std::ios::fixed,std::ios::floatfield);
-        std::cout.precision(2);
-    }
-    
-    ~ProgressBar() {
-        std::cout << "\n";
-    }
-    
-    template <typename... Args>
-    void update(uint64_t currentCount, Args... args) {
-        if (currentCount % 10000 == 0) {
-            auto percentDone = (static_cast<double>(currentCount) / static_cast<double>(total)) * 100;
-            std::cout << "\r" << percentDone << "% done";
-            updateFunc(args...);
-            std::cout << std::flush;;
-        }
-    }
-};
-
-template<class UpdateFunc>
-ProgressBar<UpdateFunc> makeProgressBar(uint64_t total, UpdateFunc updateFunc) {
-    return {total, updateFunc};
-}
 
 std::vector<unsigned char> ParseHex(const char* psz);
 
@@ -376,12 +343,15 @@ void recordAddresses(RawTransaction *tx, UTXOScriptState &state) {
         auto &input = tx->inputs[i];
         auto &scriptInput = tx->scriptInputs[i];
         auto scriptNum = state.erase(input.getOutputPointer());
+        assert(scriptNum > 0);
         scriptInput.setScriptNum(scriptNum);
     }
     
     uint16_t i = 0;
     for (auto &scriptOutput : tx->scriptOutputs) {
-        state.add({tx->txNum, i}, scriptOutput.address().scriptNum);
+        auto scriptNum = scriptOutput.address().scriptNum;
+        assert(scriptNum > 0);
+        state.add({tx->txNum, i}, scriptNum);
         i++;
     }
 }

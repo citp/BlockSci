@@ -9,25 +9,31 @@
 #ifndef address_db_h
 #define address_db_h
 
-#include "address_traverser.hpp"
 #include "parser_fwd.hpp"
+#include "parser_index.hpp"
 
+#include <blocksci/chain/chain_fwd.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
 #include <blocksci/scripts/script_type.hpp>
 
 #include <lmdbxx/lmdb++.h>
 
 #include <unordered_map>
 
-class AddressDB : public AddressTraverser {
+namespace blocksci {
+    struct Address;
+}
+
+class AddressDB : public ParserIndex {
     lmdb::env env;
     lmdb::txn wtxn;
     
     std::unordered_map<blocksci::ScriptType::Enum,  lmdb::dbi> scriptDbs;
     
+    void processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &scripts) override;
+    void processScript(const blocksci::Script &, const blocksci::ChainAccess &, const blocksci::ScriptAccess &) override {}
     void addAddress(const blocksci::Address &address, const blocksci::OutputPointer &pointer);
-    
-    void sawAddress(const blocksci::Address &address, const blocksci::OutputPointer &pointer) override;
-    void revealedP2SH(blocksci::script::ScriptHash &scriptHash, const blocksci::ScriptAccess &scripts) override;
+    void revealedP2SH(uint32_t scriptNum, const std::vector<blocksci::Address> &addresses);
     
 public:
     AddressDB(const ParserConfigurationBase &config, const std::string &path);

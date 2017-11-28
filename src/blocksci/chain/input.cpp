@@ -20,8 +20,6 @@
 
 namespace blocksci {
     
-    Input::Input(const InputPointer &pointer, const ChainAccess &access_) : Input(access_.getTx(pointer.txNum)->getInput(pointer.inoutNum), access_) {}
-    
     Transaction Input::getSpentTx() const {
         return Transaction(inout->linkedTxNum, *access);
     }

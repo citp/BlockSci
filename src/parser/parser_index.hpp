@@ -41,7 +41,6 @@ public:
     virtual void prepareUpdate() {}
     void runUpdate(const blocksci::State &state);
     virtual void tearDown() {}
-    void preDestroy();
     virtual void rollback(const blocksci::State &state) = 0;
 };
 

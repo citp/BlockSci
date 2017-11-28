@@ -11,8 +11,8 @@
 
 #include <blocksci/util/hash.hpp>
 
-#include <pebblesdb/db.h>
-#include <pebblesdb/write_batch.h>
+#include <hyperleveldb/db.h>
+#include <hyperleveldb/write_batch.h>
 
 #include <boost/filesystem/fstream.hpp>
 
@@ -131,17 +131,23 @@ AddressInfo AddressState::findAddress(const RawScript &address) const {
     
     if (auto it = multiAddressMap.find(address); it != multiAddressMap.end()) {
         multiCount++;
-        return {address, AddressLocation::MultiUseMap, it, it->second};
+        auto scriptNum = it->second;
+        assert(scriptNum > 0);
+        return {address, AddressLocation::MultiUseMap, it, scriptNum};
     }
     
     if (auto it = singleAddressMap.find(address); it != singleAddressMap.end()) {
         singleCount++;
-        return {address, AddressLocation::SingleUseMap, it, it->second};
+        auto scriptNum = it->second;
+        assert(scriptNum > 0);
+        return {address, AddressLocation::SingleUseMap, it, scriptNum};
     }
     
     if (auto it = oldSingleAddressMap.find(address); it != oldSingleAddressMap.end()) {
         oldSingleCount++;
-        return {address, AddressLocation::OldSingleUseMap, it, it->second};
+        auto scriptNum = it->second;
+        assert(scriptNum > 0);
+        return {address, AddressLocation::OldSingleUseMap, it, scriptNum};
     }
     
     leveldb::Slice keySlice(reinterpret_cast<const char *>(&address), sizeof(address));
@@ -150,6 +156,7 @@ AddressInfo AddressState::findAddress(const RawScript &address) const {
     if (s.ok()) {
         levelDBCount++;
         uint32_t destNum = *reinterpret_cast<const uint32_t *>(value.data());
+        assert(destNum > 0);
         return {address, AddressLocation::LevelDb, singleAddressMap.end(), destNum};
     }
     bloomFPCount++;
@@ -164,18 +171,22 @@ std::pair<uint32_t, bool> AddressState::resolveAddress(const AddressInfo &addres
         case AddressLocation::SingleUseMap:
             singleAddressMap.erase(addressInfo.it);
             multiAddressMap.add(rawScript, addressInfo.addressNum);
+            assert(addressInfo.addressNum > 0);
             existingAddress = true;
             break;
         case AddressLocation::OldSingleUseMap:
             oldSingleAddressMap.erase(addressInfo.it);
             multiAddressMap.add(rawScript, addressInfo.addressNum);
+            assert(addressInfo.addressNum > 0);
             existingAddress = true;
             break;
         case AddressLocation::LevelDb:
             multiAddressMap.add(rawScript, addressInfo.addressNum);
+            assert(addressInfo.addressNum > 0);
             existingAddress = true;
             break;
         case AddressLocation::MultiUseMap:
+            assert(addressInfo.addressNum > 0);
             existingAddress = true;
             break;
         case AddressLocation::NotFound:
@@ -187,13 +198,14 @@ std::pair<uint32_t, bool> AddressState::resolveAddress(const AddressInfo &addres
     if (!existingAddress) {
         addressNum = getNewAddressIndex(rawScript.type);
         addressBloomFilter.add(rawScript);
-        singleAddressMap.add(rawScript, addressInfo.addressNum);
+        singleAddressMap.add(rawScript, addressNum);
         
         if (addressBloomFilter.isFull()) {
             addressBloomFilter.reset(addressBloomFilter.getMaxItems() * 2, addressBloomFilter.getFPRate());
             reloadBloomFilter();
         }
     }
+    assert(addressNum > 0);
     return std::make_pair(addressNum, !existingAddress);
 }
 

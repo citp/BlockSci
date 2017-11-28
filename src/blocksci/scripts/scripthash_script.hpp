@@ -22,7 +22,6 @@ namespace blocksci {
     private:
         Address wrappedAddress;
     public:
-        uint32_t txRevealed;
         uint160 address;
         
         constexpr static ScriptType::Enum scriptType = ScriptType::Enum::SCRIPTHASH;

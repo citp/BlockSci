@@ -1,0 +1,13 @@
+To install lmdb++, just copy the "lmdb++.h" header file to a location of
+your choosing. To make it available system-wide, you'd normally copy it to
+/usr/local/include. Alternatively, you can embed it directly in your
+project.
+
+If you have `make', a Makefile is provided to facilitate installation:
+
+    make install
+
+    make uninstall
+
+To facilitate packaging, the Makefile rules honor the DESTDIR and PREFIX
+variables, in case values are provided for those.

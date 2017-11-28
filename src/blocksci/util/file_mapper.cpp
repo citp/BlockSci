@@ -59,11 +59,11 @@ void SimpleFileMapperBase::reload() {
 }
 
 const char *SimpleFileMapperBase::getDataAtOffset(OffsetType offset) const {
-    if (offset < size()) {
-        return constData + offset;
-    } else {
+    if (offset == InvalidFileIndex) {
         return nullptr;
     }
+    assert(offset < size());
+    return constData + offset;
 }
 
 size_t SimpleFileMapperBase::fileSize() const {

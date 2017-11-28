@@ -11,7 +11,7 @@
 
 #include "cluster.hpp"
 
-#include <blocksci/file_mapper.hpp>
+#include <blocksci/util/file_mapper.hpp>
 #include <blocksci/script.hpp>
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/scripts/script_info.hpp>
@@ -23,7 +23,7 @@
 
 class Cluster;
 
-template<blocksci::ScriptType::Enum type>
+template<auto type>
 struct ScriptClusterIndexFile : public blocksci::FixedSizeFileMapper<uint32_t> {
     using blocksci::FixedSizeFileMapper<uint32_t>::FixedSizeFileMapper;
 };

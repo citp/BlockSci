@@ -1,3 +1,5 @@
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -march=native -mtune=native")
+
 file(GLOB BLOCKSCI_HEADERS "*.hpp")
 file(GLOB BLOCKSCI_SOURCES "*.cpp")
 file(GLOB ADDRESS_HEADERS "address/*.hpp")
@@ -16,6 +18,13 @@ file(GLOB HEURISTICS_SOURCES "heuristics/*.cpp")
 set(ALL_SOURCES ${BLOCKSCI_HEADERS} ${BLOCKSCI_SOURCES} ${ADDRESS_HEADERS} ${ADDRESS_SOURCES}  ${SCRIPT_HEADERS} ${SCRIPT_SOURCES} ${CHAIN_HEADERS} ${CHAIN_SOURCES} ${INDEX_HEADERS} ${INDEX_SOURCES} ${UTIL_HEADERS} ${UTIL_SOURCES} ${HEURISTICS_HEADERS} ${HEURISTICS_SOURCES})
 
 add_library(blocksci SHARED ${ALL_SOURCES})
+
+if( supported )
+    message(STATUS "IPO / LTO enabled")
+    set_property(TARGET blocksci PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+else()
+    message(STATUS "IPO / LTO not supported: <${error}>")
+endif()
 
 source_group(blocksci\\chain FILES ${CHAIN_HEADERS} ${CHAIN_SOURCES})
 source_group(blocksci\\address FILES ${ADDRESS_HEADERS} ${ADDRESS_SOURCES})

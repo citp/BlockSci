@@ -51,8 +51,9 @@ namespace blocksci {
     }
     
     std::vector<Output> getOutputsImp(std::vector<OutputPointer> pointers, const ChainAccess &access) {
+        auto chainAccess = &access;
         return pointers
-        | ranges::view::transform([&](const OutputPointer &pointer) { return Output(pointer, access); })
+        | ranges::view::transform([chainAccess](const OutputPointer &pointer) { return Output(pointer, *chainAccess); })
         | ranges::to_vector;
     }
     
@@ -76,8 +77,9 @@ namespace blocksci {
                 }
             }
         }
+        auto chainAccess = &access;
         return allPointers
-        | ranges::view::transform([&](const InputPointer &pointer) { return Input(pointer, access); })
+        | ranges::view::transform([chainAccess](const InputPointer &pointer) { return Input(pointer, *chainAccess); })
         | ranges::to_vector;
     }
     
@@ -114,7 +116,8 @@ namespace blocksci {
     std::vector<Transaction> getOutputTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access) {
         auto txNums = pointers | ranges::view::transform([](const OutputPointer &pointer) { return pointer.txNum; }) | ranges::to_vector;
         txNums |= ranges::action::sort | ranges::action::unique;
-        return txNums | ranges::view::transform([&](uint32_t txNum) { return Transaction(txNum, access); }) | ranges::to_vector;
+        auto chainAccess = &access;
+        return txNums | ranges::view::transform([chainAccess](uint32_t txNum) { return Transaction(txNum, *chainAccess); }) | ranges::to_vector;
     }
     
     std::vector<Transaction> AddressIndex::getOutputTransactions(const Address &address, const ChainAccess &access) const {
@@ -132,7 +135,8 @@ namespace blocksci {
     }
     
     std::vector<Transaction> getInputTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access) {
-        auto txes = pointers | ranges::view::transform([&](const OutputPointer &pointer) { return Output(pointer, access).getSpendingTx(); }) | flatMap() | ranges::to_vector;
+        auto chainAccess = &access;
+        auto txes = pointers | ranges::view::transform([chainAccess](const OutputPointer &pointer) { return Output(pointer, *chainAccess).getSpendingTx(); }) | flatMap() | ranges::to_vector;
         txes |= ranges::action::sort(operator<) | ranges::action::unique(operator==);
         return txes;
     }

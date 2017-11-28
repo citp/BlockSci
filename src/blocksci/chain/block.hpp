@@ -11,9 +11,10 @@
 
 #include "chain_fwd.hpp"
 #include "transaction.hpp"
+#include "raw_block.hpp"
+#include <blocksci/chain/chain_access.hpp>
 
 #include <blocksci/scripts/scripts_fwd.hpp>
-#include <blocksci/util/bitcoin_uint256.hpp>
 #include <blocksci/address/address_types.hpp>
 
 #include <range/v3/view_facade.hpp>
@@ -24,22 +25,6 @@
 #include <chrono>
 
 namespace blocksci {
-    struct RawBlock {
-        uint32_t firstTxIndex;
-        uint32_t numTxes;
-        uint32_t height;
-        uint256 hash;
-        int32_t version;
-        uint32_t timestamp;
-        uint32_t bits;
-        uint32_t nonce;
-        uint64_t coinbaseOffset;
-        
-        RawBlock(uint32_t firstTxIndex, uint32_t numTxes, uint32_t height, uint256 hash, int32_t version, uint32_t timestamp, uint32_t bits, uint32_t nonce, uint64_t coinbaseOffset);
-        
-        bool operator==(const RawBlock& other) const;
-    };
-    
     class Block : public ranges::view_facade<Block> {
         friend ranges::range_access;
         
@@ -54,15 +39,46 @@ namespace blocksci {
             uint32_t currentTxIndex;
         public:
             cursor() = default;
-            cursor(const Block &block_, uint32_t txNum);
-            Transaction read() const;
-            bool equal(ranges::default_sentinel) const;
-            bool equal(const cursor &other) const;
-            void next();
-            void prev();
-            int distance_to(cursor const &that) const;
-            int distance_to(ranges::default_sentinel) const;
-            void advance(int amount);
+            cursor(const Block &block_, uint32_t txNum) : block(&block_), currentTxPos(reinterpret_cast<const char *>(block->access->getTx(txNum))), currentTxIndex(txNum) {}
+            
+            Transaction read() const {
+                auto rawTx = reinterpret_cast<const RawTransaction *>(currentTxPos);
+                return {rawTx, currentTxIndex, block->height(), *block->access};
+            }
+            
+            bool equal(cursor const &that) const {
+                return currentTxIndex == that.currentTxIndex;
+            }
+            
+            bool equal(ranges::default_sentinel) const {
+                return currentTxIndex == block->endTxIndex();
+            }
+            
+            void next() {
+                auto tx = reinterpret_cast<const RawTransaction *>(currentTxPos);
+                currentTxPos += sizeof(RawTransaction) +
+                static_cast<size_t>(tx->inputCount) * sizeof(Inout) +
+                static_cast<size_t>(tx->outputCount) * sizeof(Inout);
+                currentTxIndex++;
+            }
+            
+            int distance_to(cursor const &that) const {
+                return static_cast<int>(currentTxIndex) - static_cast<int>(that.currentTxIndex);
+            }
+            
+            int distance_to(ranges::default_sentinel) const {
+                return static_cast<int>(block->endTxIndex()) - static_cast<int>(currentTxIndex);
+            }
+            
+            void prev() {
+                currentTxIndex--;
+                currentTxPos = reinterpret_cast<const char *>(block->access->getTx(currentTxIndex));
+            }
+            
+            void advance(int amount) {
+                currentTxIndex += static_cast<uint32_t>(amount);
+                currentTxPos = reinterpret_cast<const char *>(block->access->getTx(currentTxIndex));
+            }
         };
         
         cursor begin_cursor() const {
@@ -75,8 +91,17 @@ namespace blocksci {
         
     public:
         Block() = default;
-        Block(uint32_t blockNum, const ChainAccess &access);
+        Block(uint32_t blockNum_, const ChainAccess &access_) : access(&access_), rawBlock(access->getBlock(blockNum_)), blockNum(blockNum_) {
+        }
         
+        bool operator==(const Block &other) const {
+            return *rawBlock == *other.rawBlock;
+        }
+
+        bool operator!=(const Block &other) const {
+            return !(*rawBlock == *other.rawBlock);
+        }
+
         auto allInputs() const {
             return *this | ranges::view::transform([](const Transaction &tx) { return tx.inputs(); }) | ranges::view::join;
         }
@@ -132,30 +157,20 @@ namespace blocksci {
         #endif
     };
     
-    inline auto fees(const Block &block) {
-        return block | ranges::view::transform(fee);
-    }
-    
-    inline auto feesPerByte(const Block &block) {
-        return block | ranges::view::transform(feePerByte);
+    inline auto txes(const Block &block) {
+        return block;
     }
     
     size_t sizeBytes(const Block &block);
     bool isSegwit(const Block &block, const ScriptAccess &scripts);
     
-    uint64_t totalOutAfterHeight(const Block &block, uint32_t height);
-    
     TransactionSummary transactionStatistics(const Block &block, const ChainAccess &access);
-    std::vector<Output> getOutputsSpentByHeight(const Block &block, uint32_t height, const ChainAccess &access);
-    uint64_t getTotalSpentOfAge(const Block &block, const ChainAccess &access, uint32_t age);
     std::vector<uint64_t> getTotalSpentOfAges(const Block &block, const ChainAccess &access, uint32_t maxAge);
     std::unordered_map<AddressType::Enum, int64_t> netAddressTypeValue(const Block &block);
     std::unordered_map<std::string, int64_t> netFullTypeValue(const Block &block, const ScriptAccess &scripts);
 
     #ifndef BLOCKSCI_WITHOUT_SINGLETON
     bool isSegwit(const Block &block);
-    std::vector<Output> getOutputsSpentByHeight(const Block &block, uint32_t height);
-    uint64_t getTotalSpentOfAge(const Block &block, uint32_t age);
     std::vector<uint64_t> getTotalSpentOfAges(const Block &block, uint32_t maxAge);
     std::unordered_map<std::string, int64_t> netFullTypeValue(const Block &block);
     #endif

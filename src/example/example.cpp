@@ -9,6 +9,9 @@
 #include "performance.hpp"
 
 #include <blocksci/blocksci.hpp>
+#include <blocksci/chain/algorithms.hpp>
+#include <blocksci/chain/transaction.hpp>
+#include <blocksci/chain/block.hpp>
 #include <blocksci/script.hpp>
 #include <blocksci/index/hash_index.hpp>
 #include <blocksci/address/address.hpp>
@@ -18,6 +21,8 @@
 
 #include <google/sparse_hash_map>
 #include <google/dense_hash_map>
+
+#include <range/v3/all.hpp>
 
 #include <numeric>
 #include <chrono>
@@ -94,7 +99,21 @@ int main(int argc, const char * argv[]) {
     assert(argc == 2);
     
     Blockchain chain(argv[1]);
-    auto outputs = getUnspentOutputs(chain[chain.size() - 1]);
+    auto a = Transaction(2571650);
+    auto b = a.outputs()[1].getAddress();
+    auto c = b.getOutputs();
+    for (auto &out : c) {
+        std::cout << out << std::endl;
+    }
+
+//    for (auto block : chain) {
+//        for (auto tx : block) {
+//            for (auto output : tx.outputs()) {
+//                std::cout << output << std::endl;
+//            }
+//        }
+//    }
+    
     return 0;
 //    uint64_t count = 0;
 //    for (auto tx : chain.iterateTransactions(0, chain.size())) {
@@ -154,8 +173,7 @@ int main(int argc, const char * argv[]) {
         return vec1;
     };
     
-    std::vector<Transaction> cjvec;
-    auto cjtxes = chain.mapReduce<std::vector<Transaction>, std::vector<Transaction>>(354416, 464270, mapFunc, reduceFunc, cjvec);
+    auto cjtxes = chain.mapReduce<std::vector<Transaction>>(354416, 464270, mapFunc, reduceFunc);
     
     cjtxes.erase(std::remove_if(cjtxes.begin(), cjtxes.end(), [](const Transaction &tx) {
         return tx.inputCount() > 15;
@@ -269,8 +287,10 @@ int main(int argc, const char * argv[]) {
     
     
     begin = std::chrono::steady_clock::now();
-    for (auto tx : chain.iterateTransactions(0, chain.size())) {
-        maxSize = std::max(maxSize, tx.sizeBytes());
+    for (auto block : chain) {
+        for (auto tx : block) {
+            maxSize = std::max(maxSize, tx.sizeBytes());
+        }
     }
     
     endTime = std::chrono::steady_clock::now();
@@ -490,8 +510,7 @@ google::dense_hash_map<uint32_t, uint32_t> getAddressDistribution(Blockchain &ch
         return map1;
     };
     
-    google::dense_hash_map<uint32_t, uint32_t> map;
-    return chain.mapReduce<google::dense_hash_map<uint32_t, uint32_t>, google::dense_hash_map<uint32_t, uint32_t>>(start, stop, mapFunc, reduceFunc, map);
+    return chain.mapReduce<google::dense_hash_map<uint32_t, uint32_t>>(start, stop, mapFunc, reduceFunc);
 }
 
 /*

@@ -9,13 +9,12 @@
 #ifndef transaction_hpp
 #define transaction_hpp
 
-#include "chain_fwd.hpp"
+#include "raw_transaction.hpp"
 #include "output.hpp"
 #include "input.hpp"
-#include "inout.hpp"
+#include "chain_access.hpp"
 
 #include <blocksci/scripts/scripts_fwd.hpp>
-#include <blocksci/util/util.hpp>
 #include <blocksci/address/address_info.hpp>
 
 #include <range/v3/iterator_range.hpp>
@@ -23,6 +22,8 @@
 #include <range/v3/view/transform.hpp>
 #include <range/v3/view/remove_if.hpp>
 #include <range/v3/view/filter.hpp>
+#include <range/v3/view/zip_with.hpp>
+#include <range/v3/view/iota.hpp>
 #include <range/v3/utility/optional.hpp>
 
 #include <vector>
@@ -36,32 +37,6 @@ namespace blocksci {
     class uint256;
     class HashIndex;
     
-    struct RawTransaction {
-        uint32_t sizeBytes;
-        uint32_t locktime;
-        uint16_t inputCount;
-        uint16_t outputCount;
-        InPlaceArray<Inout> inOuts;
-        
-        RawTransaction(uint32_t sizeBytes, uint32_t locktime, uint16_t inputCount, uint16_t outputCount);
-        
-        RawTransaction(const RawTransaction &) = delete;
-        RawTransaction(RawTransaction &&) = delete;
-        RawTransaction &operator=(const RawTransaction &) = delete;
-        RawTransaction &operator=(RawTransaction &&) = delete;
-        
-        
-        Inout &getOutput(uint16_t outputNum);
-        Inout &getInput(uint16_t inputNum);
-        
-        const Inout &getOutput(uint16_t outputNum) const;
-        const Inout &getInput(uint16_t inputNum) const;
-        
-        size_t realSize() const {
-            return sizeof(RawTransaction) + inOuts.extraSize();
-        }
-    };
-    
     class Transaction {
     private:
         const ChainAccess *access;
@@ -71,9 +46,13 @@ namespace blocksci {
         uint32_t txNum;
         uint32_t blockHeight;
         
-        Transaction(const RawTransaction *data, uint32_t txNum, uint32_t blockHeight, const ChainAccess &access);
-        Transaction(uint32_t index, const ChainAccess &access);
-        Transaction(uint32_t index, uint32_t height, const ChainAccess &access);
+        Transaction() = default;
+        
+        Transaction(const RawTransaction *data_, uint32_t txNum_, uint32_t blockHeight_, const ChainAccess &access_) : access(&access_), data(data_), txNum(txNum_), blockHeight(blockHeight_) {}
+        
+        Transaction(uint32_t index, const ChainAccess &access_) : Transaction(index, access_.getBlockHeight(index), access_) {}
+        
+        Transaction(uint32_t index, uint32_t height, const ChainAccess &access_) : Transaction(access_.getTx(index), index, height, access_) {}
         
         static ranges::optional<Transaction> txWithHash(uint256 hash, const HashIndex &index, const ChainAccess &access);
         static ranges::optional<Transaction> txWithHash(std::string hash, const HashIndex &index, const ChainAccess &access);
@@ -111,11 +90,25 @@ namespace blocksci {
         }
         
         auto outputs() const {
-            return rawOutputs() | ranges::view::transform([&](const Inout &inout) { return Output(inout, *access); });
+            auto chainAccess = access;
+            uint32_t txIndex = txNum;
+            uint32_t height = blockHeight;
+            return ranges::view::zip_with([chainAccess, txIndex, height](uint16_t outputNum, const Inout &inout) {
+                return Output({txIndex, outputNum}, height, inout, *chainAccess);
+            }, ranges::view::iota(uint16_t{0}, outputCount()), rawOutputs());
         }
         
         auto inputs() const {
-            return rawInputs() | ranges::view::transform([&](const Inout &inout) { return Input(inout, *access); });
+            auto chainAccess = access;
+            uint32_t txIndex = txNum;
+            uint32_t height = blockHeight;
+            return ranges::view::zip_with([chainAccess, txIndex, height](uint16_t inputNum, const Inout &inout) {
+                return Input({txIndex, inputNum}, height, inout, *chainAccess);
+            }, ranges::view::iota(uint16_t{0}, inputCount()), rawInputs());
+        }
+        
+        bool isCoinbase() const {
+            return inputCount() == 0;
         }
         
         Block block() const;
@@ -132,6 +125,10 @@ namespace blocksci {
     inline bool operator==(const Transaction& a, const Transaction& b) {
         return a.txNum == b.txNum;
     }
+
+    inline bool operator!=(const Transaction& a, const Transaction& b) {
+        return a.txNum != b.txNum;
+    }
     
     inline bool operator<(const Transaction& a, const Transaction& b) {
         return a.txNum < b.txNum;
@@ -140,11 +137,7 @@ namespace blocksci {
     using input_range = decltype(std::declval<Transaction>().inputs());
     using output_range = decltype(std::declval<Transaction>().outputs());
     
-    bool hasFeeGreaterThan(const Transaction &tx, uint64_t fee);
-    
-    inline bool isCoinbase(const Transaction &tx) {
-        return tx.inputCount() == 0;
-    }
+    bool hasFeeGreaterThan(Transaction &tx, uint64_t fee);
     
     bool isCoinjoin(const Transaction &tx);
     bool isDeanonTx(const Transaction &tx);
@@ -153,54 +146,6 @@ namespace blocksci {
     CoinJoinResult isPossibleCoinjoin(const Transaction &tx, uint64_t minBaseFee, double percentageFee, size_t maxDepth);
     CoinJoinResult isCoinjoinExtra(const Transaction &tx, uint64_t minBaseFee, double percentageFee, size_t maxDepth);
     ranges::optional<Output> getOpReturn(const Transaction &tx);
-    
-    inline auto inputs(const Transaction &tx) {
-        return tx.inputs();
-    }
-    
-    inline auto outputs(const Transaction &tx) {
-        return tx.outputs();
-    }
-    
-    inline auto outputsUnspent(const Transaction &tx) {
-        return tx.outputs() | ranges::view::remove_if([](const Output &output) { return output.isSpent(); });
-    }
-    
-    inline auto outputsOfAddressType(const Transaction &tx, AddressType::Enum type) {
-        return tx.outputs() | ranges::view::filter([&](const Output &output) { return output.getType() == type; });
-    }
-    
-    inline auto outputsOfScriptType(const Transaction &tx, ScriptType::Enum type) {
-        return tx.outputs() | ranges::view::filter([&](const Output &output) { return scriptType(output.getType()) == type; });
-    }
-    
-    inline uint64_t inputCount(const Transaction &tx) {
-        return tx.inputCount();
-    }
-    
-    inline uint64_t outputCount(const Transaction &tx) {
-        return tx.outputCount();
-    }
-    
-    inline uint64_t totalOut(const Transaction &tx) {
-        auto values = tx.outputs() | ranges::view::transform([](const Output &output) { return output.getValue(); });
-        return ranges::accumulate(values, uint64_t{0});
-    }
-    
-    inline uint64_t totalIn(const Transaction &tx) {
-        auto values = tx.inputs() | ranges::view::transform([](const Input &input) { return input.getValue(); });
-        return ranges::accumulate(values, uint64_t{0});
-    }
-    
-    inline uint64_t fee(const Transaction &tx) {
-        if (isCoinbase(tx)) {
-            return 0;
-        } else {
-            return totalIn(tx) - totalOut(tx);
-        }
-    }
-    
-    double feePerByte(const Transaction &tx);
     
     ranges::optional<Output> getChangeOutput(const Transaction &tx, const ScriptAccess &scripts);
     

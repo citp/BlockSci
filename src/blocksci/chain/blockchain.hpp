@@ -11,29 +11,42 @@
 
 #include "block.hpp"
 #include "transaction.hpp"
+#include <blocksci/util/data_access.hpp>
 
 #include <range/v3/view_facade.hpp>
 
+#include <type_traits>
 #include <future>
 
 namespace blocksci {
     struct DataConfiguration;
     class DataAccess;
     
-    template <typename It, typename MapType, typename ResultType>
-    ResultType mapReduceBlocksImp(It begin, It end, const std::function<MapType(const std::vector<Block> &)> &mapFunc, const std::function<ResultType&(ResultType &, MapType &)> &reduceFunc, ResultType identity) {
+    template <typename F, typename... Args>
+    struct is_callable {
+        template <typename U>
+        static auto test(U* p) -> decltype((*p)(std::declval<Args>()...), void(), std::true_type());
+        
+        template <typename U>
+        static auto test(...) -> decltype(std::false_type());
+        
+        static constexpr bool value = decltype(test<F>(nullptr))::value;
+    };
+    
+    template <typename ResultType, typename It, typename MapFunc, typename ReduceFunc>
+    ResultType mapReduceBlocksImp(It begin, It end, MapFunc mapFunc, ReduceFunc reduceFunc) {
         auto segmentCount = std::distance(begin, end);
         if(segmentCount == 1) {
-            ResultType res = identity;
+            ResultType res{};
             auto ret = mapFunc(*begin);
             res = reduceFunc(res, ret);
             return res;
         } else {
             auto mid = begin;
             std::advance(mid, segmentCount / 2);
-            auto handle = std::async(std::launch::async, mapReduceBlocksImp<It, MapType, ResultType>, begin, mid, mapFunc, reduceFunc, identity);
-            ResultType res = identity;
-            auto ret1 = mapReduceBlocksImp(mid, end, mapFunc, reduceFunc, identity);
+            auto handle = std::async(std::launch::async, mapReduceBlocksImp<ResultType, It, MapFunc, ReduceFunc>, begin, mid, mapFunc, reduceFunc);
+            ResultType res{};
+            auto ret1 = mapReduceBlocksImp<ResultType>(mid, end, mapFunc, reduceFunc);
             res = reduceFunc(res, ret1);
             auto ret2 = handle.get();
             res = reduceFunc(res, ret2);
@@ -56,15 +69,38 @@ namespace blocksci {
         public:
             cursor() = default;
             cursor(const Blockchain &chain_, uint32_t height) : chain(&chain_), currentBlockHeight(height) {}
-            Block read() const;
-            bool equal(ranges::default_sentinel) const;
-            bool equal(const cursor &other) const;
-            void next();
-            void prev();
-            int distance_to(cursor const &that) const;
-            int distance_to(ranges::default_sentinel) const;
             
-            void advance(int amount);
+            bool equal(ranges::default_sentinel) const {
+                return currentBlockHeight == chain->lastBlockHeight;
+            }
+            
+            bool equal(const cursor &other) const {
+                return currentBlockHeight == other.currentBlockHeight;
+            }
+            
+            Block read() const {
+                return Block(currentBlockHeight, *chain->access->chain);
+            }
+            
+            void next() {
+                currentBlockHeight++;
+            }
+            
+            void prev() {
+                currentBlockHeight--;
+            }
+            
+            int distance_to(ranges::default_sentinel) const {
+                return static_cast<int>(chain->lastBlockHeight) - static_cast<int>(currentBlockHeight);
+            }
+            
+            int distance_to(cursor const &that) const {
+                return static_cast<int>(that.currentBlockHeight) - static_cast<int>(currentBlockHeight);
+            }
+            
+            void advance(int amount) {
+                currentBlockHeight += amount;
+            }
         };
         
         cursor begin_cursor() const {
@@ -91,33 +127,32 @@ namespace blocksci {
             return lastBlockHeight;
         }
         
-        TransactionRange iterateTransactions(int startBlock, int endBlock) const;
-        RawTransactionRange iterateRawTransactions(int startBlock, int endBlock) const;
-        
-        template <typename MapType, typename ResultType = MapType>
-        auto mapReduce(int start, int stop, const std::function<MapType(const std::vector<Block> &)> &mapFunc, const std::function<ResultType&(ResultType &, MapType &)> &reduceFunc, ResultType identity) const -> decltype(mapFunc(std::declval<std::vector<Block> &>())) {
+        template <typename ResultType, typename MapFunc, typename ReduceFunc>
+        std::enable_if_t<is_callable<MapFunc, std::vector<Block>>::value, ResultType>
+        mapReduce(int start, int stop, MapFunc mapFunc, ReduceFunc reduceFunc) const {
             auto segments = segmentChain(*this, start, stop, std::thread::hardware_concurrency());
-            return mapReduceBlocksImp<decltype(segments)::iterator, MapType, ResultType>(segments.begin(), segments.end(), mapFunc, reduceFunc, identity);
+            return mapReduceBlocksImp<ResultType>(segments.begin(), segments.end(), mapFunc, reduceFunc);
         }
-        
-        template <typename MapType, typename ResultType = MapType>
-        ResultType mapReduce(int start, int stop, const std::function<MapType(const Block &)> &mapFunc, const std::function<ResultType&(ResultType &, MapType &)> &reduceFunc, ResultType identity) const {
+
+        template <typename ResultType, typename MapFunc, typename ReduceFunc>
+        std::enable_if_t<is_callable<MapFunc, Block>::value, ResultType>
+        mapReduce(int start, int stop, MapFunc mapFunc, ReduceFunc reduceFunc) const {
             auto mapF = [&](const std::vector<Block> &segment) {
-                ResultType res = identity;
+                ResultType res{};
                 for (auto &block : segment) {
                     auto mapped = mapFunc(block);
                     res = reduceFunc(res, mapped);
                 }
                 return res;
             };
-            
-            return mapReduce<MapType, ResultType>(start, stop, mapF, reduceFunc, identity);
+            return mapReduce<ResultType>(start, stop, mapF, reduceFunc);
         }
-        
-        template <typename MapType, typename ResultType = MapType>
-        ResultType mapReduce(int start, int stop, const std::function<MapType(const Transaction &)> &mapFunc, const std::function<ResultType&(ResultType &, MapType &)> &reduceFunc, ResultType identity) const {
+
+        template <typename ResultType, typename MapFunc, typename ReduceFunc>
+        std::enable_if_t<is_callable<MapFunc, Transaction>::value, ResultType>
+        mapReduce(int start, int stop, MapFunc mapFunc, ReduceFunc reduceFunc) const {
             auto mapF = [&](const Block &block) {
-                ResultType res = identity;
+                ResultType res{};
                 for (auto tx : block) {
                     auto mapped = mapFunc(tx);
                     res = reduceFunc(res, mapped);
@@ -125,7 +160,7 @@ namespace blocksci {
                 return res;
             };
             
-            return mapReduce<MapType, ResultType>(start, stop, mapF, reduceFunc, identity);
+            return mapReduce<ResultType>(start, stop, mapF, reduceFunc);
         }
         
         template <typename MapType>
@@ -145,8 +180,7 @@ namespace blocksci {
                 return vec1;
             };
             
-            std::vector<MapType> vec;
-            return mapReduce<std::vector<MapType>, std::vector<MapType>>(start, stop, mapF, reduceFunc, vec);
+            return mapReduce<std::vector<MapType>>(start, stop, mapF, reduceFunc);
         }
     };
     

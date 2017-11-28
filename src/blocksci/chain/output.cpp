@@ -10,7 +10,6 @@
 
 #include "output.hpp"
 #include "inout_pointer.hpp"
-#include "chain_access.hpp"
 #include "transaction.hpp"
 #include "util/hash.hpp"
 
@@ -18,24 +17,10 @@
 
 namespace blocksci {
     
-    Output::Output(const OutputPointer &pointer, const ChainAccess &access_) : Output(access_.getTx(pointer.txNum)->getOutput(pointer.inoutNum), access_) {}
-    
     std::string Output::toString() const {
         std::stringstream ss;
         ss << "TxOut(tx_index_to=" << inout->linkedTxNum << ", address=" << inout->getAddress() <<", satoshis=" << inout->getValue() << ")";
         return ss.str();
-    }
-    
-    bool Output::operator==(const Output &other) const {
-        return *inout == *other.inout;
-    }
-    
-    uint32_t Output::getSpendingTxIndex() const {
-        if (inout->linkedTxNum < access->maxLoadedTx()) {
-            return inout->linkedTxNum;
-        } else {
-            return 0;
-        }
     }
     
     ranges::optional<Transaction> Output::getSpendingTx() const {
