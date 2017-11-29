@@ -9,7 +9,7 @@
 #ifndef variant_py_h
 #define variant_py_h
 
-#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include <mpark/variant.hpp>
 

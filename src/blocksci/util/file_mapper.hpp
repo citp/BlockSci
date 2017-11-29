@@ -14,6 +14,7 @@
 #include <boost/iostreams/device/mapped_file.hpp>
 #include <boost/filesystem/path.hpp>
 
+#include <range/v3/view_facade.hpp>
 #include <range/v3/utility/optional.hpp>
 
 #include <array>
@@ -191,12 +192,64 @@ namespace blocksci {
     };
     
     template <typename T, AccessMode mode>
-    struct FixedSizeFileMapper {
+    struct FixedSizeFileMapper  : public ranges::view_facade<FixedSizeFileMapper<T, mode>> {
     private:
         SimpleFileMapper<mode> dataFile;
         size_t getPos(size_t index) const {
             return index * sizeof(T);
         }
+        
+        friend ranges::range_access;
+        
+        struct cursor {
+        private:
+            const FixedSizeFileMapper<T, mode> *file;
+            size_t currentIndex;
+        public:
+            cursor() = default;
+            cursor(const FixedSizeFileMapper<T, mode> &file_, uint32_t txNum) : file(&file_), currentIndex(txNum) {}
+            
+            add_const_ptr_t<T> read() const {
+                return file->getData(currentIndex);
+            }
+            
+            bool equal(cursor const &that) const {
+                return currentIndex == that.currentIndex;
+            }
+            
+            bool equal(ranges::default_sentinel) const {
+                return currentIndex == file->size();
+            }
+            
+            void next() {
+                currentIndex++;
+            }
+            
+            int distance_to(cursor const &that) const {
+                return static_cast<int>(currentIndex) - static_cast<int>(that.currentIndex);
+            }
+            
+            int distance_to(ranges::default_sentinel) const {
+                return static_cast<int>(file->size()) - static_cast<int>(currentIndex);
+            }
+            
+            void prev() {
+                currentIndex--;
+            }
+            
+            void advance(int amount) {
+                currentIndex += static_cast<size_t>(amount);
+            }
+        };
+        
+        cursor begin_cursor() const {
+            return cursor(*this, 0);
+        }
+        
+        ranges::default_sentinel end_cursor() const {
+            return {};
+        }
+        
     public:
         
         FixedSizeFileMapper(boost::filesystem::path path) : dataFile(path) {}
@@ -306,7 +359,7 @@ namespace blocksci {
     }
     
     template <AccessMode mode, typename... T>
-    struct IndexedFileMapper {
+    struct IndexedFileMapper  : public ranges::view_facade<IndexedFileMapper<mode, T...>> {
     private:
         template<size_t indexNum>
         using nth_element = std::tuple_element_t<indexNum, std::tuple<T...>>;
@@ -340,6 +393,57 @@ namespace blocksci {
             auto offset = (*indexData)[indexNum];
             assert(offset < dataFile.size() || offset == InvalidFileIndex);
             return offset;
+        }
+        
+        friend ranges::range_access;
+        
+        struct cursor {
+        private:
+            const IndexedFileMapper<mode, T...> *file;
+            size_t currentIndex;
+        public:
+            cursor() = default;
+            cursor(const IndexedFileMapper<mode, T...> &file_, uint32_t txNum) : file(&file_), currentIndex(txNum) {}
+            
+            auto read() const {
+                return file->getData(currentIndex);
+            }
+            
+            bool equal(cursor const &that) const {
+                return currentIndex == that.currentIndex;
+            }
+            
+            bool equal(ranges::default_sentinel) const {
+                return currentIndex == file->size();
+            }
+            
+            void next() {
+                currentIndex++;
+            }
+            
+            int distance_to(cursor const &that) const {
+                return static_cast<int>(currentIndex) - static_cast<int>(that.currentIndex);
+            }
+            
+            int distance_to(ranges::default_sentinel) const {
+                return static_cast<int>(file->size()) - static_cast<int>(currentIndex);
+            }
+            
+            void prev() {
+                currentIndex--;
+            }
+            
+            void advance(int amount) {
+                currentIndex += static_cast<size_t>(amount);
+            }
+        };
+        
+        cursor begin_cursor() const {
+            return cursor(*this, 0);
+        }
+        
+        ranges::default_sentinel end_cursor() const {
+            return {};
         }
         
     public:

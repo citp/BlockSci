@@ -108,6 +108,8 @@ void init_address(py::module &m) {
     .def_property_readonly("out_script", &script::Nonstandard::outputString, "Nonstandard output script")
     ;
     
+    
+    
     py::enum_<AddressType::Enum>(m, "address_type", py::arithmetic(), "Enumeration of all address types")
     .value("nonstandard", AddressType::Enum::NONSTANDARD)
     .value("pubkey", AddressType::Enum::PUBKEY)

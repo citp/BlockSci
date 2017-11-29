@@ -20,7 +20,6 @@ namespace blocksci {
         for_each(scriptFiles, [&](auto& file) -> decltype(auto) { file->reload(); });
     }
     
-    
     template<ScriptType::Enum type>
     struct ScriptCountFunctor {
         static uint32_t f(const ScriptAccess &access) {

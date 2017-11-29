@@ -33,8 +33,11 @@ namespace blocksci {
         }
     }
     
-    AnyScript ScriptHash::wrappedScript() const {
-        return wrappedAddress.getScript(*access);
+    ranges::optional<AnyScript> ScriptHash::wrappedScript() const {
+        if (auto add = getWrappedAddress(); add) {
+            return add->getScript(*access);
+        }
+        return ranges::nullopt;
     }
     
     std::string ScriptHash::toString() const {
@@ -46,13 +49,12 @@ namespace blocksci {
     }
     
     std::string ScriptHash::toPrettyString() const {
-        auto wrapped = wrappedScript();
         std::stringstream ss;
         ss << "P2SHAddress(";
         ss << "address=" << addressString();
         ss << ", wrappedAddress=";
-        if (wrappedAddress.scriptNum > 0) {
-            wrapped.toPrettyString();
+        if (auto wrapped = wrappedScript(); wrapped) {
+            ss << wrapped->toPrettyString();
         } else {
             ss << "unknown";
         }

@@ -11,9 +11,12 @@
 
 #include "block.hpp"
 #include "transaction.hpp"
+#include <blocksci/scripts/script_access.hpp>
+#include <blocksci/scripts/script_variant.hpp>
 #include <blocksci/util/data_access.hpp>
 
 #include <range/v3/view_facade.hpp>
+#include <range/v3/view/any_view.hpp>
 
 #include <type_traits>
 #include <future>
@@ -58,6 +61,10 @@ namespace blocksci {
     
     std::vector<std::vector<Block>> segmentChain(const Blockchain &chain, int startBlock, int endBlock, unsigned int segmentCount);
     uint32_t txCount(const Blockchain &chain);
+    
+    template <auto type>
+    using ScriptRange = ranges::any_view<ScriptAddress<type>, ranges::category::random_access | ranges::category::sized>;
+    using ScriptRangeVariant = to_variadic_t<to_script_tuple_t<ScriptRange>, mpark::variant>;
     
     class Blockchain : public ranges::view_facade<Blockchain> {
         friend ranges::range_access;
@@ -126,6 +133,16 @@ namespace blocksci {
         uint32_t size() const {
             return lastBlockHeight;
         }
+        
+        template <ScriptType::Enum type>
+        auto scripts() const {
+            return ranges::view::iota(size_t{1}, access->scripts->scriptCount<type>() + 1) | ranges::view::transform([&](size_t scriptNum) {
+                assert(scriptNum > 0);
+                return ScriptAddress<type>(*access->scripts, scriptNum);
+            });
+        }
+        
+        ScriptRangeVariant scripts(ScriptType::Enum type) const;
         
         template <typename ResultType, typename MapFunc, typename ReduceFunc>
         std::enable_if_t<is_callable<MapFunc, std::vector<Block>>::value, ResultType>

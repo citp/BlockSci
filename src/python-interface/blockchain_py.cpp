@@ -6,6 +6,8 @@
 //
 //
 
+#include "variant_py.hpp"
+
 #include <blocksci/chain/algorithms.hpp>
 #include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/transaction.hpp>
@@ -56,5 +58,8 @@ void init_blockchain(py::module &m) {
     .def("script_deanon_txes", getDeanonTxes, "Return a list of transaction for which is_script_deanon returns true")
     .def("change_script_type_txes", getChangeOverTxes, "Return a list of transaction for which is_change_over returns true")
     .def("keyset_change_txes", getKeysetChangeTxes, "Return a list of transaction for which is_keyset_change returns true")
+    .def("scripts", [](const Blockchain &chain, ScriptType::Enum type) {
+        return chain.scripts(type);
+    })
     ;
 }

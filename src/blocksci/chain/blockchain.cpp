@@ -54,6 +54,25 @@ namespace blocksci {
         lastBlockHeight = access->chain->blockCount();
     }
     
+    template<ScriptType::Enum type>
+    struct ScriptRangeFunctor {
+        static ScriptRangeVariant f(const Blockchain &chain) {
+            return chain.scripts<type>();
+        }
+    };
+    
+    ScriptRangeVariant Blockchain::scripts(ScriptType::Enum type) const {
+        static auto table = make_static_table<ScriptType, ScriptRangeFunctor>(*this);
+        static constexpr std::size_t size = AddressType::all.size();
+        
+        auto index = static_cast<size_t>(type);
+        if (index >= size)
+        {
+            throw std::invalid_argument("combination of enum values is not valid");
+        }
+        return table[index];
+    }
+    
     uint32_t txCount(const Blockchain &chain) {
         auto lastBlock = chain[chain.size() - 1];
         return lastBlock.endTxIndex();

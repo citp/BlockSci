@@ -44,7 +44,7 @@ namespace blocksci {
             }
         }
         
-        AnyScript wrappedScript() const;
+        ranges::optional<AnyScript> wrappedScript() const;
     };
 }
 

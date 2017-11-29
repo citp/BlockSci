@@ -13,8 +13,9 @@
 #include "script_data.hpp"
 
 #include <blocksci/util/data_configuration.hpp>
-
 #include <blocksci/util/file_mapper.hpp>
+
+#include <mpark/variant.hpp>
 
 namespace blocksci {
     template<typename T>
@@ -39,11 +40,10 @@ namespace blocksci {
     
     template<auto type>
     using ScriptFilePtr = std::unique_ptr<ScriptFile<type>>;
-
+    
     class ScriptAccess {
     private:
-        using ScriptFilesTuple = apply_template_t<ScriptFilePtr, ScriptInfoList>;
-        
+        using ScriptFilesTuple = to_script_tuple_t<ScriptFilePtr>;
         ScriptFilesTuple scriptFiles;
         
         

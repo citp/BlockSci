@@ -1,4 +1,4 @@
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -march=native -mtune=native")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native")
 
 file(GLOB BLOCKSCI_HEADERS "*.hpp")
 file(GLOB BLOCKSCI_SOURCES "*.cpp")
