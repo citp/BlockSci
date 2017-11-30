@@ -18,6 +18,7 @@
 
 #include <range/v3/view/transform.hpp>
 #include <range/v3/to_container.hpp>
+#include <range/v3/range_for.hpp>
 
 #include <numeric>
 #include <fstream>
@@ -79,10 +80,7 @@ namespace blocksci {
     
     size_t sizeBytes(const Block &block) {
         size_t size = GetSizeOfCompactSize(block.size()) + 80;
-        for (auto tx : block) {
-            size += tx.sizeBytes();
-        }
-        return size;
+        return size + ranges::accumulate(block | ranges::view::transform([](const Transaction &tx) { return tx.sizeBytes(); }), size_t{0});
     }
     
     TransactionSummary transactionStatistics(const Block &block) {
@@ -91,11 +89,11 @@ namespace blocksci {
     
     std::unordered_map<AddressType::Enum, int64_t> netAddressTypeValue(const Block &block) {
         std::unordered_map<AddressType::Enum, int64_t> net;
-        for (auto tx : block) {
-            for (auto output : tx.outputs()) {
+        RANGES_FOR(auto tx, block) {
+            RANGES_FOR(auto output, tx.outputs()) {
                 net[output.getType()] += output.getValue();
             }
-            for (auto input : tx.inputs()) {
+            RANGES_FOR(auto input, tx.inputs()) {
                 net[input.getType()] -= input.getValue();
             }
         }
@@ -104,11 +102,11 @@ namespace blocksci {
 
     std::unordered_map<std::string, int64_t> netFullTypeValue(const Block &block, const ScriptAccess &scripts) {
         std::unordered_map<std::string, int64_t> net;
-        for (auto tx : block) {
-            for (auto output : tx.outputs()) {
+        RANGES_FOR(auto tx, block) {
+            RANGES_FOR(auto output, tx.outputs()) {
                 net[output.getAddress().fullType(scripts)] += output.getValue();
             }
-            for (auto input : tx.inputs()) {
+            RANGES_FOR(auto input, tx.inputs()) {
                 net[input.getAddress().fullType(scripts)] -= input.getValue();
             }
         }
@@ -120,7 +118,7 @@ namespace blocksci {
         uint32_t newestTxNum = Block(block.height() - 1, access).endTxIndex() - 1;
         auto inputs = block.allInputs()
         | ranges::view::remove_if([=](const Input &input) { return input.spentTxIndex() > newestTxNum; });
-        for (auto input : inputs) {
+        RANGES_FOR(auto input, inputs) {
             uint32_t age = std::min(maxAge, block.height() - input.getSpentTx().block().height()) - 1;
             totals[age] += input.getValue();
         }

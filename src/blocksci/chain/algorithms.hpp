@@ -22,81 +22,71 @@
 namespace blocksci {
     
     template <typename B>
-    constexpr bool isInputRange = std::is_same_v<ranges::range_value_type_t<B>, Input>;
+    constexpr bool isInputRange = std::is_same<ranges::range_value_type_t<B>, Input>::value;
     
     template <typename B>
-    constexpr bool isOutputRange = std::is_same_v<ranges::range_value_type_t<B>, Output>;
+    constexpr bool isOutputRange = std::is_same<ranges::range_value_type_t<B>, Output>::value;
     
     template <typename B>
-    constexpr bool isTxRange = std::is_same_v<ranges::range_value_type_t<B>, Transaction>;
+    constexpr bool isTxRange = std::is_same<ranges::range_value_type_t<B>, Transaction>::value;
     
     template <typename B>
-    constexpr bool isBlockRange = std::is_same_v<ranges::range_value_type_t<B>, Block>;
+    constexpr bool isBlockRange = std::is_same<ranges::range_value_type_t<B>, Block>::value;
     
     template <typename B>
-    constexpr bool isTx = std::is_same_v<B, Transaction>;
+    constexpr bool isTx = std::is_same<B, Transaction>::value;
     
     template <typename B>
-    constexpr bool isBlockchain = std::is_same_v<B, Blockchain>;
+    constexpr bool isBlockchain = std::is_same<B, Blockchain>::value;
     
     template<typename T>
     struct fail_helper : std::false_type
     { };
     
-    template <typename B>
-    inline auto txes(B &b) {
-        if constexpr (isTxRange<B>) {
-            return b;
-        } else if constexpr (isBlockRange<B> || isBlockchain<B>) {
-            auto c = b | ranges::view::join;
-            static_assert(isTxRange<decltype(c)>);
-            return c;
-        } else {
-            static_assert(fail_helper<B>::value);
-        }
+    template <typename B, CONCEPT_REQUIRES_(ranges::Range<B>()), std::enable_if_t<isTxRange<B>, int> = 0>
+    inline auto txes(B && b) {
+        return std::forward<B>(b);
+    }
+    
+    template <typename B, CONCEPT_REQUIRES_(ranges::Range<B>()), std::enable_if_t<isBlockRange<B>, int> = 0>
+    inline auto txes(B && b) {
+        return std::forward<B>(b) | ranges::view::join;
     }
     
     inline auto inputs(const Transaction &tx) {
         return tx.inputs();
     }
     
-    template <typename T>
-    inline auto inputs(T &t) {
-        if constexpr (std::is_same_v<T, Transaction>) {
-            return t.inputs();
-        } else if constexpr (isInputRange<T>) {
-            return t;
-        } else if constexpr (isTxRange<T>) {
-            return t | ranges::view::transform([](const Transaction &tx) { return tx.inputs(); }) | ranges::view::join;
-        } else if constexpr (isBlockRange<T>) {
-            auto a = txes(t);
-            static_assert(isTxRange<decltype(a)>);
-            return a | ranges::view::transform([](const Transaction &tx) { return tx.inputs(); }) | ranges::view::join;
-        } else {
-            static_assert(fail_helper<T>::value);
-        }
+    inline auto inputs(Transaction &tx) {
+        return tx.inputs();
     }
     
+    template <typename B, CONCEPT_REQUIRES_(ranges::Range<B>()), std::enable_if_t<isInputRange<B>, int> = 0>
+    inline auto inputs(B && b) {
+        return std::forward<B>(b);
+    }
+    
+    template <typename B, CONCEPT_REQUIRES_(ranges::Range<B>()), std::enable_if_t<isTxRange<B> || isBlockRange<B>, int> = 0>
+    inline auto inputs(B && b) {
+        return txes(std::forward<B>(b)) | ranges::view::transform([](const Transaction &tx) { return tx.inputs(); }) | ranges::view::join;
+    }
     
     inline auto outputs(const Transaction &tx) {
         return tx.outputs();
     }
     
-    template <typename T>
-    inline auto outputs(T &t) {
-        if constexpr (std::is_same_v<T, Transaction>) {
-            return t.outputs();
-        } else if constexpr (isOutputRange<T>) {
-            return t;
-        } else if constexpr (isTxRange<T>) {
-            return t | ranges::view::transform([](const Transaction &tx) { return tx.outputs(); }) | ranges::view::join;
-        } else if constexpr (isBlockRange<T>) {
-            auto a = txes(t);
-            static_assert(isTxRange<decltype(a)>);
-            return a | ranges::view::transform([](const Transaction &tx) { return tx.outputs(); }) | ranges::view::join;
-        } else {
-            static_assert(fail_helper<T>::value);
-        }
+    inline auto outputs(Transaction &tx) {
+        return tx.outputs();
+    }
+    
+    template <typename B, CONCEPT_REQUIRES_(ranges::Range<B>()), std::enable_if_t<isOutputRange<B>, int> = 0>
+    inline auto outputs(B && b) {
+        return std::forward<B>(b);
+    }
+    
+    template <typename B, CONCEPT_REQUIRES_(ranges::Range<B>()), std::enable_if_t<isTxRange<B> || isBlockRange<B>, int> = 0>
+    inline auto outputs(B && b) {
+        return txes(std::forward<B>(b)) | ranges::view::transform([](const Transaction &tx) { return tx.outputs(); }) | ranges::view::join;
     }
     
     template <typename T>
@@ -175,14 +165,14 @@ namespace blocksci {
     }
     
     template <typename T>
-    inline uint64_t totalInputValue(T &t) {
-        auto values = inputs(t) | ranges::view::transform([](const Input &a) { return a.getValue(); });
+    inline uint64_t totalInputValue(T && t) {
+        auto values = inputs(std::forward<T>(t)) | ranges::view::transform([](const Input &a) { return a.getValue(); });
         return ranges::accumulate(values, uint64_t{0});
     }
     
     template <typename T>
-    inline uint64_t totalOutputValue(T &t) {
-        auto values = outputs(t) | ranges::view::transform([](const Output &a) { return a.getValue(); });
+    inline uint64_t totalOutputValue(T && t) {
+        auto values = outputs(std::forward<T>(t)) | ranges::view::transform([](const Output &a) { return a.getValue(); });
         return ranges::accumulate(values, uint64_t{0});
     }
     

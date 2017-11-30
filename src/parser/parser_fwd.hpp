@@ -8,6 +8,9 @@
 #ifndef parser_fwd_hpp
 #define parser_fwd_hpp
 
+#include <blocksci/address/address_types.hpp>
+
+
 struct FileTag{};
 struct RPCTag{};
 
@@ -34,23 +37,23 @@ struct RawInput;
 struct RawOutput;
 struct WitnessStackItem;
 
-template<auto>
+template<blocksci::AddressType::Enum>
 struct ScriptOutput;
 
 class AnyScriptOutput;
 
-template<auto>
+template<blocksci::AddressType::Enum>
 struct ScriptInput;
 
 class AnyScriptInput;
 
-template<auto>
+template<blocksci::AddressType::Enum>
 struct ScriptOutputData;
 
-template<auto>
+template<blocksci::AddressType::Enum>
 struct ScriptInputData;
 
-template<auto>
+template<blocksci::AddressType::Enum>
 struct SpendData;
 
 class AnySpendData;

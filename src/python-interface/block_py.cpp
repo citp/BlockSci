@@ -114,8 +114,12 @@ void init_block(py::module &m) {
     .def_property_readonly("fees", [](Block &block) { return fees(block) | ranges::to_vector; }, "Return a list of the fees in this block")
     .def_property_readonly("fees_per_byte", [](Block &block) { return feesPerByte(block); }, "Return a list of fees per byte in this block")
     .def_property_readonly("size_bytes", [](Block &block) { return sizeBytes(block); }, "Returns the total size of the block in bytes")
-    .def_property_readonly("value_in", totalInputValue<Block>, "Returns the sum of the value of all of the inputs included in this block")
-    .def_property_readonly("value_out", totalOutputValue<Block>, "Returns the sum of the value of all of the outputs included in this block")
+    .def_property_readonly("value_in", [](const Block &block) {
+        return totalInputValue(block);
+    }, "Returns the sum of the value of all of the inputs included in this block")
+    .def_property_readonly("value_out", [](const Block &block) {
+        return totalOutputValue(block);
+    }, "Returns the sum of the value of all of the outputs included in this block")
     .def_property_readonly("outputs_unspent", [](const Block &block) { return outputsUnspent(block); }, "Returns a list of all of the outputs in this block that are still unspent")
     .def("total_spent_of_ages", py::overload_cast<const Block &, uint32_t>(getTotalSpentOfAges), "Returns a list of sum of all the outputs in the block that were spent within a certain of blocks, up to the max age given")
     .def("net_address_type_value", py::overload_cast<const Block &>(netAddressTypeValue), "Returns a set of the net change in the utxo pool after this block split up by address type")

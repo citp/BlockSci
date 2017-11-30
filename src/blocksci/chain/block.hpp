@@ -35,7 +35,7 @@ namespace blocksci {
         struct cursor {
         private:
             const Block *block;
-            mutable const char *currentTxPos;
+            const char *currentTxPos;
             uint32_t currentTxIndex;
         public:
             cursor() = default;

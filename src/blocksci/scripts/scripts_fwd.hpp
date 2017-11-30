@@ -28,7 +28,7 @@ namespace blocksci {
     class AnyScript;
     class CScriptView;
     
-    template <auto>
+    template <ScriptType::Enum>
     class ScriptAddress;
     
     template <ScriptType::Enum>

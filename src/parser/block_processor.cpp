@@ -117,7 +117,7 @@ class BlockFileReader<FileTag> : public BlockFileReaderBase {
         try {
             [[maybe_unused]] auto firstTxOffset = reader->offset();
             tx->load(*reader, currentTxNum, currentHeight, isSegwit);
-            if constexpr (shouldAdvance) {
+            if (shouldAdvance) {
                 currentTxNum++;
             } else {
                 reader->reset(firstTxOffset);
@@ -210,7 +210,7 @@ class BlockFileReader<RPCTag> : public BlockFileReaderBase {
             auto txinfo = bapi.getrawtransaction(block.tx[currentTxOffset], 1);
             tx->load(txinfo, firstTxNum + currentTxOffset, currentHeight, isSegwit);
         }
-        if constexpr (shouldAdvance) {
+        if (shouldAdvance) {
             currentTxOffset++;
         }
     }
@@ -522,43 +522,56 @@ void BlockProcessor::addNewBlocks(const ParserConfiguration<ParseTag> &config, s
     
     auto advanceFunc = [](RawTransaction *) { return true; };
     
-    auto calculateHashesStep = makeProcessStep(rawDone, [&](RawTransaction *tx) {
+    auto calculateHashesFunc = [&](RawTransaction *tx) {
         calculateHash(tx, hashFile);
-    }, advanceFunc);
+    };
     
+    auto generateScriptOutputsFunc = [](RawTransaction *tx) {
+        generateScriptOutputs(tx);
+    };
     
-    auto generateScriptOutputsStep = makeProcessStep(calculateHashesStep, generateScriptOutputs, advanceFunc);
-    
-    auto connectUTXOsStep = makeProcessStep(generateScriptOutputsStep, [&](RawTransaction *tx) {
+    auto connectUTXOsFunc = [&](RawTransaction *tx) {
         connectUTXOs(tx, utxoState);
-    }, advanceFunc);
+    };
     
-    auto generateScriptInputStep = makeProcessStep(connectUTXOsStep, [&](RawTransaction *tx) {
+    auto generateScriptInputFunc = [&](RawTransaction *tx) {
         generateScriptInput(tx, utxoAddressState);
-    }, advanceFunc);
+    };
     
-    auto processAddressStep = makeProcessStep(generateScriptInputStep, [&](RawTransaction *tx) {
+    auto processAddressFunc = [&](RawTransaction *tx) {
         processAddresses(tx, addressState);
-    }, advanceFunc);
+    };
     
-    auto recordAddressesStep = makeProcessStep(processAddressStep, [&](RawTransaction *tx) {
+    auto recordAddressesFunc = [&](RawTransaction *tx) {
         recordAddresses(tx, utxoScriptState);
-    }, advanceFunc);
+    };
     
     IndexedFileWriter<1> txFile(config.txFilePath());
     FixedSizeFileWriter<OutputLinkData> linkDataFile(config.txUpdatesFilePath());
-    auto serializeTransactionStep = makeProcessStep(recordAddressesStep, [&](RawTransaction *tx) {
-        serializeTransaction(tx, txFile, linkDataFile);
-    }, advanceFunc);
     
-    auto serializeAddressStep = makeProcessStep(serializeTransactionStep, [&](RawTransaction *tx) {
+    auto serializeTransactionFunc = [&](RawTransaction *tx) {
+        serializeTransaction(tx, txFile, linkDataFile);
+    };
+    
+    auto serializeAddressFunc = [&](RawTransaction *tx) {
         serializeAddressess(tx, addressWriter);
         progressBar.update(tx->txNum - startingTxCount, tx);
-    }, [&](RawTransaction *tx) {
+    };
+    
+    auto serializeAddressAdvanceFunc = [&](RawTransaction *tx) {
         bool shouldSend = tx->sizeBytes < 800 && finished_transaction_queue.write_available() >= 1;
         if (!shouldSend) delete tx;
         return shouldSend;
-    });
+    };
+    
+    ProcessStep<decltype(calculateHashesFunc), decltype(advanceFunc)> calculateHashesStep(rawDone, calculateHashesFunc, advanceFunc);
+    ProcessStep<decltype(generateScriptOutputsFunc), decltype(advanceFunc)> generateScriptOutputsStep(calculateHashesStep, generateScriptOutputsFunc, advanceFunc);
+    ProcessStep<decltype(connectUTXOsFunc), decltype(advanceFunc)> connectUTXOsStep(generateScriptOutputsStep, connectUTXOsFunc, advanceFunc);
+    ProcessStep<decltype(generateScriptInputFunc), decltype(advanceFunc)> generateScriptInputStep(connectUTXOsStep, generateScriptInputFunc, advanceFunc);
+    ProcessStep<decltype(processAddressFunc), decltype(advanceFunc)> processAddressStep(generateScriptInputStep, processAddressFunc, advanceFunc);
+    ProcessStep<decltype(recordAddressesFunc), decltype(advanceFunc)> recordAddressesStep(processAddressStep, recordAddressesFunc, advanceFunc);
+    ProcessStep<decltype(serializeTransactionFunc), decltype(advanceFunc)> serializeTransactionStep(recordAddressesStep, serializeTransactionFunc, advanceFunc);
+    ProcessStep<decltype(serializeAddressFunc), decltype(serializeAddressAdvanceFunc)> serializeAddressStep(serializeTransactionStep, serializeAddressFunc, serializeAddressAdvanceFunc);
     serializeAddressStep.nextQueue = &finished_transaction_queue;
     
     long nextWaitCount = 0;

@@ -54,8 +54,12 @@ void init_tx(py::module &m) {
         return tx.outputs();
     }, "A list of the outputs of the transaction")
     .def_property_readonly("hash", py::overload_cast<>(&Transaction::getHash, py::const_), "The 256-bit hash of this transaction")
-    .def_property_readonly("value_in", totalInputValue<Transaction>, "The sum of the value of all of the inputs")
-    .def_property_readonly("value_out", totalOutputValue<Transaction>, "The sum of the value of all of the outputs")
+    .def_property_readonly("value_in", [](Transaction &tx) {
+        return totalInputValue(tx);
+    }, "The sum of the value of all of the inputs")
+    .def_property_readonly("value_out", [](Transaction &tx) {
+        return totalOutputValue(tx);
+    }, "The sum of the value of all of the outputs")
     .def_property_readonly("fee", py::overload_cast<const Transaction &>(fee), "The fee paid by this transaction")
     .def_property_readonly("fee_per_byte", py::overload_cast<const Transaction &>(feePerByte), "The ratio of fee paid to size in bytes of this transaction")
     .def_property_readonly("op_return", py::overload_cast<const Transaction &>(getOpReturn), py::return_value_policy::reference_internal, "If this transaction included a null data script, return its output. Otherwise return None")

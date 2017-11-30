@@ -16,8 +16,8 @@ std::vector<uint64_t> unspentSums1(Blockchain &chain, uint32_t start, uint32_t s
     for (uint32_t height = start; height < stop; height++) {
         auto block = chain[height];
         uint64_t total = 0;
-        for (const auto tx : block) {
-            for (const auto &output : tx.outputs()) {
+        RANGES_FOR(auto tx, block) {
+            RANGES_FOR(auto output, tx.outputs()) {
                 if (!output.isSpent()) {
                     total += output.getValue();
                 }
@@ -31,8 +31,8 @@ std::vector<uint64_t> unspentSums1(Blockchain &chain, uint32_t start, uint32_t s
 std::vector<uint64_t> unspentSums2(Blockchain &chain, uint32_t start, uint32_t stop) {
     auto func = [](const Block &block) {
         uint64_t total = 0;
-        for (auto tx : block) {
-            for (auto output : tx.outputs()) {
+        RANGES_FOR(auto tx, block) {
+            RANGES_FOR(auto output, tx.outputs()) {
                 if (!output.isSpent()) {
                     total += output.getValue();
                 }
@@ -48,7 +48,7 @@ uint32_t maxSizeTx1(Blockchain &chain, uint32_t start, uint32_t stop) {
     uint32_t max = 0;
     for (uint32_t height = start; height < stop; height++) {
         auto block = chain[height];
-        for (const auto tx : block) {
+        RANGES_FOR(auto tx, block) {
             max = std::max(max, tx.sizeBytes());
         }
     }
@@ -67,8 +67,8 @@ std::unordered_map<uint64_t, uint64_t> getOutputDistribution1(Blockchain &chain,
     std::unordered_map<uint64_t, uint64_t> distribution;
     for (uint32_t height = start; height < stop; height++) {
         auto block = chain[height];
-        for (auto tx : block) {
-            for(auto output : tx.outputs()) {
+        RANGES_FOR(auto tx, block) {
+            RANGES_FOR(auto output, tx.outputs()) {
                 auto value = output.getValue();
                 value &= ~0xFF;
                 auto it = distribution.insert(std::make_pair(value, 0));
@@ -84,8 +84,8 @@ std::unordered_map<uint64_t, uint64_t> getOutputDistribution2(Blockchain &chain,
     auto mapFunc = [](const std::vector<Block> &segment) {
         std::unordered_map<uint64_t, uint64_t> distribution;
         for (auto &block : segment) {
-            for (auto tx : block) {
-                for(auto output : tx.outputs()) {
+            RANGES_FOR(auto tx, block) {
+                RANGES_FOR(auto output, tx.outputs()) {
                     auto value = output.getValue();
                     value &= ~0xFF;
                     auto it = distribution.insert(std::make_pair(value, 0));
@@ -113,8 +113,8 @@ uint64_t maxValOutput1(Blockchain &chain, uint32_t start, uint32_t stop) {
     uint64_t maxValue = 0;
     for (uint32_t height = start; height < stop; height++) {
         auto block = chain[height];
-        for (auto tx : block) {
-            for (auto output : tx.outputs()) {
+        RANGES_FOR(auto tx, block) {
+            RANGES_FOR(auto output, tx.outputs()) {
                 maxValue = std::max(maxValue, output.getValue());
             }
         }

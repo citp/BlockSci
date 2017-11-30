@@ -13,15 +13,12 @@
 
 #include <lmdbxx/lmdb++.h>
 
-#include <string_view>
 #include <array>
 #include <vector>
 #include <cstdint>
 
 
 namespace blocksci {
-    using namespace std::string_view_literals;
-    
     struct Address;
     
     lmdb::env createHashIndexEnviroment(const std::string &path);
@@ -34,7 +31,7 @@ namespace blocksci {
             };
             static constexpr size_t size = 3;
             static constexpr std::array<Enum, size> all = {{PubkeyHash, ScriptHash, Tx}};
-            static constexpr std::array<std::string_view, 3> tableNames = {{"PUBKEYHASH_ADDRESS"sv, "P2SH_ADDRESS"sv, "TXHASH"sv}};
+            static constexpr std::array<const char*, 3> tableNames = {{"PUBKEYHASH_ADDRESS", "P2SH_ADDRESS", "TXHASH"}};
         };
         
         HashIndex(const std::string &path);

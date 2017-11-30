@@ -34,10 +34,10 @@ struct ScriptFileType<blocksci::Indexed<T...>> {
     using type = blocksci::IndexedFileMapper<blocksci::AccessMode::readwrite, T...>;
 };
 
-template<auto type>
+template<blocksci::ScriptType::Enum type>
 using ScriptFileType_t = typename ScriptFileType<typename blocksci::ScriptInfo<type>::storage>::type;
 
-template<auto type>
+template<blocksci::ScriptType::Enum type>
 struct ScriptFile : public ScriptFileType_t<type> {
     using ScriptFileType_t<type>::ScriptFileType_t;
 };
@@ -48,7 +48,7 @@ class AddressWriter {
     
     ScriptFilesTuple scriptFiles;
     
-    template<auto type>
+    template<blocksci::AddressType::Enum type>
     void serializeImp(const ScriptInput<type> &, ScriptFile<scriptType(type)> &) {}
     
     void serializeImp(const ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH> &input, ScriptFile<blocksci::ScriptType::Enum::PUBKEY> &file);
@@ -57,7 +57,7 @@ class AddressWriter {
     void serializeImp(const ScriptInput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> &input, ScriptFile<blocksci::ScriptType::Enum::SCRIPTHASH> &file);
     void serializeImp(const ScriptInput<blocksci::AddressType::Enum::NONSTANDARD> &input, ScriptFile<blocksci::ScriptType::Enum::NONSTANDARD> &file);
     
-    template<auto type>
+    template<blocksci::AddressType::Enum type>
     void serializeWrapped(const ScriptInputData<type> &, uint32_t, uint32_t) {}
     
     void serializeWrapped(const ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH> &input, uint32_t txNum, uint32_t outputTxNum);

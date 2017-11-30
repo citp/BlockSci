@@ -31,7 +31,7 @@ struct InputView {
     InputView(uint32_t inputNum_, uint32_t txNum_, const std::vector<WitnessStackItem> &witnessStack_, bool witnessActivated_) : inputNum(inputNum_), txNum(txNum_), witnessStack(witnessStack_), witnessActivated(witnessActivated_) {}
 };
 
-template<auto type>
+template<blocksci::AddressType::Enum type>
 struct ScriptInput {
     static constexpr auto address_v = type;
     

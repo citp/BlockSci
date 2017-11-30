@@ -224,7 +224,7 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::PUBKEYHASH>::get
 }
 
 blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::PUBKEYHASH>::getData(uint32_t txNum) const {
-    constexpr static blocksci::CPubKey nullPubkey{};
+    blocksci::CPubKey nullPubkey{};
     return {txNum, nullPubkey, hash};
 }
 
@@ -235,7 +235,7 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHA
 }
 
 blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::getData(uint32_t txNum) const {
-    constexpr static blocksci::CPubKey nullPubkey{};
+    blocksci::CPubKey nullPubkey{};
     return {txNum, nullPubkey, hash};
 }
 

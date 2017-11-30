@@ -19,6 +19,8 @@
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time.hpp>
 
+#include <range/v3/range_for.hpp>
+
 #include <unordered_map>
 #include <unordered_set>
 #include <map>
@@ -84,7 +86,7 @@ public:
         auto blockCount = chain.blockCount();
         for (uint32_t i = lastHeight; i < blockCount; i++) {
             auto block = Block(i, chain);
-            for (auto tx : block) {
+            RANGES_FOR(auto tx, block) {
                 auto it = mempool.find(tx.getHash());
                 if (it != mempool.end()) {
                     auto &txData = it->second;

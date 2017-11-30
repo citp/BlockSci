@@ -17,6 +17,7 @@
 
 #include <range/v3/view_facade.hpp>
 #include <range/v3/view/any_view.hpp>
+#include <range/v3/range_for.hpp>
 
 #include <type_traits>
 #include <future>
@@ -62,7 +63,7 @@ namespace blocksci {
     std::vector<std::vector<Block>> segmentChain(const Blockchain &chain, int startBlock, int endBlock, unsigned int segmentCount);
     uint32_t txCount(const Blockchain &chain);
     
-    template <auto type>
+    template <ScriptType::Enum type>
     using ScriptRange = ranges::any_view<ScriptAddress<type>, ranges::category::random_access | ranges::category::sized>;
     using ScriptRangeVariant = to_variadic_t<to_script_tuple_t<ScriptRange>, mpark::variant>;
     
@@ -170,7 +171,7 @@ namespace blocksci {
         mapReduce(int start, int stop, MapFunc mapFunc, ReduceFunc reduceFunc) const {
             auto mapF = [&](const Block &block) {
                 ResultType res{};
-                for (auto tx : block) {
+                RANGES_FOR(auto tx, block) {
                     auto mapped = mapFunc(tx);
                     res = reduceFunc(res, mapped);
                 }

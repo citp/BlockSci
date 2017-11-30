@@ -52,6 +52,12 @@ void init_blockchain(py::module &m) {
         return chain | ranges::view::slice(start, stop) | ranges::view::stride(step) | ranges::to_vector;
     }, "Return a list of blocks with their heights in the given range")
     .def("segment", segmentChain, "Divide the blockchain into the given number of chunks with roughly the same number of transactions in each")
+    .def("unspent_outputs", [](const Blockchain &chain, uint32_t height) -> ranges::any_view<Output> {
+        if (height == 0) {
+            height = chain.size();
+        }
+        return outputsSpentAfterHeight(chain, height);
+    }, py::arg("height") = 0)
     .def("coinjoin_txes", getCoinjoinTransactions, "Returns a list of all transactions that might be JoinMarket coinjoin transactions")
     .def("possible_coinjoin_txes", getPossibleCoinjoinTransactions, "Returns a list of all transactions that might be coinjoin transactions")
     .def("script_type_txes", getTransactionIncludingOutput, "Returns a list of all transactions that include outputs of the given script type")

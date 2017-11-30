@@ -22,17 +22,12 @@
 constexpr double Log2 = 0.69314718056;
 constexpr double Log2Squared = Log2 * Log2;
 
-static constexpr auto calculateBitMask() {
-    std::array<BloomStore::BlockType, BloomStore::BlockSize> masks = std::array<BloomStore::BlockType, BloomStore::BlockSize>();
-    for (size_t i = 0; i < BloomStore::BlockSize; ++i) {
-        masks.at(i) = BloomStore::BlockType{1} << i;
-    }
-    return masks;
-}
-
-static constexpr std::array<BloomStore::BlockType, BloomStore::BlockSize> bitMasks = calculateBitMask();
-
 BloomStore::BloomStore(const boost::filesystem::path &path, uint64_t length_) : backingFile(path), length(length_) {
+    
+    for (size_t i = 0; i < BloomStore::BlockSize; ++i) {
+        bitMasks[i] = BloomStore::BlockType{1} << i;
+    }
+    
     if (backingFile.size() == 0) {
         backingFile.truncate(blockCount());
     }

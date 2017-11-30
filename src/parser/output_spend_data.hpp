@@ -18,7 +18,7 @@
 
 #include <mpark/variant.hpp>
 
-template<auto type>
+template<blocksci::AddressType::Enum type>
 struct SpendData {
     static constexpr auto address_v = type;
     static constexpr auto script_v = scriptType(type);

@@ -88,7 +88,7 @@ void ChainIndex<FileTag>::update(const ConfigType &config) {
     auto fileCount = maxFileNum - fileNum + 1;
     int filesDone = 0;
     using namespace std::chrono_literals;
-    std::atomic<int> activeThreads = 0;
+    std::atomic<int> activeThreads{0};
     {
         std::vector<std::future<void>> blockFutures;
         for (; fileNum <= maxFileNum; fileNum++) {
@@ -170,10 +170,12 @@ void ChainIndex<FileTag>::update(const ConfigType &config) {
     
     queue.emplace_back(nullHash, 0);
     while (!queue.empty()) {
-        auto [blockHash, height] = queue.back();
+        blocksci::uint256 blockHash;
+        int height;
+        std::tie(blockHash, height) = queue.back();
         queue.pop_back();
-        for (auto [it, end] = forwardHashes.equal_range(blockHash); it != end; ++it) {
-            auto &block = blockList.at(it->second);
+        for (auto ret = forwardHashes.equal_range(blockHash); ret.first != ret.second; ++ret.first) {
+            auto &block = blockList.at(ret.first->second);
             block.height = height + 1;
             queue.emplace_back(block.hash, block.height);
         }

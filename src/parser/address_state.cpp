@@ -16,17 +16,16 @@
 
 #include <boost/filesystem/fstream.hpp>
 
-#include <string_view>
 #include <iostream>
 
 namespace {
     using namespace std::string_view_literals;
     
-    static constexpr auto singleAddressFileName = "single.dat"sv;
-    static constexpr auto multiAddressFileName = "multi.dat"sv;
-    static constexpr auto dbFileName = "db"sv;
-    static constexpr auto bloomFileName = "bloom"sv;
-    static constexpr auto scriptCountsFileName = "scriptCounts.txt"sv;
+    static constexpr auto singleAddressFileName = "single.dat";
+    static constexpr auto multiAddressFileName = "multi.dat";
+    static constexpr auto dbFileName = "db";
+    static constexpr auto bloomFileName = "bloom";
+    static constexpr auto scriptCountsFileName = "scriptCounts.txt";
 }
 
 namespace std {
@@ -129,26 +128,36 @@ AddressInfo AddressState::findAddress(const RawScript &address) const {
         return {address, AddressLocation::NotFound, singleAddressMap.end(), 0};
     }
     
-    if (auto it = multiAddressMap.find(address); it != multiAddressMap.end()) {
-        multiCount++;
-        auto scriptNum = it->second;
-        assert(scriptNum > 0);
-        return {address, AddressLocation::MultiUseMap, it, scriptNum};
+    {
+        auto it = multiAddressMap.find(address);
+        if (it != multiAddressMap.end()) {
+            multiCount++;
+            auto scriptNum = it->second;
+            assert(scriptNum > 0);
+            return {address, AddressLocation::MultiUseMap, it, scriptNum};
+        }
     }
     
-    if (auto it = singleAddressMap.find(address); it != singleAddressMap.end()) {
-        singleCount++;
-        auto scriptNum = it->second;
-        assert(scriptNum > 0);
-        return {address, AddressLocation::SingleUseMap, it, scriptNum};
+    {
+        auto it = singleAddressMap.find(address);
+        if (it != singleAddressMap.end()) {
+            singleCount++;
+            auto scriptNum = it->second;
+            assert(scriptNum > 0);
+            return {address, AddressLocation::SingleUseMap, it, scriptNum};
+        }
     }
     
-    if (auto it = oldSingleAddressMap.find(address); it != oldSingleAddressMap.end()) {
-        oldSingleCount++;
-        auto scriptNum = it->second;
-        assert(scriptNum > 0);
-        return {address, AddressLocation::OldSingleUseMap, it, scriptNum};
+    {
+        auto it = oldSingleAddressMap.find(address);
+        if (it != oldSingleAddressMap.end()) {
+            oldSingleCount++;
+            auto scriptNum = it->second;
+            assert(scriptNum > 0);
+            return {address, AddressLocation::OldSingleUseMap, it, scriptNum};
+        }
     }
+    
     
     leveldb::Slice keySlice(reinterpret_cast<const char *>(&address), sizeof(address));
     std::string value;

@@ -35,10 +35,10 @@ namespace blocksci {
     using ScriptFileType_t = typename ScriptFileType<T>::type;
     
     
-    template<auto type>
+    template<ScriptType::Enum type>
     using ScriptFile = ScriptFileType_t<typename ScriptInfo<type>::storage>;
     
-    template<auto type>
+    template<ScriptType::Enum type>
     using ScriptFilePtr = std::unique_ptr<ScriptFile<type>>;
     
     class ScriptAccess {

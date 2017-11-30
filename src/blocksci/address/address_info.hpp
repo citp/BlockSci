@@ -14,67 +14,65 @@
 #include <blocksci/util/util.hpp>
 #include <blocksci/scripts/script_type.hpp>
 
-#include <string_view>
 #include <tuple>
 #include <sstream>
 
 namespace blocksci {
-    using namespace std::string_view_literals;
     template <AddressType::Enum>
     struct AddressInfo;
     
     template <>
     struct AddressInfo<AddressType::Enum::PUBKEY> {
-        static constexpr std::string_view name = "pubkey"sv;
+        static constexpr char name[] = "pubkey";
         static constexpr ScriptType::Enum scriptType = ScriptType::Enum::PUBKEY;
     };
     
     template <>
     struct AddressInfo<AddressType::Enum::PUBKEYHASH> {
-        static constexpr std::string_view name = "pubkeyhash"sv;
+        static constexpr char name[] = "pubkeyhash";
         static constexpr ScriptType::Enum scriptType = ScriptType::Enum::PUBKEY;
     };
     
     template <>
     struct AddressInfo<AddressType::Enum::WITNESS_PUBKEYHASH> {
-        static constexpr std::string_view name = "witness_pubkeyhash"sv;
+        static constexpr char name[] = "witness_pubkeyhash";
         static constexpr ScriptType::Enum scriptType = ScriptType::Enum::PUBKEY;
     };
     
     template <>
     struct AddressInfo<AddressType::Enum::SCRIPTHASH> {
-        static constexpr std::string_view name = "scripthash"sv;
+        static constexpr char name[] = "scripthash";
         static constexpr ScriptType::Enum scriptType = ScriptType::Enum::SCRIPTHASH;
     };
     
     template <>
     struct AddressInfo<AddressType::Enum::WITNESS_SCRIPTHASH> {
-        static constexpr std::string_view name = "witness_scripthash"sv;
+        static constexpr char name[] = "witness_scripthash";
         static constexpr ScriptType::Enum scriptType = ScriptType::Enum::SCRIPTHASH;
     };
     
     template <>
     struct AddressInfo<AddressType::Enum::MULTISIG> {
-        static constexpr std::string_view name = "multisig"sv;
+        static constexpr char name[] = "multisig";
         static constexpr ScriptType::Enum scriptType = ScriptType::Enum::MULTISIG;
     };
     
     template <>
     struct AddressInfo<AddressType::Enum::NONSTANDARD> {
-        static constexpr std::string_view name = "nonstandard"sv;
+        static constexpr char name[] = "nonstandard";
         static constexpr ScriptType::Enum scriptType = ScriptType::Enum::NONSTANDARD;
     };
     
     template <>
     struct AddressInfo<AddressType::Enum::NULL_DATA> {
-        static constexpr std::string_view name = "nulldata"sv;
+        static constexpr char name[] = "nulldata";
         static constexpr ScriptType::Enum scriptType = ScriptType::Enum::NULL_DATA;
     };
     
     using AddressInfoList = array_to_tuple_t<AddressType::Enum, AddressType::size, AddressType::all>;
     
-    template <template<auto> class K>
-    using to_address_tuple_t = apply_template_t<K, AddressInfoList>;
+    template <template<AddressType::Enum> class K>
+    using to_address_tuple_t = apply_template_t<AddressType::Enum, K, AddressInfoList>;
     
     template<AddressType::Enum type>
     struct ScriptTypeFunctor {
@@ -95,23 +93,7 @@ namespace blocksci {
         return scriptTypeTable[index];
     }
     
-    template<AddressType::Enum type>
-    struct TypeNameFunctor {
-        static constexpr std::string_view f() {
-            return AddressInfo<type>::name;
-        }
-    };
-    
-    static constexpr auto addressNameTable = make_static_table<AddressType, TypeNameFunctor>();
-    
-    constexpr std::string_view addressName(AddressType::Enum type) {
-        auto index = static_cast<size_t>(type);
-        if (index >= AddressType::size)
-        {
-            throw std::invalid_argument("combination of enum values is not valid");
-        }
-        return addressNameTable[index];
-    }
+    std::string addressName(AddressType::Enum type);
 }
 
 #endif /* address_info_hpp */

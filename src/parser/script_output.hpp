@@ -23,7 +23,7 @@
 
 #include <array>
 
-template<auto type>
+template<blocksci::AddressType::Enum type>
 struct ScriptOutput {
     static constexpr auto address_v = type;
     static constexpr auto script_v = scriptType(type);
@@ -34,15 +34,11 @@ struct ScriptOutput {
     ScriptOutput() = default;
     ScriptOutput(const ScriptOutputData<type> &data_) : data(data_) {}
     
+    template<blocksci::AddressType::Enum t = type, std::enable_if_t<blocksci::ScriptInfo<scriptType(t)>::deduped, int> = 0>
     uint32_t resolve(AddressState &state) {
-        if constexpr (blocksci::ScriptInfo<script_v>::deduped) {
-            RawScript rawScript{data.getHash(), script_v};
-            auto addressInfo = state.findAddress(rawScript);
-            std::tie(scriptNum, isNew) = state.resolveAddress(addressInfo);
-        } else {
-            scriptNum = state.getNewAddressIndex(script_v);
-            isNew = true;
-        }
+        RawScript rawScript{data.getHash(), script_v};
+        auto addressInfo = state.findAddress(rawScript);
+        std::tie(scriptNum, isNew) = state.resolveAddress(addressInfo);
         assert(scriptNum > 0);
         if (isNew) {
             data.visitWrapped([&](auto &output) { output.resolve(state); });
@@ -50,16 +46,28 @@ struct ScriptOutput {
         return scriptNum;
     }
     
+    template<blocksci::AddressType::Enum t = type, std::enable_if_t<!blocksci::ScriptInfo<scriptType(t)>::deduped, int> = 0>
+    uint32_t resolve(AddressState &state) {
+        scriptNum = state.getNewAddressIndex(script_v);
+        isNew = true;
+        assert(scriptNum > 0);
+        data.visitWrapped([&](auto &output) { output.resolve(state); });
+        return scriptNum;
+    }
+    
+    template<blocksci::AddressType::Enum t = type, std::enable_if_t<blocksci::ScriptInfo<scriptType(t)>::deduped, int> = 0>
     void check(const AddressState &state) {
-        if constexpr (blocksci::ScriptInfo<script_v>::deduped) {
-            RawScript rawScript{data.getHash(), script_v};
-            auto addressInfo = state.findAddress(rawScript);
-            scriptNum = addressInfo.addressNum;
-            isNew = addressInfo.addressNum == 0;
-        } else {
-            scriptNum = 0;
-            isNew = true;
-        }
+        RawScript rawScript{data.getHash(), script_v};
+        auto addressInfo = state.findAddress(rawScript);
+        scriptNum = addressInfo.addressNum;
+        isNew = addressInfo.addressNum == 0;
+        data.visitWrapped([&](auto &output) { output.check(state); });
+    }
+    
+    template<blocksci::AddressType::Enum t = type, std::enable_if_t<!blocksci::ScriptInfo<scriptType(t)>::deduped, int> = 0>
+    void check(const AddressState &state) {
+        scriptNum = 0;
+        isNew = true;
         data.visitWrapped([&](auto &output) { output.check(state); });
     }
 };

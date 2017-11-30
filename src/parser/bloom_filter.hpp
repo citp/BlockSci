@@ -28,6 +28,9 @@ struct BloomStore {
     void reset(uint64_t length);
     
 private:
+    std::array<BloomStore::BlockType, BloomStore::BlockSize> bitMasks;
+    
+private:
     blocksci::FixedSizeFileMapper<BlockType, blocksci::AccessMode::readwrite> backingFile;
     uint64_t length;
     

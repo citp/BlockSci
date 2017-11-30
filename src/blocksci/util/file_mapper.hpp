@@ -527,32 +527,38 @@ namespace blocksci {
             return reinterpret_cast<add_ptr_t<nth_element<indexNum>>>(pointer);
         }
         
-        auto getData(uint32_t index) const {
+        template <size_t Z = sizeof...(T)>
+        auto getData(std::enable_if_t<(Z > 1), uint32_t> index) const {
             assert(index < size());
-            if constexpr (sizeof...(T) > 1) {
-                auto offsets = getOffsets(index);
-                std::array<const char *, sizeof...(T)> pointers;
-                for (size_t i = 0; i < sizeof...(T); i++) {
-                    pointers[i] = dataFile.getDataAtOffset(offsets[i]);
-                }
-                return tuple_cast<T...>(pointers);
-            } else {
-                return getDataAtIndex<0>(index);
+            auto offsets = getOffsets(index);
+            std::array<const char *, sizeof...(T)> pointers;
+            for (size_t i = 0; i < sizeof...(T); i++) {
+                pointers[i] = dataFile.getDataAtOffset(offsets[i]);
             }
+            return tuple_cast<T...>(pointers);
         }
         
-        auto getData(uint32_t index) {
+        template <size_t Z = sizeof...(T)>
+        auto getData(std::enable_if_t<(Z <= 1), uint32_t> index) const {
             assert(index < size());
-            if constexpr (sizeof...(T) > 1) {
-                auto offsets = getOffsets(index);
-                std::array<const char *, sizeof...(T)> pointers;
-                for (size_t i = 0; i < sizeof...(T); i++) {
-                    pointers[i] = dataFile.getDataAtOffset(offsets[i]);
-                }
-                return tuple_cast<T...>(pointers);
-            } else {
-                return getDataAtIndex<0>(index);
+            return getDataAtIndex<0>(index);
+        }
+        
+        template <size_t Z = sizeof...(T)>
+        auto getData(std::enable_if_t<(Z > 1), uint32_t> index) {
+            assert(index < size());
+            auto offsets = getOffsets(index);
+            std::array<char *, sizeof...(T)> pointers;
+            for (size_t i = 0; i < sizeof...(T); i++) {
+                pointers[i] = dataFile.getDataAtOffset(offsets[i]);
             }
+            return tuple_cast<T...>(pointers);
+        }
+        
+        template <size_t Z = sizeof...(T)>
+        auto getData(std::enable_if_t<(Z <= 1), uint32_t> index) {
+            assert(index < size());
+            return getDataAtIndex<0>(index);
         }
     };
 }

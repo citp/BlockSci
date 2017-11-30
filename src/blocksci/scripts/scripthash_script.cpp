@@ -34,7 +34,8 @@ namespace blocksci {
     }
     
     ranges::optional<AnyScript> ScriptHash::wrappedScript() const {
-        if (auto add = getWrappedAddress(); add) {
+        auto add = getWrappedAddress();
+        if (add) {
             return add->getScript(*access);
         }
         return ranges::nullopt;
@@ -53,7 +54,8 @@ namespace blocksci {
         ss << "P2SHAddress(";
         ss << "address=" << addressString();
         ss << ", wrappedAddress=";
-        if (auto wrapped = wrappedScript(); wrapped) {
+        auto wrapped = wrappedScript();
+        if (wrapped) {
             ss << wrapped->toPrettyString();
         } else {
             ss << "unknown";

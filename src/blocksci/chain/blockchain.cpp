@@ -90,7 +90,7 @@ namespace blocksci {
             std::vector<Transaction> skipped;
             std::vector<Transaction> txes;
             for (auto &block : segment) {
-                for (auto tx : block) {
+                RANGES_FOR(auto tx, block) {
                     auto label = isPossibleCoinjoin(tx, minBaseFee, percentageFee, maxDepth);
                     if (label == CoinJoinResult::True) {
                         txes.push_back(tx);
@@ -137,7 +137,7 @@ namespace blocksci {
         auto mapFunc = [&chain, &testFunc](const std::vector<Block> &segment) -> std::vector<Transaction> {
             std::vector<Transaction> txes;
             for (auto &block : segment) {
-                for (auto tx : block) {
+                RANGES_FOR(auto tx, block) {
                     if (testFunc(tx)) {
                         txes.push_back(tx);
                     }

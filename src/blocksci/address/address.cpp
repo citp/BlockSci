@@ -91,7 +91,9 @@ namespace blocksci {
     
     ranges::optional<Address> getAddressFromString(const DataConfiguration &config, const HashIndex &index, const std::string &addressString) {
         CBitcoinAddress address{addressString};
-        auto [hash, type] = address.Get(config);
+        uint160 hash;
+        blocksci::AddressType::Enum type;
+        std::tie(hash, type) = address.Get(config);
         if (type == AddressType::Enum::NONSTANDARD) {
             return ranges::nullopt;
         }
