@@ -41,9 +41,6 @@ add_library(openssl INTERFACE)
 target_link_libraries(openssl INTERFACE ${OPENSSL_LIBRARIES})
 target_include_directories(openssl INTERFACE SYSTEM ${OPENSSL_INCLUDE_DIR})
 
-add_library(sparsepp INTERFACE)
-target_include_directories(sparsepp INTERFACE SYSTEM libs/sparsepp)
-
 add_library(Ranges INTERFACE)
 target_include_directories(Ranges INTERFACE SYSTEM libs/range-v3/include)
 

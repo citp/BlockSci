@@ -36,10 +36,9 @@ source_group(blocksci FILES ${BLOCKSCI_HEADERS} ${BLOCKSCI_SOURCES})
 
 target_link_libraries( blocksci Threads::Threads)
 target_link_libraries( blocksci boost )
-target_link_libraries( blocksci sparsepp)
 target_link_libraries( blocksci secp256k1)
 target_link_libraries( blocksci openssl )
-target_link_libraries( blocksci lmdbxx)
+target_link_libraries( blocksci lmdbxx )
 target_link_libraries (blocksci mpark_variant Ranges)
 
 

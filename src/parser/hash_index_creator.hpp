@@ -16,9 +16,6 @@
 
 #include <lmdbxx/lmdb++.h>
 
-#include <SQLiteCpp/Database.h>
-#include <SQLiteCpp/Transaction.h>
-
 #include <tuple>
 
 namespace blocksci {
