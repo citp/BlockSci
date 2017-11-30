@@ -46,8 +46,6 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 
-#include <gperftools/profiler.h>
-
 #include <unordered_set>
 #include <future>
 #include <iostream>
@@ -259,6 +257,34 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
     }
 }
 
+void updateHashDB(const ParserConfigurationBase &config) {
+    blocksci::ChainAccess chain{config, false, 0};
+    blocksci::ScriptAccess scripts{config};
+    
+    blocksci::State updateState{chain, scripts};
+    HashIndexCreator db(config, config.addressDBFilePath().native());
+    
+    std::cout << "Updating hash index\n";
+    
+    db.prepareUpdate();
+    db.runUpdate(updateState);
+    db.tearDown();
+}
+
+void updateAddressDB(const ParserConfigurationBase &config) {
+    blocksci::ChainAccess chain{config, false, 0};
+    blocksci::ScriptAccess scripts{config};
+    
+    blocksci::State updateState{chain, scripts};
+    AddressDB db(config, config.addressDBFilePath().native());
+    
+    std::cout << "Updating address index\n";
+    
+    db.prepareUpdate();
+    db.runUpdate(updateState);
+    db.tearDown();
+}
+
 int main(int argc, const char * argv[]) {
     
     namespace po = boost::program_options;
@@ -345,30 +371,20 @@ int main(int argc, const char * argv[]) {
         
         if (vm.count("update-indexes")) {
             ParserConfigurationBase config{dataDirectory};
-            blocksci::ChainAccess chain{config, false, 0};
-            blocksci::ScriptAccess scripts{config};
-            
-            blocksci::State updateState{chain, scripts};
-            
-            ParserIndexCreator<AddressDB> addressDB(config, config.addressDBFilePath().native());
-            ParserIndexCreator<HashIndexCreator> hashIndex(config, config.hashIndexFilePath().native());
-            addressDB.update(updateState);
-            hashIndex.update(updateState);
-            addressDB.complete(updateState);
-            hashIndex.complete(updateState);
+            updateAddressDB(config);
+            updateHashDB(config);
+            return 0;
+        }
+        
+        if (vm.count("update-hash-index")) {
+            ParserConfigurationBase config{dataDirectory};
+            updateHashDB(config);
             return 0;
         }
         
         if (vm.count("update-address-index")) {
             ParserConfigurationBase config{dataDirectory};
-            blocksci::ChainAccess chain{config, false, 0};
-            blocksci::ScriptAccess scripts{config};
-            
-            blocksci::State updateState{chain, scripts};
-            AddressDB addressDB(config, config.addressDBFilePath().native());
-            addressDB.prepareUpdate();
-            addressDB.runUpdate(updateState);
-            addressDB.tearDown();
+            updateAddressDB(config);
             return 0;
         }
         
@@ -437,16 +453,9 @@ int main(int argc, const char * argv[]) {
     if (validDisk) {
         #ifdef BLOCKSCI_FILE_PARSER
         ParserConfiguration<FileTag> config{bitcoinDirectory, dataDirectory};
-//        if (bitcoinDirectoryString.find("bitcoin") != std::string::npos || bitcoinDirectoryString.find("Bitcoin") != std::string::npos) {
-//            if (maxBlockNum > 478559 || maxBlockNum == 0) {
-//                maxBlockNum = 478559;
-//            }
-//        }
-        // replayBlock(config, 177618);
-        ProfilerStart("prof.out");
         updateChain(config, maxBlockNum);
-        ProfilerStop();
-//        updateFirstSeenIndex(config, 0);
+        updateHashDB(config);
+        updateAddressDB(config);
         #endif
     } else if (validRPC) {
         #ifdef BLOCKSCI_RPC_PARSER

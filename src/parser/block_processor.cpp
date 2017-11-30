@@ -35,11 +35,8 @@
 #include <bitcoinapi/bitcoinapi.h>
 #endif
 
-#include <boost/iostreams/device/mapped_file.hpp>
 #include <boost/lockfree/spsc_queue.hpp>
 #include <boost/filesystem/operations.hpp>
-
-#include <gperftools/profiler.h>
 
 #include <cmath>
 #include <atomic>

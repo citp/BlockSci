@@ -43,9 +43,10 @@ void ParserIndex::runUpdate(const State &state) {
     blocksci::ScriptAccess scripts{config};
     
     if (latestState.txCount < state.txCount) {
-        std::cout << "Updating index with txes\n";
-        auto progress = makeProgressBar(state.txCount - latestState.txCount, [=]() {});
         auto newTransactions = TransactionRange(chain, latestState.txCount, state.txCount);
+        auto newCount = ranges::distance(newTransactions);
+        std::cout << "Updating index with " << newCount << " txes\n";
+        auto progress = makeProgressBar(newCount, [=]() {});
         uint32_t num = 0;
         RANGES_FOR(auto tx, newTransactions) {
             processTx(tx, scripts);

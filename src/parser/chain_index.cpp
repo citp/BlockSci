@@ -25,9 +25,9 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/vector.hpp>
-#include <boost/iostreams/device/mapped_file.hpp>
 #include <boost/filesystem/operations.hpp>
 
+#include <cmath>
 #include <future>
 #include <sstream>
 #include <fstream>

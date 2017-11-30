@@ -25,6 +25,7 @@
 
 #include <unordered_set>
 #include <string>
+#include <iostream>
 
 using namespace blocksci;
 
@@ -40,7 +41,40 @@ std::unordered_map<ScriptType::Enum,  lmdb::dbi> setupInsertStatements(lmdb::txn
 AddressDB::AddressDB(const ParserConfigurationBase &config_, const std::string &path) : ParserIndex(config_, "addressDB"), env(createAddressIndexEnviroment(path)), wtxn(lmdb::txn::begin(env)), scriptDbs(setupInsertStatements(wtxn)) {
 }
 
-void AddressDB::tearDown() {    
+namespace {
+    void printStats(const MDB_stat &stat) {
+        std::cout << "ms_psize: " << stat.ms_psize << "\n";
+        std::cout << "ms_depth: " << stat.ms_depth << "\n";
+        std::cout << "ms_branch_pages: " << stat.ms_branch_pages << "\n";
+        std::cout << "ms_leaf_pages: " << stat.ms_leaf_pages << "\n";
+        std::cout << "ms_overflow_pages: " << stat.ms_overflow_pages << "\n";
+        std::cout << "ms_entries: " << stat.ms_entries << "\n";
+    }
+}
+
+
+
+void AddressDB::tearDown() {
+    
+//    MDB_stat stats;
+//    dbi_stat(wtxn, scriptDbs.at(ScriptType::Enum::PUBKEY), &stats);
+//    std::cout << "AddressDB\n";
+//    dbi_stat(wtxn, scriptDbs.at(ScriptType::Enum::PUBKEY), &stats);
+//    std::cout << "PUBKEY:\n";
+//    printStats(stats);
+//    dbi_stat(wtxn, scriptDbs.at(ScriptType::Enum::SCRIPTHASH), &stats);
+//    std::cout << "SCRIPTHASH:\n";
+//    printStats(stats);
+//    dbi_stat(wtxn, scriptDbs.at(ScriptType::Enum::MULTISIG), &stats);
+//    std::cout << "MULTISIG:\n";
+//    printStats(stats);
+//    dbi_stat(wtxn, scriptDbs.at(ScriptType::Enum::NONSTANDARD), &stats);
+//    std::cout << "NONSTANDARD:\n";
+//    printStats(stats);
+//    dbi_stat(wtxn, scriptDbs.at(ScriptType::Enum::NULL_DATA), &stats);
+//    std::cout << "NULL_DATA:\n";
+//    printStats(stats);
+//    std::cout << "\n";
     wtxn.commit();
 }
 
