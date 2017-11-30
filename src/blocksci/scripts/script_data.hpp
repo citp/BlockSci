@@ -16,6 +16,8 @@
 #include <blocksci/address/address.hpp>
 #include <blocksci/util/bitcoin_uint256.hpp>
 
+#include <limits>
+
 namespace blocksci {
     
     struct ScriptDataBase {

@@ -17,6 +17,8 @@
 #include <blocksci/scripts/scripthash_script.hpp>
 #include <blocksci/scripts/script_info.hpp>
 
+#include <range/v3/range_for.hpp>
+
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/operations.hpp>
 
@@ -45,7 +47,7 @@ void ParserIndex::runUpdate(const State &state) {
         auto progress = makeProgressBar(state.txCount - latestState.txCount, [=]() {});
         auto newTransactions = TransactionRange(chain, latestState.txCount, state.txCount);
         uint32_t num = 0;
-        for (auto tx : newTransactions) {
+        RANGES_FOR(auto tx, newTransactions) {
             processTx(tx, scripts);
             progress.update(num);
             num++;

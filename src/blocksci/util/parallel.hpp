@@ -10,6 +10,7 @@
 
 #include <blocksci/chain/chain_fwd.hpp>
 
+#include <vector>
 #include <future>
 #include <thread>
 #include <functional>

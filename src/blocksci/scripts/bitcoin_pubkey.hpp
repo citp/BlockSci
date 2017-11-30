@@ -58,14 +58,14 @@ namespace blocksci {
         }
         
         //! Set this key data to be invalid
-        constexpr void Invalidate()
+        void Invalidate()
         {
             vch[0] = 0xFF;
         }
         
     public:
         //! Construct an invalid public key.
-        constexpr CPubKey() : vch{{0}}
+        CPubKey() : vch{{0}}
         {
             Invalidate();
         }

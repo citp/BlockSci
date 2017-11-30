@@ -19,6 +19,7 @@
 #include <functional>
 #include <vector>
 #include <memory>
+#include <limits>
 
 namespace blocksci {
     

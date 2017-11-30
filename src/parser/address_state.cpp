@@ -19,8 +19,6 @@
 #include <iostream>
 
 namespace {
-    using namespace std::string_view_literals;
-    
     static constexpr auto singleAddressFileName = "single.dat";
     static constexpr auto multiAddressFileName = "multi.dat";
     static constexpr auto dbFileName = "db";
