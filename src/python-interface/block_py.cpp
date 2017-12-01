@@ -100,7 +100,7 @@ void init_block(py::module &m) {
             throw py::error_already_set();
         return block | ranges::view::slice(start, stop) | ranges::view::stride(step) | ranges::to_vector;
     })
-    .def_property_readonly("header_hash", &Block::getHeaderHash, "Hash of this block")
+    .def_property_readonly("hash", &Block::getHeaderHash, "Hash of this block")
     .def_property_readonly("version", &Block::version, "Protocol version specified in block header")
     .def_property_readonly("timestamp", &Block::timestamp, "Creation timestamp specified in block header")
     .def_property_readonly("time", &Block::getTime, "Datetime object created from creation timestamp")
@@ -113,7 +113,7 @@ void init_block(py::module &m) {
     .def_property_readonly("coinbase_tx", py::overload_cast<>(&Block::coinbaseTx, py::const_), "Return the coinbase transcation in this block")
     .def_property_readonly("fees", [](Block &block) { return fees(block) | ranges::to_vector; }, "Return a list of the fees in this block")
     .def_property_readonly("fees_per_byte", [](Block &block) { return feesPerByte(block) | ranges::to_vector; }, "Return a list of fees per byte in this block")
-    .def_property_readonly("size_bytes", [](Block &block) { return sizeBytes(block); }, "Returns the total size of the block in bytes")
+    .def_property_readonly("size", [](Block &block) { return sizeBytes(block); }, "Returns the total size of the block in bytes")
     .def_property_readonly("value_in", [](const Block &block) {
         return totalInputValue(block);
     }, "Returns the sum of the value of all of the inputs included in this block")
