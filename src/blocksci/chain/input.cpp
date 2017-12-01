@@ -26,7 +26,7 @@ namespace blocksci {
     
     std::string Input::toString() const {
         std::stringstream ss;
-        ss << "TxIn(tx_index_to=" << inout->linkedTxNum << ", address=" << inout->getAddress() <<", satoshis=" << inout->getValue() << ")";
+        ss << "TxIn(spent_tx_index=" << inout->linkedTxNum << ", address=" << inout->getAddress() <<", value=" << inout->getValue() << ")";
         return ss.str();
     }
 }
