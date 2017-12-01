@@ -118,7 +118,7 @@ Here are the steps for compiling BlockSci on Ubuntu 16.04.
 	cd cmake-3.10.0/
 	cmake .
 	make      
-	make install
+	sudo make install
 	exec bash
 	
 	cd ~
