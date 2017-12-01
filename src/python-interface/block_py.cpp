@@ -120,7 +120,7 @@ void init_block(py::module &m) {
     .def_property_readonly("value_out", [](const Block &block) {
         return totalOutputValue(block);
     }, "Returns the sum of the value of all of the outputs included in this block")
-    .def_property_readonly("outputs_unspent", [](const Block &block) { return outputsUnspent(block); }, "Returns a list of all of the outputs in this block that are still unspent")
+    .def_property_readonly("outputs_unspent", [](const Block &block) -> ranges::any_view<Output> { return outputsUnspent(block); }, "Returns a list of all of the outputs in this block that are still unspent")
     .def("total_spent_of_ages", py::overload_cast<const Block &, uint32_t>(getTotalSpentOfAges), "Returns a list of sum of all the outputs in the block that were spent within a certain of blocks, up to the max age given")
     .def("net_address_type_value", py::overload_cast<const Block &>(netAddressTypeValue), "Returns a set of the net change in the utxo pool after this block split up by address type")
     .def("net_full_type_value", py::overload_cast<const Block &>(netFullTypeValue), "Returns a set of the net change in the utxo pool after this block split up by full type")

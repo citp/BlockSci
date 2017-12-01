@@ -67,5 +67,6 @@ void init_blockchain(py::module &m) {
     .def("scripts", [](const Blockchain &chain, ScriptType::Enum type) {
         return chain.scripts(type);
     })
+    .def_property_readonly("outputs_unspent", [](const Blockchain &chain) -> ranges::any_view<Output> { return outputsUnspent(chain); }, "Returns a list of all of the outputs that are unspent")
     ;
 }
