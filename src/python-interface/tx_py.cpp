@@ -35,7 +35,7 @@ void init_tx(py::module &m) {
     .def(hash(py::self))
     .def(py::init<uint32_t>(), R"docstring(
          This functions gets the transaction with given index.
-         
+
          :param int index: The index of the transation.
          :returns: Tx
          )docstring")
@@ -62,22 +62,26 @@ void init_tx(py::module &m) {
     }, "The sum of the value of all of the outputs")
     .def_property_readonly("fee", py::overload_cast<const Transaction &>(fee), "The fee paid by this transaction")
     .def_property_readonly("fee_per_byte", py::overload_cast<const Transaction &>(feePerByte), "The ratio of fee paid to size in bytes of this transaction")
-    .def_property_readonly("op_return", py::overload_cast<const Transaction &>(getOpReturn), py::return_value_policy::reference_internal, "If this transaction included a null data script, return its output. Otherwise return None")
+    .def_property_readonly("op_return", py::overload_cast<const Transaction &>(getOpReturn), "If this transaction included a null data script, return its output. Otherwise return None")
     .def_property_readonly("is_coinbase", &Transaction::isCoinbase, "Return's true if this transaction is a Coinbase transaction")
     .def_property_readonly("is_coinjoin", py::overload_cast<const Transaction &>(isCoinjoin), "Uses basic structural features to quickly decide whether this transaction might be a JoinMarket coinjoin transaction")
     .def_property_readonly("is_script_deanon", py::overload_cast<const Transaction &>(isDeanonTx), "Returns true if this transaction's change address is deanonymized by the script types involved")
     .def_property_readonly("is_change_over", py::overload_cast<const Transaction &>(isChangeOverTx), "Returns true if this transaction contained all inputs of one address type and all outputs of a different type")
     .def_property_readonly("is_keyset_change", py::overload_cast<const Transaction &>(containsKeysetChange), "Returns true if this transaction contains distinct addresses which share some of the same keys, indicating that the access control structure has changed")
+    .def_property_readonly("change_output", py::overload_cast<const Transaction &>(getChangeOutput), "If the change address in this transaction can be determined via the fresh address criteria, return it. Otherwise return None.")
     .def_property_readonly("is_definite_coinjoin", [](const Transaction &tx, uint64_t minBaseFee, double percentageFee, size_t maxDepth) {
         py::gil_scoped_release release;
         return isCoinjoinExtra(tx, minBaseFee, percentageFee, maxDepth);
-    }, py::arg("maxDepth") = 0, "This function uses subset matching in order to determine whether this transaction is a JoinMarket coinjoin. If maxDepth != 0, it limits the total number of possible subsets the algorithm will check.")
-    .def_property_readonly("change_output", py::overload_cast<const Transaction &>(getChangeOutput), "If the change address in this transaction can be determined via the fresh address criteria, return it. Otherwise return None.")
+    }, "This function uses subset matching in order to determine whether this transaction is a JoinMarket coinjoin. If maxDepth != 0, it limits the total number of possible subsets the algorithm will check.")
+    .def_property_readonly("is_definite_coinjoin", [](const Transaction &tx, uint64_t minBaseFee, double percentageFee) {
+        py::gil_scoped_release release;
+        return isCoinjoinExtra(tx, minBaseFee, percentageFee, 0);
+    }, "This function uses subset matching in order to determine whether this transaction is a JoinMarket coinjoin.")
     ;
-    
-    py::enum_<CoinJoinResult>(m, "CoinJoinResult")
-    .value("True", CoinJoinResult::True)
-    .value("False", CoinJoinResult::False)
-    .value("Timeout", CoinJoinResult::Timeout)
-    ;
+//
+//    py::enum_<CoinJoinResult>(m, "CoinJoinResult")
+//    .value("True", CoinJoinResult::True)
+//    .value("False", CoinJoinResult::False)
+//    .value("Timeout", CoinJoinResult::Timeout)
+//    ;
 }

@@ -98,7 +98,7 @@ void init_address(py::module &m) {
     .def("__str__", py::overload_cast<>(&script::OpReturn::toPrettyString, py::const_))
     .def_property_readonly("data", [](const script::OpReturn &address) {
         return py::bytes(address.data);
-    }, py::return_value_policy::copy, "Data contained inside this script")
+    }, "Data contained inside this script")
     ;
     
     py::class_<script::Nonstandard>(m, "NonStandardScript", baseScript, "Extra data about non-standard address")
