@@ -113,7 +113,7 @@ void init_block(py::module &m) {
     .def_property_readonly("coinbase_tx", py::overload_cast<>(&Block::coinbaseTx, py::const_), "Return the coinbase transcation in this block")
     .def_property_readonly("fees", [](Block &block) { return fees(block) | ranges::to_vector; }, "Return a list of the fees in this block")
     .def_property_readonly("fees_per_byte", [](Block &block) { return feesPerByte(block) | ranges::to_vector; }, "Return a list of fees per byte in this block")
-    .def_property_readonly("size", [](Block &block) { return sizeBytes(block); }, "Returns the total size of the block in bytes")
+    .def_property_readonly("size_bytes", [](Block &block) { return sizeBytes(block); }, "Returns the total size of the block in bytes")
     .def_property_readonly("value_in", [](const Block &block) {
         return totalInputValue(block);
     }, "Returns the sum of the value of all of the inputs included in this block")

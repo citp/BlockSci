@@ -42,7 +42,7 @@ void init_tx(py::module &m) {
     .def_static("tx_with_hash", py::overload_cast<std::string>(&Transaction::txWithHash))
     .def_property_readonly("num_outs", &Transaction::outputCount, "The number of outputs this transaction has")
     .def_property_readonly("num_ins", &Transaction::inputCount, "The number of inputs this transaction has")
-    .def_property_readonly("size", &Transaction::sizeBytes, "The size of this transaction in bytes")
+    .def_property_readonly("size_bytes", &Transaction::sizeBytes, "The size of this transaction in bytes")
     .def_property_readonly("locktime", &Transaction::locktime, "The locktime of this transasction")
     .def_readonly("block_height", &Transaction::blockHeight, "The height of the block that this transaction was in")
     .def_property_readonly("block", py::overload_cast<>(&Transaction::block, py::const_), "The block that this transaction was in")
