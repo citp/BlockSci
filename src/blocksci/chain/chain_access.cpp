@@ -46,10 +46,6 @@ namespace blocksci {
         setup();
     }
     
-    uint32_t ChainAccess::maxLoadedTx() const {
-        return _maxLoadedTx;
-    }
-    
     void ChainAccess::reload() {
         blockFile.reload();
         blockCoinbaseFile.reload();
