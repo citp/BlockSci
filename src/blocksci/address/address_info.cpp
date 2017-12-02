@@ -34,7 +34,7 @@ namespace blocksci {
     std::string addressName(AddressType::Enum type) {
         static auto table = make_static_table<AddressType, AddressNameFunctor>();
         auto index = static_cast<size_t>(type);
-        if (index >= ScriptType::size)
+        if (index >= AddressType::size)
         {
             throw std::invalid_argument("combination of enum values is not valid");
         }
