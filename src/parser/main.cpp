@@ -262,7 +262,7 @@ void updateHashDB(const ParserConfigurationBase &config) {
     blocksci::ScriptAccess scripts{config};
     
     blocksci::State updateState{chain, scripts};
-    HashIndexCreator db(config, config.addressDBFilePath().native());
+    HashIndexCreator db(config, config.hashIndexFilePath().native());
     
     std::cout << "Updating hash index\n";
     
