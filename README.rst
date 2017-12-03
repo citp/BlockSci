@@ -140,14 +140,14 @@ Here are the steps for compiling BlockSci on Ubuntu 16.04.
 	cd libs/bitcoin-api-cpp
 	mkdir release
 	cd release
-	cmake --DCMAKE_BUILD_TYPE=Release ..
+	cmake -DCMAKE_BUILD_TYPE=Release ..
 	make
 	sudo make install
 
 	cd ../../..
 	mkdir release
 	cd release
-	cmake --DCMAKE_BUILD_TYPE=Release ..
+	cmake -DCMAKE_BUILD_TYPE=Release ..
 	make
 	sudo make install
 
