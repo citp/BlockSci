@@ -61,6 +61,32 @@ namespace blocksci {
     class Blockchain;
     
     std::vector<std::vector<Block>> segmentChain(const Blockchain &chain, int startBlock, int endBlock, unsigned int segmentCount);
+    
+    template<typename T>
+    std::vector<std::vector<Block>> segmentBlocks(T && chain, int segmentCount) {
+        auto lastTx = chain.back().endTxIndex();
+        auto firstTx = chain.front().firstTxIndex();
+        uint32_t segmentSize = (lastTx - firstTx) / segmentCount;
+        
+        std::vector<std::vector<Block>> segments;
+        auto it = chain.begin();
+        auto chainEnd = chain.end();
+        uint32_t startIndex = 0;
+
+        auto blockIndexCmp = [](const Block &block, uint32_t txNum) {
+            return block.firstTxIndex() < txNum;
+        };
+
+        for (int i = 0; i < segmentCount - 1; i++) {
+            auto endIt = std::lower_bound(it, chainEnd, startIndex + segmentSize, blockIndexCmp);
+            startIndex = endIt->firstTxIndex();
+            segments.push_back(std::vector<Block>(it, endIt));
+            it = endIt;
+        }
+        segments.push_back(std::vector<Block>(it, chainEnd));
+        return segments;
+    }
+    
     uint32_t txCount(const Blockchain &chain);
     
     template <ScriptType::Enum type>
@@ -206,13 +232,7 @@ namespace blocksci {
     std::vector<Block> filter(const Blockchain &chain, int startBlock, int endBlock, std::function<bool(const Block &block)> testFunc);
     std::vector<Transaction> filter(const Blockchain &chain, int startBlock, int endBlock, std::function<bool(const Transaction &tx)> testFunc);
     
-    std::vector<Transaction> getCoinjoinTransactions(const Blockchain &chain, int startBlock, int endBlock);
-    std::pair<std::vector<Transaction>, std::vector<Transaction>> getPossibleCoinjoinTransactions(const Blockchain &chain, uint64_t minBaseFee, double percentageFee, size_t maxDepth);
     std::vector<Transaction> getTransactionIncludingOutput(const Blockchain &chain, int startBlock, int endBlock, AddressType::Enum type);
-    
-    std::vector<Transaction> getDeanonTxes(const Blockchain &chain, int startBlock, int endBlock);
-    std::vector<Transaction> getChangeOverTxes(const Blockchain &chain, int startBlock, int endBlock);
-    std::vector<Transaction> getKeysetChangeTxes(const Blockchain &chain, int startBlock, int endBlock);
 }
 
 

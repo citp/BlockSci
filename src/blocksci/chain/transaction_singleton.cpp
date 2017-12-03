@@ -15,13 +15,9 @@
 
 namespace blocksci {
     
-    ranges::optional<Transaction> Transaction::txWithHash(uint256 hash) {
-        return txWithHash(hash, *DataAccess::Instance().hashIndex, *DataAccess::Instance().chain);
-    }
+    Transaction::Transaction(uint256 hash) : Transaction(hash, *DataAccess::Instance().hashIndex, *DataAccess::Instance().chain) {}
     
-    ranges::optional<Transaction> Transaction::txWithHash(std::string hash) {
-        return txWithHash(hash, *DataAccess::Instance().hashIndex, *DataAccess::Instance().chain);
-    }
+    Transaction::Transaction(std::string hash) : Transaction(hash, *DataAccess::Instance().hashIndex, *DataAccess::Instance().chain) {}
     
     Transaction::Transaction(uint32_t index) : Transaction(index, *DataAccess::Instance().chain) {}
     
@@ -29,13 +25,5 @@ namespace blocksci {
     
     ranges::optional<Output> getChangeOutput(const Transaction &tx) {
         return getChangeOutput(tx, *DataAccess::Instance().scripts);
-    }
-    
-    bool isChangeOverTx(const Transaction &tx) {
-        return isChangeOverTx(tx, *DataAccess::Instance().scripts);
-    }
-    
-    bool containsKeysetChange(const Transaction &tx) {
-        return containsKeysetChange(tx, *DataAccess::Instance().scripts);
     }
 }

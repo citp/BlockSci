@@ -10,12 +10,16 @@
 #include "block.hpp"
 #include "transaction.hpp"
 #include "output.hpp"
+#include "heuristics/tx_identification.hpp"
 
 #include "chain/chain_access.hpp"
 
 #include "util/data_configuration.hpp"
 
 #include <range/v3/view/drop.hpp>
+#include <range/v3/view/filter.hpp>
+#include <range/v3/action/push_back.hpp>
+#include <range/v3/algorithm/any_of.hpp>
 
 #include <fstream>
 #include <iostream>
@@ -78,50 +82,9 @@ namespace blocksci {
         return lastBlock.endTxIndex();
     }
     
-    std::vector<Transaction> getCoinjoinTransactions(const Blockchain &chain, int startBlock, int endBlock)  {
-        return filter(chain, startBlock, endBlock, [](const Transaction &tx) {
-            return isCoinjoin(tx);
-        });
-    }
-    
-    std::pair<std::vector<Transaction>, std::vector<Transaction>> getPossibleCoinjoinTransactions(const Blockchain &chain, uint64_t minBaseFee, double percentageFee, size_t maxDepth)  {
-        
-        auto mapFunc = [&](const std::vector<Block> &segment) {
-            std::vector<Transaction> skipped;
-            std::vector<Transaction> txes;
-            for (auto &block : segment) {
-                RANGES_FOR(auto tx, block) {
-                    auto label = isPossibleCoinjoin(tx, minBaseFee, percentageFee, maxDepth);
-                    if (label == CoinJoinResult::True) {
-                        txes.push_back(tx);
-                    } else if (label == CoinJoinResult::Timeout) {
-                        skipped.push_back(tx);
-                    }
-                }
-            }
-            return std::make_pair(txes, skipped);
-        };
-        
-        using RetType = std::pair<std::vector<Transaction>, std::vector<Transaction>>;
-        
-        auto reduceFunc = [] (RetType &a, RetType &b) -> RetType & {
-            a.first.insert(a.first.end(), b.first.begin(), b.first.end());
-            a.second.insert(a.second.end(), b.second.begin(), b.second.end());
-            return a;
-        };
-        
-        return chain.mapReduce<RetType>(0, chain.size(), mapFunc, reduceFunc);
-    }
-    
     std::vector<Block> filter(const Blockchain &chain, int startBlock, int endBlock, std::function<bool(const Block &tx)> testFunc)  {
         auto mapFunc = [&chain, &testFunc](const std::vector<Block> &segment) -> std::vector<Block> {
-            std::vector<Block> blocks;
-            for (auto &block : segment) {
-                if (testFunc(block)) {
-                    blocks.push_back(block);
-                }
-            }
-            return blocks;
+            return segment | ranges::view::filter(testFunc) | ranges::to_vector;
         };
         
         auto reduceFunc = [] (std::vector<Block> &vec1, std::vector<Block> &vec2) -> std::vector<Block> & {
@@ -137,11 +100,7 @@ namespace blocksci {
         auto mapFunc = [&chain, &testFunc](const std::vector<Block> &segment) -> std::vector<Transaction> {
             std::vector<Transaction> txes;
             for (auto &block : segment) {
-                RANGES_FOR(auto tx, block) {
-                    if (testFunc(tx)) {
-                        txes.push_back(tx);
-                    }
-                }
+                txes |= ranges::action::push_back(block | ranges::view::filter(testFunc));
             }
             return txes;
         };
@@ -157,30 +116,9 @@ namespace blocksci {
     
     std::vector<Transaction> getTransactionIncludingOutput(const Blockchain &chain, int startBlock, int endBlock, AddressType::Enum type) {
         return filter(chain, startBlock, endBlock, [type](const Transaction &tx) {
-            for (auto output : tx.outputs()) {
-                if (output.getType() == type) {
-                    return true;
-                }
-            }
-            return false;
-        });
-    }
-    
-    std::vector<Transaction> getDeanonTxes(const Blockchain &chain, int startBlock, int endBlock) {
-        return filter(chain, startBlock, endBlock, [](const Transaction &tx) {
-            return isDeanonTx(tx);
-        });
-    }
-    
-    std::vector<Transaction> getChangeOverTxes(const Blockchain &chain, int startBlock, int endBlock) {
-        return filter(chain, startBlock, endBlock, [](const Transaction &tx) {
-            return isChangeOverTx(tx);
-        });
-    }
-    
-    std::vector<Transaction> getKeysetChangeTxes(const Blockchain &chain, int startBlock, int endBlock) {
-        return filter(chain, startBlock, endBlock, [](const Transaction &tx) {
-            return containsKeysetChange(tx);
+            return ranges::any_of(tx.outputs(), [=](const Output &output) {
+                return output.getType() == type;
+            });
         });
     }
 }

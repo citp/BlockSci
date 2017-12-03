@@ -12,6 +12,7 @@
 #include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/index/address_index.hpp>
+#include <blocksci/heuristics/blockchain_heuristics.hpp>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -58,12 +59,12 @@ void init_blockchain(py::module &m) {
         }
         return outputsSpentAfterHeight(chain, height);
     }, py::arg("height") = 0)
-    .def("coinjoin_txes", getCoinjoinTransactions, "Returns a list of all transactions that might be JoinMarket coinjoin transactions")
-    .def("possible_coinjoin_txes", getPossibleCoinjoinTransactions, "Returns a list of all transactions that might be coinjoin transactions")
+    .def("coinjoin_txes", heuristics::getCoinjoinTransactions, "Returns a list of all transactions that might be JoinMarket coinjoin transactions")
+    .def("possible_coinjoin_txes", heuristics::getPossibleCoinjoinTransactions, "Returns a list of all transactions that might be coinjoin transactions")
     .def("script_type_txes", getTransactionIncludingOutput, "Returns a list of all transactions that include outputs of the given script type")
-    .def("script_deanon_txes", getDeanonTxes, "Return a list of transaction for which is_script_deanon returns true")
-    .def("change_script_type_txes", getChangeOverTxes, "Return a list of transaction for which is_change_over returns true")
-    .def("keyset_change_txes", getKeysetChangeTxes, "Return a list of transaction for which is_keyset_change returns true")
+    .def("script_deanon_txes", heuristics::getDeanonTxes, "Return a list of transaction for which is_script_deanon returns true")
+    .def("change_script_type_txes", heuristics::getChangeOverTxes, "Return a list of transaction for which is_change_over returns true")
+    .def("keyset_change_txes", heuristics::getKeysetChangeTxes, "Return a list of transaction for which is_keyset_change returns true")
     .def("scripts", [](const Blockchain &chain, ScriptType::Enum type) {
         return chain.scripts(type);
     })

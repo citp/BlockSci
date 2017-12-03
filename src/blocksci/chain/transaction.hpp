@@ -28,14 +28,14 @@
 
 #include <vector>
 
-enum class CoinJoinResult {
-    True, False, Timeout
-};
-
 namespace blocksci {
     struct Address;
     class uint256;
     class HashIndex;
+    
+    struct InvalidHashException : public std::runtime_error {
+        InvalidHashException() : std::runtime_error("No Match for hash") {}
+    };
     
     class Transaction {
     private:
@@ -54,8 +54,8 @@ namespace blocksci {
         
         Transaction(uint32_t index, uint32_t height, const ChainAccess &access_) : Transaction(access_.getTx(index), index, height, access_) {}
         
-        static ranges::optional<Transaction> txWithHash(uint256 hash, const HashIndex &index, const ChainAccess &access);
-        static ranges::optional<Transaction> txWithHash(std::string hash, const HashIndex &index, const ChainAccess &access);
+        Transaction(uint256 hash, const HashIndex &index, const ChainAccess &access);
+        Transaction(std::string hash, const HashIndex &index, const ChainAccess &access);
         
         uint256 getHash() const;
         std::string getString() const;
@@ -117,8 +117,8 @@ namespace blocksci {
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
         Transaction(uint32_t index);
         Transaction(uint32_t index, uint32_t height);
-        static ranges::optional<Transaction> txWithHash(uint256 hash);
-        static ranges::optional<Transaction> txWithHash(std::string hash);
+        Transaction(uint256 hash);
+        Transaction(std::string hash);
         #endif
     };
     
@@ -139,22 +139,11 @@ namespace blocksci {
     
     bool hasFeeGreaterThan(Transaction &tx, uint64_t fee);
     
-    bool isCoinjoin(const Transaction &tx);
-    bool isDeanonTx(const Transaction &tx);
-    bool isChangeOverTx(const Transaction &tx, const ScriptAccess &scripts);
-    bool containsKeysetChange(const Transaction &tx, const blocksci::ScriptAccess &access);
-    CoinJoinResult isPossibleCoinjoin(const Transaction &tx, uint64_t minBaseFee, double percentageFee, size_t maxDepth);
-    CoinJoinResult isCoinjoinExtra(const Transaction &tx, uint64_t minBaseFee, double percentageFee, size_t maxDepth);
     ranges::optional<Output> getOpReturn(const Transaction &tx);
-    
     ranges::optional<Output> getChangeOutput(const Transaction &tx, const ScriptAccess &scripts);
     
     #ifndef BLOCKSCI_WITHOUT_SINGLETON
-    bool containsKeysetChange(const Transaction &tx);
-    
     ranges::optional<Output> getChangeOutput(const Transaction &tx);
-    bool isChangeOverTx(const Transaction &tx);
-    
     #endif
 }
 

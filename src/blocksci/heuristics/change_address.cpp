@@ -6,6 +6,7 @@
 //
 #include "change_address.hpp"
 #include "blocksci.hpp"
+#include "tx_identification.hpp"
 #include <blocksci/scripts/script_variant.hpp>
 
 #include <unordered_set>

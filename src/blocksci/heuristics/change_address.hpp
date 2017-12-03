@@ -12,11 +12,9 @@
 
 #include <range/v3/utility/optional.hpp>
 
-#include <stdio.h>
 #include <unordered_set>
 
 namespace blocksci {
-    
 namespace heuristics {
     
     bool isPeelingChain(const Transaction &tx);
