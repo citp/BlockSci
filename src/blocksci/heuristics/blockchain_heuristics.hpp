@@ -9,6 +9,7 @@
 #define blockchain_heuristics_hpp
 
 #include <blocksci/chain/chain_fwd.hpp>
+#include <cstdint>
 #include <vector>
 
 namespace blocksci { namespace heuristics {
