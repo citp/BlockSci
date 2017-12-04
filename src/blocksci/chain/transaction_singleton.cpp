@@ -22,8 +22,4 @@ namespace blocksci {
     Transaction::Transaction(uint32_t index) : Transaction(index, *DataAccess::Instance().chain) {}
     
     Transaction::Transaction(uint32_t index, uint32_t height) : Transaction(index, height, *DataAccess::Instance().chain) {}
-    
-    ranges::optional<Output> getChangeOutput(const Transaction &tx) {
-        return getChangeOutput(tx, *DataAccess::Instance().scripts);
-    }
 }

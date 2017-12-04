@@ -112,7 +112,7 @@ class BlockFileReader<FileTag> : public BlockFileReaderBase {
     template<bool shouldAdvance>
     void nextTxImp(RawTransaction *tx, bool isSegwit) {
         try {
-            [[maybe_unused]] auto firstTxOffset = reader->offset();
+            auto firstTxOffset = reader->offset();
             tx->load(*reader, currentTxNum, currentHeight, isSegwit);
             if (shouldAdvance) {
                 currentTxNum++;

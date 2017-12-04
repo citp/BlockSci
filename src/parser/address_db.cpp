@@ -41,16 +41,16 @@ std::unordered_map<ScriptType::Enum,  lmdb::dbi> setupInsertStatements(lmdb::txn
 AddressDB::AddressDB(const ParserConfigurationBase &config_, const std::string &path) : ParserIndex(config_, "addressDB"), env(createAddressIndexEnviroment(path)), wtxn(lmdb::txn::begin(env)), scriptDbs(setupInsertStatements(wtxn)) {
 }
 
-namespace {
-    void printStats(const MDB_stat &stat) {
-        std::cout << "ms_psize: " << stat.ms_psize << "\n";
-        std::cout << "ms_depth: " << stat.ms_depth << "\n";
-        std::cout << "ms_branch_pages: " << stat.ms_branch_pages << "\n";
-        std::cout << "ms_leaf_pages: " << stat.ms_leaf_pages << "\n";
-        std::cout << "ms_overflow_pages: " << stat.ms_overflow_pages << "\n";
-        std::cout << "ms_entries: " << stat.ms_entries << "\n";
-    }
-}
+//namespace {
+//    void printStats(const MDB_stat &stat) {
+//        std::cout << "ms_psize: " << stat.ms_psize << "\n";
+//        std::cout << "ms_depth: " << stat.ms_depth << "\n";
+//        std::cout << "ms_branch_pages: " << stat.ms_branch_pages << "\n";
+//        std::cout << "ms_leaf_pages: " << stat.ms_leaf_pages << "\n";
+//        std::cout << "ms_overflow_pages: " << stat.ms_overflow_pages << "\n";
+//        std::cout << "ms_entries: " << stat.ms_entries << "\n";
+//    }
+//}
 
 
 

@@ -4,6 +4,9 @@
 //
 //  Created by Malte Möser on 10/2/17.
 //
+
+#define BLOCKSCI_WITHOUT_SINGLETON
+
 #include "change_address.hpp"
 #include "blocksci.hpp"
 #include "tx_identification.hpp"
@@ -215,25 +218,23 @@ namespace blocksci { namespace heuristics {
     
     // Most clients will generate a fresh address for the change.
     // If an output is the first to send value to an address, it is potentially the change.
-    std::unordered_set<Output> changeByClientChangeAddressBehavior(const Transaction &tx) {
+    std::unordered_set<Output> changeByClientChangeAddressBehavior(const Transaction &tx, const ScriptAccess &scripts) {
         std::unordered_set<Output> candidates;
         
         for (auto output : tx.outputs()) {
-            if (output.getAddress().isSpendable()) {
-                if (output.getAddress().getScript().firstTxIndex() == tx.txNum) {
-                    candidates.insert(output);
-                }
+            if (output.getAddress().isSpendable() && output.getAddress().getScript(scripts).firstTxIndex() == tx.txNum) {
+                candidates.insert(output);
             }
         }
         return removeOpReturnOutputs(candidates);
     }
     
-    ranges::optional<Output> uniqueChangeByClientChangeAddressBehavior(const Transaction &tx) {
-        return singleOrNullptr(changeByClientChangeAddressBehavior(tx));
+    ranges::optional<Output> uniqueChangeByClientChangeAddressBehavior(const Transaction &tx, const ScriptAccess &scripts) {
+        return singleOrNullptr(changeByClientChangeAddressBehavior(tx, scripts));
     }
     
     // Legacy heuristic used in previous versions of BlockSci
-    ranges::optional<Output> uniqueChangeByLegacyHeuristic(const Transaction &tx) {
+    ranges::optional<Output> uniqueChangeByLegacyHeuristic(const Transaction &tx, const ScriptAccess &scripts) {
         if (isCoinjoin(tx)) {
             return ranges::nullopt;
         }
@@ -248,7 +249,7 @@ namespace blocksci { namespace heuristics {
         for (auto output : tx.outputs()) {
             if (output.getAddress().isSpendable()) {
                 spendableCount++;
-                if (output.getValue() < smallestInput && output.getAddress().getScript().firstTxIndex() == tx.txNum) {
+                if (output.getValue() < smallestInput && output.getAddress().getScript(scripts).firstTxIndex() == tx.txNum) {
                     if (change) {
                         return ranges::nullopt;
                     }

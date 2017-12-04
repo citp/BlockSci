@@ -35,7 +35,7 @@ public:
     }
     
     template<typename T = SpendData<addressType>, std::enable_if_t<std::is_empty<T>::value, int> = 0>
-    SpendData<type> spendOutput(const blocksci::OutputPointer &pointer) {
+    SpendData<type> spendOutput(const blocksci::OutputPointer &) {
         return SpendData<type>();
     }
     
@@ -45,7 +45,7 @@ public:
     }
     
     template<typename T = SpendData<addressType>, std::enable_if_t<std::is_empty<T>::value, int> = 0>
-    void addOutput(const SpendData<type> &spendData, const blocksci::OutputPointer &outputPointer) {
+    void addOutput(const SpendData<type> &, const blocksci::OutputPointer &) {
         
     }
     

@@ -1,6 +1,8 @@
 file(GLOB PYTHON_INTERFACE_HEADERS "*.hpp")
 file(GLOB PYTHON_INTERFACE_SOURCES "*.cpp")
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-nested-anon-types")
+
 pybind11_add_module(blocksci_interface ${PYTHON_INTERFACE_SOURCES} ${PYTHON_INTERFACE_HEADERS})
 target_link_libraries( blocksci_interface PUBLIC blocksci)
 

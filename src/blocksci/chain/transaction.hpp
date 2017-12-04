@@ -140,11 +140,6 @@ namespace blocksci {
     bool hasFeeGreaterThan(Transaction &tx, uint64_t fee);
     
     ranges::optional<Output> getOpReturn(const Transaction &tx);
-    ranges::optional<Output> getChangeOutput(const Transaction &tx, const ScriptAccess &scripts);
-    
-    #ifndef BLOCKSCI_WITHOUT_SINGLETON
-    ranges::optional<Output> getChangeOutput(const Transaction &tx);
-    #endif
 }
 
 

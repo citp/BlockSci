@@ -35,9 +35,9 @@ void init_heuristics(py::module &m) {
     s.def("change_by_locktime", heuristics::changeByLocktime);
     s.def("unique_change_by_locktime", heuristics::uniqueChangeByLocktime);
     
-    s.def("change_by_address_reuse", heuristics::changeByAddressReuse);
-    s.def("unique_change_by_address_reuse", heuristics::uniqueChangeByAddressReuse);
+    s.def("change_by_address_reuse", py::overload_cast<const Transaction &>(heuristics::changeByAddressReuse));
+    s.def("unique_change_by_address_reuse", py::overload_cast<const Transaction &>(heuristics::uniqueChangeByAddressReuse));
     
-    s.def("change_by_client_change_address_behavior", heuristics::changeByClientChangeAddressBehavior);
-    s.def("unique_change_by_client_change_address_behavior", heuristics::uniqueChangeByClientChangeAddressBehavior);
+    s.def("change_by_client_change_address_behavior", py::overload_cast<const Transaction &>(heuristics::changeByClientChangeAddressBehavior));
+    s.def("unique_change_by_client_change_address_behavior", py::overload_cast<const Transaction &>(heuristics::uniqueChangeByClientChangeAddressBehavior));
 }

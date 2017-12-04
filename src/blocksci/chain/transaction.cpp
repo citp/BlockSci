@@ -96,8 +96,4 @@ namespace blocksci {
     bool hasFeeGreaterThan(Transaction &tx, uint64_t txFee) {
         return fee(tx) > txFee;
     }
-    
-    ranges::optional<Output> getChangeOutput(const Transaction &tx, const ScriptAccess &scripts) {
-        return heuristics::uniqueChangeByLegacyHeuristic(tx);
-    }
 }

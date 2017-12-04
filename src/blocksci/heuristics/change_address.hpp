@@ -9,6 +9,7 @@
 #define change_address_hpp
 
 #include <blocksci/chain/chain_fwd.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
 
 #include <range/v3/utility/optional.hpp>
 
@@ -39,10 +40,18 @@ namespace heuristics {
     std::unordered_set<Output> changeByAddressReuse(const Transaction &tx);
     ranges::optional<Output> uniqueChangeByAddressReuse(const Transaction &tx);
     
+    std::unordered_set<Output> changeByClientChangeAddressBehavior(const Transaction &tx, const ScriptAccess &scripts);
+    ranges::optional<Output> uniqueChangeByClientChangeAddressBehavior(const Transaction &tx, const ScriptAccess &scripts);
+    
+    ranges::optional<Output> uniqueChangeByLegacyHeuristic(const Transaction &tx, const ScriptAccess &scripts);
+    
+    #ifndef BLOCKSCI_WITHOUT_SINGLETON
+    
     std::unordered_set<Output> changeByClientChangeAddressBehavior(const Transaction &tx);
     ranges::optional<Output> uniqueChangeByClientChangeAddressBehavior(const Transaction &tx);
     
     ranges::optional<Output> uniqueChangeByLegacyHeuristic(const Transaction &tx);
+    #endif
 }}
 
 #endif /* change_address_hpp */

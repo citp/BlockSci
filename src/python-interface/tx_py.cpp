@@ -16,6 +16,7 @@
 #include <blocksci/address/address.hpp>
 #include <blocksci/util/bitcoin_uint256.hpp>
 #include <blocksci/heuristics/tx_identification.hpp>
+#include <blocksci/heuristics/change_address.hpp>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -77,7 +78,7 @@ void init_tx(py::module &m) {
     .def_property_readonly("is_script_deanon", py::overload_cast<const Transaction &>(heuristics::isDeanonTx), "Returns true if this transaction's change address is deanonymized by the script types involved")
     .def_property_readonly("is_change_over", py::overload_cast<const Transaction &>(heuristics::isChangeOverTx), "Returns true if this transaction contained all inputs of one address type and all outputs of a different type")
     .def_property_readonly("is_keyset_change", py::overload_cast<const Transaction &>(heuristics::containsKeysetChange), "Returns true if this transaction contains distinct addresses which share some of the same keys, indicating that the access control structure has changed")
-    .def_property_readonly("change_output", py::overload_cast<const Transaction &>(getChangeOutput), "If the change address in this transaction can be determined via the fresh address criteria, return it. Otherwise return None.")
+    .def_property_readonly("change_output", py::overload_cast<const Transaction &>(heuristics::uniqueChangeByLegacyHeuristic), "If the change address in this transaction can be determined via the fresh address criteria, return it. Otherwise return None.")
     .def_property_readonly("is_definite_coinjoin", [](const Transaction &tx, uint64_t minBaseFee, double percentageFee, size_t maxDepth) {
         py::gil_scoped_release release;
         return heuristics::isCoinjoinExtra(tx, minBaseFee, percentageFee, maxDepth);
