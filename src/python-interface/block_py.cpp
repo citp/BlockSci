@@ -114,10 +114,10 @@ void init_block(py::module &m) {
     .def_property_readonly("fees", [](Block &block) { return fees(block) | ranges::to_vector; }, "Return a list of the fees in this block")
     .def_property_readonly("fees_per_byte", [](Block &block) { return feesPerByte(block) | ranges::to_vector; }, "Return a list of fees per byte in this block")
     .def_property_readonly("size_bytes", [](Block &block) { return sizeBytes(block); }, "Returns the total size of the block in bytes")
-    .def_property_readonly("value_in", [](const Block &block) {
+    .def_property_readonly("input_value", [](const Block &block) {
         return totalInputValue(block);
     }, "Returns the sum of the value of all of the inputs included in this block")
-    .def_property_readonly("value_out", [](const Block &block) {
+    .def_property_readonly("output_value", [](const Block &block) {
         return totalOutputValue(block);
     }, "Returns the sum of the value of all of the outputs included in this block")
     .def_property_readonly("outputs_unspent", [](const Block &block) -> ranges::any_view<Output> { return outputsUnspent(block); }, "Returns a list of all of the outputs in this block that are still unspent")
