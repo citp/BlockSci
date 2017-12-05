@@ -16,3 +16,6 @@
 [submodule "libs/lmdbxx"]
 	path = libs/lmdbxx
 	url = https://github.com/bendiken/lmdbxx
+[submodule "libs/type_safe"]
+	path = libs/type_safe
+	url = https://github.com/foonathan/type_safe

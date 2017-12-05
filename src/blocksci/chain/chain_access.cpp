@@ -27,9 +27,9 @@ namespace blocksci {
     
     void ChainAccess::setup() {
         maxHeight = static_cast<BlockHeight>(blockFile.size()) - blocksIgnored;
-        if (maxHeight > 0) {
+        if (maxHeight > BlockHeight(0)) {
             const auto &blockFile_ = blockFile;
-            auto maxLoadedBlock = blockFile_.getData(static_cast<size_t>(maxHeight - 1));
+            auto maxLoadedBlock = blockFile_.getData(static_cast<size_t>(static_cast<int>(maxHeight) - 1));
             lastBlockHash = maxLoadedBlock->hash;
             _maxLoadedTx = maxLoadedBlock->firstTxIndex + maxLoadedBlock->numTxes;
             lastBlockHashDisk = &maxLoadedBlock->hash;
@@ -63,7 +63,7 @@ namespace blocksci {
         if (errorOnReorg && txIndex >= _maxLoadedTx) {
             throw std::out_of_range("Transaction index out of range");
         }
-        auto blockRange = ranges::make_iterator_range(blockFile.getData(0), blockFile.getData(static_cast<size_t>(maxHeight - 1)) + 1);
+        auto blockRange = ranges::make_iterator_range(blockFile.getData(0), blockFile.getData(static_cast<size_t>(static_cast<int>(maxHeight) - 1)) + 1);
         auto it = std::upper_bound(blockRange.begin(), blockRange.end(), txIndex, [](uint32_t index, const RawBlock &b) {
             return index < b.firstTxIndex;
         });

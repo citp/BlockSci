@@ -39,7 +39,7 @@ ParserIndex::~ParserIndex() {
 }
 
 void ParserIndex::runUpdate(const State &state) {
-    blocksci::ChainAccess chain{config, false, 0};
+    blocksci::ChainAccess chain{config, false, blocksci::BlockHeight{0}};
     blocksci::ScriptAccess scripts{config};
     
     if (latestState.txCount < state.txCount) {

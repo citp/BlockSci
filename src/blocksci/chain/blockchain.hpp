@@ -60,7 +60,7 @@ namespace blocksci {
     
     class Blockchain;
     
-    std::vector<std::vector<Block>> segmentChain(const Blockchain &chain, int startBlock, int endBlock, unsigned int segmentCount);
+    std::vector<std::vector<Block>> segmentChain(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, unsigned int segmentCount);
     
     template<typename T>
     std::vector<std::vector<Block>> segmentBlocks(T && chain, int segmentCount) {
@@ -99,14 +99,10 @@ namespace blocksci {
         struct cursor {
         private:
             const Blockchain *chain;
-            int currentBlockHeight;
+            BlockHeight currentBlockHeight;
         public:
             cursor() = default;
-            cursor(const Blockchain &chain_, int height) : chain(&chain_), currentBlockHeight(height) {}
-            
-            bool equal(ranges::default_sentinel) const {
-                return currentBlockHeight == chain->lastBlockHeight;
-            }
+            cursor(const Blockchain &chain_, BlockHeight height) : chain(&chain_), currentBlockHeight(height) {}
             
             bool equal(const cursor &other) const {
                 return currentBlockHeight == other.currentBlockHeight;
@@ -124,38 +120,46 @@ namespace blocksci {
                 currentBlockHeight--;
             }
             
-            int distance_to(ranges::default_sentinel) const {
-                return chain->lastBlockHeight - currentBlockHeight;
-            }
-            
             int distance_to(cursor const &that) const {
-                return that.currentBlockHeight - currentBlockHeight;
+                return static_cast<int>(that.currentBlockHeight - currentBlockHeight);
             }
             
             void advance(int amount) {
-                currentBlockHeight += amount;
+                currentBlockHeight += BlockHeight{amount};
+            }
+            
+            bool equal(ranges::default_sentinel) const {
+                return currentBlockHeight == chain->lastBlockHeight;
+            }
+            
+            BlockHeight distance_to(ranges::default_sentinel) const {
+                return chain->lastBlockHeight - currentBlockHeight;
             }
         };
         
         cursor begin_cursor() const {
-            return cursor(*this, 0);
+            return cursor(*this, BlockHeight{0});
         }
         
         ranges::default_sentinel end_cursor() const {
             return {};
         }
         
-        int lastBlockHeight;
+        BlockHeight lastBlockHeight;
 
     public:
         Blockchain() = default;
-        Blockchain(const DataConfiguration &config, bool errorOnReorg, uint32_t blocksIgnored);
+        Blockchain(const DataConfiguration &config, bool errorOnReorg, BlockHeight blocksIgnored);
         Blockchain(const std::string &dataDirectory);
         
         const DataAccess *access;
         
         uint32_t firstTxIndex() const;
         uint32_t endTxIndex() const;
+        
+        Block operator[](BlockHeight height) const {
+            return ranges::view_facade<Blockchain>::operator[](static_cast<int>(height));
+        }
         
         BlockHeight size() const {
             return lastBlockHeight;
@@ -173,14 +177,14 @@ namespace blocksci {
         
         template <typename ResultType, typename MapFunc, typename ReduceFunc>
         std::enable_if_t<is_callable<MapFunc, std::vector<Block>>::value, ResultType>
-        mapReduce(int start, int stop, MapFunc mapFunc, ReduceFunc reduceFunc) const {
+        mapReduce(BlockHeight start, BlockHeight stop, MapFunc mapFunc, ReduceFunc reduceFunc) const {
             auto segments = segmentChain(*this, start, stop, std::thread::hardware_concurrency());
             return mapReduceBlocksImp<ResultType>(segments.begin(), segments.end(), mapFunc, reduceFunc);
         }
 
         template <typename ResultType, typename MapFunc, typename ReduceFunc>
         std::enable_if_t<is_callable<MapFunc, Block>::value, ResultType>
-        mapReduce(int start, int stop, MapFunc mapFunc, ReduceFunc reduceFunc) const {
+        mapReduce(BlockHeight start, BlockHeight stop, MapFunc mapFunc, ReduceFunc reduceFunc) const {
             auto mapF = [&](const std::vector<Block> &segment) {
                 ResultType res{};
                 for (auto &block : segment) {
@@ -194,7 +198,7 @@ namespace blocksci {
 
         template <typename ResultType, typename MapFunc, typename ReduceFunc>
         std::enable_if_t<is_callable<MapFunc, Transaction>::value, ResultType>
-        mapReduce(int start, int stop, MapFunc mapFunc, ReduceFunc reduceFunc) const {
+        mapReduce(BlockHeight start, BlockHeight stop, MapFunc mapFunc, ReduceFunc reduceFunc) const {
             auto mapF = [&](const Block &block) {
                 ResultType res{};
                 RANGES_FOR(auto tx, block) {
@@ -208,7 +212,7 @@ namespace blocksci {
         }
         
         template <typename MapType>
-        std::vector<MapType> map(int start, int stop, const std::function<MapType(const Block &)> &mapFunc) const {
+        std::vector<MapType> map(BlockHeight start, BlockHeight stop, const std::function<MapType(const Block &)> &mapFunc) const {
             auto mapF = [&](const std::vector<Block> &segment) {
                 std::vector<MapType> vec;
                 vec.reserve(segment.size());
@@ -228,11 +232,17 @@ namespace blocksci {
         }
     };
     
-    // filter - Blocks and Txes
-    std::vector<Block> filter(const Blockchain &chain, int startBlock, int endBlock, std::function<bool(const Block &block)> testFunc);
-    std::vector<Transaction> filter(const Blockchain &chain, int startBlock, int endBlock, std::function<bool(const Transaction &tx)> testFunc);
+    CONCEPT_ASSERT(ranges::Range<Blockchain>());
+    CONCEPT_ASSERT(ranges::InputRange<Blockchain>());
+    CONCEPT_ASSERT(ranges::ForwardRange<Blockchain>());
+    CONCEPT_ASSERT(ranges::BidirectionalRange<Blockchain>());
+    CONCEPT_ASSERT(ranges::RandomAccessRange<Blockchain>());
     
-    std::vector<Transaction> getTransactionIncludingOutput(const Blockchain &chain, int startBlock, int endBlock, AddressType::Enum type);
+    // filter - Blocks and Txes
+    std::vector<Block> filter(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, std::function<bool(const Block &block)> testFunc);
+    std::vector<Transaction> filter(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, std::function<bool(const Transaction &tx)> testFunc);
+    
+    std::vector<Transaction> getTransactionIncludingOutput(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, AddressType::Enum type);
 }
 
 

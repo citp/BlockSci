@@ -20,10 +20,6 @@ namespace blocksci {
         return isSegwit(block, *DataAccess::Instance().scripts);
     }
     
-    std::vector<uint64_t> getTotalSpentOfAges(const Block &block, BlockHeight maxAge) {
-        return getTotalSpentOfAges(block, *DataAccess::Instance().chain, maxAge);
-    }
-    
     std::unordered_map<std::string, int64_t> netFullTypeValue(const Block &block) {
         return netFullTypeValue(block, *DataAccess::Instance().scripts);
     }

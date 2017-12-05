@@ -16,9 +16,9 @@
 
 namespace blocksci {
     
-    DataAccess::DataAccess(const DataConfiguration &config_, bool errorOnReorg_, uint32_t blocksIgnored_) : config(config_), chain{std::make_unique<ChainAccess>(config, errorOnReorg_, blocksIgnored_)}, scripts{std::make_unique<ScriptAccess>(config)}, addressIndex{std::make_unique<AddressIndex>(config.addressDBFilePath().native())}, hashIndex{std::make_unique<HashIndex>(config.hashIndexFilePath().native())} {}
+    DataAccess::DataAccess(const DataConfiguration &config_, bool errorOnReorg_, BlockHeight blocksIgnored_) : config(config_), chain{std::make_unique<ChainAccess>(config, errorOnReorg_, blocksIgnored_)}, scripts{std::make_unique<ScriptAccess>(config)}, addressIndex{std::make_unique<AddressIndex>(config.addressDBFilePath().native())}, hashIndex{std::make_unique<HashIndex>(config.hashIndexFilePath().native())} {}
     
-    DataAccess &DataAccess::Instance(const DataConfiguration &config_, bool errorOnReorg, uint32_t blocksIgnored) {
+    DataAccess &DataAccess::Instance(const DataConfiguration &config_, bool errorOnReorg, BlockHeight blocksIgnored) {
         // Since it's a static variable, if the class has already been created,
         // It won't be created again.
         // And it **is** thread-safe in C++11.
@@ -38,7 +38,7 @@ namespace blocksci {
     
     DataAccess &DataAccess::Instance() {
         DataConfiguration config {};
-        return Instance(config, true, 0);
+        return Instance(config, true, BlockHeight{0});
     }
 }
 

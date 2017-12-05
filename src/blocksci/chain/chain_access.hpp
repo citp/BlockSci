@@ -63,7 +63,7 @@ namespace blocksci {
         
         const RawBlock *getBlock(BlockHeight blockHeight) const {
             reorgCheck();
-            return blockFile.getData(static_cast<size_t>(blockHeight));
+            return blockFile.getData(static_cast<size_t>(static_cast<int>(blockHeight)));
         }
         
         const uint256 *getTxHash(uint32_t index) const {

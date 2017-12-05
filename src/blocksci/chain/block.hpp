@@ -164,13 +164,12 @@ namespace blocksci {
     bool isSegwit(const Block &block, const ScriptAccess &scripts);
     
     TransactionSummary transactionStatistics(const Block &block, const ChainAccess &access);
-    std::vector<uint64_t> getTotalSpentOfAges(const Block &block, const ChainAccess &access, BlockHeight maxAge);
+    std::vector<uint64_t> getTotalSpentOfAges(const Block &block, BlockHeight maxAge);
     std::unordered_map<AddressType::Enum, int64_t> netAddressTypeValue(const Block &block);
     std::unordered_map<std::string, int64_t> netFullTypeValue(const Block &block, const ScriptAccess &scripts);
 
     #ifndef BLOCKSCI_WITHOUT_SINGLETON
     bool isSegwit(const Block &block);
-    std::vector<uint64_t> getTotalSpentOfAges(const Block &block, BlockHeight maxAge);
     std::unordered_map<std::string, int64_t> netFullTypeValue(const Block &block);
     #endif
 }

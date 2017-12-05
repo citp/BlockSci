@@ -58,6 +58,8 @@ add_subdirectory(libs/pybind11)
 
 add_subdirectory(libs/variant)
 
+add_subdirectory(libs/type_safe)
+
 add_subdirectory(src/blocksci)
 add_subdirectory(src/parser)
 add_subdirectory(src/mempool_recorder)

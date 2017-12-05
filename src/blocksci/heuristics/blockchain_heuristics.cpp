@@ -10,25 +10,25 @@
 #include "chain/blockchain.hpp"
 
 namespace blocksci { namespace heuristics {
-    std::vector<Transaction> getDeanonTxes(const Blockchain &chain, int startBlock, int endBlock) {
+    std::vector<Transaction> getDeanonTxes(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock) {
         return filter(chain, startBlock, endBlock, [](const Transaction &tx) {
             return isDeanonTx(tx);
         });
     }
     
-    std::vector<Transaction> getChangeOverTxes(const Blockchain &chain, int startBlock, int endBlock) {
+    std::vector<Transaction> getChangeOverTxes(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock) {
         return filter(chain, startBlock, endBlock, [](const Transaction &tx) {
             return isChangeOverTx(tx);
         });
     }
     
-    std::vector<Transaction> getKeysetChangeTxes(const Blockchain &chain, int startBlock, int endBlock) {
+    std::vector<Transaction> getKeysetChangeTxes(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock) {
         return filter(chain, startBlock, endBlock, [](const Transaction &tx) {
             return containsKeysetChange(tx);
         });
     }
     
-    std::vector<Transaction> getCoinjoinTransactions(const Blockchain &chain, int startBlock, int endBlock)  {
+    std::vector<Transaction> getCoinjoinTransactions(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock)  {
         return filter(chain, startBlock, endBlock, [](const Transaction &tx) {
             return heuristics::isCoinjoin(tx);
         });
@@ -60,6 +60,6 @@ namespace blocksci { namespace heuristics {
             return a;
         };
         
-        return chain.mapReduce<RetType>(0, chain.size(), mapFunc, reduceFunc);
+        return chain.mapReduce<RetType>(BlockHeight{0}, chain.size(), mapFunc, reduceFunc);
     }
 }}

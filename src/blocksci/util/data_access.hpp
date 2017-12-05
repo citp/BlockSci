@@ -25,10 +25,10 @@ namespace blocksci {
         std::unique_ptr<AddressIndex> addressIndex;
         std::unique_ptr<HashIndex> hashIndex;
         
-        static DataAccess &Instance(const DataConfiguration &config, bool errorOnReorg, uint32_t blocksIgnored);
+        static DataAccess &Instance(const DataConfiguration &config, bool errorOnReorg, BlockHeight blocksIgnored);
         static DataAccess &Instance();
         
-        DataAccess(const DataConfiguration &config, bool errorOnReorg, uint32_t blocksIgnored);
+        DataAccess(const DataConfiguration &config, bool errorOnReorg, BlockHeight blocksIgnored);
         
         // delete copy and move constructors and assign operators
         DataAccess(DataAccess const&) = delete;             // Copy construct

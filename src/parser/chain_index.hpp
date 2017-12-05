@@ -128,7 +128,7 @@ struct ChainIndex {
     std::vector<BlockType> generateChain(blocksci::BlockHeight maxBlockHeight) const {
         std::vector<BlockType> chain;
         const BlockType *maxHeightBlock = nullptr;
-        int maxHeight = std::numeric_limits<int>::min();
+        blocksci::BlockHeight maxHeight = std::numeric_limits<blocksci::BlockHeight>::min();
         for (auto &pair : blockList) {
             if (pair.second.height > maxHeight) {
                 maxHeightBlock = &pair.second;
@@ -156,7 +156,7 @@ struct ChainIndex {
         if (maxBlockHeight == 0 || maxBlockHeight > static_cast<blocksci::BlockHeight>(chain.size())) {
             return chain;
         } else {
-            return {chain.begin(), chain.begin() + maxBlockHeight};
+            return {chain.begin(), chain.begin() + static_cast<int>(maxBlockHeight)};
         }
     }
     
@@ -166,8 +166,8 @@ struct ChainIndex {
         
         auto maxSize = std::min(static_cast<blocksci::BlockHeight>(oldBlocks.size()), blockHeight);
         auto splitPoint = maxSize;
-        for (blocksci::BlockHeight i = 0; i < maxSize; i++) {
-            blocksci::uint256 oldHash = oldBlocks[static_cast<size_t>(maxSize - 1 - i)].hash;
+        for (blocksci::BlockHeight i{0}; i < maxSize; i++) {
+            blocksci::uint256 oldHash = oldBlocks[static_cast<size_t>(static_cast<int>(maxSize - 1 - i))].hash;
             blocksci::uint256 newHash = getBlockHash(maxSize - 1 - i);
             if (oldHash == newHash) {
                 splitPoint = maxSize - i;

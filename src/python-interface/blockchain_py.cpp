@@ -47,7 +47,7 @@ void init_blockchain(py::module &m) {
     }, "Return the block of the given height")
     .def("__getitem__", [](const Blockchain &chain, py::slice slice) -> std::vector<Block> {
         size_t start, stop, step, slicelength;
-        if (!slice.compute(static_cast<size_t>(chain.size()), &start, &stop, &step, &slicelength))
+        if (!slice.compute(static_cast<size_t>(static_cast<int>(chain.size())), &start, &stop, &step, &slicelength))
             throw py::error_already_set();
         return chain | ranges::view::slice(start, stop) | ranges::view::stride(step) | ranges::to_vector;
     }, "Return a list of blocks with their heights in the given range")

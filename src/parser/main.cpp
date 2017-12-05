@@ -57,8 +57,8 @@ uint32_t getStartingTxCount(const blocksci::DataConfiguration &config);
 
 
 blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::BlockHeight firstDeletedBlock, uint32_t firstDeletedTxNum) {
-    blocksci::State state{blocksci::ChainAccess{config, false, 0}, blocksci::ScriptAccess{config}};
-    state.blockCount = static_cast<uint32_t>(firstDeletedBlock);
+    blocksci::State state{blocksci::ChainAccess{config, false, blocksci::BlockHeight{0}}, blocksci::ScriptAccess{config}};
+    state.blockCount = static_cast<uint32_t>(static_cast<int>(firstDeletedBlock));
     state.txCount = firstDeletedTxNum;
     
     blocksci::IndexedFileMapper<blocksci::AccessMode::readwrite, blocksci::RawTransaction> txFile{config.txFilePath()};
@@ -113,9 +113,10 @@ void rollbackTransactions(blocksci::BlockHeight blockKeepCount, const ParserConf
     constexpr auto readwrite = blocksci::AccessMode::readwrite;
     blocksci::FixedSizeFileMapper<blocksci::RawBlock, readwrite> blockFile(config.blockFilePath());
     
-    if (blockFile.size() > static_cast<size_t>(blockKeepCount)) {
+    auto blockKeepSize = static_cast<size_t>(static_cast<int>(blockKeepCount));
+    if (blockFile.size() > blockKeepSize) {
         
-        auto firstDeletedBlock = blockFile.getData(static_cast<size_t>(blockKeepCount));
+        auto firstDeletedBlock = blockFile.getData(blockKeepSize);
         auto firstDeletedTxNum = firstDeletedBlock->firstTxIndex;
         
         auto blocksciState = rollbackState(config, blockKeepCount, firstDeletedTxNum);
@@ -124,7 +125,7 @@ void rollbackTransactions(blocksci::BlockHeight blockKeepCount, const ParserConf
         blocksci::FixedSizeFileMapper<blocksci::uint256, readwrite>(config.txHashesFilePath()).truncate(firstDeletedTxNum);
         blocksci::IndexedFileMapper<readwrite, uint32_t>(config.sequenceFilePath()).truncate(firstDeletedTxNum);
         blocksci::SimpleFileMapper<readwrite>(config.blockCoinbaseFilePath()).truncate(firstDeletedBlock->coinbaseOffset);
-        blockFile.truncate(static_cast<size_t>(blockKeepCount));
+        blockFile.truncate(blockKeepSize);
         
         AddressState(config.addressPath()).rollback(blocksciState);
         AddressWriter(config).rollback(blocksciState);
@@ -152,7 +153,7 @@ struct ChainUpdateInfo {
 };
 
 uint32_t getStartingTxCount(const blocksci::DataConfiguration &config) {
-    blocksci::ChainAccess chain(config, false, 0);
+    blocksci::ChainAccess chain(config, false, blocksci::BlockHeight{0});
     if (chain.blockCount() > 0) {
         auto lastBlock = chain.getBlock(chain.blockCount() - 1);
         return lastBlock->firstTxIndex + lastBlock->numTxes;
@@ -181,12 +182,12 @@ void updateChain(const ParserConfiguration<ParserTag> &config, blocksci::BlockHe
     }();
 
     blocksci::BlockHeight splitPoint = [&]() {
-        blocksci::ChainAccess oldChain(config, false, 0);
+        blocksci::ChainAccess oldChain(config, false, blocksci::BlockHeight{0});
         blocksci::BlockHeight maxSize = std::min(oldChain.blockCount(), static_cast<blocksci::BlockHeight>(chainBlocks.size()));
         auto splitPoint = maxSize;
-        for (blocksci::BlockHeight i = 0; i < maxSize; i++) {
+        for (blocksci::BlockHeight i{0}; i < maxSize; i++) {
             blocksci::uint256 oldHash = oldChain.getBlock(maxSize - 1 - i)->hash;
-            blocksci::uint256 newHash = chainBlocks[static_cast<size_t>(maxSize - 1 - i)].hash;
+            blocksci::uint256 newHash = chainBlocks[static_cast<size_t>(static_cast<int>(maxSize - 1 - i))].hash;
             if (!(oldHash == newHash)) {
                 splitPoint = maxSize - 1 - i;
                 break;
@@ -200,7 +201,7 @@ void updateChain(const ParserConfiguration<ParserTag> &config, blocksci::BlockHe
         return splitPoint;
     }();
 
-    std::vector<BlockInfo<ParserTag>> blocksToAdd{chainBlocks.begin() + splitPoint, chainBlocks.end()};
+    std::vector<BlockInfo<ParserTag>> blocksToAdd{chainBlocks.begin() + static_cast<int>(splitPoint), chainBlocks.end()};
     
     std::ios::sync_with_stdio(false);
     
@@ -211,7 +212,7 @@ void updateChain(const ParserConfiguration<ParserTag> &config, blocksci::BlockHe
     }
     
     uint32_t startingTxCount = getStartingTxCount(config);
-    uint32_t maxBlockHeight = static_cast<uint32_t>(blocksToAdd.back().height);
+    auto maxBlockHeight = blocksToAdd.back().height;
     
     uint32_t totalTxCount = 0;
     uint32_t totalInputCount = 0;
@@ -257,7 +258,7 @@ void updateChain(const ParserConfiguration<ParserTag> &config, blocksci::BlockHe
 }
 
 void updateHashDB(const ParserConfigurationBase &config) {
-    blocksci::ChainAccess chain{config, false, 0};
+    blocksci::ChainAccess chain{config, false, blocksci::BlockHeight{0}};
     blocksci::ScriptAccess scripts{config};
     
     blocksci::State updateState{chain, scripts};
@@ -271,7 +272,7 @@ void updateHashDB(const ParserConfigurationBase &config) {
 }
 
 void updateAddressDB(const ParserConfigurationBase &config) {
-    blocksci::ChainAccess chain{config, false, 0};
+    blocksci::ChainAccess chain{config, false, blocksci::BlockHeight{0}};
     blocksci::ScriptAccess scripts{config};
     
     blocksci::State updateState{chain, scripts};
@@ -288,12 +289,12 @@ int main(int argc, const char * argv[]) {
     
     namespace po = boost::program_options;
     std::string dataDirectoryString;
-    blocksci::BlockHeight maxBlockNum;
+    int maxBlockNum;
     po::options_description general("Options");
     general.add_options()
     ("help", "Print help messages")
     ("output-directory", po::value<std::string>(&dataDirectoryString)->required(), "Path to output parsed data")
-    ("max-block", po::value<blocksci::BlockHeight>(&maxBlockNum)->default_value(0), "Max block to scan up to")
+    ("max-block", po::value<int>(&maxBlockNum)->default_value(0), "Max block to scan up to")
     ("update-indexes", "Update indexes to latest chain state")
     ("update-address-index", "Update address index to latest state")
     ;
@@ -452,14 +453,14 @@ int main(int argc, const char * argv[]) {
     if (validDisk) {
         #ifdef BLOCKSCI_FILE_PARSER
         ParserConfiguration<FileTag> config{bitcoinDirectory, dataDirectory};
-        updateChain(config, maxBlockNum);
+        updateChain(config, blocksci::BlockHeight{maxBlockNum});
         updateHashDB(config);
         updateAddressDB(config);
         #endif
     } else if (validRPC) {
         #ifdef BLOCKSCI_RPC_PARSER
         ParserConfiguration<RPCTag> config(username, password, address, port, dataDirectory);
-        updateChain(config, maxBlockNum);
+        updateChain(config, blocksci::BlockHeight{maxBlockNum});
         #endif
     }
     

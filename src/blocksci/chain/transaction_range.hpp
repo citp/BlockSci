@@ -54,7 +54,7 @@ namespace blocksci {
         void updateNextBlock() {
             auto block = access->getBlock(blockNum);
             prevBlockLast = block->firstTxIndex - 1;
-            nextBlockFirst = blockNum < access->blockCount() - 1 ? block->firstTxIndex + static_cast<uint32_t>(block->numTxes) : std::numeric_limits<decltype(nextBlockFirst)>::max();
+            nextBlockFirst = blockNum < access->blockCount() - BlockHeight{1} ? block->firstTxIndex + static_cast<uint32_t>(block->numTxes) : std::numeric_limits<decltype(nextBlockFirst)>::max();
         }
         
     public:

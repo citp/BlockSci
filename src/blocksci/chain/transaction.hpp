@@ -52,7 +52,7 @@ namespace blocksci {
         
         Transaction(uint32_t index, const ChainAccess &access_) : Transaction(index, access_.getBlockHeight(index), access_) {}
         
-        Transaction(uint32_t index, int height, const ChainAccess &access_) : Transaction(access_.getTx(index), index, height, access_) {}
+        Transaction(uint32_t index, BlockHeight height, const ChainAccess &access_) : Transaction(access_.getTx(index), index, height, access_) {}
         
         Transaction(uint256 hash, const HashIndex &index, const ChainAccess &access);
         Transaction(std::string hash, const HashIndex &index, const ChainAccess &access);

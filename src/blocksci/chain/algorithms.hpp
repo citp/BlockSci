@@ -115,28 +115,28 @@ namespace blocksci {
     }
 
     template <typename T>
-    inline auto outputsSpentWithinRelativeHeight(T &t, int difference) {
+    inline auto outputsSpentWithinRelativeHeight(T &t, blocksci::BlockHeight difference) {
         return outputs(t) | ranges::view::filter([=](const Output &output) { 
             return output.isSpent() && output.getSpendingTx()->blockHeight - output.blockHeight < difference; 
         });
     }
     
     template <typename T>
-    inline auto outputsSpentOutsideRelativeHeight(T &t, int difference) {
+    inline auto outputsSpentOutsideRelativeHeight(T &t, blocksci::BlockHeight difference) {
         return outputs(t) | ranges::view::filter([=](const Output &output) { 
             return output.isSpent() && output.getSpendingTx()->blockHeight - output.blockHeight >= difference; 
         });
     }
     
     template <typename T>
-    inline auto inputsCreatedWithinRelativeHeight(T &t, int difference) {
+    inline auto inputsCreatedWithinRelativeHeight(T &t, blocksci::BlockHeight difference) {
         return inputs(t) | ranges::view::filter([=](const Input &input) {
             return input.blockHeight - input.getSpentTx().blockHeight < difference; 
         });
     }
     
     template <typename T>
-    inline auto inputsCreatedOutsideRelativeHeight(T &t, int difference) {
+    inline auto inputsCreatedOutsideRelativeHeight(T &t, blocksci::BlockHeight difference) {
         return inputs(t) | ranges::view::filter([=](const Input &input) {
             return input.blockHeight - input.getSpentTx().blockHeight >= difference;
         });

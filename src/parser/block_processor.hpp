@@ -63,11 +63,11 @@ class BlockProcessor {
     uint32_t startingTxCount;
     uint32_t currentTxNum;
     uint32_t totalTxCount;
-    uint32_t maxBlockHeight;
+    blocksci::BlockHeight maxBlockHeight;
 
 public:
     
-    BlockProcessor(uint32_t startingTxCount, uint32_t totalTxCount, uint32_t maxBlockHeight);
+    BlockProcessor(uint32_t startingTxCount, uint32_t totalTxCount, blocksci::BlockHeight maxBlockHeight);
     
     template <typename ParseTag>
     void addNewBlocks(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> nextBlocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState);

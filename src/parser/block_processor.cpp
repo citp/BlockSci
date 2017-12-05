@@ -46,7 +46,7 @@
 
 std::vector<unsigned char> ParseHex(const char* psz);
 
-BlockProcessor::BlockProcessor(uint32_t startingTxCount_, uint32_t totalTxCount_, uint32_t maxBlockHeight_) : startingTxCount(startingTxCount_), currentTxNum(startingTxCount_), totalTxCount(totalTxCount_), maxBlockHeight(maxBlockHeight_) {
+BlockProcessor::BlockProcessor(uint32_t startingTxCount_, uint32_t totalTxCount_, blocksci::BlockHeight maxBlockHeight_) : startingTxCount(startingTxCount_), currentTxNum(startingTxCount_), totalTxCount(totalTxCount_), maxBlockHeight(maxBlockHeight_) {
     
 }
 
@@ -202,7 +202,7 @@ class BlockFileReader<RPCTag> : public BlockFileReaderBase {
             //Set the desired initial block reward
             tx->outputs.emplace_back(scriptBytes, 50 * 100000000.0);
             tx->hash = blocksci::uint256S("0100000000000000000000000000000000000000000000000000000000000000");
-            tx->blockHeight = 0;
+            tx->blockHeight = blocksci::BlockHeight{0};
             tx->txNum = 0;
             tx->isSegwit = false;
         } else {
@@ -271,7 +271,7 @@ std::vector<unsigned char> readNewBlock(uint32_t firstTxNum, const BlockInfoBase
         
         outFunc(tx);
     }
-    blocksci::RawBlock blocksciBlock{firstTxNum, block.nTx, static_cast<uint32_t>(block.height), block.hash, block.header.nVersion, block.header.nTime, block.header.nBits, block.header.nNonce, files.blockCoinbaseFile.size()};
+    blocksci::RawBlock blocksciBlock{firstTxNum, block.nTx, static_cast<uint32_t>(static_cast<int>(block.height)), block.hash, block.header.nVersion, block.header.nTime, block.header.nBits, block.header.nNonce, files.blockCoinbaseFile.size()};
     firstTxNum += block.nTx;
     files.blockFile.write(blocksciBlock);
     files.blockCoinbaseFile.write(coinbase.begin(), coinbase.end());

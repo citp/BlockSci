@@ -33,11 +33,11 @@ namespace blocksci {
     }
 
     Block Block::nextBlock() const {
-        return Block(blockNum + 1, *access);
+        return Block(blockNum + BlockHeight(1), *access);
     }
 
-    Block Block::prevBlock() {
-        return Block(blockNum - 1, *access);
+    Block Block::prevBlock() const {
+        return Block(blockNum - BlockHeight(1), *access);
     }
     
     const std::string Block::getHeaderHash() const {
@@ -121,17 +121,18 @@ namespace blocksci {
         return net;
     }
     
-    std::vector<uint64_t> getTotalSpentOfAges(const Block &block, const ChainAccess &access, BlockHeight maxAge) {
-        std::vector<uint64_t> totals(static_cast<size_t>(maxAge));
-        uint32_t newestTxNum = Block(block.height() - 1, access).endTxIndex() - 1;
+    std::vector<uint64_t> getTotalSpentOfAges(const Block &block, BlockHeight maxAge) {
+        std::vector<uint64_t> totals(static_cast<size_t>(static_cast<int>(maxAge)));
+        uint32_t newestTxNum = block.prevBlock().endTxIndex() - 1;
         auto inputs = block.allInputs()
         | ranges::view::remove_if([=](const Input &input) { return input.spentTxIndex() > newestTxNum; });
         RANGES_FOR(auto input, inputs) {
-            BlockHeight age = std::min(maxAge, block.height() - input.getSpentTx().block().height()) - 1;
-            totals[static_cast<size_t>(age)] += input.getValue();
+            BlockHeight age = std::min(maxAge, block.height() - input.getSpentTx().block().height()) - BlockHeight{1};
+            totals[static_cast<size_t>(static_cast<int>(age))] += input.getValue();
         }
-        for (BlockHeight i = 1; i < maxAge; i++) {
-            totals[static_cast<size_t>(maxAge - i - 1)] += totals[static_cast<size_t>(maxAge - i)];
+        for (BlockHeight i{1}; i < maxAge; i++) {
+            auto age = static_cast<size_t>(static_cast<int>(maxAge - i));
+            totals[age - 1] += totals[age];
         }
         return totals;
     }

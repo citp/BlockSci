@@ -57,12 +57,12 @@ void replayBlock(const ParserConfiguration<FileTag> &config, blocksci::BlockHeig
     AddressState addressState_{config.addressPath()};
     
     const AddressState &addressState = addressState_;
-    blocksci::ChainAccess currentChain(config, false, 0);
+    blocksci::ChainAccess currentChain(config, false, blocksci::BlockHeight{0});
     blocksci::ScriptAccess scripts(config);
     
     auto realBlock = blocksci::Block(blockNum, currentChain);
     auto segwit = isSegwit(realBlock, scripts);
-    for (int txNum = 0; txNum < static_cast<blocksci::BlockHeight>(txCount); txNum++) {
+    for (int txNum = 0; txNum < static_cast<int>(txCount); txNum++) {
         auto realTx = realBlock[txNum];
         
         RawTransaction tx;

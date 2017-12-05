@@ -8,8 +8,9 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "change_address.hpp"
-#include "blocksci.hpp"
 #include "tx_identification.hpp"
+#include "chain/output.hpp"
+#include "chain/transaction.hpp"
 #include <blocksci/scripts/script_variant.hpp>
 
 #include <unordered_set>

@@ -172,12 +172,12 @@ void ChainIndex<FileTag>::update(const ConfigType &config) {
     blocksci::uint256 nullHash;
     nullHash.SetNull();
     
-    std::vector<std::pair<blocksci::uint256, int>> queue;
+    std::vector<std::pair<blocksci::uint256, blocksci::BlockHeight>> queue;
     
     queue.emplace_back(nullHash, 0);
     while (!queue.empty()) {
         blocksci::uint256 blockHash;
-        int height;
+        blocksci::BlockHeight height;
         std::tie(blockHash, height) = queue.back();
         queue.pop_back();
         for (auto ret = forwardHashes.equal_range(blockHash); ret.first != ret.second; ++ret.first) {
@@ -197,22 +197,22 @@ void ChainIndex<RPCTag>::update(const ConfigType &config) {
 
         
         auto splitPoint = findSplitPointIndex(blockHeight, [&](blocksci::BlockHeight h) {
-            return blocksci::uint256S(bapi.getblockhash(h));
+            return blocksci::uint256S(bapi.getblockhash(static_cast<int>(h)));
         });
         
         std::cout.setf(std::ios::fixed,std::ios::floatfield);
         std::cout.precision(1);
         blocksci::BlockHeight numBlocks = blockHeight - splitPoint;
-        auto percentage = static_cast<double>(numBlocks) / 1000.0;
+        auto percentage = static_cast<double>(static_cast<int>(numBlocks)) / 1000.0;
         auto percentageMarker = static_cast<blocksci::BlockHeight>(std::ceil(percentage));
         
         for (blocksci::BlockHeight i = splitPoint; i < blockHeight; i++) {
-            std::string blockhash = bapi.getblockhash(i);
+            std::string blockhash = bapi.getblockhash(static_cast<int>(i));
             BlockType block{bapi.getblock(blockhash), i};
             blockList.emplace(block.hash, block);
             auto count = i - splitPoint;
             if (count % percentageMarker == 0) {
-                std::cout << "\r" << (static_cast<double>(count) / static_cast<double>(numBlocks)) * 100 << "% done fetching block headers" << std::flush;
+                std::cout << "\r" << (static_cast<double>(static_cast<int>(count)) / static_cast<double>(static_cast<int>(numBlocks))) * 100 << "% done fetching block headers" << std::flush;
             }
             if (i == blockHeight - 1) {
                 newestBlock = block;
