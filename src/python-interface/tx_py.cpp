@@ -47,8 +47,8 @@ void init_tx(py::module &m) {
          :param string index: The hash of the transation.
          :returns: Tx
          )docstring")
-    .def_property_readonly("num_outs", &Transaction::outputCount, "The number of outputs this transaction has")
-    .def_property_readonly("num_ins", &Transaction::inputCount, "The number of inputs this transaction has")
+    .def_property_readonly("output_count", &Transaction::outputCount, "The number of outputs this transaction has")
+    .def_property_readonly("input_count", &Transaction::inputCount, "The number of inputs this transaction has")
     .def_property_readonly("size_bytes", &Transaction::sizeBytes, "The size of this transaction in bytes")
     .def_property_readonly("locktime", &Transaction::locktime, "The locktime of this transasction")
     .def_readonly("block_height", &Transaction::blockHeight, "The height of the block that this transaction was in")
@@ -59,15 +59,21 @@ void init_tx(py::module &m) {
     .def_readonly("index", &Transaction::txNum, "The internal index of this transaction")
     .def_property_readonly("ins", [](const Transaction &tx) -> ranges::any_view<Input, ranges::get_categories<decltype(tx.inputs())>()>  {
         return tx.inputs();
-    }, "A list of the inputs of the transaction")
+    }, "A list of the inputs of the transaction") // same as below
+    .def_property_readonly("inputs", [](const Transaction &tx) -> ranges::any_view<Input, ranges::get_categories<decltype(tx.inputs())>()>  {
+        return tx.inputs();
+    }, "A list of the inputs of the transaction") // same as above
     .def_property_readonly("outs", [](const Transaction &tx) -> ranges::any_view<Output, ranges::get_categories<decltype(tx.outputs())>()>  {
         return tx.outputs();
-    }, "A list of the outputs of the transaction")
+    }, "A list of the outputs of the transaction") // same as below
+    .def_property_readonly("outputs", [](const Transaction &tx) -> ranges::any_view<Output, ranges::get_categories<decltype(tx.outputs())>()>  {
+        return tx.outputs();
+    }, "A list of the outputs of the transaction") // same as above
     .def_property_readonly("hash", py::overload_cast<>(&Transaction::getHash, py::const_), "The 256-bit hash of this transaction")
-    .def_property_readonly("total_input_value", [](Transaction &tx) {
+    .def_property_readonly("input_value", [](Transaction &tx) {
         return totalInputValue(tx);
     }, "The sum of the value of all of the inputs")
-    .def_property_readonly("total_output_value", [](Transaction &tx) {
+    .def_property_readonly("output_value", [](Transaction &tx) {
         return totalOutputValue(tx);
     }, "The sum of the value of all of the outputs")
     .def_property_readonly("fee", py::overload_cast<const Transaction &>(fee), "The fee paid by this transaction")
