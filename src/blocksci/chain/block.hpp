@@ -137,6 +137,9 @@ namespace blocksci {
         uint32_t nonce() const {
             return rawBlock->nonce;
         }
+
+        Block nextBlock() const;
+        Block prevBlock() const;
         
         const std::string getHeaderHash() const;
         
@@ -156,10 +159,6 @@ namespace blocksci {
         Block(BlockHeight blockNum);
         #endif
     };
-    
-    inline auto txes(const Block &block) {
-        return block;
-    }
     
     size_t sizeBytes(const Block &block);
     bool isSegwit(const Block &block, const ScriptAccess &scripts);

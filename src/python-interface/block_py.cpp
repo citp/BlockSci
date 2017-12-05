@@ -100,6 +100,8 @@ void init_block(py::module &m) {
             throw py::error_already_set();
         return block | ranges::view::slice(start, stop) | ranges::view::stride(step) | ranges::to_vector;
     })
+    .def_property_readonly("next_block", &Block::nextBlock)
+    .def_property_readonly("prev_block", &Block::prevBlock)
     .def_property_readonly("hash", &Block::getHeaderHash, "Hash of this block")
     .def_property_readonly("version", &Block::version, "Protocol version specified in block header")
     .def_property_readonly("timestamp", &Block::timestamp, "Creation timestamp specified in block header")

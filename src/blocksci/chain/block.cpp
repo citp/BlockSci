@@ -31,6 +31,14 @@ namespace blocksci {
         ss << "Block(numTxes=" << rawBlock->numTxes <<", height=" << blockNum <<", header_hash=" << rawBlock->hash.GetHex() << ", version=" << rawBlock->version <<", timestamp=" << rawBlock->timestamp << ", bits=" << rawBlock->bits << ", nonce=" << rawBlock->nonce << ")";
         return ss.str();
     }
+
+    Block Block::nextBlock() const {
+        return Block(blockNum + 1, *access);
+    }
+
+    Block Block::prevBlock() {
+        return Block(blockNum - 1, *access);
+    }
     
     const std::string Block::getHeaderHash() const {
         return rawBlock->hash.GetHex();
