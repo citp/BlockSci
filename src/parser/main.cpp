@@ -52,12 +52,11 @@
 #include <iomanip>
 #include <cassert>
 
-void rollbackTransactions(size_t blockKeepCount, const ParserConfigurationBase &config);
 std::vector<char> HexToBytes(const std::string& hex);
 uint32_t getStartingTxCount(const blocksci::DataConfiguration &config);
 
 
-blocksci::State rollbackState(const ParserConfigurationBase &config, size_t firstDeletedBlock, uint32_t firstDeletedTxNum) {
+blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::BlockHeight firstDeletedBlock, uint32_t firstDeletedTxNum) {
     blocksci::State state{blocksci::ChainAccess{config, false, 0}, blocksci::ScriptAccess{config}};
     state.blockCount = static_cast<uint32_t>(firstDeletedBlock);
     state.txCount = firstDeletedTxNum;
@@ -108,15 +107,15 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, size_t firs
     return state;
 }
 
-void rollbackTransactions(size_t blockKeepCount, const ParserConfigurationBase &config) {
+void rollbackTransactions(blocksci::BlockHeight blockKeepCount, const ParserConfigurationBase &config) {
     using namespace blocksci;
     
     constexpr auto readwrite = blocksci::AccessMode::readwrite;
     blocksci::FixedSizeFileMapper<blocksci::RawBlock, readwrite> blockFile(config.blockFilePath());
     
-    if (blockFile.size() > blockKeepCount) {
+    if (blockFile.size() > static_cast<size_t>(blockKeepCount)) {
         
-        auto firstDeletedBlock = blockFile.getData(blockKeepCount);
+        auto firstDeletedBlock = blockFile.getData(static_cast<size_t>(blockKeepCount));
         auto firstDeletedTxNum = firstDeletedBlock->firstTxIndex;
         
         auto blocksciState = rollbackState(config, blockKeepCount, firstDeletedTxNum);
@@ -125,7 +124,7 @@ void rollbackTransactions(size_t blockKeepCount, const ParserConfigurationBase &
         blocksci::FixedSizeFileMapper<blocksci::uint256, readwrite>(config.txHashesFilePath()).truncate(firstDeletedTxNum);
         blocksci::IndexedFileMapper<readwrite, uint32_t>(config.sequenceFilePath()).truncate(firstDeletedTxNum);
         blocksci::SimpleFileMapper<readwrite>(config.blockCoinbaseFilePath()).truncate(firstDeletedBlock->coinbaseOffset);
-        blockFile.truncate(blockKeepCount);
+        blockFile.truncate(static_cast<size_t>(blockKeepCount));
         
         AddressState(config.addressPath()).rollback(blocksciState);
         AddressWriter(config).rollback(blocksciState);
@@ -163,7 +162,7 @@ uint32_t getStartingTxCount(const blocksci::DataConfiguration &config) {
 }
 
 template <typename ParserTag>
-void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlockNum) {
+void updateChain(const ParserConfiguration<ParserTag> &config, blocksci::BlockHeight maxBlockNum) {
     using namespace std::chrono_literals;
     
     auto chainBlocks = [&]() {
@@ -181,13 +180,13 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
         return blocks;
     }();
 
-    size_t splitPoint = [&]() {
+    blocksci::BlockHeight splitPoint = [&]() {
         blocksci::ChainAccess oldChain(config, false, 0);
-        auto maxSize = std::min(oldChain.blockCount(), chainBlocks.size());
-        size_t splitPoint = maxSize;
-        for (size_t i = 0; i < maxSize; i++) {
+        blocksci::BlockHeight maxSize = std::min(oldChain.blockCount(), static_cast<blocksci::BlockHeight>(chainBlocks.size()));
+        auto splitPoint = maxSize;
+        for (blocksci::BlockHeight i = 0; i < maxSize; i++) {
             blocksci::uint256 oldHash = oldChain.getBlock(maxSize - 1 - i)->hash;
-            blocksci::uint256 newHash = chainBlocks[maxSize - 1 - i].hash;
+            blocksci::uint256 newHash = chainBlocks[static_cast<size_t>(maxSize - 1 - i)].hash;
             if (!(oldHash == newHash)) {
                 splitPoint = maxSize - 1 - i;
                 break;
@@ -195,8 +194,8 @@ void updateChain(const ParserConfiguration<ParserTag> &config, uint32_t maxBlock
         }
         
         std::cout << "Starting with chain of " << oldChain.blockCount() << " blocks" << std::endl;
-        std::cout << "Removing " << oldChain.blockCount() - splitPoint << " blocks" << std::endl;
-        std::cout << "Adding " << chainBlocks.size() - splitPoint << " blocks" << std::endl;
+        std::cout << "Removing " << static_cast<blocksci::BlockHeight>(oldChain.blockCount()) - splitPoint << " blocks" << std::endl;
+        std::cout << "Adding " << static_cast<blocksci::BlockHeight>(chainBlocks.size()) - splitPoint << " blocks" << std::endl;
         
         return splitPoint;
     }();
@@ -289,12 +288,12 @@ int main(int argc, const char * argv[]) {
     
     namespace po = boost::program_options;
     std::string dataDirectoryString;
-    uint32_t maxBlockNum;
+    blocksci::BlockHeight maxBlockNum;
     po::options_description general("Options");
     general.add_options()
     ("help", "Print help messages")
     ("output-directory", po::value<std::string>(&dataDirectoryString)->required(), "Path to output parsed data")
-    ("max-block", po::value<uint32_t>(&maxBlockNum)->default_value(0), "Max block to scan up to")
+    ("max-block", po::value<blocksci::BlockHeight>(&maxBlockNum)->default_value(0), "Max block to scan up to")
     ("update-indexes", "Update indexes to latest chain state")
     ("update-address-index", "Update address index to latest state")
     ;

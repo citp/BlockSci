@@ -99,7 +99,11 @@ namespace blocksci { namespace heuristics {
     // Default for digits is 6 (i.e. 0.01 BTC)
     std::unordered_set<Output> changeByPowerOfTenValue(const Transaction &tx, int digits) {
         std::unordered_set<Output> candidates;
-        uint64_t value = std::pow(10, digits);
+        uint64_t value = 1;
+        for (int i = 0; i < digits; ++i)
+        {
+            value *= 10;
+        }
         for(auto output : tx.outputs()) {
             if(output.getValue() % value != 0) {
                 candidates.insert(output);

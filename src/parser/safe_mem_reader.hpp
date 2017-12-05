@@ -54,7 +54,7 @@ public:
         }
     }
     
-    void advance(size_type n) {
+    void advance(difference_type n) {
         if (!has(n)) {
             throw std::out_of_range("Tried to advance past end of file");
         }
@@ -65,14 +65,14 @@ public:
         pos = begin;
     }
     
-    void reset(size_type n) {
+    void reset(difference_type n) {
         if (begin + n > end) {
             throw std::out_of_range("Tried to reset out of file");
         }
         pos = begin + n;
     }
     
-    size_type offset() {
+    difference_type offset() {
         return std::distance(begin, pos);
     }
     

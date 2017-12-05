@@ -63,12 +63,12 @@ WitnessStackItem::WitnessStackItem(SafeMemReader &reader) {
     reader.advance(length);
 }
 
-void RawTransaction::load(SafeMemReader &reader, uint32_t txNum_, uint32_t blockHeight_, bool witnessActivated) {
+void RawTransaction::load(SafeMemReader &reader, uint32_t txNum_, blocksci::BlockHeight blockHeight_, bool witnessActivated) {
     txNum = txNum_;
     isSegwit = witnessActivated;
     blockHeight = blockHeight_;
     auto startOffset = reader.offset();
-    version = reader.readNext<uint32_t>();
+    version = reader.readNext<decltype(version)>();
     txHashStart = reader.unsafePos();
     
     auto inputCount = reader.readVariableLengthInteger();
@@ -113,7 +113,7 @@ void RawTransaction::load(SafeMemReader &reader, uint32_t txNum_, uint32_t block
 
 TransactionHeader::TransactionHeader(SafeMemReader &reader) {
     auto startOffset = reader.offset();
-    version = reader.readNext<uint32_t>();
+    version = reader.readNext<decltype(version)>();
     
     inputCount = reader.readVariableLengthInteger();
     bool containsSegwit = false;
@@ -177,7 +177,7 @@ RawOutput::RawOutput(std::vector<unsigned char> scriptBytes_, uint64_t value_) :
 
 RawOutput::RawOutput(const vout_t &vout) : RawOutput(hexStringToVec(vout.scriptPubKey.hex), static_cast<uint64_t>(vout.value * 100000000)) {}
 
-void RawTransaction::load(const getrawtransaction_t &txinfo, uint32_t txNum_, uint32_t blockHeight_, bool witnessActivated) {
+void RawTransaction::load(const getrawtransaction_t &txinfo, uint32_t txNum_, blocksci::BlockHeight blockHeight_, bool witnessActivated) {
     txNum = txNum_;
     isSegwit = witnessActivated;
     blockHeight = blockHeight_;

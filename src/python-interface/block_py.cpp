@@ -59,7 +59,7 @@ void init_block(py::module &m) {
     
     py::class_<Block> cl(m, "Block", "Class representing a block in the blockchain");
     cl
-    .def(py::init<uint32_t>())
+    .def(py::init<blocksci::BlockHeight>())
     .def(py::pickle(
         [](const Block &block) {
             return py::make_tuple(block.height());
@@ -68,7 +68,7 @@ void init_block(py::module &m) {
             if (t.size() != 1)
                 throw std::runtime_error("Invalid state!");
 
-            return Block(t[0].cast<uint32_t>(), *DataAccess::Instance().chain);
+            return Block(t[0].cast<blocksci::BlockHeight>(), *DataAccess::Instance().chain);
         }
     ))
     .def("__repr__", &Block::getString)
@@ -78,7 +78,7 @@ void init_block(py::module &m) {
     /// Optional sequence protocol operations
     .def("__iter__", [](const Block &block) { return py::make_iterator(block.begin(), block.end()); },
          py::keep_alive<0, 1>() /* Essential: keep object alive while iterator exists */)
-    .def("__getitem__", [](const Block &block, int64_t i) {
+    .def("__getitem__", [](const Block &block, blocksci::BlockHeight i) {
         if (i < 0) {
             i += block.size();
         }
@@ -121,7 +121,7 @@ void init_block(py::module &m) {
         return totalOutputValue(block);
     }, "Returns the sum of the value of all of the outputs included in this block")
     .def_property_readonly("outputs_unspent", [](const Block &block) -> ranges::any_view<Output> { return outputsUnspent(block); }, "Returns a list of all of the outputs in this block that are still unspent")
-    .def("total_spent_of_ages", py::overload_cast<const Block &, uint32_t>(getTotalSpentOfAges), "Returns a list of sum of all the outputs in the block that were spent within a certain of blocks, up to the max age given")
+    .def("total_spent_of_ages", py::overload_cast<const Block &, blocksci::BlockHeight>(getTotalSpentOfAges), "Returns a list of sum of all the outputs in the block that were spent within a certain of blocks, up to the max age given")
     .def("net_address_type_value", py::overload_cast<const Block &>(netAddressTypeValue), "Returns a set of the net change in the utxo pool after this block split up by address type")
     .def("net_full_type_value", py::overload_cast<const Block &>(netFullTypeValue), "Returns a set of the net change in the utxo pool after this block split up by full type")
     .def_property_readonly("input_count", inputCount<Block>)

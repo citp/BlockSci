@@ -28,6 +28,8 @@ namespace blocksci {
     class InvalidAddressException : virtual public std::runtime_error {
     public:
         InvalidAddressException() : std::runtime_error("Tried to construct invalid address") {}
+        InvalidAddressException(const InvalidAddressException &) = default;
+        InvalidAddressException(InvalidAddressException &&) = default;
         virtual ~InvalidAddressException() = default;
     };
     

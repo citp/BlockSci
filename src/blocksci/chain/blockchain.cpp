@@ -34,9 +34,9 @@ namespace blocksci {
         
         std::vector<std::vector<Block>> segments;
         auto it = chain.begin();
-        std::advance(it, static_cast<int64_t>(startBlock));
+        std::advance(it, startBlock);
         auto chainEnd = chain.begin();
-        std::advance(chainEnd, static_cast<int64_t>(endBlock));
+        std::advance(chainEnd, endBlock);
         while(lastTx - (*it).firstTxIndex() > segmentSize) {
             auto endIt = std::lower_bound(it, chainEnd, (*it).firstTxIndex() + segmentSize, [](const Block &block, uint32_t txNum) {
                 return block.firstTxIndex() < txNum;

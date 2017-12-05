@@ -34,9 +34,9 @@ namespace blocksci {
         
         friend size_t std::hash<Input>::operator()(const Input &) const;
     public:
-        uint32_t blockHeight;
+        BlockHeight blockHeight;
 
-        Input(const InputPointer &pointer_, uint32_t blockHeight_, const Inout &inout_, const ChainAccess &access_) : 
+        Input(const InputPointer &pointer_, BlockHeight blockHeight_, const Inout &inout_, const ChainAccess &access_) : 
         access(&access_), inout(&inout_), pointer(pointer_), blockHeight(blockHeight_) {
             assert(pointer.isValid(access_));
         }

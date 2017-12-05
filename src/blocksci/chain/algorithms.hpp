@@ -95,22 +95,22 @@ namespace blocksci {
     }
     
     template <typename T>
-    inline auto outputsSpentBeforeHeight(T &t, uint32_t blockHeight) {
+    inline auto outputsSpentBeforeHeight(T &t, blocksci::BlockHeight blockHeight) {
         return outputs(t) | ranges::view::filter([=](const Output &output) { return output.isSpent() && output.getSpendingTx()->blockHeight < blockHeight; });
     }
     
     template <typename T>
-    inline auto outputsSpentAfterHeight(T &t, uint32_t blockHeight) {
+    inline auto outputsSpentAfterHeight(T &t, blocksci::BlockHeight blockHeight) {
         return outputs(t) | ranges::view::filter([=](const Output &output) { return output.isSpent() && output.getSpendingTx()->blockHeight >= blockHeight; });
     }
     
     template <typename T>
-    inline auto inputsCreatedAfterHeight(T &t, uint32_t blockHeight) {
+    inline auto inputsCreatedAfterHeight(T &t, blocksci::BlockHeight blockHeight) {
         return inputs(t) | ranges::view::filter([=](const Input &input) { return input.getSpentTx().blockHeight >= blockHeight; });
     }
     
     template <typename T>
-    inline auto inputsCreatedBeforeHeight(T &t, uint32_t blockHeight) {
+    inline auto inputsCreatedBeforeHeight(T &t, blocksci::BlockHeight blockHeight) {
         return inputs(t) | ranges::view::filter([=](const Input &input) { return input.getSpentTx().blockHeight < blockHeight; });
     }
 

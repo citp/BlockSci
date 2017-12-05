@@ -26,6 +26,9 @@ public:
         std::cout.setf(std::ios::fixed,std::ios::floatfield);
         std::cout.precision(2);
     }
+
+    ProgressBar(const ProgressBar &) = default;
+    ProgressBar(ProgressBar &&) = default;
     
     ~ProgressBar() {
         std::cout << "\n";

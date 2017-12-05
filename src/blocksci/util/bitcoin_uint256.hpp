@@ -86,7 +86,10 @@ namespace blocksci {
         friend inline bool operator!=(const base_blob& a, const base_blob& b) { return a.Compare(b) != 0; }
         friend inline bool operator<(const base_blob& a, const base_blob& b) { return a.Compare(b) < 0; }
         
-        std::string GetHex() const;
+        std::string GetHex() const {
+            return HexStr(std::reverse_iterator<const uint8_t*>(data + sizeof(data)), std::reverse_iterator<const uint8_t*>(data));
+        }
+        
         void SetHex(const char* psz);
         void SetHex(const std::string& str);
         std::string ToString() const;

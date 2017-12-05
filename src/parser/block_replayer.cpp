@@ -32,7 +32,7 @@
 #include <boost/filesystem/fstream.hpp>
 
 #ifdef BLOCKSCI_FILE_PARSER
-void replayBlock(const ParserConfiguration<FileTag> &config, uint32_t blockNum) {
+void replayBlock(const ParserConfiguration<FileTag> &config, blocksci::BlockHeight blockNum) {
     blocksci::ECCVerifyHandle handle;
     ChainIndex<FileTag> index;
     boost::filesystem::ifstream inFile(config.blockListPath(), std::ios::binary);
@@ -62,7 +62,7 @@ void replayBlock(const ParserConfiguration<FileTag> &config, uint32_t blockNum) 
     
     auto realBlock = blocksci::Block(blockNum, currentChain);
     auto segwit = isSegwit(realBlock, scripts);
-    for (uint32_t txNum = 0; txNum < txCount; txNum++) {
+    for (int txNum = 0; txNum < static_cast<blocksci::BlockHeight>(txCount); txNum++) {
         auto realTx = realBlock[txNum];
         
         RawTransaction tx;

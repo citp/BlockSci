@@ -12,10 +12,12 @@
 #include "config.hpp"
 #include "parser_fwd.hpp"
 
+#include <blocksci/chain/chain_fwd.hpp>
+
 #include <cstdint>
 
 #ifdef BLOCKSCI_FILE_PARSER
-void replayBlock(const ParserConfiguration<FileTag> &config, uint32_t blockNum);
+void replayBlock(const ParserConfiguration<FileTag> &config, blocksci::BlockHeight blockNum);
 #endif
 
 #endif /* block_replayer_hpp */

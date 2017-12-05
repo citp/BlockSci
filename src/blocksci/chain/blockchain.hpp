@@ -90,7 +90,7 @@ namespace blocksci {
     uint32_t txCount(const Blockchain &chain);
     
     template <ScriptType::Enum type>
-    using ScriptRange = ranges::any_view<ScriptAddress<type>, ranges::category::random_access | ranges::category::sized>;
+    using ScriptRange = ranges::any_view<ScriptAddress<type>>;
     using ScriptRangeVariant = to_variadic_t<to_script_tuple_t<ScriptRange>, mpark::variant>;
     
     class Blockchain : public ranges::view_facade<Blockchain> {
@@ -99,10 +99,10 @@ namespace blocksci {
         struct cursor {
         private:
             const Blockchain *chain;
-            uint32_t currentBlockHeight;
+            int currentBlockHeight;
         public:
             cursor() = default;
-            cursor(const Blockchain &chain_, uint32_t height) : chain(&chain_), currentBlockHeight(height) {}
+            cursor(const Blockchain &chain_, int height) : chain(&chain_), currentBlockHeight(height) {}
             
             bool equal(ranges::default_sentinel) const {
                 return currentBlockHeight == chain->lastBlockHeight;
@@ -125,11 +125,11 @@ namespace blocksci {
             }
             
             int distance_to(ranges::default_sentinel) const {
-                return static_cast<int>(chain->lastBlockHeight) - static_cast<int>(currentBlockHeight);
+                return chain->lastBlockHeight - currentBlockHeight;
             }
             
             int distance_to(cursor const &that) const {
-                return static_cast<int>(that.currentBlockHeight) - static_cast<int>(currentBlockHeight);
+                return that.currentBlockHeight - currentBlockHeight;
             }
             
             void advance(int amount) {
@@ -145,7 +145,7 @@ namespace blocksci {
             return {};
         }
         
-        uint32_t lastBlockHeight;
+        int lastBlockHeight;
 
     public:
         Blockchain() = default;
@@ -157,13 +157,13 @@ namespace blocksci {
         uint32_t firstTxIndex() const;
         uint32_t endTxIndex() const;
         
-        uint32_t size() const {
+        BlockHeight size() const {
             return lastBlockHeight;
         }
         
         template <ScriptType::Enum type>
         auto scripts() const {
-            return ranges::view::iota(size_t{1}, access->scripts->scriptCount<type>() + 1) | ranges::view::transform([&](size_t scriptNum) {
+            return ranges::view::iota(uint32_t{1}, access->scripts->scriptCount<type>() + 1) | ranges::view::transform([&](uint32_t scriptNum) {
                 assert(scriptNum > 0);
                 return ScriptAddress<type>(*access->scripts, scriptNum);
             });

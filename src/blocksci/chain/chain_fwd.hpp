@@ -9,6 +9,8 @@
 #define chain_fwd_h
 
 namespace blocksci {
+    using BlockHeight = int;
+    
     class ChainAccess;
     
     struct RawBlock;

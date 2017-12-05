@@ -23,6 +23,8 @@ namespace blocksci {
     class ReorgException : public std::runtime_error {
     public:
         ReorgException();
+        ReorgException(const ReorgException &) = default;
+        ReorgException(ReorgException &&) = default;
         virtual ~ReorgException();
     };
     
@@ -37,9 +39,9 @@ namespace blocksci {
         
         uint256 lastBlockHash;
         const uint256 *lastBlockHashDisk;
-        uint32_t maxHeight;
+        BlockHeight maxHeight;
         uint32_t _maxLoadedTx;
-        uint32_t blocksIgnored;
+        BlockHeight blocksIgnored;
         bool errorOnReorg;
         
         void reorgCheck() const {
@@ -51,17 +53,17 @@ namespace blocksci {
         void setup();
         
     public:
-        ChainAccess(const DataConfiguration &config, bool errorOnReorg, uint32_t blocksIgnored);
+        ChainAccess(const DataConfiguration &config, bool errorOnReorg, BlockHeight blocksIgnored);
         
         uint32_t maxLoadedTx() const {
             return _maxLoadedTx;
         }
         
-        uint32_t getBlockHeight(uint32_t txIndex) const;
+        BlockHeight getBlockHeight(uint32_t txIndex) const;
         
-        const RawBlock *getBlock(uint32_t blockHeight) const {
+        const RawBlock *getBlock(BlockHeight blockHeight) const {
             reorgCheck();
-            return blockFile.getData(blockHeight);
+            return blockFile.getData(static_cast<size_t>(blockHeight));
         }
         
         const uint256 *getTxHash(uint32_t index) const {
@@ -75,7 +77,7 @@ namespace blocksci {
         
         size_t txCount() const;
         
-        size_t blockCount() const {
+        BlockHeight blockCount() const {
             return maxHeight;
         }
         

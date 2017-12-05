@@ -31,7 +31,7 @@
 using namespace blocksci;
 // boost::posix_time::hours(24 * 5)
 class MempoolRecorder {
-    uint32_t lastHeight;
+    blocksci::BlockHeight lastHeight;
     std::unordered_map<uint256, time_t, std::hash<blocksci::uint256>> mempool;
     const DataConfiguration &config;
     BitcoinAPI &bitcoinAPI;
@@ -84,7 +84,7 @@ public:
     void recordMempool() {
         blocksci::ChainAccess chain(config, false, 0);
         auto blockCount = chain.blockCount();
-        for (uint32_t i = lastHeight; i < blockCount; i++) {
+        for (blocksci::BlockHeight i = lastHeight; i < blockCount; i++) {
             auto block = Block(i, chain);
             RANGES_FOR(auto tx, block) {
                 auto it = mempool.find(tx.getHash());
@@ -145,7 +145,4 @@ int main(int argc, const char * argv[]) {
             updateCount = 0;
         }
     }
-    
-    
-    return 0;
 }

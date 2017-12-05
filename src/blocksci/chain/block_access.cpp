@@ -14,13 +14,13 @@
 
 namespace blocksci {
     
-    Block::Block(uint32_t blockNum) : Block(blockNum, *DataAccess::Instance().chain) {}
+    Block::Block(BlockHeight blockNum) : Block(blockNum, *DataAccess::Instance().chain) {}
     
     bool isSegwit(const Block &block) {
         return isSegwit(block, *DataAccess::Instance().scripts);
     }
     
-    std::vector<uint64_t> getTotalSpentOfAges(const Block &block, uint32_t maxAge) {
+    std::vector<uint64_t> getTotalSpentOfAges(const Block &block, BlockHeight maxAge) {
         return getTotalSpentOfAges(block, *DataAccess::Instance().chain, maxAge);
     }
     

@@ -50,7 +50,7 @@ namespace blocksci {
     }
     
     void RawTransactionRange::advance(int amount) {
-        currentTxIndex += amount;
+        currentTxIndex = static_cast<uint32_t>(static_cast<int>(currentTxIndex) + amount);
         currentTxPos = reinterpret_cast<const char *>(access->getTx(currentTxIndex));
     }
     

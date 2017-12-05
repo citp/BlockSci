@@ -49,20 +49,20 @@ public:
     template <typename T>
     T read(size_t offset) {
         T ret;
-        file.seekg(offset);
+        file.seekg(static_cast<std::streamoff>(offset));
         file.read(reinterpret_cast<char *>(&ret), sizeof(T));
-        file.seekg(lastDataPos);
+        file.seekg(static_cast<std::streamoff>(lastDataPos));
         return ret;
     }
     
     template<typename K>
     void update(size_t offset, const K &t) {
-        file.seekp(offset);
+        file.seekp(static_cast<std::streamoff>(offset));
         file.write(reinterpret_cast<const char *>(&t), sizeof(t));
-        file.seekp(lastDataPos);
+        file.seekp(static_cast<std::streamoff>(lastDataPos));
     }
     
-    void expandToFit(size_t size) {
+    void expandToFit(std::streamoff size) {
         file.seekp(size - 1);
         file.write("", 1);
     }

@@ -113,17 +113,17 @@ namespace blocksci {
         return net;
     }
     
-    std::vector<uint64_t> getTotalSpentOfAges(const Block &block, const ChainAccess &access, uint32_t maxAge) {
-        std::vector<uint64_t> totals(maxAge);
+    std::vector<uint64_t> getTotalSpentOfAges(const Block &block, const ChainAccess &access, BlockHeight maxAge) {
+        std::vector<uint64_t> totals(static_cast<size_t>(maxAge));
         uint32_t newestTxNum = Block(block.height() - 1, access).endTxIndex() - 1;
         auto inputs = block.allInputs()
         | ranges::view::remove_if([=](const Input &input) { return input.spentTxIndex() > newestTxNum; });
         RANGES_FOR(auto input, inputs) {
-            uint32_t age = std::min(maxAge, block.height() - input.getSpentTx().block().height()) - 1;
-            totals[age] += input.getValue();
+            BlockHeight age = std::min(maxAge, block.height() - input.getSpentTx().block().height()) - 1;
+            totals[static_cast<size_t>(age)] += input.getValue();
         }
-        for (size_t i = 1; i < maxAge; i++) {
-            totals[maxAge - i - 1] += totals[maxAge - i];
+        for (BlockHeight i = 1; i < maxAge; i++) {
+            totals[static_cast<size_t>(maxAge - i - 1)] += totals[static_cast<size_t>(maxAge - i)];
         }
         return totals;
     }

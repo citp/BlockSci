@@ -26,17 +26,17 @@ namespace blocksci {
     ReorgException::~ReorgException() = default;
     
     void ChainAccess::setup() {
-        maxHeight = static_cast<uint32_t>(blockFile.size()) - blocksIgnored;
+        maxHeight = static_cast<BlockHeight>(blockFile.size()) - blocksIgnored;
         if (maxHeight > 0) {
             const auto &blockFile_ = blockFile;
-            auto maxLoadedBlock = blockFile_.getData(maxHeight - 1);
+            auto maxLoadedBlock = blockFile_.getData(static_cast<size_t>(maxHeight - 1));
             lastBlockHash = maxLoadedBlock->hash;
             _maxLoadedTx = maxLoadedBlock->firstTxIndex + maxLoadedBlock->numTxes;
             lastBlockHashDisk = &maxLoadedBlock->hash;
         }
     }
     
-    ChainAccess::ChainAccess(const DataConfiguration &config, bool errorOnReorg_, uint32_t blocksIgnored_) :
+    ChainAccess::ChainAccess(const DataConfiguration &config, bool errorOnReorg_, BlockHeight blocksIgnored_) :
     blockFile(config.blockFilePath()),
     blockCoinbaseFile(config.blockCoinbaseFilePath()),
     txFile(config.txFilePath()),
@@ -58,18 +58,17 @@ namespace blocksci {
         return _maxLoadedTx;
     }
     
-    uint32_t ChainAccess::getBlockHeight(uint32_t txIndex) const {
+    BlockHeight ChainAccess::getBlockHeight(uint32_t txIndex) const {
         reorgCheck();
         if (errorOnReorg && txIndex >= _maxLoadedTx) {
             throw std::out_of_range("Transaction index out of range");
         }
-        auto blockRange = ranges::make_iterator_range(blockFile.getData(0), blockFile.getData(maxHeight - 1) + 1);
+        auto blockRange = ranges::make_iterator_range(blockFile.getData(0), blockFile.getData(static_cast<size_t>(maxHeight - 1)) + 1);
         auto it = std::upper_bound(blockRange.begin(), blockRange.end(), txIndex, [](uint32_t index, const RawBlock &b) {
             return index < b.firstTxIndex;
         });
         it--;
-        auto height = static_cast<uint32_t>(std::distance(blockRange.begin(), it));
-        return height;
+        return static_cast<BlockHeight>(std::distance(blockRange.begin(), it));
     }
     
     std::vector<unsigned char> ChainAccess::getCoinbase(uint64_t offset) const {

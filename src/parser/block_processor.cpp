@@ -94,6 +94,8 @@ bool checkSegwit(RawTransaction *tx) {
     return false;
 }
 
+BlockFileReaderBase::~BlockFileReaderBase() = default;
+
 template <typename ParseTag>
 class BlockFileReader;
 
@@ -106,7 +108,7 @@ class BlockFileReader<FileTag> : public BlockFileReaderBase {
     const ParserConfiguration<FileTag> &config;
     SafeMemReader *reader;
     
-    uint32_t currentHeight;
+    blocksci::BlockHeight currentHeight;
     uint32_t currentTxNum;
     
     template<bool shouldAdvance>
@@ -123,7 +125,7 @@ class BlockFileReader<FileTag> : public BlockFileReaderBase {
             std::cerr << "Failed to load tx"
             << " from block" << currentHeight
             << " at offset " << reader->offset()
-            << ".\n";
+            << ".\n" << e.what();
             throw;
         }
     }
@@ -151,7 +153,7 @@ public:
         reader->reset(block.nDataPos);
         reader->advance(sizeof(CBlockHeader));
         reader->readVariableLengthInteger();
-        currentHeight = static_cast<uint32_t>(block.height);
+        currentHeight = block.height;
         currentTxNum = firstTxNum;
         
     }
@@ -186,7 +188,7 @@ class BlockFileReader<RPCTag> : public BlockFileReaderBase {
     
     uint32_t firstTxNum;
     uint32_t currentTxOffset;
-    uint32_t currentHeight;
+    blocksci::BlockHeight currentHeight;
     BlockInfo<RPCTag> block;
     
     template<bool shouldAdvance>
@@ -217,7 +219,7 @@ public:
     
     void nextBlock(BlockInfo<RPCTag> &block_, uint32_t txNum) {
         block = block_;
-        currentHeight = static_cast<uint32_t>(block.height);
+        currentHeight = block.height;
         firstTxNum = txNum;
         currentTxOffset = 0;
     }
@@ -432,6 +434,7 @@ private:
 
 struct NextQueueFinishedEarlyException : public std::runtime_error {
     NextQueueFinishedEarlyException() : std::runtime_error("Next queue finished early") {}
+    NextQueueFinishedEarlyException(const NextQueueFinishedEarlyException &) = default;
     virtual ~NextQueueFinishedEarlyException() = default;
 };
 

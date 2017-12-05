@@ -13,6 +13,7 @@
 #include "parser_fwd.hpp"
 
 #include <blocksci/util/bitcoin_uint256.hpp>
+#include <blocksci/chain/chain_fwd.hpp>
 
 #include <boost/serialization/base_object.hpp>
 
@@ -50,7 +51,7 @@ struct BlockInfoBase {
     CBlockHeader header;
     
     //! height of the entry in the chain. The genesis block has height 0
-    int height;
+    blocksci::BlockHeight height;
     
     // Length of block in bytes
     uint32_t size;
@@ -106,7 +107,7 @@ struct BlockInfo<RPCTag> : BlockInfoBase {
     std::vector<std::string> tx;
     
     BlockInfo() : BlockInfoBase() {}
-    BlockInfo(const blockinfo_t &info, uint32_t height);
+    BlockInfo(const blockinfo_t &info, blocksci::BlockHeight height);
     
     friend class boost::serialization::access;
     template<class Archive> void serialize(Archive & ar, const unsigned int) {
@@ -123,16 +124,50 @@ struct ChainIndex {
     BlockType newestBlock;
     
     void update(const ConfigType &config);
-    std::vector<BlockType> generateChain(uint32_t maxBlockHeight) const;
+
+    std::vector<BlockType> generateChain(blocksci::BlockHeight maxBlockHeight) const {
+        std::vector<BlockType> chain;
+        const BlockType *maxHeightBlock = nullptr;
+        int maxHeight = std::numeric_limits<int>::min();
+        for (auto &pair : blockList) {
+            if (pair.second.height > maxHeight) {
+                maxHeightBlock = &pair.second;
+                maxHeight = pair.second.height;
+            }
+        }
+        
+        if (!maxHeightBlock) {
+            return chain;
+        }
+        
+        blocksci::uint256 nullHash;
+        nullHash.SetNull();
+        
+        auto hash = maxHeightBlock->hash;
+        
+        while (hash != nullHash) {
+            auto &block = blockList.find(hash)->second;
+            chain.push_back(block);
+            hash = block.header.hashPrevBlock;
+        }
+        
+        std::reverse(chain.begin(), chain.end());
+        
+        if (maxBlockHeight == 0 || maxBlockHeight > static_cast<blocksci::BlockHeight>(chain.size())) {
+            return chain;
+        } else {
+            return {chain.begin(), chain.begin() + maxBlockHeight};
+        }
+    }
     
     template <typename GetBlockHash>
-    uint32_t findSplitPointIndex(uint32_t blockHeight, GetBlockHash getBlockHash) {
+    blocksci::BlockHeight findSplitPointIndex(blocksci::BlockHeight blockHeight, GetBlockHash getBlockHash) {
         auto oldBlocks = generateChain(blockHeight);
         
-        uint32_t maxSize = std::min(static_cast<uint32_t>(oldBlocks.size()), blockHeight);
-        uint32_t splitPoint = static_cast<uint32_t>(maxSize);
-        for (uint32_t i = 0; i < maxSize; i++) {
-            blocksci::uint256 oldHash = oldBlocks[maxSize - 1 - i].hash;
+        auto maxSize = std::min(static_cast<blocksci::BlockHeight>(oldBlocks.size()), blockHeight);
+        auto splitPoint = maxSize;
+        for (blocksci::BlockHeight i = 0; i < maxSize; i++) {
+            blocksci::uint256 oldHash = oldBlocks[static_cast<size_t>(maxSize - 1 - i)].hash;
             blocksci::uint256 newHash = getBlockHash(maxSize - 1 - i);
             if (oldHash == newHash) {
                 splitPoint = maxSize - i;

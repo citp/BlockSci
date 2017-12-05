@@ -30,7 +30,7 @@ namespace blocksci {
         
         const ChainAccess *access;
         const RawBlock *rawBlock;
-        uint32_t blockNum;
+        BlockHeight blockNum;
         
         struct cursor {
         private:
@@ -91,7 +91,7 @@ namespace blocksci {
         
     public:
         Block() = default;
-        Block(uint32_t blockNum_, const ChainAccess &access_) : access(&access_), rawBlock(access->getBlock(blockNum_)), blockNum(blockNum_) {
+        Block(BlockHeight blockNum_, const ChainAccess &access_) : access(&access_), rawBlock(access->getBlock(blockNum_)), blockNum(blockNum_) {
         }
         
         bool operator==(const Block &other) const {
@@ -118,7 +118,7 @@ namespace blocksci {
             return rawBlock->firstTxIndex + rawBlock->numTxes;
         }
         
-        uint32_t height() const {
+        BlockHeight height() const {
             return blockNum;
         }
         
@@ -153,7 +153,7 @@ namespace blocksci {
         Transaction coinbaseTx() const;
         
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        Block(uint32_t blockNum);
+        Block(BlockHeight blockNum);
         #endif
     };
     
@@ -165,13 +165,13 @@ namespace blocksci {
     bool isSegwit(const Block &block, const ScriptAccess &scripts);
     
     TransactionSummary transactionStatistics(const Block &block, const ChainAccess &access);
-    std::vector<uint64_t> getTotalSpentOfAges(const Block &block, const ChainAccess &access, uint32_t maxAge);
+    std::vector<uint64_t> getTotalSpentOfAges(const Block &block, const ChainAccess &access, BlockHeight maxAge);
     std::unordered_map<AddressType::Enum, int64_t> netAddressTypeValue(const Block &block);
     std::unordered_map<std::string, int64_t> netFullTypeValue(const Block &block, const ScriptAccess &scripts);
 
     #ifndef BLOCKSCI_WITHOUT_SINGLETON
     bool isSegwit(const Block &block);
-    std::vector<uint64_t> getTotalSpentOfAges(const Block &block, uint32_t maxAge);
+    std::vector<uint64_t> getTotalSpentOfAges(const Block &block, BlockHeight maxAge);
     std::unordered_map<std::string, int64_t> netFullTypeValue(const Block &block);
     #endif
 }

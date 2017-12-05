@@ -101,8 +101,8 @@ public:
 
 struct TransactionHeader {
     int32_t version;
-    int inputCount;
-    int outputCount;
+    uint32_t inputCount;
+    uint32_t outputCount;
     uint32_t sizeBytes;
     uint32_t locktime;
     TransactionHeader(SafeMemReader &reader);
@@ -114,7 +114,7 @@ struct RawTransaction {
     uint32_t sizeBytes;
     uint32_t locktime;
     int32_t version;
-    uint32_t blockHeight;
+    blocksci::BlockHeight blockHeight;
     bool isSegwit;
     const char *txHashStart;
     uint32_t txHashLength;
@@ -134,11 +134,11 @@ struct RawTransaction {
       blockHeight(0) {}
     
     #ifdef BLOCKSCI_FILE_PARSER
-    void load(SafeMemReader &reader, uint32_t txNum, uint32_t blockHeight, bool witnessActivated);
+    void load(SafeMemReader &reader, uint32_t txNum, blocksci::BlockHeight blockHeight, bool witnessActivated);
     #endif
     
     #ifdef BLOCKSCI_RPC_PARSER
-    void load(const getrawtransaction_t &txinfo, uint32_t txNum, uint32_t blockHeight, bool witnessActivated);
+    void load(const getrawtransaction_t &txinfo, uint32_t txNum, blocksci::BlockHeight blockHeight, bool witnessActivated);
     #endif
     
     void calculateHash();

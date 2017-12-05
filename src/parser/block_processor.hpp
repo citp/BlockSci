@@ -24,6 +24,10 @@
 
 class BlockFileReaderBase {
 public:
+    BlockFileReaderBase() = default;
+    BlockFileReaderBase(const BlockFileReaderBase &) = default;
+    virtual ~BlockFileReaderBase();
+
     virtual void nextTx(RawTransaction *tx, bool isSegwit) = 0;
     virtual void nextTxNoAdvance(RawTransaction *tx, bool isSegwit) = 0;
     virtual void receivedFinishedTx(RawTransaction *) = 0;

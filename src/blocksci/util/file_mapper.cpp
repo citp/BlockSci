@@ -175,7 +175,7 @@ void SimpleFileMapper<AccessMode::readwrite>::truncate(OffsetType offset) {
         clearBuffer();
         if (!boost::filesystem::exists(path)) {
             boost::filesystem::fstream s{path, std::fstream::out | std::fstream::binary};
-            s.seekp(offset - 1);
+            s.seekp(static_cast<long long>(offset - 1));
             s.write("", 1);
         } else {
             boost::filesystem::resize_file(path, offset);

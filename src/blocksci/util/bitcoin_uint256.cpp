@@ -35,12 +35,6 @@ namespace blocksci {
     }
     
     template <unsigned int BITS>
-    std::string base_blob<BITS>::GetHex() const
-    {
-        return HexStr(std::reverse_iterator<const uint8_t*>(data + sizeof(data)), std::reverse_iterator<const uint8_t*>(data));
-    }
-    
-    template <unsigned int BITS>
     void base_blob<BITS>::SetHex(const char* psz)
     {
         memset(data, 0, sizeof(data));
@@ -82,13 +76,11 @@ namespace blocksci {
     }
     
     // Explicit instantiations for base_blob<160>
-    template std::string base_blob<160>::GetHex() const;
     template std::string base_blob<160>::ToString() const;
     template void base_blob<160>::SetHex(const char*);
     template void base_blob<160>::SetHex(const std::string&);
     
     // Explicit instantiations for base_blob<256>
-    template std::string base_blob<256>::GetHex() const;
     template std::string base_blob<256>::ToString() const;
     template void base_blob<256>::SetHex(const char*);
     template void base_blob<256>::SetHex(const std::string&);

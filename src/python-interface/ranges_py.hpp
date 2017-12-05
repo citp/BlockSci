@@ -24,10 +24,10 @@ auto addRangeClass(pybind11::module &m, const std::string &name) {
     .def("__len__", [](Range &chain) { return chain.size(); })
     .def("__iter__", [](Range &chain) { return pybind11::make_iterator(chain.begin(), chain.end()); },
          pybind11::keep_alive<0, 1>())
-    .def("__getitem__", [](Range &chain, int64_t i) {
+    .def("__getitem__", [](Range &chain, ranges::range_difference_type_t<Range> i) {
         auto chainSize = chain.size();
         if (i < 0) {
-            i = (chainSize + i) % chainSize;
+            i += chainSize;
         }
         uint64_t posIndex = static_cast<uint64_t>(i);
         if (posIndex >= chainSize) {
@@ -39,7 +39,10 @@ auto addRangeClass(pybind11::module &m, const std::string &name) {
         size_t start, stop, step, slicelength;
         if (!slice.compute(chain.size(), &start, &stop, &step, &slicelength))
             throw pybind11::error_already_set();
-        auto subset =  ranges::view::slice(chain, start, stop);
+
+        auto subset =  ranges::view::slice(chain, 
+            static_cast<ranges::range_difference_type_t<Range>>(start), 
+            static_cast<ranges::range_difference_type_t<Range>>(stop));
         auto strided = subset | ranges::view::stride(step);
         return strided;
     })

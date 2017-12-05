@@ -36,24 +36,23 @@ void init_blockchain(py::module &m) {
     /// Optional sequence protocol operations
     .def("__iter__", [](const Blockchain &chain) { return py::make_iterator(chain.begin(), chain.end()); },
          py::keep_alive<0, 1>(), "Allows direct iteration over the blocks in the blockchain")
-    .def("__getitem__", [](const Blockchain &chain, int64_t i) {
+    .def("__getitem__", [](const Blockchain &chain, blocksci::BlockHeight i) {
         if (i < 0) {
-            i = (chain.size() + i) % chain.size();
+            i += chain.size();
         }
-        uint64_t posIndex = static_cast<uint64_t>(i);
-        if (posIndex >= chain.size()) {
+        if (i >= chain.size()) {
             throw py::index_error();
         }
         return chain[i];
     }, "Return the block of the given height")
     .def("__getitem__", [](const Blockchain &chain, py::slice slice) -> std::vector<Block> {
         size_t start, stop, step, slicelength;
-        if (!slice.compute(chain.size(), &start, &stop, &step, &slicelength))
+        if (!slice.compute(static_cast<size_t>(chain.size()), &start, &stop, &step, &slicelength))
             throw py::error_already_set();
         return chain | ranges::view::slice(start, stop) | ranges::view::stride(step) | ranges::to_vector;
     }, "Return a list of blocks with their heights in the given range")
     .def("segment", segmentChain, "Divide the blockchain into the given number of chunks with roughly the same number of transactions in each")
-    .def("unspent_outputs", [](const Blockchain &chain, uint32_t height) -> ranges::any_view<Output> {
+    .def("unspent_outputs", [](const Blockchain &chain, blocksci::BlockHeight height) -> ranges::any_view<Output> {
         if (height == 0) {
             height = chain.size();
         }

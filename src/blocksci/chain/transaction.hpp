@@ -44,15 +44,15 @@ namespace blocksci {
         friend TransactionSummary;
     public:
         uint32_t txNum;
-        uint32_t blockHeight;
+        BlockHeight blockHeight;
         
         Transaction() = default;
         
-        Transaction(const RawTransaction *data_, uint32_t txNum_, uint32_t blockHeight_, const ChainAccess &access_) : access(&access_), data(data_), txNum(txNum_), blockHeight(blockHeight_) {}
+        Transaction(const RawTransaction *data_, uint32_t txNum_, BlockHeight blockHeight_, const ChainAccess &access_) : access(&access_), data(data_), txNum(txNum_), blockHeight(blockHeight_) {}
         
         Transaction(uint32_t index, const ChainAccess &access_) : Transaction(index, access_.getBlockHeight(index), access_) {}
         
-        Transaction(uint32_t index, uint32_t height, const ChainAccess &access_) : Transaction(access_.getTx(index), index, height, access_) {}
+        Transaction(uint32_t index, int height, const ChainAccess &access_) : Transaction(access_.getTx(index), index, height, access_) {}
         
         Transaction(uint256 hash, const HashIndex &index, const ChainAccess &access);
         Transaction(std::string hash, const HashIndex &index, const ChainAccess &access);
@@ -92,7 +92,7 @@ namespace blocksci {
         auto outputs() const {
             auto chainAccess = access;
             uint32_t txIndex = txNum;
-            uint32_t height = blockHeight;
+            BlockHeight height = blockHeight;
             return ranges::view::zip_with([chainAccess, txIndex, height](uint16_t outputNum, const Inout &inout) {
                 return Output({txIndex, outputNum}, height, inout, *chainAccess);
             }, ranges::view::iota(uint16_t{0}, outputCount()), rawOutputs());
@@ -101,7 +101,7 @@ namespace blocksci {
         auto inputs() const {
             auto chainAccess = access;
             uint32_t txIndex = txNum;
-            uint32_t height = blockHeight;
+            BlockHeight height = blockHeight;
             return ranges::view::zip_with([chainAccess, txIndex, height](uint16_t inputNum, const Inout &inout) {
                 return Input({txIndex, inputNum}, height, inout, *chainAccess);
             }, ranges::view::iota(uint16_t{0}, inputCount()), rawInputs());
@@ -116,7 +116,7 @@ namespace blocksci {
         // Requires DataAccess
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
         Transaction(uint32_t index);
-        Transaction(uint32_t index, uint32_t height);
+        Transaction(uint32_t index, BlockHeight height);
         Transaction(uint256 hash);
         Transaction(std::string hash);
         #endif

@@ -21,7 +21,7 @@ namespace blocksci {
         const char *currentTxPos;
         uint32_t currentTxIndex;
         uint32_t endTxIndex;
-        uint32_t blockNum;
+        BlockHeight blockNum;
         uint32_t nextBlockFirst;
         uint32_t prevBlockLast;
         

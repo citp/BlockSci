@@ -41,8 +41,14 @@ BlockInfoBase::BlockInfoBase(const blocksci::uint256 &hash_, const CBlockHeader 
 BlockInfo<FileTag>::BlockInfo(const CBlockHeader &h, uint32_t size_, unsigned int numTxes, uint32_t inputCount_, uint32_t outputCount_, const ParserConfiguration<FileTag> &config, int fileNum, unsigned int dataPos) : BlockInfoBase(config.workHashFunction(reinterpret_cast<const char *>(&h), sizeof(CBlockHeader)), h, size_, numTxes, inputCount_, outputCount_), nFile(fileNum), nDataPos(dataPos) {}
 
 // The 0 should be replaced with info.bits converted to string
-BlockInfo<RPCTag>::BlockInfo(const blockinfo_t &info, uint32_t height_) : BlockInfoBase(blocksci::uint256S(info.hash), {info.version, blocksci::uint256S(info.previousblockhash), blocksci::uint256S(info.merkleroot), info.time, 0, info.nonce}, info.size, static_cast<uint32_t>(info.tx.size()), 0, 0), tx(info.tx) {
-    height = static_cast<int>(height_);
+BlockInfo<RPCTag>::BlockInfo(const blockinfo_t &info, blocksci::BlockHeight height_) : 
+BlockInfoBase(
+    blocksci::uint256S(info.hash), 
+    {info.version, blocksci::uint256S(info.previousblockhash), blocksci::uint256S(info.merkleroot), info.time, 0, info.nonce}, 
+    static_cast<uint32_t>(info.size), 
+    static_cast<uint32_t>(info.tx.size()), 0, 0
+    ), tx(info.tx) {
+    height = height_;
 }
 
 int maxBlockFileNum(int startFile, const ParserConfiguration<FileTag> &config) {
@@ -134,7 +140,7 @@ void ChainIndex<FileTag>::update(const ConfigType &config) {
                     std::cerr << "Failed to read block header information"
                     << " from " << blockFilePath
                     << " at offset " << reader.offset()
-                    << ".\n";
+                    << ": " << e.what() << "\n";
                     throw;
                 }
                 
@@ -187,24 +193,24 @@ template<>
 void ChainIndex<RPCTag>::update(const ConfigType &config) {
     try {
         BitcoinAPI bapi{config.createBitcoinAPI()};
-        auto blockHeight = static_cast<uint32_t>(bapi.getblockcount());
+        auto blockHeight = static_cast<blocksci::BlockHeight>(bapi.getblockcount());
 
         
-        uint32_t splitPoint = findSplitPointIndex(blockHeight, [&](uint32_t h) {
-            return blocksci::uint256S(bapi.getblockhash(static_cast<int>(h)));
+        auto splitPoint = findSplitPointIndex(blockHeight, [&](blocksci::BlockHeight h) {
+            return blocksci::uint256S(bapi.getblockhash(h));
         });
         
         std::cout.setf(std::ios::fixed,std::ios::floatfield);
         std::cout.precision(1);
-        uint32_t numBlocks = blockHeight - splitPoint;
+        blocksci::BlockHeight numBlocks = blockHeight - splitPoint;
         auto percentage = static_cast<double>(numBlocks) / 1000.0;
-        uint32_t percentageMarker = static_cast<uint32_t>(std::ceil(percentage));
+        auto percentageMarker = static_cast<blocksci::BlockHeight>(std::ceil(percentage));
         
-        for (uint32_t i = splitPoint; i < blockHeight; i++) {
-            std::string blockhash = bapi.getblockhash(static_cast<int>(i));
+        for (blocksci::BlockHeight i = splitPoint; i < blockHeight; i++) {
+            std::string blockhash = bapi.getblockhash(i);
             BlockType block{bapi.getblock(blockhash), i};
             blockList.emplace(block.hash, block);
-            uint32_t count = i - splitPoint;
+            auto count = i - splitPoint;
             if (count % percentageMarker == 0) {
                 std::cout << "\r" << (static_cast<double>(count) / static_cast<double>(numBlocks)) * 100 << "% done fetching block headers" << std::flush;
             }
@@ -221,45 +227,5 @@ void ChainIndex<RPCTag>::update(const ConfigType &config) {
     }
     std::cout << std::endl;
 }
-
-template<typename ParseTag>
-std::vector<typename ChainIndex<ParseTag>::BlockType> ChainIndex<ParseTag>::generateChain(uint32_t maxBlockHeight) const {
-    
-    std::vector<BlockType> chain;
-    const BlockType *maxHeightBlock = nullptr;
-    int maxHeight = std::numeric_limits<int>::min();
-    for (auto &pair : blockList) {
-        if (pair.second.height > maxHeight) {
-            maxHeightBlock = &pair.second;
-            maxHeight = pair.second.height;
-        }
-    }
-    
-    if (!maxHeightBlock) {
-        return chain;
-    }
-    
-    blocksci::uint256 nullHash;
-    nullHash.SetNull();
-    
-    auto hash = maxHeightBlock->hash;
-    
-    while (hash != nullHash) {
-        auto &block = blockList.find(hash)->second;
-        chain.push_back(block);
-        hash = block.header.hashPrevBlock;
-    }
-    
-    std::reverse(chain.begin(), chain.end());
-    
-    if (maxBlockHeight == 0 || maxBlockHeight > chain.size()) {
-        return chain;
-    } else {
-        return {chain.begin(), chain.begin() + maxBlockHeight};
-    }
-}
-
-template std::vector<typename ChainIndex<FileTag>::BlockType> ChainIndex<FileTag>::generateChain(uint32_t maxBlockHeight) const;
-template std::vector<typename ChainIndex<RPCTag>::BlockType> ChainIndex<RPCTag>::generateChain(uint32_t maxBlockHeight) const;
 
 #endif
