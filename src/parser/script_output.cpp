@@ -105,7 +105,7 @@ ScriptOutputDataType extractScriptData(const blocksci::CScriptView &scriptPubKey
         {
             if (pc1 == script1.end() && pc2 == script2.end()) {
                 
-                if (!mpark::visit([&](auto &data) { return data.isValid(); }, *type)) {
+                if (!type || !mpark::visit([&](auto &data) { return data.isValid(); }, *type)) {
                     break;
                 }
                 return *type;

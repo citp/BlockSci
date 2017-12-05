@@ -18,8 +18,10 @@
 #include <boost/serialization/base_object.hpp>
 
 #include <unordered_map>
+#include <algorithm>
 #include <vector>
 #include <cstdint>
+#include <limits>
 
 class CBlockIndex;
 struct blockinfo_t;

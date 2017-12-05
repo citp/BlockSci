@@ -22,6 +22,7 @@ namespace {
                 return boost::iostreams::mapped_file::mapmode::readonly;
         }
         assert(false);
+        return boost::iostreams::mapped_file::mapmode::readonly;
     }
 }
 

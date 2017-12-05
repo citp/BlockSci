@@ -149,6 +149,7 @@ const char* GetOpName(opcodetype opcode)
     }
     // All ops should be covered by the switch statement
     assert(false);
+    return "";
 }
 
 scriptnum_error::scriptnum_error(const std::string& str) : std::runtime_error(str) {}
