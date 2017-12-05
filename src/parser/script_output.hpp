@@ -28,8 +28,8 @@ struct ScriptOutput {
     static constexpr auto address_v = type;
     static constexpr auto script_v = scriptType(type);
     ScriptOutputData<type> data;
-    uint32_t scriptNum;
-    bool isNew;
+    uint32_t scriptNum = 0;
+    bool isNew = false;
     
     ScriptOutput() = default;
     ScriptOutput(const ScriptOutputData<type> &data_) : data(data_) {}
