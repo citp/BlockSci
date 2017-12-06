@@ -53,7 +53,7 @@ namespace blocksci {
         }
         
         uint32_t age() const {
-            return blockHeight - spentTxIndex();
+            return blockHeight - getSpentTx().blockHeight;
         }
 
         bool operator==(const Inout &other) const {
