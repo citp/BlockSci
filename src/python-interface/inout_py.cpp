@@ -124,7 +124,30 @@ void init_inout(py::module &m) {
             return list;
         };
     });
+
+    auto outputRangeClass2 = addRangeClass<ranges::any_view<Output, ranges::category::random_access | ranges::category::sized>>(m, "OutputRange");
+    auto inputRangeClass2 = addRangeClass<ranges::any_view<Input, ranges::category::random_access | ranges::category::sized>>(m, "InputRange");
     
+    addInputMethods(inputRangeClass2, [](auto func) {
+        return [=](ranges::any_view<Input> &view) {
+            py::list list;
+            RANGES_FOR(auto && input, view) {
+                list.append(func(std::forward<decltype(input)>(input)));
+            }
+            return list;
+        };
+    });
+
+    addOutputMethods(outputRangeClass2, [](auto func) {
+        return [=](ranges::any_view<Output> &view) {
+            py::list list;
+            RANGES_FOR(auto && output, view) {
+                list.append(func(std::forward<decltype(output)>(output)));
+            }
+            return list;
+        };
+    });
+
     py::class_<Output> outputClass(m, "Output", "Class representing a transaction output");
     outputClass
     .def("__repr__", &Output::toString)

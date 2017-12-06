@@ -19,8 +19,6 @@ using namespace blocksci;
 
 void init_ranges(py::module &m) {
 	addRangeClass<ranges::any_view<Block>>(m, "AnyBlockRange");
-	addRangeClass<ranges::any_view<Output, ranges::category::random_access | ranges::category::sized>>(m, "OutputRange");
-    addRangeClass<ranges::any_view<Input, ranges::category::random_access | ranges::category::sized>>(m, "InputRange");
  
     addRangeClass<ranges::any_view<ScriptAddress<ScriptType::Enum::PUBKEY>>>(m, "AnyPubkeyScriptRange");
     addRangeClass<ranges::any_view<ScriptAddress<ScriptType::Enum::SCRIPTHASH>>>(m, "AnyScripthashScriptRange");
