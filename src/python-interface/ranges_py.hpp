@@ -22,7 +22,7 @@ auto addRangeClass(pybind11::module &m, const std::string &name) {
     pybind11::class_<Range> cl(m, name.c_str());
     cl
     .def("__len__", [](Range &chain) { return chain.size(); })
-    .def("__bool__", [](Range &range) { return ranges::empty(range); })
+    .def("__bool__", [](Range &range) { return !ranges::empty(range); })
     .def("__iter__", [](Range &chain) { return pybind11::make_iterator(chain.begin(), chain.end()); },
          pybind11::keep_alive<0, 1>())
     .def("__getitem__", [](Range &chain, ranges::range_difference_type_t<Range> i) {
@@ -56,7 +56,7 @@ auto addRangeClass(pybind11::module &m, const std::string &name) {
     pybind11::class_<Range> cl(m, name.c_str());
     cl
     .def("__len__", [](Range &chain) { return ranges::distance(chain); })
-    .def("__bool__", [](Range &range) { return ranges::empty(range); })
+    .def("__bool__", [](Range &range) { return !ranges::empty(range); })
     .def("__iter__", [](Range &chain) { return pybind11::make_iterator(chain.begin(), chain.end()); },
          pybind11::keep_alive<0, 1>())
     .def("__getitem__", [](Range &chain, int64_t i) {
@@ -87,7 +87,7 @@ auto addRangeClass(pybind11::module &m, const std::string &name) {
     pybind11::class_<Range> cl(m, name.c_str());
     cl
     .def("__len__", [](Range &range) { return ranges::distance(range); })
-    .def("__bool__", [](Range &range) { return ranges::empty(range); })
+    .def("__bool__", [](Range &range) { return !ranges::empty(range); })
     .def("__iter__", [](Range &range) { return pybind11::make_iterator(range.begin(), range.end()); },
          pybind11::keep_alive<0, 1>())
     .def("__getitem__", [](Range &range, int64_t i) {
@@ -121,7 +121,7 @@ auto addRangeClass(pybind11::module &m, const std::string &name) {
     pybind11::class_<Range> cl(m, name.c_str());
     cl
     .def("__len__", [](Range &range) { return ranges::distance(range); })
-    .def("__bool__", [](Range &range) { return ranges::distance(range) == 0; })
+    .def("__bool__", [](Range &range) { return ranges::distance(range) > 0; })
     .def("__iter__", [](Range &range) { return pybind11::make_iterator(range.begin(), range.end()); },
          pybind11::keep_alive<0, 1>())
     ;
