@@ -103,6 +103,12 @@ void init_block(py::module &m) {
     .def_property_readonly("txes", [](const Block &block) -> ranges::any_view<Transaction> {
         return block;
     })
+    .def_property_readonly("inputs", [](const Block &block) -> ranges::any_view<Input> {
+        return inputs(block);
+    })
+    .def_property_readonly("outputs", [](const Block &block) -> ranges::any_view<Output> {
+        return outputs(block);
+    })
     .def_property_readonly("next_block", &Block::nextBlock)
     .def_property_readonly("prev_block", &Block::prevBlock)
     .def_property_readonly("hash", &Block::getHeaderHash, "Hash of this block")

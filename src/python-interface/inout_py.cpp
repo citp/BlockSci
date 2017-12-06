@@ -7,6 +7,7 @@
 //
 
 #include "optional_py.hpp"
+#include "ranges_py.hpp"
 
 #include <blocksci/address/address.hpp>
 #include <blocksci/chain/input.hpp>
@@ -14,6 +15,7 @@
 #include <blocksci/chain/inout_pointer.hpp>
 #include <blocksci/chain/transaction.hpp>
 
+#include <range/v3/range_for.hpp>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
@@ -21,6 +23,54 @@
 namespace py = pybind11;
 
 using namespace blocksci;
+
+template <typename Class, typename FuncApplication>
+void addInputMethods(Class &cl, FuncApplication func) {
+    cl
+    .def_property_readonly("address", func([](const Input &input) {
+        return input.getAddress();
+    }), "This address linked to this input")
+    .def_property_readonly("value", func([](const Input &input) {
+        return input.getValue();
+    }), "The value in base currency attached to this inout")
+    .def_property_readonly("address_type", func([](const Input &input) {
+        return input.getType();
+    }), "The address type of the input")
+    .def_property_readonly("spent_tx_index", func([](const Input &input) {
+        return input.spentTxIndex();
+    }), "The index of the transaction that this input spent")
+    .def_property_readonly("spent_tx", func([](const Input &input) {
+        return input.getSpentTx();
+    }), "The transaction that this input spent")
+    .def_property_readonly("age", func([](const Input &input) {
+        return input.age();
+    }), "The number of blocks between the spent output and this input")
+    ;
+}
+
+template <typename Class, typename FuncApplication>
+void addOutputMethods(Class &cl, FuncApplication func) {
+    cl
+    .def_property_readonly("address", func([](const Output &output) {
+        return output.getAddress();
+    }), "This address linked to this output")
+    .def_property_readonly("value", func([](const Output &output) {
+        return output.getValue();
+    }), "The value in base currency attached to this output")
+    .def_property_readonly("address_type", func([](const Output &output) {
+        return output.getType();
+    }), "The address type of the output")
+    .def_property_readonly("is_spent", func([](const Output &output) {
+        return output.isSpent();
+    }), "Returns whether this output has been spent")
+    .def_property_readonly("spending_tx_index", func([](const Output &output) {
+        return output.getSpendingTxIndex();
+    }), "Returns the index of the tranasction which spent this output or 0 if it is unspent")
+    .def_property_readonly("spending_tx", func([](const Output &output) {
+        return output.getSpendingTx();
+    }), "Returns the transaction that spent this output or None if it is unspent")
+    ;
+}
 
 void init_inout(py::module &m) {
     py::class_<OutputPointer>(m, "OutputPointer", "Class representing a pointer to an output")
@@ -38,30 +88,56 @@ void init_inout(py::module &m) {
     .def_readonly("tx_index", &InputPointer::txNum)
     .def_readonly("int_index", &InputPointer::inoutNum)
     ;
-        
-    py::class_<Input>(m, "Input", "Class representing a transaction input")
+    
+    auto inputRangeClass = addRangeClass<ranges::any_view<Input>>(m, "AnyInputRange");
+    addInputMethods(inputRangeClass, [](auto func) {
+        return [=](ranges::any_view<Input> &view) {
+            py::list list;
+            RANGES_FOR(auto && input, view) {
+                list.append(func(std::forward<decltype(input)>(input)));
+            }
+            return list;
+        };
+    });
+    
+    py::class_<Input> inputClass(m, "Input", "Class representing a transaction input");
+    inputClass
     .def("__repr__", &Input::toString)
     .def(py::init<InputPointer>())
     .def(py::self == py::self)
     .def(hash(py::self))
-    .def_property_readonly("address", &Input::getAddress, "This address linked to this inout")
-    .def_property_readonly("value", &Input::getValue, "The value in base currency attached to this inout")
-    .def_property_readonly("script_type", &Input::getType, "The type of the address")
-    .def_property_readonly("spent_tx_index", &Input::spentTxIndex, "The index of the transaction that this input spent")
-    .def_property_readonly("spent_tx", &Input::getSpentTx, "The transaction that this input spent")
     ;
     
-    py::class_<Output>(m, "Output", "Class representing a transaction output")
+    addInputMethods(inputClass, [](auto func) {
+        return [=](Input &input) {
+            return func(input);
+        };
+    });
+    
+    auto outputRangeClass = addRangeClass<ranges::any_view<Output>>(m, "AnyOutputRange");
+    addOutputMethods(outputRangeClass, [](auto func) {
+        return [=](ranges::any_view<Output> &view) {
+            py::list list;
+            RANGES_FOR(auto && output, view) {
+                list.append(func(std::forward<decltype(output)>(output)));
+            }
+            return list;
+        };
+    });
+    
+    py::class_<Output> outputClass(m, "Output", "Class representing a transaction output");
+    outputClass
     .def("__repr__", &Output::toString)
     .def(py::init<OutputPointer>())
     .def(py::self == py::self)
     .def(hash(py::self))
-    .def_property_readonly("address", &Output::getAddress, "This address linked to this inout")
-    .def_property_readonly("value", &Output::getValue, "The value in base currency attached to this inout")
-    .def_property_readonly("script_type", &Output::getType, "The type of the address")
-    .def_property_readonly("is_spent", &Output::isSpent, "Returns whether this output has been spent")
-    .def_property_readonly("spending_tx_index", &Output::getSpendingTxIndex, "Returns the index of the tranasction which spent this output or 0 if it is unspent")
-    .def_property_readonly("spending_tx", &Output::getSpendingTx, "Returns the transaction that spent this output or None if it is unspent")
     ;
+    
+    addOutputMethods(inputClass, [](auto func) {
+        return [=](Output &output) {
+            return func(output);
+        };
+    });
+    
 
 }

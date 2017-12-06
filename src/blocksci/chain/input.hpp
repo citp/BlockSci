@@ -51,6 +51,10 @@ namespace blocksci {
         uint32_t inputIndex() const {
             return pointer.inoutNum;
         }
+        
+        uint32_t age() const {
+            return blockHeight - spentTxIndex();
+        }
 
         bool operator==(const Inout &other) const {
             return *inout == other;
