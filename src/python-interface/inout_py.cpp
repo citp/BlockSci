@@ -185,7 +185,7 @@ void init_inout(py::module &m) {
     .def(hash(py::self))
     ;
     
-    addOutputMethods(inputClass, [](auto func) {
+    addOutputMethods(outputClass, [](auto func) {
         return [=](Output &output) {
             return func(output);
         };
