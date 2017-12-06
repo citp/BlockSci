@@ -142,11 +142,11 @@ void init_block(py::module &m) {
         
         return block[i];
     })
-    .def("__getitem__", [](const Block &block, py::slice slice) -> std::vector<Transaction> {
+    .def("__getitem__", [](const Block &block, py::slice slice) -> ranges::any_view<Transaction> {
         size_t start, stop, step, slicelength;
         if (!slice.compute(block.size(), &start, &stop, &step, &slicelength))
             throw py::error_already_set();
-        return block | ranges::view::slice(start, stop) | ranges::view::stride(step) | ranges::to_vector;
+        return block | ranges::view::slice(start, stop) | ranges::view::stride(step);
     })
     .def_property_readonly("txes", [](const Block &block) -> ranges::any_view<Transaction> {
         return block;
