@@ -29,6 +29,10 @@ namespace blocksci {
         ss << "TxIn(spent_tx_index=" << inout->linkedTxNum << ", address=" << inout->getAddress() <<", value=" << inout->getValue() << ")";
         return ss.str();
     }
+
+    uint32_t Input::age() const {
+        return blockHeight - getSpentTx().blockHeight;
+    }
 }
 
 namespace std {
