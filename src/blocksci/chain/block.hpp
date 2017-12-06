@@ -39,7 +39,13 @@ namespace blocksci {
             uint32_t currentTxIndex;
         public:
             cursor() = default;
-            cursor(const Block &block_, uint32_t txNum) : block(&block_), currentTxPos(reinterpret_cast<const char *>(block->access->getTx(txNum))), currentTxIndex(txNum) {}
+            cursor(const Block &block_, uint32_t txNum) : block(&block_), currentTxIndex(txNum) {
+                if (currentTxIndex < block->access->txCount()) {
+                    currentTxPos = reinterpret_cast<const char *>(block->access->getTx(currentTxIndex));
+                } else {
+                    currentTxPos = nullptr;
+                }
+            }
             
             Transaction read() const {
                 auto rawTx = reinterpret_cast<const RawTransaction *>(currentTxPos);
@@ -63,7 +69,7 @@ namespace blocksci {
             }
             
             int distance_to(cursor const &that) const {
-                return static_cast<int>(currentTxIndex) - static_cast<int>(that.currentTxIndex);
+                return static_cast<int>(that.currentTxIndex) - static_cast<int>(currentTxIndex);
             }
             
             int distance_to(ranges::default_sentinel) const {
@@ -77,7 +83,11 @@ namespace blocksci {
             
             void advance(int amount) {
                 currentTxIndex += static_cast<uint32_t>(amount);
-                currentTxPos = reinterpret_cast<const char *>(block->access->getTx(currentTxIndex));
+                if (currentTxIndex < block->access->txCount()) {
+                    currentTxPos = reinterpret_cast<const char *>(block->access->getTx(currentTxIndex));
+                } else {
+                    currentTxPos = nullptr;
+                }
             }
         };
         
