@@ -100,6 +100,19 @@ void init_tx(py::module &m) {
             return list;
         };
     });
+
+    txRangeClass
+    .def_property_readonly("inputs", [](ranges::any_view<Transaction> &txes) -> ranges::any_view<ranges::any_view<Input>>  {
+        return txes | ranges::view::transform([](const Transaction &tx) -> ranges::any_view<Input> {
+            return tx.inputs();
+        });
+    }, "A list of lists of the inputs of each transaction")
+    .def_property_readonly("outputs", [](ranges::any_view<Transaction> &txes) -> ranges::any_view<ranges::any_view<Output>>  {
+        return txes | ranges::view::transform([](const Transaction &tx) -> ranges::any_view<Output> {
+            return tx.outputs();
+        });
+    }, "A list of lists of the outputs of each transaction")
+    ;
     
     
     py::class_<Transaction> txClass(m, "Tx", "Class representing a transaction in a block");

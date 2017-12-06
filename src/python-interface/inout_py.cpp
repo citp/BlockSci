@@ -125,9 +125,7 @@ void init_inout(py::module &m) {
         };
     });
 
-    auto outputRangeClass2 = addRangeClass<ranges::any_view<Output, ranges::category::random_access | ranges::category::sized>>(m, "OutputRange");
     auto inputRangeClass2 = addRangeClass<ranges::any_view<Input, ranges::category::random_access | ranges::category::sized>>(m, "InputRange");
-    
     addInputMethods(inputRangeClass2, [](auto func) {
         return [=](ranges::any_view<Input, ranges::category::random_access | ranges::category::sized> &view) {
             py::list list;
@@ -138,11 +136,42 @@ void init_inout(py::module &m) {
         };
     });
 
+    auto outputRangeClass2 = addRangeClass<ranges::any_view<Output, ranges::category::random_access | ranges::category::sized>>(m, "OutputRange");
     addOutputMethods(outputRangeClass2, [](auto func) {
         return [=](ranges::any_view<Output, ranges::category::random_access | ranges::category::sized> &view) {
             py::list list;
             RANGES_FOR(auto && output, view) {
                 list.append(func(std::forward<decltype(output)>(output)));
+            }
+            return list;
+        };
+    });
+
+    auto nestedInputRangeClass = addRangeClass<ranges::any_view<ranges::any_view<Input>>>(m, "NestedInputRange");
+    addInputMethods(nestedInputRangeClass, [](auto func) {
+        return [=](ranges::any_view<ranges::any_view<Input>> &view) {
+            py::list list;
+            RANGES_FOR(auto && inputRange, view) {
+                py::list nestedList;
+                RANGES_FOR(auto && input, inputRange) {
+                    nestedList.append(func(std::forward<decltype(input)>(input)));
+                }
+                list.append(nestedList);
+            }
+            return list;
+        };
+    });
+
+    auto nestedOutputRangeClass = addRangeClass<ranges::any_view<ranges::any_view<Output>>>(m, "NestedOutputRange");
+    addOutputMethods(nestedOutputRangeClass, [](auto func) {
+        return [=](ranges::any_view<ranges::any_view<Output>> &view) {
+            py::list list;
+            RANGES_FOR(auto && outputRange, view) {
+                py::list nestedList;
+                RANGES_FOR(auto && output, outputRange) {
+                    nestedList.append(func(std::forward<decltype(output)>(output)));
+                }
+                list.append(nestedList);
             }
             return list;
         };

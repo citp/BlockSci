@@ -26,6 +26,54 @@ namespace py = pybind11;
 
 using namespace blocksci;
 
+template <typename Class, typename FuncApplication>
+void addBlockMethods(Class &cl, FuncApplication func) {
+    cl
+    .def_property_readonly("hash", func([](const Block &block) {
+        return block.getHeaderHash();
+    }), "Hash of this block")
+    .def_property_readonly("version", func([](const Block &block) {
+        return block.version();
+    }), "Protocol version specified in block header")
+    .def_property_readonly("timestamp", func([](const Block &block) {
+        return block.timestamp();
+    }), "Creation timestamp specified in block header")
+    .def_property_readonly("time", func([](const Block &block) {
+        return block.getTime();
+    }), "Datetime object created from creation timestamp")
+    .def_property_readonly("bits", func([](const Block &block) {
+        return block.bits();
+    }), "Difficulty threshold specified in block header")
+    .def_property_readonly("nonce", func([](const Block &block) {
+        return block.nonce();
+    }), "Nonce specified in block header")
+    .def_property_readonly("height", func([](const Block &block) {
+        return block.height();
+    }), "Height of the block in the blockchain")
+    .def_property_readonly("coinbase_param", func([](const Block &block) {
+        return py::bytes(block.coinbaseParam());
+    }), "Data contained within the coinbase transaction of this block")
+    .def_property_readonly("coinbase_tx", func([](const Block &block) {
+        return block.coinbaseTx();
+    }), "Return the coinbase transaction in this block")
+    .def_property_readonly("size_bytes", func([](Block &block) {
+        return sizeBytes(block);
+    }), "Returns the total size of the block in bytes")
+    .def_property_readonly("input_value", func([](const Block &block) {
+        return totalInputValue(block);
+    }), "Returns the sum of the value of all of the inputs included in this block")
+    .def_property_readonly("output_value", func([](const Block &block) {
+        return totalOutputValue(block);
+    }), "Returns the sum of the value of all of the outputs included in this block")
+    .def_property_readonly("input_count", func([](const Block &block) {
+        return inputCount(block);
+    }), "Returns total number of inputs included in this block")
+    .def_property_readonly("output_count", func([](const Block &block) {
+        return outputCount(block);
+    }), "Returns total number of outputs included in this block")
+    ;
+}
+
 void init_block(py::module &m) {
     py::class_<uint256>(m, "uint256")
     .def("__repr__", &uint256::GetHex)
@@ -111,31 +159,11 @@ void init_block(py::module &m) {
     })
     .def_property_readonly("next_block", &Block::nextBlock)
     .def_property_readonly("prev_block", &Block::prevBlock)
-    .def_property_readonly("hash", &Block::getHeaderHash, "Hash of this block")
-    .def_property_readonly("version", &Block::version, "Protocol version specified in block header")
-    .def_property_readonly("timestamp", &Block::timestamp, "Creation timestamp specified in block header")
-    .def_property_readonly("time", &Block::getTime, "Datetime object created from creation timestamp")
-    .def_property_readonly("bits", &Block::bits, "Difficulty threshold specified in block header")
-    .def_property_readonly("nonce", &Block::nonce, "Nonce specified in block header")
-    .def_property_readonly("height", &Block::height, "Height of the block in the blockchain")
-    .def_property_readonly("coinbase_param", [](const Block &block) {
-        return py::bytes(block.coinbaseParam());
-    }, "Data contained within the coinbase transaction of this block")
-    .def_property_readonly("coinbase_tx", py::overload_cast<>(&Block::coinbaseTx, py::const_), "Return the coinbase transcation in this block")
     .def_property_readonly("all_fees", [](Block &block) { return fees(block) | ranges::to_vector; }, "Return a list of the fees in this block")
     .def_property_readonly("all_fees_per_byte", [](Block &block) { return feesPerByte(block) | ranges::to_vector; }, "Return a list of fees per byte in this block")
-    .def_property_readonly("size_bytes", [](Block &block) { return sizeBytes(block); }, "Returns the total size of the block in bytes")
-    .def_property_readonly("input_value", [](const Block &block) {
-        return totalInputValue(block);
-    }, "Returns the sum of the value of all of the inputs included in this block")
-    .def_property_readonly("output_value", [](const Block &block) {
-        return totalOutputValue(block);
-    }, "Returns the sum of the value of all of the outputs included in this block")
     .def_property_readonly("outputs_unspent", [](const Block &block) -> ranges::any_view<Output> { return outputsUnspent(block); }, "Returns a list of all of the outputs in this block that are still unspent")
     .def("total_spent_of_ages", py::overload_cast<const Block &, blocksci::BlockHeight>(getTotalSpentOfAges), "Returns a list of sum of all the outputs in the block that were spent within a certain of blocks, up to the max age given")
     .def("net_address_type_value", py::overload_cast<const Block &>(netAddressTypeValue), "Returns a set of the net change in the utxo pool after this block split up by address type")
     .def("net_full_type_value", py::overload_cast<const Block &>(netFullTypeValue), "Returns a set of the net change in the utxo pool after this block split up by full type")
-    .def_property_readonly("input_count", inputCount<Block>)
-    .def_property_readonly("output_count", outputCount<Block>)
     ;
 }
