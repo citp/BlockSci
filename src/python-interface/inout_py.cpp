@@ -129,7 +129,7 @@ void init_inout(py::module &m) {
     auto inputRangeClass2 = addRangeClass<ranges::any_view<Input, ranges::category::random_access | ranges::category::sized>>(m, "InputRange");
     
     addInputMethods(inputRangeClass2, [](auto func) {
-        return [=](ranges::any_view<Input> &view) {
+        return [=](ranges::any_view<Input, ranges::category::random_access | ranges::category::sized> &view) {
             py::list list;
             RANGES_FOR(auto && input, view) {
                 list.append(func(std::forward<decltype(input)>(input)));
@@ -139,7 +139,7 @@ void init_inout(py::module &m) {
     });
 
     addOutputMethods(outputRangeClass2, [](auto func) {
-        return [=](ranges::any_view<Output> &view) {
+        return [=](ranges::any_view<Output, ranges::category::random_access | ranges::category::sized> &view) {
             py::list list;
             RANGES_FOR(auto && output, view) {
                 list.append(func(std::forward<decltype(output)>(output)));
