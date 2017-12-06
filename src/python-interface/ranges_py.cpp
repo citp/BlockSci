@@ -19,7 +19,6 @@ using namespace blocksci;
 
 void init_ranges(py::module &m) {
 	addRangeClass<ranges::any_view<Block>>(m, "AnyBlockRange");
-    addRangeClass<ranges::any_view<Transaction>>(m, "AnyTransactionRange");
     addRangeClass<ranges::any_view<Output>>(m, "AnyOutputRange");
     addRangeClass<ranges::any_view<Input>>(m, "AnyInputRange");
 	addRangeClass<ranges::any_view<Output, ranges::category::random_access | ranges::category::sized>>(m, "OutputRange");

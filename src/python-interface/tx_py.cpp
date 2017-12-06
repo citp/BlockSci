@@ -7,6 +7,7 @@
 //
 
 #include "optional_py.hpp"
+#include "ranges_py.hpp"
 
 #include <blocksci/chain/algorithms.hpp>
 #include <blocksci/chain/transaction.hpp>
@@ -89,7 +90,7 @@ void addTransactionMethods(Class &cl, FuncApplication func) {
 
 void init_tx(py::module &m) {
     
-    py::class_<ranges::any_view<Transaction>> txRangeClass(m, "TxRange", "Class representing a list of transactions");
+    auto txRangeClass = addRangeClass<ranges::any_view<Transaction>>(m, "AnyTransactionRange");
     addTransactionMethods(txRangeClass, [](auto func) {
         return [=](ranges::any_view<Transaction> &view) {
             py::list list;
@@ -99,7 +100,7 @@ void init_tx(py::module &m) {
             return list;
         };
     });
-
+    
     
     py::class_<Transaction> txClass(m, "Tx", "Class representing a transaction in a block");
     addTransactionMethods(txClass, [](auto func) {
