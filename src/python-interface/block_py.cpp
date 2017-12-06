@@ -100,6 +100,9 @@ void init_block(py::module &m) {
             throw py::error_already_set();
         return block | ranges::view::slice(start, stop) | ranges::view::stride(step) | ranges::to_vector;
     })
+    .def_property_readonly("txes", [](const Block &block) -> ranges::any_view<Transaction> {
+        return block;
+    })
     .def_property_readonly("next_block", &Block::nextBlock)
     .def_property_readonly("prev_block", &Block::prevBlock)
     .def_property_readonly("hash", &Block::getHeaderHash, "Hash of this block")
