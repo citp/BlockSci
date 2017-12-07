@@ -37,7 +37,7 @@ namespace blocksci {
         return Block(blockHeight, *access);
     }
     
-    std::string Transaction::getString() const {
+    std::string Transaction::toString() const {
         std::stringstream ss;
         ss << "Tx(len(txins)=" << inputCount() <<", len(txouts)=" << outputCount() <<", size_bytes=" << sizeBytes() << ", block_height=" << blockHeight <<", tx_index=" << txNum << ")";
         return ss.str();

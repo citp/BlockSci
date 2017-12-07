@@ -90,10 +90,10 @@ namespace blocksci {
         Input(const InputPointer &pointer);
         #endif
     };
+
+    inline std::ostream &operator<<(std::ostream &os, const Input &input) { 
+        return os << input.toString();
+    }
 }
-
-
-
-std::ostream &operator<<(std::ostream &os, blocksci::Input const &input);
 
 #endif /* raw_input_hpp */

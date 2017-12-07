@@ -58,7 +58,7 @@ namespace blocksci {
         Transaction(std::string hash, const HashIndex &index, const ChainAccess &access);
         
         uint256 getHash() const;
-        std::string getString() const;
+        std::string toString() const;
         
         std::vector<OutputPointer> getOutputPointers(const InputPointer &pointer) const;
         std::vector<InputPointer> getInputPointers(const OutputPointer &pointer) const;
@@ -140,6 +140,10 @@ namespace blocksci {
     bool hasFeeGreaterThan(Transaction &tx, uint64_t fee);
     
     ranges::optional<Output> getOpReturn(const Transaction &tx);
+
+    inline std::ostream &operator<<(std::ostream &os, const Transaction &tx) { 
+        return os << tx.toString();
+    }
 }
 
 

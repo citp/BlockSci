@@ -86,9 +86,11 @@ namespace blocksci {
     std::vector<Address> getAddressesWithPrefix(const std::string &prefix);
     size_t addressCount();
     #endif
-}
 
-std::ostream &operator<<(std::ostream &os, const blocksci::Address &address);
+    inline std::ostream &operator<<(std::ostream &os, const Address &address) { 
+        return os << address.toString();
+    }
+}
 
 namespace std {
     template <>

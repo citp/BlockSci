@@ -11,6 +11,7 @@
 #include "output.hpp"
 #include "inout_pointer.hpp"
 #include "transaction.hpp"
+#include "address/address.hpp"
 #include "util/hash.hpp"
 
 #include <sstream>
@@ -39,9 +40,4 @@ namespace std
         hash_combine(seed, *output.inout);
         return seed;
     }
-}
-
-std::ostream &operator<<(std::ostream &os, blocksci::Output const &output) {
-    os << output.toString();
-    return os;
 }

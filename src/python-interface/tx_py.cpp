@@ -123,8 +123,8 @@ void init_tx(py::module &m) {
     });
     
     txClass
-    .def("__str__", &Transaction::getString)
-    .def("__repr__", &Transaction::getString)
+    .def("__str__", &Transaction::toString)
+    .def("__repr__", &Transaction::toString)
     .def(py::self == py::self)
     .def(hash(py::self))
     .def(py::init<uint32_t>(), R"docstring(

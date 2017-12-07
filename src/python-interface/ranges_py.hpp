@@ -13,9 +13,29 @@
 #include <range/v3/view/any_view.hpp>
 #include <range/v3/view/stride.hpp>
 #include <range/v3/view/slice.hpp>
+#include <range/v3/range_for.hpp>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
+
+#include <iostream>
+
+
+template <typename T, CONCEPT_REQUIRES_(!ranges::Range<T>())>
+auto pythonAllType(T && t) {
+    return std::forward<T>(t);
+}
+
+template <typename T, CONCEPT_REQUIRES_(ranges::Range<T>())>
+auto pythonAllType(T && t) {
+    pybind11::list list;
+    RANGES_FOR(auto && a, std::forward<T>(t)) {
+        list.append(pythonAllType(std::forward<decltype(a)>(a)));
+    }
+    return list;
+}
+
+
 
 template<typename Range, CONCEPT_REQUIRES_(ranges::RandomAccessRange<Range>() && ranges::SizedRange<Range>())>
 auto addRangeClass(pybind11::module &m, const std::string &name) {
@@ -47,6 +67,9 @@ auto addRangeClass(pybind11::module &m, const std::string &name) {
         auto strided = subset | ranges::view::stride(step);
         return strided;
     })
+    .def_property_readonly("all", [](Range & range) { 
+        return pythonAllType(range);
+    })
     ;
     return cl;
 }
@@ -77,6 +100,9 @@ auto addRangeClass(pybind11::module &m, const std::string &name) {
         auto subset =  ranges::view::slice(chain, start, stop);
         auto strided = subset | ranges::view::stride(step);
         return strided;
+    })
+    .def_property_readonly("all", [](Range & range) { 
+        return pythonAllType(range);
     })
     ;
     return cl;
@@ -112,6 +138,9 @@ auto addRangeClass(pybind11::module &m, const std::string &name) {
         auto strided = subset | ranges::view::stride(step);
         return strided;
     })
+    .def_property_readonly("all", [](Range & range) { 
+        return pythonAllType(range);
+    })
     ;
     return cl;
 }
@@ -122,8 +151,9 @@ auto addRangeClass(pybind11::module &m, const std::string &name) {
     cl
     .def("__len__", [](Range &range) { return ranges::distance(range); })
     .def("__bool__", [](Range &range) { return ranges::distance(range) > 0; })
-    .def("__iter__", [](Range &range) { return pybind11::make_iterator(range.begin(), range.end()); },
-         pybind11::keep_alive<0, 1>())
+    .def_property_readonly("all", [](Range & range) { 
+        return pythonAllType(range);
+    })
     ;
     return cl;
 }

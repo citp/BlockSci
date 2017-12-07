@@ -96,8 +96,10 @@ namespace blocksci {
         Output(const OutputPointer &pointer);
         #endif
     };
-}
 
-std::ostream &operator<<(std::ostream &os, blocksci::Output const &output);
+    inline std::ostream &operator<<(std::ostream &os, const Output &output) { 
+        return os << output.toString();
+    }
+}
 
 #endif /* output_hpp */
