@@ -22,6 +22,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
+#include <pybind11/chrono.h>
 
 #include <range/v3/iterator_range.hpp>
 #include <range/v3/view/any_view.hpp>
