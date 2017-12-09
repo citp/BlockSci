@@ -34,6 +34,8 @@ namespace blocksci {
                 visitFunc(address);
             }
         }
+        
+        std::vector<ScriptAddress<ScriptType::Enum::PUBKEY>> pubkeyScripts() const;
     };
 }
 

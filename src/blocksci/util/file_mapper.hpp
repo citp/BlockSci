@@ -473,9 +473,11 @@ namespace blocksci {
         }
         
         void truncate(uint32_t index) {
-            auto offsets = getOffsets(index);
-            indexFile.truncate(index);
-            dataFile.truncate(offsets[0]);
+            if (index < size()) {
+                auto offsets = getOffsets(index);
+                indexFile.truncate(index);
+                dataFile.truncate(offsets[0]);
+            }
         }
         
         void seekEnd() {

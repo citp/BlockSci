@@ -9,6 +9,7 @@
 #include "script_output.hpp"
 
 #include <blocksci/scripts/script_variant.hpp>
+#include <blocksci/address/address_types.hpp>
 
 struct SpendDataGenerator {
     template <blocksci::AddressType::Enum type>
@@ -19,25 +20,25 @@ struct SpendDataGenerator {
 
 template<blocksci::AddressType::Enum type>
 struct ScriptAddressGenerator {
-    static SpendDataType f(const blocksci::AnyScript &script, const blocksci::ScriptAccess &scripts) {
-        return SpendData<type>(mpark::get<blocksci::ScriptAddress<blocksci::scriptType(type)>>(script.wrapped), scripts);
+    static SpendDataType f(const blocksci::AnyScript &script) {
+        return SpendData<type>(mpark::get<blocksci::ScriptAddress<blocksci::scriptType(type)>>(script.wrapped));
     }
 };
 
 static auto scriptAddressGeneratorTable = blocksci::make_dynamic_table<blocksci::AddressType, ScriptAddressGenerator>();
 
-SpendDataType generateFromScriptAddress(const blocksci::AnyScript &scriptData, blocksci::AddressType::Enum type, const blocksci::ScriptAccess &scripts) {
+SpendDataType generateFromScriptAddress(const blocksci::AnyScript &scriptData, blocksci::AddressType::Enum type) {
     auto index = static_cast<size_t>(type);
     if (index >= blocksci::AddressType::size)
     {
         throw std::invalid_argument("combination of enum values is not valid");
     }
-    return scriptAddressGeneratorTable[index](scriptData, scripts);
+    return scriptAddressGeneratorTable[index](scriptData);
 }
 
 AnySpendData::AnySpendData(const AnyScriptOutput &output) : wrapped(mpark::visit(SpendDataGenerator(), output.wrapped)) {}
 
-AnySpendData::AnySpendData(const blocksci::AnyScript &scriptData, blocksci::AddressType::Enum addressType, const blocksci::ScriptAccess &scripts) : wrapped(generateFromScriptAddress(scriptData, addressType, scripts)) {}
+AnySpendData::AnySpendData(const blocksci::AnyScript &scriptData, blocksci::AddressType::Enum addressType) : wrapped(generateFromScriptAddress(scriptData, addressType)) {}
 
 SpendData<blocksci::AddressType::Enum::MULTISIG>::SpendData(const ScriptOutput<blocksci::AddressType::Enum::MULTISIG> &output) {
     uint32_t i = 0;
@@ -48,10 +49,10 @@ SpendData<blocksci::AddressType::Enum::MULTISIG>::SpendData(const ScriptOutput<b
     addressCount = i;
 }
 
-SpendData<blocksci::AddressType::Enum::MULTISIG>::SpendData(const blocksci::ScriptAddress<blocksci::ScriptType::Enum::MULTISIG> &output, const blocksci::ScriptAccess &scripts) {
+SpendData<blocksci::AddressType::Enum::MULTISIG>::SpendData(const blocksci::ScriptAddress<blocksci::ScriptType::Enum::MULTISIG> &output) {
     uint32_t i = 0;
-    for (auto address : output.addresses) {
-        addresses[i] = *blocksci::script::Pubkey(scripts, address.scriptNum).getPubkey();
+    for (auto pubkey : output.pubkeyScripts()) {
+        addresses[i] = *pubkey.getPubkey();
         i++;
     }
     addressCount = i;

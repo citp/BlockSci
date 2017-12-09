@@ -50,4 +50,13 @@ namespace blocksci {
         ss << "]";
         return ss.str();
     }
+    
+    std::vector<ScriptAddress<ScriptType::Enum::PUBKEY>> Multisig::pubkeyScripts() const {
+        std::vector<ScriptAddress<ScriptType::Enum::PUBKEY>> ret;
+        ret.reserve(addresses.size());
+        for (auto &address : addresses) {
+            ret.emplace_back(*access, address.scriptNum);
+        }
+        return ret;
+    }
 }

@@ -79,7 +79,7 @@ void replayBlock(const ParserConfiguration<FileTag> &config, blocksci::BlockHeig
             auto realInput = realTx.inputs()[i];
             auto address = realInput.getAddress();
             InputView inputView(i, tx.txNum, input.witnessStack, tx.isSegwit);
-            AnySpendData spendData(address.getScript(scripts), address.type, scripts);
+            AnySpendData spendData(address.getScript(scripts), address.type);
             tx.scriptInputs.emplace_back(inputView, input.getScriptView(), tx, spendData);
             i++;
         }

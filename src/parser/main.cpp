@@ -64,14 +64,19 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::B
     blocksci::IndexedFileMapper<blocksci::AccessMode::readwrite, blocksci::RawTransaction> txFile{config.txFilePath()};
     blocksci::FixedSizeFileMapper<blocksci::uint256, blocksci::AccessMode::readwrite> txHashesFile{config.txHashesFilePath()};
     blocksci::ScriptAccess scripts(config);
+    
     UTXOState utxoState;
+    UTXOAddressState utxoAddressState;
+    UTXOScriptState utxoScriptState;
+    
+    utxoAddressState.unserialize(config.utxoAddressStatePath());
     utxoState.unserialize(config.utxoCacheFile().native());
+    utxoScriptState.unserialize(config.utxoScriptStatePath().native());
     
     uint32_t totalTxCount = static_cast<uint32_t>(txFile.size());
     for (uint32_t txNum = totalTxCount - 1; txNum >= firstDeletedTxNum; txNum--) {
         auto tx = txFile.getData(txNum);
         auto hash = txHashesFile.getData(txNum);
-        
         for (uint16_t i = 0; i < tx->outputCount; i++) {
             auto &output = tx->getOutput(i);
             if (output.getAddress().getScript(scripts).firstTxIndex() == txNum) {
@@ -81,28 +86,39 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::B
                     prevValue = addressNum;
                 }
             }
-            if (output.linkedTxNum != 0) {
+            if (isSpendable(scriptType(output.getType()))) {
+//                std::cout << "Erasing output " << txNum << ":" << i << " spent by " << output.linkedTxNum << std::endl;
                 utxoState.erase({*hash, i});
+                utxoAddressState.spendOutput({txNum, i}, output.getType());
+                utxoScriptState.erase({txNum, i});
             }
         }
         
+        uint32_t inputsAdded = 0;
         for (uint16_t i = 0; i < tx->inputCount; i++) {
             auto &input = tx->getInput(i);
             auto spentTxNum = input.linkedTxNum;
             auto spentTx = txFile.getData(spentTxNum);
             auto spentHash = txHashesFile.getData(spentTxNum);
-            for (uint16_t j = 0; i < spentTx->outputCount; i++) {
-                auto &output = spentTx->getOutput(i);
+            for (uint16_t j = 0; j < spentTx->outputCount; j++) {
+                auto &output = spentTx->getOutput(j);
                 if (output.linkedTxNum == txNum) {
                     output.linkedTxNum = 0;
                     UTXO utxo(output.getValue(), spentTxNum, output.getType());
+//                    std::cout << "Adding output " << spentTxNum << ":" << j <<  " spent by " << txNum << std::endl;
                     utxoState.add({*spentHash, j}, utxo);
+                    utxoAddressState.addOutput({output.getAddress().getScript(scripts), output.getType()}, {spentTxNum, j});
+                    utxoScriptState.add({spentTxNum, j}, output.toAddressNum);
+                    inputsAdded++;
                 }
             }
         }
+        assert(inputsAdded == tx->inputCount);
     }
     
+    utxoAddressState.serialize(config.utxoAddressStatePath());
     utxoState.serialize(config.utxoCacheFile().native());
+    utxoScriptState.serialize(config.utxoScriptStatePath().native());
     
     return state;
 }

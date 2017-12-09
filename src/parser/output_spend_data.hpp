@@ -25,7 +25,7 @@ struct SpendData {
     
     SpendData() = default;
     SpendData(const ScriptOutput<type> &) {}
-    SpendData(const blocksci::ScriptAddress<blocksci::scriptType(type)> &, const blocksci::ScriptAccess &) {}
+    SpendData(const blocksci::ScriptAddress<blocksci::scriptType(type)> &) {}
 };
 
 template<>
@@ -38,7 +38,7 @@ struct SpendData<blocksci::AddressType::Enum::MULTISIG> {
     
     SpendData() = default;
     SpendData(const ScriptOutput<blocksci::AddressType::Enum::MULTISIG> &output);
-    SpendData(const blocksci::ScriptAddress<blocksci::ScriptType::Enum::MULTISIG> &output, const blocksci::ScriptAccess &scripts);
+    SpendData(const blocksci::ScriptAddress<blocksci::ScriptType::Enum::MULTISIG> &output);
 };
 
 using SpendDataType = blocksci::to_variadic_t<blocksci::to_address_tuple_t<SpendData>, mpark::variant>;
@@ -50,7 +50,7 @@ public:
     AnySpendData(const SpendDataType &var) : wrapped(var) {}
     
     AnySpendData(const AnyScriptOutput &scriptOutput);
-    AnySpendData(const blocksci::AnyScript &scriptData, blocksci::AddressType::Enum addressType, const blocksci::ScriptAccess &scripts);
+    AnySpendData(const blocksci::AnyScript &scriptData, blocksci::AddressType::Enum addressType);
 };
 
 
