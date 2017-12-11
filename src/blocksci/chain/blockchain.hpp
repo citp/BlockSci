@@ -157,10 +157,6 @@ namespace blocksci {
         uint32_t firstTxIndex() const;
         uint32_t endTxIndex() const;
         
-        Block operator[](BlockHeight height) const {
-            return ranges::view_facade<Blockchain>::operator[](static_cast<int>(height));
-        }
-        
         BlockHeight size() const {
             return lastBlockHeight;
         }
