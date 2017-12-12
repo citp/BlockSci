@@ -29,7 +29,7 @@ void init_address(py::module &m) {
     .def(hash(py::self))
     .def_readonly("script_num", &Address::scriptNum)
     .def_readonly("type", &Address::type)
-    .def("balance", py::overload_cast<BlockHeight>(&Address::calculateBalanceAtHeight, py::const_), py::arg("height") = 0, "Calculates the balance held by this address at the height (Defaults to the full chain)")
+    .def("balance", py::overload_cast<BlockHeight>(&Address::calculateBalance, py::const_), py::arg("height") = 0, "Calculates the balance held by this address at the height (Defaults to the full chain)")
     .def("outs", py::overload_cast<>(&Address::getOutputs, py::const_), "Returns a list of all outputs sent to this address")
     .def("ins", py::overload_cast<>(&Address::getInputs, py::const_), "Returns a list of all inputs spent from this address")
     .def("txes", py::overload_cast<>(&Address::getTransactions, py::const_), "Returns a list of all transactions involving this address")
