@@ -61,6 +61,9 @@ namespace blocksci {
             return pointer.inoutNum;
         }
         
+        Transaction transaction() const;
+        Block block() const;
+        
         bool isSpent() const {
             return getSpendingTxIndex() != 0;
         }

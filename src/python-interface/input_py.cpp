@@ -46,6 +46,12 @@ void addInputMethods(Class &cl, FuncApplication func) {
     .def_property_readonly("age", func([](const Input &input) {
         return input.age();
     }), "The number of blocks between the spent output and this input")
+    .def_property_readonly("tx", func([](const Input &input) {
+        return input.transaction();
+    }), "The transaction that contains this input")
+    .def_property_readonly("block", func([](const Input &input) {
+        return input.block();
+    }), "The block that contains this input")
     ;
 }
 

@@ -43,7 +43,6 @@ namespace blocksci {
         Input(const InputPointer &pointer_, const ChainAccess &access_) : 
         Input(pointer_, access_.getBlockHeight(pointer_.txNum), access_.getTx(pointer_.txNum)->getInput(pointer_.inoutNum), access_) {}
         
-
         uint32_t txIndex() const {
             return pointer.txNum;
         }
@@ -51,6 +50,9 @@ namespace blocksci {
         uint32_t inputIndex() const {
             return pointer.inoutNum;
         }
+        
+        Transaction transaction() const;
+        Block block() const;
         
         uint32_t age() const;
 

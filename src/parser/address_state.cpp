@@ -33,7 +33,7 @@ namespace std {
         hash_combine(seed, b.hash);
         hash_combine(seed, b.type);
         return seed;
-    };
+    }
 }
 
 AddressState::AddressMap::AddressMap() : SerializableMap<RawScript, uint32_t>({blocksci::uint160S("FFFFFFFFFFFFFFFFFFFF"), blocksci::ScriptType::Enum::NULL_DATA}, {blocksci::uint160S("FFFFFFFFFFFFFFFFFFFF"), blocksci::ScriptType::Enum::SCRIPTHASH}) {}

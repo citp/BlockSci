@@ -9,6 +9,7 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "output.hpp"
+#include "block.hpp"
 #include "inout_pointer.hpp"
 #include "transaction.hpp"
 #include "address/address.hpp"
@@ -17,6 +18,14 @@
 #include <sstream>
 
 namespace blocksci {
+    
+    Transaction Output::transaction() const {
+        return Transaction(pointer.txNum, blockHeight, *access);
+    }
+    
+    Block Output::block() const {
+        return Block(blockHeight, *access);
+    }
     
     std::string Output::toString() const {
         std::stringstream ss;

@@ -9,7 +9,7 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "input.hpp"
-#include "inout.hpp"
+#include "block.hpp"
 #include "transaction.hpp"
 #include "inout_pointer.hpp"
 #include "chain_access.hpp"
@@ -19,6 +19,14 @@
 #include <sstream>
 
 namespace blocksci {
+    
+    Transaction Input::transaction() const {
+        return Transaction(pointer.txNum, blockHeight, *access);
+    }
+    
+    Block Input::block() const {
+        return Block(blockHeight, *access);
+    }
     
     Transaction Input::getSpentTx() const {
         return Transaction(inout->linkedTxNum, *access);

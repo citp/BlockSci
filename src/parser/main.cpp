@@ -87,7 +87,6 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::B
                 }
             }
             if (isSpendable(scriptType(output.getType()))) {
-//                std::cout << "Erasing output " << txNum << ":" << i << " spent by " << output.linkedTxNum << std::endl;
                 utxoState.erase({*hash, i});
                 utxoAddressState.spendOutput({txNum, i}, output.getType());
                 utxoScriptState.erase({txNum, i});
@@ -105,7 +104,6 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::B
                 if (output.linkedTxNum == txNum) {
                     output.linkedTxNum = 0;
                     UTXO utxo(output.getValue(), spentTxNum, output.getType());
-//                    std::cout << "Adding output " << spentTxNum << ":" << j <<  " spent by " << txNum << std::endl;
                     utxoState.add({*spentHash, j}, utxo);
                     utxoAddressState.addOutput({output.getAddress().getScript(scripts), output.getType()}, {spentTxNum, j});
                     utxoScriptState.add({spentTxNum, j}, output.toAddressNum);

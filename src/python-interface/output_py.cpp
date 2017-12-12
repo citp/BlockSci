@@ -46,6 +46,12 @@ void addOutputMethods(Class &cl, FuncApplication func) {
     .def_property_readonly("spending_tx", func([](const Output &output) {
         return output.getSpendingTx();
     }), "Returns the transaction that spent this output or None if it is unspent")
+    .def_property_readonly("tx", func([](const Output &output) {
+        return output.transaction();
+    }), "The transaction that contains this input")
+    .def_property_readonly("block", func([](const Output &output) {
+        return output.block();
+    }), "The block that contains this input")
     ;
 }
 
