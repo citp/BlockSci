@@ -69,6 +69,26 @@ namespace blocksci {
         return access.totalAddressCount();
     }
     
+    uint64_t Address::calculateBalance(const AddressIndex &index, const ChainAccess &chain) const {
+        uint64_t value = 0;
+        for (auto &output : index.getOutputs(*this, chain)) {
+            if (!output.isSpent()) {
+                value += output.getValue();
+            }
+        }
+        return value;
+    }
+    
+    uint64_t Address::calculateBalanceAtHeight(uint32_t height, const AddressIndex &index, const ChainAccess &chain) const {
+        uint64_t value = 0;
+        for (auto &output : index.getOutputs(*this, chain)) {
+            if (output.blockHeight <= height & (!output.isSpent() || output.getSpendingTxIndex() > height) {
+                value += output.getValue();
+            }
+        }
+        return value;
+    }
+    
     std::vector<Output> Address::getOutputs(const AddressIndex &index, const ChainAccess &chain) const {
         return index.getOutputs(*this, chain);
     }
