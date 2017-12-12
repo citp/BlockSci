@@ -49,7 +49,7 @@ namespace blocksci {
         
         AnyScript getScript(const ScriptAccess &access) const;
         
-        uint64_t calculateBalance(BlockHeight height = 0, const AddressIndex &index, const ChainAccess &chain) const;
+        uint64_t calculateBalance(BlockHeight height, const AddressIndex &index, const ChainAccess &chain) const;
         
         std::vector<Output> getOutputs(const AddressIndex &index, const ChainAccess &chain) const;
         std::vector<Input> getInputs(const AddressIndex &index, const ChainAccess &chain) const;
@@ -64,7 +64,7 @@ namespace blocksci {
         #ifndef BLOCKSCI_WITHOUT_SINGLETON        
         AnyScript getScript() const;
         
-        uint64_t calculateBalance(BlockHeight height = 0) const;
+        uint64_t calculateBalance(BlockHeight height) const;
         
         std::vector<Output> getOutputs() const;
         std::vector<Input> getInputs() const;
