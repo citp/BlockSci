@@ -12,7 +12,9 @@
 #pragma GCC visibility push(default)
 
 #include <blocksci/chain.hpp>
-#include <blocksci/script.hpp>
+#include <blocksci/scripts.hpp>
+#include <blocksci/address.hpp>
+#include <blocksci/heuristics.hpp>
 #include <blocksci/address/address.hpp>
 #include <blocksci/address/address_types.hpp>
 

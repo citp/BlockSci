@@ -152,18 +152,6 @@ void init_tx(py::module &m) {
     .def_property_readonly("outputs", [](const Transaction &tx) -> ranges::any_view<Output, ranges::get_categories<decltype(tx.outputs())>()>  {
         return tx.outputs();
     }, "A list of the outputs of the transaction") // same as above
-    .def_property_readonly("is_coinjoin", py::overload_cast<const Transaction &>(heuristics::isCoinjoin), "Uses basic structural features to quickly decide whether this transaction might be a JoinMarket coinjoin transaction")
-    .def_property_readonly("is_script_deanon", py::overload_cast<const Transaction &>(heuristics::isDeanonTx), "Returns true if this transaction's change address is deanonymized by the script types involved")
-    .def_property_readonly("is_change_over", py::overload_cast<const Transaction &>(heuristics::isChangeOverTx), "Returns true if this transaction contained all inputs of one address type and all outputs of a different type")
-    .def_property_readonly("is_keyset_change", py::overload_cast<const Transaction &>(heuristics::containsKeysetChange), "Returns true if this transaction contains distinct addresses which share some of the same keys, indicating that the access control structure has changed")
-    .def_property_readonly("is_definite_coinjoin", [](const Transaction &tx, uint64_t minBaseFee, double percentageFee, size_t maxDepth) {
-        py::gil_scoped_release release;
-        return heuristics::isCoinjoinExtra(tx, minBaseFee, percentageFee, maxDepth);
-    }, "This function uses subset matching in order to determine whether this transaction is a JoinMarket coinjoin. If maxDepth != 0, it limits the total number of possible subsets the algorithm will check.")
-    .def_property_readonly("is_definite_coinjoin", [](const Transaction &tx, uint64_t minBaseFee, double percentageFee) {
-        py::gil_scoped_release release;
-        return heuristics::isCoinjoinExtra(tx, minBaseFee, percentageFee, 0);
-    }, "This function uses subset matching in order to determine whether this transaction is a JoinMarket coinjoin.")
     ;
 //
 //    py::enum_<CoinJoinResult>(m, "CoinJoinResult")
