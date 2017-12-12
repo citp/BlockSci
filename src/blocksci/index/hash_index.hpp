@@ -21,7 +21,7 @@
 namespace blocksci {
     struct Address;
     
-    lmdb::env createHashIndexEnviroment(const std::string &path);
+    lmdb::env createHashIndexEnviroment(const std::string &path, bool readonly);
     
     class HashIndex {
     public:

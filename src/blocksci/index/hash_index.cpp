@@ -16,15 +16,19 @@
 
 namespace blocksci {
     
-    lmdb::env createHashIndexEnviroment(const std::string &path) {
+    lmdb::env createHashIndexEnviroment(const std::string &path, bool readonly) {
         auto env = lmdb::env::create();
         env.set_mapsize(100UL * 1024UL * 1024UL * 1024UL); /* 1 GiB */
         env.set_max_dbs(5);
-        env.open(path.c_str(), MDB_NOSUBDIR, 0664);
+        int flags = MDB_NOSUBDIR;
+        if (readonly) {
+            flags |= MDB_RDONLY;
+        }
+        env.open(path.c_str(), flags, 0664);
         return env;
     }
     
-    HashIndex::HashIndex(const std::string &path) : env(createHashIndexEnviroment(path)) {}
+    HashIndex::HashIndex(const std::string &path) : env(createHashIndexEnviroment(path, true)) {}
     
     template <typename T>
     uint32_t getMatch(const lmdb::env &env, const char *name, const T &t) {

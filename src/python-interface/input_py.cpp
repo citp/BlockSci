@@ -17,6 +17,7 @@
 
 #include <range/v3/range_for.hpp>
 #include <range/v3/view/transform.hpp>
+#include <range/v3/view/any_view.hpp>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>

@@ -39,15 +39,19 @@ namespace blocksci {
     std::vector<Transaction> getOutputTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
     std::vector<Transaction> getInputTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
     
-    lmdb::env createAddressIndexEnviroment(const std::string &path) {
+    lmdb::env createAddressIndexEnviroment(const std::string &path, bool readonly) {
         auto env = lmdb::env::create();
         env.set_mapsize(40UL * 1024UL * 1024UL * 1024UL); /* 1 GiB */
         env.set_max_dbs(5);
-        env.open(path.c_str(), MDB_NOSUBDIR, 0664);
+        int flags = MDB_NOSUBDIR;
+        if (readonly) {
+            flags |= MDB_RDONLY;
+        }
+        env.open(path.c_str(), flags, 0664);
         return env;
     }
     
-    AddressIndex::AddressIndex(const std::string &path) : env(createAddressIndexEnviroment(path))  {
+    AddressIndex::AddressIndex(const std::string &path) : env(createAddressIndexEnviroment(path, true))  {
     }
     
     std::vector<Output> getOutputsImp(std::vector<OutputPointer> pointers, const ChainAccess &access) {

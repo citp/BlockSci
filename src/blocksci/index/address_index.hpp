@@ -23,7 +23,7 @@
 namespace blocksci {
     struct Address;
     
-    lmdb::env createAddressIndexEnviroment(const std::string &path);
+    lmdb::env createAddressIndexEnviroment(const std::string &path, bool readonly);
     
     class AddressIndex {
         lmdb::env env;

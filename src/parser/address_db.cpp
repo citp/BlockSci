@@ -38,7 +38,7 @@ std::unordered_map<ScriptType::Enum,  lmdb::dbi> setupInsertStatements(lmdb::txn
     return scriptDbs;
 }
 
-AddressDB::AddressDB(const ParserConfigurationBase &config_, const std::string &path) : ParserIndex(config_, "addressDB"), env(createAddressIndexEnviroment(path)), wtxn(lmdb::txn::begin(env)), scriptDbs(setupInsertStatements(wtxn)) {
+AddressDB::AddressDB(const ParserConfigurationBase &config_, const std::string &path) : ParserIndex(config_, "addressDB"), env(createAddressIndexEnviroment(path, false)), wtxn(lmdb::txn::begin(env)), scriptDbs(setupInsertStatements(wtxn)) {
 }
 
 //namespace {
