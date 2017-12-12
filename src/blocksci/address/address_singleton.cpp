@@ -22,10 +22,12 @@ namespace blocksci {
     }
     
     uint64_t calculateBalance() const {
+        auto &instance = DataAccess::Instance();
         return calculateBalance(*instance.addressIndex, *instance.chain);
     }
     
     uint64_t calculateBalanceAtHeight(uint32_t height) const {
+        auto &instance = DataAccess::Instance();
         return calculateBalanceAtHeight(height, *instance.addressIndex, *instance.chain);
     }
         
