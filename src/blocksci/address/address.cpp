@@ -82,7 +82,7 @@ namespace blocksci {
     uint64_t Address::calculateBalanceAtHeight(uint32_t height, const AddressIndex &index, const ChainAccess &chain) const {
         uint64_t value = 0;
         for (auto &output : index.getOutputs(*this, chain)) {
-            if (output.blockHeight <= height & (!output.isSpent() || output.getSpendingTxIndex() > height) {
+            if (output.blockHeight <= height & (!output.isSpent() || output.getSpendingTxIndex() > height)) {
                 value += output.getValue();
             }
         }
