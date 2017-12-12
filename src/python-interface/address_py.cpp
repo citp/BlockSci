@@ -136,6 +136,10 @@ void init_address(py::module &m) {
                 return "Nonstandard";
             case AddressType::Enum::NULL_DATA:
                 return "Null data";
+            case AddressType::Enum::WITNESS_PUBKEYHASH:
+                return "Pay to witness pubkey hash";
+            case AddressType::Enum::WITNESS_SCRIPTHASH:
+                return "Pay to witness script hash";
             default:
                 return "Unknown Address Type";
         }
