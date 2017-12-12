@@ -37,6 +37,9 @@ void addInputMethods(Class &cl, FuncApplication func) {
     .def_property_readonly("address_type", func([](const Input &input) {
         return input.getType();
     }), "The address type of the input")
+    .def_property_readonly("sequence_num", func([](const Input &input) {
+        return input.sequenceNumber();
+    }), "The sequence number of the input")
     .def_property_readonly("spent_tx_index", func([](const Input &input) {
         return input.spentTxIndex();
     }), "The index of the transaction that this input spent")

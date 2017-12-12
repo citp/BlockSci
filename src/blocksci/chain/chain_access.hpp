@@ -35,6 +35,8 @@ namespace blocksci {
         SimpleFileMapper<> blockCoinbaseFile;
         
         IndexedFileMapper<AccessMode::readonly, RawTransaction> txFile;
+        IndexedFileMapper<AccessMode::readonly, uint32_t> sequenceFile;
+        
         FixedSizeFileMapper<uint256> txHashesFile;
         
         uint256 lastBlockHash;
@@ -73,6 +75,10 @@ namespace blocksci {
         
         const RawTransaction *getTx(uint32_t index) const {
             return txFile.getData(index);
+        }
+        
+        const uint32_t *getSequenceNumbers(uint32_t index) const {
+            return sequenceFile.getData(index);
         }
         
         size_t txCount() const;

@@ -40,6 +40,7 @@ namespace blocksci {
     blockFile(config.blockFilePath()),
     blockCoinbaseFile(config.blockCoinbaseFilePath()),
     txFile(config.txFilePath()),
+    sequenceFile(config.sequenceFilePath()),
     txHashesFile(config.txHashesFilePath()),
     blocksIgnored(blocksIgnored_),
     errorOnReorg(errorOnReorg_) {

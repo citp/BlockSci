@@ -41,6 +41,7 @@ namespace blocksci {
     private:
         const ChainAccess *access;
         const RawTransaction *data;
+        const uint32_t *sequenceNumbers;
         friend TransactionSummary;
     public:
         uint32_t txNum;
@@ -48,7 +49,7 @@ namespace blocksci {
         
         Transaction() = default;
         
-        Transaction(const RawTransaction *data_, uint32_t txNum_, BlockHeight blockHeight_, const ChainAccess &access_) : access(&access_), data(data_), txNum(txNum_), blockHeight(blockHeight_) {}
+        Transaction(const RawTransaction *data_, uint32_t txNum_, BlockHeight blockHeight_, const ChainAccess &access_) : access(&access_), data(data_), sequenceNumbers(access_.getSequenceNumbers(txNum_)), txNum(txNum_), blockHeight(blockHeight_) {}
         
         Transaction(uint32_t index, const ChainAccess &access_) : Transaction(index, access_.getBlockHeight(index), access_) {}
         
@@ -102,9 +103,10 @@ namespace blocksci {
             auto chainAccess = access;
             uint32_t txIndex = txNum;
             BlockHeight height = blockHeight;
-            return ranges::view::zip_with([chainAccess, txIndex, height](uint16_t inputNum, const Inout &inout) {
-                return Input({txIndex, inputNum}, height, inout, *chainAccess);
-            }, ranges::view::iota(uint16_t{0}, inputCount()), rawInputs());
+            auto sequenceRange = ranges::make_iterator_range(sequenceNumbers, sequenceNumbers + inputCount());
+            return ranges::view::zip_with([chainAccess, txIndex, height](uint16_t inputNum, const Inout &inout, uint32_t sequenceNum) {
+                return Input({txIndex, inputNum}, height, inout, sequenceNum, *chainAccess);
+            }, ranges::view::iota(uint16_t{0}, inputCount()), rawInputs(), sequenceRange);
         }
         
         bool isCoinbase() const {

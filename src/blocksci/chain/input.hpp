@@ -30,18 +30,20 @@ namespace blocksci {
     class Input {
         const ChainAccess *access;
         const Inout *inout;
+        const uint32_t *sequenceNum;
         InputPointer pointer;
         
         friend size_t std::hash<Input>::operator()(const Input &) const;
     public:
+        
         BlockHeight blockHeight;
 
-        Input(const InputPointer &pointer_, BlockHeight blockHeight_, const Inout &inout_, const ChainAccess &access_) : 
-        access(&access_), inout(&inout_), pointer(pointer_), blockHeight(blockHeight_) {
+        Input(const InputPointer &pointer_, BlockHeight blockHeight_, const Inout &inout_, const uint32_t *sequenceNum_, const ChainAccess &access_) :
+        access(&access_), inout(&inout_), pointer(pointer_), sequenceNum(sequenceNum_), blockHeight(blockHeight_) {
             assert(pointer.isValid(access_));
         }
         Input(const InputPointer &pointer_, const ChainAccess &access_) : 
-        Input(pointer_, access_.getBlockHeight(pointer_.txNum), access_.getTx(pointer_.txNum)->getInput(pointer_.inoutNum), access_) {}
+        Input(pointer_, access_.getBlockHeight(pointer_.txNum), access_.getTx(pointer_.txNum)->getInput(pointer_.inoutNum), &access_.getSequenceNumbers(pointer_.txNum)[pointer_.inoutNum], access_) {}
         
         uint32_t txIndex() const {
             return pointer.txNum;
@@ -49,6 +51,10 @@ namespace blocksci {
 
         uint32_t inputIndex() const {
             return pointer.inoutNum;
+        }
+        
+        uint32_t sequenceNumber() const {
+            return *sequenceNum;
         }
         
         Transaction transaction() const;
