@@ -39,7 +39,7 @@ namespace blocksci {
         BlockHeight blockHeight;
 
         Input(const InputPointer &pointer_, BlockHeight blockHeight_, const Inout &inout_, const uint32_t *sequenceNum_, const ChainAccess &access_) :
-        access(&access_), inout(&inout_), pointer(pointer_), sequenceNum(sequenceNum_), blockHeight(blockHeight_) {
+        access(&access_), inout(&inout_), sequenceNum(sequenceNum_), pointer(pointer_), blockHeight(blockHeight_) {
             assert(pointer.isValid(access_));
         }
         Input(const InputPointer &pointer_, const ChainAccess &access_) : 

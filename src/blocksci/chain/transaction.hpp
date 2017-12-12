@@ -103,10 +103,9 @@ namespace blocksci {
             auto chainAccess = access;
             uint32_t txIndex = txNum;
             BlockHeight height = blockHeight;
-            auto sequenceRange = ranges::make_iterator_range(sequenceNumbers, sequenceNumbers + inputCount());
-            return ranges::view::zip_with([chainAccess, txIndex, height](uint16_t inputNum, const Inout &inout, uint32_t sequenceNum) {
-                return Input({txIndex, inputNum}, height, inout, sequenceNum, *chainAccess);
-            }, ranges::view::iota(uint16_t{0}, inputCount()), rawInputs(), sequenceRange);
+            return ranges::view::zip_with([chainAccess, txIndex, height, sequenceNumbers](uint16_t inputNum, const Inout &inout) {
+                return Input({txIndex, inputNum}, height, inout, &sequenceNumbers[inputNum], *chainAccess);
+            }, ranges::view::iota(uint16_t{0}, inputCount()), rawInputs());
         }
         
         bool isCoinbase() const {
