@@ -69,21 +69,19 @@ namespace blocksci {
         return access.totalAddressCount();
     }
     
-    uint64_t Address::calculateBalance(const AddressIndex &index, const ChainAccess &chain) const {
+    uint64_t Address::calculateBalance(BlockHeight height, const AddressIndex &index, const ChainAccess &chain) const {
         uint64_t value = 0;
-        for (auto &output : index.getOutputs(*this, chain)) {
-            if (!output.isSpent()) {
-                value += output.getValue();
+        if (height == 0) {
+            for (auto &output : index.getOutputs(*this, chain)) {
+                if (!output.isSpent()) {
+                    value += output.getValue();
+                }
             }
-        }
-        return value;
-    }
-    
-    uint64_t Address::calculateBalanceAtHeight(BlockHeight height, const AddressIndex &index, const ChainAccess &chain) const {
-        uint64_t value = 0;
-        for (auto &output : index.getOutputs(*this, chain)) {
-            if (output.blockHeight <= height && (!output.isSpent() || output.getSpendingTx()->blockHeight > height)) {
-                value += output.getValue();
+        } else {
+            for (auto &output : index.getOutputs(*this, chain)) {
+                if (output.blockHeight <= height && (!output.isSpent() || output.getSpendingTx()->blockHeight > height)) {
+                    value += output.getValue();
+                }
             }
         }
         return value;

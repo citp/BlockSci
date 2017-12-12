@@ -21,14 +21,9 @@ namespace blocksci {
         return getScript(*DataAccess::Instance().scripts);
     }
     
-    uint64_t Address::calculateBalance() const {
+    uint64_t Address::calculateBalance(BlockHeight height) const {
         auto &instance = DataAccess::Instance();
-        return calculateBalance(*instance.addressIndex, *instance.chain);
-    }
-    
-    uint64_t Address::calculateBalanceAtHeight(BlockHeight height) const {
-        auto &instance = DataAccess::Instance();
-        return calculateBalanceAtHeight(height, *instance.addressIndex, *instance.chain);
+        return calculateBalance(height, *instance.addressIndex, *instance.chain);
     }
         
     std::vector<Output> Address::getOutputs() const {
