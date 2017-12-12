@@ -66,7 +66,7 @@ namespace blocksci {
         AnyScript getScript() const;
         
         uint64_t calculateBalance() const;
-        uint64_t calculateBalanceAtHeight(uint32_t height) const;
+        uint64_t calculateBalanceAtHeight(BlockHeight height) const;
         
         std::vector<Output> getOutputs() const;
         std::vector<Input> getInputs() const;

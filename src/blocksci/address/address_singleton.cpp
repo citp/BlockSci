@@ -26,7 +26,7 @@ namespace blocksci {
         return calculateBalance(*instance.addressIndex, *instance.chain);
     }
     
-    uint64_t Address::calculateBalanceAtHeight(uint32_t height) const {
+    uint64_t Address::calculateBalanceAtHeight(BlockHeight height) const {
         auto &instance = DataAccess::Instance();
         return calculateBalanceAtHeight(height, *instance.addressIndex, *instance.chain);
     }
