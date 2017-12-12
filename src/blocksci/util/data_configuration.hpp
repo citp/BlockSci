@@ -15,6 +15,9 @@
 #include <sstream>
 
 namespace blocksci {
+    
+    static constexpr int dataVersion = 2;
+    
     struct DataConfiguration {
         DataConfiguration() {}
         explicit DataConfiguration(const boost::filesystem::path &dataDirectory);

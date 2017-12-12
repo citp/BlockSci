@@ -9,6 +9,10 @@
 #include "util/data_configuration.hpp"
 
 #include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/fstream.hpp>
+#include <boost/program_options.hpp>
+#include <boost/property_tree/ini_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 
 namespace blocksci {
     
@@ -22,6 +26,21 @@ namespace blocksci {
     }
     
     DataConfiguration::DataConfiguration(const boost::filesystem::path &dataDirectory_) : dataDirectory(dataDirectory_) {
+        createDirectory(dataDirectory);
+        createDirectory(scriptsDirectory());
+        createDirectory(chainDirectory());
+        
+        boost::property_tree::ptree root;
+        auto configFile = dataDirectory/"config.ini";
+        if (boost::filesystem::exists(configFile)) {
+            boost::filesystem::ifstream configStream{configFile};
+            boost::property_tree::read_ini(configStream, root);
+            auto versionNum = root.get("version", 0);
+            if (versionNum != dataVersion) {
+                throw std::runtime_error("Error, parser data is not in the correct format. To fix you must delete the data file and rerun the parser");
+            }
+        }
+        
         auto dataDirectoryString = dataDirectory.native();
         if(dataDirectoryString.find("dash") != std::string::npos) {
             pubkeyPrefix = {76};
@@ -39,10 +58,6 @@ namespace blocksci {
             pubkeyPrefix = std::vector<unsigned char>(1,0);
             scriptPrefix = std::vector<unsigned char>(1,5);
         }
-        
-        createDirectory(dataDirectory);
-        createDirectory(scriptsDirectory());
-        createDirectory(chainDirectory());
     }
     
 }

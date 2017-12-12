@@ -369,7 +369,7 @@ int main(int argc, const char * argv[]) {
         auto configFile = dataDirectory/"config.ini";
         if (boost::filesystem::exists(configFile)) {
             boost::filesystem::ifstream configStream{configFile};
-            po::store(po::parse_config_file(configStream, all), vm);
+            po::store(po::parse_config_file(configStream, all, true), vm);
         }
 
         bool diskEnabled = false;
@@ -435,6 +435,8 @@ int main(int argc, const char * argv[]) {
         }
         
         boost::property_tree::ptree rootPTree;
+        
+        rootPTree.put("version", blocksci::dataVersion);
         
         if (validDisk) {
             bitcoinDirectory = {bitcoinDirectoryString};
