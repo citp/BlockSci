@@ -50,7 +50,7 @@ namespace blocksci {
         AnyScript getScript(const ScriptAccess &access) const;
         
         uint64_t calculateBalance(const AddressIndex &index, const ChainAccess &chain) const;
-        uint64_t calculateBalanceAtHeight(uint32_t height, const AddressIndex &index, const ChainAccess &chain) const;
+        uint64_t calculateBalanceAtHeight(BlockHeight height, const AddressIndex &index, const ChainAccess &chain) const;
         
         std::vector<Output> getOutputs(const AddressIndex &index, const ChainAccess &chain) const;
         std::vector<Input> getInputs(const AddressIndex &index, const ChainAccess &chain) const;
