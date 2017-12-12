@@ -103,8 +103,9 @@ namespace blocksci {
             auto chainAccess = access;
             uint32_t txIndex = txNum;
             BlockHeight height = blockHeight;
-            return ranges::view::zip_with([chainAccess, txIndex, height, sequenceNumbers](uint16_t inputNum, const Inout &inout) {
-                return Input({txIndex, inputNum}, height, inout, &sequenceNumbers[inputNum], *chainAccess);
+            auto seq = sequenceNumbers;
+            return ranges::view::zip_with([chainAccess, txIndex, height, seq](uint16_t inputNum, const Inout &inout) {
+                return Input({txIndex, inputNum}, height, inout, &seq[inputNum], *chainAccess);
             }, ranges::view::iota(uint16_t{0}, inputCount()), rawInputs());
         }
         
