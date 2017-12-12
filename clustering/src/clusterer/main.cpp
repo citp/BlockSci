@@ -24,14 +24,14 @@ using namespace blocksci;
 std::vector<std::pair<Script, Script>> process_transaction(const Transaction &tx) {
     std::vector<std::pair<Script, Script>> pairsToUnion;
     
-    if (!heurisitcs::isCoinjoin(tx) && !tx.isCoinbase()) {
+    if (!heuristics::isCoinjoin(tx) && !tx.isCoinbase()) {
         auto inputs = tx.inputs();
         auto firstAddress = inputs[0].getAddress();
         for (uint16_t i = 1; i < inputs.size(); i++) {
             pairsToUnion.emplace_back(firstAddress, inputs[i].getAddress());
         }
         
-        if (auto change = heurisitcs::getChangeOutput(tx)) {
+        if (auto change = heuristics::getChangeOutput(tx)) {
             pairsToUnion.emplace_back(change->getAddress(), firstAddress);
         }
     }
