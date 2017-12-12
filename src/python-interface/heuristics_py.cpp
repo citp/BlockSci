@@ -54,4 +54,5 @@ void init_heuristics(py::module &m) {
         py::gil_scoped_release release;
         return heuristics::isCoinjoinExtra(tx, minBaseFee, percentageFee, 0);
     }, "This function uses subset matching in order to determine whether this transaction is a JoinMarket coinjoin.")
+    ;
 }
