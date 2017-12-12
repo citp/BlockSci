@@ -30,7 +30,7 @@ void init_address(py::module &m) {
     .def_readonly("script_num", &Address::scriptNum)
     .def_readonly("type", &Address::type)
     .def("balance", py::overload_cast<>(&Address::calculateBalance, py::const_), "Returns the balance currently held by this address")
-    .def("balance_at_height", py::overload_cast<uint32_t>(&Address::calculateBalance, py::const_), "Returns the balance held by this address when the chain was at the given height")
+    .def("balance_at_height", py::overload_cast<uint32_t>(&Address::calculateBalanceAtHeight, py::const_), "Returns the balance held by this address when the chain was at the given height")
     .def("outs", py::overload_cast<>(&Address::getOutputs, py::const_), "Returns a list of all outputs sent to this address")
     .def("ins", py::overload_cast<>(&Address::getInputs, py::const_), "Returns a list of all inputs spent from this address")
     .def("txes", py::overload_cast<>(&Address::getTransactions, py::const_), "Returns a list of all transactions involving this address")
