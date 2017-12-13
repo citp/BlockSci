@@ -56,6 +56,7 @@ void init_address(py::module &m) {
     .def_readonly("script_num", &Script::scriptNum)
     .def_readonly("type", &Script::type)
     .def(py::init<uint32_t, ScriptType::Enum>(), "Can be constructed directly by passing it an address index and address type")
+    .def("balance", py::overload_cast<BlockHeight>(&Script::calculateBalance, py::const_), py::arg("height") = 0, "Calculates the balance held by this script at the height (Defaults to the full chain)")
     .def("outs", py::overload_cast<>(&Script::getOutputs, py::const_), "Returns a list of all outputs sent to this script")
     .def("ins", py::overload_cast<>(&Script::getInputs, py::const_), "Returns a list of all inputs spent from this script")
     .def("txes", py::overload_cast<>(&Script::getTransactions, py::const_), "Returns a list of all transactions involving this script")

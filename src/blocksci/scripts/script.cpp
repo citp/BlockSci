@@ -63,6 +63,24 @@ namespace blocksci {
         return AnyScript(*this, scripts);
     }
     
+    uint64_t Script::calculateBalance(BlockHeight height, const AddressIndex &index, const ChainAccess &chain) const {
+        uint64_t value = 0;
+        if (height == 0) {
+            for (auto &output : index.getOutputs(*this, chain)) {
+                if (!output.isSpent()) {
+                    value += output.getValue();
+                }
+            }
+        } else {
+            for (auto &output : index.getOutputs(*this, chain)) {
+                if (output.blockHeight <= height && (!output.isSpent() || output.getSpendingTx()->blockHeight > height)) {
+                    value += output.getValue();
+                }
+            }
+        }
+        return value;
+    }
+
     std::vector<Output> Script::getOutputs(const AddressIndex &index, const ChainAccess &chain) const {
         return index.getOutputs(*this, chain);
     }

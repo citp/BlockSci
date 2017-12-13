@@ -40,6 +40,8 @@ namespace blocksci {
         bool operator==(const Script& other) const {
             return type == other.type && scriptNum == other.scriptNum;
         }
+
+        uint64_t calculateBalance(BlockHeight height, const AddressIndex &index, const ChainAccess &chain) const;
         
         void visitPointers(const std::function<void(const Address &)> &) const {}
 
