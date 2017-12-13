@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.4)
+cmake_minimum_required(VERSION 3.9)
 project(${module_name})
 
 set(CMAKE_CXX_STANDARD 14)
@@ -27,7 +27,7 @@ ENDIF("${isSystemDir}" STREQUAL "-1")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-find_package( Boost 1.58 COMPONENTS program_options system filesystem thread iostreams REQUIRED )
+find_package( Boost COMPONENTS program_options system filesystem thread iostreams REQUIRED )
 
 include_directories( ${Boost_INCLUDE_DIR} )
 include_directories(./src)
