@@ -8,6 +8,7 @@ Script Classes
    address_type
    address
    script_type
+   script
    PubkeyScript
    PayToScriptHashScript
    MultisigScript
