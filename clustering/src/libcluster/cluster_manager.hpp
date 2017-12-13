@@ -53,7 +53,7 @@ public:
     template<blocksci::ScriptType::Enum type>
     uint32_t getClusterNum(uint32_t addressNum) const {
         auto &file = std::get<ScriptClusterIndexFile<type>>(scriptClusterIndexFiles);
-        return *file.getData(addressNum);
+        return *file.getData(addressNum - 1);
     }
     
     uint32_t getClusterNum(const blocksci::Address &address) const;
