@@ -32,7 +32,7 @@ def mapreduce_block_ranges(chain, mapFunc, reduceFunc, init,  start=None, end=No
         end = blocks[-1].height
 
     if cpu_count == 1:
-        return reduce(reduceFunc, (mapFunc(block) for block in chain[start:end]))
+        return mapFunc(chain[start:end])
 
     segments = chain.segment(start, end, cpu_count)
     with Pool(cpu_count - 1) as p:
@@ -48,14 +48,14 @@ def mapreduce_blocks(chain, mapFunc, reduceFunc, init, start=None, end=None, cpu
     """
     def mapRangeFunc(blocks):
         return reduce(reduceFunc, (mapFunc(block) for block in blocks), init)
-    return mapreduce_block_ranges(chain, mapRangeFunc, start, end, reduceFunc, init, cpu_count)
+    return mapreduce_block_ranges(chain, mapRangeFunc, reduceFunc, init, start, end, cpu_count)
 
 def mapreduce_txes(chain, mapFunc, reduceFunc, init,  start=None, end=None, cpu_count=psutil.cpu_count()):
     """Initialized multithreaded map reduce function over a stream of transactions
     """
     def mapRangeFunc(blocks):
         return reduce(reduceFunc, (mapFunc(tx) for block in blocks for tx in block))
-    return mapreduce_block_ranges(chain, mapRangeFunc, start, end, reduceFunc, init, cpu_count)
+    return mapreduce_block_ranges(chain, mapRangeFunc, reduceFunc, init, start, end, cpu_count)
 
 
 def map_blocks(self, blockFunc, start = None, end = None, cpu_count=psutil.cpu_count()):
