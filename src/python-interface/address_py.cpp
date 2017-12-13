@@ -27,8 +27,8 @@ void init_address(py::module &m) {
     .def("__repr__", &Address::toString)
     .def(py::self == py::self)
     .def(hash(py::self))
-    .def_readonly("script_num", &Address::scriptNum)
-    .def_readonly("type", &Address::type)
+    .def_readonly("script_num", &Address::scriptNum, "The internal identifier of the address")
+    .def_readonly("type", &Address::type, "The type of address")
     .def("balance", py::overload_cast<BlockHeight>(&Address::calculateBalance, py::const_), py::arg("height") = 0, "Calculates the balance held by this address at the height (Defaults to the full chain)")
     .def("outs", py::overload_cast<>(&Address::getOutputs, py::const_), "Returns a list of all outputs sent to this address")
     .def("ins", py::overload_cast<>(&Address::getInputs, py::const_), "Returns a list of all inputs spent from this address")
@@ -40,7 +40,7 @@ void init_address(py::module &m) {
     }, "Returns the script associated with this address")
     .def_static("address_count", static_cast<size_t(*)()>(addressCount), "Get the total number of address of a given type")
     .def_static("from_string", py::overload_cast<const std::string &>(getAddressFromString), "Construct an address object from an address string")
-    .def_static("with_prefix", py::overload_cast<const std::string &>(getAddressesWithPrefix))
+    .def_static("with_prefix", py::overload_cast<const std::string &>(getAddressesWithPrefix), "Find all addresses beginning with the given prefix")
     ;
     
     py::class_<Script> script(m, "Script", "Class representing a script which coins are sent to");
@@ -53,8 +53,8 @@ void init_address(py::module &m) {
     .def_property_readonly("script", [](const Script &script) {
         return script.getScript().wrapped;
     }, "Returns the script data associated with this script")
-    .def_readonly("script_num", &Script::scriptNum)
-    .def_readonly("type", &Script::type)
+    .def_readonly("script_num", &Script::scriptNum, "The internal identifier of the address")
+    .def_readonly("type", &Script::type, "The kind of script")
     .def(py::init<uint32_t, ScriptType::Enum>(), "Can be constructed directly by passing it an address index and address type")
     .def("balance", py::overload_cast<BlockHeight>(&Script::calculateBalance, py::const_), py::arg("height") = 0, "Calculates the balance held by this script at the height (Defaults to the full chain)")
     .def("outs", py::overload_cast<>(&Script::getOutputs, py::const_), "Returns a list of all outputs sent to this script")
