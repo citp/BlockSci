@@ -138,6 +138,9 @@ Blockchain.heights_to_dates = heights_to_dates
 
 first_miner_run = True
 
+class DummyClass:
+    pass
+
 loaderDirectory = os.path.dirname(os.path.abspath(inspect.getsourcefile(DummyClass)))
 
 def get_miner(block):
@@ -183,10 +186,6 @@ def get_miner(block):
     return "Unknown"
 
 Block.miner = get_miner
-
-class DummyClass:
-    pass
-
 
 class CPP(object):
     def __init__(self, chain):
