@@ -25,6 +25,11 @@ namespace blocksci {
     ranges::optional<Transaction> BaseScript::getTransactionRevealed() const {
         return getTransactionRevealed(*DataAccess::Instance().chain);
     }
+
+    uint64_t Script::calculateBalance(BlockHeight height) const {
+        auto &instance = DataAccess::Instance();
+        return calculateBalance(height, *instance.addressIndex, *instance.chain);
+    }
     
     std::vector<Output> Script::getOutputs() const {
         auto &instance = DataAccess::Instance();

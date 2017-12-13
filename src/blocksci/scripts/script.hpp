@@ -55,6 +55,7 @@ namespace blocksci {
         
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
         AnyScript getScript() const;
+        uint64_t calculateBalance(BlockHeight height) const;
         std::vector<Output> getOutputs() const;
         std::vector<Input> getInputs() const;
         std::vector<Transaction> getTransactions() const;
