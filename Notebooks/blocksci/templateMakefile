@@ -34,7 +34,7 @@ include_directories( ${Boost_INCLUDE_DIR} )
 link_directories(${Boost_LIBRARY_DIR})
 link_directories(/usr/local/lib)
 
-add_subdirectory(/home/ubuntu/BlockSci/libspybind11 ${CMAKE_CURRENT_BINARY_DIR}/pybind11)
+add_subdirectory(/home/ubuntu/BlockSci/libs/pybind11 ${CMAKE_CURRENT_BINARY_DIR}/pybind11)
 
 file(GLOB PYTHON_CLUSTER_SOURCES "*.cpp")
 
