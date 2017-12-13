@@ -52,18 +52,7 @@ void init_blockchain(py::module &m) {
         return chain | ranges::view::slice(start, stop) | ranges::view::stride(step) | ranges::to_vector;
     }, "Return a list of blocks with their heights in the given range")
     .def("segment", segmentChain, "Divide the blockchain into the given number of chunks with roughly the same number of transactions in each")
-    .def("unspent_outputs", [](const Blockchain &chain, blocksci::BlockHeight height) -> ranges::any_view<Output> {
-        if (height == 0) {
-            height = chain.size();
-        }
-        return outputsSpentAfterHeight(chain, height);
-    }, py::arg("height") = 0)
-    .def("coinjoin_txes", heuristics::getCoinjoinTransactions, "Returns a list of all transactions that might be JoinMarket coinjoin transactions")
-    .def("possible_coinjoin_txes", heuristics::getPossibleCoinjoinTransactions, "Returns a list of all transactions that might be coinjoin transactions")
     .def("script_type_txes", getTransactionIncludingOutput, "Returns a list of all transactions that include outputs of the given script type")
-    .def("script_deanon_txes", heuristics::getDeanonTxes, "Return a list of transaction for which is_script_deanon returns true")
-    .def("change_script_type_txes", heuristics::getChangeOverTxes, "Return a list of transaction for which is_change_over returns true")
-    .def("keyset_change_txes", heuristics::getKeysetChangeTxes, "Return a list of transaction for which is_keyset_change returns true")
     .def("scripts", [](const Blockchain &chain, ScriptType::Enum type) {
         return chain.scripts(type);
     })
