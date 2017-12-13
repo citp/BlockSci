@@ -45,6 +45,8 @@ void init_input(py::module &m) {
         return [=](Input &input) {
             return func(input);
         };
+    }, [](auto && docstring) {
+        return std::forward<decltype(docstring)>(docstring);
     });
     
     auto inputRangeClass = addRangeClass<ranges::any_view<Input>>(m, "AnyInputRange");
@@ -56,6 +58,10 @@ void init_input(py::module &m) {
             }
             return list;
         };
+    }, [](std::string docstring) {
+        std::stringstream ss;
+        ss << "For each input: " << docstring;
+        return strdup(ss.str().c_str());
     });
     addInputRangeMethods(inputRangeClass, [](ranges::any_view<Input> &range, auto func) {
         return func(range);
@@ -70,6 +76,10 @@ void init_input(py::module &m) {
             }
             return list;
         };
+    }, [](std::string docstring) {
+        std::stringstream ss;
+        ss << "For each input: " << docstring;
+        return strdup(ss.str().c_str());
     });
     addInputRangeMethods(inputRangeClass2, [](ranges::any_view<Input, ranges::category::random_access | ranges::category::sized> &view, auto func) {
         return func(view);
@@ -88,6 +98,10 @@ void init_input(py::module &m) {
             }
             return list;
         };
+    }, [](std::string docstring) {
+        std::stringstream ss;
+        ss << "For each input: " << docstring;
+        return strdup(ss.str().c_str());
     });
     addInputRangeMethods(nestedInputRangeClass, [](ranges::any_view<ranges::any_view<Input>> &view, auto func) -> ranges::any_view<ranges::any_view<Input>> {
         return ranges::view::transform(view, [=](auto && nestedView) {

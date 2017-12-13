@@ -150,15 +150,28 @@ void init_block(py::module &m) {
     })
     .def_property_readonly("txes", [](const Block &block) -> ranges::any_view<Transaction> {
         return block;
-    })
+    }, R"docstring(
+         Returns a range of all of the txes in the block.
+
+         :returns: AnyTxRange
+         )docstring")
     .def_property_readonly("inputs", [](const Block &block) -> ranges::any_view<Input> {
         return inputs(block);
-    })
+    }, R"docstring(
+         Returns a range of all of the inputs in the block.
+
+         :returns: AnyInputRange
+         )docstring")
+
     .def_property_readonly("outputs", [](const Block &block) -> ranges::any_view<Output> {
         return outputs(block);
-    })
-    .def_property_readonly("next_block", &Block::nextBlock)
-    .def_property_readonly("prev_block", &Block::prevBlock)
+    }, R"docstring(
+         Returns a range of all of the outputs in the block.
+
+         :returns: AnyOutputRange
+         )docstring")
+    .def_property_readonly("next_block", &Block::nextBlock, "Returns the block which follows this one in the chain")
+    .def_property_readonly("prev_block", &Block::prevBlock, "Returns the block which comes before this one in the chain")
     .def("total_spent_of_ages", py::overload_cast<const Block &, blocksci::BlockHeight>(getTotalSpentOfAges), "Returns a list of sum of all the outputs in the block that were spent within a certain of blocks, up to the max age given")
     .def("net_address_type_value", py::overload_cast<const Block &>(netAddressTypeValue), "Returns a set of the net change in the utxo pool after this block split up by address type")
     .def("net_full_type_value", py::overload_cast<const Block &>(netFullTypeValue), "Returns a set of the net change in the utxo pool after this block split up by full type")

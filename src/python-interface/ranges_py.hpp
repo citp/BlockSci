@@ -69,7 +69,7 @@ auto addRangeClass(pybind11::module &m, const std::string &name) {
     })
     .def_property_readonly("all", [](Range & range) { 
         return pythonAllType(range);
-    })
+    }, "Returns a list of all of the objects in the range")
     ;
     return cl;
 }
@@ -103,7 +103,7 @@ auto addRangeClass(pybind11::module &m, const std::string &name) {
     })
     .def_property_readonly("all", [](Range & range) { 
         return pythonAllType(range);
-    })
+    }, "Returns a list of all of the objects in the range")
     ;
     return cl;
 }
@@ -140,7 +140,7 @@ auto addRangeClass(pybind11::module &m, const std::string &name) {
     })
     .def_property_readonly("all", [](Range & range) { 
         return pythonAllType(range);
-    })
+    }, "Returns a list of all of the objects in the range")
     ;
     return cl;
 }
@@ -153,7 +153,7 @@ auto addRangeClass(pybind11::module &m, const std::string &name) {
     .def("__bool__", [](Range &range) { return ranges::distance(range) > 0; })
     .def_property_readonly("all", [](Range & range) { 
         return pythonAllType(range);
-    })
+    }, "Returns a list of all of the objects in the range")
     ;
     return cl;
 }

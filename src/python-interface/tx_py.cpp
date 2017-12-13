@@ -32,66 +32,66 @@ namespace py = pybind11;
 
 using namespace blocksci;
 
-template <typename Class, typename FuncApplication>
-void addTransactionMethods(Class &cl, FuncApplication func) {
+template <typename Class, typename FuncApplication, typename FuncDoc>
+void addTransactionMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     cl
     .def_property_readonly("output_count", func([](const Transaction &tx) {
         return tx.outputCount();
-    }), "The number of outputs this transaction has")
+    }), func2("The number of outputs this transaction has"))
     .def_property_readonly("input_count", func([](const Transaction &tx) {
         return tx.inputCount();
-    }), "The number of inputs this transaction has")
+    }), func2("The number of inputs this transaction has"))
     .def_property_readonly("size_bytes", func([](const Transaction &tx) {
         return tx.sizeBytes();
-    }), "The size of this transaction in bytes")
+    }), func2("The size of this transaction in bytes"))
     .def_property_readonly("locktime", func([](const Transaction &tx) {
         return tx.locktime();
-    }), "The locktime of this transasction")
+    }), func2("The locktime of this transasction"))
     .def_property_readonly("block_height", func([](const Transaction &tx) {
         return tx.blockHeight;
-    }), "The height of the block that this transaction was in")
+    }), func2("The height of the block that this transaction was in"))
     .def_property_readonly("block_time", func([](const Transaction &tx) {
         return tx.block().getTime();
-    }))
+    }), func2("The time that the block containing this transaction arrived"))
     .def_property_readonly("block", func([](const Transaction &tx) {
         return tx.block();
-    }), "The block that this transaction was in")
+    }), func2("The block that this transaction was in"))
     .def_property_readonly("index", func([](const Transaction &tx) {
         return tx.block();
-    }), "The internal index of this transaction")
+    }), func2("The internal index of this transaction"))
     .def_property_readonly("hash", func([](const Transaction &tx) {
         return tx.getHash();
-    }), "The 256-bit hash of this transaction")
+    }), func2("The 256-bit hash of this transaction"))
     .def_property_readonly("input_value", func([](const Transaction &tx) {
         return totalInputValue(tx);
-    }), "The sum of the value of all of the inputs")
+    }), func2("The sum of the value of all of the inputs"))
     .def_property_readonly("output_value", func([](const Transaction &tx) {
         return totalOutputValue(tx);
-    }), "The sum of the value of all of the outputs")
+    }), func2("The sum of the value of all of the outputs"))
     .def_property_readonly("output_value", func([](const Transaction &tx) {
         return totalOutputValue(tx);
-    }), "The sum of the value of all of the outputs")
+    }), func2("The sum of the value of all of the outputs"))
     .def_property_readonly("fee", func([](const Transaction &tx) {
         return fee(tx);
-    }), "The fee paid by this transaction")
+    }), func2("The fee paid by this transaction"))
     .def_property_readonly("fee_per_byte", func([](const Transaction &tx) {
         return feePerByte(tx);
-    }), "The ratio of fee paid to size in bytes of this transaction")
+    }), func2("The ratio of fee paid to size in bytes of this transaction"))
     .def_property_readonly("op_return", func([](const Transaction &tx) {
         return getOpReturn(tx);
-    }), "If this transaction included a null data script, return its output. Otherwise return None")
+    }), func2("If this transaction included a null data script, return its output. Otherwise return None"))
     .def_property_readonly("is_coinbase", func([](const Transaction &tx) {
         return tx.isCoinbase();
-    }), "Return's true if this transaction is a Coinbase transaction")
+    }), func2("Return's true if this transaction is a Coinbase transaction"))
     .def_property_readonly("change_output", func([](const Transaction &tx) {
         return heuristics::uniqueChangeByLegacyHeuristic(tx);
-    }), "If the change address in this transaction can be determined via the fresh address criteria, return it. Otherwise return None.")
+    }), func2("If the change address in this transaction can be determined via the fresh address criteria, return it. Otherwise return None."))
     ;
 }
 
 void init_tx(py::module &m) {
     
-    auto txRangeClass = addRangeClass<ranges::any_view<Transaction>>(m, "AnyTransactionRange");
+    auto txRangeClass = addRangeClass<ranges::any_view<Transaction>>(m, "AnyTxRange");
     addTransactionMethods(txRangeClass, [](auto func) {
         return [=](ranges::any_view<Transaction> &view) {
             py::list list;
@@ -100,6 +100,10 @@ void init_tx(py::module &m) {
             }
             return list;
         };
+    }, [](std::string docstring) {
+        std::stringstream ss;
+        ss << "For each transaction: " << docstring;
+        return strdup(ss.str().c_str());
     });
 
     txRangeClass
@@ -121,6 +125,8 @@ void init_tx(py::module &m) {
         return [=](Transaction &tx) {
             return func(tx);
         };
+    }, [](auto && docstring) {
+        return std::forward<decltype(docstring)>(docstring);
     });
     
     txClass
@@ -153,10 +159,4 @@ void init_tx(py::module &m) {
         return tx.outputs();
     }, "A list of the outputs of the transaction") // same as above
     ;
-//
-//    py::enum_<CoinJoinResult>(m, "CoinJoinResult")
-//    .value("True", CoinJoinResult::True)
-//    .value("False", CoinJoinResult::False)
-//    .value("Timeout", CoinJoinResult::Timeout)
-//    ;
 }

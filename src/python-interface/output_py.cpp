@@ -25,33 +25,33 @@ namespace py = pybind11;
 
 using namespace blocksci;
 
-template <typename Class, typename FuncApplication>
-void addOutputMethods(Class &cl, FuncApplication func) {
+template <typename Class, typename FuncApplication, typename FuncDoc>
+void addOutputMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     cl
     .def_property_readonly("address", func([](const Output &output) {
         return output.getAddress();
-    }), "This address linked to this output")
+    }), func2("This address linked to this output"))
     .def_property_readonly("value", func([](const Output &output) {
         return output.getValue();
-    }), "The value in base currency attached to this output")
+    }), func2("The value in base currency attached to this output"))
     .def_property_readonly("address_type", func([](const Output &output) {
         return output.getType();
-    }), "The address type of the output")
+    }), func2("The address type of the output"))
     .def_property_readonly("is_spent", func([](const Output &output) {
         return output.isSpent();
-    }), "Returns whether this output has been spent")
+    }), func2("Returns whether this output has been spent"))
     .def_property_readonly("spending_tx_index", func([](const Output &output) {
         return output.getSpendingTxIndex();
-    }), "Returns the index of the tranasction which spent this output or 0 if it is unspent")
+    }), func2("Returns the index of the tranasction which spent this output or 0 if it is unspent"))
     .def_property_readonly("spending_tx", func([](const Output &output) {
         return output.getSpendingTx();
-    }), "Returns the transaction that spent this output or None if it is unspent")
+    }), func2("Returns the transaction that spent this output or None if it is unspent"))
     .def_property_readonly("tx", func([](const Output &output) {
         return output.transaction();
-    }), "The transaction that contains this input")
+    }), func2("The transaction that contains this input"))
     .def_property_readonly("block", func([](const Output &output) {
         return output.block();
-    }), "The block that contains this input")
+    }), func2("The block that contains this input"))
     ;
 }
 
@@ -63,37 +63,37 @@ void addOutputRangeMethods(Class &cl, FuncApplication func) {
         return func(range, [=](auto && r) -> ranges::any_view<blocksci::Output> {
             return outputsUnspent(r);
         });
-    })
+    }, "Returns a range including the subset of outputs which were never spent")
     .def("spent_before",  [=](Range &range, blocksci::BlockHeight height) {
         return func(range, [=](auto && r) -> ranges::any_view<blocksci::Output> {
             return outputsSpentBeforeHeight(r, height);
         });
-    })
+    }, "Returns a range including the subset of outputs which were spent before the given height")
     .def("spent_after",  [=](Range &range, blocksci::BlockHeight height) {
         return func(range, [=](auto && r) -> ranges::any_view<blocksci::Output> {
             return outputsSpentAfterHeight(std::forward<decltype(r)>(r), height);
         });
-    })
+    }, "Returns a range including the subset of outputs which were spent after the given height")
     .def("spent_within",  [=](Range &range, blocksci::BlockHeight height) {
         return func(range, [=](auto && r) -> ranges::any_view<blocksci::Output> {
             return outputsSpentWithinRelativeHeight(std::forward<decltype(r)>(r), height);
         });
-    })
+    }, "Returns a range including the subset of outputs which were spent within the given number of blocks")
     .def("spent_outside",  [=](Range &range, blocksci::BlockHeight height) {
         return func(range, [=](auto && r) -> ranges::any_view<blocksci::Output> {
             return outputsSpentOutsideRelativeHeight(std::forward<decltype(r)>(r), height);
         });
-    })
+    }, "Returns a range including the subset of outputs which were spent later than the given number of blocks")
     .def("with_type", [=](Range &range, AddressType::Enum type) {
         return func(range, [=](auto && r) -> ranges::any_view<blocksci::Output> {
             return outputsOfType(std::forward<decltype(r)>(r), type);
         });
-    })
+    }, "Returns a range including the subset of outputs which were sent to the given address type")
     .def("with_type", [=](Range &range, ScriptType::Enum type) {
         return func(range, [=](auto && r) -> ranges::any_view<blocksci::Output> {
             return outputsOfType(std::forward<decltype(r)>(r), type);
         });
-    })
+    }, "Returns a range including the subset of outputs which were sent to the given script type")
     ;
 }
 
@@ -103,8 +103,8 @@ void init_output(py::module &m) {
     .def("__repr__", &OutputPointer::toString)
     .def(py::self == py::self)
     .def(hash(py::self))
-    .def_readonly("tx_index", &OutputPointer::txNum)
-    .def_readonly("out_index", &OutputPointer::inoutNum)
+    .def_readonly("tx_index", &OutputPointer::txNum, "The index of the transaction this points to")
+    .def_readonly("out_index", &OutputPointer::inoutNum, "The offset of the output in the pointed to transaction")
     ;
     
     py::class_<Output> outputClass(m, "Output", "Class representing a transaction output");
@@ -119,6 +119,8 @@ void init_output(py::module &m) {
         return [=](Output &output) {
             return func(output);
         };
+    }, [](auto && docstring) {
+        return std::forward<decltype(docstring)>(docstring);
     });
     
     auto outputRangeClass = addRangeClass<ranges::any_view<Output>>(m, "AnyOutputRange");
@@ -130,6 +132,10 @@ void init_output(py::module &m) {
             }
             return list;
         };
+    }, [](std::string docstring) {
+        std::stringstream ss;
+        ss << "For each output: " << docstring;
+        return strdup(ss.str().c_str());
     });
     addOutputRangeMethods(outputRangeClass, [](ranges::any_view<Output> &range, auto func) {
         return func(range);
@@ -144,6 +150,10 @@ void init_output(py::module &m) {
             }
             return list;
         };
+    }, [](std::string docstring) {
+        std::stringstream ss;
+        ss << "For each output: " << docstring;
+        return strdup(ss.str().c_str());
     });
     addOutputRangeMethods(outputRangeClass2, [](ranges::any_view<Output, ranges::category::random_access | ranges::category::sized> &range, auto func) {
         return func(range);
@@ -163,6 +173,10 @@ void init_output(py::module &m) {
             }
             return list;
         };
+    }, [](std::string docstring) {
+        std::stringstream ss;
+        ss << "For each output: " << docstring;
+        return strdup(ss.str().c_str());
     });
     addOutputRangeMethods(nestedOutputRangeClass, [](ranges::any_view<ranges::any_view<Output>> &view, auto func) -> ranges::any_view<ranges::any_view<Output>> {
         return view | ranges::view::transform(func);

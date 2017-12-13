@@ -72,7 +72,14 @@ void init_address(py::module &m) {
     py::class_<script::Pubkey>(m, "PubkeyScript", baseScript, "Extra data about pay to pubkey address")
     .def("__repr__", py::overload_cast<>(&script::Pubkey::toString, py::const_))
     .def("__str__", py::overload_cast<>(&script::Pubkey::toPrettyString, py::const_))
-    .def_property_readonly("pubkey", &script::Pubkey::getPubkey, "Public key for this address")
+    .def_property_readonly("pubkey", [](const script::Pubkey &script) -> ranges::optional<py::bytes> {
+        auto pubkey = script.getPubkey();
+        if (pubkey) {
+            return py::bytes(reinterpret_cast<const char *>(pubkey->begin()), pubkey->size());
+        } else {
+            return ranges::nullopt;
+        }
+    }, pybind11::keep_alive<0, 1>(), "Public key for this address")
     .def_readonly("pubkeyhash", &script::Pubkey::pubkeyhash, "160 bit address hash")
     .def_property_readonly("address_string", py::overload_cast<>(&script::Pubkey::addressString, py::const_), "Bitcoin address string")
     ;
@@ -99,7 +106,7 @@ void init_address(py::module &m) {
     .def("__str__", py::overload_cast<>(&script::OpReturn::toPrettyString, py::const_))
     .def_property_readonly("data", [](const script::OpReturn &address) {
         return py::bytes(address.data);
-    }, "Data contained inside this script")
+    }, pybind11::keep_alive<0, 1>(), "Data contained inside this script")
     ;
     
     py::class_<script::Nonstandard>(m, "NonStandardScript", baseScript, "Extra data about non-standard address")
@@ -118,11 +125,12 @@ void init_address(py::module &m) {
     .value("nulldata", AddressType::Enum::NULL_DATA)
     .value("witness_pubkeyhash", AddressType::Enum::WITNESS_PUBKEYHASH)
     .value("witness_scripthash", AddressType::Enum::WITNESS_SCRIPTHASH)
-    .def_property_readonly_static("types", [](py::object) -> std::array<AddressType::Enum, 6> {
+    .def_property_readonly_static("types", [](py::object) -> std::array<AddressType::Enum, 8> {
         return {{AddressType::Enum::PUBKEY, AddressType::Enum::PUBKEYHASH, AddressType::Enum::SCRIPTHASH,
-            AddressType::Enum::MULTISIG, AddressType::Enum::NULL_DATA, AddressType::Enum::NONSTANDARD}};
-        })
-    .def("pretty_name", [](AddressType::Enum val) {
+            AddressType::Enum::MULTISIG, AddressType::Enum::NULL_DATA, AddressType::Enum::NONSTANDARD,
+            AddressType::Enum::WITNESS_PUBKEYHASH, AddressType::Enum::WITNESS_SCRIPTHASH}};
+        }, "A list of all possible address types")
+    .def("__str__", [](AddressType::Enum val) {
         switch (val) {
             case AddressType::Enum::PUBKEY:
                 return "Pay to pubkey";
@@ -146,13 +154,17 @@ void init_address(py::module &m) {
     })
     ;
     
-    py::enum_<ScriptType::Enum>(m, "script_type", py::arithmetic(), "Enumeration of all address types")
+    py::enum_<ScriptType::Enum>(m, "script_type", py::arithmetic(), "Enumeration of all script types")
     .value("nonstandard", ScriptType::Enum::NONSTANDARD)
     .value("pubkey", ScriptType::Enum::PUBKEY)
     .value("scripthash", ScriptType::Enum::SCRIPTHASH)
     .value("multisig", ScriptType::Enum::MULTISIG)
     .value("nulldata", ScriptType::Enum::NULL_DATA)
-    .def("pretty_name", [](AddressType::Enum val) {
+    .def_property_readonly_static("types", [](py::object) -> std::array<ScriptType::Enum, 5> {
+        return {{ScriptType::Enum::PUBKEY, ScriptType::Enum::SCRIPTHASH,
+            ScriptType::Enum::MULTISIG, ScriptType::Enum::NULL_DATA, ScriptType::Enum::NONSTANDARD}};
+    }, "A list of all possible script types")
+    .def("__str__", [](ScriptType::Enum val) {
         switch (val) {
             case ScriptType::Enum::PUBKEY:
                 return "Pay to pubkey";
