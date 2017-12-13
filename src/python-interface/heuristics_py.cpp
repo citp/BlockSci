@@ -5,8 +5,7 @@
 //  Created by Malte Möser on 10/3/17.
 //
 
-#include <blocksci/heuristics/change_address.hpp>
-#include <blocksci/heuristics/tx_identification.hpp>
+#include <blocksci/heuristics.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/output.hpp>
 
