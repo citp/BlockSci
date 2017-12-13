@@ -9,6 +9,7 @@
 #ifndef chain_h
 #define chain_h
 
+#include <blocksci/chain/algorithms.hpp>
 #include <blocksci/chain/block.hpp>
 #include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/chain_access.hpp>
