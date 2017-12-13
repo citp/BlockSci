@@ -6,6 +6,7 @@
 //
 
 #include <blocksci/heuristics.hpp>
+#include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/output.hpp>
 
