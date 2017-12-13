@@ -4,11 +4,8 @@ file(GLOB CLUSTERER_SOURCES "*.cpp")
 add_executable(clusterer ${CLUSTERER_SOURCES} ${CLUSTERER_HEADERS})
 
 target_link_libraries( clusterer pthread)
-target_link_libraries( clusterer sparsepp)
 target_link_libraries( clusterer dset)
 target_link_libraries( clusterer blocksci)
-target_link_libraries( clusterer sqlite3)
-target_link_libraries( clusterer leveldb)
 target_link_libraries( clusterer ${Boost_LIBRARIES})
 
 install(TARGETS clusterer DESTINATION bin)
