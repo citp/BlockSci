@@ -127,16 +127,18 @@ def new_init(self, loc):
 
     if os.path.exists(ec2_instance_path):
         if not os.path.exists(tx_heated_path):
-            print("Tx data is not heated")
+            print("Note: this appears to be a fresh instance. Transaction data has not yet been cached locally. Most queries might be slow. Caching is currently ongoing in the background, and usually takes 1 hour.")
         elif not os.path.exists(scripts_heated_path):
-            print("Script data is not heated")
+            print("Note: this appears to be a fresh instance. Script data has not yet been cached locally. Some queries might be slow. Caching is currently ongoing in the background, and usually takes 1 hour.")
         elif not os.path.exists(index_heated_path):
-            print("Index data is not heated")
+            print("Note: this appears to be a fresh instance. Index data has not yet been cached locally. A few queries might be slow. Caching is currently ongoing in the background, and usually takes 2 hours.")
 Blockchain.__init__ = new_init
 Blockchain.range = block_range
 Blockchain.heights_to_dates = heights_to_dates
 
 first_miner_run = True
+
+loaderDirectory = os.path.dirname(os.path.abspath(inspect.getsourcefile(DummyClass)))
 
 def get_miner(block):
     global first_miner_run
@@ -145,7 +147,7 @@ def get_miner(block):
     global coinbase_tag_re
     if first_miner_run:
         import json
-        with open("Blockchain-Known-Pools/pools.json") as f:
+        with open(loaderDirectory + "/Blockchain-Known-Pools/pools.json") as f:
             pool_data = json.load(f)
         addresses = [Address.from_string(addr_string) for addr_string in pool_data["payout_addresses"]]
         tagged_addresses = {pointer: pool_data["payout_addresses"][address] for address in addresses if address in pool_data["payout_addresses"]}
@@ -184,8 +186,6 @@ Block.miner = get_miner
 
 class DummyClass:
     pass
-
-loaderDirectory = os.path.dirname(os.path.abspath(inspect.getsourcefile(DummyClass)))
 
 
 class CPP(object):
