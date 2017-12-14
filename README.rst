@@ -17,17 +17,16 @@ Additionally, a demonstration Notebook_ is available in the Notebooks folder.
 
 For installation instructions, see below. More detailed documentation is coming soon. Meanwhile, feel free to contact us at blocksci@lists.cs.princeton.edu.
 
-Latest Release (BlockSci v0.3)
+Latest release (BlockSci v0.3)
 ================================
 
-BlockSci has been updated to version 0.3. This includes many bug fixes and improvements following the initial release
-which you can read about in the `release notes`_. It is being released along with a new AMI image running the new version
-as well as updated documentation.
+Version 0.3 includes many bug fixes and a massive 5x performance improvements, 
+which you can read about in the `release notes`_. We are also releasing new AMI image_ running version 0.3 (explained under "Quick setup" below) as well as updated documentation.
 
 .. _release notes: https://citp.github.io/BlockSci/changelog.html#version-0-3
 .. _image: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-1f9b8364
 
-Quick Setup using Amazon EC2
+Quick setup using Amazon EC2
 ==============================
 
 If you want to start using BlockSci immediately, we have made available an EC2 image: ami-1f9b8364_. We recomend using instance with 60 GB of memory or more for optimal performance (r4.2xlarge). On boot, a Jupyter Notebook running BlockSci will launch immediately. To access the notebook, you must set up port forwarding to your computer. Inserting the name of your private key file and the domain of your ec2 instance into the following command will make the Notebook available on your machine.
@@ -45,7 +44,7 @@ There is no need for user intervention to resolve this issue since the machine w
 .. _ami-1f9b8364: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-1f9b8364
 .. _known performance issue: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-initialize.html
 
-Local Setup
+Local setup
 =====================
 To run BlockSci locally, you must be running a full node (such as bitcoind or an altcoin node) since BlockSci requires the full serialized blockchain data structure which full nodes produce. 
 
@@ -66,7 +65,7 @@ RPC mode uses the RPC interface of a cryptocurrency to extract data regarding th
 
 	blocksci_parser --username [user] --password [pass] --address [ip] --port [port] --output-directory bitcoin-data
 
-Using the Analysis Library
+Using the analysis library
 ============================
 
 After the parser has been run, the analysis library is ready for use. This can again be used through two different interfaces
@@ -112,7 +111,7 @@ which will open a window in your browser to the Jupyter server.
 .. _Jupyter Notebook: https://jupyter.readthedocs.io/en/latest/install.html
 
 
-BlockSci Compilation Instructions
+BlockSci compilation instructions
 ======================================
 
 Here are the steps for compiling BlockSci on Ubuntu 16.04.
@@ -179,7 +178,7 @@ Note that BlockSci only actively supports python 3.
 	sudo -H pip3 install --upgrade pip
 	sudo -H pip3 install --upgrade multiprocess psutil jupyter pycrypto matplotlib pandas dateparser
 	
-Team & Contact info
+Team & contact info
 ===================
 
 BlockSci was created by Harry Kalodner, Steven Goldfeder, Alishah Chator, Malte Möser, and Arvind Narayanan at Princeton University. It is supported by NSF grants CNS-1421689 and CNS-1651938 and an NSF Graduate Research Fellowship under grant number DGE-1148900. We've released a paper_ describing BlockSci's design and a few applications that illustrate its capabilities. You can contact the team at blocksci@lists.cs.princeton.edu.
