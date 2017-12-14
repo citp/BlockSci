@@ -7,20 +7,13 @@ Changelog
 Version 0.3
 ========================
 
-New Data Format
-------------------
-
-This version of BlockSci uses an updated data format requiring rerunning the parser from scratch if you are running a local
-copy of BlockSci. If you are using the EC2 AMI image you can simply launch a new server with the BlockSci 0.3 image.
-
-Increased Performance
+5x performance increase
 -----------------------
-We acheived a ~4% increase in tx data size for a ~5x performance increase
+We acheived a roughly 5x performance increase at the cost of a small (under 4%) increase in memory consumption. BlockSci can now iterate over every transaction input and output on the Bitcoin blockchain in about 1 second on a single 4-core EC2 instance. Most of the improvements came from improving memory alignment in data files.
 
-Below we compare the performance numbers performing various performance calculations on the blockchain up 
-to block 478,449 in order to match the original version.
+In our paper_ we presented performance results for iterating over transactions (up to block 478,449 of the Bitcoin blockchain). In the table below we compare the timings reported in the paper (Old) to the corresponding timings for version 0.3 (New).
 
-Most of the improvements came from improving memory alignment in data files which lead to a small increase in size.
+.. _paper: https://arxiv.org/pdf/1709.02489.pdf
 
 +-----------------------------+----------------------+----------------------------+
 |Iterating over               | Single Threaded      |     Multithreaded          |
@@ -36,11 +29,19 @@ Most of the improvements came from improving memory alignment in data files whic
 |Headers in random order      | 303.0 sec | 99.9 sec | Unsupported |  Unsupported |
 +-----------------------------+-----------+----------+-------------+--------------+
 
+
+New Data Format
+------------------
+
+As noted above, we updated the data format. This requires rerunning the parser from scratch if you are running a local
+copy of BlockSci. If you are using the EC2 AMI image you can simply launch a new server with the BlockSci 0.3 image.
+
 SegWit Support & API changes
 -----------------------------
 - We provide full support to two new address types (Pay to Witness Script Hash and Pay to Witness Pubkey Hash)
-- Provide distinction between address type and script type
-  In this version we introduce a distinction between two outputs which are sent the same way and two outputs that can be spent
+- New distinction between address type and script type
+
+  Version 0.3 introduces a distinction between two outputs which are sent the same way and two outputs that can be spent
   using the same information. This difference comes up in multiple circumstances including when a the same public key is used
   is a pay to public key hash output and inside a multisignature output.
   
