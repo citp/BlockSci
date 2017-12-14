@@ -1,0 +1,6 @@
+multiprocess
+psutil
+pycrypto
+matplotlib
+pandas
+dateparser
