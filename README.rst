@@ -20,7 +20,7 @@ For installation instructions, see below. More detailed documentation is coming 
 Latest release (BlockSci v0.3)
 ================================
 
-Version 0.3 includes many bug fixes and a massive 5x performance improvements, 
+Version 0.3 includes many bug fixes and a massive 5x performance improvement, 
 which you can read about in the `release notes`_. We are also releasing new AMI image_ running version 0.3 (explained under "Quick setup" below) as well as updated documentation.
 
 .. _release notes: https://citp.github.io/BlockSci/changelog.html#version-0-3
@@ -37,9 +37,9 @@ If you want to start using BlockSci immediately, we have made available an EC2 i
 
 This sets up an SSH tunnel between port 8888 on your remote EC2 instance and port 8888 on your localhost. You can use whichever port you like on your local machine. Next, you can navigate to http://localhost:8888/ in your browser and log in with the password 'blocksci'. A demo notebook will be available for you to run and you can begin exploring the blockchain. Don't forget to shut down the EC2 instance when you are finished since EC2 charges hourly.
 
-AWS instances suffer from a `known performance issue`_ when starting up from an existing AMI. When the machine starts up it doesn't actually load all of the data on the disk so that startup can be instant. Instead it only loads the data when it is accessed for the first time. Thus BlockSci will temporarly operate slowely when the image has first been launched. All examples in the demo Notebook should run at full speed about 20 minutes after launch and it will take approximately 3 hours to reach full speed.
+AWS instances suffer from a `known performance issue`_ when starting up from an existing AMI. When the machine starts up it doesn't actually load all of the data on the disk so that startup can be instant. Instead it only loads the data when it is accessed for the first time. Thus BlockSci will temporarly operate slowly when the image has first been launched. Within about 20 minutes after launch, the most crucial data files will be loaded to disk from the network, and most quries should run at full speed, including all examples in the demo Notebook. After about 3.5 hours, all data will be loaded to disk and all queries will reach full speed.
 
-There is no need for user intervention to resolve this issue since the machine will do so automatically on launch
+There is no need for user intervention to resolve this issue since the machine will do so automatically on launch.
 
 .. _ami-1f9b8364: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-1f9b8364
 .. _known performance issue: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-initialize.html
