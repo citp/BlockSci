@@ -7,7 +7,7 @@ Current tools for blockchain analysis depend on general-purpose databases that p
 
 Documentation
 =====================
-Documentation_ is available for the python interface library.
+Documentation_ is available for the Python interface.
 
 .. _Documentation: https://citp.github.io/BlockSci/
 
