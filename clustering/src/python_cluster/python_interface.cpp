@@ -54,7 +54,7 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
      }, "Return the cluster containing the given script")
      .def("cluster_count", &ClusterManager::clusterCount, "Get the total number of clusters")
      .def("clusters", &ClusterManager::getClusters
-        , "Get a list of all clusters (The list is lazy so there is no cost to calling this method")
+        , "Get a list of all clusters (The list is lazy so there is no cost to calling this method)")
      .def("cluster_sizes", &ClusterManager::getClusterSizes, "Get a list of all cluster sizes (This is quite slow)")
      .def("tagged_clusters", &ClusterManager::taggedClusters
         , "Given a dictionary of tags, return a list of TaggedCluster objects for any clusters containing tagged scripts")
