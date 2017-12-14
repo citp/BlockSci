@@ -24,12 +24,12 @@ Version 0.3 includes many bug fixes and a massive 5x performance improvement,
 which you can read about in the `release notes`_. We are also releasing new AMI image_ running version 0.3 (explained under "Quick setup" below) as well as updated documentation.
 
 .. _release notes: https://citp.github.io/BlockSci/changelog.html#version-0-3
-.. _image: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-1f9b8364
+.. _image: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-7cf38706
 
 Quick setup using Amazon EC2
 ==============================
 
-If you want to start using BlockSci immediately, we have made available an EC2 image: ami-1f9b8364_. We recomend using instance with 60 GB of memory or more for optimal performance (r4.2xlarge). On boot, a Jupyter Notebook running BlockSci will launch immediately. To access the notebook, you must set up port forwarding to your computer. Inserting the name of your private key file and the domain of your ec2 instance into the following command will make the Notebook available on your machine.
+If you want to start using BlockSci immediately, we have made available an EC2 image: ami-7cf38706_. We recomend using instance with 60 GB of memory or more for optimal performance (r4.2xlarge). On boot, a Jupyter Notebook running BlockSci will launch immediately. To access the notebook, you must set up port forwarding to your computer. Inserting the name of your private key file and the domain of your ec2 instance into the following command will make the Notebook available on your machine.
 
 .. code-block:: bash
 
@@ -41,7 +41,7 @@ AWS instances suffer from a `known performance issue`_ when starting up from an 
 
 There is no need for user intervention to resolve this issue since the machine will do so automatically on launch.
 
-.. _ami-1f9b8364: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-1f9b8364
+.. _ami-7cf38706: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-7cf38706
 .. _known performance issue: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-initialize.html
 
 Local setup
