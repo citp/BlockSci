@@ -9,6 +9,7 @@
 #ifndef input_py_hpp
 #define input_py_hpp
 
+#include <blocksci/chain/algorithms.hpp>
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/block.hpp>
 #include <blocksci/chain/transaction.hpp>
@@ -53,37 +54,37 @@ void addInputMethods(Class &cl, FuncApplication func, FuncDoc func2) {
 
 template <typename Class, typename FuncApplication>
 void addInputRangeMethods(Class &cl, FuncApplication func) {
-	using namespace blocksci;
+    using namespace blocksci;
     using Range = typename Class::type;
     cl
-    .def("sent_before",  [=](Range &range, blocksci::BlockHeight height) {
-        return func(range, [=](auto && r) -> ranges::any_view<blocksci::Input> {
-            return inputsCreatedBeforeHeight(std::forward<decltype(r)>(r), height);
+    .def("sent_before",  [=](Range &range, BlockHeight height) {
+        return func(range, [=](auto && r) -> ranges::any_view<Input> {
+            return inputsCreatedBeforeHeight(r, height);
         });
     }, "Returns a range including the subset of inputs which spent an output created before the given height")
     .def("sent_after",  [=](Range &range, blocksci::BlockHeight height) {
         return func(range, [=](auto && r) -> ranges::any_view<blocksci::Input> {
-            return inputsCreatedAfterHeight(std::forward<decltype(r)>(r), height);
+            return inputsCreatedAfterHeight(r, height);
         });
     }, "Returns a range including the subset of inputs which spent an output created after the given height")
     .def("sent_within",  [=](Range &range, blocksci::BlockHeight height) {
         return func(range, [=](auto && r) -> ranges::any_view<blocksci::Input> {
-            return inputsCreatedWithinRelativeHeight(std::forward<decltype(r)>(r), height);
+            return inputsCreatedWithinRelativeHeight(r, height);
         });
     }, "Returns a range including the subset of inputs which spent an output created more than a given number of blocks before the input")
     .def("sent_outside",  [=](Range &range, blocksci::BlockHeight height) {
         return func(range, [=](auto && r) -> ranges::any_view<blocksci::Input> {
-            return inputsCreatedOutsideRelativeHeight(std::forward<decltype(r)>(r), height);
+            return inputsCreatedOutsideRelativeHeight(r, height);
         });
     }, "Returns a range including the subset of inputs which spent an output created less than a given number of blocks before the input")
     .def("with_type", [=](Range &range, AddressType::Enum type) {
         return func(range, [=](auto && r) -> ranges::any_view<blocksci::Input> {
-        	return inputsOfType(std::forward<decltype(r)>(r), type);
+        	return inputsOfType(r, type);
         });
     }, "Return a range including only inputs sent to the given address type")
     .def("with_type", [=](Range &range, ScriptType::Enum type) {
         return func(range, [=](auto && r) -> ranges::any_view<blocksci::Input> {
-        	return inputsOfType(std::forward<decltype(r)>(r), type);
+        	return inputsOfType(r, type);
         });
     }, "Return a range including only inputs sent to the given script type")
     ;
