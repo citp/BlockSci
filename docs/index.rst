@@ -7,16 +7,20 @@ BlockSci Version 0.3 Documentation
 ====================================
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
    :caption: Contents:
 
    readme
+
+   changelog
 
    chain/chain
 
    scripts/scripts
 
    heuristics/heuristics
+
+   clustering/clustering
 
 Old Documentation
 =======================
