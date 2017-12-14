@@ -46,11 +46,18 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
      
      py::class_<ClusterManager>(m, "ClusterManager", "Class managing the cluster dat")
      .def(py::init<std::string>())
-     .def("cluster_with_address", &ClusterManager::getCluster)
-     .def("cluster_count", &ClusterManager::clusterCount)
-     .def("clusters", &ClusterManager::getClusters)
-     .def("cluster_sizes", &ClusterManager::getClusterSizes)
-     .def("tagged_clusters", &ClusterManager::taggedClusters)
+     .def("cluster_with_address", [](const ClusterManager &cm, const Address &address) {
+        return cm.getCluster(address);
+     }, "Return the cluster containing the given address")
+     .def("cluster_with_script", [](const ClusterManager &cm, const Script &script) {
+        return cm.getCluster(script);
+     }, "Return the cluster containing the given script")
+     .def("cluster_count", &ClusterManager::clusterCount, "Get the total number of clusters")
+     .def("clusters", &ClusterManager::getClusters
+        , "Get a list of all clusters (The list is lazy so there is no cost to calling this method")
+     .def("cluster_sizes", &ClusterManager::getClusterSizes, "Get a list of all cluster sizes (This is quite slow)")
+     .def("tagged_clusters", &ClusterManager::taggedClusters
+        , "Given a dictionary of tags, return a list of TaggedCluster objects for any clusters containing tagged scripts")
      ;
      
      py::class_<Cluster>(m, "Cluster", "Class representing a cluster")
@@ -60,21 +67,21 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
      .def("__hash__", [] (const Cluster &cluster) {
          return cluster.clusterNum;
      })
-     .def_property_readonly("scripts", &Cluster::getScripts)
-     .def("tagged_scripts", &Cluster::taggedScripts)
-     .def("script_count", &Cluster::getScriptCount)
+     .def_property_readonly("scripts", &Cluster::getScripts, "Get a iterable over all the scripts in the cluster")
+     .def("tagged_scripts", &Cluster::taggedScripts, "Given a dictionary of tags, return a list of TaggedScript objects for any tagged scripts in the cluster")
+     .def("script_count", &Cluster::getScriptCount, "Return the number of scripts of the given type in the cluster")
      ;
      
      py::class_<TaggedScript>(m, "TaggedScript")
-     .def_readonly("script", &TaggedScript::script)
-     .def_readonly("tag", &TaggedScript::tag)
+     .def_readonly("script", &TaggedScript::script, "Return the script object which has been tagged")
+     .def_readonly("tag", &TaggedScript::tag, "Return the tag associated with the contained script")
      ;
      
      py::class_<TaggedCluster>(m, "TaggedCluster")
      .def_property_readonly("cluster", [](const TaggedCluster &tc) {
          return tc.cluster;
-     })
-     .def_readonly("tagged_addresses", &TaggedCluster::taggedScripts)
+     }, "Return the cluster object which has been tagged")
+     .def_readonly("tagged_addresses", &TaggedCluster::taggedScripts, "Return the list of scripts inside the cluster which have been tagged")
      ;
      
      py::class_<cluster_range>(m, "ClusterRange")

@@ -22,27 +22,31 @@ uint32_t ClusterManager::clusterCount() const {
     return static_cast<uint32_t>(clusterOffsetFile.size());
 }
 
-template<blocksci::AddressType::Enum type>
+template<blocksci::ScriptType::Enum type>
 struct ClusterNumFunctor {
-    static uint32_t f(const ClusterManager *cm, const blocksci::Address &address) {
-        return cm->getClusterNum<scriptType(type)>(address.scriptNum);
+    static uint32_t f(const ClusterManager *cm, uint32_t scriptNum) {
+        return cm->getClusterNum<type>(scriptNum);
     }
 };
 
 
-uint32_t ClusterManager::getClusterNum(const blocksci::Address &address) const {
-    static auto table = blocksci::make_dynamic_table<blocksci::AddressType, ClusterNumFunctor>();
-    static constexpr std::size_t size = blocksci::AddressType::all.size();
+uint32_t ClusterManager::getClusterNum(const blocksci::Script &script) const {
+    static auto table = blocksci::make_dynamic_table<blocksci::ScriptType, ClusterNumFunctor>();
+    static constexpr std::size_t size = blocksci::ScriptType::all.size();
     
-    auto index = static_cast<size_t>(address.type);
+    auto index = static_cast<size_t>(script.type);
     if (index >= size)
     {
         throw std::invalid_argument("combination of enum values is not valid");
     }
-    return table[index](this, address);
+    return table[index](this, script.scriptNum);
 }
 
 Cluster ClusterManager::getCluster(const blocksci::Address &address) const {
+    return Cluster(getClusterNum(address), *this);
+}
+
+Cluster ClusterManager::getCluster(const blocksci::Script &script) const {
     return Cluster(getClusterNum(address), *this);
 }
 

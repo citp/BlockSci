@@ -49,14 +49,15 @@ public:
     ClusterManager(std::string baseDirectory);
     
     Cluster getCluster(const blocksci::Address &address) const;
+    Cluster getCluster(const blocksci::Script &script) const;
     
     template<blocksci::ScriptType::Enum type>
-    uint32_t getClusterNum(uint32_t addressNum) const {
+    uint32_t getClusterNum(uint32_t scriptNum) const {
         auto &file = std::get<ScriptClusterIndexFile<type>>(scriptClusterIndexFiles);
-        return *file.getData(addressNum - 1);
+        return *file.getData(scriptNum - 1);
     }
     
-    uint32_t getClusterNum(const blocksci::Address &address) const;
+    uint32_t getClusterNum(const blocksci::Script &script) const;
     
     uint32_t getClusterSize(uint32_t clusterNum) const;
     boost::iterator_range<const blocksci::Script *> getClusterScripts(uint32_t clusterNum) const;
