@@ -9,45 +9,93 @@
 #ifndef script_hpp
 #define script_hpp
 
-#include <blocksci/address/address_types.hpp>
-#include <blocksci/address/address.hpp>
+#include "script_type.hpp"
+#include "scripts_fwd.hpp"
 
+#include <blocksci/chain/chain_fwd.hpp>
+
+#include <range/v3/utility/optional.hpp>
+
+#include <functional>
 #include <vector>
 #include <memory>
-#include <stdio.h>
+#include <limits>
 
 namespace blocksci {
     
-    template <AddressType::Enum AddressType>
-    class ScriptAddress;
+    struct Address;
+    struct DataConfiguration;
+    class AddressIndex;
     
     struct Script {
-        virtual std::string toString(const DataConfiguration &config) const = 0;
-        virtual std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const = 0;
+        uint32_t scriptNum;
+        ScriptType::Enum type;
         
-        virtual ~Script() = default;
+        Script() = default;
+        Script(uint32_t scriptNum_, ScriptType::Enum type_) : scriptNum(scriptNum_), type(type_) {}
+        Script(const Address &address);
         
-        virtual std::vector<Address> nestedAddresses() const {
-            return std::vector<Address>();
+        AnyScript getScript(const ScriptAccess &access) const;
+        
+        bool operator==(const Script& other) const {
+            return type == other.type && scriptNum == other.scriptNum;
         }
+
+        uint64_t calculateBalance(BlockHeight height, const AddressIndex &index, const ChainAccess &chain) const;
         
-        virtual bool operator==(const Script &other) = 0;
+        void visitPointers(const std::function<void(const Address &)> &) const {}
+
+        std::vector<Output> getOutputs(const AddressIndex &index, const ChainAccess &chain) const;
+        std::vector<Input> getInputs(const AddressIndex &index, const ChainAccess &chain) const;
+        std::vector<Transaction> getTransactions(const AddressIndex &index, const ChainAccess &chain) const;
+        std::vector<Transaction> getOutputTransactions(const AddressIndex &index, const ChainAccess &chain) const;
+        std::vector<Transaction> getInputTransactions(const AddressIndex &index, const ChainAccess &chain) const;
         
-        static std::unique_ptr<Script> create(const ScriptAccess &access, const Address &address);
-        
-        // requires DataAccess
+        std::string toString() const;
         
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        static std::unique_ptr<Script> create(const Address &address);
-        std::string toString() const;
-        std::string toPrettyString() const;
+        AnyScript getScript() const;
+        uint64_t calculateBalance(BlockHeight height) const;
+        std::vector<Output> getOutputs() const;
+        std::vector<Input> getInputs() const;
+        std::vector<Transaction> getTransactions() const;
+        std::vector<Transaction> getOutputTransactions() const;
+        std::vector<Transaction> getInputTransactions() const;
         #endif
-        
     };
     
+    struct BaseScript : public Script {
+        const ScriptAccess *access;
+        uint32_t firstTxIndex;
+        uint32_t txRevealed;
+        
+        BaseScript(uint32_t scriptNum_, ScriptType::Enum type_, const ScriptDataBase &data, const ScriptAccess &scripts);
+        BaseScript(const Address &address, const ScriptDataBase &data, const ScriptAccess &scripts);
+        
+        Transaction getFirstTransaction(const ChainAccess &chain) const;
+        ranges::optional<Transaction> getTransactionRevealed(const ChainAccess &chain) const;
+
+        bool hasBeenSpent() const {
+            return txRevealed != std::numeric_limits<uint32_t>::max();
+        }
+        
+        #ifndef BLOCKSCI_WITHOUT_SINGLETON
+        Transaction getFirstTransaction() const;
+        ranges::optional<Transaction> getTransactionRevealed() const;
+        #endif
+    };
 }
-#ifndef BLOCKSCI_WITHOUT_SINGLETON
-std::ostream &operator<<(std::ostream &os, const blocksci::Script &script);
-#endif
+
+namespace std {
+    template <>
+    struct hash<blocksci::Script> {
+        typedef blocksci::Script argument_type;
+        typedef size_t  result_type;
+        result_type operator()(const argument_type &b) const {
+            return (static_cast<size_t>(b.scriptNum) << 32) + static_cast<size_t>(b.type);
+        }
+    };
+}
+
 
 #endif /* script_hpp */

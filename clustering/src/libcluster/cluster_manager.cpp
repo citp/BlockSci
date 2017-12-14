@@ -11,48 +11,49 @@
 
 #include <blocksci/address/address_info.hpp>
 
-ClusterManager::ClusterManager(std::string baseDirectory) : clusterOffsetFile(baseDirectory + "clusterOffsets"), clusterAddressesFile(baseDirectory + "clusterAddresses"), scriptClusterIndexFiles(blocksci::apply(blocksci::AddressInfoList(), [&] (auto tag) {
-    return baseDirectory + blocksci::AddressInfo<tag.type>::typeName + "_cluster_index";;
+ClusterManager::ClusterManager(std::string baseDirectory) : clusterOffsetFile(baseDirectory + "clusterOffsets"), clusterScriptsFile(baseDirectory + "clusterAddresses"), scriptClusterIndexFiles(blocksci::apply(blocksci::ScriptInfoList(), [&] (auto tag) {
+    std::stringstream ss;
+    ss << baseDirectory << blocksci::scriptName(tag) << "_cluster_index";
+    return ss.str();
 }))  {
 }
 
-boost::transformed_range<ClusterExpander, const boost::iterator_range<boost::iterators::counting_iterator<unsigned int>>> ClusterManager::getClusters() const {
-    ClusterExpander expander(*this);
-    return boost::counting_range(0u, clusterCount()) | boost::adaptors::transformed(expander);
-}
-
 uint32_t ClusterManager::clusterCount() const {
-    return clusterOffsetFile.size();
+    return static_cast<uint32_t>(clusterOffsetFile.size());
 }
 
-template<blocksci::AddressType::Enum type>
+template<blocksci::ScriptType::Enum type>
 struct ClusterNumFunctor {
-    static uint32_t f(const ClusterManager *cm, const blocksci::Address &address) {
-        return cm->getClusterNum<addressAddressType(type)>(address.addressNum);;
+    static uint32_t f(const ClusterManager *cm, uint32_t scriptNum) {
+        return cm->getClusterNum<type>(scriptNum);
     }
 };
 
 
-uint32_t ClusterManager::getClusterNum(const blocksci::Address &address) const {
-    static auto table = blocksci::make_dynamic_table<ClusterNumFunctor>();
-    static constexpr std::size_t size = blocksci::AddressType::all.size();
+uint32_t ClusterManager::getClusterNum(const blocksci::Script &script) const {
+    static auto table = blocksci::make_dynamic_table<blocksci::ScriptType, ClusterNumFunctor>();
+    static constexpr std::size_t size = blocksci::ScriptType::all.size();
     
-    auto index = static_cast<size_t>(address.type);
+    auto index = static_cast<size_t>(script.type);
     if (index >= size)
     {
         throw std::invalid_argument("combination of enum values is not valid");
     }
-    return table[index](this, address);
+    return table[index](this, script.scriptNum);
 }
 
 Cluster ClusterManager::getCluster(const blocksci::Address &address) const {
     return Cluster(getClusterNum(address), *this);
 }
 
-std::vector<TaggedCluster> ClusterManager::taggedClusters(const std::unordered_map<blocksci::Address, std::string> &tags) {
+Cluster ClusterManager::getCluster(const blocksci::Script &script) const {
+    return Cluster(getClusterNum(script), *this);
+}
+
+std::vector<TaggedCluster> ClusterManager::taggedClusters(const std::unordered_map<blocksci::Script, std::string> &tags) {
     std::vector<TaggedCluster> taggedClusters;
-    for (auto &cluster : getClusters()) {
-        auto taggedAddresses = cluster.taggedAddresses(tags);
+    for (auto cluster : getClusters()) {
+        auto taggedAddresses = cluster.taggedScripts(tags);
         if (!taggedAddresses.empty()) {
             taggedClusters.emplace_back(cluster, std::move(taggedAddresses));
         }
@@ -82,7 +83,7 @@ std::vector<uint32_t> ClusterManager::getClusterSizes() const {
     return clusterSizes;
 }
 
-boost::iterator_range<const blocksci::Address *> ClusterManager::getClusterAddresses(uint32_t clusterNum) const {
+boost::iterator_range<const blocksci::Script *> ClusterManager::getClusterScripts(uint32_t clusterNum) const {
     auto nextClusterOffset = *clusterOffsetFile.getData(clusterNum);
     uint32_t clusterOffset = 0;
     if (clusterNum > 0) {
@@ -90,7 +91,7 @@ boost::iterator_range<const blocksci::Address *> ClusterManager::getClusterAddre
     }
     auto clusterSize = nextClusterOffset - clusterOffset;
     
-    auto firstAddressOffset = clusterAddressesFile.getData(clusterOffset);
+    auto firstAddressOffset = clusterScriptsFile.getData(clusterOffset);
     
     return boost::make_iterator_range_n(firstAddressOffset, clusterSize);
 }

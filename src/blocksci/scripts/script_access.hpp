@@ -9,87 +9,76 @@
 #ifndef script_access_hpp
 #define script_access_hpp
 
-#include <blocksci/address/address_info.hpp>
+#include "script_info.hpp"
 #include "script_data.hpp"
 
-#include <blocksci/file_mapper.hpp>
+#include <blocksci/util/data_configuration.hpp>
+#include <blocksci/util/file_mapper.hpp>
 
-#include <stdio.h>
+#include <mpark/variant.hpp>
 
 namespace blocksci {
-    
-    struct DataConfiguration;
-    
     template<typename T>
     struct ScriptFileType;
     
     template<typename T>
-    struct ScriptFileType<blocksci::FixedSize<T>> {
+    struct ScriptFileType<FixedSize<T>> {
         using type = FixedSizeFileMapper<T>;
     };
     
     template<typename ...T>
-    struct ScriptFileType<blocksci::Indexed<T...>> {
-        using type = IndexedFileMapper<boost::iostreams::mapped_file::mapmode::readonly, T...>;
+    struct ScriptFileType<Indexed<T...>> {
+        using type = IndexedFileMapper<AccessMode::readonly, T...>;
     };
     
     template<typename T>
     using ScriptFileType_t = typename ScriptFileType<T>::type;
     
     
-    template<AddressType::Enum type>
-    struct ScriptFile : public ScriptFileType_t<typename AddressInfo<type>::storage> {
-        using ScriptFileType_t<typename AddressInfo<type>::storage>::ScriptFileType_t;
-    };
-
+    template<ScriptType::Enum type>
+    using ScriptFile = ScriptFileType_t<typename ScriptInfo<type>::storage>;
+    
+    template<ScriptType::Enum type>
+    using ScriptFilePtr = std::unique_ptr<ScriptFile<type>>;
+    
     class ScriptAccess {
     private:
-        using ScriptFilesTuple = internal::to_script_type<ScriptFile, AddressInfoList>::type;
-        
+        using ScriptFilesTuple = to_script_tuple_t<ScriptFilePtr>;
         ScriptFilesTuple scriptFiles;
         
         
     public:
         ScriptAccess(const DataConfiguration &config);
         
-        template<AddressType::Enum type>
-        boost::optional<Address> findAddress(uint160 rawAddress) const {
-            auto &file = std::get<ScriptFile<type>>(scriptFiles);
-            auto index = file.find([&](const auto &item) { return item.address == rawAddress; });
-            if (index) {
-                return Address(*index + 1, type);
-            }
-            return boost::none;
+        DataConfiguration config;
+        
+        template <ScriptType::Enum type>
+        ScriptFile<type> &getFile() {
+            return *std::get<ScriptFile<type>>(scriptFiles);
         }
         
-        template<AddressType::Enum type, typename Func>
-        std::vector<Address> findMatchingAddresses(Func func) const {
-            auto &file = std::get<ScriptFile<type>>(scriptFiles);
-            
-            auto addressNums = file.findAll(func);
-            
-            std::vector<Address> addresses;
-            addresses.reserve(addressNums.size());
-            for (auto num : addressNums) {
-                addresses.emplace_back(num + 1, type);
-            }
-            return addresses;
+        template <ScriptType::Enum type>
+        const ScriptFile<type> &getFile() const {
+            return *std::get<ScriptFilePtr<type>>(scriptFiles);
         }
         
-        template <AddressType::Enum type>
+        template <ScriptType::Enum type>
         auto getScriptData(uint32_t addressNum) const {
-            return std::get<ScriptFile<type>>(scriptFiles).getData(addressNum - 1);
+            return getFile<type>().getData(addressNum - 1);
         }
         
-        template<AddressType::Enum type>
-        size_t addressCount() const {
-            auto &file = std::get<ScriptFile<type>>(scriptFiles);
-            return file.size();
+        
+        template<ScriptType::Enum type>
+        size_t scriptCount() const {
+            return getFile<type>().size();
         }
         
-        size_t addressCount(AddressType::Enum type) const;
+        std::array<uint32_t, ScriptType::size> scriptCounts() const;
+        uint32_t scriptCount(ScriptType::Enum type) const;
         
         size_t totalAddressCount() const;
+        
+        void reload();
     };
 
 }

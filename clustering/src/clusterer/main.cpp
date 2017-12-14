@@ -6,15 +6,11 @@
 //  Copyright © 2017 Harry Kalodner. All rights reserved.
 //
 
-#include <dset/dset.h>
+#include "dset/dset.h"
 
-#include <blocksci/chain/blockchain.hpp>
-#include <blocksci/chain/output.hpp>
-#include <blocksci/chain/input.hpp>
-#include <blocksci/chain/transaction.hpp>
-#include <blocksci/address/address.hpp>
-#include <blocksci/scripts/scriptsfwd.hpp>
-#include <blocksci/scripts/scripthash_script.hpp>
+#include <blocksci/blocksci.hpp>
+#include <blocksci/util/data_access.hpp>
+#include <blocksci/script.hpp>
 
 #include <unordered_map>
 #include <unordered_set>
@@ -25,94 +21,17 @@
 
 using namespace blocksci;
 
-
-bool isCoinjoinFast(const Transaction &tx, const std::vector<const Output *> &spentOutputs) {
-    if (tx.inputCount() < 2 || tx.outputCount() < 3) {
-        return false;
-    }
+std::vector<std::pair<Script, Script>> process_transaction(const Transaction &tx) {
+    std::vector<std::pair<Script, Script>> pairsToUnion;
     
-    uint16_t participantCount = (tx.outputCount() + 1) / 2;
-    if (participantCount > tx.inputCount()) {
-        return false;
-    }
-    
-    std::unordered_set<Address> inputAddresses;
-    for (auto spentOutput : spentOutputs) {
-        inputAddresses.insert(spentOutput->getAddress());
-    }
-    
-    if (participantCount > inputAddresses.size()) {
-        return false;
-    }
-    
-    std::unordered_map<uint64_t, uint16_t> outputValues;
-    for (auto &output : tx.outputs()) {
-        outputValues[output.getValue()]++;
-    }
-    
-    using pair_type = decltype(outputValues)::value_type;
-    auto pr = std::max_element(std::begin(outputValues), std::end(outputValues),
-                               [] (const pair_type & p1, const pair_type & p2) {
-                                   return p1.second < p2.second;
-                               }
-                               );
-    
-    if (pr->second != participantCount) {
-        return false;
-    }
-    
-    if (pr->first == 546 || pr->first == 2730) {
-        return false;
-    }
-    
-    return true;
-}
-
-const Output * getChange(const Transaction &tx, uint64_t smallestInput) {
-    if (tx.outputCount() <= 1) {
-        return nullptr;
-    }
-    
-    uint16_t spendableCount = 0;
-    const Output *change = nullptr;
-    for (const auto &output : tx.outputs()) {
-        auto address = output.getAddress();
-        if (address.isSpendable()) {
-            if (output.getValue() < smallestInput && address.getFirstTransactionIndex() == tx.txNum) {
-                if (change) {
-                    // Multiple possible change addresses
-                    return nullptr;
-                }
-                change = &output;
-            }
-            spendableCount++;
-        }
-    }
-    
-    if (spendableCount < 2) {
-        return nullptr;
-    }
-    
-    return change;
-}
-
-std::vector<std::pair<Address, Address>> process_transaction(const Transaction &tx) {
-    std::vector<std::pair<Address, Address>> pairsToUnion;
-    
-    if (!isCoinjoin(tx) && !isCoinbase(tx)) {
+    if (!heuristics::isCoinjoin(tx) && !tx.isCoinbase()) {
         auto inputs = tx.inputs();
-        uint64_t smallestInput = inputs.front().getValue();
-        auto firstAddress = inputs.front().getAddress();
-        if (tx.inputCount() > 1) {
-            for (uint16_t i = 1; i < tx.inputCount(); i++) {
-                smallestInput = std::min(smallestInput, inputs[i].getValue());
-                pairsToUnion.emplace_back(firstAddress, inputs[i].getAddress());
-            }
+        auto firstAddress = inputs[0].getAddress();
+        for (uint16_t i = 1; i < inputs.size(); i++) {
+            pairsToUnion.emplace_back(firstAddress, inputs[i].getAddress());
         }
         
-        auto change = getChange(tx, smallestInput);
-        
-        if (change) {
+        if (auto change = heuristics::uniqueChangeByLegacyHeuristic(tx)) {
             pairsToUnion.emplace_back(change->getAddress(), firstAddress);
         }
     }
@@ -157,40 +76,66 @@ void segmentWork(uint32_t start, uint32_t end, uint32_t segmentCount, Job job) {
     }
 }
 
-std::vector<uint32_t> getClusters(Blockchain &chain, std::unordered_map<Address, uint32_t> &addressesMapped, uint32_t totalAddressCount) {
+struct AddressDisjointSets {
+    DisjointSets disjoinSets;
+    std::unordered_map<ScriptType::Enum, uint32_t> addressStarts;
+
+    AddressDisjointSets(uint32_t totalSize, std::unordered_map<ScriptType::Enum, uint32_t> addressStarts_) : disjoinSets{totalSize}, addressStarts{std::move(addressStarts_)} {}
+
+    uint32_t size() const {
+        return disjoinSets.size();
+    }
+
+    void link_addresses(const Script &address1, const Script &address2) {
+        auto firstAddressIndex = addressStarts.at(address1.type) + address1.scriptNum - 1;
+        auto secondAddressIndex = addressStarts.at(address2.type) + address2.scriptNum - 1;
+        disjoinSets.unite(firstAddressIndex, secondAddressIndex);
+    }
+
+    void resolveAll() {
+        segmentWork(0, disjoinSets.size(), 8, [&](uint32_t index) {
+            disjoinSets.find(index);
+        });
+    }
+
+    uint32_t find(uint32_t index) {
+        return disjoinSets.find(index);
+    }
+};
+
+std::vector<uint32_t> getClusters(Blockchain &chain, std::unordered_map<ScriptType::Enum, uint32_t> addressStarts, uint32_t totalScriptCount) {
     
-    DisjointSets ds(totalAddressCount);
+    AddressDisjointSets ds(totalScriptCount, std::move(addressStarts));
     
-    auto scriptHashCount = chain.access.scripts.addressCount<AddressType::Enum::SCRIPTHASH>();
+    auto &scripts = *chain.access->scripts;
+
+    auto scriptHashCount = scripts.scriptCount<ScriptType::Enum::SCRIPTHASH>();
     
     
-    segmentWork(1, scriptHashCount + 1, 8, [&ds, &addressesMapped](uint32_t index) {
-        Address address(index, AddressType::Enum::SCRIPTHASH);
-        auto script = address.getScript();
-        auto scripthashScript = dynamic_cast<script::ScriptHash *>(script.get());
-        if (scripthashScript && scripthashScript->wrappedAddress.addressNum > 0) {
-            auto wrappedPointer = scripthashScript->wrappedAddress;
-            ds.unite(addressesMapped[address], addressesMapped[wrappedPointer]);
+    segmentWork(1, scriptHashCount + 1, 8, [&ds, &scripts](uint32_t index) {
+        Script pointer(index, ScriptType::Enum::SCRIPTHASH);
+        script::ScriptHash scripthash{scripts, index};
+        auto wrappedAddress = scripthash.getWrappedAddress();
+        if (wrappedAddress) {
+            ds.link_addresses(pointer, *wrappedAddress);
         }
     });
     
     auto extract = [&](const Transaction &tx) {
         auto pairs = process_transaction(tx);
         for (auto &pair : pairs) {
-            ds.unite(addressesMapped[pair.first], addressesMapped[pair.second]);
+            ds.link_addresses(pair.first, pair.second);
         }
         return 0;
     };
-
-    chain.mapReduceTransactions(0, chain.size(), extract, [](int,int) {return 0;}, 0);
     
-    segmentWork(0, totalAddressCount, 8, [&ds](uint32_t index) {
-        ds.find(index);
-    });
+    chain.mapReduce<int>(0, chain.size() - 10, extract, [](int &a,int &) -> int & {return a;});
+    
+    ds.resolveAll();
     
     std::vector<uint32_t> parents;
     parents.reserve(ds.size());
-    for (uint32_t i = 0; i < totalAddressCount; i++) {
+    for (uint32_t i = 0; i < totalScriptCount; i++) {
         parents.push_back(ds.find(i));
     }
     return parents;
@@ -214,19 +159,28 @@ uint32_t remapClusterIds(std::vector<uint32_t> &parents) {
     return clusterCount;
 }
 
-void recordOrderedAddresses(const std::vector<uint32_t> &parent, std::vector<uint32_t> &clusterPositions, const std::vector<Address> &idensMapped) {
+void recordOrderedAddresses(const std::vector<uint32_t> &parent, std::vector<uint32_t> &clusterPositions, const std::unordered_map<ScriptType::Enum, uint32_t> &scriptStarts) {
     
-    std::vector<Address> orderedAddresses;
-    orderedAddresses.resize(parent.size());
+    std::map<uint32_t, ScriptType::Enum> typeIndexes;
+    for (auto &pair : scriptStarts) {
+        typeIndexes[pair.second] = pair.first;
+    }
     
-    for (size_t i = 0; i < parent.size(); i++) {
+    std::vector<Script> orderedScripts;
+    orderedScripts.resize(parent.size());
+    
+    for (uint32_t i = 0; i < parent.size(); i++) {
         uint32_t &j = clusterPositions[parent[i]];
-        orderedAddresses[j] = idensMapped[i];
+        auto it = typeIndexes.upper_bound(i);
+        it--;
+        uint32_t addressNum = i - it->first + 1;
+        auto addressType = it->second;
+        orderedScripts[j] = Script(addressNum, addressType);
         j++;
     }
     
     std::ofstream clusterAddressesFile("clusterAddresses.dat", std::ios::binary);
-    clusterAddressesFile.write(reinterpret_cast<char *>(orderedAddresses.data()), sizeof(Address) * orderedAddresses.size());
+    clusterAddressesFile.write(reinterpret_cast<char *>(orderedScripts.data()), sizeof(Script) * orderedScripts.size());
 }
 
 int main(int argc, const char * argv[]) {
@@ -236,49 +190,22 @@ int main(int argc, const char * argv[]) {
     
     Blockchain chain(argv[1]);
     
+    auto &scripts = *chain.access->scripts;
+    size_t totalScriptCount = scripts.totalAddressCount();;
     
-    
-    std::vector<uint32_t> addressCounts;
-    
-    constexpr std::array<AddressType::Enum, 5> types = {{
-        AddressType::Enum::NONSTANDARD,
-        AddressType::Enum::PUBKEYHASH,
-        AddressType::Enum::SCRIPTHASH,
-        AddressType::Enum::MULTISIG,
-        AddressType::Enum::NULL_DATA
-    }};
-    
-    uint32_t totalAddressCount = 0;
-    for (auto type : types) {
-        totalAddressCount += chain.access.scripts.addressCount(type);
-    }
-    
-    std::unordered_map<Address, uint32_t> addressesMapped;
-    std::vector<Address> idensMapped;
-    idensMapped.reserve(totalAddressCount);
-    addressesMapped.reserve(totalAddressCount);
-    
-    std::unordered_map<AddressType::Enum, uint32_t> addressStarts;
-    
-    uint32_t index = 0;
-    for (size_t i = 0; i < types.size(); i++) {
-        auto type = types[i];
-        addressStarts[type] = index;
-        auto count = chain.access.scripts.addressCount(type);
-        for (uint32_t i = 1; i <= count; i++) {
-            auto pointer = Address{i, type};
-            addressesMapped[pointer] = index;
-            idensMapped.push_back(pointer);
-            index++;
+    std::unordered_map<ScriptType::Enum, uint32_t> scriptStarts;
+    for (size_t i = 0; i < ScriptType::size; i++) {
+        scriptStarts[ScriptType::all[i]] = 0;
+        for (size_t j = 0; j < i; j++) {
+            scriptStarts[ScriptType::all[i]] += scripts.scriptCount(ScriptType::all[j]);
         }
     }
     
-    
     auto allClusterStart = std::chrono::steady_clock::now();
-    auto parent = getClusters(chain, addressesMapped, totalAddressCount);
+    auto parent = getClusters(chain, scriptStarts, static_cast<uint32_t>(totalScriptCount));
     std::cout << "Finished main clustering in " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - allClusterStart).count() / 1000000.0 << " seconds\n";
     uint32_t clusterCount = remapClusterIds(parent);
-     std::cout << "Finished remapping in " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - allClusterStart).count() / 1000000.0 << " seconds\n";
+    std::cout << "Finished remapping in " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - allClusterStart).count() / 1000000.0 << " seconds\n";
     std::vector<uint32_t> clusterPositions;
     clusterPositions.resize(clusterCount + 1);
     for (auto parentId : parent) {
@@ -291,14 +218,15 @@ int main(int argc, const char * argv[]) {
     
     std::cout << "Finished position tracking in " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - allClusterStart).count() / 1000000.0 << " seconds\n";
     
+    auto recordOrdered = std::async(std::launch::async, recordOrderedAddresses, parent, std::ref(clusterPositions), scriptStarts);
     
-    auto recordOrdered = std::async(std::launch::async, recordOrderedAddresses, parent, std::ref(clusterPositions), idensMapped);
-    
-    segmentWork(0, types.size(), types.size(), [&types, &addressStarts, &chain, &parent](uint32_t index) {
-        auto type = types[index];
-        uint32_t startIndex = addressStarts[type];
-        uint32_t totalCount = chain.access.scripts.addressCount(type);
-        std::ofstream clusterIndexFile(GetTxnOutputType(type) + "_cluster_index.dat", std::ios::binary);
+    segmentWork(0, ScriptType::size, ScriptType::size, [&scriptStarts, &scripts, &parent](uint32_t index) {
+        auto type = ScriptType::all[index];
+        uint32_t startIndex = scriptStarts[type];
+        uint32_t totalCount = scripts.scriptCount(type);
+        std::stringstream ss;
+        ss << scriptName(type) << "_cluster_index.dat";
+        std::ofstream clusterIndexFile(ss.str(), std::ios::binary);
         clusterIndexFile.write(reinterpret_cast<char *>(parent.data() + startIndex), sizeof(uint32_t) * totalCount);
     });
     
@@ -308,6 +236,6 @@ int main(int argc, const char * argv[]) {
     clusterOffsetFile.write(reinterpret_cast<char *>(clusterPositions.data()), sizeof(uint32_t) * clusterPositions.size());
     
     std::cout << "Finished whole program in " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - progStart).count() / 1000000.0 << " seconds\n";
-
+    
     return 0;
 }

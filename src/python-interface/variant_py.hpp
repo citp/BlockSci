@@ -9,20 +9,20 @@
 #ifndef variant_py_h
 #define variant_py_h
 
-#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
-#include <boost/variant/variant.hpp>
+#include <mpark/variant.hpp>
 
 namespace pybind11 { namespace detail {
     template <typename... Ts>
-    struct type_caster<boost::variant<Ts...>> : variant_caster<boost::variant<Ts...>> {};
+    struct type_caster<mpark::variant<Ts...>> : variant_caster<mpark::variant<Ts...>> {};
     
     // Specifies the function used to visit the variant -- `apply_visitor` instead of `visit`
     template <>
-    struct visit_helper<boost::variant> {
+    struct visit_helper<mpark::variant> {
         template <typename... Args>
-        static auto call(Args &&...args) -> decltype(boost::apply_visitor(args...)) {
-            return boost::apply_visitor(args...);
+        static auto call(Args &&...args) -> decltype(mpark::visit(args...)) {
+            return mpark::visit(args...);
         }
     };
 }}

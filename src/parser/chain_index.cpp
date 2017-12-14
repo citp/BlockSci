@@ -9,187 +9,223 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "chain_index.hpp"
-#include "utilities.hpp"
 #include "parser_configuration.hpp"
+#include "safe_mem_reader.hpp"
+#include "preproccessed_block.hpp"
 
-#include <blocksci/hash.hpp>
+#include <blocksci/chain/chain_access.hpp>
+#include <blocksci/chain/block.hpp>
+#include <blocksci/util/hash.hpp>
 
-#include <leveldb/db.h>
+#ifdef BLOCKSCI_RPC_PARSER
+#include <bitcoinapi/bitcoinapi.h>
+#endif
 
-#include <boost/iostreams/device/mapped_file.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/fstream.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/serialization/unordered_map.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/filesystem/operations.hpp>
 
+#include <cmath>
+#include <future>
 #include <sstream>
 #include <fstream>
 #include <iostream>
 
 #ifdef BLOCKSCI_FILE_PARSER
 
-struct CBlockHeader
-{
-    // header
-    int32_t nVersion;
-    blocksci::uint256 hashPrevBlock;
-    blocksci::uint256 hashMerkleRoot;
-    uint32_t nTime;
-    uint32_t nBits;
-    uint32_t nNonce;
-};
 
-BlockInfo::BlockInfo(const CBlockHeader &h, int fileNum, unsigned int dataPos, unsigned int numTxes, const FileParserConfiguration &config) : prevHash(h.hashPrevBlock), height(-1), nFile(fileNum), nDataPos(dataPos), nTx(numTxes), nVersion(h.nVersion), hashMerkleRoot(h.hashMerkleRoot), nTime(h.nTime), nBits(h.nBits), nNonce(h.nNonce) {
-    hash = config.workHashFunction(reinterpret_cast<const char *>(&h), sizeof(CBlockHeader));
+BlockInfoBase::BlockInfoBase(const blocksci::uint256 &hash_, const CBlockHeader &h, uint32_t size_, unsigned int numTxes, uint32_t inputCount_, uint32_t outputCount_) : hash(hash_), header(h), height(-1), size(size_), nTx(numTxes), inputCount(inputCount_), outputCount(outputCount_) {}
+
+BlockInfo<FileTag>::BlockInfo(const CBlockHeader &h, uint32_t size_, unsigned int numTxes, uint32_t inputCount_, uint32_t outputCount_, const ParserConfiguration<FileTag> &config, int fileNum, unsigned int dataPos) : BlockInfoBase(config.workHashFunction(reinterpret_cast<const char *>(&h), sizeof(CBlockHeader)), h, size_, numTxes, inputCount_, outputCount_), nFile(fileNum), nDataPos(dataPos) {}
+
+// The 0 should be replaced with info.bits converted to string
+BlockInfo<RPCTag>::BlockInfo(const blockinfo_t &info, blocksci::BlockHeight height_) : 
+BlockInfoBase(
+    blocksci::uint256S(info.hash), 
+    {info.version, blocksci::uint256S(info.previousblockhash), blocksci::uint256S(info.merkleroot), info.time, 0, info.nonce}, 
+    static_cast<uint32_t>(info.size), 
+    static_cast<uint32_t>(info.tx.size()), 0, 0
+    ), tx(info.tx) {
+    height = height_;
 }
 
-ChainIndex::ChainIndex(const FileParserConfiguration &config_) : config(config_) {
-    boost::filesystem::fstream file(config.blockListPath(), std::ios::binary);
-    if (file.good()) {
-        uint64_t length;
-        file.read(reinterpret_cast<char *>(&length), sizeof(length));
-        blockList.resize(length);
-        file.read(reinterpret_cast<char *>(blockList.data()), sizeof(BlockInfo) * length);
-    }
-    updateFromFilesystem();
-}
-
-ChainIndex::~ChainIndex() {
-    boost::filesystem::ofstream file(config.blockListPath(), std::ios::binary);
-    uint64_t length = blockList.size();
-    file.write(reinterpret_cast<char *>(&length), sizeof(length));
-    file.write(reinterpret_cast<char *>(blockList.data()), sizeof(BlockInfo) * length);
-}
-
-void ChainIndex::updateFromFilesystem() {
-    int fileNum = 0;
-    size_t filePos = 0;
-    
-    if (!blockList.empty()) {
-        fileNum = blockList.back().nFile;
-        filePos = blockList.back().nDataPos;
-    }
-    
-    int firstFile = fileNum;
-    
-    while (true) {
-        auto blockPath = config.pathForBlockFile(fileNum);
-        if (!boost::filesystem::exists(blockPath)) {
-            std::cout << "No block file " << blockPath << "\n";
-            break;
-        }
-        
-        boost::iostreams::mapped_file_source fileMap;
-        fileMap.open(blockPath);
-        
-        const char *startPos = fileMap.data() + filePos;
-        assert(filePos <= fileMap.size());
-        if (filePos + 4 > fileMap.size()) {
-            continue;
-        }
-        if (fileNum == firstFile && filePos > 0) {
-            startPos -= sizeof(uint32_t);
-            uint32_t length = readNext<uint32_t>(&startPos);
-            startPos += length;
-        }
-        
-        uint32_t magic = 0;
-        while ((magic = readNext<uint32_t>(&startPos)) == config.blockMagic) {
-            uint32_t length = readNext<uint32_t>(&startPos);
-            filePos = startPos - fileMap.data();
-            auto header = reinterpret_cast<const CBlockHeader *>(startPos);
-            size_t blockHeaderSize = 80;
-            const char *buffer = startPos + blockHeaderSize;
-            uint32_t numTxes = readVariableLengthInteger(&buffer);
-            startPos += length;
-            blockList.push_back(BlockInfo(*header, fileNum, filePos, numTxes, config));
-        }
+int maxBlockFileNum(int startFile, const ParserConfiguration<FileTag> &config) {
+    int fileNum = startFile;
+    while (boost::filesystem::exists(config.pathForBlockFile(fileNum))) {
         fileNum++;
-        filePos = 0;
     }
-    
-    std::unordered_map<blocksci::uint256, size_t> indexMap;
-    indexMap.reserve(blockList.size());
-    size_t blockNum = 0;
-    for (const auto &blockInfo : blockList) {
-        indexMap[blockInfo.hash] = blockNum;
-        blockNum++;
-    }
-
-    for (size_t i = 0; i < blockList.size(); i++) {
-        blockList[i].height = -1;
-    }
-    
-    for (size_t i = 0; i < blockList.size(); i++) {
-        updateHeight(i, indexMap);
-    }
+    return fileNum - 1;
 }
 
-int ChainIndex::updateHeight(size_t blockNum, const std::unordered_map<blocksci::uint256, size_t> &indexMap) {
-    auto &block = blockList[blockNum];
-    if (block.height == -1) {
-        if (block.prevHash.IsNull()) {
-            block.height = 0;
-        } else {
-            auto it = indexMap.find(block.prevHash);
-            if(it != indexMap.end()) {
-                block.height = updateHeight(it->second, indexMap) + 1;
-            } else {
-                block.height = -1;
-            }
-            
-        }
-    }
-    return block.height;
+template<typename ParseTag>
+template<class Archive>
+void ChainIndex<ParseTag>::serialize(Archive & ar, const unsigned int) {
+    ar & blockList;
+    ar & newestBlock;
 }
 
-std::vector<BlockInfo> ChainIndex::generateChain(int maxBlockHeight) const {
-    
-    std::unordered_map<blocksci::uint256, size_t> indexMap;
-    indexMap.reserve(blockList.size());
-    size_t blockNum = 0;
-    for (const auto &blockInfo : blockList) {
-        indexMap[blockInfo.hash] = blockNum;
-        blockNum++;
+template void ChainIndex<FileTag>::serialize(boost::archive::binary_iarchive& archive, const unsigned int version);
+template void ChainIndex<FileTag>::serialize(boost::archive::binary_oarchive& archive, const unsigned int version);
+template void ChainIndex<RPCTag>::serialize(boost::archive::binary_iarchive& archive, const unsigned int version);
+template void ChainIndex<RPCTag>::serialize(boost::archive::binary_oarchive& archive, const unsigned int version);
+
+template <>
+void ChainIndex<FileTag>::update(const ConfigType &config) {
+    int fileNum = 0;
+    unsigned int filePos = 0;
+
+    if (!blockList.empty()) {
+        fileNum = newestBlock.nFile;
+        filePos = newestBlock.nDataPos + newestBlock.size;
     }
+
+    auto firstFile = fileNum;
     
-    int curMax = maxBlockHeight == 0 ? std::numeric_limits<int>::max() : maxBlockHeight;
+    auto maxFileNum = maxBlockFileNum(fileNum, config);
     
-    std::vector<BlockInfo> chain;
-    while (true) {
-        chain.clear();
-        const BlockInfo *maxHeightBlock = nullptr;
-        int maxHeight = 0;
-        for (auto &possibleMaxBlock : blockList) {
-            if (possibleMaxBlock.height > maxHeight && possibleMaxBlock.height <= curMax) {
-                maxHeightBlock = &possibleMaxBlock;
-                maxHeight = possibleMaxBlock.height;
+    auto localConfig = config;
+    
+    std::mutex m;
+    
+    std::cout.setf(std::ios::fixed,std::ios::floatfield);
+    std::cout.precision(1);
+    auto fileCount = maxFileNum - fileNum + 1;
+    int filesDone = 0;
+    using namespace std::chrono_literals;
+    std::atomic<int> activeThreads{0};
+    {
+        std::vector<std::future<void>> blockFutures;
+        for (; fileNum <= maxFileNum; fileNum++) {
+            while (activeThreads > 20) {
+                std::this_thread::sleep_for(500ms);
             }
-        }
-        
-        if (maxHeightBlock == nullptr) {
-            return chain;
-        }
-        
-        const BlockInfo *block = maxHeightBlock;
-        while (true) {
-            if (block->height < curMax) {
-                chain.push_back(*block);
-            }
-            if (block->height > 0) {
-                auto it = indexMap.find(block->prevHash);
-                if (it == indexMap.end()) {
-                    curMax = block->height - 2;
-                    break;
-                } else {
-                    block = &blockList[it->second];
+            blockFutures.emplace_back(std::async(std::launch::async, [&](int fileNum) {
+                activeThreads++;
+                // determine block file path
+                auto blockFilePath = localConfig.pathForBlockFile(fileNum);
+                SafeMemReader reader{blockFilePath.native()};
+                std::vector<BlockInfo<FileTag>> blocks;
+                try {
+                    // logic for resume from last processed block, note blockStartOffset and length below
+                    if (fileNum == firstFile) {
+                        reader.reset(filePos);
+                    }
+                    
+                    // read blocks in loop while we can...
+                    while (reader.has(sizeof(uint32_t))) {
+                        auto magic = reader.readNext<uint32_t>();
+                        if (magic != localConfig.blockMagic) {
+                            break;
+                        }
+                        auto length = reader.readNext<uint32_t>();
+                        auto blockStartOffset = reader.offset();
+                        auto header = reader.readNext<CBlockHeader>();
+                        auto numTxes = reader.readVariableLengthInteger();
+                        uint32_t inputCount = 0;
+                        uint32_t outputCount = 0;
+                        for (size_t i = 0; i < numTxes; i++) {
+                            TransactionHeader h(reader);
+                            inputCount += h.inputCount;
+                            outputCount += h.outputCount;
+                        }
+                        // The next two lines bring the reader to the end of this block
+                        reader.reset(blockStartOffset);
+                        reader.advance(length);
+                        inputCount--;
+                        blocks.emplace_back(header, length, numTxes, inputCount, outputCount, localConfig, fileNum, blockStartOffset);
+                    }
+                } catch (const std::out_of_range &e) {
+                    std::cerr << "Failed to read block header information"
+                    << " from " << blockFilePath
+                    << " at offset " << reader.offset()
+                    << ": " << e.what() << "\n";
+                    throw;
                 }
-            } else {
-                std::reverse(chain.begin(), chain.end());
-                return chain;
-            }
+                
+                if (fileNum == maxFileNum && blocks.size() > 0) {
+                    newestBlock = blocks.back();
+                }
+                activeThreads--;
+                std::lock_guard<std::mutex> lock(m);
+                
+                for (auto &block : blocks) {
+                    blockList[block.hash] = block;
+                }
+                
+                filesDone++;
+                std::cout << "\r" << (static_cast<double>(filesDone) / static_cast<double>(fileCount)) * 100 << "% done fetching block headers" << std::flush;
+                
+            }, fileNum));
         }
     }
     
-    return chain;
+    std::cout << std::endl;
+    
+    std::unordered_multimap<blocksci::uint256, blocksci::uint256> forwardHashes;
+    
+    for (auto &pair : blockList) {
+        forwardHashes.emplace(pair.second.header.hashPrevBlock, pair.second.hash);
+    }
+    
+    blocksci::uint256 nullHash;
+    nullHash.SetNull();
+    
+    std::vector<std::pair<blocksci::uint256, blocksci::BlockHeight>> queue;
+    
+    queue.emplace_back(nullHash, 0);
+    while (!queue.empty()) {
+        blocksci::uint256 blockHash;
+        blocksci::BlockHeight height;
+        std::tie(blockHash, height) = queue.back();
+        queue.pop_back();
+        for (auto ret = forwardHashes.equal_range(blockHash); ret.first != ret.second; ++ret.first) {
+            auto &block = blockList.at(ret.first->second);
+            block.height = height + 1;
+            queue.emplace_back(block.hash, block.height);
+        }
+    }
+    
+}
+
+template<>
+void ChainIndex<RPCTag>::update(const ConfigType &config) {
+    try {
+        BitcoinAPI bapi{config.createBitcoinAPI()};
+        auto blockHeight = static_cast<blocksci::BlockHeight>(bapi.getblockcount());
+
+        
+        auto splitPoint = findSplitPointIndex(blockHeight, [&](blocksci::BlockHeight h) {
+            return blocksci::uint256S(bapi.getblockhash(static_cast<int>(h)));
+        });
+        
+        std::cout.setf(std::ios::fixed,std::ios::floatfield);
+        std::cout.precision(1);
+        blocksci::BlockHeight numBlocks = blockHeight - splitPoint;
+        auto percentage = static_cast<double>(static_cast<int>(numBlocks)) / 1000.0;
+        auto percentageMarker = static_cast<blocksci::BlockHeight>(std::ceil(percentage));
+        
+        for (blocksci::BlockHeight i = splitPoint; i < blockHeight; i++) {
+            std::string blockhash = bapi.getblockhash(static_cast<int>(i));
+            BlockType block{bapi.getblock(blockhash), i};
+            blockList.emplace(block.hash, block);
+            auto count = i - splitPoint;
+            if (count % percentageMarker == 0) {
+                std::cout << "\r" << (static_cast<double>(static_cast<int>(count)) / static_cast<double>(static_cast<int>(numBlocks))) * 100 << "% done fetching block headers" << std::flush;
+            }
+            if (i == blockHeight - 1) {
+                newestBlock = block;
+            }
+        }
+        
+        std::cout << std::endl;
+    } catch (const BitcoinException &e) {
+        std::cout << std::endl;
+        std::cerr << "Error while interacting with RPC: " << e.what() << std::endl;
+        throw;
+    }
+    std::cout << std::endl;
 }
 
 #endif

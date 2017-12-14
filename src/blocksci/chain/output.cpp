@@ -9,45 +9,44 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "output.hpp"
-#include "input.hpp"
-#include "chain_access.hpp"
+#include "block.hpp"
+#include "inout_pointer.hpp"
 #include "transaction.hpp"
 #include "address/address.hpp"
+#include "util/hash.hpp"
 
 #include <sstream>
 
 namespace blocksci {
     
-    Input Output::matchedInput(uint32_t txIndex) const {
-        return {txIndex, getAddress(), getValue()};
+    Transaction Output::transaction() const {
+        return Transaction(pointer.txNum, blockHeight, *access);
+    }
+    
+    Block Output::block() const {
+        return Block(blockHeight, *access);
     }
     
     std::string Output::toString() const {
         std::stringstream ss;
-        auto address = getAddress();
-        ss << "TxOut(tx_index_to=" << linkedTxNum << ", address=" << address <<", satoshis=" << getValue() << ")";
+        ss << "TxOut(spending_tx_index=" << inout->linkedTxNum << ", address=" << inout->getAddress() <<", value=" << inout->getValue() << ")";
         return ss.str();
     }
     
-    uint32_t Output::getSpendingTxIndex(const ChainAccess &access) const {
-        if (linkedTxNum < access.maxLoadedTx()) {
-            return linkedTxNum;
+    ranges::optional<Transaction> Output::getSpendingTx() const {
+        if (isSpent()) {
+            return Transaction(getSpendingTxIndex(), *access);
         } else {
-            return 0;
+            return ranges::nullopt;
         }
-    }
-    
-    boost::optional<Transaction> Output::getSpendingTx(const ChainAccess &access) const {
-        if (isSpent(access)) {
-            return Transaction::txWithIndex(access, getSpendingTxIndex(access));
-        } else {
-            return boost::none;
-        }
-        
     }
 }
 
-std::ostream &operator<<(std::ostream &os, blocksci::Output const &output) {
-    os << output.toString();
-    return os;
+namespace std
+{
+    size_t hash<blocksci::Output>::operator()(const blocksci::Output &output) const {
+        std::size_t seed = 819543;
+        hash_combine(seed, *output.inout);
+        return seed;
+    }
 }

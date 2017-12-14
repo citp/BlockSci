@@ -11,23 +11,22 @@
 
 #include <array>
 #include <string>
-#include <stdio.h>
 
-#define ADDRESS_TYPE_LIST VAL(NONSTANDARD), VAL(PUBKEY), VAL(PUBKEYHASH), VAL(SCRIPTHASH), VAL(MULTISIG), VAL(NULL_DATA)
-#define ADDRESS_TYPE_SET VAL(NONSTANDARD) VAL(PUBKEY) VAL(PUBKEYHASH) VAL(SCRIPTHASH) VAL(MULTISIG) VAL(NULL_DATA)
+#define ADDRESS_TYPE_LIST VAL(NONSTANDARD), VAL(PUBKEY), VAL(PUBKEYHASH), VAL(SCRIPTHASH), VAL(MULTISIG), VAL(NULL_DATA), VAL(WITNESS_PUBKEYHASH), VAL(WITNESS_SCRIPTHASH)
+#define ADDRESS_TYPE_SET VAL(NONSTANDARD) VAL(PUBKEY) VAL(PUBKEYHASH) VAL(SCRIPTHASH) VAL(MULTISIG) VAL(NULL_DATA) VAL(WITNESS_PUBKEYHASH) VAL(WITNESS_SCRIPTHASH)
 
 namespace blocksci {
     
 
     struct AddressType {
         
-        enum class Enum {
+        enum Enum {
             #define VAL(x) x
             ADDRESS_TYPE_LIST
             #undef VAL
         };
         #define VAL(x) Enum::x
-        static constexpr std::array<Enum, 6> all = {{ADDRESS_TYPE_LIST}};
+        static constexpr std::array<Enum, 8> all = {{ADDRESS_TYPE_LIST}};
         #undef VAL
         
         static constexpr size_t size = all.size();

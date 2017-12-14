@@ -9,72 +9,88 @@
 #ifndef chain_access_hpp
 #define chain_access_hpp
 
-#include <blocksci/file_mapper.hpp>
-#include <blocksci/bitcoin_uint256.hpp>
+#include "chain_fwd.hpp"
 
-#include <boost/range/iterator_range.hpp>
-#include <stdio.h>
+#include <blocksci/chain/raw_transaction.hpp>
+#include <blocksci/chain/raw_block.hpp>
+#include <blocksci/util/file_mapper.hpp>
+#include <blocksci/util/bitcoin_uint256.hpp>
+
+#include <memory>
 
 namespace blocksci {
+    
     class ReorgException : public std::runtime_error {
     public:
-        ReorgException() : std::runtime_error("") {}
+        ReorgException();
+        ReorgException(const ReorgException &) = default;
+        ReorgException(ReorgException &&) = default;
+        virtual ~ReorgException();
     };
     
-    struct Block;
-    struct Output;
-    struct Input;
     struct DataConfiguration;
-    struct RawTransaction;
-    
     
     class ChainAccess {
-        FixedSizeFileMapper<Block> blockFile;
+        FixedSizeFileMapper<RawBlock> blockFile;
         SimpleFileMapper<> blockCoinbaseFile;
         
-        IndexedFileMapper<boost::iostreams::mapped_file::mapmode::readonly, RawTransaction> txFile;
+        IndexedFileMapper<AccessMode::readonly, RawTransaction> txFile;
+        IndexedFileMapper<AccessMode::readonly, uint32_t> sequenceFile;
+        
         FixedSizeFileMapper<uint256> txHashesFile;
         
-        uint32_t _maxLoadedTx;
-        
-        const uint256 *lastBlockHashDisk;
         uint256 lastBlockHash;
-        uint32_t maxHeight;
-        
-        void reorgCheck() const;
-        
+        const uint256 *lastBlockHashDisk;
+        BlockHeight maxHeight;
+        uint32_t _maxLoadedTx;
+        BlockHeight blocksIgnored;
         bool errorOnReorg;
         
-        const FixedSizeFileMapper<Block> &getBlockFile() const {
-            return blockFile;
+        void reorgCheck() const {
+            if (errorOnReorg && lastBlockHash != *lastBlockHashDisk) {
+                throw ReorgException();
+            }
         }
         
+        void setup();
+        
     public:
-        ChainAccess(const DataConfiguration &config, bool errorOnReorg, uint32_t blocksIgnored);
+        ChainAccess(const DataConfiguration &config, bool errorOnReorg, BlockHeight blocksIgnored);
         
-        uint32_t maxLoadedTx() const;
+        uint32_t maxLoadedTx() const {
+            return _maxLoadedTx;
+        }
         
-        uint32_t getBlockHeight(uint32_t txIndex) const;
-        const Block &getBlock(uint32_t blockHeight) const;
-        const boost::iterator_range<const Block *> getBlocks() const;
+        BlockHeight getBlockHeight(uint32_t txIndex) const;
         
-        const char *getTxPos(uint32_t index) const;
+        const RawBlock *getBlock(BlockHeight blockHeight) const {
+            reorgCheck();
+            return blockFile.getData(static_cast<size_t>(static_cast<int>(blockHeight)));
+        }
         
-        const RawTransaction *getTx(uint32_t index) const;
+        const uint256 *getTxHash(uint32_t index) const {
+            reorgCheck();
+            return txHashesFile.getData(index);
+        }
         
-        const Output &getOutput(uint32_t txIndex, uint16_t outputNum) const;
-        const Input &getInput(uint32_t txIndex, uint16_t inputNum) const;
+        const RawTransaction *getTx(uint32_t index) const {
+            return txFile.getData(index);
+        }
+        
+        const uint32_t *getSequenceNumbers(uint32_t index) const {
+            return sequenceFile.getData(index);
+        }
         
         size_t txCount() const;
         
+        BlockHeight blockCount() const {
+            return maxHeight;
+        }
+        
         std::vector<unsigned char> getCoinbase(uint64_t offset) const;
         
-        const FixedSizeFileMapper<uint256> &getTxHashesFile() const {
-            reorgCheck();
-            return txHashesFile;
-        }
+        void reload();
     };
 }
-
 
 #endif /* chain_access_hpp */

@@ -37,20 +37,20 @@ exact_byte_matches = [
 ]
 
 address_matches = {
-    Address(155316552, pubkeyhash):"Chainpoint",
-    Address(89427334, pubkeyhash):"Base64DataAddress1",
-    Address(156665979, pubkeyhash):"Base64DataAddress2",
-    Address(182075165, pubkeyhash):"Base64DataAddress3",
-    Address(156599323, pubkeyhash):"Base64DataAddress4",
-    Address(203933727, pubkeyhash):"Komodo",
-    Address(203831434, pubkey):"Komodo",
-    Address(127559021, pubkeyhash): "UnknownAddress1",
-    Address(16179390, scripthash):"SpamAddress1",
-    Address(16163151, scripthash):"SpamAddress2",
-    Address(89403362, pubkeyhash):"SpamAddress3",
-    Address(155249896, pubkeyhash):"SpamAddress4",
-    Address(77604537, pubkeyhash):"SpamAddress5",
-    Address(127504441, pubkeyhash):"SpamAddress5"
+    Address(155316552, address_type.pubkeyhash):"Chainpoint",
+    Address(89427334, address_type.pubkeyhash):"Base64DataAddress1",
+    Address(156665979, address_type.pubkeyhash):"Base64DataAddress2",
+    Address(182075165, address_type.pubkeyhash):"Base64DataAddress3",
+    Address(156599323, address_type.pubkeyhash):"Base64DataAddress4",
+    Address(203933727, address_type.pubkeyhash):"Komodo",
+    Address(203831434, address_type.pubkey):"Komodo",
+    Address(127559021, address_type.pubkeyhash): "UnknownAddress1",
+    Address(16179390, address_type.scripthash):"SpamAddress1",
+    Address(16163151, address_type.scripthash):"SpamAddress2",
+    Address(89403362, address_type.pubkeyhash):"SpamAddress3",
+    Address(155249896, address_type.pubkeyhash):"SpamAddress4",
+    Address(77604537, address_type.pubkeyhash):"SpamAddress5",
+    Address(127504441, address_type.pubkeyhash):"SpamAddress5"
 }
 
 def label_application(tx):

@@ -13,26 +13,28 @@
 #include <sstream>
 
 namespace blocksci {
-    constexpr char AddressInfo<AddressType::Enum::PUBKEY>::typeName[];
-    constexpr char AddressInfo<AddressType::Enum::PUBKEYHASH>::typeName[];
-    constexpr char AddressInfo<AddressType::Enum::SCRIPTHASH>::typeName[];
-    constexpr char AddressInfo<AddressType::Enum::MULTISIG>::typeName[];
-    constexpr char AddressInfo<AddressType::Enum::NULL_DATA>::typeName[];
-    constexpr char AddressInfo<AddressType::Enum::NONSTANDARD>::typeName[];
+    
+    
+    constexpr char AddressInfo<AddressType::Enum::PUBKEY>::name[];
+    constexpr char AddressInfo<AddressType::Enum::PUBKEYHASH>::name[];
+    constexpr char AddressInfo<AddressType::Enum::WITNESS_PUBKEYHASH>::name[];
+    constexpr char AddressInfo<AddressType::Enum::SCRIPTHASH>::name[];
+    constexpr char AddressInfo<AddressType::Enum::WITNESS_SCRIPTHASH>::name[];
+    constexpr char AddressInfo<AddressType::Enum::MULTISIG>::name[];
+    constexpr char AddressInfo<AddressType::Enum::NULL_DATA>::name[];
+    constexpr char AddressInfo<AddressType::Enum::NONSTANDARD>::name[];
     
     template<AddressType::Enum type>
-    struct TypeNameFunctor {
+    struct AddressNameFunctor {
         static std::string f() {
-            return AddressInfo<type>::typeName;
+            return AddressInfo<type>::name;
         }
     };
     
-    std::string GetTxnOutputType(AddressType::Enum type) {
-        static auto table = make_static_table<TypeNameFunctor>();
-        static constexpr std::size_t size = AddressType::all.size();
-        
+    std::string addressName(AddressType::Enum type) {
+        static auto table = make_static_table<AddressType, AddressNameFunctor>();
         auto index = static_cast<size_t>(type);
-        if (index >= size)
+        if (index >= AddressType::size)
         {
             throw std::invalid_argument("combination of enum values is not valid");
         }

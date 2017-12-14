@@ -13,17 +13,17 @@
 
 #include "cluster_manager.hpp"
 
-boost::iterator_range<const blocksci::Address *> Cluster::getAddresses() const {
-    return manager.getClusterAddresses(clusterNum);
+boost::iterator_range<const blocksci::Script *> Cluster::getScripts() const {
+    return manager.getClusterScripts(clusterNum);
 }
 
 uint32_t Cluster::getSize() const {
     return manager.getClusterSize(clusterNum);
 }
 
-std::vector<TaggedAddress> Cluster::taggedAddresses(const std::unordered_map<blocksci::Address, std::string> &tags) const {
-    std::vector<TaggedAddress> tagged;
-    for (auto &address : getAddresses()) {
+std::vector<TaggedScript> Cluster::taggedScripts(const std::unordered_map<blocksci::Script, std::string> &tags) const {
+    std::vector<TaggedScript> tagged;
+    for (auto &address : getScripts()) {
         auto it = tags.find(address);
         if (it != tags.end()) {
             tagged.emplace_back(it->first, it->second);
@@ -32,9 +32,9 @@ std::vector<TaggedAddress> Cluster::taggedAddresses(const std::unordered_map<blo
     return tagged;
 }
 
-uint32_t Cluster::getAddressCount(blocksci::AddressType::Enum type) const {
+uint32_t Cluster::getScriptCount(blocksci::ScriptType::Enum type) const {
     uint32_t count = 0;
-    for (auto &address : getAddresses()) {
+    for (auto &address : getScripts()) {
         if (address.type == type) {
             ++count;
         }

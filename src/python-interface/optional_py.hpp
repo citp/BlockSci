@@ -10,11 +10,11 @@
 #define optional_py_h
 
 #include <pybind11/stl.h>
-#include <boost/optional/optional.hpp>
+#include <range/v3/utility/optional.hpp>
 
 namespace pybind11 { namespace detail {
     template <typename T>
-    struct type_caster<boost::optional<T>> : optional_caster<boost::optional<T>> {};
+    struct type_caster<ranges::optional<T>> : optional_caster<ranges::optional<T>> {};
 }}
 
 #endif /* optional_py_h */

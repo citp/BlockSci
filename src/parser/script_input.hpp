@@ -11,93 +11,135 @@
 
 #include "basic_types.hpp"
 #include "script_output.hpp"
+#include "parser_fwd.hpp"
 
 #include <blocksci/address/address_types.hpp>
 #include <blocksci/address/address.hpp>
-#include <blocksci/chain/output_pointer.hpp>
+#include <blocksci/scripts/script_view.hpp>
+#include <blocksci/chain/inout_pointer.hpp>
 
-#include <boost/variant/variant.hpp>
+#include <mpark/variant.hpp>
 
 #include <bitset>
-#include <stdio.h>
 
-class AddressWriter;
-struct RawTransaction;
-class CPubKey;
-
-
-struct InputInfo {
-    blocksci::Address address;
+struct InputView {
     uint32_t inputNum;
-    const unsigned char *scriptBegin;
-    const unsigned char *scriptEnd;
+    uint32_t txNum;
+    const std::vector<WitnessStackItem> &witnessStack;
+    bool witnessActivated;
     
-    InputInfo(const blocksci::Address &address_, uint32_t inputNum_, const unsigned char *scriptBegin_, const unsigned char *scriptEnd_) : address(address_), inputNum(inputNum_), scriptBegin(scriptBegin_), scriptEnd(scriptEnd_) {}
-    
-    CScript getScript() const {
-        return CScript(scriptBegin, scriptEnd);
-    }
-};
-
-struct ScriptInputBase {
-    void checkInput(const InputInfo &, const RawTransaction &, const BlockchainState &, const AddressWriter &) {}
+    InputView(uint32_t inputNum_, uint32_t txNum_, const std::vector<WitnessStackItem> &witnessStack_, bool witnessActivated_) : inputNum(inputNum_), txNum(txNum_), witnessStack(witnessStack_), witnessActivated(witnessActivated_) {}
 };
 
 template<blocksci::AddressType::Enum type>
-struct ScriptInput;
-
-template<>
-struct ScriptInput<blocksci::AddressType::Enum::PUBKEY> : public ScriptInputBase {
-    ScriptInput(const InputInfo &, const RawTransaction &, const AddressWriter &) {}
-    void processInput(const InputInfo &, const RawTransaction &, BlockchainState &, AddressWriter &) {}
-};
-
-template<>
-struct ScriptInput<blocksci::AddressType::Enum::PUBKEYHASH> : public ScriptInputBase {
-    uint32_t addressNum;
-    CPubKey pubkey;
+struct ScriptInput {
+    static constexpr auto address_v = type;
     
-    ScriptInput(const InputInfo &inputInfo, const RawTransaction &tx, const AddressWriter &);
-    void processInput(const InputInfo &, const RawTransaction &, BlockchainState &, AddressWriter &);
+    ScriptInputData<type> data;
+    uint32_t scriptNum;
+    
+    
+    ScriptInput(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<type> &spendData) : data(inputView, scriptView, tx, spendData) {}
+    
+    void process(AddressState &state) {
+        data.process(state);
+    }
+    
+    void check(const AddressState &state) {
+        data.check(state);
+    }
+};
+
+struct ScriptInputDataBase {
+    void check(const AddressState &) {}
+    void process(AddressState &) {}
 };
 
 template<>
-struct ScriptInput<blocksci::AddressType::Enum::NONSTANDARD> : public ScriptInputBase {
-    uint32_t addressNum;
+struct ScriptInputData<blocksci::AddressType::Enum::PUBKEY> : public ScriptInputDataBase {
+    ScriptInputData(const InputView &, const blocksci::CScriptView &, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::PUBKEY> &) {}
+};
+
+template<>
+struct ScriptInputData<blocksci::AddressType::Enum::PUBKEYHASH> : public ScriptInputDataBase {
+    blocksci::CPubKey pubkey;
+
+    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::PUBKEYHASH> &);
+};
+
+template<>
+struct ScriptInputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : public ScriptInputDataBase {
+    blocksci::CPubKey pubkey;
+    
+    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> &);
+};
+
+template<>
+struct ScriptInputData<blocksci::AddressType::Enum::NONSTANDARD> : public ScriptInputDataBase {
     CScript script;
     
-    ScriptInput(const InputInfo &inputInfo, const RawTransaction &tx, const AddressWriter &);
-    void processInput(const InputInfo &, const RawTransaction &, BlockchainState &, AddressWriter &);
+    ScriptInputData() = default;
+    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::NONSTANDARD> &);
 };
 
 template <>
-struct ScriptInput<blocksci::AddressType::Enum::NULL_DATA> : public ScriptInputBase {
-    ScriptInput(const InputInfo &inputInfo, const RawTransaction &tx, const AddressWriter &);
-    void processInput(const InputInfo &, const RawTransaction &, BlockchainState &, AddressWriter &);
-};
-
-using ScriptInputType = blocksci::to_script_variant_t<ScriptInput, blocksci::AddressInfoList>;
-
-template<>
-struct ScriptInput<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptInputBase {
-    uint32_t addressNum;
-    blocksci::Address wrappedAddress;
-    ScriptOutputType wrappedScriptOutput;
-    std::vector<unsigned char> wrappedInputScript;
-    
-    ScriptInput(const InputInfo &inputInfo, const RawTransaction &tx, const AddressWriter &);
-    void processInput(const InputInfo &inputInfo, const RawTransaction &tx, BlockchainState &state, AddressWriter &writer);
-    void checkInput(const InputInfo &inputInfo, const RawTransaction &tx, const BlockchainState &state, const AddressWriter &writer);
+struct ScriptInputData<blocksci::AddressType::Enum::NULL_DATA> : public ScriptInputDataBase {
+    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::NULL_DATA> &);
 };
 
 template<>
-struct ScriptInput<blocksci::AddressType::Enum::MULTISIG> : public ScriptInputBase {
+struct ScriptInputData<blocksci::AddressType::Enum::MULTISIG> : public ScriptInputDataBase {
     static constexpr int MAX_ADDRESSES = 16;
-    uint32_t addressNum;
     std::bitset<MAX_ADDRESSES> spendSet;
     
-    ScriptInput(const InputInfo &inputInfo, const RawTransaction &tx, const AddressWriter &);
-    void processInput(const InputInfo &, const RawTransaction &, BlockchainState &, AddressWriter &);
+    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::MULTISIG> &spendData);
+};
+
+class AnyScriptInput;
+
+template<>
+struct ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptInputDataBase {
+    AnyScriptOutput wrappedScriptOutput;
+    std::unique_ptr<AnyScriptInput> wrappedScriptInput;
+    
+    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::SCRIPTHASH> &);
+    
+    void process(AddressState &state);
+    void check(const AddressState &state);
+    
+private:
+    ScriptInputData(std::pair<AnyScriptOutput, std::unique_ptr<AnyScriptInput>> data);
+};
+
+template<>
+struct ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> : public ScriptInputDataBase {
+    AnyScriptOutput wrappedScriptOutput;
+    std::unique_ptr<AnyScriptInput> wrappedScriptInput;
+    
+    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> &);
+    
+    void process(AddressState &state);
+    void check(const AddressState &state);
+    
+private:
+    ScriptInputData(std::pair<AnyScriptOutput, std::unique_ptr<AnyScriptInput>> data);
+};
+
+using ScriptInputType = blocksci::to_variadic_t<blocksci::to_address_tuple_t<ScriptInput>, mpark::variant>;
+
+class AnyScriptInput {
+public:
+    ScriptInputType wrapped;
+    
+    AnyScriptInput() = default;
+    AnyScriptInput(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const AnySpendData &spendData);
+    
+    void process(AddressState &state);
+    void check(const AddressState &state);
+    
+    void setScriptNum(uint32_t scriptNum);
+    
+    blocksci::Address address() const;
 };
 
 #endif /* script_input_hpp */

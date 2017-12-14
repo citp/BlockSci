@@ -19,6 +19,8 @@ import sys
 import os
 import inspect
 
+version = "0.3"
+
 def mapreduce_block_ranges(chain, mapFunc, reduceFunc, init,  start=None, end=None, cpu_count=psutil.cpu_count()):
     """Initialized multithreaded map reduce function over a stream of block ranges
     """
@@ -120,15 +122,72 @@ def new_init(self, loc):
     old_init(self, loc)
     self.block_times = None
     self.cpp = CPP(self)
+    ec2_instance_path = "/home/ubuntu/BlockSci/IS_EC2"
+    tx_heated_path = "/home/ubuntu/BlockSci/TX_DATA_HEATED"
+    scripts_heated_path = "/home/ubuntu/BlockSci/SCRIPT_DATA_HEATED"
+    index_heated_path = "/home/ubuntu/BlockSci/INDEX_DATA_HEATED"
+
+    if os.path.exists(ec2_instance_path):
+        if not os.path.exists(tx_heated_path):
+            print("Note: this appears to be a fresh instance. Transaction data has not yet been cached locally. Most queries might be slow. Caching is currently ongoing in the background, and usually takes 20 minutes.")
+        elif not os.path.exists(scripts_heated_path):
+            print("Note: this appears to be a fresh instance. Script data has not yet been cached locally. Some queries might be slow. Caching is currently ongoing in the background, and usually takes 1.5 hours.")
+        elif not os.path.exists(index_heated_path):
+            print("Note: this appears to be a fresh instance. Index data has not yet been cached locally. A few queries might be slow. Caching is currently ongoing in the background, and usually takes 3.5 hours.")
 Blockchain.__init__ = new_init
 Blockchain.range = block_range
 Blockchain.heights_to_dates = heights_to_dates
+
+first_miner_run = True
 
 class DummyClass:
     pass
 
 loaderDirectory = os.path.dirname(os.path.abspath(inspect.getsourcefile(DummyClass)))
 
+def get_miner(block):
+    global first_miner_run
+    global tagged_addresses
+    global pool_data
+    global coinbase_tag_re
+    if first_miner_run:
+        import json
+        with open(loaderDirectory + "/Blockchain-Known-Pools/pools.json") as f:
+            pool_data = json.load(f)
+        addresses = [Address.from_string(addr_string) for addr_string in pool_data["payout_addresses"]]
+        tagged_addresses = {pointer: pool_data["payout_addresses"][address] for address in addresses if address in pool_data["payout_addresses"]}
+        coinbase_tag_re = re.compile('|'.join(map(re.escape, pool_data["coinbase_tags"])))
+        first_miner_run = False
+    coinbase = block.coinbase_param.decode("utf_8", "replace")
+    tag_matches = re.findall(coinbase_tag_re, coinbase)
+    if len(tag_matches) > 0:
+        return pool_data["coinbase_tags"][tag_matches[0]]["name"]
+    for txout in block.coinbase_tx.outs:
+        if txout.address in tagged_addresses:
+            return tagged_addresses[txout.address]["name"]
+    
+    additional_miners = {
+        "EclipseMC" : "EclipseMC",
+        "poolserverj" : "poolserverj",
+        "/stratumPool/" : "stratumPool",
+        "/stratum/" : "stratum",
+        "/nodeStratum/" : "nodeStratum",
+        "BitLC" : "BitLC",
+        "/TangPool/" : "TangPool",
+        "/Tangpool/" : "TangPool",
+        "pool.mkalinin.ru" : "pool.mkalinin.ru",
+        "For Pierce and Paul" : "Pierce and Paul",
+        "50btc.com" : "50btc.com",
+        "七彩神仙鱼" : "F2Pool"
+    }
+    
+    for miner in additional_miners:
+        if miner in coinbase:
+            return additional_miners[miner]
+    
+    return "Unknown"
+
+Block.miner = get_miner
 
 class CPP(object):
     def __init__(self, chain):

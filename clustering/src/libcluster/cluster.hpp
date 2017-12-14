@@ -9,25 +9,22 @@
 #ifndef cluster_hpp
 #define cluster_hpp
 
-#include <blocksci/address/address.hpp>
+#include <blocksci/scripts/script.hpp>
 
 #include <boost/range/iterator_range.hpp>
 
+#include <vector>
 #include <unordered_map>
 #include <stdio.h>
 #include <cstdint>
 
 class ClusterManager;
 
-namespace blocksci {
-    struct Address;
-}
-
-struct TaggedAddress {
-    blocksci::Address address;
+struct TaggedScript {
+    blocksci::Script script;
     std::string tag;
     
-    TaggedAddress(const blocksci::Address &address_, const std::string &tag_) : address(address_), tag(tag_) {}
+    TaggedScript(const blocksci::Script &script_, const std::string &tag_) : script(script_), tag(tag_) {}
 };
 
 class Cluster {
@@ -37,11 +34,11 @@ public:
     uint32_t clusterNum;
     
     Cluster(uint32_t clusterNum_, const ClusterManager &manager_) : manager(manager_), clusterNum(clusterNum_) {}
-    boost::iterator_range<const blocksci::Address *> getAddresses() const;
+    boost::iterator_range<const blocksci::Script *> getScripts() const;
     
-    std::vector<TaggedAddress> taggedAddresses(const std::unordered_map<blocksci::Address, std::string> &tags) const;
+    std::vector<TaggedScript> taggedScripts(const std::unordered_map<blocksci::Script, std::string> &tags) const;
     
-    uint32_t getAddressCount(blocksci::AddressType::Enum type) const;
+    uint32_t getScriptCount(blocksci::ScriptType::Enum type) const;
     
     uint32_t getSize() const;
     
