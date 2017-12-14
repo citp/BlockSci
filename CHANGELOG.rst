@@ -1,7 +1,7 @@
 .. role:: python(code)
    :language: python
 
-Changelog
+Release notes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Version 0.3
