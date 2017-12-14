@@ -1,0 +1,88 @@
+.. role:: python(code)
+   :language: python
+
+Version 0.3
+========================
+
+New Data Format
+------------------
+
+This version of BlockSci uses an updated data format requiring rerunning the parser from scratch if you are running a local
+copy of BlockSci. If you are using the EC2 AMI image you can simply launch a new server with the BlockSci 0.3 image.
+
+Increased Performance
+-----------------------
+We acheived a ~4% increase in tx data size for a ~5x performance increase
+
+Below we compare the performance numbers performing various performance calculations on the blockchain up 
+to block 478,449 in order to match the original version.
+
+Most of the improvements came from improving memory alignment in data files which lead to a small increase in size.
+
++-----------------------------+----------------------+----------------------------+
+|Iterating over               | Single Threaded      |     Multithreaded          |
+|                             +-----------+----------+-------------+--------------+
+|                             | Old       |   New    |   Old       |    New       |
++-----------------------------+-----------+----------+-------------+--------------+
+|Transaction headers          | 13.1 sec  | 3.0 sec  | 3.2 sec     | 0.6 sec      |
++-----------------------------+-----------+----------+-------------+--------------+
+|Transaction outputs          | 27.9 sec  | 3.4 sec  | 6.6 sec     | 0.9 sec      |
++-----------------------------+-----------+----------+-------------+--------------+
+|Transaction inputs & outputs | 46.4 sec  | 4.2 sec  | 10.3 sec    | 1.1 sec      |
++-----------------------------+-----------+----------+-------------+--------------+
+|Headers in random order      | 303.0 sec | 99.9 sec | Unsupported |  Unsupported |
++-----------------------------+-----------+----------+-------------+--------------+
+
+SegWit Support & API changes
+-------------------------
+- We provide full support to two new address types (Pay to Witness Script Hash and Pay to Witness Pubkey Hash)
+- Provide distinction between address type and script type
+  In this version we introduce a distinction between two outputs which are sent the same way and two outputs that can be spent
+  using the same information. This difference comes up in multiple circumstances including when a the same public key is used
+  is a pay to public key hash output and inside a multisignature output.
+  
+  Inside the BlockSci interface these two related concepts map to the Address and Script types respectively. Both objects
+  possess very similar APIs, but operate somewhat differently. As an example, given a specific P2PKH address, :python:`address`, the
+  then :python:`address.outs()` will return all outputs sent to that specific address. If the pubkey used in that address
+  was also used in another type of output, this would not be shown. However calling :python:`address.script.outs()` will return
+  all outputs where that pubkey was used in any form.
+
+  Additionally Script objects contain a large amount of information about the script used. For instance Multisig scripts provide
+  access to all the pubkeys involved and P2SH scripts provide access to the wrapped address if it is known.
+
+- Moved heuristic-based behavior to a separate module (blocksci.heuristics) to make it easier to distinguish it from core functionality.
+
+  The heuristics library contains two main types of heuristics: change address identification and transaction labeling.
+  In the previous version these functionalities were included in the main functionality of the library making it difficult to
+  distinguish between functions which are guaranteed to be correct and functions which only produce guesses.
+  
+  New versions of the API are accessable by using 
+  
+  .. code-block:: python
+
+        blocksci.heuristics.change_by_client_change_address_behavior(tx)
+        blocksci.heuristics.is_coinjoin(tx)
+  
+Additional Index lookup
+------------------------
+We have added an index to allow the lookup of transactions by hash and addresses address string
+
+Transactions can be looked up via :python:`blocksci.Tx(hash_string)` and addresses can be looked up via :python:`blockcsi.Address.from_string(address_string)`
+   
+Bug Fixes
+---------------------
+ - Many causes of crashes and instability have now been resolved
+ - The address index lookups now will return correct results
+ 
+Limitations
+-------------------
+Incremental updating of the blockchain is currently not supported due to some continuing bugs in blockchain reorg handling. 
+Rerunning the parser in the uncommon situation that a previously parsed block has been orphaned may cause data corruption.
+
+Version 0.2
+========================
+
+This version was the initial release of BlockSci. Old documentation_ is still available for people working with this version
+of the software.
+
+.. _documentation: https://citp.github.io/BlockSci/0.2/
