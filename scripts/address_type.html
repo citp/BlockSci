@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Address Type &#8212; BlockSci 0.1 documentation</title>
+    <title>Address Type &#8212; BlockSci 0.2 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1',
+        VERSION:     '0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -21,10 +21,11 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Pubkey Script" href="PubkeyScript.html" />
-    <link rel="prev" title="Address" href="address.html" />
+    <link rel="next" title="Address" href="address.html" />
+    <link rel="prev" title="Script Classes" href="scripts.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -61,11 +62,6 @@
 <code class="descname">nulldata</code><em class="property"> = address_type.nulldata</em><a class="headerlink" href="#blocksci.address_type.nulldata" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
-<dt id="blocksci.address_type.pretty_name">
-<code class="descname">pretty_name</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.address_type</em><span class="sig-paren">)</span> &#x2192; str<a class="headerlink" href="#blocksci.address_type.pretty_name" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="attribute">
 <dt id="blocksci.address_type.pubkey">
 <code class="descname">pubkey</code><em class="property"> = address_type.pubkey</em><a class="headerlink" href="#blocksci.address_type.pubkey" title="Permalink to this definition">¶</a></dt>
@@ -83,7 +79,17 @@
 
 <dl class="attribute">
 <dt id="blocksci.address_type.types">
-<code class="descname">types</code><em class="property"> = [address_type.pubkey, address_type.pubkeyhash, address_type.scripthash, address_type.multisig, address_type.nulldata, address_type.nonstandard]</em><a class="headerlink" href="#blocksci.address_type.types" title="Permalink to this definition">¶</a></dt>
+<code class="descname">types</code><em class="property"> = [address_type.pubkey, address_type.pubkeyhash, address_type.scripthash, address_type.multisig, address_type.nulldata, address_type.nonstandard, address_type.witness_pubkeyhash, address_type.witness_scripthash]</em><a class="headerlink" href="#blocksci.address_type.types" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.address_type.witness_pubkeyhash">
+<code class="descname">witness_pubkeyhash</code><em class="property"> = address_type.witness_pubkeyhash</em><a class="headerlink" href="#blocksci.address_type.witness_pubkeyhash" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.address_type.witness_scripthash">
+<code class="descname">witness_scripthash</code><em class="property"> = address_type.witness_scripthash</em><a class="headerlink" href="#blocksci.address_type.witness_scripthash" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -108,19 +114,23 @@
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chain/chain.html">Chain Classes</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="scripts.html">Script Classes</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="address.html">Address</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Address Type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="address.html">Address</a></li>
+<li class="toctree-l2"><a class="reference internal" href="script_type.html">Script Type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="script.html">Script</a></li>
 <li class="toctree-l2"><a class="reference internal" href="PubkeyScript.html">Pubkey Script</a></li>
-<li class="toctree-l2"><a class="reference internal" href="PubkeyHashScript.html">Pubkey Hash Script</a></li>
 <li class="toctree-l2"><a class="reference internal" href="PayToScriptHashScript.html">Pay to ScriptHash Script</a></li>
 <li class="toctree-l2"><a class="reference internal" href="MultisigScript.html">Multisig Script</a></li>
 <li class="toctree-l2"><a class="reference internal" href="NulldataScript.html">Null Data Script</a></li>
 <li class="toctree-l2"><a class="reference internal" href="NonStandardScript.html">Non-Standard Script</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../includeme.html">BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../heuristics/heuristics.html">Heuristics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../clustering/clustering.html">Clustering</a></li>
 </ul>
 
 <div class="relations">
@@ -128,8 +138,8 @@
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="scripts.html">Script Classes</a><ul>
-      <li>Previous: <a href="address.html" title="previous chapter">Address</a></li>
-      <li>Next: <a href="PubkeyScript.html" title="next chapter">Pubkey Script</a></li>
+      <li>Previous: <a href="scripts.html" title="previous chapter">Script Classes</a></li>
+      <li>Next: <a href="address.html" title="next chapter">Address</a></li>
   </ul></li>
   </ul></li>
 </ul>

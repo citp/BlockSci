@@ -1,4 +1,4 @@
-Transaction
+Tx
 ====================================
 
 .. autoclass:: blocksci.Tx

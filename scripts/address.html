@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Address &#8212; BlockSci 0.1 documentation</title>
+    <title>Address &#8212; BlockSci 0.2 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1',
+        VERSION:     '0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -21,10 +21,11 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Address Type" href="address_type.html" />
-    <link rel="prev" title="Script Classes" href="scripts.html" />
+    <link rel="next" title="Script Type" href="script_type.html" />
+    <link rel="prev" title="Address Type" href="address_type.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -49,7 +50,7 @@
 <dl class="method">
 <dt id="blocksci.Address.__init__">
 <code class="descname">__init__</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Address</em>, <em>arg0: int</em>, <em>arg1: blocksci::AddressType::Enum</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#blocksci.Address.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Can be constructed directly py passing it an address index and address type</p>
+<dd><p>Can be constructed directly by passing it an address index and address type</p>
 </dd></dl>
 
 <dl class="method">
@@ -58,33 +59,16 @@
 <dd><p>Get the total number of address of a given type</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="blocksci.Address.address_num">
-<code class="descname">address_num</code><a class="headerlink" href="#blocksci.Address.address_num" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="method">
-<dt id="blocksci.Address.addresses_with_prefix">
-<code class="descname">addresses_with_prefix</code><span class="sig-paren">(</span><em>arg0: str</em><span class="sig-paren">)</span> &#x2192; List[blocksci.blocksci_interface.Address]<a class="headerlink" href="#blocksci.Address.addresses_with_prefix" title="Permalink to this definition">¶</a></dt>
-<dd><p>Find all addresses that begin with the given prefix</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="blocksci.Address.first_tx">
-<code class="descname">first_tx</code><a class="headerlink" href="#blocksci.Address.first_tx" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the first transaction that was sent to this address</p>
+<dt id="blocksci.Address.balance">
+<code class="descname">balance</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Address</em>, <em>height: int=0</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#blocksci.Address.balance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the balance held by this address at the height (Defaults to the full chain)</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="blocksci.Address.from_string">
 <code class="descname">from_string</code><span class="sig-paren">(</span><em>arg0: str</em><span class="sig-paren">)</span> &#x2192; Optional[blocksci.blocksci_interface.Address]<a class="headerlink" href="#blocksci.Address.from_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Construct an address object from an address string</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="blocksci.Address.from_strings">
-<code class="descname">from_strings</code><span class="sig-paren">(</span><em>arg0: List[str]</em><span class="sig-paren">)</span> &#x2192; List[blocksci.blocksci_interface.Address]<a class="headerlink" href="#blocksci.Address.from_strings" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a list of addresses that match the given address strings</p>
 </dd></dl>
 
 <dl class="method">
@@ -123,9 +107,9 @@
 <dd><p>Returns a list of all transactions involving this address</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="blocksci.Address.type">
-<code class="descname">type</code><a class="headerlink" href="#blocksci.Address.type" title="Permalink to this definition">¶</a></dt>
+<dl class="method">
+<dt id="blocksci.Address.with_prefix">
+<code class="descname">with_prefix</code><span class="sig-paren">(</span><em>arg0: str</em><span class="sig-paren">)</span> &#x2192; List[blocksci.blocksci_interface.Address]<a class="headerlink" href="#blocksci.Address.with_prefix" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -150,19 +134,23 @@
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chain/chain.html">Chain Classes</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="scripts.html">Script Classes</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Address</a></li>
 <li class="toctree-l2"><a class="reference internal" href="address_type.html">Address Type</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Address</a></li>
+<li class="toctree-l2"><a class="reference internal" href="script_type.html">Script Type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="script.html">Script</a></li>
 <li class="toctree-l2"><a class="reference internal" href="PubkeyScript.html">Pubkey Script</a></li>
-<li class="toctree-l2"><a class="reference internal" href="PubkeyHashScript.html">Pubkey Hash Script</a></li>
 <li class="toctree-l2"><a class="reference internal" href="PayToScriptHashScript.html">Pay to ScriptHash Script</a></li>
 <li class="toctree-l2"><a class="reference internal" href="MultisigScript.html">Multisig Script</a></li>
 <li class="toctree-l2"><a class="reference internal" href="NulldataScript.html">Null Data Script</a></li>
 <li class="toctree-l2"><a class="reference internal" href="NonStandardScript.html">Non-Standard Script</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../includeme.html">BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../heuristics/heuristics.html">Heuristics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../clustering/clustering.html">Clustering</a></li>
 </ul>
 
 <div class="relations">
@@ -170,8 +158,8 @@
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="scripts.html">Script Classes</a><ul>
-      <li>Previous: <a href="scripts.html" title="previous chapter">Script Classes</a></li>
-      <li>Next: <a href="address_type.html" title="next chapter">Address Type</a></li>
+      <li>Previous: <a href="address_type.html" title="previous chapter">Address Type</a></li>
+      <li>Next: <a href="script_type.html" title="next chapter">Script Type</a></li>
   </ul></li>
   </ul></li>
 </ul>

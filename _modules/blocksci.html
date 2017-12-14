@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>blocksci &#8212; BlockSci 0.1 documentation</title>
+    <title>blocksci &#8212; BlockSci 0.2 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1',
+        VERSION:     '0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -21,6 +21,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
    
@@ -50,6 +51,7 @@
 <span class="kn">import</span> <span class="nn">operator</span>
 <span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">dateparser</span>
+<span class="kn">from</span> <span class="nn">dateutil.relativedelta</span> <span class="k">import</span> <span class="n">relativedelta</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">psutil</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
@@ -59,16 +61,22 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">inspect</span>
 
+<span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;0.3&quot;</span>
+
 <span class="k">def</span> <span class="nf">mapreduce_block_ranges</span><span class="p">(</span><span class="n">chain</span><span class="p">,</span> <span class="n">mapFunc</span><span class="p">,</span> <span class="n">reduceFunc</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span>  <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cpu_count</span><span class="o">=</span><span class="n">psutil</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()):</span>
     <span class="sd">&quot;&quot;&quot;Initialized multithreaded map reduce function over a stream of block ranges</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">if</span> <span class="n">end</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">end</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">chain</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">end</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">chain</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">blocks</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">blocks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">height</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">blocks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">height</span>
 
     <span class="k">if</span> <span class="n">cpu_count</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">reduceFunc</span><span class="p">,</span> <span class="p">(</span><span class="n">mapFunc</span><span class="p">(</span><span class="n">block</span><span class="p">)</span> <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="n">mapFunc</span><span class="p">(</span><span class="n">chain</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">])</span>
 
     <span class="n">segments</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">cpu_count</span><span class="p">)</span>
     <span class="k">with</span> <span class="n">Pool</span><span class="p">(</span><span class="n">cpu_count</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
@@ -84,14 +92,14 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">mapRangeFunc</span><span class="p">(</span><span class="n">blocks</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">reduceFunc</span><span class="p">,</span> <span class="p">(</span><span class="n">mapFunc</span><span class="p">(</span><span class="n">block</span><span class="p">)</span> <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">blocks</span><span class="p">),</span> <span class="n">init</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">mapreduce_block_ranges</span><span class="p">(</span><span class="n">chain</span><span class="p">,</span> <span class="n">mapRangeFunc</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">reduceFunc</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">cpu_count</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mapreduce_block_ranges</span><span class="p">(</span><span class="n">chain</span><span class="p">,</span> <span class="n">mapRangeFunc</span><span class="p">,</span> <span class="n">reduceFunc</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">cpu_count</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">mapreduce_txes</span><span class="p">(</span><span class="n">chain</span><span class="p">,</span> <span class="n">mapFunc</span><span class="p">,</span> <span class="n">reduceFunc</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span>  <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cpu_count</span><span class="o">=</span><span class="n">psutil</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()):</span>
     <span class="sd">&quot;&quot;&quot;Initialized multithreaded map reduce function over a stream of transactions</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">mapRangeFunc</span><span class="p">(</span><span class="n">blocks</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">reduceFunc</span><span class="p">,</span> <span class="p">(</span><span class="n">mapFunc</span><span class="p">(</span><span class="n">tx</span><span class="p">)</span> <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">blocks</span> <span class="k">for</span> <span class="n">tx</span> <span class="ow">in</span> <span class="n">block</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">mapreduce_block_ranges</span><span class="p">(</span><span class="n">chain</span><span class="p">,</span> <span class="n">mapRangeFunc</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">reduceFunc</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">cpu_count</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mapreduce_block_ranges</span><span class="p">(</span><span class="n">chain</span><span class="p">,</span> <span class="n">mapRangeFunc</span><span class="p">,</span> <span class="n">reduceFunc</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">cpu_count</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">map_blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blockFunc</span><span class="p">,</span> <span class="n">start</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cpu_count</span><span class="o">=</span><span class="n">psutil</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()):</span>
@@ -131,11 +139,6 @@
     <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_series</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">time</span><span class="p">))</span>
 
 <span class="k">def</span> <span class="nf">block_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">add_one_month</span><span class="p">(</span><span class="n">dt0</span><span class="p">):</span>
-        <span class="n">dt1</span> <span class="o">=</span> <span class="n">dt0</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">day</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">dt2</span> <span class="o">=</span> <span class="n">dt1</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
-        <span class="n">dt3</span> <span class="o">=</span> <span class="n">dt2</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">day</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">dt3</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_times</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">block_times</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">block</span><span class="o">.</span><span class="n">time</span> <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">block_times</span><span class="p">[</span><span class="s2">&quot;height&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_times</span><span class="o">.</span><span class="n">index</span>
@@ -146,28 +149,87 @@
     <span class="k">if</span> <span class="n">end</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">dateparser</span><span class="o">.</span><span class="n">DateDataParser</span><span class="p">()</span><span class="o">.</span><span class="n">get_date_data</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;period&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;month&#39;</span><span class="p">:</span>
-            <span class="n">end</span> <span class="o">=</span> <span class="n">add_one_month</span><span class="p">(</span><span class="n">start_date</span><span class="p">)</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">start_date</span> <span class="o">+</span> <span class="n">relativedelta</span><span class="p">(</span><span class="n">months</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;period&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;day&#39;</span><span class="p">:</span>
-            <span class="n">end</span> <span class="o">=</span> <span class="n">start_date</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">start_date</span> <span class="o">+</span> <span class="n">relativedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;period&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;year&#39;</span><span class="p">:</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">start_date</span> <span class="o">+</span> <span class="n">relativedelta</span><span class="p">(</span><span class="n">years</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">end</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="p">[</span><span class="n">height</span><span class="p">]</span> <span class="k">for</span> <span class="n">height</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_times</span><span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_times</span><span class="o">.</span><span class="n">index</span> <span class="o">&gt;=</span> <span class="n">start_date</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_times</span><span class="o">.</span><span class="n">index</span> <span class="o">&lt;</span> <span class="n">end</span><span class="p">)]</span><span class="o">.</span><span class="n">height</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span>
 
-<span class="n">old_init</span> <span class="o">=</span> <span class="n">Blockchain</span><span class="o">.</span><span class="n">__init__</span>
+<span class="n">old_init</span> <span class="o">=</span> <span class="n">Blockchain</span><span class="o">.</span><span class="fm">__init__</span>
 <span class="k">def</span> <span class="nf">new_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loc</span><span class="p">):</span>
     <span class="n">old_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loc</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">block_times</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">cpp</span> <span class="o">=</span> <span class="n">CPP</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-<span class="n">Blockchain</span><span class="o">.</span><span class="n">__init__</span> <span class="o">=</span> <span class="n">new_init</span>
+    <span class="n">ec2_instance_path</span> <span class="o">=</span> <span class="s2">&quot;/home/ubuntu/BlockSci/IS_EC2&quot;</span>
+    <span class="n">tx_heated_path</span> <span class="o">=</span> <span class="s2">&quot;/home/ubuntu/BlockSci/TX_DATA_HEATED&quot;</span>
+    <span class="n">scripts_heated_path</span> <span class="o">=</span> <span class="s2">&quot;/home/ubuntu/BlockSci/SCRIPT_DATA_HEATED&quot;</span>
+    <span class="n">index_heated_path</span> <span class="o">=</span> <span class="s2">&quot;/home/ubuntu/BlockSci/INDEX_DATA_HEATED&quot;</span>
+
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">ec2_instance_path</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">tx_heated_path</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Note: this appears to be a fresh instance. Transaction data has not yet been cached locally. Most queries might be slow. Caching is currently ongoing in the background, and usually takes 20 minutes.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">scripts_heated_path</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Note: this appears to be a fresh instance. Script data has not yet been cached locally. Some queries might be slow. Caching is currently ongoing in the background, and usually takes 1.5 hours.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">index_heated_path</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Note: this appears to be a fresh instance. Index data has not yet been cached locally. A few queries might be slow. Caching is currently ongoing in the background, and usually takes 3.5 hours.&quot;</span><span class="p">)</span>
+<span class="n">Blockchain</span><span class="o">.</span><span class="fm">__init__</span> <span class="o">=</span> <span class="n">new_init</span>
 <span class="n">Blockchain</span><span class="o">.</span><span class="n">range</span> <span class="o">=</span> <span class="n">block_range</span>
 <span class="n">Blockchain</span><span class="o">.</span><span class="n">heights_to_dates</span> <span class="o">=</span> <span class="n">heights_to_dates</span>
+
+<span class="n">first_miner_run</span> <span class="o">=</span> <span class="kc">True</span>
 
 <span class="k">class</span> <span class="nc">DummyClass</span><span class="p">:</span>
     <span class="k">pass</span>
 
 <span class="n">loaderDirectory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">getsourcefile</span><span class="p">(</span><span class="n">DummyClass</span><span class="p">)))</span>
 
+<span class="k">def</span> <span class="nf">get_miner</span><span class="p">(</span><span class="n">block</span><span class="p">):</span>
+    <span class="k">global</span> <span class="n">first_miner_run</span>
+    <span class="k">global</span> <span class="n">tagged_addresses</span>
+    <span class="k">global</span> <span class="n">pool_data</span>
+    <span class="k">global</span> <span class="n">coinbase_tag_re</span>
+    <span class="k">if</span> <span class="n">first_miner_run</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">json</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">loaderDirectory</span> <span class="o">+</span> <span class="s2">&quot;/Blockchain-Known-Pools/pools.json&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pool_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="n">addresses</span> <span class="o">=</span> <span class="p">[</span><span class="n">Address</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="n">addr_string</span><span class="p">)</span> <span class="k">for</span> <span class="n">addr_string</span> <span class="ow">in</span> <span class="n">pool_data</span><span class="p">[</span><span class="s2">&quot;payout_addresses&quot;</span><span class="p">]]</span>
+        <span class="n">tagged_addresses</span> <span class="o">=</span> <span class="p">{</span><span class="n">pointer</span><span class="p">:</span> <span class="n">pool_data</span><span class="p">[</span><span class="s2">&quot;payout_addresses&quot;</span><span class="p">][</span><span class="n">address</span><span class="p">]</span> <span class="k">for</span> <span class="n">address</span> <span class="ow">in</span> <span class="n">addresses</span> <span class="k">if</span> <span class="n">address</span> <span class="ow">in</span> <span class="n">pool_data</span><span class="p">[</span><span class="s2">&quot;payout_addresses&quot;</span><span class="p">]}</span>
+        <span class="n">coinbase_tag_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">,</span> <span class="n">pool_data</span><span class="p">[</span><span class="s2">&quot;coinbase_tags&quot;</span><span class="p">])))</span>
+        <span class="n">first_miner_run</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">coinbase</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">coinbase_param</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf_8&quot;</span><span class="p">,</span> <span class="s2">&quot;replace&quot;</span><span class="p">)</span>
+    <span class="n">tag_matches</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">coinbase_tag_re</span><span class="p">,</span> <span class="n">coinbase</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tag_matches</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pool_data</span><span class="p">[</span><span class="s2">&quot;coinbase_tags&quot;</span><span class="p">][</span><span class="n">tag_matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">txout</span> <span class="ow">in</span> <span class="n">block</span><span class="o">.</span><span class="n">coinbase_tx</span><span class="o">.</span><span class="n">outs</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">txout</span><span class="o">.</span><span class="n">address</span> <span class="ow">in</span> <span class="n">tagged_addresses</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">tagged_addresses</span><span class="p">[</span><span class="n">txout</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+    
+    <span class="n">additional_miners</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;EclipseMC&quot;</span> <span class="p">:</span> <span class="s2">&quot;EclipseMC&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;poolserverj&quot;</span> <span class="p">:</span> <span class="s2">&quot;poolserverj&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;/stratumPool/&quot;</span> <span class="p">:</span> <span class="s2">&quot;stratumPool&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;/stratum/&quot;</span> <span class="p">:</span> <span class="s2">&quot;stratum&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;/nodeStratum/&quot;</span> <span class="p">:</span> <span class="s2">&quot;nodeStratum&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;BitLC&quot;</span> <span class="p">:</span> <span class="s2">&quot;BitLC&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;/TangPool/&quot;</span> <span class="p">:</span> <span class="s2">&quot;TangPool&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;/Tangpool/&quot;</span> <span class="p">:</span> <span class="s2">&quot;TangPool&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pool.mkalinin.ru&quot;</span> <span class="p">:</span> <span class="s2">&quot;pool.mkalinin.ru&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;For Pierce and Paul&quot;</span> <span class="p">:</span> <span class="s2">&quot;Pierce and Paul&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;50btc.com&quot;</span> <span class="p">:</span> <span class="s2">&quot;50btc.com&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;七彩神仙鱼&quot;</span> <span class="p">:</span> <span class="s2">&quot;F2Pool&quot;</span>
+    <span class="p">}</span>
+    
+    <span class="k">for</span> <span class="n">miner</span> <span class="ow">in</span> <span class="n">additional_miners</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">miner</span> <span class="ow">in</span> <span class="n">coinbase</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">additional_miners</span><span class="p">[</span><span class="n">miner</span><span class="p">]</span>
+    
+    <span class="k">return</span> <span class="s2">&quot;Unknown&quot;</span>
+
+<span class="n">Block</span><span class="o">.</span><span class="n">miner</span> <span class="o">=</span> <span class="n">get_miner</span>
 
 <span class="k">class</span> <span class="nc">CPP</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chain</span><span class="p">):</span>
@@ -242,9 +304,12 @@
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chain/chain.html">Chain Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../scripts/scripts.html">Script Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../includeme.html">BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../heuristics/heuristics.html">Heuristics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../clustering/clustering.html">Clustering</a></li>
 </ul>
 
 <div class="relations">

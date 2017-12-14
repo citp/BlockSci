@@ -1,4 +1,4 @@
-Transaction Output
+Output
 ====================================
 
 .. autoclass:: blocksci.Output

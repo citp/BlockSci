@@ -1,0 +1,5 @@
+Tagged Script
+====================================
+
+.. autoclass:: blocksci.cluster_python.TaggedScript
+   :members:

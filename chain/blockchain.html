@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Blockchain &#8212; BlockSci 0.1 documentation</title>
+    <title>Blockchain &#8212; BlockSci 0.2 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1',
+        VERSION:     '0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -21,6 +21,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Block" href="block.html" />
@@ -55,7 +56,7 @@
 </ol>
 <p>Return the block of the given height</p>
 <ol class="arabic simple" start="2">
-<li>__getitem__(self: blocksci.blocksci_interface.Blockchain, arg0: slice) -&gt; list</li>
+<li>__getitem__(self: blocksci.blocksci_interface.Blockchain, arg0: slice) -&gt; List[blocksci::Block]</li>
 </ol>
 <p>Return a list of blocks with their heights in the given range</p>
 </dd></dl>
@@ -73,26 +74,14 @@
 </dd></dl>
 
 <dl class="method">
-<dt id="blocksci.Blockchain.change_script_type_txes">
-<code class="descname">change_script_type_txes</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Blockchain</em>, <em>arg0: int</em>, <em>arg1: int</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Transaction]<a class="headerlink" href="#blocksci.Blockchain.change_script_type_txes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a list of transaction for which is_change_over returns true</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="blocksci.Blockchain.coinjoin_txes">
-<code class="descname">coinjoin_txes</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Blockchain</em>, <em>arg0: int</em>, <em>arg1: int</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Transaction]<a class="headerlink" href="#blocksci.Blockchain.coinjoin_txes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a list of all transactions that might be JoinMarket coinjoin transactions</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="blocksci.Blockchain.filter_blocks">
-<code class="descname">filter_blocks</code><span class="sig-paren">(</span><em>filterFunc</em>, <em>start=None</em>, <em>end=None</em>, <em>cpu_count=4</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.filter_blocks" title="Permalink to this definition">¶</a></dt>
+<code class="descname">filter_blocks</code><span class="sig-paren">(</span><em>filterFunc</em>, <em>start=None</em>, <em>end=None</em>, <em>cpu_count=8</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.filter_blocks" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return all blocks in range which match the given criteria</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="blocksci.Blockchain.filter_txes">
-<code class="descname">filter_txes</code><span class="sig-paren">(</span><em>filterFunc</em>, <em>start=None</em>, <em>end=None</em>, <em>cpu_count=4</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.filter_txes" title="Permalink to this definition">¶</a></dt>
+<code class="descname">filter_txes</code><span class="sig-paren">(</span><em>filterFunc</em>, <em>start=None</em>, <em>end=None</em>, <em>cpu_count=8</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.filter_txes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return all transactions in range which match the given criteria</p>
 </dd></dl>
 
@@ -102,39 +91,33 @@
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="blocksci.Blockchain.keyset_change_txes">
-<code class="descname">keyset_change_txes</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Blockchain</em>, <em>arg0: int</em>, <em>arg1: int</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Transaction]<a class="headerlink" href="#blocksci.Blockchain.keyset_change_txes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a list of transaction for which is_keyset_change returns true</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="blocksci.Blockchain.map_blocks">
-<code class="descname">map_blocks</code><span class="sig-paren">(</span><em>blockFunc</em>, <em>start=None</em>, <em>end=None</em>, <em>cpu_count=4</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.map_blocks" title="Permalink to this definition">¶</a></dt>
+<code class="descname">map_blocks</code><span class="sig-paren">(</span><em>blockFunc</em>, <em>start=None</em>, <em>end=None</em>, <em>cpu_count=8</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.map_blocks" title="Permalink to this definition">¶</a></dt>
 <dd><p>Runs the given function over each block in range and returns a list of the results</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="blocksci.Blockchain.mapreduce_block_ranges">
-<code class="descname">mapreduce_block_ranges</code><span class="sig-paren">(</span><em>chain</em>, <em>mapFunc</em>, <em>reduceFunc</em>, <em>init</em>, <em>start=None</em>, <em>end=None</em>, <em>cpu_count=4</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.mapreduce_block_ranges" title="Permalink to this definition">¶</a></dt>
+<code class="descname">mapreduce_block_ranges</code><span class="sig-paren">(</span><em>chain</em>, <em>mapFunc</em>, <em>reduceFunc</em>, <em>init</em>, <em>start=None</em>, <em>end=None</em>, <em>cpu_count=8</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.mapreduce_block_ranges" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialized multithreaded map reduce function over a stream of block ranges</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="blocksci.Blockchain.mapreduce_blocks">
-<code class="descname">mapreduce_blocks</code><span class="sig-paren">(</span><em>chain</em>, <em>mapFunc</em>, <em>reduceFunc</em>, <em>init</em>, <em>start=None</em>, <em>end=None</em>, <em>cpu_count=4</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.mapreduce_blocks" title="Permalink to this definition">¶</a></dt>
+<code class="descname">mapreduce_blocks</code><span class="sig-paren">(</span><em>chain</em>, <em>mapFunc</em>, <em>reduceFunc</em>, <em>init</em>, <em>start=None</em>, <em>end=None</em>, <em>cpu_count=8</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.mapreduce_blocks" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialized multithreaded map reduce function over a stream of blocks</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="blocksci.Blockchain.mapreduce_txes">
-<code class="descname">mapreduce_txes</code><span class="sig-paren">(</span><em>chain</em>, <em>mapFunc</em>, <em>reduceFunc</em>, <em>init</em>, <em>start=None</em>, <em>end=None</em>, <em>cpu_count=4</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.mapreduce_txes" title="Permalink to this definition">¶</a></dt>
+<code class="descname">mapreduce_txes</code><span class="sig-paren">(</span><em>chain</em>, <em>mapFunc</em>, <em>reduceFunc</em>, <em>init</em>, <em>start=None</em>, <em>end=None</em>, <em>cpu_count=8</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.mapreduce_txes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialized multithreaded map reduce function over a stream of transactions</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="blocksci.Blockchain.possible_coinjoin_txes">
-<code class="descname">possible_coinjoin_txes</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Blockchain</em>, <em>arg0: int</em>, <em>arg1: float</em>, <em>arg2: int</em><span class="sig-paren">)</span> &#x2192; Tuple[List[blocksci::Transaction], List[blocksci::Transaction]]<a class="headerlink" href="#blocksci.Blockchain.possible_coinjoin_txes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a list of all transactions that might be coinjoin transactions</p>
+<dl class="attribute">
+<dt id="blocksci.Blockchain.outputs_unspent">
+<code class="descname">outputs_unspent</code><a class="headerlink" href="#blocksci.Blockchain.outputs_unspent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all of the outputs that are unspent</p>
 </dd></dl>
 
 <dl class="method">
@@ -143,16 +126,15 @@
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="blocksci.Blockchain.script_deanon_txes">
-<code class="descname">script_deanon_txes</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Blockchain</em>, <em>arg0: int</em>, <em>arg1: int</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Transaction]<a class="headerlink" href="#blocksci.Blockchain.script_deanon_txes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a list of transaction for which is_script_deanon returns true</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="blocksci.Blockchain.script_type_txes">
 <code class="descname">script_type_txes</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Blockchain</em>, <em>arg0: int</em>, <em>arg1: int</em>, <em>arg2: blocksci.blocksci_interface.address_type</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Transaction]<a class="headerlink" href="#blocksci.Blockchain.script_type_txes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a list of all transactions that include outputs of the given script type</p>
 </dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Blockchain.scripts">
+<code class="descname">scripts</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Blockchain</em>, <em>arg0: blocksci.blocksci_interface.script_type</em><span class="sig-paren">)</span> &#x2192; Union[ranges::v3::any_view&lt;blocksci::ScriptAddress&lt;(blocksci::ScriptType::Enum)0&gt;, (ranges::v3::category)1, void&gt;, ranges::v3::any_view&lt;blocksci::ScriptAddress&lt;(blocksci::ScriptType::Enum)1&gt;, (ranges::v3::category)1, void&gt;, ranges::v3::any_view&lt;blocksci::ScriptAddress&lt;(blocksci::ScriptType::Enum)2&gt;, (ranges::v3::category)1, void&gt;, ranges::v3::any_view&lt;blocksci::ScriptAddress&lt;(blocksci::ScriptType::Enum)3&gt;, (ranges::v3::category)1, void&gt;, ranges::v3::any_view&lt;blocksci::ScriptAddress&lt;(blocksci::ScriptType::Enum)4&gt;, (ranges::v3::category)1, void&gt;]<a class="headerlink" href="#blocksci.Blockchain.scripts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="blocksci.Blockchain.segment">
@@ -182,16 +164,22 @@
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Release notes</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="chain.html">Chain Classes</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Blockchain</a></li>
 <li class="toctree-l2"><a class="reference internal" href="block.html">Block</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tx.html">Transaction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="input.html">Transaction Input</a></li>
-<li class="toctree-l2"><a class="reference internal" href="output.html">Transaction Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tx.html">Tx</a></li>
+<li class="toctree-l2"><a class="reference internal" href="input.html">Input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="output.html">Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AnyTxRange.html">Tx Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AnyInputRange.html">Input Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AnyOutputRange.html">Output Range</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../scripts/scripts.html">Script Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../includeme.html">BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../heuristics/heuristics.html">Heuristics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../clustering/clustering.html">Clustering</a></li>
 </ul>
 
 <div class="relations">

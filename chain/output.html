@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Transaction Output &#8212; BlockSci 0.1 documentation</title>
+    <title>Output &#8212; BlockSci 0.2 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1',
+        VERSION:     '0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -21,10 +21,11 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Script Classes" href="../scripts/scripts.html" />
-    <link rel="prev" title="Transaction Input" href="input.html" />
+    <link rel="next" title="Tx Range" href="AnyTxRange.html" />
+    <link rel="prev" title="Input" href="input.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -40,8 +41,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="transaction-output">
-<h1>Transaction Output<a class="headerlink" href="#transaction-output" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="output">
+<h1>Output<a class="headerlink" href="#output" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="blocksci.Output">
 <em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">Output</code><a class="headerlink" href="#blocksci.Output" title="Permalink to this definition">¶</a></dt>
@@ -49,19 +50,25 @@
 <dl class="attribute">
 <dt id="blocksci.Output.address">
 <code class="descname">address</code><a class="headerlink" href="#blocksci.Output.address" title="Permalink to this definition">¶</a></dt>
-<dd><p>This address linked to this inout</p>
+<dd><p>This address linked to this output</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.Output.address_type">
+<code class="descname">address_type</code><a class="headerlink" href="#blocksci.Output.address_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>The address type of the output</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.Output.block">
+<code class="descname">block</code><a class="headerlink" href="#blocksci.Output.block" title="Permalink to this definition">¶</a></dt>
+<dd><p>The block that contains this input</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="blocksci.Output.is_spent">
 <code class="descname">is_spent</code><a class="headerlink" href="#blocksci.Output.is_spent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns whether this output has been spent</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="blocksci.Output.script_type">
-<code class="descname">script_type</code><a class="headerlink" href="#blocksci.Output.script_type" title="Permalink to this definition">¶</a></dt>
-<dd><p>The type of the address</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -77,9 +84,15 @@
 </dd></dl>
 
 <dl class="attribute">
+<dt id="blocksci.Output.tx">
+<code class="descname">tx</code><a class="headerlink" href="#blocksci.Output.tx" title="Permalink to this definition">¶</a></dt>
+<dd><p>The transaction that contains this input</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="blocksci.Output.value">
 <code class="descname">value</code><a class="headerlink" href="#blocksci.Output.value" title="Permalink to this definition">¶</a></dt>
-<dd><p>The value in base currency attached to this inout</p>
+<dd><p>The value in base currency attached to this output</p>
 </dd></dl>
 
 </dd></dl>
@@ -104,16 +117,22 @@
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Release notes</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="chain.html">Chain Classes</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="blockchain.html">Blockchain</a></li>
 <li class="toctree-l2"><a class="reference internal" href="block.html">Block</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tx.html">Transaction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="input.html">Transaction Input</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Transaction Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tx.html">Tx</a></li>
+<li class="toctree-l2"><a class="reference internal" href="input.html">Input</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AnyTxRange.html">Tx Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AnyInputRange.html">Input Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AnyOutputRange.html">Output Range</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../scripts/scripts.html">Script Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../includeme.html">BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../heuristics/heuristics.html">Heuristics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../clustering/clustering.html">Clustering</a></li>
 </ul>
 
 <div class="relations">
@@ -121,8 +140,8 @@
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="chain.html">Chain Classes</a><ul>
-      <li>Previous: <a href="input.html" title="previous chapter">Transaction Input</a></li>
-      <li>Next: <a href="../scripts/scripts.html" title="next chapter">Script Classes</a></li>
+      <li>Previous: <a href="input.html" title="previous chapter">Input</a></li>
+      <li>Next: <a href="AnyTxRange.html" title="next chapter">Tx Range</a></li>
   </ul></li>
   </ul></li>
 </ul>

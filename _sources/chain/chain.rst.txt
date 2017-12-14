@@ -10,3 +10,6 @@ Chain Classes
    tx
    input
    output
+   AnyTxRange
+   AnyInputRange
+   AnyOutputRange

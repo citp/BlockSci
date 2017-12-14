@@ -1,4 +1,4 @@
-Transaction Input
+Input
 ====================================
 
 .. autoclass:: blocksci.Input

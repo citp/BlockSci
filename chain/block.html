@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Block &#8212; BlockSci 0.1 documentation</title>
+    <title>Block &#8212; BlockSci 0.2 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1',
+        VERSION:     '0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -21,9 +21,10 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Transaction" href="tx.html" />
+    <link rel="next" title="Tx" href="tx.html" />
     <link rel="prev" title="Blockchain" href="blockchain.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -52,7 +53,7 @@
 <dd><p>Overloaded function.</p>
 <ol class="arabic simple">
 <li>__getitem__(self: blocksci.blocksci_interface.Block, arg0: int) -&gt; blocksci::Transaction</li>
-<li>__getitem__(self: blocksci.blocksci_interface.Block, arg0: slice) -&gt; list</li>
+<li>__getitem__(self: blocksci.blocksci_interface.Block, arg0: slice) -&gt; ranges::v3::any_view&lt;blocksci::Transaction, (ranges::v3::category)1, void&gt;</li>
 </ol>
 </dd></dl>
 
@@ -63,7 +64,7 @@
 
 <dl class="method">
 <dt id="blocksci.Block.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Block</em>, <em>arg0: int</em>, <em>arg1: int</em>, <em>arg2: int</em>, <em>arg3: blocksci.blocksci_interface.uint256</em>, <em>arg4: int</em>, <em>arg5: int</em>, <em>arg6: int</em>, <em>arg7: int</em>, <em>arg8: int</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#blocksci.Block.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Block</em>, <em>arg0: int</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#blocksci.Block.__init__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -106,24 +107,12 @@
 <dl class="attribute">
 <dt id="blocksci.Block.coinbase_tx">
 <code class="descname">coinbase_tx</code><a class="headerlink" href="#blocksci.Block.coinbase_tx" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the coinbase transcation in this block</p>
+<dd><p>Return the coinbase transaction in this block</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="blocksci.Block.fees">
-<code class="descname">fees</code><a class="headerlink" href="#blocksci.Block.fees" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a list of the fees in this block</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="blocksci.Block.fees_per_byte">
-<code class="descname">fees_per_byte</code><a class="headerlink" href="#blocksci.Block.fees_per_byte" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a list of fees per byte in this block</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="blocksci.Block.header_hash">
-<code class="descname">header_hash</code><a class="headerlink" href="#blocksci.Block.header_hash" title="Permalink to this definition">¶</a></dt>
+<dt id="blocksci.Block.hash">
+<code class="descname">hash</code><a class="headerlink" href="#blocksci.Block.hash" title="Permalink to this definition">¶</a></dt>
 <dd><p>Hash of this block</p>
 </dd></dl>
 
@@ -133,10 +122,53 @@
 <dd><p>Height of the block in the blockchain</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="blocksci.Block.input_count">
+<code class="descname">input_count</code><a class="headerlink" href="#blocksci.Block.input_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns total number of inputs included in this block</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.Block.input_value">
+<code class="descname">input_value</code><a class="headerlink" href="#blocksci.Block.input_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the sum of the value of all of the inputs included in this block</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.Block.inputs">
+<code class="descname">inputs</code><a class="headerlink" href="#blocksci.Block.inputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a range of all of the inputs in the block.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">AnyInputRange</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Block.miner">
+<code class="descname">miner</code><span class="sig-paren">(</span><em>block</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Block.miner" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="blocksci.Block.net_address_type_value">
 <code class="descname">net_address_type_value</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Block</em><span class="sig-paren">)</span> &#x2192; Dict[blocksci.blocksci_interface.address_type, int]<a class="headerlink" href="#blocksci.Block.net_address_type_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a set of the net change in the utxo pool after this block split up by address type</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Block.net_full_type_value">
+<code class="descname">net_full_type_value</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Block</em><span class="sig-paren">)</span> &#x2192; Dict[str, int]<a class="headerlink" href="#blocksci.Block.net_full_type_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a set of the net change in the utxo pool after this block split up by full type</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.Block.next_block">
+<code class="descname">next_block</code><a class="headerlink" href="#blocksci.Block.next_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the block which follows this one in the chain</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -145,10 +177,36 @@
 <dd><p>Nonce specified in block header</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="blocksci.Block.outputs_spent_by_height">
-<code class="descname">outputs_spent_by_height</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Block</em>, <em>arg0: int</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Output]<a class="headerlink" href="#blocksci.Block.outputs_spent_by_height" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a list of all of the outputs that were spent by the given height</p>
+<dl class="attribute">
+<dt id="blocksci.Block.output_count">
+<code class="descname">output_count</code><a class="headerlink" href="#blocksci.Block.output_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns total number of outputs included in this block</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.Block.output_value">
+<code class="descname">output_value</code><a class="headerlink" href="#blocksci.Block.output_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the sum of the value of all of the outputs included in this block</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.Block.outputs">
+<code class="descname">outputs</code><a class="headerlink" href="#blocksci.Block.outputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a range of all of the outputs in the block.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">AnyOutputRange</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.Block.prev_block">
+<code class="descname">prev_block</code><a class="headerlink" href="#blocksci.Block.prev_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the block which comes before this one in the chain</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -170,39 +228,23 @@
 </dd></dl>
 
 <dl class="method">
-<dt id="blocksci.Block.total_spent_of_age">
-<code class="descname">total_spent_of_age</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Block</em>, <em>arg0: int</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#blocksci.Block.total_spent_of_age" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the sum of all the outputs in the block that were spent within the given number of blocks</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="blocksci.Block.total_spent_of_ages">
 <code class="descname">total_spent_of_ages</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Block</em>, <em>arg0: int</em><span class="sig-paren">)</span> &#x2192; List[int]<a class="headerlink" href="#blocksci.Block.total_spent_of_ages" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a list of sum of all the outputs in the block that were spent within a certain of blocks, up to the max age given</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="blocksci.Block.unspent_outputs">
-<code class="descname">unspent_outputs</code><a class="headerlink" href="#blocksci.Block.unspent_outputs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a list of all of the outputs in this block that are still unspent</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="blocksci.Block.value_in">
-<code class="descname">value_in</code><a class="headerlink" href="#blocksci.Block.value_in" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the sum of the value of all of the inputs included in this block</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="blocksci.Block.value_out">
-<code class="descname">value_out</code><a class="headerlink" href="#blocksci.Block.value_out" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the sum of the value of all of the outputs included in this block</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="blocksci.Block.value_out_after_height">
-<code class="descname">value_out_after_height</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Block</em>, <em>arg0: int</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#blocksci.Block.value_out_after_height" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the sum of all of the outputs that were not spent until after the given height</p>
+<dt id="blocksci.Block.txes">
+<code class="descname">txes</code><a class="headerlink" href="#blocksci.Block.txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a range of all of the txes in the block.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">AnyTxRange</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
@@ -233,16 +275,22 @@
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Release notes</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="chain.html">Chain Classes</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="blockchain.html">Blockchain</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Block</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tx.html">Transaction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="input.html">Transaction Input</a></li>
-<li class="toctree-l2"><a class="reference internal" href="output.html">Transaction Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tx.html">Tx</a></li>
+<li class="toctree-l2"><a class="reference internal" href="input.html">Input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="output.html">Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AnyTxRange.html">Tx Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AnyInputRange.html">Input Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AnyOutputRange.html">Output Range</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../scripts/scripts.html">Script Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../includeme.html">BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../heuristics/heuristics.html">Heuristics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../clustering/clustering.html">Clustering</a></li>
 </ul>
 
 <div class="relations">
@@ -251,7 +299,7 @@
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="chain.html">Chain Classes</a><ul>
       <li>Previous: <a href="blockchain.html" title="previous chapter">Blockchain</a></li>
-      <li>Next: <a href="tx.html" title="next chapter">Transaction</a></li>
+      <li>Next: <a href="tx.html" title="next chapter">Tx</a></li>
   </ul></li>
   </ul></li>
 </ul>
