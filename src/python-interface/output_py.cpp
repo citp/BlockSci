@@ -127,8 +127,8 @@ void init_output(py::module &m) {
     addOutputMethods(outputRangeClass, [](auto func) {
         return [=](ranges::any_view<Output> &range) {
             py::list list;
-            RANGES_FOR(auto && output, range) {
-                list.append(func(std::forward<decltype(output)>(output)));
+            RANGES_FOR(const auto &output, range) {
+                list.append(func(output));
             }
             return list;
         };
@@ -137,7 +137,7 @@ void init_output(py::module &m) {
         ss << "For each output: " << docstring;
         return strdup(ss.str().c_str());
     });
-    addOutputRangeMethods(outputRangeClass, [](ranges::any_view<Output> &range, auto func) {
+    addOutputRangeMethods(outputRangeClass, [](auto &&range, auto func) {
         return func(range);
     });
     
@@ -145,8 +145,8 @@ void init_output(py::module &m) {
     addOutputMethods(outputRangeClass2, [](auto func) {
         return [=](ranges::any_view<Output, ranges::category::random_access | ranges::category::sized> &view) {
             py::list list;
-            RANGES_FOR(auto && output, view) {
-                list.append(func(std::forward<decltype(output)>(output)));
+            RANGES_FOR(const auto &output, view) {
+                list.append(func(output));
             }
             return list;
         };
@@ -164,10 +164,10 @@ void init_output(py::module &m) {
     addOutputMethods(nestedOutputRangeClass, [](auto func) {
         return [=](ranges::any_view<ranges::any_view<Output>> &view) {
             py::list list;
-            RANGES_FOR(auto && outputRange, view) {
+            RANGES_FOR(ranges::any_view<Output> outputRange, view) {
                 py::list nestedList;
-                RANGES_FOR(auto && output, outputRange) {
-                    nestedList.append(func(std::forward<decltype(output)>(output)));
+                RANGES_FOR(const auto &output, outputRange) {
+                    nestedList.append(func(output));
                 }
                 list.append(nestedList);
             }

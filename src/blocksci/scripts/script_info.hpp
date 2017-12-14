@@ -83,16 +83,17 @@ namespace blocksci {
             return ScriptInfo<type>::spendable;
         }
     };
+
+    constexpr void scriptTypeCheckThrow(size_t index) {  
+        index >= ScriptType::size ? throw std::invalid_argument("combination of enum values is not valid") : 0;
+    }
     
     static constexpr auto spendableTable = blocksci::make_static_table<ScriptType, SpendableFunctor>();
     
     constexpr bool isSpendable(ScriptType::Enum t) {
         
         auto index = static_cast<size_t>(t);
-        if (index >= ScriptType::size)
-        {
-            throw std::invalid_argument("combination of enum values is not valid");
-        }
+        scriptTypeCheckThrow(index);
         return spendableTable[index];
     }
     
@@ -107,10 +108,7 @@ namespace blocksci {
     
     constexpr bool isDeduped(ScriptType::Enum t) {
         auto index = static_cast<size_t>(t);
-        if (index >= ScriptType::size)
-        {
-            throw std::invalid_argument("combination of enum values is not valid");
-        }
+        scriptTypeCheckThrow(index);
         return dedupedTable[index];
     }
     

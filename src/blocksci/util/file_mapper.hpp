@@ -68,9 +68,6 @@ namespace blocksci {
         
         SimpleFileMapperBase(boost::filesystem::path path_, AccessMode mode);
         
-        SimpleFileMapperBase(const SimpleFileMapperBase &) = delete;
-        SimpleFileMapperBase &operator=(const SimpleFileMapperBase &) = delete;
-        
         bool isGood() const {
             return file.is_open();
         }
@@ -130,11 +127,6 @@ namespace blocksci {
         static constexpr auto mode = AccessMode::readwrite;
         
         SimpleFileMapper(boost::filesystem::path path) : SimpleFileMapperBase(path, AccessMode::readwrite), writePos(size()) {}
-        
-        SimpleFileMapper(const SimpleFileMapper &) = delete;
-        SimpleFileMapper &operator=(const SimpleFileMapper &) = delete;
-        SimpleFileMapper(SimpleFileMapper &&) = delete;
-        SimpleFileMapper &operator=(SimpleFileMapper &&) = delete;
         
         ~SimpleFileMapper() {
             clearBuffer();

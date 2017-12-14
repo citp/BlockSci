@@ -141,7 +141,7 @@ namespace blocksci {
     std::vector<Transaction> getInputTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access) {
         auto chainAccess = &access;
         auto txes = pointers | ranges::view::transform([chainAccess](const OutputPointer &pointer) { return Output(pointer, *chainAccess).getSpendingTx(); }) | flatMap() | ranges::to_vector;
-        txes |= ranges::action::sort(operator<) | ranges::action::unique(operator==);
+        txes |= ranges::action::sort | ranges::action::unique;
         return txes;
     }
     

@@ -135,6 +135,18 @@ namespace blocksci {
     inline bool operator<(const Transaction& a, const Transaction& b) {
         return a.txNum < b.txNum;
     }
+
+    inline bool operator<=(const Transaction& a, const Transaction& b) {
+        return a.txNum <= b.txNum;
+    }
+
+    inline bool operator>(const Transaction& a, const Transaction& b) {
+        return a.txNum > b.txNum;
+    }
+
+    inline bool operator>=(const Transaction& a, const Transaction& b) {
+        return a.txNum >= b.txNum;
+    }
     
     using input_range = decltype(std::declval<Transaction>().inputs());
     using output_range = decltype(std::declval<Transaction>().outputs());

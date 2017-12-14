@@ -83,13 +83,14 @@ namespace blocksci {
     
     static constexpr auto scriptTypeTable = blocksci::make_static_table<AddressType, ScriptTypeFunctor>();
     
+    constexpr void addressTypeCheckThrow(size_t index) {  
+        index >= AddressType::size ? throw std::invalid_argument("combination of enum values is not valid") : 0;
+    }
+
     constexpr ScriptType::Enum scriptType(AddressType::Enum t) {
         
         auto index = static_cast<size_t>(t);
-        if (index >= AddressType::size)
-        {
-            throw std::invalid_argument("combination of enum values is not valid");
-        }
+        addressTypeCheckThrow(index);
         return scriptTypeTable[index];
     }
     

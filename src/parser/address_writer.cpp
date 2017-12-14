@@ -12,7 +12,7 @@
 
 AddressWriter::AddressWriter(const ParserConfigurationBase &config) :
 scriptFiles(blocksci::apply(blocksci::ScriptInfoList(), [&] (auto tag) {
-    return config.scriptsDirectory()/ std::string{scriptName(tag)};
+    return ScriptFile<tag>(config.scriptsDirectory()/ std::string{scriptName(tag)});
 })) {
 }
 

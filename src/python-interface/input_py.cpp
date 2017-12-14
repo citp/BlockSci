@@ -53,8 +53,8 @@ void init_input(py::module &m) {
     addInputMethods(inputRangeClass, [](auto func) {
         return [=](ranges::any_view<Input> &view) {
             py::list list;
-            RANGES_FOR(auto && input, view) {
-                list.append(func(std::forward<decltype(input)>(input)));
+            RANGES_FOR(const auto &input, view) {
+                list.append(func(input));
             }
             return list;
         };
@@ -71,8 +71,8 @@ void init_input(py::module &m) {
     addInputMethods(inputRangeClass2, [](auto func) {
         return [=](ranges::any_view<Input, ranges::category::random_access | ranges::category::sized> &view) {
             py::list list;
-            RANGES_FOR(auto && input, view) {
-                list.append(func(std::forward<decltype(input)>(input)));
+            RANGES_FOR(const auto &input, view) {
+                list.append(func(input));
             }
             return list;
         };
@@ -89,10 +89,10 @@ void init_input(py::module &m) {
     addInputMethods(nestedInputRangeClass, [](auto func) {
         return [=](ranges::any_view<ranges::any_view<Input>> &view) {
             py::list list;
-            RANGES_FOR(auto && inputRange, view) {
+            RANGES_FOR(ranges::any_view<Input> inputRange, view) {
                 py::list nestedList;
-                RANGES_FOR(auto && input, inputRange) {
-                    nestedList.append(func(std::forward<decltype(input)>(input)));
+                RANGES_FOR(const auto &input, inputRange) {
+                    nestedList.append(func(input));
                 }
                 list.append(nestedList);
             }

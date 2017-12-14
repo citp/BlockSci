@@ -33,7 +33,9 @@ namespace blocksci {
 
 namespace std {
     template<> struct hash<blocksci::ScriptType::Enum> {
-        size_t operator()(blocksci::ScriptType::Enum val) const;
+        size_t operator()(blocksci::ScriptType::Enum val) const {
+            return static_cast<size_t>(val);
+        }
     };
 }
 

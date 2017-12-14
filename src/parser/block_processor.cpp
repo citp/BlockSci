@@ -147,7 +147,7 @@ public:
                 ss << "Error: Failed to open block file " << blockPath << "\n";
                 throw std::runtime_error(ss.str());
             }
-            files.emplace(std::piecewise_construct, std::forward_as_tuple(block.nFile), std::forward_as_tuple(blockPath.native(), lastTxRequired[block.nFile]));
+            files.insert(std::make_pair(block.nFile, std::make_pair(SafeMemReader(blockPath.native()), lastTxRequired[block.nFile])));
         }
         reader = &files.at(block.nFile).first;
         reader->reset(block.nDataPos);

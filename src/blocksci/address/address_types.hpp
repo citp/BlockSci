@@ -33,6 +33,14 @@ namespace blocksci {
     };
 }
 
+namespace std {
+    template<> struct hash<blocksci::AddressType::Enum> {
+        size_t operator()(blocksci::AddressType::Enum type) const {
+            return static_cast<size_t>(type);
+        }
+    };
+}
+
 std::ostream &operator<<(std::ostream &os, blocksci::AddressType::Enum const &type);
 
 #endif /* script_types_hpp */
