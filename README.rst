@@ -17,6 +17,16 @@ Additionally, a demonstration Notebook_ is available in the Notebooks folder.
 
 For installation instructions, see below. More detailed documentation is coming soon. Meanwhile, feel free to contact us at blocksci@lists.cs.princeton.edu.
 
+Latest Release (BlockSci v0.3)
+===========================
+
+BlockSci has been updated to version 0.3. This includes many bug fixes and improvements following the initial release
+which you can read about in the `release notes`_. It is being released along with a new AMI image running the new version
+as well as updated documentation.
+
+.. _release notes: https://citp.github.io/BlockSci/changelog.html#version-0-3
+.. _image: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-1f9b8364
+
 Quick Setup using Amazon EC2
 ==============
 
@@ -26,24 +36,14 @@ If you want to start using BlockSci immediately, we have made available an EC2 i
 
 	ssh -i .ssh/your_private_key.pem -N -L 8888:localhost:8888 ubuntu@your_url.amazonaws.com
 
-This sets up an SSH tunnel between port 8888 on your remote EC2 instance and port 8888 on your localhost. You can use whichever port you like on your local machine. Next, you can navigate to https://localhost:8888/ (https is required) in your browser and log in with the password 'blocksci'. When connecting to the server, you will receive a certificate error regarding the self-signed certificate. This error is expected and can be safely bypassed. A demo notebook will be available for you to run and you can begin exploring the blockchain. Don't forget to shut down the EC2 instance when you are finished since EC2 charges hourly.
+This sets up an SSH tunnel between port 8888 on your remote EC2 instance and port 8888 on your localhost. You can use whichever port you like on your local machine. Next, you can navigate to http://localhost:8888/ in your browser and log in with the password 'blocksci'. A demo notebook will be available for you to run and you can begin exploring the blockchain. Don't forget to shut down the EC2 instance when you are finished since EC2 charges hourly.
 
-AWS instances suffer from a `known performance issue`_ when starting up from an existing AMI. When the machine starts up it doesn't actually load all of the data on the disk so that startup can be instant. Instead it only loads the data when it is accessed for the first time. Thus without intervention BlockSci will be substantially slower than the benchmarks report when commands are run the first time although subsequent queries will be drastically faster.
+AWS instances suffer from a `known performance issue`_ when starting up from an existing AMI. When the machine starts up it doesn't actually load all of the data on the disk so that startup can be instant. Instead it only loads the data when it is accessed for the first time. Thus BlockSci will temporarly operate slowely when the image has first been launched. All examples in the demo Notebook should run at full speed about 20 minutes after launch and it will take approximately 3 hours to reach full speed.
 
-If you want to eliminate this performance issue entirely, you can do so using the ``fio`` utility which takes about 12 hours to run.
-
-You'll first need to determine which block device the disk is loaded as using the ``lsblk`` tool. There should only be one devlice listed which is ``xvda`` on our instance. In the final line replace ``xvda`` with the block device listed by ``lsblk``. Further instructions are available from Amazon_.
-
-.. code-block:: bash
-
-	ssh -i .ssh/your_private_key.pem ubuntu@your_url.amazonaws.com
-	lsblk
-	sudo apt-get install -y fio
-	sudo fio --filename=/dev/xvda --rw=read --bs=128k --iodepth=32 --ioengine=libaio --direct=1 --name=volume-initialize
+There is no need for user intervention to resolve this issue since the machine will do so automatically on launch
 
 .. _ami-1f9b8364: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-1f9b8364
 .. _known performance issue: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-initialize.html
-.. _Amazon: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-initialize.html
 
 Local Setup
 =====================
@@ -78,7 +78,7 @@ In order to use the C++ library, you must compile your code against the BlockSci
 
 .. code-block:: c++
 
-	#include <blocksci/chain/blockchain.hpp>
+	#include <blocksci/blocksci.hpp>
 	
 	int main(int argc, const char * argv[]) {
     		blocksci::Blockchain chain{"file_path_to_output-directory"};
@@ -157,9 +157,10 @@ Note that BlockSci only actively supports python 3.
 	cd ~
 	git clone https://github.com/citp/BlockSci.git
 	cd BlockSci
-	git checkout segwit
 	git submodule init
 	git submodule update --recursive
+	sudo cp -r libs/range-v3/include/meta /usr/local/include
+	sudo cp -r libs/range-v3/include/range /usr/local/include
 
 	cd libs/bitcoin-api-cpp
 	mkdir release
