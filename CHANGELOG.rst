@@ -30,13 +30,13 @@ In our paper_ we presented performance results for iterating over transactions (
 +-----------------------------+-----------+----------+-------------+--------------+
 
 
-New Data Format
+New data format
 ------------------
 
 As noted above, we updated the data format. This requires rerunning the parser from scratch if you are running a local
 copy of BlockSci. If you are using the EC2 AMI image you can simply launch a new server with the BlockSci 0.3 image.
 
-SegWit Support & API changes
+SegWit support & API changes
 -----------------------------
 - We provide full support to two new address types (Pay to Witness Script Hash and Pay to Witness Pubkey Hash)
 - New distinction between address type and script type
@@ -67,13 +67,13 @@ SegWit Support & API changes
         blocksci.heuristics.change_by_client_change_address_behavior(tx)
         blocksci.heuristics.is_coinjoin(tx)
   
-Additional Index lookup
+Additional index lookup
 ------------------------
 We have added an index to allow the lookup of transactions by hash and addresses address string
 
 Transactions can be looked up via :python:`blocksci.Tx(hash_string)` and addresses can be looked up via :python:`blockcsi.Address.from_string(address_string)`
    
-Bug Fixes
+Bug fixes
 ---------------------
  - Many causes of crashes and instability have now been resolved
  - The address index lookups now will return correct results
@@ -86,7 +86,6 @@ Rerunning the parser in the uncommon situation that a previously parsed block ha
 Version 0.2
 ========================
 
-This version was the initial release of BlockSci. Old documentation_ is still available for people working with this version
-of the software.
+This version was the initial release of BlockSci. Documentation_ for version 0.2 is still available.
 
-.. _documentation: https://citp.github.io/BlockSci/0.2/
+.. _Documentation: https://citp.github.io/BlockSci/0.2/
