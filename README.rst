@@ -18,7 +18,7 @@ Additionally, a demonstration Notebook_ is available in the Notebooks folder.
 For installation instructions, see below. More detailed documentation is coming soon. Meanwhile, feel free to contact us at blocksci@lists.cs.princeton.edu.
 
 Latest Release (BlockSci v0.3)
-===========================
+================================
 
 BlockSci has been updated to version 0.3. This includes many bug fixes and improvements following the initial release
 which you can read about in the `release notes`_. It is being released along with a new AMI image running the new version

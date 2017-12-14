@@ -37,7 +37,7 @@ Most of the improvements came from improving memory alignment in data files whic
 +-----------------------------+-----------+----------+-------------+--------------+
 
 SegWit Support & API changes
--------------------------
+-----------------------------
 - We provide full support to two new address types (Pay to Witness Script Hash and Pay to Witness Pubkey Hash)
 - Provide distinction between address type and script type
   In this version we introduce a distinction between two outputs which are sent the same way and two outputs that can be spent
