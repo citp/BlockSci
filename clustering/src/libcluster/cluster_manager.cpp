@@ -47,7 +47,7 @@ Cluster ClusterManager::getCluster(const blocksci::Address &address) const {
 }
 
 Cluster ClusterManager::getCluster(const blocksci::Script &script) const {
-    return Cluster(getClusterNum(address), *this);
+    return Cluster(getClusterNum(script), *this);
 }
 
 std::vector<TaggedCluster> ClusterManager::taggedClusters(const std::unordered_map<blocksci::Script, std::string> &tags) {
