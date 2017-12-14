@@ -19,6 +19,8 @@ import sys
 import os
 import inspect
 
+version = "0.3"
+
 def mapreduce_block_ranges(chain, mapFunc, reduceFunc, init,  start=None, end=None, cpu_count=psutil.cpu_count()):
     """Initialized multithreaded map reduce function over a stream of block ranges
     """
