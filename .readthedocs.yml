@@ -1,0 +1,10 @@
+requirements_file:
+   docs/requirements.txt
+
+python:
+   version: 3.5
+
+python:
+   setup_py_install: true
+
+
