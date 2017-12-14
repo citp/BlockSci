@@ -9,9 +9,9 @@ Version 0.3
 
 5x performance increase
 -----------------------
-We acheived a roughly 5x performance increase at the cost of a small (under 4%) increase in memory consumption. BlockSci can now iterate over every transaction input and output on the Bitcoin blockchain in about 1 second on a single 4-core EC2 instance. Most of the improvements came from improving memory alignment in data files.
+We acheived a roughly 5x performance increase (for the C++ interface) at the cost of a small (under 4%) increase in memory consumption. BlockSci can now iterate over every transaction input and output on the Bitcoin blockchain in about 1 second on a single 4-core EC2 instance. Most of the improvements came from improving memory alignment in data files.
 
-In our paper_ we presented performance results for iterating over transactions (up to block 478,449 of the Bitcoin blockchain). In the table below we compare the timings reported in the paper (Old) to the corresponding timings for version 0.3 (New).
+In our paper_ we presented performance results for iterating over transactions using the C++ library (up to block 478,449 of the Bitcoin blockchain). In the table below we compare the timings reported in the paper (Old) to the corresponding timings for version 0.3 (New).
 
 .. _paper: https://arxiv.org/pdf/1709.02489.pdf
 
@@ -29,6 +29,7 @@ In our paper_ we presented performance results for iterating over transactions (
 |Headers in random order      | 303.0 sec | 99.9 sec | Unsupported |  Unsupported |
 +-----------------------------+-----------+----------+-------------+--------------+
 
+In future versions we plan to bring the Python performance for most common types of queries closer to the C++ performance figures in the table.
 
 New data format
 ------------------
