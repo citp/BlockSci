@@ -9,7 +9,7 @@
 #include "script_output.hpp"
 
 void UTXOAddressState::addOutput(const AnySpendData &spendData, const blocksci::OutputPointer &pointer) {
-    mpark::visit([&](const auto &spendData) { addOutput(spendData, pointer); }, spendData.wrapped);
+    mpark::visit([&](const auto &spendData) { this->addOutput(spendData, pointer); }, spendData.wrapped);
 }
 
 template<blocksci::AddressType::Enum type>

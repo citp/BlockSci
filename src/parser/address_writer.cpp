@@ -17,11 +17,11 @@ scriptFiles(blocksci::apply(blocksci::ScriptInfoList(), [&] (auto tag) {
 }
 
 size_t AddressWriter::serialize(const AnyScriptOutput &output, uint32_t txNum) {
-    return mpark::visit([&](auto &scriptOutput) { return serialize(scriptOutput, txNum); }, output.wrapped);
+    return mpark::visit([&](auto &scriptOutput) { return this->serialize(scriptOutput, txNum); }, output.wrapped);
 }
 
 void AddressWriter::serialize(const AnyScriptInput &input, uint32_t txNum, uint32_t outputTxNum) {
-    mpark::visit([&](auto &scriptInput) { serialize(scriptInput, txNum, outputTxNum); }, input.wrapped);
+    mpark::visit([&](auto &scriptInput) { this->serialize(scriptInput, txNum, outputTxNum); }, input.wrapped);
 }
 
 using namespace blocksci;

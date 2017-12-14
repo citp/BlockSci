@@ -62,7 +62,7 @@ void ParserIndex::runUpdate(const State &state) {
         std::cout << "Updating index with scripts of type " << scriptName(type) << "\n";
         for (uint32_t i = latestState.scriptCounts[typeIndex]; i < state.scriptCounts[typeIndex]; i++) {
             auto pointer = Script{i + 1, type};
-            processScript(pointer, chain, scripts);
+            this->processScript(pointer, chain, scripts);
             progress.update(num);
             num++;
         }

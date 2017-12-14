@@ -80,7 +80,7 @@ public:
         if (output.isNew) {
             auto &file = std::get<ScriptFile<scriptType(type)>>(scriptFiles);
             file.write(output.data.getData(txNum));
-            output.data.visitWrapped([&](auto &output) { serialize(output, txNum); });
+            output.data.visitWrapped([&](auto &output) { this->serialize(output, txNum); });
             return file.size();
         }
         return 0;
