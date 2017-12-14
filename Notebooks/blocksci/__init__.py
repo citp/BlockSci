@@ -131,9 +131,9 @@ def new_init(self, loc):
         if not os.path.exists(tx_heated_path):
             print("Note: this appears to be a fresh instance. Transaction data has not yet been cached locally. Most queries might be slow. Caching is currently ongoing in the background, and usually takes 20 minutes.")
         elif not os.path.exists(scripts_heated_path):
-            print("Note: this appears to be a fresh instance. Script data has not yet been cached locally. Some queries might be slow. Caching is currently ongoing in the background, and usually takes 1 hour.")
+            print("Note: this appears to be a fresh instance. Script data has not yet been cached locally. Some queries might be slow. Caching is currently ongoing in the background, and usually takes 1.5 hours.")
         elif not os.path.exists(index_heated_path):
-            print("Note: this appears to be a fresh instance. Index data has not yet been cached locally. A few queries might be slow. Caching is currently ongoing in the background, and usually takes 2 hours.")
+            print("Note: this appears to be a fresh instance. Index data has not yet been cached locally. A few queries might be slow. Caching is currently ongoing in the background, and usually takes 3.5 hours.")
 Blockchain.__init__ = new_init
 Blockchain.range = block_range
 Blockchain.heights_to_dates = heights_to_dates
