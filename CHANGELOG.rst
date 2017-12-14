@@ -69,14 +69,14 @@ SegWit support & API changes
   
 Additional index lookup
 ------------------------
-We have added an index to allow the lookup of transactions by hash and addresses address string
+We have added an index to allow the lookup of transactions by hash and addresses by address string.
 
-Transactions can be looked up via :python:`blocksci.Tx(hash_string)` and addresses can be looked up via :python:`blockcsi.Address.from_string(address_string)`
+Transactions can be looked up via :python:`blocksci.Tx(hash_string)` and addresses can be looked up via :python:`blockcsi.Address.from_string(address_string)`.
    
 Bug fixes
 ---------------------
- - Many causes of crashes and instability have now been resolved
- - The address index lookups now will return correct results
+ - Many causes of crashes and instability have now been resolved.
+ - The address index lookups now will return correct results.
  
 Limitations
 -------------------
