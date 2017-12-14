@@ -76,7 +76,21 @@ Transactions can be looked up via :python:`blocksci.Tx(hash_string)` and address
 Bug fixes
 ---------------------
  - Many causes of crashes and instability have now been resolved.
- - The address index lookups now will return correct results.
+ - Segwit support has been introduced. (`Issue #1`_)
+ - The address index lookups now will return correct results. (`Issue #6`_)
+ - The parser no longer reads beyond memory boundaries causing occasional crashes. (`Issue #9`_)
+ - The initial header parse phase is now multithreaded leading to a substantial performance increase. (`Issue #12`_)
+ - Fixed bitcoin-api-cpp headers so it now works on both mac and linux. (`Issue #15`_)
+ - The parser now provides feedback as it goes. (`Issue #26`_)
+ - The python module no longer crashes on exit. (`Issue #25`_)
+
+ .. _Issue #1: https://github.com/citp/BlockSci/issues/1
+ .. _Issue #6: https://github.com/citp/BlockSci/issues/6
+ .. _Issue #9: https://github.com/citp/BlockSci/issues/9
+ .. _Issue #12: https://github.com/citp/BlockSci/issues/12
+ .. _Issue #15: https://github.com/citp/BlockSci/issues/15
+ .. _Issue #25: https://github.com/citp/BlockSci/issues/25
+ .. _Issue #26: https://github.com/citp/BlockSci/issues/26
  
 Limitations
 -------------------
