@@ -39,7 +39,7 @@
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>
-#include <boost/program_options.hpp>
+#include <clipp.h>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
@@ -299,187 +299,140 @@ void updateAddressDB(const ParserConfigurationBase &config) {
     db.tearDown();
 }
 
-int main(int argc, const char * argv[]) {
+void updateConfig(boost::filesystem::path &dataDirectory) {
+    auto configFile = dataDirectory/"config.ini";
     
-    namespace po = boost::program_options;
+    boost::property_tree::ptree rootPTree;
+    rootPTree.put("version", blocksci::dataVersion);
+    
+    boost::filesystem::ofstream configStream{configFile};
+    boost::property_tree::write_ini(configStream, rootPTree);
+}
+
+int main(int argc, char * argv[]) {
+    
+    enum class mode {update, updateCore, updateIndexes, updateHashIndex, updateAddressIndex, help};
+    mode selected = mode::help;
+
+
+    enum class updateMode {
+        disk, rpc
+    };
+    updateMode selectedUpdateMode = updateMode::disk;
+
+
     std::string dataDirectoryString;
-    int maxBlockNum;
-    po::options_description general("Options");
-    general.add_options()
-    ("help", "Print help messages")
-    ("output-directory", po::value<std::string>(&dataDirectoryString)->required(), "Path to output parsed data")
-    ("max-block", po::value<int>(&maxBlockNum)->default_value(0), "Max block to scan up to")
-    ("update-indexes", "Update indexes to latest chain state")
-    ("update-address-index", "Update address index to latest state")
-    ;
+    
+
+
+    auto outputDirOpt = (clipp::required("--output-directory", "-o") & clipp::value("output directory", dataDirectoryString)) % "Path to output parsed data";
 
     std::string username;
     std::string password;
-    std::string address;
-    int port;
-    po::options_description rpcOptions("RPC options");
-    rpcOptions.add_options()
-    ("username", po::value<std::string>(&username), "RPC username")
-    ("password", po::value<std::string>(&password), "RPC password")
-    ("address", po::value<std::string>(&address)->default_value("127.0.0.1"), "RPC address")
-    ("port", po::value<int>(&port)->default_value(9998), "RPC port")
-    ;
-    
-    #ifdef BLOCKSCI_FILE_PARSER
+    std::string address = "127.0.0.1";
+    int port = 9998;
+    auto rpcOptions = (
+        clipp::command("rpc").set(selectedUpdateMode, updateMode::rpc),
+        (clipp::required("--username") & clipp::value("username", username)) % "RPC username",
+        (clipp::required("--password") & clipp::value("password", password)) % "RPC password",
+        (clipp::option("--address") & clipp::value("address", address)) % "RPC address",
+        (clipp::option("--port") & clipp::value("port", port)) % "RPC port"
+    ).doc("RPC options");
+
     std::string bitcoinDirectoryString;
-    po::options_description fileOptions("File parser options");
-    fileOptions.add_options()
-    ("coin-directory", po::value<std::string>(&bitcoinDirectoryString), "Path to cryptocurrency directory")
-    ;
-    #endif
+    auto fileOptions = (
+        clipp::command("disk").set(selectedUpdateMode, updateMode::disk),
+        (clipp::required("--coin-directory", "-c") & clipp::value("coin directory", bitcoinDirectoryString)) % "Path to cryptocurrency directory"
+    ).doc("File parser options");
+
+    auto updateCommand = clipp::command("update").set(selected,mode::update) % "Update all BlockSci data";
+    auto updateCoreCommand = clipp::command("core-update").set(selected,mode::updateCore) % "Update just the core BlockSci data (excluding indexes)";
+    auto indexUpdateCommand = clipp::command("index-update").set(selected,mode::updateIndexes) % "Update indexes to latest chain state";
+    auto addressIndexUpdateCommand = clipp::command("address-index-update").set(selected,mode::updateAddressIndex) % "Update address index to latest state";
+    auto hashIndexUpdateCommand = clipp::command("hash-index-update").set(selected,mode::updateHashIndex) % "Update hash index to latest state";
     
-    po::options_description all("Allowed options");
-    all.add(general);
-    #ifdef BLOCKSCI_FILE_PARSER
-    all.add(fileOptions);
-    #endif
-    #ifdef BLOCKSCI_RPC_PARSER
-    all.add(rpcOptions);
-    #endif
+    int maxBlockNum = 0;
+    auto maxBlockOpt = (clipp::option("--max-block", "-m") & clipp::value("max block", maxBlockNum)) % "Max block height to scan up to";
     
-    bool validDisk = false;
-    bool validRPC = false;
-    boost::filesystem::path bitcoinDirectory;
-    boost::filesystem::path dataDirectory;
+    auto coreUpdateOptions = (maxBlockOpt, (fileOptions | rpcOptions));
     
-    try {
-        po::variables_map vm;
-        
-        po::store(po::parse_command_line(argc, argv, all), vm); // can throw
-        
-        /** --help option
-         */
-        if ( vm.count("help")  )
-        {
-            std::cout << "Basic Command Line Parameter App" << std::endl
-            << all << std::endl;
-            return 1;
+    auto commands = ((updateCommand | updateCoreCommand), coreUpdateOptions) | indexUpdateCommand | addressIndexUpdateCommand | hashIndexUpdateCommand;
+    
+    auto cli = (outputDirOpt, commands);
+    
+    
+    
+    auto res = parse(argc, argv, cli);
+    if (res.any_error()) {
+//        clipp::debug::print(std::cerr, res);
+        for(const auto& m : res.missing()) {
+            auto p = m.param();
+            std::cout << "missing " << clipp::debug::doc_label(*p) << " after index " << m.after_index() << '\n';
         }
-        
-        po::notify(vm); // throws on error, so do after help in case
-        // there are any problems
-        
-        dataDirectory = {dataDirectoryString};
-        dataDirectory = boost::filesystem::absolute(dataDirectory);
-        auto configFile = dataDirectory/"config.ini";
-        if (boost::filesystem::exists(configFile)) {
-            boost::filesystem::ifstream configStream{configFile};
-            po::store(po::parse_config_file(configStream, all, true), vm);
+        std::cout << "\n" << clipp::make_man_page(cli, argv[0]);
+        return 0;
+    }
+
+    boost::filesystem::path dataDirectory = {dataDirectoryString};
+    dataDirectory = boost::filesystem::absolute(dataDirectory);
+
+    if(!(boost::filesystem::exists(dataDirectory))){
+        boost::filesystem::create_directory(dataDirectory);
+    }
+
+    switch (selected) {
+        case mode::update:
+        case mode::updateCore: {
+            switch (selectedUpdateMode) {
+                case updateMode::disk: {
+                    boost::filesystem::path bitcoinDirectory = {bitcoinDirectoryString};
+                    bitcoinDirectory = boost::filesystem::absolute(bitcoinDirectory);
+                    ParserConfiguration<FileTag> config{bitcoinDirectory, dataDirectory};
+                    updateChain(config, blocksci::BlockHeight{maxBlockNum});
+                    break;
+                }
+
+                case updateMode::rpc: {
+                    ParserConfiguration<RPCTag> config(username, password, address, port, dataDirectory);
+                    updateChain(config, blocksci::BlockHeight{maxBlockNum});
+                    
+                    break;
+                }
+            }
+            updateConfig(dataDirectory);
+            
+            if (selected == mode::update) {
+                ParserConfigurationBase config{dataDirectory};
+                updateHashDB(config);
+                updateAddressDB(config);
+            }
+            
+            break;
         }
 
-        bool diskEnabled = false;
-        bool rpcEnabled = false;
-        
-        #ifdef BLOCKSCI_FILE_PARSER
-        diskEnabled = true;
-        #endif
-        
-        #ifdef BLOCKSCI_RPC_PARSER
-        rpcEnabled = true;
-        #endif
-        
-        if (vm.count("update-indexes")) {
+        case mode::updateIndexes: {
             ParserConfigurationBase config{dataDirectory};
             updateAddressDB(config);
             updateHashDB(config);
-            return 0;
+            break;
         }
-        
-        if (vm.count("update-hash-index")) {
+
+        case mode::updateHashIndex: {
             ParserConfigurationBase config{dataDirectory};
             updateHashDB(config);
-            return 0;
         }
-        
-        if (vm.count("update-address-index")) {
+
+        case mode::updateAddressIndex: {
             ParserConfigurationBase config{dataDirectory};
             updateAddressDB(config);
-            return 0;
+            break;
         }
-        
-        if (diskEnabled) {
-            if (vm.count("coin-directory")) {
-                validDisk = true;
-            }
+
+        case mode::help: {
+            std::cout << clipp::make_man_page(cli, "blocksci_parser");
+            break;
         }
-        
-        bool enabledSomeRPC = false;
-        bool enabledAllRPC = false;
-        if (rpcEnabled) {
-            enabledSomeRPC = vm.count("username") || vm.count("password");
-            enabledAllRPC = vm.count("username") && vm.count("password");
-            if (enabledSomeRPC && !enabledAllRPC) {
-                throw std::logic_error(std::string("Must specify all RPC username and password"));
-            } else if (enabledAllRPC) {
-                validRPC = true;
-            }
-        }
-        
-        if (rpcEnabled && diskEnabled) {
-            if (!validDisk && !validRPC) {
-                throw std::logic_error(std::string("Must specify disk or RPC options"));
-            }
-        } else if (diskEnabled) {
-            if (!validDisk) {
-                throw std::logic_error(std::string("Must specify disk options"));
-            }
-        } else if (rpcEnabled) {
-            if (!validRPC) {
-                throw std::logic_error(std::string("Must specify RPC options"));
-            }
-        }
-        
-        boost::property_tree::ptree rootPTree;
-        
-        rootPTree.put("version", blocksci::dataVersion);
-        
-        if (validDisk) {
-            bitcoinDirectory = {bitcoinDirectoryString};
-            bitcoinDirectory = boost::filesystem::absolute(bitcoinDirectory);
-            rootPTree.put("coin-directory", bitcoinDirectory.native());
-        }
-        
-        if (validRPC) {
-            rootPTree.put("username", username);
-            rootPTree.put("password", password);
-            rootPTree.put("address", address);
-            rootPTree.put("port", port);
-        }
-        
-        if(!(boost::filesystem::exists(dataDirectory))){
-            boost::filesystem::create_directory(dataDirectory);
-        }
-        
-        boost::filesystem::ofstream configStream{configFile};
-        boost::property_tree::write_ini(configStream, rootPTree);
     }
-    catch(std::exception& e)
-    {
-        std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
-        std::cerr << all << std::endl;
-        return -1;
-    }
-    
-    
-    if (validDisk) {
-        #ifdef BLOCKSCI_FILE_PARSER
-        ParserConfiguration<FileTag> config{bitcoinDirectory, dataDirectory};
-        updateChain(config, blocksci::BlockHeight{maxBlockNum});
-        updateHashDB(config);
-        updateAddressDB(config);
-        #endif
-    } else if (validRPC) {
-        #ifdef BLOCKSCI_RPC_PARSER
-        ParserConfiguration<RPCTag> config(username, password, address, port, dataDirectory);
-        updateChain(config, blocksci::BlockHeight{maxBlockNum});
-        #endif
-    }
-    
     
     return 0;
 }

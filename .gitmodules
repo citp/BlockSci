@@ -22,3 +22,6 @@
 [submodule "Notebooks/blocksci/Blockchain-Known-Pools"]
 	path = Notebooks/blocksci/Blockchain-Known-Pools
 	url = https://github.com/blockchain/Blockchain-Known-Pools
+[submodule "libs/clipp"]
+	path = libs/clipp
+	url = https://github.com/muellan/clipp
