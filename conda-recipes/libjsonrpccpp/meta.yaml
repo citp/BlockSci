@@ -1,0 +1,18 @@
+package:
+  name: libjson-rpc-cpp
+  version: 1.0.0
+
+requirements:
+  build:
+    - git
+    - doxygen
+    - cmake
+    - curl
+    - argtable2
+
+source:
+  git_url: https://github.com/cinemast/libjson-rpc-cpp
+
+about:
+  home: https://github.com/cinemast/libjson-rpc-cpp
+  license: MIT

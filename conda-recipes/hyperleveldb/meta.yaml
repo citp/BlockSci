@@ -1,0 +1,11 @@
+package:
+  name: hyperleveldb
+  version: 1.2.2
+
+source:
+  git_url: https://github.com/rescrv/HyperLevelDB
+  git_tag: releases/1.2.2
+
+about:
+  home: https://github.com/rescrv/HyperLevelDB
+  license: MIT

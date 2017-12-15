@@ -1,0 +1,19 @@
+package:
+  name: bitcoin-api-cpp
+  version: 1.2.2
+
+requirements:
+  build:
+    - cmake
+    - boost
+    - jsoncpp
+    - libjson-rpc-cpp
+  run:
+    - jsoncpp
+    - libjson-rpc-cpp
+source:
+  git_url: https://github.com/hkalodner/bitcoin-api-cpp
+
+about:
+  home: https://github.com/hkalodner/bitcoin-api-cpp
+  license: MIT

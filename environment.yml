@@ -4,9 +4,17 @@ name: blocksci-env
 dependencies:
   - python=3.5
   - boost
+  - lmdb
+  - sparsehash
+  - jsoncpp
   - numpy
   - matplotlib
   - pandas
   - pip
-  - pip:
-    - cmake
+  - cmake
+  - setuptools
+  - requests
+  - pycrypto
+  - multiprocess
+  - psutil
+  - dateparser

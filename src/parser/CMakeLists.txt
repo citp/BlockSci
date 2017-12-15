@@ -10,5 +10,4 @@ target_link_libraries( blocksci_parser hyperleveldb)
 target_link_libraries( blocksci_parser clipp)
 target_link_libraries( blocksci_parser cereal )
 target_link_libraries( blocksci_parser blocksci)
-
 install(TARGETS blocksci_parser DESTINATION bin)
