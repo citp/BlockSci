@@ -33,6 +33,8 @@ namespace blocksci {
             lastBlockHash = maxLoadedBlock->hash;
             _maxLoadedTx = maxLoadedBlock->firstTxIndex + maxLoadedBlock->numTxes;
             lastBlockHashDisk = &maxLoadedBlock->hash;
+        } else {
+            _maxLoadedTx = 0;
         }
     }
     
