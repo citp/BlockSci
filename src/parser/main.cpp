@@ -43,8 +43,7 @@
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
+#include <cereal/archives/binary.hpp>
 
 #include <unordered_set>
 #include <future>
@@ -184,14 +183,14 @@ void updateChain(const ParserConfiguration<ParserTag> &config, blocksci::BlockHe
         ChainIndex<ParserTag> index;
         boost::filesystem::ifstream inFile(config.blockListPath(), std::ios::binary);
         if (inFile.good()) {
-            boost::archive::binary_iarchive ia(inFile);
-            ia >> index;
+            cereal::BinaryInputArchive ia(inFile);
+            ia(index);
         }
         index.update(config);
         auto blocks = index.generateChain(maxBlockNum);
         boost::filesystem::ofstream of(config.blockListPath(), std::ios::binary);
-        boost::archive::binary_oarchive oa(of);
-        oa << index;
+        cereal::BinaryOutputArchive oa(of);
+        oa(index);
         return blocks;
     }();
 

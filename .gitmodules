@@ -25,3 +25,6 @@
 [submodule "libs/clipp"]
 	path = libs/clipp
 	url = https://github.com/muellan/clipp
+[submodule "libs/cereal"]
+	path = libs/cereal
+	url = https://github.com/USCiLab/cereal

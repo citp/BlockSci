@@ -10,8 +10,7 @@
 
 #include <blocksci/util/bitcoin_uint256.hpp>
 
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
+#include <cereal/archives/binary.hpp>
 #include <boost/filesystem/fstream.hpp>
 
 #include <fstream>
@@ -70,8 +69,8 @@ BloomFilterData loadData(const boost::filesystem::path &path, uint64_t maxItems,
     BloomFilterData data{maxItems, fpRate};
     boost::filesystem::ifstream file(path, std::ios::binary);
     if (file.good()) {
-        boost::archive::binary_iarchive ia(file);
-        ia >> data;
+        cereal::BinaryInputArchive ia(file);
+        ia(data);
     }
     return data;
 }
@@ -80,8 +79,8 @@ BloomFilter::BloomFilter(const boost::filesystem::path &path_, uint64_t maxItems
 
 BloomFilter::~BloomFilter() {
     boost::filesystem::ofstream file(metaPath(), std::ios::binary);
-    boost::archive::binary_oarchive oa(file);
-    oa << impData;
+    cereal::BinaryOutputArchive oa(file);
+    oa(impData);
 }
 
 void BloomFilter::reset(uint64_t maxItems, double fpRate) {

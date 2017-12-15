@@ -15,7 +15,10 @@
 #include <blocksci/util/bitcoin_uint256.hpp>
 #include <blocksci/chain/chain_fwd.hpp>
 
-#include <boost/serialization/base_object.hpp>
+#include <cereal/types/base_class.hpp>
+#include <cereal/types/unordered_map.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/string.hpp>
 
 #include <unordered_map>
 #include <algorithm>
@@ -27,7 +30,6 @@ class CBlockIndex;
 struct blockinfo_t;
 
 struct CBlockHeader {
-    friend class boost::serialization::access;
     template<class Archive> void serialize(Archive & ar, const unsigned int) {
         ar & nVersion;
         ar & hashPrevBlock;
@@ -67,18 +69,10 @@ struct BlockInfoBase {
     BlockInfoBase() {}
     BlockInfoBase(const blocksci::uint256 &hash, const CBlockHeader &h, uint32_t size, unsigned int numTxes, uint32_t inputCount, uint32_t outputCount);
     
-    friend class boost::serialization::access;
-    template<class Archive> void serialize(Archive & ar, const unsigned int) {
-        ar & hash;
-        ar & header;
-        ar & height;
-        ar & size;
-        ar & nTx;
-        ar & inputCount;
-        ar & outputCount;
+    template <class Archive>
+    void serialize( Archive & ar ) {
+        ar(hash, header, height, size, nTx, inputCount, outputCount);
     }
-    
-    
 };
 
 template <typename ParseType>
@@ -96,11 +90,9 @@ struct BlockInfo<FileTag> : BlockInfoBase {
     BlockInfo() : BlockInfoBase() {}
     BlockInfo(const CBlockHeader &h, uint32_t length, unsigned int numTxes, uint32_t inputCount, uint32_t outputCount, const ParserConfiguration<FileTag> &config, int fileNum, unsigned int dataPos);
     
-    friend class boost::serialization::access;
-    template<class Archive> void serialize(Archive & ar, const unsigned int) {
-        ar & boost::serialization::base_object<BlockInfoBase>(*this);
-        ar & nFile;
-        ar & nDataPos;
+    template <class Archive>
+    void serialize( Archive & ar ) {
+        ar(cereal::base_class<BlockInfoBase>(this), nFile, nDataPos);
     }
 };
 
@@ -111,10 +103,9 @@ struct BlockInfo<RPCTag> : BlockInfoBase {
     BlockInfo() : BlockInfoBase() {}
     BlockInfo(const blockinfo_t &info, blocksci::BlockHeight height);
     
-    friend class boost::serialization::access;
-    template<class Archive> void serialize(Archive & ar, const unsigned int) {
-        ar & boost::serialization::base_object<BlockInfoBase>(*this);
-        ar & tx;
+    template <class Archive>
+    void serialize( Archive & ar ) {
+        ar(cereal::base_class<BlockInfoBase>(this), tx);
     }
 };
 
@@ -179,9 +170,12 @@ struct ChainIndex {
         return splitPoint;
     }
     
+    template <class Archive>
+    void serialize( Archive & ar ) {
+        ar(blockList, newestBlock);
+    }
+    
 private:
-    friend class boost::serialization::access;
-    template<class Archive> void serialize(Archive & ar, const unsigned int);
     
     int updateHeight(size_t blockNum, const std::unordered_map<blocksci::uint256, size_t> &indexMap);
 };

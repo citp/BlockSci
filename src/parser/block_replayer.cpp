@@ -26,22 +26,22 @@
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>
 
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
+#include <cereal/archives/binary.hpp>
 
 #include <boost/filesystem/fstream.hpp>
 
 #ifdef BLOCKSCI_FILE_PARSER
 void replayBlock(const ParserConfiguration<FileTag> &config, blocksci::BlockHeight blockNum) {
     blocksci::ECCVerifyHandle handle;
-    ChainIndex<FileTag> index;
+    
     boost::filesystem::ifstream inFile(config.blockListPath(), std::ios::binary);
     if (!inFile.good()) {
         throw std::runtime_error("Can only replay block that has already been processed");
     }
+    cereal::BinaryInputArchive ia(inFile);
     
-    boost::archive::binary_iarchive ia(inFile);
-    ia >> index;
+    ChainIndex<FileTag> index;
+    ia(index);
     auto chain = index.generateChain(blockNum);
     auto block = chain.back();
     auto blockPath = config.pathForBlockFile(block.nFile);

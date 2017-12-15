@@ -11,8 +11,6 @@
 
 #include <blocksci/util/file_mapper.hpp>
 
-#include <boost/serialization/access.hpp>
-
 #include <fstream>
 #include <vector>
 
@@ -47,13 +45,10 @@ struct BloomFilterData {
     BloomFilterData();
     BloomFilterData(uint64_t maxItems_, double fpRate_);
     
-    friend class boost::serialization::access;
-    template<class Archive> void serialize(Archive & ar, const unsigned int) {
-        ar & maxItems;
-        ar & fpRate;
-        ar & m_numHashes;
-        ar & length;
-        ar & addedCount;
+    
+    template <class Archive>
+    void serialize( Archive & ar ) {
+        ar(maxItems, fpRate, m_numHashes, length, addedCount);
     }
 };
 

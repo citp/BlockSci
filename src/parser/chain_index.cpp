@@ -21,10 +21,8 @@
 #include <bitcoinapi/bitcoinapi.h>
 #endif
 
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/serialization/unordered_map.hpp>
-#include <boost/serialization/vector.hpp>
+#include <cereal/archives/binary.hpp>
+
 #include <boost/filesystem/operations.hpp>
 
 #include <cmath>
@@ -58,18 +56,6 @@ int maxBlockFileNum(int startFile, const ParserConfiguration<FileTag> &config) {
     }
     return fileNum - 1;
 }
-
-template<typename ParseTag>
-template<class Archive>
-void ChainIndex<ParseTag>::serialize(Archive & ar, const unsigned int) {
-    ar & blockList;
-    ar & newestBlock;
-}
-
-template void ChainIndex<FileTag>::serialize(boost::archive::binary_iarchive& archive, const unsigned int version);
-template void ChainIndex<FileTag>::serialize(boost::archive::binary_oarchive& archive, const unsigned int version);
-template void ChainIndex<RPCTag>::serialize(boost::archive::binary_iarchive& archive, const unsigned int version);
-template void ChainIndex<RPCTag>::serialize(boost::archive::binary_oarchive& archive, const unsigned int version);
 
 template <>
 void ChainIndex<FileTag>::update(const ConfigType &config) {

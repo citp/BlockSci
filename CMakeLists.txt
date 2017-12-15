@@ -34,7 +34,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-find_package( Boost 1.58 COMPONENTS system filesystem thread iostreams serialization REQUIRED )
+find_package( Boost 1.58 COMPONENTS system filesystem thread iostreams REQUIRED )
 add_library(boost INTERFACE)
 target_link_libraries(boost INTERFACE ${Boost_LIBRARIES})
 target_include_directories(boost INTERFACE SYSTEM ${Boost_INCLUDE_DIR})
@@ -49,6 +49,9 @@ target_include_directories(Ranges INTERFACE SYSTEM libs/range-v3/include)
 
 add_library(clipp INTERFACE)
 target_include_directories(clipp INTERFACE SYSTEM libs/clipp/include)
+
+add_library(cereal INTERFACE)
+target_include_directories(cereal INTERFACE SYSTEM libs/cereal/include)
 
 add_library(lmdbxx INTERFACE)
 target_include_directories(lmdbxx INTERFACE SYSTEM libs)
