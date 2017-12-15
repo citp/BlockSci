@@ -34,7 +34,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-find_package( Boost 1.58 COMPONENTS system filesystem thread iostreams REQUIRED )
+find_package( Boost 1.58 COMPONENTS system filesystem iostreams REQUIRED )
 add_library(boost INTERFACE)
 target_link_libraries(boost INTERFACE ${Boost_LIBRARIES})
 target_include_directories(boost INTERFACE SYSTEM ${Boost_INCLUDE_DIR})
