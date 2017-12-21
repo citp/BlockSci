@@ -64,11 +64,21 @@ RPC mode uses the RPC interface of a cryptocurrency to extract data regarding th
 ..  code-block:: bash
 
 	blocksci_parser --output-directory bitcoin-data update rpc --username [user] --password [pass] --address [ip] --port [port]
+	
+Clusterer
+---------
+
+After parsing is done, the next step is to run the clusterer. The clusterer writes its output to the current working directory, and takes the parser output directory as its input.
+
+..  code-block:: bash
+
+	clusterer bitcoin-data
+
 
 Using the analysis library
 ============================
 
-After the parser has been run, the analysis library is ready for use. This can again be used through two different interfaces
+After the clusterer has been run, the analysis library is ready for use. This can again be used through two different interfaces
 
 C++
 ------
@@ -169,6 +179,14 @@ Note that BlockSci only actively supports python 3.
 	sudo make install
 
 	cd ../../..
+	mkdir release
+	cd release
+	cmake -DCMAKE_BUILD_TYPE=Release ..
+	make
+	sudo make install
+	
+	cd ..
+	cd clustering
 	mkdir release
 	cd release
 	cmake -DCMAKE_BUILD_TYPE=Release ..
