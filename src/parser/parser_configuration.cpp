@@ -46,6 +46,9 @@ ParserConfiguration<FileTag>::ParserConfiguration(const boost::filesystem::path 
     } else if (bitcoinDirectoryString.find("regtest") != std::string::npos) {
         blockMagic = 0xdab5bffa;
         workHashFunction = doubleSha256;
+    } else if (bitcoinDirectoryString.find("testnet") != std::string::npos) {
+        blockMagic = 0x0709110b;
+        workHashFunction = doubleSha256;
     } else {
         blockMagic = 0xd9b4bef9;
         workHashFunction = doubleSha256;
