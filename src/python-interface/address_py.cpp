@@ -66,6 +66,7 @@ void init_address(py::module &m) {
     
     py::class_<BaseScript> baseScript(m, "BaseScript", script, "Class representing a script which coins are sent to");
     baseScript
+    .def_property_readonly("has_been_spent", py::overload_cast<>(&BaseScript::hasBeenSpent, py::const_), "Check if this script has ever been spent")
     .def_property_readonly("first_tx", py::overload_cast<>(&BaseScript::getFirstTransaction, py::const_), "Get the first transaction that was sent to this address")
     .def_property_readonly("revealed_tx",py::overload_cast<>(&BaseScript::getTransactionRevealed, py::const_), "The transaction where this wrapped script was first revealed")
     ;

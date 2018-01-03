@@ -39,7 +39,7 @@ namespace blocksci {
     }
     
     ranges::optional<Transaction> BaseScript::getTransactionRevealed(const ChainAccess &chain) const {
-        if (txRevealed != 0) {
+        if (hasBeenSpent()) {
             return Transaction(txRevealed, chain);
         } else {
             return ranges::nullopt;
