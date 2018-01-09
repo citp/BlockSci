@@ -18,6 +18,7 @@ file(GLOB HEURISTICS_SOURCES "heuristics/*.cpp")
 set(ALL_SOURCES ${BLOCKSCI_HEADERS} ${BLOCKSCI_SOURCES} ${ADDRESS_HEADERS} ${ADDRESS_SOURCES}  ${SCRIPT_HEADERS} ${SCRIPT_SOURCES} ${CHAIN_HEADERS} ${CHAIN_SOURCES} ${INDEX_HEADERS} ${INDEX_SOURCES} ${UTIL_HEADERS} ${UTIL_SOURCES} ${HEURISTICS_HEADERS} ${HEURISTICS_SOURCES})
 
 add_library(blocksci SHARED ${ALL_SOURCES})
+add_library(blocksci_static STATIC ${ALL_SOURCES})
 
 if( supported )
     message(STATUS "IPO / LTO enabled")
@@ -39,15 +40,38 @@ target_link_libraries( blocksci boost )
 target_link_libraries( blocksci secp256k1)
 target_link_libraries( blocksci openssl )
 target_link_libraries( blocksci lmdbxx )
-target_link_libraries (blocksci mpark_variant Ranges type_safe)
+target_link_libraries( blocksci mpark_variant Ranges type_safe)
 
+SET_TARGET_PROPERTIES(blocksci_static PROPERTIES OUTPUT_NAME blocksci)
+
+TARGET_LINK_LIBRARIES(blocksci_static
+                        Threads::Threads
+                        boost
+                        secp256k1
+                        openssl
+                        lmdbxx
+                        mpark_variant Ranges type_safe
+                        )
 
 target_include_directories(blocksci PUBLIC BEFORE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<INSTALL_INTERFACE:include/blocksci>
 )
 
-install(TARGETS blocksci DESTINATION lib )
+target_include_directories(blocksci_static PUBLIC BEFORE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  $<INSTALL_INTERFACE:include/blocksci>
+)
+
+SET(VERSION_STRING ${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION})
+
+SET_TARGET_PROPERTIES(blocksci blocksci_static PROPERTIES
+    VERSION "${VERSION_STRING}"
+    SOVERSION "${SO_VERSION}")
+
+INSTALL(TARGETS blocksci blocksci_static
+            LIBRARY DESTINATION lib
+            ARCHIVE DESTINATION lib)
 install(FILES ${BLOCKSCI_HEADERS} DESTINATION include/blocksci)
 install(FILES ${ADDRESS_HEADERS} DESTINATION include/blocksci/address)
 install(FILES ${SCRIPT_HEADERS} DESTINATION include/blocksci/scripts)
@@ -55,4 +79,6 @@ install(FILES ${UTIL_HEADERS} DESTINATION include/blocksci/util)
 install(FILES ${INDEX_SOURCES} DESTINATION include/blocksci/index)
 install(FILES ${CHAIN_HEADERS} DESTINATION include/blocksci/chain)
 install(FILES ${HEURISTICS_HEADERS} DESTINATION include/blocksci/heuristics)
+
+
 
