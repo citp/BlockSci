@@ -20,6 +20,8 @@ set(ALL_SOURCES ${BLOCKSCI_HEADERS} ${BLOCKSCI_SOURCES} ${ADDRESS_HEADERS} ${ADD
 add_library(blocksci SHARED ${ALL_SOURCES})
 add_library(blocksci_static STATIC ${ALL_SOURCES})
 
+set_property(TARGET blocksci_static PROPERTY POSITION_INDEPENDENT_CODE ON)
+
 if( supported )
     message(STATUS "IPO / LTO enabled")
     set_property(TARGET blocksci PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
