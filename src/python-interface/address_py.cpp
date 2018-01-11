@@ -35,6 +35,12 @@ void init_address(py::module &m) {
     .def("txes", py::overload_cast<>(&Address::getTransactions, py::const_), "Returns a list of all transactions involving this address")
     .def("in_txes", py::overload_cast<>(&Address::getInputTransactions, py::const_), "Returns a list of all transaction where this address was an input")
     .def("out_txes", py::overload_cast<>(&Address::getOutputTransactions, py::const_), "Returns a list of all transaction where this address was an output")
+    .def("out_txes_count", [](const Address &address) {
+        return address.getOutputTransactions().size();
+    }, "Return the number of transactions where this address was an output")
+    .def("in_txes_count", [](const Address &address) {
+        return address.getInputTransactions().size();
+    }, "Return the number of transactions where this address was an input")
     .def_property_readonly("script", [](const Address &address) {
         return address.getScript().wrapped;
     }, "Returns the script associated with this address")
