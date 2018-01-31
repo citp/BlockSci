@@ -23,7 +23,7 @@ class CurrencyConverter(object):
 
         self.supported_currencies = self._get_supported_currencies()
         if currency not in self.supported_currencies:
-            raise ValueError("Currency {} is not supported. Please use one of the following options:".format(currency, self.supported_currencies))
+            raise ValueError("Currency {} is not supported. Please use one of the following options: {}.".format(currency, self.supported_currencies))
 
         self.data = self._get_data()
 
