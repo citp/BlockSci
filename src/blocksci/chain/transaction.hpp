@@ -18,10 +18,6 @@
 #include <blocksci/address/address_info.hpp>
 
 #include <range/v3/iterator_range.hpp>
-#include <range/v3/numeric/accumulate.hpp>
-#include <range/v3/view/transform.hpp>
-#include <range/v3/view/remove_if.hpp>
-#include <range/v3/view/filter.hpp>
 #include <range/v3/view/zip_with.hpp>
 #include <range/v3/view/iota.hpp>
 #include <range/v3/utility/optional.hpp>

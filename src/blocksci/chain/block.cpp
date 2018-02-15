@@ -19,6 +19,7 @@
 #include <range/v3/view/transform.hpp>
 #include <range/v3/to_container.hpp>
 #include <range/v3/range_for.hpp>
+#include <range/v3/view/remove_if.hpp>
 
 #include <numeric>
 #include <fstream>

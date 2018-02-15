@@ -105,7 +105,14 @@ void init_address(py::module &m) {
     .def("__str__", py::overload_cast<>(&script::ScriptHash::toPrettyString, py::const_))
     .def_property_readonly("wrapped_address", &script::ScriptHash::getWrappedAddress, "The address inside this P2SH address")
     .def_readonly("raw_address",  &script::ScriptHash::address, "The 160 bit P2SH address hash")
-    .def_property_readonly("wrapped_script",py::overload_cast<>(&script::ScriptHash::wrappedScript, py::const_), "The script inside this P2SH address")
+    .def_property_readonly("wrapped_script", [](const script::ScriptHash &script) -> ranges::optional<AnyScript::ScriptVariant> {
+        auto wrappedScript = script.wrappedScript();
+        if (wrappedScript) {
+            return wrappedScript->wrapped;
+        } else {
+            return ranges::nullopt;
+        }
+    }, "The script inside this P2SH address")
     .def_property_readonly("address", py::overload_cast<>(&script::ScriptHash::addressString, py::const_), "Bitcoin address string")
     ;
     
