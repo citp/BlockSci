@@ -16,6 +16,8 @@
 #include <blocksci/util/state.hpp>
 #include <blocksci/util/bitcoin_uint256.hpp>
 
+#include <rocksdb/db.h>
+
 #include <future>
 #include <unordered_map>
 
@@ -46,12 +48,6 @@ namespace std {
     };
 }
 
-namespace leveldb {
-    class DB;
-}
-
-
-
 struct AddressInfo;
 
 class AddressState {
@@ -69,7 +65,8 @@ private:
     
     boost::filesystem::path path;
     
-    leveldb::DB* levelDb;
+    rocksdb::DB *db;
+    std::vector<rocksdb::ColumnFamilyHandle *> columnHandles;
     
     AddressMap multiAddressMap;
     AddressMap singleAddressMap;
@@ -88,6 +85,8 @@ private:
     
     std::future<void> addressClearFuture;
     
+    rocksdb::ColumnFamilyHandle *getColumn(blocksci::ScriptType::Enum type);
+    
     void reloadBloomFilter();
     
     void clearAddressCache();
@@ -95,7 +94,7 @@ private:
     void clearDeletedKeys();
     
 public:
-    AddressState(const boost::filesystem::path &path);
+    AddressState(const boost::filesystem::path &path, const boost::filesystem::path &hashIndexPath);
     AddressState(const AddressState &) = delete;
     AddressState &operator=(const AddressState &) = delete;
     AddressState(AddressState &&) = delete;
@@ -104,7 +103,7 @@ public:
     
     void optionalSave();
 
-    AddressInfo findAddress(const RawScript &address) const;
+    AddressInfo findAddress(const RawScript &address);
     // Bool is true if address is new
     std::pair<uint32_t, bool> resolveAddress(const AddressInfo &addressInfo);
     uint32_t getNewAddressIndex(blocksci::ScriptType::Enum type);

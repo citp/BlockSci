@@ -60,11 +60,11 @@ namespace blocksci {
         }
         
         boost::filesystem::path addressDBFilePath() const {
-            return dataDirectory/"addressesDb.dat";
+            return dataDirectory/"addressesDb";
         }
         
         boost::filesystem::path hashIndexFilePath() const {
-            return dataDirectory/"hashIndex.dat";
+            return dataDirectory/"hashIndex";
         }
         
         boost::filesystem::path scriptTypeCountFile() const {

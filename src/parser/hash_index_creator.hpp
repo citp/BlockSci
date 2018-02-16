@@ -27,7 +27,7 @@ class HashIndexCreator : public ParserIndex {
     std::vector<rocksdb::ColumnFamilyHandle *> columnHandles;
     
     void processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &scripts) override;
-    void processScript(const blocksci::Script &script, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override;
+    void processScript(const blocksci::Script &script, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override {}
 
 public:
     HashIndexCreator(const ParserConfigurationBase &config, const std::string &path);

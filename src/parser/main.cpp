@@ -141,7 +141,7 @@ void rollbackTransactions(blocksci::BlockHeight blockKeepCount, const ParserConf
         blocksci::SimpleFileMapper<readwrite>(config.blockCoinbaseFilePath()).truncate(firstDeletedBlock->coinbaseOffset);
         blockFile.truncate(blockKeepSize);
         
-        AddressState(config.addressPath()).rollback(blocksciState);
+        AddressState{config.addressPath(), config.hashIndexFilePath()}.rollback(blocksciState);
         AddressWriter(config).rollback(blocksciState);
         AddressDB(config, config.addressDBFilePath().native()).rollback(blocksciState);
         HashIndexCreator(config, config.hashIndexFilePath().native()).rollback(blocksciState);
@@ -241,7 +241,7 @@ void updateChain(const ParserConfiguration<ParserTag> &config, blocksci::BlockHe
         BlockProcessor processor{startingTxCount, totalTxCount, maxBlockHeight};
         UTXOState utxoState;
         UTXOAddressState utxoAddressState;
-        AddressState addressState{config.addressPath()};
+        AddressState addressState{config.addressPath(), config.hashIndexFilePath()};
         UTXOScriptState utxoScriptState;
         
         utxoAddressState.unserialize(config.utxoAddressStatePath());

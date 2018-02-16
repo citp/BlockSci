@@ -36,7 +36,7 @@ void AnyScriptInput::process(AddressState &state) {
     mpark::visit([&](auto &scriptInput) { scriptInput.process(state); }, wrapped);
 }
 
-void AnyScriptInput::check(const AddressState &state) {
+void AnyScriptInput::check(AddressState &state) {
     mpark::visit([&](auto &scriptInput) { scriptInput.check(state); }, wrapped);
 }
 
@@ -85,7 +85,7 @@ void ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH>::process(AddressSt
     wrappedScriptInput->setScriptNum(scriptNum);
 }
 
-void ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH>::check(const AddressState &state) {
+void ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH>::check(AddressState &state) {
     wrappedScriptOutput.check(state);
     wrappedScriptInput->check(state);
 }
@@ -182,7 +182,7 @@ void ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::process(A
     wrappedScriptInput->setScriptNum(scriptNum);
 }
 
-void ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::check(const AddressState &state) {
+void ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::check(AddressState &state) {
     wrappedScriptOutput.check(state);
     wrappedScriptInput->check(state);
 }

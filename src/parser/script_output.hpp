@@ -56,7 +56,7 @@ struct ScriptOutput {
     }
     
     template<blocksci::AddressType::Enum t = type, std::enable_if_t<blocksci::ScriptInfo<scriptType(t)>::deduped, int> = 0>
-    void check(const AddressState &state) {
+    void check(AddressState &state) {
         RawScript rawScript{data.getHash(), script_v};
         auto addressInfo = state.findAddress(rawScript);
         scriptNum = addressInfo.addressNum;
@@ -65,7 +65,7 @@ struct ScriptOutput {
     }
     
     template<blocksci::AddressType::Enum t = type, std::enable_if_t<!blocksci::ScriptInfo<scriptType(t)>::deduped, int> = 0>
-    void check(const AddressState &state) {
+    void check(AddressState &state) {
         scriptNum = 0;
         isNew = true;
         data.visitWrapped([&](auto &output) { output.check(state); });
@@ -208,7 +208,7 @@ public:
     AnyScriptOutput() = default;
     AnyScriptOutput(const blocksci::CScriptView &scriptPubKey, bool witnessActivated);
     
-    void check(const AddressState &state);
+    void check(AddressState &state);
     uint32_t resolve(AddressState &state);
     bool isValid() const;
 };

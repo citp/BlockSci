@@ -9,14 +9,14 @@
 #include "address_state.hpp"
 #include "parser_configuration.hpp"
 
+#include <blocksci/util/bitcoin_uint256.hpp>
 #include <blocksci/util/hash.hpp>
-
-#include <hyperleveldb/db.h>
-#include <hyperleveldb/write_batch.h>
 
 #include <boost/filesystem/fstream.hpp>
 
 #include <iostream>
+
+using namespace blocksci;
 
 namespace {
     static constexpr auto singleAddressFileName = "single.dat";
@@ -38,12 +38,25 @@ namespace std {
 
 AddressState::AddressMap::AddressMap() : SerializableMap<RawScript, uint32_t>({blocksci::uint160S("FFFFFFFFFFFFFFFFFFFF"), blocksci::ScriptType::Enum::NULL_DATA}, {blocksci::uint160S("FFFFFFFFFFFFFFFFFFFF"), blocksci::ScriptType::Enum::SCRIPTHASH}) {}
 
-
-AddressState::AddressState(const boost::filesystem::path &path_) : path(path_), addressBloomFilter(path/std::string(bloomFileName), StartingAddressCount, AddressFalsePositiveRate)  {
-    leveldb::Options options;
+AddressState::AddressState(const boost::filesystem::path &path_, const boost::filesystem::path &hashIndexPath) : path(path_), addressBloomFilter(path/std::string(bloomFileName), StartingAddressCount, AddressFalsePositiveRate)  {
+    rocksdb::Options options;
+    // Optimize RocksDB. This is the easiest way to get RocksDB to perform well
+    options.IncreaseParallelism();
+    options.OptimizeLevelStyleCompaction();
+    // create the DB if it's not already present
     options.create_if_missing = true;
-    options.write_buffer_size = 128 * 1024* 1024;
-    leveldb::DB::Open(options, (path/std::string(dbFileName)).c_str(), &levelDb);
+    options.create_missing_column_families = true;
+    
+    
+    std::vector<rocksdb::ColumnFamilyDescriptor> columnDescriptors;
+    columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions());
+    columnDescriptors.emplace_back("P", rocksdb::ColumnFamilyOptions{});
+    columnDescriptors.emplace_back("S", rocksdb::ColumnFamilyOptions{});
+    columnDescriptors.emplace_back("T", rocksdb::ColumnFamilyOptions{});
+    
+    rocksdb::Status s = rocksdb::DB::Open(options, hashIndexPath.c_str(), columnDescriptors, &columnHandles, &db);
+    
+    assert(s.ok());
     
     singleAddressMap.resize(SingleAddressMapMaxSize);
     oldSingleAddressMap.resize(SingleAddressMapMaxSize);
@@ -79,6 +92,19 @@ AddressState::~AddressState() {
         addressClearFuture.get();
     }
     
+    rocksdb::WriteBatch batch;
+    for (auto &entry : singleAddressMap) {
+        rocksdb::Slice key(reinterpret_cast<const char *>(&entry.first.hash), sizeof(entry.first.hash));
+        rocksdb::Slice value(reinterpret_cast<const char *>(&entry.second), sizeof(entry.second));
+        batch.Put(getColumn(entry.first.type), key, value);
+    }
+    db->Write(rocksdb::WriteOptions(), &batch);
+    
+    for (auto handle : columnHandles) {
+        delete handle;
+    }
+    delete db;
+    
     singleAddressMap.serialize((path/std::string(singleAddressFileName)).native());
     multiAddressMap.serialize((path/std::string(multiAddressFileName)).native());
     
@@ -86,6 +112,18 @@ AddressState::~AddressState() {
     for (auto value : scriptIndexes) {
         outputFile << value << " ";
     }
+}
+
+rocksdb::ColumnFamilyHandle *AddressState::getColumn(ScriptType::Enum type) {
+    switch (type) {
+    case ScriptType::PUBKEY:
+        return columnHandles[1];
+    case ScriptType::SCRIPTHASH:
+        return columnHandles[2];
+    default:
+        assert("Tried to get column for unindexed script type");
+    }
+    return nullptr;
 }
 
 uint32_t AddressState::getNewAddressIndex(blocksci::ScriptType::Enum type) {
@@ -108,17 +146,34 @@ void AddressState::reloadBloomFilter() {
         addressBloomFilter.add(pair.first);
     }
     
-    leveldb::Iterator* it = levelDb->NewIterator(leveldb::ReadOptions());
-    for (it->SeekToFirst(); it->Valid(); it->Next()) {
-        auto key = it->key();
-        if (key.size() == sizeof(RawScript)) {
-            auto address = *reinterpret_cast<const RawScript *>(key.data());
-            addressBloomFilter.add(address);
+    {
+        rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), getColumn(ScriptType::Enum::PUBKEY));
+        for (it->SeekToFirst(); it->Valid(); it->Next()) {
+            uint32_t scriptNum;
+            memcpy(&scriptNum, it->value().data(), sizeof(scriptNum));
+            uint160 addressHash;
+            memcpy(&addressHash, it->key().data(), sizeof(addressHash));
+            addressBloomFilter.add(RawScript{addressHash, ScriptType::Enum::PUBKEY});
         }
+        assert(it->status().ok());
+        delete it;
+    }
+    
+    {
+        rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), getColumn(ScriptType::Enum::SCRIPTHASH));
+        for (it->SeekToFirst(); it->Valid(); it->Next()) {
+            uint32_t scriptNum;
+            memcpy(&scriptNum, it->value().data(), sizeof(scriptNum));
+            uint160 addressHash;
+            memcpy(&addressHash, it->key().data(), sizeof(addressHash));
+            addressBloomFilter.add(RawScript{addressHash, ScriptType::Enum::SCRIPTHASH});
+        }
+        assert(it->status().ok());
+        delete it;
     }
 }
 
-AddressInfo AddressState::findAddress(const RawScript &address) const {
+AddressInfo AddressState::findAddress(const RawScript &address) {
     
     if (!addressBloomFilter.possiblyContains(address)) {
         // Address has definitely never been seen
@@ -157,12 +212,13 @@ AddressInfo AddressState::findAddress(const RawScript &address) const {
     }
     
     
-    leveldb::Slice keySlice(reinterpret_cast<const char *>(&address), sizeof(address));
+    rocksdb::Slice keySlice(reinterpret_cast<const char *>(&address.hash), sizeof(address.hash));
     std::string value;
-    leveldb::Status s = levelDb->Get(leveldb::ReadOptions(), keySlice, &value);
+    rocksdb::Status s = db->Get(rocksdb::ReadOptions(), getColumn(address.type), keySlice, &value);
     if (s.ok()) {
         levelDBCount++;
-        uint32_t destNum = *reinterpret_cast<const uint32_t *>(value.data());
+        uint32_t destNum;
+        memcpy(&destNum, value.data(), sizeof(destNum));
         assert(destNum > 0);
         return {address, AddressLocation::LevelDb, singleAddressMap.end(), destNum};
     }
@@ -176,13 +232,11 @@ std::pair<uint32_t, bool> AddressState::resolveAddress(const AddressInfo &addres
     bool existingAddress = false;
     switch (addressInfo.location) {
         case AddressLocation::SingleUseMap:
-            singleAddressMap.erase(addressInfo.it);
             multiAddressMap.add(rawScript, addressInfo.addressNum);
             assert(addressInfo.addressNum > 0);
             existingAddress = true;
             break;
         case AddressLocation::OldSingleUseMap:
-            oldSingleAddressMap.erase(addressInfo.it);
             multiAddressMap.add(rawScript, addressInfo.addressNum);
             assert(addressInfo.addressNum > 0);
             existingAddress = true;
@@ -238,20 +292,25 @@ void AddressState::rollback(const blocksci::State &state) {
         }
     }
     
-    leveldb::WriteBatch batch;
-    leveldb::Iterator* levelDbIt = levelDb->NewIterator(leveldb::ReadOptions());
-    for (levelDbIt->SeekToFirst(); levelDbIt->Valid(); levelDbIt->Next()) {
-        auto key = levelDbIt->key();
-        if (key.size() == sizeof(RawScript)) {
-            uint32_t destNum = *reinterpret_cast<const uint32_t *>(levelDbIt->value().data());
-            auto address = *reinterpret_cast<const RawScript *>(key.data());
-            auto count = state.scriptCounts[static_cast<size_t>(address.type)];
+    {
+        auto column = getColumn(ScriptType::SCRIPTHASH);
+        rocksdb::WriteBatch batch;
+        rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
+        for (it->SeekToFirst(); it->Valid(); it->Next()) {
+            uint32_t destNum;
+            memcpy(&destNum, it->value().data(), sizeof(destNum));
+            uint160 addressHash;
+            memcpy(&addressHash, it->key().data(), sizeof(addressHash));
+            auto count = state.scriptCounts[static_cast<size_t>(ScriptType::SCRIPTHASH)];
             if (destNum >= count) {
-                batch.Delete(key);
+                batch.Delete(column, it->key());
             }
         }
+        assert(it->status().ok());
+        delete it;
+        db->Write(rocksdb::WriteOptions(), &batch);
     }
-    levelDb->Write(leveldb::WriteOptions(), &batch);
+    
     addressBloomFilter.reset(addressBloomFilter.getMaxItems(), addressBloomFilter.getFPRate());
     reloadBloomFilter();
     scriptIndexes.clear();
@@ -273,12 +332,12 @@ void AddressState::clearAddressCache() {
     }
     singleAddressMap.swap(oldSingleAddressMap);
     addressClearFuture = std::async(std::launch::async, [&] {
-        leveldb::WriteBatch batch;
+        rocksdb::WriteBatch batch;
         for (auto &entry : oldSingleAddressMap) {
-            leveldb::Slice key(reinterpret_cast<const char *>(&entry.first), sizeof(entry.first));
-            leveldb::Slice value(reinterpret_cast<const char *>(&entry.second), sizeof(entry.second));
-            batch.Put(key, value);
+            rocksdb::Slice key(reinterpret_cast<const char *>(&entry.first.hash), sizeof(entry.first.hash));
+            rocksdb::Slice value(reinterpret_cast<const char *>(&entry.second), sizeof(entry.second));
+            batch.Put(getColumn(entry.first.type), key, value);
         }
-        levelDb->Write(leveldb::WriteOptions(), &batch);
+        db->Write(rocksdb::WriteOptions(), &batch);
     });
 }
