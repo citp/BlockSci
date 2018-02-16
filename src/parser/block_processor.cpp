@@ -242,6 +242,9 @@ std::vector<unsigned char> readNewBlock(uint32_t firstTxNum, const BlockInfoBase
     bool isSegwit = false;
     blocksci::uint256 nullHash;
     nullHash.SetNull();
+    uint32_t headerSize = 80 + variableLengthIntSize(block.nTx);
+    uint32_t baseSize = headerSize;
+    uint32_t realSize = headerSize;
     for (uint32_t j = 0; j < block.nTx; j++) {
         RawTransaction *tx = nullptr;
         if (!loadFunc(tx)) {
@@ -269,9 +272,12 @@ std::vector<unsigned char> readNewBlock(uint32_t firstTxNum, const BlockInfoBase
             tx->inputs.clear();
         }
         
+        baseSize += tx->baseSize;
+        realSize += tx->realSize;
+        
         outFunc(tx);
     }
-    blocksci::RawBlock blocksciBlock{firstTxNum, block.nTx, static_cast<uint32_t>(static_cast<int>(block.height)), block.hash, block.header.nVersion, block.header.nTime, block.header.nBits, block.header.nNonce, files.blockCoinbaseFile.size()};
+    blocksci::RawBlock blocksciBlock{firstTxNum, block.nTx, static_cast<uint32_t>(static_cast<int>(block.height)), block.hash, block.header.nVersion, block.header.nTime, block.header.nBits, block.header.nNonce, realSize, baseSize, files.blockCoinbaseFile.size()};
     firstTxNum += block.nTx;
     files.blockFile.write(blocksciBlock);
     files.blockCoinbaseFile.write(coinbase.begin(), coinbase.end());

@@ -147,6 +147,22 @@ namespace blocksci {
         uint32_t nonce() const {
             return rawBlock->nonce;
         }
+        
+        uint32_t baseSize() const {
+            return rawBlock->baseSize;
+        }
+        
+        uint32_t totalSize() const {
+            return rawBlock->realSize;
+        }
+        
+        uint32_t virtualSize() const {
+            return (rawBlock->realSize + rawBlock->baseSize * 3 + 3) / 4;
+        }
+        
+        uint32_t sizeBytes() const {
+            return virtualSize();
+        }
 
         Block nextBlock() const;
         Block prevBlock() const;

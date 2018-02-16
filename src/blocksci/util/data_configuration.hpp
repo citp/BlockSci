@@ -16,7 +16,7 @@
 
 namespace blocksci {
     
-    static constexpr int dataVersion = 2;
+    static constexpr int dataVersion = 3;
     
     struct DataConfiguration {
         DataConfiguration() {}

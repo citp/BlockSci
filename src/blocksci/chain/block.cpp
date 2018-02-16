@@ -72,26 +72,6 @@ namespace blocksci {
         return false;
     }
     
-    /**
-     * Compact Size
-     * size <  253        -- 1 byte
-     * size <= USHRT_MAX  -- 3 bytes  (253 + 2 bytes)
-     * size <= UINT_MAX   -- 5 bytes  (254 + 4 bytes)
-     * size >  UINT_MAX   -- 9 bytes  (255 + 8 bytes)
-     */
-    inline unsigned int GetSizeOfCompactSize(uint64_t nSize)
-    {
-        if (nSize < 253)             return sizeof(unsigned char);
-        else if (nSize <= std::numeric_limits<unsigned short>::max()) return sizeof(unsigned char) + sizeof(unsigned short);
-        else if (nSize <= std::numeric_limits<unsigned int>::max())  return sizeof(unsigned char) + sizeof(unsigned int);
-        else                         return sizeof(unsigned char) + sizeof(uint64_t);
-    }
-    
-    size_t sizeBytes(const Block &block) {
-        size_t size = GetSizeOfCompactSize(block.size()) + 80;
-        return size + ranges::accumulate(block | ranges::view::transform([](const Transaction &tx) { return tx.sizeBytes(); }), size_t{0});
-    }
-    
     TransactionSummary transactionStatistics(const Block &block) {
         return ranges::accumulate(block, TransactionSummary{});
     }
