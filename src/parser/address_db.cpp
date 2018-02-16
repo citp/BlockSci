@@ -144,6 +144,8 @@ void AddressDB::revealedP2SH(uint32_t scriptNum, const std::vector<Address> &add
             addAddress(a, outPoint);
         }
     }
+    assert(it.ok());
+    delete it;
 }
 
 void AddressDB::addAddress(const blocksci::Address &address, const blocksci::OutputPointer &pointer) {
