@@ -60,8 +60,20 @@ namespace blocksci {
         std::vector<OutputPointer> getOutputPointers(const InputPointer &pointer) const;
         std::vector<InputPointer> getInputPointers(const OutputPointer &pointer) const;
         
+        uint32_t baseSize() const {
+            return data->baseSize;
+        }
+        
+        uint32_t totalSize() const {
+            return data->realSize;
+        }
+        
+        uint32_t virtualSize() const {
+            return (data->realSize + data->baseSize * 3 + 3) / 4;
+        }
+        
         uint32_t sizeBytes() const {
-            return data->sizeBytes;
+            return virtualSize();
         }
         
         uint32_t locktime() const {

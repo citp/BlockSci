@@ -8,5 +8,5 @@
 #include "raw_transaction.hpp"
 
 namespace blocksci {
-    RawTransaction::RawTransaction(uint32_t sizeBytes_, uint32_t locktime_, uint16_t inputCount_, uint16_t outputCount_) : sizeBytes(sizeBytes_), locktime(locktime_), inputCount(inputCount_), outputCount(outputCount_), inOuts(static_cast<uint32_t>(inputCount_ + outputCount_)) {}
+    RawTransaction::RawTransaction(uint32_t realSize_, uint32_t baseSize_, uint32_t locktime_, uint16_t inputCount_, uint16_t outputCount_) : realSize(realSize_), baseSize(baseSize_), locktime(locktime_), inputCount(inputCount_), outputCount(outputCount_) {}
 }

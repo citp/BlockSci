@@ -559,7 +559,7 @@ void BlockProcessor::addNewBlocks(const ParserConfiguration<ParseTag> &config, s
     };
     
     auto serializeAddressAdvanceFunc = [&](RawTransaction *tx) {
-        bool shouldSend = tx->sizeBytes < 800 && finished_transaction_queue.write_available() >= 1;
+        bool shouldSend = tx->realSize < 800 && finished_transaction_queue.write_available() >= 1;
         if (!shouldSend) delete tx;
         return shouldSend;
     };
