@@ -39,19 +39,24 @@ namespace blocksci {
     std::vector<Transaction> getOutputTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
     std::vector<Transaction> getInputTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
     
-    lmdb::env createAddressIndexEnviroment(const std::string &path, bool readonly) {
-        auto env = lmdb::env::create();
-        env.set_mapsize(40UL * 1024UL * 1024UL * 1024UL); /* 1 GiB */
-        env.set_max_dbs(5);
-        int flags = MDB_NOSUBDIR;
-        if (readonly) {
-            flags |= MDB_RDONLY;
+    AddressIndex::AddressIndex(const std::string &path)  {
+        rocksdb::Options options;
+        // Optimize RocksDB. This is the easiest way to get RocksDB to perform well
+        options.IncreaseParallelism();
+        options.OptimizeLevelStyleCompaction();
+        // create the DB if it's not already present
+        options.create_if_missing = true;
+        options.create_missing_column_families = true;
+        
+        
+        std::vector<rocksdb::ColumnFamilyDescriptor> columnDescriptors;
+        columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions());
+        for (auto script : ScriptType::all) {
+            auto scriptNameStr = scriptName(script).c_str();
+            columnDescriptors.push_back(rocksdb::ColumnFamilyDescriptor{scriptNameStr, rocksdb::ColumnFamilyOptions{}});
         }
-        env.open(path.c_str(), flags, 0664);
-        return env;
-    }
-    
-    AddressIndex::AddressIndex(const std::string &path) : env(createAddressIndexEnviroment(path, true))  {
+        rocksdb::Status s = rocksdb::DB::Open(options, path.c_str(), columnDescriptors, &columnHandles, &db);
+        assert(s.ok());
     }
     
     std::vector<Output> getOutputsImp(std::vector<OutputPointer> pointers, const ChainAccess &access) {
@@ -153,37 +158,30 @@ namespace blocksci {
         return getInputTransactionsImp(getOutputPointers(script), access);
     }
     
-    template<typename Query>
-    std::vector<OutputPointer> getOutputPointersImp(lmdb::cursor &cursor, lmdb::val &key, const Query &query) {
+//    auto column = columnHandles[static_cast<size_t>(ScriptType::SCRIPTHASH) + 1];
+    
+    std::vector<OutputPointer> getOutputPointersImp(rocksdb::DB *db, rocksdb::ColumnFamilyHandle *column, const rocksdb::Slice &key) {
         std::vector<OutputPointer> pointers;
-        lmdb::val value;
-        for (bool hasNext = cursor.get(key, value, MDB_SET_RANGE); hasNext; hasNext = cursor.get(key, value, MDB_NEXT)) {
-            Address *address = key.data<Address>();
-            if (*address != query) {
-                break;
-            }
-            OutputPointer *pointer = value.data<OutputPointer>();
-            pointers.push_back(*pointer);
+        rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
+        for (it->Seek(key); it->Valid() && it->key().starts_with(key); it->Next()) {
+            auto foundKey = it->key();
+            foundKey.remove_prefix(sizeof(Address));
+            auto outPoint = reinterpret_cast<const OutputPointer *>(foundKey.data());
+            pointers.push_back(*outPoint);
         }
         return pointers;
     }
                                                                       
     std::vector<OutputPointer> AddressIndex::getOutputPointers(const Address &searchAddress) const {
-        std::vector<OutputPointer> pointers;
-        auto rtxn = lmdb::txn::begin(env, nullptr, MDB_RDONLY);
-        auto dbi = lmdb::dbi::open(rtxn, std::string(scriptName(scriptType(searchAddress.type))).c_str(), MDB_DUPSORT| MDB_DUPFIXED);
-        auto cursor = lmdb::cursor::open(rtxn, dbi);
-        lmdb::val key{&searchAddress, sizeof(searchAddress)};
-        return getOutputPointersImp(cursor, key, searchAddress);
+        auto column = columnHandles[static_cast<size_t>(scriptType(searchAddress.type)) + 1];
+        rocksdb::Slice key{reinterpret_cast<const char *>(&searchAddress), sizeof(searchAddress)};
+        return getOutputPointersImp(db, column, key);
     }
     
     std::vector<OutputPointer> AddressIndex::getOutputPointers(const Script &script) const {
-        std::vector<OutputPointer> pointers;
-        auto rtxn = lmdb::txn::begin(env, nullptr, MDB_RDONLY);
-        auto dbi = lmdb::dbi::open(rtxn, std::string(scriptName(script.type)).c_str(), MDB_DUPSORT| MDB_DUPFIXED);
-        auto cursor = lmdb::cursor::open(rtxn, dbi);
-        lmdb::val key{&script.scriptNum, sizeof(script.scriptNum)};
-        return getOutputPointersImp(cursor, key, script);
+        auto column = columnHandles[static_cast<size_t>(script.type) + 1];
+        rocksdb::Slice key{reinterpret_cast<const char *>(&script.scriptNum), sizeof(script.scriptNum)};
+        return getOutputPointersImp(db, column, key);
     }
 }
 

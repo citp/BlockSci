@@ -16,45 +16,48 @@
 
 namespace blocksci {
     
-    lmdb::env createHashIndexEnviroment(const std::string &path, bool readonly) {
-        auto env = lmdb::env::create();
-        env.set_mapsize(100UL * 1024UL * 1024UL * 1024UL); /* 1 GiB */
-        env.set_max_dbs(5);
-        int flags = MDB_NOSUBDIR;
-        if (readonly) {
-            flags |= MDB_RDONLY;
-        }
-        env.open(path.c_str(), flags, 0664);
-        return env;
+    HashIndex::HashIndex(const std::string &path) {
+        rocksdb::Options options;
+        // Optimize RocksDB. This is the easiest way to get RocksDB to perform well
+        options.IncreaseParallelism();
+        options.OptimizeLevelStyleCompaction();
+        // create the DB if it's not already present
+        options.create_if_missing = true;
+        options.create_missing_column_families = true;
+        
+        
+        std::vector<rocksdb::ColumnFamilyDescriptor> columnDescriptors;
+        columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions());
+        columnDescriptors.emplace_back("P", rocksdb::ColumnFamilyOptions{});
+        columnDescriptors.emplace_back("S", rocksdb::ColumnFamilyOptions{});
+        columnDescriptors.emplace_back("T", rocksdb::ColumnFamilyOptions{});
+        
+        rocksdb::Status s = rocksdb::DB::OpenForReadOnly(options, path.c_str(), columnDescriptors, &columnHandles, &db);
+        assert(s.ok());
     }
     
-    HashIndex::HashIndex(const std::string &path) : env(createHashIndexEnviroment(path, true)) {}
-    
     template <typename T>
-    uint32_t getMatch(const lmdb::env &env, const char *name, const T &t) {
-        auto rtxn = lmdb::txn::begin(env, nullptr, MDB_RDONLY);
-        auto dbi = lmdb::dbi::open(rtxn, name);
-        auto cursor = lmdb::cursor::open(rtxn, dbi);
-        lmdb::val key{&t, sizeof(t)};
-        lmdb::val data;
-        bool found = dbi.get(rtxn, key, data);
-        if (found) {
-            return *data.data<uint32_t>();
+    uint32_t getMatch(rocksdb::DB *db, rocksdb::ColumnFamilyHandle *handle, const T &t) {
+        std::string val;
+        rocksdb::Slice key{reinterpret_cast<const char *>(&t), sizeof(t)};
+        auto getStatus = db->Get(rocksdb::ReadOptions{}, handle, key, &val);
+        if (getStatus.ok()) {
+            return *reinterpret_cast<const uint32_t *>(val.data());
         } else {
             return 0;
         }
     }
     
-    uint32_t HashIndex::getTxIndex(const uint256 &txHash) const {
-        return getMatch(env, "tx", txHash);
+    uint32_t HashIndex::getTxIndex(const uint256 &txHash) {
+        return getMatch(db, columnHandles[3], txHash);
     }
     
-    uint32_t HashIndex::getPubkeyHashIndex(const uint160 &pubkeyhash) const {
-        return getMatch(env, "pubkey", pubkeyhash);
+    uint32_t HashIndex::getPubkeyHashIndex(const uint160 &pubkeyhash) {
+        return getMatch(db, columnHandles[1], pubkeyhash);
         
     }
     
-    uint32_t HashIndex::getScriptHashIndex(const uint160 &scripthash) const {
-        return getMatch(env, "scripthash", scripthash);
+    uint32_t HashIndex::getScriptHashIndex(const uint160 &scripthash) {
+        return getMatch(db, columnHandles[2], scripthash);
     }
 }

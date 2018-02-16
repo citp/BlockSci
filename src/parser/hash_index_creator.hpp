@@ -14,7 +14,7 @@
 
 #include <blocksci/chain/chain_fwd.hpp>
 
-#include <lmdbxx/lmdb++.h>
+#include <rocksdb/db.h>
 
 #include <tuple>
 
@@ -23,11 +23,8 @@ namespace blocksci {
 }
 
 class HashIndexCreator : public ParserIndex {
-    lmdb::env env;
-    lmdb::txn wtxn;
-    lmdb::dbi pubkey_dbi;
-    lmdb::dbi scripthash_dbi;
-    lmdb::dbi tx_dbi;
+    rocksdb::DB *db;
+    std::vector<rocksdb::ColumnFamilyHandle *> columnHandles;
     
     void processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &scripts) override;
     void processScript(const blocksci::Script &script, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override;

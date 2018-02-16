@@ -44,7 +44,7 @@ namespace blocksci {
     }
     
     
-    uint32_t getTxIndex(uint256 hash, const HashIndex &index) {
+    uint32_t getTxIndex(uint256 hash, HashIndex &index) {
         auto txIndex = index.getTxIndex(hash);
         if (txIndex == 0) {
             throw InvalidHashException();
@@ -52,9 +52,9 @@ namespace blocksci {
         return txIndex;
     }
     
-    Transaction::Transaction(uint256 hash, const HashIndex &index, const ChainAccess &chain) : Transaction(getTxIndex(hash, index), chain) {}
+    Transaction::Transaction(uint256 hash, HashIndex &index, const ChainAccess &chain) : Transaction(getTxIndex(hash, index), chain) {}
     
-    Transaction::Transaction(std::string hash, const HashIndex &index, const ChainAccess &chain) : Transaction(uint256S(hash), index, chain) {}
+    Transaction::Transaction(std::string hash, HashIndex &index, const ChainAccess &chain) : Transaction(uint256S(hash), index, chain) {}
     
     std::vector<OutputPointer> Transaction::getOutputPointers(const InputPointer &pointer) const {
         std::vector<OutputPointer> pointers;

@@ -107,7 +107,7 @@ namespace blocksci {
         return index.getInputTransactions(*this, chain);
     }
     
-    ranges::optional<Address> getAddressFromString(const DataConfiguration &config, const HashIndex &index, const std::string &addressString) {
+    ranges::optional<Address> getAddressFromString(const DataConfiguration &config, HashIndex &index, const std::string &addressString) {
         CBitcoinAddress address{addressString};
         uint160 hash;
         blocksci::AddressType::Enum type;

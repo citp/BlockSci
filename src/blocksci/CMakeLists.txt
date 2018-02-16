@@ -42,6 +42,7 @@ target_link_libraries( blocksci boost )
 target_link_libraries( blocksci secp256k1)
 target_link_libraries( blocksci openssl )
 target_link_libraries( blocksci lmdbxx )
+target_link_libraries( blocksci rocksdb )
 target_link_libraries( blocksci mpark_variant Ranges type_safe)
 
 SET_TARGET_PROPERTIES(blocksci_static PROPERTIES OUTPUT_NAME blocksci)

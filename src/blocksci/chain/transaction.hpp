@@ -51,8 +51,8 @@ namespace blocksci {
         
         Transaction(uint32_t index, BlockHeight height, const ChainAccess &access_) : Transaction(access_.getTx(index), index, height, access_) {}
         
-        Transaction(uint256 hash, const HashIndex &index, const ChainAccess &access);
-        Transaction(std::string hash, const HashIndex &index, const ChainAccess &access);
+        Transaction(uint256 hash, HashIndex &index, const ChainAccess &access);
+        Transaction(std::string hash, HashIndex &index, const ChainAccess &access);
         
         uint256 getHash() const;
         std::string toString() const;
@@ -113,10 +113,10 @@ namespace blocksci {
         
         // Requires DataAccess
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        Transaction(uint32_t index);
+        explicit Transaction(uint32_t index);
         Transaction(uint32_t index, BlockHeight height);
-        Transaction(uint256 hash);
-        Transaction(std::string hash);
+        explicit Transaction(uint256 hash);
+        explicit Transaction(std::string hash);
         #endif
     };
     

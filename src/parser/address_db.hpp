@@ -16,7 +16,7 @@
 #include <blocksci/scripts/scripts_fwd.hpp>
 #include <blocksci/scripts/script_type.hpp>
 
-#include <lmdbxx/lmdb++.h>
+#include <rocksdb/db.h>
 
 #include <unordered_map>
 
@@ -25,10 +25,8 @@ namespace blocksci {
 }
 
 class AddressDB : public ParserIndex {
-    lmdb::env env;
-    lmdb::txn wtxn;
-    
-    std::unordered_map<blocksci::ScriptType::Enum,  lmdb::dbi> scriptDbs;
+    rocksdb::DB *db;
+    std::vector<rocksdb::ColumnFamilyHandle *> columnHandles;
     
     void processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &scripts) override;
     void processScript(const blocksci::Script &, const blocksci::ChainAccess &, const blocksci::ScriptAccess &) override {}

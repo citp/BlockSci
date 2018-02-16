@@ -99,10 +99,16 @@ int main(int argc, const char * argv[]) {
     assert(argc == 2);
     
     Blockchain chain(argv[1]);
-    auto a = Transaction(2571650);
-    auto b = a.outputs()[1].getAddress();
-    auto c = b.getOutputs();
-    for (auto &out : c) {
+    auto a = Transaction(1000);
+    uint256 hash = a.getHash();
+    std::cout << "Tx:" << a << std::endl;
+    std::cout << "Hash:" << hash.GetHex() << std::endl;
+    auto b = Transaction(hash);
+    std::cout << "Tx:" << b << std::endl;
+    auto c = a.outputs()[0].getAddress();
+    std::cout << "Output: " << a.outputs()[0] << std::endl;
+    auto d = c.getOutputs();
+    for (auto &out : d) {
         std::cout << out << std::endl;
     }
 
@@ -160,7 +166,7 @@ int main(int argc, const char * argv[]) {
         std::vector<Transaction> txes;
         for (auto &block : segment) {
             RANGES_FOR(auto tx, block) {
-                if (isCoinjoin(tx)) {
+                if (blocksci::heuristics::isCoinjoin(tx)) {
                     txes.push_back(tx);
                 }
             }
@@ -184,10 +190,10 @@ int main(int argc, const char * argv[]) {
     std::vector<Transaction> hardCJs;
     hardCJs.reserve(cjtxes.size());
     for (auto &tx : cjtxes) {
-        auto res = isCoinjoinExtra(tx, 10000, .01, 1000);
-        if (res == CoinJoinResult::True) {
+        auto res = blocksci::heuristics::isCoinjoinExtra(tx, 10000, .01, 1000);
+        if (res == blocksci::heuristics::CoinJoinResult::True) {
             easyCJs.push_back(tx);
-        } else if (res == CoinJoinResult::Timeout) {
+        } else if (res == blocksci::heuristics::CoinJoinResult::Timeout) {
             hardCJs.push_back(tx);
         }
     }
@@ -268,7 +274,7 @@ int main(int argc, const char * argv[]) {
         auto block = chain[i];
         std::cout << block.getString() << std::endl;
         RANGES_FOR(auto tx, block) {
-            std::cout << tx.getString() << std::endl;
+            std::cout << tx.toString() << std::endl;
             for (auto input : tx.inputs()) {
                 std::cout << input.toString() << std::endl;
                 std::cout << input.getAddress().getScript().toPrettyString() << std::endl;

@@ -19,59 +19,94 @@
 
 #include <sstream>
 
-HashIndexCreator::HashIndexCreator(const ParserConfigurationBase &config_, const std::string &path) : ParserIndex(config_, "hashIndex"), env(blocksci::createHashIndexEnviroment(path, false)), wtxn(lmdb::txn::begin(env)), pubkey_dbi(lmdb::dbi::open(wtxn, "pubkey", MDB_CREATE)), scripthash_dbi(lmdb::dbi::open(wtxn, "scripthash", MDB_CREATE)), tx_dbi(lmdb::dbi::open(wtxn, "tx", MDB_CREATE)) {
+constexpr int pubkeyHandleNum = 1;
+constexpr int scriptHashHandleNum = 2;
+constexpr int txHandleNum = 3;
+
+HashIndexCreator::HashIndexCreator(const ParserConfigurationBase &config_, const std::string &path) : ParserIndex(config_, "hashIndex") {
+    rocksdb::Options options;
+    // Optimize RocksDB. This is the easiest way to get RocksDB to perform well
+    options.IncreaseParallelism();
+    options.OptimizeLevelStyleCompaction();
+    // create the DB if it's not already present
+    options.create_if_missing = true;
+    options.create_missing_column_families = true;
+    
+    
+    std::vector<rocksdb::ColumnFamilyDescriptor> columnDescriptors;
+    columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions());
+    columnDescriptors.emplace_back("P", rocksdb::ColumnFamilyOptions{});
+    columnDescriptors.emplace_back("S", rocksdb::ColumnFamilyOptions{});
+    columnDescriptors.emplace_back("T", rocksdb::ColumnFamilyOptions{});
+
+    rocksdb::Status s = rocksdb::DB::Open(options, path.c_str(), columnDescriptors, &columnHandles, &db);
+    
+    assert(s.ok());
+    
 }
 
 void HashIndexCreator::tearDown() {
-    wtxn.commit();
+//    wtxn.commit();
 }
 
 void HashIndexCreator::processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &) {
     auto hash = tx.getHash();
-    tx_dbi.put(wtxn, hash, tx.txNum, lmdb::dbi::default_put_flags);
+    rocksdb::Slice keySlice(reinterpret_cast<const char *>(&hash), sizeof(hash));
+    rocksdb::Slice valueSlice(reinterpret_cast<const char *>(&tx.txNum), sizeof(tx.txNum));
+    db->Put(rocksdb::WriteOptions(), columnHandles[txHandleNum], keySlice, valueSlice);
 }
 
 void HashIndexCreator::processScript(const blocksci::Script &script, const blocksci::ChainAccess &, const blocksci::ScriptAccess &scripts) {
     if (script.type == blocksci::ScriptType::Enum::PUBKEY) {
         blocksci::script::Pubkey pubkeyScript{scripts, script.scriptNum};
-        pubkey_dbi.put(wtxn, pubkeyScript.pubkeyhash, script.scriptNum, lmdb::dbi::default_put_flags);
+        rocksdb::Slice keySlice(reinterpret_cast<const char *>(&pubkeyScript.pubkeyhash), sizeof(pubkeyScript.pubkeyhash));
+        rocksdb::Slice valueSlice(reinterpret_cast<const char *>(&script.scriptNum), sizeof(script.scriptNum));
+        db->Put(rocksdb::WriteOptions(), columnHandles[pubkeyHandleNum], keySlice, valueSlice);
     } else if (script.type == blocksci::ScriptType::Enum::SCRIPTHASH) {
         blocksci::script::ScriptHash p2shScript{scripts, script.scriptNum};
-        scripthash_dbi.put(wtxn, p2shScript.address, script.scriptNum, lmdb::dbi::default_put_flags);
+        rocksdb::Slice keySlice(reinterpret_cast<const char *>(&p2shScript.address), sizeof(p2shScript.address));
+        rocksdb::Slice valueSlice(reinterpret_cast<const char *>(&script.scriptNum), sizeof(script.scriptNum));
+        db->Put(rocksdb::WriteOptions(), columnHandles[scriptHashHandleNum], keySlice, valueSlice);
     }
 }
 
 void HashIndexCreator::rollback(const blocksci::State &state) {
     {
-        // Delete pubkeys
-        auto cursor = lmdb::cursor::open(wtxn, pubkey_dbi);
-        lmdb::val key, value;
-        while (cursor.get(key, value, MDB_NEXT)) {
-            if (*value.data<uint32_t>() >= state.scriptCounts[static_cast<size_t>(blocksci::ScriptType::Enum::PUBKEY)]) {
-                lmdb::cursor_del(cursor.handle());
+        auto column = columnHandles[pubkeyHandleNum];
+        rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
+        for (it->SeekToFirst(); it->Valid(); it->Next()) {
+            auto value = reinterpret_cast<const uint32_t *>(it->value().data());
+            if (*value >= state.scriptCounts[static_cast<size_t>(blocksci::ScriptType::Enum::PUBKEY)]) {
+                db->Delete(rocksdb::WriteOptions(), column, it->key());
             }
         }
+        assert(it->status().ok()); // Check for any errors found during the scan
+        delete it;
     }
     
     {
-        // Delete scripthashes
-        auto cursor = lmdb::cursor::open(wtxn, scripthash_dbi);
-        lmdb::val key, value;
-        while (cursor.get(key, value, MDB_NEXT)) {
-            if (*value.data<uint32_t>() >= state.scriptCounts[static_cast<size_t>(blocksci::ScriptType::Enum::SCRIPTHASH)]) {
-                lmdb::cursor_del(cursor.handle());
+        auto column = columnHandles[scriptHashHandleNum];
+        rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
+        for (it->SeekToFirst(); it->Valid(); it->Next()) {
+            auto value = reinterpret_cast<const uint32_t *>(it->value().data());
+            if (*value >= state.scriptCounts[static_cast<size_t>(blocksci::ScriptType::Enum::SCRIPTHASH)]) {
+                db->Delete(rocksdb::WriteOptions(), column, it->key());
             }
         }
+        assert(it->status().ok()); // Check for any errors found during the scan
+        delete it;
     }
     
     {
-        // Delete txes
-        auto cursor = lmdb::cursor::open(wtxn, tx_dbi);
-        lmdb::val key, value;
-        while (cursor.get(key, value, MDB_NEXT)) {
-            if (*value.data<uint32_t>() >= state.txCount) {
-                lmdb::cursor_del(cursor.handle());
+        auto column = columnHandles[txHandleNum];
+        rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
+        for (it->SeekToFirst(); it->Valid(); it->Next()) {
+            auto value = reinterpret_cast<const uint32_t *>(it->value().data());
+            if (*value >= state.txCount) {
+                db->Delete(rocksdb::WriteOptions(), column, it->key());
             }
         }
+        assert(it->status().ok()); // Check for any errors found during the scan
+        delete it;
     }
 }

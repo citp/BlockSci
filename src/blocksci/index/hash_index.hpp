@@ -11,7 +11,7 @@
 
 #include <blocksci/blocksci_fwd.hpp>
 
-#include <lmdbxx/lmdb++.h>
+#include <rocksdb/db.h>
 
 #include <array>
 #include <vector>
@@ -20,8 +20,6 @@
 
 namespace blocksci {
     struct Address;
-    
-    lmdb::env createHashIndexEnviroment(const std::string &path, bool readonly);
     
     class HashIndex {
     public:
@@ -36,11 +34,12 @@ namespace blocksci {
         
         HashIndex(const std::string &path);
         
-        uint32_t getPubkeyHashIndex(const uint160 &pubkeyhash) const;
-        uint32_t getScriptHashIndex(const uint160 &scripthash) const;
-        uint32_t getTxIndex(const uint256 &txHash) const;
+        uint32_t getPubkeyHashIndex(const uint160 &pubkeyhash);
+        uint32_t getScriptHashIndex(const uint160 &scripthash);
+        uint32_t getTxIndex(const uint256 &txHash);
     private:
-        lmdb::env env;
+        rocksdb::DB *db;
+        std::vector<rocksdb::ColumnFamilyHandle *> columnHandles;
     };
 }
 

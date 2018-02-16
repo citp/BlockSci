@@ -14,7 +14,7 @@
 #include <blocksci/chain/chain_fwd.hpp>
 #include <blocksci/scripts/scripts_fwd.hpp>
 
-#include <lmdbxx/lmdb++.h>
+#include <rocksdb/db.h>
 
 #include <unordered_map>
 #include <string>
@@ -23,11 +23,9 @@
 namespace blocksci {
     struct Address;
     
-    lmdb::env createAddressIndexEnviroment(const std::string &path, bool readonly);
-    
     class AddressIndex {
-        lmdb::env env;
-        std::unordered_map<blocksci::ScriptType::Enum,  lmdb::dbi> scriptDbs;
+        rocksdb::DB *db;
+        std::vector<rocksdb::ColumnFamilyHandle *> columnHandles;
     public:
         
         AddressIndex(const std::string &path);

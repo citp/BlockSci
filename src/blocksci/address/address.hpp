@@ -80,7 +80,7 @@ namespace blocksci {
     
     void visit(const Address &address, const std::function<bool(const Address &)> &visitFunc, const ScriptAccess &access);
     
-    ranges::optional<Address> getAddressFromString(const DataConfiguration &config, const HashIndex &index, const std::string &addressString);
+    ranges::optional<Address> getAddressFromString(const DataConfiguration &config, HashIndex &index, const std::string &addressString);
     
     std::vector<Address> getAddressesWithPrefix(const std::string &prefix, const ScriptAccess &scripts);
     
