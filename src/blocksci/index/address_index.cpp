@@ -166,8 +166,9 @@ namespace blocksci {
         for (it->Seek(key); it->Valid() && it->key().starts_with(key); it->Next()) {
             auto foundKey = it->key();
             foundKey.remove_prefix(sizeof(Address));
-            auto outPoint = reinterpret_cast<const OutputPointer *>(foundKey.data());
-            pointers.push_back(*outPoint);
+            OutputPointer outPoint;
+            memcpy(&outPoint, foundKey.data(), sizeof(outPoint));
+            pointers.push_back(outPoint);
         }
         return pointers;
     }

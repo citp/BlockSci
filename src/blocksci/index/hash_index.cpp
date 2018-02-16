@@ -42,7 +42,9 @@ namespace blocksci {
         rocksdb::Slice key{reinterpret_cast<const char *>(&t), sizeof(t)};
         auto getStatus = db->Get(rocksdb::ReadOptions{}, handle, key, &val);
         if (getStatus.ok()) {
-            return *reinterpret_cast<const uint32_t *>(val.data());
+            uint32_t value;
+            memcpy(&value, val.data(), sizeof(value));
+            return value;
         } else {
             return 0;
         }

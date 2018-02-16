@@ -75,7 +75,8 @@ void HashIndexCreator::rollback(const blocksci::State &state) {
         auto column = columnHandles[pubkeyHandleNum];
         rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
         for (it->SeekToFirst(); it->Valid(); it->Next()) {
-            auto value = reinterpret_cast<const uint32_t *>(it->value().data());
+            uint32_t value;
+            memcpy(&value, it->value().data(), sizeof(value));
             if (*value >= state.scriptCounts[static_cast<size_t>(blocksci::ScriptType::Enum::PUBKEY)]) {
                 db->Delete(rocksdb::WriteOptions(), column, it->key());
             }
@@ -88,7 +89,8 @@ void HashIndexCreator::rollback(const blocksci::State &state) {
         auto column = columnHandles[scriptHashHandleNum];
         rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
         for (it->SeekToFirst(); it->Valid(); it->Next()) {
-            auto value = reinterpret_cast<const uint32_t *>(it->value().data());
+            uint32_t value;
+            memcpy(&value, it->value().data(), sizeof(value));
             if (*value >= state.scriptCounts[static_cast<size_t>(blocksci::ScriptType::Enum::SCRIPTHASH)]) {
                 db->Delete(rocksdb::WriteOptions(), column, it->key());
             }
@@ -101,7 +103,8 @@ void HashIndexCreator::rollback(const blocksci::State &state) {
         auto column = columnHandles[txHandleNum];
         rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
         for (it->SeekToFirst(); it->Valid(); it->Next()) {
-            auto value = reinterpret_cast<const uint32_t *>(it->value().data());
+            uint32_t value;
+            memcpy(&value, it->value().data(), sizeof(value));
             if (*value >= state.txCount) {
                 db->Delete(rocksdb::WriteOptions(), column, it->key());
             }

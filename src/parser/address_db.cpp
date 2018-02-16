@@ -135,9 +135,10 @@ void AddressDB::revealedP2SH(uint32_t scriptNum, const std::vector<Address> &add
     for (it->Seek(key); it->Valid() && it->key().starts_with(key); it->Next()) {
         auto key = it->key();
         key.remove_prefix(sizeof(Address));
-        auto outPoint = reinterpret_cast<const OutputPointer *>(key.data());
+        OutputPointer outPoint;
+        memcpy(&pointer, key.data(), sizeof(pointer));
         for (auto &a : addresses) {
-            addAddress(a, *outPoint);
+            addAddress(a, outPoint);
         }
     }
 }
@@ -160,7 +161,8 @@ void AddressDB::rollback(const blocksci::State &state) {
         for (it->SeekToFirst(); it->Valid(); it->Next()) {
             auto key = it->key();
             key.remove_prefix(sizeof(Address));
-            auto outPoint = reinterpret_cast<const OutputPointer *>(key.data());
+            OutputPointer outPoint;
+            memcpy(&pointer, key.data(), sizeof(pointer));
             if (outPoint->txNum >= state.scriptCounts[static_cast<size_t>(blocksci::ScriptType::Enum::SCRIPTHASH)]) {
                 db->Delete(rocksdb::WriteOptions(), column, it->key());
             }
