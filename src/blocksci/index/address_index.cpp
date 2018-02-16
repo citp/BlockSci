@@ -59,6 +59,13 @@ namespace blocksci {
         assert(s.ok());
     }
     
+    AddressIndex::~AddressIndex() {
+        for (auto handle : columnHandles) {
+            delete handle;
+        }
+        delete db;
+    }
+    
     std::vector<Output> getOutputsImp(std::vector<OutputPointer> pointers, const ChainAccess &access) {
         auto chainAccess = &access;
         return pointers

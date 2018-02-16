@@ -33,6 +33,7 @@ namespace blocksci {
         };
         
         HashIndex(const std::string &path);
+        ~HashIndex();
         
         uint32_t getPubkeyHashIndex(const uint160 &pubkeyhash);
         uint32_t getScriptHashIndex(const uint160 &scripthash);

@@ -50,7 +50,10 @@ AddressDB::AddressDB(const ParserConfigurationBase &config_, const std::string &
 }
 
 void AddressDB::tearDown() {
-    
+    for (auto handle : columnHandles) {
+        delete handle;
+    }
+    delete db;
 }
 
 void AddressDB::processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &scripts) {
@@ -131,12 +134,12 @@ void AddressDB::processTx(const blocksci::Transaction &tx, const blocksci::Scrip
 void AddressDB::revealedP2SH(uint32_t scriptNum, const std::vector<Address> &addresses) {
     auto column = columnHandles[static_cast<size_t>(ScriptType::SCRIPTHASH) + 1];
     rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
-    rocksdb::Slice key(reinterpret_cast<const char *>(scriptNum), sizeof(scriptNum));
+    rocksdb::Slice key(reinterpret_cast<const char *>(&scriptNum), sizeof(scriptNum));
     for (it->Seek(key); it->Valid() && it->key().starts_with(key); it->Next()) {
         auto key = it->key();
         key.remove_prefix(sizeof(Address));
         OutputPointer outPoint;
-        memcpy(&pointer, key.data(), sizeof(pointer));
+        memcpy(&outPoint, key.data(), sizeof(outPoint));
         for (auto &a : addresses) {
             addAddress(a, outPoint);
         }
@@ -162,8 +165,8 @@ void AddressDB::rollback(const blocksci::State &state) {
             auto key = it->key();
             key.remove_prefix(sizeof(Address));
             OutputPointer outPoint;
-            memcpy(&pointer, key.data(), sizeof(pointer));
-            if (outPoint->txNum >= state.scriptCounts[static_cast<size_t>(blocksci::ScriptType::Enum::SCRIPTHASH)]) {
+            memcpy(&outPoint, key.data(), sizeof(outPoint));
+            if (outPoint.txNum >= state.scriptCounts[static_cast<size_t>(blocksci::ScriptType::Enum::SCRIPTHASH)]) {
                 db->Delete(rocksdb::WriteOptions(), column, it->key());
             }
         }

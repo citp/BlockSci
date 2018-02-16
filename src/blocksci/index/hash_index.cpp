@@ -36,6 +36,13 @@ namespace blocksci {
         assert(s.ok());
     }
     
+    HashIndex::~HashIndex() {
+        for (auto handle : columnHandles) {
+            delete handle;
+        }
+        delete db;
+    }
+    
     template <typename T>
     uint32_t getMatch(rocksdb::DB *db, rocksdb::ColumnFamilyHandle *handle, const T &t) {
         std::string val;

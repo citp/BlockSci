@@ -46,7 +46,10 @@ HashIndexCreator::HashIndexCreator(const ParserConfigurationBase &config_, const
 }
 
 void HashIndexCreator::tearDown() {
-//    wtxn.commit();
+    for (auto handle : columnHandles) {
+        delete handle;
+    }
+    delete db;
 }
 
 void HashIndexCreator::processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &) {
@@ -77,7 +80,7 @@ void HashIndexCreator::rollback(const blocksci::State &state) {
         for (it->SeekToFirst(); it->Valid(); it->Next()) {
             uint32_t value;
             memcpy(&value, it->value().data(), sizeof(value));
-            if (*value >= state.scriptCounts[static_cast<size_t>(blocksci::ScriptType::Enum::PUBKEY)]) {
+            if (value >= state.scriptCounts[static_cast<size_t>(blocksci::ScriptType::Enum::PUBKEY)]) {
                 db->Delete(rocksdb::WriteOptions(), column, it->key());
             }
         }
@@ -91,7 +94,7 @@ void HashIndexCreator::rollback(const blocksci::State &state) {
         for (it->SeekToFirst(); it->Valid(); it->Next()) {
             uint32_t value;
             memcpy(&value, it->value().data(), sizeof(value));
-            if (*value >= state.scriptCounts[static_cast<size_t>(blocksci::ScriptType::Enum::SCRIPTHASH)]) {
+            if (value >= state.scriptCounts[static_cast<size_t>(blocksci::ScriptType::Enum::SCRIPTHASH)]) {
                 db->Delete(rocksdb::WriteOptions(), column, it->key());
             }
         }
@@ -105,7 +108,7 @@ void HashIndexCreator::rollback(const blocksci::State &state) {
         for (it->SeekToFirst(); it->Valid(); it->Next()) {
             uint32_t value;
             memcpy(&value, it->value().data(), sizeof(value));
-            if (*value >= state.txCount) {
+            if (value >= state.txCount) {
                 db->Delete(rocksdb::WriteOptions(), column, it->key());
             }
         }

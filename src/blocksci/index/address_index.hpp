@@ -29,6 +29,7 @@ namespace blocksci {
     public:
         
         AddressIndex(const std::string &path);
+        ~AddressIndex();
         
         std::vector<OutputPointer> getOutputPointers(const Address &address) const;
         std::vector<OutputPointer> getOutputPointers(const Script &script) const;
