@@ -59,9 +59,9 @@ AddressState::AddressState(const boost::filesystem::path &path_, const boost::fi
     
     assert(s.ok());
     
-    singleAddressMap.resize(SingleAddressMapMaxSize);
-    oldSingleAddressMap.resize(SingleAddressMapMaxSize);
-    multiAddressMap.resize(SingleAddressMapMaxSize);
+//    singleAddressMap.resize(SingleAddressMapMaxSize);
+//    oldSingleAddressMap.resize(SingleAddressMapMaxSize);
+//    multiAddressMap.resize(SingleAddressMapMaxSize);
     
     singleAddressMap.unserialize((path/std::string(singleAddressFileName)).native());
     multiAddressMap.unserialize((path/std::string(multiAddressFileName)).native());
