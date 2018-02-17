@@ -52,6 +52,7 @@ AddressState::AddressState(const boost::filesystem::path &path_, const boost::fi
     columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions());
     columnDescriptors.emplace_back("P", rocksdb::ColumnFamilyOptions{});
     columnDescriptors.emplace_back("S", rocksdb::ColumnFamilyOptions{});
+    columnDescriptors.emplace_back("M", rocksdb::ColumnFamilyOptions{});
     columnDescriptors.emplace_back("T", rocksdb::ColumnFamilyOptions{});
     
     rocksdb::Status s = rocksdb::DB::Open(options, hashIndexPath.c_str(), columnDescriptors, &columnHandles, &db);
@@ -120,6 +121,8 @@ rocksdb::ColumnFamilyHandle *AddressState::getColumn(ScriptType::Enum type) {
         return columnHandles[1];
     case ScriptType::SCRIPTHASH:
         return columnHandles[2];
+    case ScriptType::MULTISIG:
+            return columnHandles[3];
     default:
         assert("Tried to get column for unindexed script type");
     }

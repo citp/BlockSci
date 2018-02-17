@@ -21,7 +21,7 @@
 
 //constexpr int pubkeyHandleNum = 1;
 //constexpr int scriptHashHandleNum = 2;
-constexpr int txHandleNum = 3;
+constexpr int txHandleNum = 4;
 
 HashIndexCreator::HashIndexCreator(const ParserConfigurationBase &config_, const std::string &path) : ParserIndex(config_, "hashIndex") {
     rocksdb::Options options;
@@ -37,6 +37,7 @@ HashIndexCreator::HashIndexCreator(const ParserConfigurationBase &config_, const
     columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions());
     columnDescriptors.emplace_back("P", rocksdb::ColumnFamilyOptions{});
     columnDescriptors.emplace_back("S", rocksdb::ColumnFamilyOptions{});
+    columnDescriptors.emplace_back("M", rocksdb::ColumnFamilyOptions{});
     columnDescriptors.emplace_back("T", rocksdb::ColumnFamilyOptions{});
 
     rocksdb::Status s = rocksdb::DB::Open(options, path.c_str(), columnDescriptors, &columnHandles, &db);

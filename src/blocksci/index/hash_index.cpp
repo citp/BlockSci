@@ -30,6 +30,7 @@ namespace blocksci {
         columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions());
         columnDescriptors.emplace_back("P", rocksdb::ColumnFamilyOptions{});
         columnDescriptors.emplace_back("S", rocksdb::ColumnFamilyOptions{});
+        columnDescriptors.emplace_back("M", rocksdb::ColumnFamilyOptions{});
         columnDescriptors.emplace_back("T", rocksdb::ColumnFamilyOptions{});
         
         rocksdb::Status s = rocksdb::DB::OpenForReadOnly(options, path.c_str(), columnDescriptors, &columnHandles, &db);
@@ -58,12 +59,11 @@ namespace blocksci {
     }
     
     uint32_t HashIndex::getTxIndex(const uint256 &txHash) {
-        return getMatch(db, columnHandles[3], txHash);
+        return getMatch(db, columnHandles[4], txHash);
     }
     
     uint32_t HashIndex::getPubkeyHashIndex(const uint160 &pubkeyhash) {
         return getMatch(db, columnHandles[1], pubkeyhash);
-        
     }
     
     uint32_t HashIndex::getScriptHashIndex(const uint160 &scripthash) {
