@@ -258,7 +258,8 @@ struct Serializer {
     }
 };
 
-enum {
+enum
+{
     SIGHASH_ALL = 1,
     SIGHASH_NONE = 2,
     SIGHASH_SINGLE = 3,
@@ -280,8 +281,10 @@ blocksci::uint256 RawTransaction::getHash(const InputView &info, const blocksci:
             nInput = info.inputNum;
         }
         // Serialize the prevout
-        uint32_t outputNum = inputs[nInput].rawOutputPointer.outputNum;
-        s.serialize(outputNum);
+        auto &outPointer = inputs[nInput].rawOutputPointer;
+        uint32_t outNum = outPointer.outputNum;
+        s.serialize(outPointer.hash);
+        s.serialize(outNum);
         // Serialize the script
         if (nInput != info.inputNum) {
             // Blank out other inputs' signatures
@@ -289,16 +292,16 @@ blocksci::uint256 RawTransaction::getHash(const InputView &info, const blocksci:
         } else {
             blocksci::CScriptView::const_iterator it = scriptView.begin();
             blocksci::CScriptView::const_iterator itBegin = it;
-            opcodetype opcode;
+            blocksci::opcodetype opcode;
             unsigned int nCodeSeparators = 0;
             while (scriptView.GetOp(it, opcode)) {
-                if (opcode == OP_CODESEPARATOR)
+                if (opcode == blocksci::OP_CODESEPARATOR)
                     nCodeSeparators++;
             }
             s.serializeCompact(scriptView.size() - nCodeSeparators);
             it = itBegin;
             while (scriptView.GetOp(it, opcode)) {
-                if (opcode == OP_CODESEPARATOR) {
+                if (opcode == blocksci::OP_CODESEPARATOR) {
                     s.serialize(&itBegin[0], static_cast<size_t>(it-itBegin-1));
                     itBegin = it;
                 }
@@ -310,7 +313,7 @@ blocksci::uint256 RawTransaction::getHash(const InputView &info, const blocksci:
         // Serialize the nSequence
         if (nInput != info.inputNum && (hashSingle || hashNone)) {
             // let the others update at will
-            s.serialize(uint32_t{0});
+            s.serialize(int32_t{0});
         } else {
             s.serialize(inputs[nInput].sequenceNum);
         }
@@ -332,5 +335,6 @@ blocksci::uint256 RawTransaction::getHash(const InputView &info, const blocksci:
         }
     }
     s.serialize(locktime);
+    s.serialize(hashType);
     return s.finalize();
 }

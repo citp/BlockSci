@@ -54,7 +54,7 @@ namespace blocksci {
         for (auto script : ScriptType::all) {
             columnDescriptors.push_back(rocksdb::ColumnFamilyDescriptor{scriptName(script), rocksdb::ColumnFamilyOptions{}});
         }
-        rocksdb::Status s = rocksdb::DB::Open(options, path.c_str(), columnDescriptors, &columnHandles, &db);
+        rocksdb::Status s = rocksdb::DB::OpenForReadOnly(options, path.c_str(), columnDescriptors, &columnHandles, &db);
         assert(s.ok());
     }
     

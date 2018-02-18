@@ -317,7 +317,7 @@ blocksci::ArbitraryLengthData<blocksci::NonstandardScriptData> ScriptOutputData<
 
 ScriptOutputData<blocksci::AddressType::Enum::NULL_DATA>::ScriptOutputData(const blocksci::CScriptView &script){
     blocksci::CScriptView::const_iterator pc1 = script.begin();
-    opcodetype opcode1;
+    blocksci::opcodetype opcode1;
     ranges::iterator_range<const unsigned char *> vch1;
     while(true) {
         if(!script.GetOp(pc1, opcode1, vch1)) {

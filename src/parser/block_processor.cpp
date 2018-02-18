@@ -197,7 +197,7 @@ class BlockFileReader<RPCTag> : public BlockFileReaderBase {
             tx->outputs.clear();
             tx->outputs.reserve(1);
             
-            auto scriptPubKey = CScript() << ParseHex("040184a11fa689ad5123690c81a3a49c8f13f8d45bac857fbcbc8bc4a8ead3eb4b1ff4d4614fa18dce611aaf1f471216fe1b51851b4acf21b17fc45171ac7b13af") << OP_CHECKSIG;
+            auto scriptPubKey = blocksci::CScript() << ParseHex("040184a11fa689ad5123690c81a3a49c8f13f8d45bac857fbcbc8bc4a8ead3eb4b1ff4d4614fa18dce611aaf1f471216fe1b51851b4acf21b17fc45171ac7b13af") << blocksci::OP_CHECKSIG;
             std::vector<unsigned char> scriptBytes(scriptPubKey.begin(), scriptPubKey.end());
             //Set the desired initial block reward
             tx->outputs.emplace_back(scriptBytes, 50 * 100000000.0);

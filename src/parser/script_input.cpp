@@ -52,7 +52,7 @@ std::pair<AnyScriptOutput, std::unique_ptr<AnyScriptInput>> p2shGenerate(const I
     blocksci::CScriptView::const_iterator pc1 = scriptView.begin();
     blocksci::CScriptView::const_iterator prevpc = scriptView.begin();
     blocksci::CScriptView::const_iterator prevprevpc = scriptView.begin();
-    opcodetype opcode1;
+    blocksci::opcodetype opcode1;
     ranges::iterator_range<const unsigned char *> vch1;
     
     ranges::iterator_range<const unsigned char *> lastScript;
@@ -93,7 +93,7 @@ void ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH>::check(AddressStat
 ScriptInputData<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::PUBKEYHASH> &) {
     if (scriptView.size() > 0) {
         auto pc = scriptView.begin();
-        opcodetype opcode;
+        blocksci::opcodetype opcode;
         ranges::iterator_range<const unsigned char *> vchSig;
         scriptView.GetOp(pc, opcode, vchSig);
         scriptView.GetOp(pc, opcode, vchSig);
@@ -145,7 +145,7 @@ ScriptInputData<blocksci::AddressType::Enum::MULTISIG>::ScriptInputData(const In
 
 ScriptInputData<blocksci::AddressType::Enum::NONSTANDARD>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::NONSTANDARD> &) {
     if (scriptView.size() > 0) {
-        script = CScript(scriptView.begin(), scriptView.end());
+        script = blocksci::CScript(scriptView.begin(), scriptView.end());
     } else if (inputView.witnessStack.size() > 0) {
         for (size_t i = 0; i < inputView.witnessStack.size() - 1; i++) {
             auto &stackItem = inputView.witnessStack[i];

@@ -76,7 +76,7 @@ struct ScriptInputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : public
 
 template<>
 struct ScriptInputData<blocksci::AddressType::Enum::NONSTANDARD> : public ScriptInputDataBase {
-    CScript script;
+    blocksci::CScript script;
     
     ScriptInputData() = default;
     ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::NONSTANDARD> &);

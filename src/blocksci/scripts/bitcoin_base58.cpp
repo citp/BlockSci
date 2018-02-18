@@ -219,6 +219,10 @@ namespace blocksci {
             SetData(config.scriptPrefix, &dest, sizeof(dest));
         }
     }
+    
+    CBitcoinAddress::CBitcoinAddress(const uint160 &dest, const std::vector<unsigned char>& version) {
+        SetData(version, &dest, sizeof(dest));
+    }
 
     std::pair<uint160, AddressType::Enum> CBitcoinAddress::Get(const DataConfiguration &config) const {
         uint160 id;

@@ -114,12 +114,15 @@ int main(int argc, const char * argv[]) {
 
 //    RANGES_FOR(auto block, chain) {
 //        RANGES_FOR(auto tx, block) {
-//            RANGES_FOR(auto output, tx.outputs()) {
-//                std::cout << output << std::endl;
+//            if (tx.totalSize() != tx.baseSize()) {
+//                std::cout << tx << std::endl;
 //            }
+////            RANGES_FOR(auto output, tx.outputs()) {
+////                std::cout << output << std::endl;
+////            }
 //        }
 //    }
-    
+//
     return 0;
 //    uint64_t count = 0;
 //    RANGES_FOR(auto tx, chain.iterateTransactions(0, chain.size())) {
