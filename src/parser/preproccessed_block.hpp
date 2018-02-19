@@ -148,6 +148,8 @@ struct RawTransaction {
     
     blocksci::uint256 getHash(const InputView &info, const blocksci::CScriptView &scriptView, int hashType) const;
     blocksci::RawTransaction getRawTransaction() const;
+    
+    std::vector<char> getSer(const InputView &info, const blocksci::CScriptView &scriptView, int hashType) const;
 };
 
 

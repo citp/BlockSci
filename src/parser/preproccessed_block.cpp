@@ -254,7 +254,7 @@ struct Serializer {
     blocksci::uint256 finalize() {
         blocksci::uint256 hash;
         SHA256_Final(reinterpret_cast<unsigned char *>(&hash), &sha256);
-        return hash;
+        return ::sha256(reinterpret_cast<const uint8_t *>(&hash), sizeof(hash));
     }
 };
 
