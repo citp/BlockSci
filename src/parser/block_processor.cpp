@@ -339,8 +339,6 @@ void processAddresses(RawTransaction *tx, AddressState &addressState) {
     for (auto &scriptOutput : tx->scriptOutputs) {
         scriptOutput.resolve(addressState);
     }
-    
-    addressState.optionalSave();
 }
 
 void recordAddresses(RawTransaction *tx, UTXOScriptState &state) {

@@ -36,9 +36,8 @@ struct ScriptOutput {
     
     template<blocksci::AddressType::Enum t = type, std::enable_if_t<blocksci::ScriptInfo<scriptType(t)>::deduped, int> = 0>
     uint32_t resolve(AddressState &state) {
-        RawScript rawScript{data.getHash(), script_v};
-        auto addressInfo = state.findAddress(rawScript);
-        std::tie(scriptNum, isNew) = state.resolveAddress(addressInfo);
+        auto addressInfo = state.findAddress<scriptType(t)>(data.getHash());
+        std::tie(scriptNum, isNew) = state.resolveAddress<scriptType(t)>(addressInfo);
         assert(scriptNum > 0);
         if (isNew) {
             data.visitWrapped([&](auto &output) { output.resolve(state); });
@@ -57,8 +56,7 @@ struct ScriptOutput {
     
     template<blocksci::AddressType::Enum t = type, std::enable_if_t<blocksci::ScriptInfo<scriptType(t)>::deduped, int> = 0>
     void check(AddressState &state) {
-        RawScript rawScript{data.getHash(), script_v};
-        auto addressInfo = state.findAddress(rawScript);
+        auto addressInfo = state.findAddress<scriptType(t)>(data.getHash());
         scriptNum = addressInfo.addressNum;
         isNew = addressInfo.addressNum == 0;
         data.visitWrapped([&](auto &output) { output.check(state); });

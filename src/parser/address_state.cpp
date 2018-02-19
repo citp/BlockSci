@@ -59,11 +59,6 @@ AddressState::AddressState(const boost::filesystem::path &path_, const boost::fi
     
     assert(s.ok());
     
-//    singleAddressMap.resize(SingleAddressMapMaxSize);
-//    oldSingleAddressMap.resize(SingleAddressMapMaxSize);
-//    multiAddressMap.resize(SingleAddressMapMaxSize);
-    
-    singleAddressMap.unserialize((path/std::string(singleAddressFileName)).native());
     multiAddressMap.unserialize((path/std::string(multiAddressFileName)).native());
     
     boost::filesystem::ifstream inputFile(path/std::string(scriptCountsFileName));
@@ -83,30 +78,15 @@ AddressState::AddressState(const boost::filesystem::path &path_, const boost::fi
 AddressState::~AddressState() {
     
     std::cout << "\nbloomNegativeCount: " << bloomNegativeCount << "\n";
-    std::cout << "singleCount: " << singleCount << "\n";
-    std::cout << "oldSingleCount: " << oldSingleCount << "\n";
     std::cout << "multiCount: " << multiCount << "\n";
-    std::cout << "levelDBCount: " << levelDBCount << "\n";
+    std::cout << "dbCount: " << dbCount << "\n";
     std::cout << "bloomFPCount: " << bloomFPCount << "\n";
-    
-    if (addressClearFuture.valid()) {
-        addressClearFuture.get();
-    }
-    
-    rocksdb::WriteBatch batch;
-    for (auto &entry : singleAddressMap) {
-        rocksdb::Slice key(reinterpret_cast<const char *>(&entry.first.hash), sizeof(entry.first.hash));
-        rocksdb::Slice value(reinterpret_cast<const char *>(&entry.second), sizeof(entry.second));
-        batch.Put(getColumn(entry.first.type), key, value);
-    }
-    db->Write(rocksdb::WriteOptions(), &batch);
     
     for (auto handle : columnHandles) {
         delete handle;
     }
     delete db;
     
-    singleAddressMap.serialize((path/std::string(singleAddressFileName)).native());
     multiAddressMap.serialize((path/std::string(multiAddressFileName)).native());
     
     boost::filesystem::ofstream outputFile(path/std::string(scriptCountsFileName));
@@ -137,140 +117,19 @@ uint32_t AddressState::getNewAddressIndex(blocksci::ScriptType::Enum type) {
 }
 
 void AddressState::reloadBloomFilter() {
-    for (auto &pair : singleAddressMap) {
-        addressBloomFilter.add(pair.first);
-    }
-    
-    for (auto &pair : oldSingleAddressMap) {
-        addressBloomFilter.add(pair.first);
-    }
-    
-    for (auto &pair : multiAddressMap) {
-        addressBloomFilter.add(pair.first);
-    }
-    
-    {
-        rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), getColumn(ScriptType::Enum::PUBKEY));
+    auto types = std::vector<ScriptType::Enum>{ScriptType::PUBKEY, ScriptType::SCRIPTHASH, ScriptType::MULTISIG};
+    for (auto type : types) {
+        rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), getColumn(type));
         for (it->SeekToFirst(); it->Valid(); it->Next()) {
             uint32_t scriptNum;
             memcpy(&scriptNum, it->value().data(), sizeof(scriptNum));
             uint160 addressHash;
             memcpy(&addressHash, it->key().data(), sizeof(addressHash));
-            addressBloomFilter.add(RawScript{addressHash, ScriptType::Enum::PUBKEY});
+            addressBloomFilter.add(RawScript{addressHash, type});
         }
         assert(it->status().ok());
         delete it;
     }
-    
-    {
-        rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), getColumn(ScriptType::Enum::SCRIPTHASH));
-        for (it->SeekToFirst(); it->Valid(); it->Next()) {
-            uint32_t scriptNum;
-            memcpy(&scriptNum, it->value().data(), sizeof(scriptNum));
-            uint160 addressHash;
-            memcpy(&addressHash, it->key().data(), sizeof(addressHash));
-            addressBloomFilter.add(RawScript{addressHash, ScriptType::Enum::SCRIPTHASH});
-        }
-        assert(it->status().ok());
-        delete it;
-    }
-}
-
-AddressInfo AddressState::findAddress(const RawScript &address) {
-    
-    if (!addressBloomFilter.possiblyContains(address)) {
-        // Address has definitely never been seen
-        bloomNegativeCount++;
-        return {address, AddressLocation::NotFound, singleAddressMap.end(), 0};
-    }
-    
-    {
-        auto it = multiAddressMap.find(address);
-        if (it != multiAddressMap.end()) {
-            multiCount++;
-            auto scriptNum = it->second;
-            assert(scriptNum > 0);
-            return {address, AddressLocation::MultiUseMap, it, scriptNum};
-        }
-    }
-    
-    {
-        auto it = singleAddressMap.find(address);
-        if (it != singleAddressMap.end()) {
-            singleCount++;
-            auto scriptNum = it->second;
-            assert(scriptNum > 0);
-            return {address, AddressLocation::SingleUseMap, it, scriptNum};
-        }
-    }
-    
-    {
-        auto it = oldSingleAddressMap.find(address);
-        if (it != oldSingleAddressMap.end()) {
-            oldSingleCount++;
-            auto scriptNum = it->second;
-            assert(scriptNum > 0);
-            return {address, AddressLocation::OldSingleUseMap, it, scriptNum};
-        }
-    }
-    
-    
-    rocksdb::Slice keySlice(reinterpret_cast<const char *>(&address.hash), sizeof(address.hash));
-    std::string value;
-    rocksdb::Status s = db->Get(rocksdb::ReadOptions(), getColumn(address.type), keySlice, &value);
-    if (s.ok()) {
-        levelDBCount++;
-        uint32_t destNum;
-        memcpy(&destNum, value.data(), sizeof(destNum));
-        assert(destNum > 0);
-        return {address, AddressLocation::LevelDb, singleAddressMap.end(), destNum};
-    }
-    bloomFPCount++;
-    // We must have had a false positive
-    return {address, AddressLocation::NotFound, singleAddressMap.end(), 0};
-}
-
-std::pair<uint32_t, bool> AddressState::resolveAddress(const AddressInfo &addressInfo) {
-    auto rawScript = addressInfo.rawScript;
-    bool existingAddress = false;
-    switch (addressInfo.location) {
-        case AddressLocation::SingleUseMap:
-            multiAddressMap.add(rawScript, addressInfo.addressNum);
-            assert(addressInfo.addressNum > 0);
-            existingAddress = true;
-            break;
-        case AddressLocation::OldSingleUseMap:
-            multiAddressMap.add(rawScript, addressInfo.addressNum);
-            assert(addressInfo.addressNum > 0);
-            existingAddress = true;
-            break;
-        case AddressLocation::LevelDb:
-            multiAddressMap.add(rawScript, addressInfo.addressNum);
-            assert(addressInfo.addressNum > 0);
-            existingAddress = true;
-            break;
-        case AddressLocation::MultiUseMap:
-            assert(addressInfo.addressNum > 0);
-            existingAddress = true;
-            break;
-        case AddressLocation::NotFound:
-            existingAddress = false;
-            break;
-    }
-    
-    uint32_t addressNum = addressInfo.addressNum;
-    if (!existingAddress) {
-        addressNum = getNewAddressIndex(rawScript.type);
-        addressBloomFilter.add(rawScript);
-        singleAddressMap.add(rawScript, addressNum);
-        
-        if (addressBloomFilter.isFull()) {
-            addressBloomFilter.reset(addressBloomFilter.getMaxItems() * 2, addressBloomFilter.getFPRate());
-            reloadBloomFilter();
-        }
-    }
-    assert(addressNum > 0);
-    return std::make_pair(addressNum, !existingAddress);
 }
 
 void AddressState::rollback(const blocksci::State &state) {
@@ -281,30 +140,15 @@ void AddressState::rollback(const blocksci::State &state) {
         }
     }
     
-    for (auto singleAddressIt = singleAddressMap.begin(); singleAddressIt != singleAddressMap.end(); ++singleAddressIt) {
-        auto count = state.scriptCounts[static_cast<size_t>(singleAddressIt->first.type)];
-        if (singleAddressIt->second >= count) {
-            singleAddressMap.erase(singleAddressIt);
-        }
-    }
-    
-    for (auto singleAddressIt = oldSingleAddressMap.begin(); singleAddressIt != oldSingleAddressMap.end(); ++singleAddressIt) {
-        auto count = state.scriptCounts[static_cast<size_t>(singleAddressIt->first.type)];
-        if (singleAddressIt->second >= count) {
-            oldSingleAddressMap.erase(singleAddressIt);
-        }
-    }
-    
-    {
-        auto column = getColumn(ScriptType::SCRIPTHASH);
+    auto types = std::vector<ScriptType::Enum>{ScriptType::PUBKEY, ScriptType::SCRIPTHASH, ScriptType::MULTISIG};
+    for (auto type : types) {
+        auto column = getColumn(type);
         rocksdb::WriteBatch batch;
         rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
         for (it->SeekToFirst(); it->Valid(); it->Next()) {
             uint32_t destNum;
             memcpy(&destNum, it->value().data(), sizeof(destNum));
-            uint160 addressHash;
-            memcpy(&addressHash, it->key().data(), sizeof(addressHash));
-            auto count = state.scriptCounts[static_cast<size_t>(ScriptType::SCRIPTHASH)];
+            auto count = state.scriptCounts[static_cast<size_t>(type)];
             if (destNum >= count) {
                 batch.Delete(column, it->key());
             }
@@ -320,27 +164,4 @@ void AddressState::rollback(const blocksci::State &state) {
     for (auto size : state.scriptCounts) {
         scriptIndexes.push_back(size);
     }
-}
-
-void AddressState::optionalSave() {
-    if (singleAddressMap.size() > (SingleAddressMapMaxSize * 9) / 10) {
-        clearAddressCache();
-    }
-}
-
-void AddressState::clearAddressCache() {
-    if (addressClearFuture.valid()) {
-        addressClearFuture.get();
-        oldSingleAddressMap.clear_no_resize();
-    }
-    singleAddressMap.swap(oldSingleAddressMap);
-    addressClearFuture = std::async(std::launch::async, [&] {
-        rocksdb::WriteBatch batch;
-        for (auto &entry : oldSingleAddressMap) {
-            rocksdb::Slice key(reinterpret_cast<const char *>(&entry.first.hash), sizeof(entry.first.hash));
-            rocksdb::Slice value(reinterpret_cast<const char *>(&entry.second), sizeof(entry.second));
-            batch.Put(getColumn(entry.first.type), key, value);
-        }
-        db->Write(rocksdb::WriteOptions(), &batch);
-    });
 }
