@@ -90,7 +90,7 @@ class AddressState {
     void reloadBloomFilter() {
         auto &addressBloomFilter = std::get<AddressBloomFilter<type>>(addressBloomFilters);
         addressBloomFilter.reset(addressBloomFilter.getMaxItems(), addressBloomFilter.getFPRate());
-        rocksdb::Iterator* it = db.getIterator(addressBloomFilter.type);
+        rocksdb::Iterator* it = db.getIterator(type);
         for (it->SeekToFirst(); it->Valid(); it->Next()) {
             uint32_t scriptNum;
             memcpy(&scriptNum, it->value().data(), sizeof(scriptNum));
@@ -100,9 +100,19 @@ class AddressState {
         }
     }
     
+    // Duplicated to prevent triggering gcc
     void reloadBloomFilters() {
         blocksci::for_each(blocksci::ScriptInfoList(), [&](auto tag) {
-            reloadBloomFilter<tag>();
+            auto &addressBloomFilter = std::get<AddressBloomFilter<tag>>(addressBloomFilters);
+            addressBloomFilter.reset(addressBloomFilter.getMaxItems(), addressBloomFilter.getFPRate());
+            rocksdb::Iterator* it = db.getIterator(tag);
+            for (it->SeekToFirst(); it->Valid(); it->Next()) {
+                uint32_t scriptNum;
+                memcpy(&scriptNum, it->value().data(), sizeof(scriptNum));
+                blocksci::uint160 addressHash;
+                memcpy(&addressHash, it->key().data(), sizeof(addressHash));
+                addressBloomFilter.add(addressHash);
+            }
         });
     }
     
