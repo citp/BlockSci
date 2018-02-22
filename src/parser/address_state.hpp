@@ -43,19 +43,15 @@ struct NonDudupAddressInfo {
 };
 
 template<blocksci::ScriptType::Enum scriptType>
-static constexpr int startingCount = 0;
-
+constexpr int startingCount = 0;
 template<>
-static constexpr int startingCount<blocksci::ScriptType::Enum::PUBKEY> = 600'000'000;
-
+constexpr int startingCount<blocksci::ScriptType::Enum::PUBKEY> = 600'000'000;
 template<>
-static constexpr int startingCount<blocksci::ScriptType::Enum::SCRIPTHASH> = 100'000'000;
-
+constexpr int startingCount<blocksci::ScriptType::Enum::SCRIPTHASH> = 100'000'000;
 template<>
-static constexpr int startingCount<blocksci::ScriptType::Enum::MULTISIG> = 100'000'000;
+constexpr int startingCount<blocksci::ScriptType::Enum::MULTISIG> = 100'000'000;
 
 class AddressState {
-    static constexpr auto StartingAddressCount = 500'000'000;
     static constexpr auto AddressFalsePositiveRate = .05;
     
     template<blocksci::ScriptType::Enum scriptType>
