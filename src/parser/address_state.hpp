@@ -13,10 +13,11 @@
 #include "parser_fwd.hpp"
 #include "serializable_map.hpp"
 
+#include <blocksci/index/hash_index.hpp>
 #include <blocksci/util/state.hpp>
 #include <blocksci/util/bitcoin_uint256.hpp>
-
-#include <rocksdb/db.h>
+#include <blocksci/scripts/script_info.hpp>
+#include <blocksci/address/address_info.hpp>
 
 #include <future>
 #include <unordered_map>
@@ -29,49 +30,57 @@ enum class AddressLocation {
     NotFound
 };
 
-struct RawScript {
-    blocksci::uint160 hash;
-    blocksci::ScriptType::Enum type;
-    
-    bool operator==(const RawScript& other) const {
-        return type == other.type && hash == other.hash;
-    }
-};
-
-namespace std {
-    template <>
-    struct hash<RawScript> {
-    public:
-        size_t operator()(const RawScript &b) const;
-    };
-}
-
-template<blocksci::ScriptType::Enum type>
+template<blocksci::AddressType::Enum type>
 struct RawAddressInfo {
     blocksci::uint160 hash;
     AddressLocation location;
     uint32_t addressNum;
 };
 
+template<blocksci::AddressType::Enum type>
+struct NonDudupAddressInfo {
+    uint32_t addressNum;
+};
+
+template<blocksci::ScriptType::Enum scriptType>
+static constexpr int startingCount = 0;
+
+template<>
+static constexpr int startingCount<blocksci::ScriptType::Enum::PUBKEY> = 600'000'000;
+
+template<>
+static constexpr int startingCount<blocksci::ScriptType::Enum::SCRIPTHASH> = 100'000'000;
+
+template<>
+static constexpr int startingCount<blocksci::ScriptType::Enum::MULTISIG> = 100'000'000;
+
 class AddressState {
-public:
-    class AddressMap : public SerializableMap<RawScript, uint32_t> {
-    public:
-        AddressMap();
-    };
-    
-private:
-    
     static constexpr auto StartingAddressCount = 500'000'000;
     static constexpr auto AddressFalsePositiveRate = .05;
     
+    template<blocksci::ScriptType::Enum scriptType>
+    class AddressMap : public SerializableMap<blocksci::uint160, uint32_t>  {
+    public:
+        static constexpr auto type = scriptType;
+        AddressMap() : SerializableMap(blocksci::uint160S("FFFFFFFFFFFFFFFFFFFF"), blocksci::uint160S("AAAAAAAAAAAAAAAAAA")) {}
+    };
+    
+    template<blocksci::ScriptType::Enum scriptType>
+    class AddressBloomFilter : public BloomFilter  {
+    public:
+        static constexpr auto type = scriptType;
+        AddressBloomFilter(const boost::filesystem::path &path) : BloomFilter(boost::filesystem::path(path).concat(scriptName(type)), startingCount<scriptType>, AddressFalsePositiveRate)  {}
+    };
+    
     boost::filesystem::path path;
     
-    rocksdb::DB *db;
-    std::vector<rocksdb::ColumnFamilyHandle *> columnHandles;
+    blocksci::HashIndex db;
     
-    AddressMap multiAddressMap;
-    BloomFilter addressBloomFilter;
+    using AddressMapTuple = blocksci::to_script_tuple_t<AddressMap>;
+    using AddressBloomFilterTuple = blocksci::to_script_tuple_t<AddressBloomFilter>;
+    
+    AddressMapTuple multiAddressMaps;
+    AddressBloomFilterTuple addressBloomFilters;
     
     mutable long bloomNegativeCount = 0;
     mutable long multiCount = 0;
@@ -81,9 +90,25 @@ private:
     
     std::vector<uint32_t> scriptIndexes;
     
-    rocksdb::ColumnFamilyHandle *getColumn(blocksci::ScriptType::Enum type);
+    template<blocksci::ScriptType::Enum type>
+    void reloadBloomFilter() {
+        auto &addressBloomFilter = std::get<AddressBloomFilter<type>>(addressBloomFilters);
+        addressBloomFilter.reset(addressBloomFilter.getMaxItems(), addressBloomFilter.getFPRate());
+        rocksdb::Iterator* it = db.getIterator(addressBloomFilter.type);
+        for (it->SeekToFirst(); it->Valid(); it->Next()) {
+            uint32_t scriptNum;
+            memcpy(&scriptNum, it->value().data(), sizeof(scriptNum));
+            blocksci::uint160 addressHash;
+            memcpy(&addressHash, it->key().data(), sizeof(addressHash));
+            addressBloomFilter.add(addressHash);
+        }
+    }
     
-    void reloadBloomFilter();
+    void reloadBloomFilters() {
+        blocksci::for_each(blocksci::ScriptInfoList(), [&](auto tag) {
+            reloadBloomFilter<tag>();
+        });
+    }
     
 public:
     AddressState(const boost::filesystem::path &path, const boost::filesystem::path &hashIndexPath);
@@ -93,33 +118,39 @@ public:
     AddressState &operator=(AddressState &&) = delete;
     ~AddressState();
     
-    template<blocksci::ScriptType::Enum type>
-    RawAddressInfo<type> findAddress(const blocksci::uint160 &hash) {
-        RawScript address{hash, type};
-        if (!addressBloomFilter.possiblyContains(address)) {
+    template<blocksci::AddressType::Enum type, std::enable_if_t<!blocksci::ScriptInfo<scriptType(type)>::deduped, int> = 0>
+    NonDudupAddressInfo<type> findAddress(const ScriptOutputData<type> &) {
+        uint32_t scriptNum = getNewAddressIndex(scriptType(type));
+        return NonDudupAddressInfo<type>{scriptNum};
+    }
+    
+    template<blocksci::AddressType::Enum type>
+    std::pair<uint32_t, bool> resolveAddress(const NonDudupAddressInfo<type> &addressInfo) {
+        return std::make_pair(addressInfo.addressNum, true);
+    }
+    
+    template<blocksci::AddressType::Enum type, std::enable_if_t<blocksci::ScriptInfo<scriptType(type)>::deduped, int> = 0>
+    RawAddressInfo<type> findAddress(const ScriptOutputData<type> &data) {
+        auto hash = data.getHash();
+        auto &addressBloomFilter = std::get<AddressBloomFilter<scriptType(type)>>(addressBloomFilters);
+        if (!addressBloomFilter.possiblyContains(hash)) {
             // Address has definitely never been seen
             bloomNegativeCount++;
             return {hash, AddressLocation::NotFound, 0};
         }
         
         {
-            auto it = multiAddressMap.find(address);
+            auto &multiAddressMap = std::get<AddressMap<scriptType(type)>>(multiAddressMaps);
+            auto it = multiAddressMap.find(hash);
             if (it != multiAddressMap.end()) {
                 multiCount++;
-                auto scriptNum = it->second;
-                assert(scriptNum > 0);
-                return {hash, AddressLocation::MultiUseMap, scriptNum};
+                return {hash, AddressLocation::MultiUseMap, it->second};
             }
         }
         
-        rocksdb::Slice keySlice(reinterpret_cast<const char *>(&hash), sizeof(hash));
-        std::string value;
-        rocksdb::Status s = db->Get(rocksdb::ReadOptions(), getColumn(type), keySlice, &value);
-        if (s.ok()) {
+        uint32_t destNum = db.lookupAddress<blocksci::AddressInfo<type>::dedupType>(hash);
+        if (destNum != 0) {
             dbCount++;
-            uint32_t destNum;
-            memcpy(&destNum, value.data(), sizeof(destNum));
-            assert(destNum > 0);
             return {hash, AddressLocation::LevelDb, destNum};
         } else {
             bloomFPCount++;
@@ -129,34 +160,34 @@ public:
     }
     
     // Bool is true if address is new
-    template<blocksci::ScriptType::Enum type>
+    template<blocksci::AddressType::Enum type>
     std::pair<uint32_t, bool> resolveAddress(const RawAddressInfo<type> &addressInfo) {
-        RawScript rawScript{addressInfo.hash, type};
         bool existingAddress = false;
         switch (addressInfo.location) {
-            case AddressLocation::LevelDb:
-                multiAddressMap.add(rawScript, addressInfo.addressNum);
+            case AddressLocation::LevelDb: {
+                auto &multiAddressMap = std::get<AddressMap<scriptType(type)>>(multiAddressMaps);
+                multiAddressMap.add(addressInfo.hash, addressInfo.addressNum);
                 existingAddress = true;
                 break;
-            case AddressLocation::MultiUseMap:
+            }
+            case AddressLocation::MultiUseMap: {
                 existingAddress = true;
                 break;
-            case AddressLocation::NotFound:
+            }
+            case AddressLocation::NotFound: {
                 existingAddress = false;
                 break;
+            }
         }
         
         uint32_t addressNum = addressInfo.addressNum;
         if (!existingAddress) {
-            addressNum = getNewAddressIndex(type);
-            addressBloomFilter.add(rawScript);
-            rocksdb::Slice key(reinterpret_cast<const char *>(&addressInfo.hash), sizeof(addressInfo.hash));
-            rocksdb::Slice value(reinterpret_cast<const char *>(&addressNum), sizeof(addressNum));
-            db->Put(rocksdb::WriteOptions{}, getColumn(type), key, value);
-            
+            addressNum = getNewAddressIndex(scriptType(type));
+            auto &addressBloomFilter = std::get<AddressBloomFilter<scriptType(type)>>(addressBloomFilters);
+            addressBloomFilter.add(addressInfo.hash);
+            db.addAddress<blocksci::AddressInfo<type>::dedupType>(addressInfo.hash, addressNum);
             if (addressBloomFilter.isFull()) {
-                addressBloomFilter.reset(addressBloomFilter.getMaxItems() * 2, addressBloomFilter.getFPRate());
-                reloadBloomFilter();
+                reloadBloomFilter<scriptType(type)>();
             }
         }
         return std::make_pair(addressNum, !existingAddress);

@@ -39,14 +39,22 @@ namespace blocksci {
     };
     
     struct ScriptHashData : public ScriptDataBase {
-        uint160 address;
+        union {
+            uint160 hash160;
+            uint256 hash256;
+        };
         Address wrappedAddress;
+        bool isSegwit;
         
-        ScriptHashData(uint32_t txNum, uint160 address_, Address wrappedAddress_) : ScriptDataBase(txNum), address(address_), wrappedAddress(wrappedAddress_) {}
+        ScriptHashData(uint32_t txNum, uint160 hash160_, Address wrappedAddress_) : ScriptDataBase(txNum), hash160(hash160_), wrappedAddress(wrappedAddress_), isSegwit(false) {}
+        
+        ScriptHashData(uint32_t txNum, uint256 hash256_, Address wrappedAddress_) : ScriptDataBase(txNum), hash256(hash256_), wrappedAddress(wrappedAddress_), isSegwit(true) {}
         
         size_t size() {
             return sizeof(ScriptHashData);
         }
+        
+        uint160 getHash160() const;
     };
     
     struct MultisigData : public ScriptDataBase {

@@ -26,6 +26,17 @@ void AddressWriter::serialize(const AnyScriptInput &input, uint32_t txNum, uint3
 
 using namespace blocksci;
 
+void AddressWriter::serializeImp(const ScriptOutput<blocksci::AddressType::Enum::PUBKEY> &output, ScriptFile<blocksci::ScriptType::Enum::PUBKEY> &file) {
+    auto data = file.getData(output.scriptNum - 1);
+    data->pubkey = output.data.pubkey;
+}
+
+void AddressWriter::serializeImp(const ScriptOutput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> &output, ScriptFile<blocksci::ScriptType::Enum::SCRIPTHASH> &file) {
+    auto data = file.getData(output.scriptNum - 1);
+    data->hash256 = output.data.hash;
+    data->isSegwit = true;
+}
+
 void AddressWriter::serializeImp(const ScriptInput<AddressType::Enum::PUBKEYHASH> &input, ScriptFile<ScriptType::Enum::PUBKEY> &file) {
     auto data = file.getData(input.scriptNum - 1);
     data->pubkey = input.data.pubkey;

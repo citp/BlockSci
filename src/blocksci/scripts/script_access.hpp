@@ -14,6 +14,7 @@
 
 #include <blocksci/util/data_configuration.hpp>
 #include <blocksci/util/file_mapper.hpp>
+#include <blocksci/address/address_info.hpp>
 
 #include <mpark/variant.hpp>
 
@@ -67,6 +68,10 @@ namespace blocksci {
             return getFile<type>().getData(addressNum - 1);
         }
         
+        template <AddressType::Enum type>
+        auto getScriptData(uint32_t addressNum) const {
+            return getScriptData<scriptType(type)>(addressNum);
+        }
         
         template<ScriptType::Enum type>
         size_t scriptCount() const {

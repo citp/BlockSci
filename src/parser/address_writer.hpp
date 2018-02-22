@@ -58,6 +58,12 @@ class AddressWriter {
     void serializeImp(const ScriptInput<blocksci::AddressType::Enum::NONSTANDARD> &input, ScriptFile<blocksci::ScriptType::Enum::NONSTANDARD> &file);
     
     template<blocksci::AddressType::Enum type>
+    void serializeImp(const ScriptOutput<type> &, ScriptFile<scriptType(type)> &) {}
+    
+    void serializeImp(const ScriptOutput<blocksci::AddressType::Enum::PUBKEY> &input, ScriptFile<blocksci::ScriptType::Enum::PUBKEY> &file);
+    void serializeImp(const ScriptOutput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> &input, ScriptFile<blocksci::ScriptType::Enum::SCRIPTHASH> &file);
+    
+    template<blocksci::AddressType::Enum type>
     void serializeWrapped(const ScriptInputData<type> &, uint32_t, uint32_t) {}
     
     void serializeWrapped(const ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH> &input, uint32_t txNum, uint32_t outputTxNum);
@@ -82,6 +88,9 @@ public:
             file.write(output.data.getData(txNum));
             output.data.visitWrapped([&](auto &output) { this->serialize(output, txNum); });
             return file.size();
+        } else {
+            auto &file = std::get<ScriptFile<scriptType(type)>>(scriptFiles);
+            serializeImp(output, file);
         }
         return 0;
     }

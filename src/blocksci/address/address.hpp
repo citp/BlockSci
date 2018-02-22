@@ -42,9 +42,6 @@ namespace blocksci {
             return !operator==(other);
         }
         
-        bool operator==(const Script &other) const;
-        bool operator!=(const Script &other) const;
-        
         std::string toString() const;
         
         AnyScript getScript(const ScriptAccess &access) const;

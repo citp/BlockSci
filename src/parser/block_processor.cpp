@@ -306,7 +306,7 @@ void connectUTXOs(RawTransaction *tx, UTXOState &utxoState) {
         auto &output = tx->outputs[i];
         auto &scriptOutput = tx->scriptOutputs[i];
         auto type = scriptOutput.type();
-        if (isSpendable(scriptType(type))) {
+        if (isSpendable(type)) {
             UTXO utxo{output.value, tx->txNum, type};
             RawOutputPointer pointer{tx->hash, i};
             utxoState.add(pointer, utxo);

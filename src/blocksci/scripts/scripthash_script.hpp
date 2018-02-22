@@ -17,24 +17,11 @@
 #include <range/v3/utility/optional.hpp>
 
 namespace blocksci {
-    template <>
-    class ScriptAddress<ScriptType::Enum::SCRIPTHASH> : public BaseScript {
+    class ScriptHashBase : public Script {
     private:
         Address wrappedAddress;
     public:
-        uint160 address;
-        
-        constexpr static ScriptType::Enum scriptType = ScriptType::Enum::SCRIPTHASH;
-        
-        ScriptAddress<scriptType>(uint32_t scriptNum, const ScriptHashData *rawData, const ScriptAccess &access);
-        ScriptAddress<scriptType>(const ScriptAccess &access, uint32_t addressNum);
-        
-        ranges::optional<Transaction> transactionRevealed(const ChainAccess &chain) const;
-        
-        std::string addressString() const;
-        
-        std::string toString() const;
-        std::string toPrettyString() const;
+        ScriptHashBase(uint32_t scriptNum, AddressType::Enum type, const ScriptHashData *rawData, const ScriptAccess &access);
         
         ranges::optional<Address> getWrappedAddress() const;
         
@@ -45,6 +32,38 @@ namespace blocksci {
         }
         
         ranges::optional<AnyScript> wrappedScript() const;
+    };
+    
+    template <>
+    class ScriptAddress<AddressType::SCRIPTHASH> : public ScriptHashBase {
+    public:
+        uint160 address;
+        
+        constexpr static AddressType::Enum addressType = AddressType::SCRIPTHASH;
+        
+        ScriptAddress(uint32_t scriptNum, const ScriptHashData *rawData, const ScriptAccess &access);
+        ScriptAddress(const ScriptAccess &access, uint32_t addressNum);
+        
+        std::string addressString() const;
+        
+        std::string toString() const;
+        std::string toPrettyString() const;
+    };
+    
+    template <>
+    class ScriptAddress<AddressType::WITNESS_SCRIPTHASH> : public ScriptHashBase {
+    public:
+        uint256 address;
+        
+        constexpr static AddressType::Enum addressType = AddressType::WITNESS_SCRIPTHASH;
+        
+        ScriptAddress(uint32_t scriptNum, const ScriptHashData *rawData, const ScriptAccess &access);
+        ScriptAddress(const ScriptAccess &access, uint32_t addressNum);
+        
+        std::string addressString() const;
+        
+        std::string toString() const;
+        std::string toPrettyString() const;
     };
 }
 

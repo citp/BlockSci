@@ -89,9 +89,9 @@ namespace blocksci {
     
     uint32_t txCount(const Blockchain &chain);
     
-    template <ScriptType::Enum type>
+    template <AddressType::Enum type>
     using ScriptRange = ranges::any_view<ScriptAddress<type>>;
-    using ScriptRangeVariant = to_variadic_t<to_script_tuple_t<ScriptRange>, mpark::variant>;
+    using ScriptRangeVariant = to_variadic_t<to_address_tuple_t<ScriptRange>, mpark::variant>;
     
     class Blockchain : public ranges::view_facade<Blockchain> {
         friend ranges::range_access;
@@ -161,15 +161,15 @@ namespace blocksci {
             return lastBlockHeight;
         }
         
-        template <ScriptType::Enum type>
+        template <AddressType::Enum type>
         auto scripts() const {
-            return ranges::view::iota(uint32_t{1}, access->scripts->scriptCount<type>() + 1) | ranges::view::transform([&](uint32_t scriptNum) {
+            return ranges::view::iota(uint32_t{1}, access->scripts->scriptCount<scriptType(type)>() + 1) | ranges::view::transform([&](uint32_t scriptNum) {
                 assert(scriptNum > 0);
                 return ScriptAddress<type>(*access->scripts, scriptNum);
             });
         }
         
-        ScriptRangeVariant scripts(ScriptType::Enum type) const;
+        ScriptRangeVariant scripts(AddressType::Enum type) const;
         
         template <typename ResultType, typename MapFunc, typename ReduceFunc>
         std::enable_if_t<is_callable<MapFunc, std::vector<Block>>::value, ResultType>

@@ -164,7 +164,9 @@ ScriptInputData<blocksci::AddressType::Enum::NONSTANDARD>::ScriptInputData(const
 ScriptInputData<blocksci::AddressType::Enum::NULL_DATA>::ScriptInputData(const InputView &, const blocksci::CScriptView &, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::NULL_DATA> &) {
 }
 
-ScriptInputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> &) {
+ScriptInputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> &) {
+    std::cout << "Script view of size " << scriptView.size() << std::endl;
+    std::cout << "Witness stack of size " << inputView.witnessStack.size() << std::endl;
     auto &pubkeyWitness = inputView.witnessStack[1];
     pubkey.Set(reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin), reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin) + pubkeyWitness.length);
 }

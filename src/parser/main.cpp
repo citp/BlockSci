@@ -86,7 +86,7 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::B
                     prevValue = addressNum;
                 }
             }
-            if (isSpendable(scriptType(output.getType()))) {
+            if (isSpendable(output.getType())) {
                 utxoState.erase({*hash, i});
                 utxoAddressState.spendOutput({txNum, i}, output.getType());
                 utxoScriptState.erase({txNum, i});

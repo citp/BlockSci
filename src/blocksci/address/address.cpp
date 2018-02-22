@@ -44,20 +44,13 @@ namespace blocksci {
         }
     }
     
-    bool Address::operator==(const Script &other) const {
-        return scriptNum == other.scriptNum && scriptType(type) == other.type;
-    }
-    
-    bool Address::operator!=(const Script &other) const {
-        return !operator==(other);
-    }
-    
     void visit(const Address &address, const std::function<bool(const Address &)> &visitFunc, const ScriptAccess &scripts) {
         if (visitFunc(address)) {
             std::function<void(const blocksci::Address &)> nestedVisitor = [&](const blocksci::Address &nestedAddress) {
                 visit(nestedAddress, visitFunc, scripts);
             };
-            address.getScript(scripts).visitPointers(nestedVisitor);
+            auto script = address.getScript(scripts);
+            script.visitPointers(nestedVisitor);
         }
     }
 
@@ -132,7 +125,7 @@ namespace blocksci {
         std::vector<Address> addresses;
         auto count = scripts.scriptCount(scriptType(type));
         for (uint32_t scriptNum = 1; scriptNum <= count; scriptNum++) {
-            ScriptAddress<scriptType(type)> script(scripts, scriptNum);
+            ScriptAddress<type> script(scripts, scriptNum);
             if (script.addressString().compare(0, prefix.length(), prefix) == 0) {
                 addresses.push_back(Address(scriptNum, type));
             }

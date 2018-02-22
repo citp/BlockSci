@@ -11,6 +11,7 @@
 
 #include "script_type.hpp"
 #include "scripts_fwd.hpp"
+#include <blocksci/address/address_types.hpp>
 #include <blocksci/util/util.hpp>
 
 #include <string>
@@ -29,6 +30,7 @@ namespace blocksci {
         static constexpr bool deduped = true;
         static constexpr bool spendable = true;
         static constexpr bool indexed = false;
+        static constexpr std::array<AddressType::Enum, 3> addressTypes = {{AddressType::PUBKEY, AddressType::PUBKEYHASH, AddressType::WITNESS_PUBKEYHASH}};
         using outputType = PubkeyData;
         using storage = FixedSize<PubkeyData>;
     };
@@ -39,6 +41,7 @@ namespace blocksci {
         static constexpr bool deduped = true;
         static constexpr bool spendable = true;
         static constexpr bool indexed = false;
+        static constexpr std::array<AddressType::Enum, 2> addressTypes = {{AddressType::SCRIPTHASH, AddressType::WITNESS_SCRIPTHASH}};
         using outputType = ScriptHashData;
         using storage = FixedSize<ScriptHashData>;
     };
@@ -49,6 +52,7 @@ namespace blocksci {
         static constexpr bool deduped = true;
         static constexpr bool spendable = true;
         static constexpr bool indexed = true;
+        static constexpr std::array<AddressType::Enum, 1> addressTypes = {{AddressType::MULTISIG}};
         using outputType = MultisigData;
         using storage = Indexed<MultisigData>;
     };
@@ -59,6 +63,7 @@ namespace blocksci {
         static constexpr bool deduped = false;
         static constexpr bool spendable = true;
         static constexpr bool indexed = true;
+        static constexpr std::array<AddressType::Enum, 1> addressTypes = {{AddressType::NONSTANDARD}};
         using outputType = NonstandardScriptData;
         using storage = Indexed<NonstandardScriptData,NonstandardSpendScriptData>;
     };
@@ -69,6 +74,7 @@ namespace blocksci {
         static constexpr bool deduped = false;
         static constexpr bool spendable = false;
         static constexpr bool indexed = true;
+        static constexpr std::array<AddressType::Enum, 1> addressTypes = {{AddressType::NULL_DATA}};
         using outputType = RawData;
         using storage = Indexed<RawData>;
     };
@@ -91,7 +97,6 @@ namespace blocksci {
     static constexpr auto spendableTable = blocksci::make_static_table<ScriptType, SpendableFunctor>();
     
     constexpr bool isSpendable(ScriptType::Enum t) {
-        
         auto index = static_cast<size_t>(t);
         scriptTypeCheckThrow(index);
         return spendableTable[index];

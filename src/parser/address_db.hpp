@@ -29,7 +29,7 @@ class AddressDB : public ParserIndex {
     std::vector<rocksdb::ColumnFamilyHandle *> columnHandles;
     
     void processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &scripts) override;
-    void processScript(const blocksci::Script &, const blocksci::ChainAccess &, const blocksci::ScriptAccess &) override {}
+//    void processScript(const blocksci::Script &, const blocksci::ChainAccess &, const blocksci::ScriptAccess &) override {}
     void addAddress(const blocksci::Address &address, const blocksci::OutputPointer &pointer);
     void revealedP2SH(uint32_t scriptNum, const std::vector<blocksci::Address> &addresses);
     

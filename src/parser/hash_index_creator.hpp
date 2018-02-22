@@ -13,8 +13,7 @@
 #include "parser_fwd.hpp"
 
 #include <blocksci/chain/chain_fwd.hpp>
-
-#include <rocksdb/db.h>
+#include <blocksci/index/hash_index.hpp>
 
 #include <tuple>
 
@@ -23,17 +22,16 @@ namespace blocksci {
 }
 
 class HashIndexCreator : public ParserIndex {
-    rocksdb::DB *db;
-    std::vector<rocksdb::ColumnFamilyHandle *> columnHandles;
+    blocksci::HashIndex db;
     
     void processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &scripts) override;
-    void processScript(const blocksci::Script &script, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override {}
+//    void processScript(const blocksci::Script &script, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override {}
 
 public:
     HashIndexCreator(const ParserConfigurationBase &config, const std::string &path);
     void processTx(const blocksci::uint256 &hash, uint32_t index);
     void rollback(const blocksci::State &state) override;
-    void tearDown() override;
+    void tearDown() override {}
 };
 
 #endif /* hash_index_creator_hpp */

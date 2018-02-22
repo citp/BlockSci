@@ -58,15 +58,15 @@ namespace blocksci {
         lastBlockHeight = access->chain->blockCount();
     }
     
-    template<ScriptType::Enum type>
+    template<AddressType::Enum type>
     struct ScriptRangeFunctor {
         static ScriptRangeVariant f(const Blockchain &chain) {
             return chain.scripts<type>();
         }
     };
     
-    ScriptRangeVariant Blockchain::scripts(ScriptType::Enum type) const {
-        static auto table = make_static_table<ScriptType, ScriptRangeFunctor>(*this);
+    ScriptRangeVariant Blockchain::scripts(AddressType::Enum type) const {
+        static auto table = make_static_table<AddressType, ScriptRangeFunctor>(*this);
         static constexpr std::size_t size = AddressType::all.size();
         
         auto index = static_cast<size_t>(type);

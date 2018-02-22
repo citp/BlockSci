@@ -287,7 +287,8 @@ namespace blocksci {
         }
         
         size_t size() const {
-            return dataFile.size() / sizeof(T);
+            constexpr size_t unitSize = sizeof(T);
+            return dataFile.size() / unitSize;
         }
         
         size_t fileSize() const {

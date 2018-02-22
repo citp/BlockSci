@@ -16,6 +16,7 @@
 #include "nulldata_script.hpp"
 #include "nonstandard_script.hpp"
 
+#include <blocksci/address/address_info.hpp>
 #include <blocksci/chain/chain_fwd.hpp>
 
 #include <range/v3/utility/optional.hpp>
@@ -28,12 +29,11 @@ namespace blocksci {
     
     class AnyScript {
     public:
-        using ScriptVariant = to_variadic_t<to_script_tuple_t<ScriptAddress>, mpark::variant>;
+        using ScriptVariant = to_variadic_t<to_address_tuple_t<ScriptAddress>, mpark::variant>;
         
         AnyScript(const Address &address, const ScriptAccess &access);
-        AnyScript(const Script &script, const ScriptAccess &access);
         
-        ScriptType::Enum type() const;
+        AddressType::Enum type() const;
         
         std::string toString() const;
         std::string toPrettyString() const;

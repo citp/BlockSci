@@ -53,7 +53,7 @@ void init_blockchain(py::module &m) {
     }, "Return a list of blocks with their heights in the given range")
     .def("segment", segmentChain, "Divide the blockchain into the given number of chunks with roughly the same number of transactions in each")
     .def("script_type_txes", getTransactionIncludingOutput, "Returns a list of all transactions that include outputs of the given script type")
-    .def("scripts", [](const Blockchain &chain, ScriptType::Enum type) {
+    .def("scripts", [](const Blockchain &chain, AddressType::Enum type) {
         return chain.scripts(type);
     })
     .def_property_readonly("outputs_unspent", [](const Blockchain &chain) -> ranges::any_view<Output> { return outputsUnspent(chain); }, "Returns a list of all of the outputs that are unspent")

@@ -258,7 +258,7 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHA
 
 blocksci::ScriptHashData ScriptOutputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::getData(uint32_t txNum) const {
     blocksci::Address wrappedAddress;
-    return {txNum, getHash(), wrappedAddress};
+    return {txNum, hash, wrappedAddress};
 }
 
 // MARK: TX_MULTISIG

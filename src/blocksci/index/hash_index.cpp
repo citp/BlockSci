@@ -9,6 +9,7 @@
 #include "hash_index.hpp"
 #include "util/bitcoin_uint256.hpp"
 #include "scripts/bitcoin_base58.hpp"
+#include "scripts/script_info.hpp"
 #include "address/address.hpp"
 #include "util/util.hpp"
 
@@ -16,7 +17,7 @@
 
 namespace blocksci {
     
-    HashIndex::HashIndex(const std::string &path) {
+    HashIndex::HashIndex(const std::string &path, bool readonly) {
         rocksdb::Options options;
         // Optimize RocksDB. This is the easiest way to get RocksDB to perform well
         options.IncreaseParallelism();
@@ -27,14 +28,18 @@ namespace blocksci {
         
         
         std::vector<rocksdb::ColumnFamilyDescriptor> columnDescriptors;
-        columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions());
-        columnDescriptors.emplace_back("P", rocksdb::ColumnFamilyOptions{});
-        columnDescriptors.emplace_back("S", rocksdb::ColumnFamilyOptions{});
-        columnDescriptors.emplace_back("M", rocksdb::ColumnFamilyOptions{});
+        blocksci::for_each(blocksci::ScriptInfoList(), [&](auto tag) {
+            columnDescriptors.emplace_back(scriptName(tag), rocksdb::ColumnFamilyOptions{});
+        });
+        columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions{});
         columnDescriptors.emplace_back("T", rocksdb::ColumnFamilyOptions{});
         
-        rocksdb::Status s = rocksdb::DB::OpenForReadOnly(options, path.c_str(), columnDescriptors, &columnHandles, &db);
-        assert(s.ok());
+        if (readonly) {
+            rocksdb::Status s = rocksdb::DB::OpenForReadOnly(options, path.c_str(), columnDescriptors, &columnHandles, &db);
+            assert(s.ok());
+        } else {
+            rocksdb::Status s = rocksdb::DB::Open(options, path.c_str(), columnDescriptors, &columnHandles, &db);
+        }
     }
     
     HashIndex::~HashIndex() {
@@ -44,29 +49,51 @@ namespace blocksci {
         delete db;
     }
     
-    template <typename T>
-    uint32_t getMatch(rocksdb::DB *db, rocksdb::ColumnFamilyHandle *handle, const T &t) {
-        std::string val;
-        rocksdb::Slice key{reinterpret_cast<const char *>(&t), sizeof(t)};
-        auto getStatus = db->Get(rocksdb::ReadOptions{}, handle, key, &val);
-        if (getStatus.ok()) {
-            uint32_t value;
-            memcpy(&value, val.data(), sizeof(value));
-            return value;
-        } else {
-            return 0;
+    rocksdb::ColumnFamilyHandle *HashIndex::getColumn(AddressType::Enum type) {
+        auto index = static_cast<size_t>(type);
+        if (index > AddressType::size) {
+            assert("Tried to get column for unindexed script type");
+            return nullptr;
         }
+        return columnHandles[index];
+    }
+    
+    rocksdb::ColumnFamilyHandle *HashIndex::getColumn(ScriptType::Enum type) {
+        switch (type) {
+            case ScriptType::PUBKEY:
+                return getColumn(AddressType::PUBKEY);
+            case ScriptType::SCRIPTHASH:
+                return getColumn(AddressType::SCRIPTHASH);
+            case ScriptType::MULTISIG:
+                return getColumn(AddressType::MULTISIG);
+            case ScriptType::NULL_DATA:
+                return getColumn(AddressType::NULL_DATA);
+            case ScriptType::NONSTANDARD:
+                return getColumn(AddressType::NONSTANDARD);
+        }
+        assert(false);
+        return getColumn(AddressType::PUBKEY);
+    }
+    
+    void HashIndex::addTx(const uint256 &hash, uint32_t txNum) {
+        rocksdb::Slice keySlice(reinterpret_cast<const char *>(&hash), sizeof(hash));
+        rocksdb::Slice valueSlice(reinterpret_cast<const char *>(&txNum), sizeof(txNum));
+        db->Put(rocksdb::WriteOptions(), columnHandles.back(), keySlice, valueSlice);
     }
     
     uint32_t HashIndex::getTxIndex(const uint256 &txHash) {
-        return getMatch(db, columnHandles[4], txHash);
+        return getMatch(columnHandles.back(), txHash);
     }
     
     uint32_t HashIndex::getPubkeyHashIndex(const uint160 &pubkeyhash) {
-        return getMatch(db, columnHandles[1], pubkeyhash);
+        return getMatch(getColumn(AddressType::PUBKEY), pubkeyhash);
     }
     
     uint32_t HashIndex::getScriptHashIndex(const uint160 &scripthash) {
-        return getMatch(db, columnHandles[2], scripthash);
+        return getMatch(getColumn(AddressType::SCRIPTHASH), scripthash);
+    }
+    
+    uint32_t HashIndex::getScriptHashIndex(const uint256 &scripthash) {
+        return getMatch(getColumn(AddressType::SCRIPTHASH), scripthash);
     }
 }

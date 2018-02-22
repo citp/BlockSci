@@ -27,18 +27,13 @@
 
 namespace blocksci {
     
-    Script::Script(const Address &address) : Script(address.scriptNum, scriptType(address.type)) {}
+    Script::Script(uint32_t scriptNum_, AddressType::Enum type_, const ScriptDataBase &data, const ScriptAccess &scripts_) : Address(scriptNum_, type_), access(&scripts_), firstTxIndex(data.txFirstSeen), txRevealed(data.txFirstSpent) {}
     
-    BaseScript::BaseScript(uint32_t scriptNum_, ScriptType::Enum type_, const ScriptDataBase &data, const ScriptAccess &scripts_) : Script(scriptNum_, type_), access(&scripts_), firstTxIndex(data.txFirstSeen), txRevealed(data.txFirstSpent) {}
-    
-    BaseScript::BaseScript(const Address &address, const ScriptDataBase &data, const ScriptAccess &scripts) : BaseScript(address.scriptNum, scriptType(address.type), data, scripts) {}
-    
-    
-    Transaction BaseScript::getFirstTransaction(const ChainAccess &chain) const {
+    Transaction Script::getFirstTransaction(const ChainAccess &chain) const {
         return Transaction(firstTxIndex, chain);
     }
     
-    ranges::optional<Transaction> BaseScript::getTransactionRevealed(const ChainAccess &chain) const {
+    ranges::optional<Transaction> Script::getTransactionRevealed(const ChainAccess &chain) const {
         if (hasBeenSpent()) {
             return Transaction(txRevealed, chain);
         } else {
@@ -46,59 +41,59 @@ namespace blocksci {
         }
     }
     
-    std::string Script::toString() const {
-        if (scriptNum == 0) {
-            return "InvalidScript()";
-        } else {
-            std::stringstream ss;
-            ss << "Script(";
-            ss << "scriptNum=" << scriptNum;
-            ss << ", type=" << scriptName(type);
-            ss << ")";
-            return ss.str();
-        }
-    }
-    
-    AnyScript Script::getScript(const ScriptAccess &scripts) const {
-        return AnyScript(*this, scripts);
-    }
-    
-    uint64_t Script::calculateBalance(BlockHeight height, const AddressIndex &index, const ChainAccess &chain) const {
-        uint64_t value = 0;
-        if (height == 0) {
-            for (auto &output : index.getOutputs(*this, chain)) {
-                if (!output.isSpent()) {
-                    value += output.getValue();
-                }
-            }
-        } else {
-            for (auto &output : index.getOutputs(*this, chain)) {
-                if (output.blockHeight <= height && (!output.isSpent() || output.getSpendingTx()->blockHeight > height)) {
-                    value += output.getValue();
-                }
-            }
-        }
-        return value;
-    }
-
-    std::vector<Output> Script::getOutputs(const AddressIndex &index, const ChainAccess &chain) const {
-        return index.getOutputs(*this, chain);
-    }
-    
-    std::vector<Input> Script::getInputs(const AddressIndex &index, const ChainAccess &chain) const {
-        return index.getInputs(*this, chain);
-    }
-    
-    std::vector<Transaction> Script::getTransactions(const AddressIndex &index, const ChainAccess &chain) const {
-        return index.getTransactions(*this, chain);
-    }
-    
-    std::vector<Transaction> Script::getOutputTransactions(const AddressIndex &index, const ChainAccess &chain) const {
-        return index.getOutputTransactions(*this, chain);
-    }
-    
-    std::vector<Transaction> Script::getInputTransactions(const AddressIndex &index, const ChainAccess &chain) const {
-        return index.getInputTransactions(*this, chain);
-    }
+//    std::string Script::toString() const {
+//        if (scriptNum == 0) {
+//            return "InvalidScript()";
+//        } else {
+//            std::stringstream ss;
+//            ss << "Script(";
+//            ss << "scriptNum=" << scriptNum;
+//            ss << ", type=" << scriptName(type);
+//            ss << ")";
+//            return ss.str();
+//        }
+//    }
+//
+//    AnyScript Script::getScript(const ScriptAccess &scripts) const {
+//        return AnyScript(*this, scripts);
+//    }
+//
+//    uint64_t Script::calculateBalance(BlockHeight height, const AddressIndex &index, const ChainAccess &chain) const {
+//        uint64_t value = 0;
+//        if (height == 0) {
+//            for (auto &output : index.getOutputs(*this, chain)) {
+//                if (!output.isSpent()) {
+//                    value += output.getValue();
+//                }
+//            }
+//        } else {
+//            for (auto &output : index.getOutputs(*this, chain)) {
+//                if (output.blockHeight <= height && (!output.isSpent() || output.getSpendingTx()->blockHeight > height)) {
+//                    value += output.getValue();
+//                }
+//            }
+//        }
+//        return value;
+//    }
+//
+//    std::vector<Output> Script::getOutputs(const AddressIndex &index, const ChainAccess &chain) const {
+//        return index.getOutputs(*this, chain);
+//    }
+//
+//    std::vector<Input> Script::getInputs(const AddressIndex &index, const ChainAccess &chain) const {
+//        return index.getInputs(*this, chain);
+//    }
+//
+//    std::vector<Transaction> Script::getTransactions(const AddressIndex &index, const ChainAccess &chain) const {
+//        return index.getTransactions(*this, chain);
+//    }
+//
+//    std::vector<Transaction> Script::getOutputTransactions(const AddressIndex &index, const ChainAccess &chain) const {
+//        return index.getOutputTransactions(*this, chain);
+//    }
+//
+//    std::vector<Transaction> Script::getInputTransactions(const AddressIndex &index, const ChainAccess &chain) const {
+//        return index.getInputTransactions(*this, chain);
+//    }
 
 }
