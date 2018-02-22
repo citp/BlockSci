@@ -57,6 +57,7 @@ namespace blocksci {
         } else {
             pubkeyPrefix = std::vector<unsigned char>(1,0);
             scriptPrefix = std::vector<unsigned char>(1,5);
+            segwitPrefix = "bc";
         }
     }
     

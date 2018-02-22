@@ -75,7 +75,7 @@ namespace blocksci {
     std::string WitnessScriptHash::addressString() const {
         std::vector<uint8_t> witprog;
         witprog.insert(witprog.end(), reinterpret_cast<const uint8_t *>(&address), reinterpret_cast<const uint8_t *>(&address) + sizeof(address));
-        return segwit_addr::encode("bc", 0, witprog);
+        return segwit_addr::encode(access->config, 0, witprog);
     }
     
     std::string WitnessScriptHash::toString() const {

@@ -23,6 +23,10 @@
 #include <vector>
 #include <string>
 
+namespace blocksci {
+	struct DataConfiguration;
+}
+
 namespace bech32
 {
 

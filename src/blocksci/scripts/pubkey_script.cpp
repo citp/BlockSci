@@ -12,6 +12,7 @@
 #include "script_data.hpp"
 #include "script_access.hpp"
 #include "bitcoin_base58.hpp"
+#include "bitcoin_segwit_addr.h"
 
 #include <range/v3/utility/optional.hpp>
 
@@ -67,7 +68,9 @@ namespace blocksci {
     WitnessPubkeyHash::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : PubkeyAddressBase(addressNum, addressType, access.getScriptData<addressType>(addressNum), access) {}
     
     std::string WitnessPubkeyHash::addressString() const {
-        return CBitcoinAddress(pubkeyhash, AddressType::Enum::PUBKEYHASH, access->config).ToString();
+        std::vector<uint8_t> witprog;
+        witprog.insert(witprog.end(), reinterpret_cast<const uint8_t *>(&pubkeyhash), reinterpret_cast<const uint8_t *>(&pubkeyhash) + sizeof(pubkeyhash));
+        return segwit_addr::encode(access->config, 0, witprog);
     }
     
     std::string WitnessPubkeyHash::toString() const {

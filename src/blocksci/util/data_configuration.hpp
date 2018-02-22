@@ -24,6 +24,7 @@ namespace blocksci {
         
         std::vector<unsigned char> pubkeyPrefix;
         std::vector<unsigned char> scriptPrefix;
+        std::string segwitPrefix;
         
         boost::filesystem::path dataDirectory;
         
