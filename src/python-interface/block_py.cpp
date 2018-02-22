@@ -57,7 +57,7 @@ void addBlockMethods(Class &cl, FuncApplication func) {
         return block.coinbaseTx();
     }), "Return the coinbase transaction in this block")
     .def_property_readonly("size_bytes", func([](Block &block) {
-        return sizeBytes(block);
+        return block.sizeBytes();
     }), "Returns the total size of the block in bytes")
     .def_property_readonly("input_value", func([](const Block &block) {
         return totalInputValue(block);

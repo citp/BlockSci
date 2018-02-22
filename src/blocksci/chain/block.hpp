@@ -185,8 +185,7 @@ namespace blocksci {
         Block(BlockHeight blockNum);
         #endif
     };
-    
-    size_t sizeBytes(const Block &block);
+
     bool isSegwit(const Block &block, const ScriptAccess &scripts);
     
     TransactionSummary transactionStatistics(const Block &block, const ChainAccess &access);
