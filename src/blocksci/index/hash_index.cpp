@@ -28,8 +28,8 @@ namespace blocksci {
         
         
         std::vector<rocksdb::ColumnFamilyDescriptor> columnDescriptors;
-        blocksci::for_each(blocksci::ScriptInfoList(), [&](auto tag) {
-            columnDescriptors.emplace_back(scriptName(tag), rocksdb::ColumnFamilyOptions{});
+        blocksci::for_each(blocksci::AddressInfoList(), [&](auto tag) {
+            columnDescriptors.emplace_back(addressName(tag), rocksdb::ColumnFamilyOptions{});
         });
         columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions{});
         columnDescriptors.emplace_back("T", rocksdb::ColumnFamilyOptions{});
@@ -72,7 +72,7 @@ namespace blocksci {
                 return getColumn(AddressType::NONSTANDARD);
         }
         assert(false);
-        return getColumn(AddressType::PUBKEY);
+        return nullptr;
     }
     
     void HashIndex::addTx(const uint256 &hash, uint32_t txNum) {
