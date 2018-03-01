@@ -69,7 +69,11 @@ namespace blocksci {
         }
         
         uint32_t virtualSize() const {
-            return (data->realSize + data->baseSize * 3 + 3) / 4;
+            return (weight() + 3) / 4;
+        }
+        
+        uint32_t weight() const {
+            return data->realSize + 3 * data->baseSize;
         }
         
         uint32_t sizeBytes() const {

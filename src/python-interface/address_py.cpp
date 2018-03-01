@@ -120,8 +120,8 @@ void init_address(py::module &m) {
     
     py::class_<ScriptHashBase> scriptHashBase(m, "ScriptHashBase", script, "Extra data about pay to script hash address");
     scriptHashBase
-    .def_property_readonly("wrapped_address", &script::ScriptHash::getWrappedAddress, "The address inside this P2SH address")
-    .def_property_readonly("wrapped_script", [](const script::ScriptHash &script) -> ranges::optional<AnyScript::ScriptVariant> {
+    .def_property_readonly("wrapped_address", &ScriptHashBase::getWrappedAddress, "The address inside this P2SH address")
+    .def_property_readonly("wrapped_script", [](const ScriptHashBase &script) -> ranges::optional<AnyScript::ScriptVariant> {
         auto wrappedScript = script.wrappedScript();
         if (wrappedScript) {
             return wrappedScript->wrapped;

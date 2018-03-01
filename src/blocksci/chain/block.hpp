@@ -157,7 +157,11 @@ namespace blocksci {
         }
         
         uint32_t virtualSize() const {
-            return (rawBlock->realSize + rawBlock->baseSize * 3 + 3) / 4;
+            return (weight() + 3) / 4;
+        }
+        
+        uint32_t weight() const {
+            return baseSize() * 3 + totalSize();
         }
         
         uint32_t sizeBytes() const {
