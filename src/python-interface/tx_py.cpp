@@ -69,7 +69,7 @@ void addTransactionMethods(Class &cl, FuncApplication func, FuncDoc func2) {
         return tx.block();
     }), func2("The block that this transaction was in"))
     .def_property_readonly("index", func([](const Transaction &tx) {
-        return tx.block();
+        return tx.txNum;
     }), func2("The internal index of this transaction"))
     .def_property_readonly("hash", func([](const Transaction &tx) {
         return tx.getHash();
