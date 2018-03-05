@@ -190,5 +190,25 @@ namespace blocksci {
         rocksdb::Slice key{reinterpret_cast<const char *>(&script.scriptNum), sizeof(script.scriptNum)};
         return getOutputPointersImp(db, column, key);
     }
+    
+    void AddressIndex::checkDB(const ChainAccess &access) const {
+        for (auto scriptType : ScriptType::all) {
+            auto column = columnHandles[static_cast<size_t>(scriptType) + 1];
+            rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
+            for (it->SeekToFirst(); it->Valid(); it->Next()) {
+                auto foundKey = it->key();
+                Address address;
+                memcpy(&address, foundKey.data(), sizeof(address));
+                foundKey.remove_prefix(sizeof(Address));
+                OutputPointer outPoint;
+                memcpy(&outPoint, foundKey.data(), sizeof(outPoint));
+                Output output(outPoint, access);
+                if (output.getType() != address.type) {
+                    std::cout << "Output " << output << " matched with " << address << " instead of " << output.getAddress();
+                    continue;
+                }
+            }
+        }
+    }
 }
 

@@ -45,6 +45,8 @@ namespace blocksci {
         std::vector<Transaction> getTransactions(const Script &script, const ChainAccess &access) const;
         std::vector<Transaction> getOutputTransactions(const Script &script, const ChainAccess &access) const;
         std::vector<Transaction> getInputTransactions(const Script &script, const ChainAccess &access) const;
+        
+        void checkDB(const ChainAccess &access) const;
     };
 }
 
