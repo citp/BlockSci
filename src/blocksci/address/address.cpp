@@ -9,6 +9,7 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "address.hpp"
+#include "dedup_address.hpp"
 #include "address_info.hpp"
 #include "scripts/bitcoin_base58.hpp"
 #include "scripts/script_access.hpp"
@@ -26,6 +27,12 @@ namespace blocksci {
     Address::Address() : scriptNum(0), type(AddressType::Enum::NONSTANDARD) {}
     
     Address::Address(uint32_t addressNum_, AddressType::Enum type_) : scriptNum(addressNum_), type(type_) {}
+    
+    
+    DedupAddress Address::dedup() const {
+        return DedupAddress{scriptNum, scriptType(type)};
+    }
+    
     
     bool Address::isSpendable() const {
         return blocksci::isSpendable(scriptType(type));

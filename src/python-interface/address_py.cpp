@@ -10,6 +10,7 @@
 #include "variant_py.hpp"
 
 #include <blocksci/address/address.hpp>
+#include <blocksci/address/dedup_address.hpp>
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/chain.hpp>
 #include <blocksci/script.hpp>
@@ -30,6 +31,7 @@ void init_address(py::module &m) {
     .def(hash(py::self))
     .def_readonly("script_num", &Address::scriptNum, "The internal identifier of the address")
     .def_readonly("type", &Address::type, "The type of address")
+    .def_property_readonly("dedup", &Address::dedup, "Returns the deduped address associated with this address")
     .def("balance", py::overload_cast<BlockHeight>(&Address::calculateBalance, py::const_), py::arg("height") = 0, "Calculates the balance held by this address at the height (Defaults to the full chain)")
     .def("outs", py::overload_cast<>(&Address::getOutputs, py::const_), "Returns a list of all outputs sent to this address")
     .def("ins", py::overload_cast<>(&Address::getInputs, py::const_), "Returns a list of all inputs spent from this address")
@@ -50,28 +52,22 @@ void init_address(py::module &m) {
     .def_static("with_prefix", py::overload_cast<const std::string &>(getAddressesWithPrefix), "Find all addresses beginning with the given prefix")
     ;
     
-//    py::class_<Script> script(m, "Script", "Class representing a script which coins are sent to");
-//
-//    script
-//    .def(py::init<uint32_t, ScriptType::Enum>(), "Can be constructed directly by passing it an address index and address type")
-//    .def("__repr__", &Script::toString)
-//    .def(py::self == py::self)
-//    .def(hash(py::self))
-//    .def_property_readonly("script", [](const Script &script) {
-//        return script.getScript().wrapped;
-//    }, "Returns the script data associated with this script")
-//    .def_readonly("script_num", &Script::scriptNum, "The internal identifier of the address")
-//    .def_readonly("type", &Script::type, "The kind of script")
-//    .def(py::init<uint32_t, ScriptType::Enum>(), "Can be constructed directly by passing it an address index and address type")
-//    .def("balance", py::overload_cast<BlockHeight>(&Script::calculateBalance, py::const_), py::arg("height") = 0, "Calculates the balance held by this script at the height (Defaults to the full chain)")
-//    .def("outs", py::overload_cast<>(&Script::getOutputs, py::const_), "Returns a list of all outputs sent to this script")
-//    .def("ins", py::overload_cast<>(&Script::getInputs, py::const_), "Returns a list of all inputs spent from this script")
-//    .def("txes", py::overload_cast<>(&Script::getTransactions, py::const_), "Returns a list of all transactions involving this script")
-//    .def("in_txes", py::overload_cast<>(&Script::getInputTransactions, py::const_), "Returns a list of all transaction where this script was an input")
-//    .def("out_txes", py::overload_cast<>(&Script::getOutputTransactions, py::const_), "Returns a list of all transaction where this script was an output")
-//    ;
+    py::class_<DedupAddress>(m, "DedupAddress", "Class representing a deduped address which coins are sent to")
+    .def(py::init<uint32_t, ScriptType::Enum>(), "Can be constructed directly by passing it an script index and script type")
+    .def("__repr__", &DedupAddress::toString)
+    .def(py::self == py::self)
+    .def(hash(py::self))
+    .def_readonly("script_num", &DedupAddress::scriptNum, "The internal identifier of the address")
+    .def_readonly("type", &DedupAddress::type, "The kind of script")
+    .def("balance", py::overload_cast<BlockHeight>(&DedupAddress::calculateBalance, py::const_), py::arg("height") = 0, "Calculates the balance held by this deduped address at the height (Defaults to the full chain)")
+    .def("outs", py::overload_cast<>(&DedupAddress::getOutputs, py::const_), "Returns a list of all outputs sent to this deduped address")
+    .def("ins", py::overload_cast<>(&DedupAddress::getInputs, py::const_), "Returns a list of all inputs spent from this deduped address")
+    .def("txes", py::overload_cast<>(&DedupAddress::getTransactions, py::const_), "Returns a list of all transactions involving this deduped address")
+    .def("in_txes", py::overload_cast<>(&DedupAddress::getInputTransactions, py::const_), "Returns a list of all transaction where this deduped address was an input")
+    .def("out_txes", py::overload_cast<>(&DedupAddress::getOutputTransactions, py::const_), "Returns a list of all transaction where this deduped address was an output")
+    ;
     
-    py::class_<Script> script(m, "Script", address, "Class representing a script which coins are sent to");
+    py::class_<Script> script(m, "Script", "Class representing a script which coins are sent to");
     script
     .def_property_readonly("has_been_spent", py::overload_cast<>(&Script::hasBeenSpent, py::const_), "Check if this script has ever been spent")
     .def_property_readonly("first_tx", py::overload_cast<>(&Script::getFirstTransaction, py::const_), "Get the first transaction that was sent to this address")

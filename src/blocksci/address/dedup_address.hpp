@@ -1,13 +1,14 @@
 //
-//  address.hpp
+//  dedup_address.hpp
 //  blocksci
 //
-//  Created by Harry Kalodner on 7/12/17.
-//
+//  Created by Harry Kalodner on 3/5/18.
 //
 
-#ifndef address_hpp
-#define address_hpp
+#ifndef dedup_address_hpp
+#define dedup_address_hpp
+
+#include <stdio.h>
 
 #include "address_types.hpp"
 
@@ -23,29 +24,24 @@ namespace blocksci {
     class HashIndex;
     class AddressIndex;
     struct DataConfiguration;
-    struct DedupAddress;
     
-    struct Address {
+    struct DedupAddress {
         
         uint32_t scriptNum;
-        AddressType::Enum type;
+        ScriptType::Enum type;
         
-        Address();
-        Address(uint32_t addressNum, AddressType::Enum type);
+        DedupAddress();
+        DedupAddress(uint32_t addressNum, ScriptType::Enum type);
         
-        bool isSpendable() const;
-        
-        bool operator==(const Address& other) const {
+        bool operator==(const DedupAddress& other) const {
             return type == other.type && scriptNum == other.scriptNum;
         }
         
-        bool operator!=(const Address& other) const {
+        bool operator!=(const DedupAddress& other) const {
             return !operator==(other);
         }
         
         std::string toString() const;
-        
-        AnyScript getScript(const ScriptAccess &access) const;
         
         uint64_t calculateBalance(BlockHeight height, const AddressIndex &index, const ChainAccess &chain) const;
         
@@ -55,14 +51,9 @@ namespace blocksci {
         std::vector<Transaction> getOutputTransactions(const AddressIndex &index, const ChainAccess &chain) const;
         std::vector<Transaction> getInputTransactions(const AddressIndex &index, const ChainAccess &chain) const;
         
-        DedupAddress dedup() const;
-
-        std::string fullType(const ScriptAccess &script) const;
-
-        // Requires DataAccess
-        #ifndef BLOCKSCI_WITHOUT_SINGLETON        
-        AnyScript getScript() const;
         
+        // Requires DataAccess
+#ifndef BLOCKSCI_WITHOUT_SINGLETON
         uint64_t calculateBalance(BlockHeight height) const;
         
         std::vector<Output> getOutputs() const;
@@ -70,35 +61,18 @@ namespace blocksci {
         std::vector<Transaction> getTransactions() const;
         std::vector<Transaction> getOutputTransactions() const;
         std::vector<Transaction> getInputTransactions() const;
-
-        std::string fullType() const;
-        #endif
+#endif
     };
     
-    size_t addressCount(const ScriptAccess &access);
-    
-    void visit(const Address &address, const std::function<bool(const Address &)> &visitFunc, const ScriptAccess &access);
-    
-    ranges::optional<Address> getAddressFromString(const DataConfiguration &config, HashIndex &index, const std::string &addressString);
-    
-    std::vector<Address> getAddressesWithPrefix(const std::string &prefix, const ScriptAccess &scripts);
-    
-    // Requires DataAccess
-    #ifndef BLOCKSCI_WITHOUT_SINGLETON
-    ranges::optional<Address> getAddressFromString(const std::string &addressString);
-    std::vector<Address> getAddressesWithPrefix(const std::string &prefix);
-    size_t addressCount();
-    #endif
-
-    inline std::ostream &operator<<(std::ostream &os, const Address &address) { 
+    inline std::ostream &operator<<(std::ostream &os, const DedupAddress &address) {
         return os << address.toString();
     }
 }
 
 namespace std {
     template <>
-    struct hash<blocksci::Address> {
-        typedef blocksci::Address argument_type;
+    struct hash<blocksci::DedupAddress> {
+        typedef blocksci::DedupAddress argument_type;
         typedef size_t  result_type;
         result_type operator()(const argument_type &b) const {
             return (static_cast<size_t>(b.scriptNum) << 32) + static_cast<size_t>(b.type);
@@ -106,4 +80,4 @@ namespace std {
     };
 }
 
-#endif /* address_hpp */
+#endif /* dedup_address_hpp */

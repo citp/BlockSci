@@ -22,6 +22,7 @@
 
 namespace blocksci {
     struct Address;
+    struct DedupAddress;
     
     class AddressIndex {
         rocksdb::DB *db;
@@ -32,7 +33,7 @@ namespace blocksci {
         ~AddressIndex();
         
         std::vector<OutputPointer> getOutputPointers(const Address &address) const;
-        std::vector<OutputPointer> getOutputPointers(const Script &script) const;
+        std::vector<OutputPointer> getOutputPointers(const DedupAddress &script) const;
         
         std::vector<Output> getOutputs(const Address &address, const ChainAccess &access) const;
         std::vector<Input> getInputs(const Address &address, const ChainAccess &access) const;
@@ -40,11 +41,11 @@ namespace blocksci {
         std::vector<Transaction> getOutputTransactions(const Address &address, const ChainAccess &access) const;
         std::vector<Transaction> getInputTransactions(const Address &address, const ChainAccess &access) const;
         
-        std::vector<Output> getOutputs(const Script &script, const ChainAccess &access) const;
-        std::vector<Input> getInputs(const Script &script, const ChainAccess &access) const;
-        std::vector<Transaction> getTransactions(const Script &script, const ChainAccess &access) const;
-        std::vector<Transaction> getOutputTransactions(const Script &script, const ChainAccess &access) const;
-        std::vector<Transaction> getInputTransactions(const Script &script, const ChainAccess &access) const;
+        std::vector<Output> getOutputs(const DedupAddress &script, const ChainAccess &access) const;
+        std::vector<Input> getInputs(const DedupAddress &script, const ChainAccess &access) const;
+        std::vector<Transaction> getTransactions(const DedupAddress &script, const ChainAccess &access) const;
+        std::vector<Transaction> getOutputTransactions(const DedupAddress &script, const ChainAccess &access) const;
+        std::vector<Transaction> getInputTransactions(const DedupAddress &script, const ChainAccess &access) const;
         
         void checkDB(const ChainAccess &access) const;
     };

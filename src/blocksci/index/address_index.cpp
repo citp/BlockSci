@@ -14,6 +14,7 @@
 #include "chain/output.hpp"
 #include "chain/input.hpp"
 #include "address/address.hpp"
+#include "address/dedup_address.hpp"
 #include "address/address_info.hpp"
 #include "scripts/script_info.hpp"
 #include "scripts/script.hpp"
@@ -76,7 +77,7 @@ namespace blocksci {
         return getOutputsImp(getOutputPointers(address), access);
     }
     
-    std::vector<Output> AddressIndex::getOutputs(const Script &script, const ChainAccess &access) const {
+    std::vector<Output> AddressIndex::getOutputs(const DedupAddress &script, const ChainAccess &access) const {
         return getOutputsImp(getOutputPointers(script), access);
     }
     
@@ -102,7 +103,7 @@ namespace blocksci {
         return getInputsImp(getOutputPointers(address), access);
     }
     
-    std::vector<Input> AddressIndex::getInputs(const Script &script, const ChainAccess &access) const {
+    std::vector<Input> AddressIndex::getInputs(const DedupAddress &script, const ChainAccess &access) const {
         return getInputsImp(getOutputPointers(script), access);
     }
     
@@ -124,7 +125,7 @@ namespace blocksci {
         return getTransactionsImp(getOutputPointers(address), access);
     }
     
-    std::vector<Transaction> AddressIndex::getTransactions(const Script &script, const ChainAccess &access) const {
+    std::vector<Transaction> AddressIndex::getTransactions(const DedupAddress &script, const ChainAccess &access) const {
         return getTransactionsImp(getOutputPointers(script), access);
     }
     
@@ -139,7 +140,7 @@ namespace blocksci {
         return getOutputTransactionsImp(getOutputPointers(address), access);
     }
     
-    std::vector<Transaction> AddressIndex::getOutputTransactions(const Script &script, const ChainAccess &access) const {
+    std::vector<Transaction> AddressIndex::getOutputTransactions(const DedupAddress &script, const ChainAccess &access) const {
         return getOutputTransactionsImp(getOutputPointers(script), access);
     }
     
@@ -160,7 +161,7 @@ namespace blocksci {
         return getInputTransactionsImp(getOutputPointers(address), access);
     }
     
-    std::vector<Transaction> AddressIndex::getInputTransactions(const Script &script, const ChainAccess &access) const {
+    std::vector<Transaction> AddressIndex::getInputTransactions(const DedupAddress &script, const ChainAccess &access) const {
         return getInputTransactionsImp(getOutputPointers(script), access);
     }
     
@@ -185,7 +186,7 @@ namespace blocksci {
         return getOutputPointersImp(db, column, key);
     }
     
-    std::vector<OutputPointer> AddressIndex::getOutputPointers(const Script &script) const {
+    std::vector<OutputPointer> AddressIndex::getOutputPointers(const DedupAddress &script) const {
         auto column = columnHandles[static_cast<size_t>(script.type) + 1];
         rocksdb::Slice key{reinterpret_cast<const char *>(&script.scriptNum), sizeof(script.scriptNum)};
         return getOutputPointersImp(db, column, key);
