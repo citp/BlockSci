@@ -51,8 +51,8 @@ namespace blocksci {
         
         std::vector<rocksdb::ColumnFamilyDescriptor> columnDescriptors;
         columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions());
-        blocksci::for_each(blocksci::AddressInfoList(), [&](auto tag) {
-            columnDescriptors.emplace_back(addressName(tag), rocksdb::ColumnFamilyOptions{});
+        blocksci::for_each(blocksci::ScriptInfoList(), [&](auto tag) {
+            columnDescriptors.emplace_back(scriptName(tag), rocksdb::ColumnFamilyOptions{});
         });
         rocksdb::Status s = rocksdb::DB::OpenForReadOnly(options, path.c_str(), columnDescriptors, &columnHandles, &db);
         assert(s.ok());
