@@ -61,7 +61,7 @@ namespace blocksci {
     rocksdb::ColumnFamilyHandle *HashIndex::getColumn(ScriptType::Enum type) {
         switch (type) {
             case ScriptType::PUBKEY:
-                return getColumn(AddressType::PUBKEY);
+                return getColumn(AddressType::PUBKEYHASH);
             case ScriptType::SCRIPTHASH:
                 return getColumn(AddressType::SCRIPTHASH);
             case ScriptType::MULTISIG:
@@ -86,7 +86,7 @@ namespace blocksci {
     }
     
     uint32_t HashIndex::getPubkeyHashIndex(const uint160 &pubkeyhash) {
-        return getMatch(getColumn(AddressType::PUBKEY), pubkeyhash);
+        return getMatch(getColumn(AddressType::PUBKEYHASH), pubkeyhash);
     }
     
     uint32_t HashIndex::getScriptHashIndex(const uint160 &scripthash) {
