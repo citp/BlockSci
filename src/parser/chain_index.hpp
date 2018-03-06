@@ -154,8 +154,9 @@ struct ChainIndex {
         }
         
         std::reverse(chain.begin(), chain.end());
-        
-        if (maxBlockHeight == 0 || maxBlockHeight > static_cast<blocksci::BlockHeight>(chain.size())) {
+        if (maxBlockHeight < 0) {
+            return {chain.begin(), chain.end() + static_cast<int>(maxBlockHeight)};
+        } else if (maxBlockHeight == 0 || maxBlockHeight > static_cast<blocksci::BlockHeight>(chain.size())) {
             return chain;
         } else {
             return {chain.begin(), chain.begin() + static_cast<int>(maxBlockHeight)};
