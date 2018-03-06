@@ -94,6 +94,6 @@ namespace blocksci {
     }
     
     uint32_t HashIndex::getScriptHashIndex(const uint256 &scripthash) {
-        return getMatch(getColumn(AddressType::SCRIPTHASH), scripthash);
+        return getMatch(getColumn(AddressType::WITNESS_SCRIPTHASH), scripthash);
     }
 }
