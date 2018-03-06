@@ -53,6 +53,16 @@ namespace blocksci {
             db->Put(rocksdb::WriteOptions{}, getColumn(type), key, value);
         }
         
+        uint32_t countColumn(AddressType::Enum type) {
+            uint32_t keyCount = 0;
+            auto column = getColumn(type);
+            rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
+            for (it->SeekToFirst(); it->Valid(); it->Next()) {
+                keyCount++;
+            }
+            return keyCount;
+        }
+        
         void addTx(const uint256 &hash, uint32_t txID);
         
         rocksdb::Iterator* getIterator(AddressType::Enum type) {
