@@ -13,7 +13,7 @@
 #include "script_access.hpp"
 #include "script_variant.hpp"
 #include "bitcoin_base58.hpp"
-#include "bitcoin_segwit_addr.h"
+#include "bitcoin_segwit_addr.hpp"
 
 namespace blocksci {
     using namespace script;

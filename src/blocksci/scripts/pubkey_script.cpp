@@ -12,7 +12,7 @@
 #include "script_data.hpp"
 #include "script_access.hpp"
 #include "bitcoin_base58.hpp"
-#include "bitcoin_segwit_addr.h"
+#include "bitcoin_segwit_addr.hpp"
 
 #include <range/v3/utility/optional.hpp>
 

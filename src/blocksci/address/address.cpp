@@ -12,6 +12,7 @@
 #include "dedup_address.hpp"
 #include "address_info.hpp"
 #include "scripts/bitcoin_base58.hpp"
+#include "scripts/bitcoin_segwit_addr.hpp"
 #include "scripts/script_access.hpp"
 #include "scripts/scripts_fwd.hpp"
 #include "scripts/script_variant.hpp"
@@ -108,6 +109,25 @@ namespace blocksci {
     }
     
     ranges::optional<Address> getAddressFromString(const DataConfiguration &config, HashIndex &index, const std::string &addressString) {
+        if (std::equal(config.segwitPrefix.begin(), config.segwitPrefix.end(), addressString.begin(), addressString.end() + config.segwitPrefix.size())) {
+            std::pair<int, std::vector<uint8_t> > decoded = segwit_addr::decode(config.segwitPrefix, addressString);
+            if (decoded.first == 1) {
+                if (decoded.second.size() == 20) {
+                    uint160 pubkeyHash(decoded.second.begin(), decoded.second.end());
+                    uint32_t addressNum = index.getPubkeyHashIndex(pubkeyHash);
+                    if (addressNum > 0) {
+                        return Address{addressNum, AddressType::WITNESS_PUBKEYHASH};
+                    }
+                } else if (decoded.second.size() == 32) {
+                    uint256 scriptHash(decoded.second.begin(), decoded.second.end());
+                    uint32_t addressNum = index.getScriptHashIndex(scriptHash);
+                    if (addressNum > 0) {
+                        return Address{addressNum, AddressType::WITNESS_SCRIPTHASH};
+                    }
+                }
+            }
+            return ranges::nullopt;
+        }
         CBitcoinAddress address{addressString};
         uint160 hash;
         blocksci::AddressType::Enum type;

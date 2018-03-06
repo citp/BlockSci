@@ -19,7 +19,7 @@
  * THE SOFTWARE.
  */
 
-#include "bitcoin_bech32.h"
+#include "bitcoin_bech32.hpp"
 
 namespace
 {

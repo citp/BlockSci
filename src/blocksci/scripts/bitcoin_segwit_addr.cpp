@@ -19,8 +19,8 @@
  * THE SOFTWARE.
  */
 
-#include "bitcoin_segwit_addr.h"
-#include "bitcoin_bech32.h"
+#include "bitcoin_segwit_addr.hpp"
+#include "bitcoin_bech32.hpp"
 #include <blocksci/util/data_configuration.hpp>
 
 namespace
