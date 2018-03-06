@@ -55,7 +55,7 @@ namespace blocksci {
     
     std::string PubkeyHash::toString() const {
         std::stringstream ss;
-        ss << "PubkeyAddress(";
+        ss << "PubkeyHashAddress(";
         ss << "address=" << addressString();
         ss << ")";
         return ss.str();
@@ -75,7 +75,7 @@ namespace blocksci {
     
     std::string WitnessPubkeyHash::toString() const {
         std::stringstream ss;
-        ss << "PubkeyAddress(";
+        ss << "WitnessPubkeyAddress(";
         ss << "address=" << addressString();
         ss << ")";
         return ss.str();

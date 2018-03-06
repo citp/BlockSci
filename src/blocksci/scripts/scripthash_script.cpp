@@ -46,7 +46,7 @@ namespace blocksci {
     
     std::string ScriptHash::toString() const {
         std::stringstream ss;
-        ss << "P2SHAddress(";
+        ss << "ScriptHashAddress(";
         ss << "address=" << addressString();
         ss << ")";
         return ss.str();
@@ -54,7 +54,7 @@ namespace blocksci {
     
     std::string ScriptHash::toPrettyString() const {
         std::stringstream ss;
-        ss << "P2SHAddress(";
+        ss << "ScriptHashAddress(";
         ss << "address=" << addressString();
         ss << ", wrappedAddress=";
         auto wrapped = wrappedScript();
@@ -80,7 +80,7 @@ namespace blocksci {
     
     std::string WitnessScriptHash::toString() const {
         std::stringstream ss;
-        ss << "P2SHAddress(";
+        ss << "WitnessScriptHashAddress(";
         ss << "address=" << addressString();
         ss << ")";
         return ss.str();
@@ -88,7 +88,7 @@ namespace blocksci {
     
     std::string WitnessScriptHash::toPrettyString() const {
         std::stringstream ss;
-        ss << "P2SHAddress(";
+        ss << "WitnessScriptHashAddress(";
         ss << "address=" << addressString();
         ss << ", wrappedAddress=";
         auto wrapped = wrappedScript();
