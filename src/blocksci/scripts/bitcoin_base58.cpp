@@ -136,12 +136,7 @@ namespace blocksci {
             vchRet.clear();
             return false;
         }
-        // re-calculate the checksum, ensure it matches the included 4-byte checksum
-        uint256 hash = doubleSha256(reinterpret_cast<const char*>(vchRet.data()), vchRet.size() - 4);
-        if (memcmp(&hash, &vchRet.end()[-4], 4) != 0) {
-            vchRet.clear();
-            return false;
-        }
+        // Ignore the checksum since it shouldn't matter for our purposes
         vchRet.resize(vchRet.size() - 4);
         return true;
     }
