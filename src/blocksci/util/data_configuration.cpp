@@ -45,15 +45,19 @@ namespace blocksci {
         if(dataDirectoryString.find("dash") != std::string::npos) {
             pubkeyPrefix = {76};
             scriptPrefix = {16};
+            segwitPrefix = "NONE";
         } else if(dataDirectoryString.find("litecoin") != std::string::npos) {
             pubkeyPrefix = {48};
             scriptPrefix = {50};
+            segwitPrefix = "ltc";
         } else if(dataDirectoryString.find("zcash") != std::string::npos) {
             pubkeyPrefix = {28,184};
             scriptPrefix = {28,189};
+            segwitPrefix = "NONE";
         } else if(dataDirectoryString.find("namecoin") != std::string::npos) {
             pubkeyPrefix = {52};
             scriptPrefix = {13};
+            segwitPrefix = "nc";
         } else {
             pubkeyPrefix = std::vector<unsigned char>(1,0);
             scriptPrefix = std::vector<unsigned char>(1,5);
