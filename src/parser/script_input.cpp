@@ -104,7 +104,7 @@ ScriptInputData<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInputData(const 
     }
 }
 
-ScriptInputData<blocksci::AddressType::Enum::MULTISIG>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &rawTx, const SpendData<blocksci::AddressType::Enum::MULTISIG> &spendData) {
+ScriptInputData<blocksci::AddressType::Enum::MULTISIG>::ScriptInputData(const InputView &, const blocksci::CScriptView &, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::MULTISIG> &) {
     // Prelimary work on code to track multisig spend sets
 //    auto multisig = blocksci::CScript() << blocksci::OP_2;
 //    for (uint32_t i = 0; i < spendData.addressCount; i++) {
@@ -164,7 +164,7 @@ ScriptInputData<blocksci::AddressType::Enum::NONSTANDARD>::ScriptInputData(const
 ScriptInputData<blocksci::AddressType::Enum::NULL_DATA>::ScriptInputData(const InputView &, const blocksci::CScriptView &, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::NULL_DATA> &) {
 }
 
-ScriptInputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> &) {
+ScriptInputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> &) {
     auto &pubkeyWitness = inputView.witnessStack[1];
     pubkey.Set(reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin), reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin) + pubkeyWitness.length);
 }
