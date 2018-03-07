@@ -22,6 +22,7 @@
 #include "index/hash_index.hpp"
 
 #include <unordered_set>
+#include <iostream>
 
 namespace blocksci {
     
@@ -109,9 +110,9 @@ namespace blocksci {
     }
     
     ranges::optional<Address> getAddressFromString(const DataConfiguration &config, HashIndex &index, const std::string &addressString) {
-        if (std::equal(config.segwitPrefix.begin(), config.segwitPrefix.end(), addressString.begin(), addressString.end() + config.segwitPrefix.size())) {
+        if (addressString.compare(0, config.segwitPrefix.size(), config.segwitPrefix) == 0) {
             std::pair<int, std::vector<uint8_t> > decoded = segwit_addr::decode(config.segwitPrefix, addressString);
-            if (decoded.first == 1) {
+            if (decoded.first == 0) {
                 if (decoded.second.size() == 20) {
                     uint160 pubkeyHash(decoded.second.begin(), decoded.second.end());
                     uint32_t addressNum = index.getPubkeyHashIndex(pubkeyHash);
