@@ -9,6 +9,7 @@
 #ifndef address_hpp
 #define address_hpp
 
+#include "address_fwd.hpp"
 #include "address_types.hpp"
 
 #include <blocksci/chain/chain_fwd.hpp>
@@ -23,7 +24,6 @@ namespace blocksci {
     class HashIndex;
     class AddressIndex;
     struct DataConfiguration;
-    struct DedupAddress;
     
     struct Address {
         

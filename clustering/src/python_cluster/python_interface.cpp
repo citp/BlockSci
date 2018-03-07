@@ -67,21 +67,21 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
      .def("__hash__", [] (const Cluster &cluster) {
          return cluster.clusterNum;
      })
-     .def_property_readonly("scripts", &Cluster::getScripts, "Get a iterable over all the scripts in the cluster")
-     .def("tagged_scripts", &Cluster::taggedScripts, "Given a dictionary of tags, return a list of TaggedScript objects for any tagged scripts in the cluster")
-     .def("script_count", &Cluster::getScriptCount, "Return the number of scripts of the given type in the cluster")
+     .def_property_readonly("addresses", &Cluster::getDedupAddresses, "Get a iterable over all the dedup addresses in the cluster")
+     .def("tagged_addresses", &Cluster::taggedDedupAddresses, "Given a dictionary of tags, return a list of TaggedDedupAddresses objects for any tagged dedup addresses in the cluster")
+     .def("count_of_type", &Cluster::countOfType, "Return the number of dedup addresses of the given type in the cluster")
      ;
      
-     py::class_<TaggedScript>(m, "TaggedScript")
-     .def_readonly("script", &TaggedScript::script, "Return the script object which has been tagged")
-     .def_readonly("tag", &TaggedScript::tag, "Return the tag associated with the contained script")
+     py::class_<TaggedDedupAddress>(m, "TaggedDedupAddress")
+     .def_readonly("address", &TaggedDedupAddress::address, "Return the dedup address object which has been tagged")
+     .def_readonly("tag", &TaggedDedupAddress::tag, "Return the tag associated with the contained dedup address")
      ;
      
      py::class_<TaggedCluster>(m, "TaggedCluster")
      .def_property_readonly("cluster", [](const TaggedCluster &tc) {
          return tc.cluster;
      }, "Return the cluster object which has been tagged")
-     .def_readonly("tagged_addresses", &TaggedCluster::taggedScripts, "Return the list of scripts inside the cluster which have been tagged")
+     .def_readonly("tagged_addresses", &TaggedCluster::taggedDedupAddresses, "Return the list of dedup addresses inside the cluster which have been tagged")
      ;
      
      py::class_<cluster_range>(m, "ClusterRange")

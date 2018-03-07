@@ -23,7 +23,7 @@
 
 class Cluster;
 
-template<auto type>
+template<blocksci::ScriptType::Enum type>
 struct ScriptClusterIndexFile : public blocksci::FixedSizeFileMapper<uint32_t> {
     using blocksci::FixedSizeFileMapper<uint32_t>::FixedSizeFileMapper;
 };
@@ -32,14 +32,14 @@ class ClusterExpander;
 
 struct TaggedCluster {
     Cluster cluster;
-    std::vector<TaggedScript> taggedScripts;
+    std::vector<TaggedDedupAddress> taggedDedupAddresses;
     
-    TaggedCluster(const Cluster &cluster_, std::vector<TaggedScript> &&taggedScripts_) : cluster(cluster_), taggedScripts(taggedScripts_) {}
+    TaggedCluster(const Cluster &cluster_, std::vector<TaggedDedupAddress> &&taggedDedupAddresses_) : cluster(cluster_), taggedDedupAddresses(taggedDedupAddresses_) {}
 };
 
 class ClusterManager {
     blocksci::FixedSizeFileMapper<uint32_t> clusterOffsetFile;
-    blocksci::FixedSizeFileMapper<blocksci::Script> clusterScriptsFile;
+    blocksci::FixedSizeFileMapper<blocksci::DedupAddress> clusterScriptsFile;
     
     using ScriptClusterIndexTuple = blocksci::to_script_tuple_t<ScriptClusterIndexFile>;
     
@@ -49,7 +49,7 @@ public:
     ClusterManager(std::string baseDirectory);
     
     Cluster getCluster(const blocksci::Address &address) const;
-    Cluster getCluster(const blocksci::Script &script) const;
+    Cluster getCluster(const blocksci::DedupAddress &address) const;
     
     template<blocksci::ScriptType::Enum type>
     uint32_t getClusterNum(uint32_t scriptNum) const {
@@ -57,10 +57,10 @@ public:
         return *file.getData(scriptNum - 1);
     }
     
-    uint32_t getClusterNum(const blocksci::Script &script) const;
+    uint32_t getClusterNum(const blocksci::DedupAddress &address) const;
     
     uint32_t getClusterSize(uint32_t clusterNum) const;
-    boost::iterator_range<const blocksci::Script *> getClusterScripts(uint32_t clusterNum) const;
+    boost::iterator_range<const blocksci::DedupAddress *> getClusterScripts(uint32_t clusterNum) const;
     
     uint32_t clusterCount() const;
 
@@ -71,7 +71,7 @@ public:
     
     std::vector<uint32_t> getClusterSizes() const;
     
-    std::vector<TaggedCluster> taggedClusters(const std::unordered_map<blocksci::Script, std::string> &tags);
+    std::vector<TaggedCluster> taggedClusters(const std::unordered_map<blocksci::DedupAddress, std::string> &tags);
 };
 
 using cluster_range = decltype(std::declval<ClusterManager>().getClusters());

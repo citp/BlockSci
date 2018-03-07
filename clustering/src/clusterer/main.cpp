@@ -9,6 +9,7 @@
 #include "dset/dset.h"
 
 #include <blocksci/blocksci.hpp>
+#include <blocksci/address/dedup_address.hpp>
 #include <blocksci/util/data_access.hpp>
 #include <blocksci/script.hpp>
 
@@ -21,18 +22,18 @@
 
 using namespace blocksci;
 
-std::vector<std::pair<Script, Script>> process_transaction(const Transaction &tx) {
-    std::vector<std::pair<Script, Script>> pairsToUnion;
+std::vector<std::pair<DedupAddress, DedupAddress>> process_transaction(const Transaction &tx) {
+    std::vector<std::pair<DedupAddress, DedupAddress>> pairsToUnion;
     
     if (!heuristics::isCoinjoin(tx) && !tx.isCoinbase()) {
         auto inputs = tx.inputs();
-        auto firstAddress = inputs[0].getAddress();
+        auto firstAddress = inputs[0].getAddress().dedup();
         for (uint16_t i = 1; i < inputs.size(); i++) {
-            pairsToUnion.emplace_back(firstAddress, inputs[i].getAddress());
+            pairsToUnion.emplace_back(firstAddress, inputs[i].getAddress().dedup());
         }
         
         if (auto change = heuristics::uniqueChangeByLegacyHeuristic(tx)) {
-            pairsToUnion.emplace_back(change->getAddress(), firstAddress);
+            pairsToUnion.emplace_back(change->getAddress().dedup(), firstAddress);
         }
     }
     return pairsToUnion;
@@ -86,7 +87,7 @@ struct AddressDisjointSets {
         return disjoinSets.size();
     }
 
-    void link_addresses(const Script &address1, const Script &address2) {
+    void link_addresses(const DedupAddress &address1, const DedupAddress &address2) {
         auto firstAddressIndex = addressStarts.at(address1.type) + address1.scriptNum - 1;
         auto secondAddressIndex = addressStarts.at(address2.type) + address2.scriptNum - 1;
         disjoinSets.unite(firstAddressIndex, secondAddressIndex);
@@ -113,11 +114,11 @@ std::vector<uint32_t> getClusters(Blockchain &chain, std::unordered_map<ScriptTy
     
     
     segmentWork(1, scriptHashCount + 1, 8, [&ds, &scripts](uint32_t index) {
-        Script pointer(index, ScriptType::Enum::SCRIPTHASH);
+        DedupAddress pointer(index, ScriptType::Enum::SCRIPTHASH);
         script::ScriptHash scripthash{scripts, index};
         auto wrappedAddress = scripthash.getWrappedAddress();
         if (wrappedAddress) {
-            ds.link_addresses(pointer, *wrappedAddress);
+            ds.link_addresses(pointer, wrappedAddress->dedup());
         }
     });
     
@@ -166,7 +167,7 @@ void recordOrderedAddresses(const std::vector<uint32_t> &parent, std::vector<uin
         typeIndexes[pair.second] = pair.first;
     }
     
-    std::vector<Script> orderedScripts;
+    std::vector<DedupAddress> orderedScripts;
     orderedScripts.resize(parent.size());
     
     for (uint32_t i = 0; i < parent.size(); i++) {
@@ -175,7 +176,7 @@ void recordOrderedAddresses(const std::vector<uint32_t> &parent, std::vector<uin
         it--;
         uint32_t addressNum = i - it->first + 1;
         auto addressType = it->second;
-        orderedScripts[j] = Script(addressNum, addressType);
+        orderedScripts[j] = DedupAddress(addressNum, addressType);
         j++;
     }
     

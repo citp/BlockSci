@@ -10,6 +10,7 @@
 #include "cluster.hpp"
 
 #include <blocksci/address/address_info.hpp>
+#include <blocksci/address/dedup_address.hpp>
 
 ClusterManager::ClusterManager(std::string baseDirectory) : clusterOffsetFile(baseDirectory + "clusterOffsets"), clusterScriptsFile(baseDirectory + "clusterAddresses"), scriptClusterIndexFiles(blocksci::apply(blocksci::ScriptInfoList(), [&] (auto tag) {
     std::stringstream ss;
@@ -30,30 +31,30 @@ struct ClusterNumFunctor {
 };
 
 
-uint32_t ClusterManager::getClusterNum(const blocksci::Script &script) const {
+uint32_t ClusterManager::getClusterNum(const blocksci::DedupAddress &address) const {
     static auto table = blocksci::make_dynamic_table<blocksci::ScriptType, ClusterNumFunctor>();
     static constexpr std::size_t size = blocksci::ScriptType::all.size();
     
-    auto index = static_cast<size_t>(script.type);
+    auto index = static_cast<size_t>(address.type);
     if (index >= size)
     {
         throw std::invalid_argument("combination of enum values is not valid");
     }
-    return table[index](this, script.scriptNum);
+    return table[index](this, address.scriptNum);
 }
 
 Cluster ClusterManager::getCluster(const blocksci::Address &address) const {
+    return Cluster(getClusterNum(address.dedup()), *this);
+}
+
+Cluster ClusterManager::getCluster(const blocksci::DedupAddress &address) const {
     return Cluster(getClusterNum(address), *this);
 }
 
-Cluster ClusterManager::getCluster(const blocksci::Script &script) const {
-    return Cluster(getClusterNum(script), *this);
-}
-
-std::vector<TaggedCluster> ClusterManager::taggedClusters(const std::unordered_map<blocksci::Script, std::string> &tags) {
+std::vector<TaggedCluster> ClusterManager::taggedClusters(const std::unordered_map<blocksci::DedupAddress, std::string> &tags) {
     std::vector<TaggedCluster> taggedClusters;
     for (auto cluster : getClusters()) {
-        auto taggedAddresses = cluster.taggedScripts(tags);
+        auto taggedAddresses = cluster.taggedDedupAddresses(tags);
         if (!taggedAddresses.empty()) {
             taggedClusters.emplace_back(cluster, std::move(taggedAddresses));
         }
@@ -83,7 +84,7 @@ std::vector<uint32_t> ClusterManager::getClusterSizes() const {
     return clusterSizes;
 }
 
-boost::iterator_range<const blocksci::Script *> ClusterManager::getClusterScripts(uint32_t clusterNum) const {
+boost::iterator_range<const blocksci::DedupAddress *> ClusterManager::getClusterScripts(uint32_t clusterNum) const {
     auto nextClusterOffset = *clusterOffsetFile.getData(clusterNum);
     uint32_t clusterOffset = 0;
     if (clusterNum > 0) {
