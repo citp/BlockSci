@@ -14,8 +14,8 @@ fio --filename=/home/ubuntu/bitcoin/scripts/scripthash_script.dat --rw=read --bs
 
 touch /home/ubuntu/BlockSci/SCRIPT_DATA_HEATED
 
-fio --filename=/home/ubuntu/bitcoin/hashIndex.dat --rw=read --bs=128k --iodepth=32 --ioengine=libaio --direct=1 --name=volume-initialize
-fio --filename=/home/ubuntu/bitcoin/addressesDb.dat --rw=read --bs=128k --iodepth=32 --ioengine=libaio --direct=1 --name=volume-initialize
+fio --opendir=/home/ubuntu/bitcoin/hashIndex --rw=read --bs=128k --iodepth=32 --ioengine=libaio --direct=1 --name=volume-initialize
+fio --opendir=/home/ubuntu/bitcoin/addressesDb --rw=read --bs=128k --iodepth=32 --ioengine=libaio --direct=1 --name=volume-initialize
 
 touch /home/ubuntu/BlockSci/INDEX_DATA_HEATED
 
