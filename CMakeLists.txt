@@ -53,6 +53,7 @@ target_include_directories(clipp INTERFACE SYSTEM libs/clipp/include)
 link_directories(/usr/local/lib)
 include_directories("src")
 
+set(PYBIND11_INSTALL true)
 add_subdirectory(libs/pybind11)
 
 add_subdirectory(libs/variant)
