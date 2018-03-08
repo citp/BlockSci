@@ -113,8 +113,8 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
      })
      ;
      
-     using script_range = boost::iterator_range<const blocksci::Script *>;
-     py::class_<script_range>(m, "ScriptRange")
+     using script_range = boost::iterator_range<const blocksci::DedupAddress *>;
+     py::class_<script_range>(m, "DedupAddressRangeRange")
      .def("__len__", &script_range::size)
      /// Optional sequence protocol operations
      .def("__iter__", [](const script_range &range) { return py::make_iterator(range.begin(), range.end()); },
@@ -133,7 +133,7 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
          if (!slice.compute(range.size(), &start, &stop, &step, &slicelength))
              throw py::error_already_set();
          py::list txList;
-         for (size_t i=0; i<slicelength; ++i) {
+         for (size_t i=0; i<slicelength; i+= step) {
              txList.append(range[start]);
              start += step;
          }
