@@ -9,7 +9,7 @@
 #ifndef cluster_hpp
 #define cluster_hpp
 
-#include <blocksci/address/dedup_address.hpp>
+#include <blocksci/address/equiv_address.hpp>
 
 
 #include <boost/range/iterator_range.hpp>
@@ -21,11 +21,11 @@
 
 class ClusterManager;
 
-struct TaggedDedupAddress {
-    blocksci::DedupAddress address;
+struct TaggedEquivAddress {
+    blocksci::EquivAddress address;
     std::string tag;
     
-    TaggedDedupAddress(const blocksci::DedupAddress &address_, const std::string &tag_) : address(address_), tag(tag_) {}
+    TaggedEquivAddress(const blocksci::EquivAddress &address_, const std::string &tag_) : address(address_), tag(tag_) {}
 };
 
 class Cluster {
@@ -35,11 +35,11 @@ public:
     uint32_t clusterNum;
     
     Cluster(uint32_t clusterNum_, const ClusterManager &manager_) : manager(manager_), clusterNum(clusterNum_) {}
-    boost::iterator_range<const blocksci::DedupAddress *> getDedupAddresses() const;
+    boost::iterator_range<const blocksci::EquivAddress *> getEquivAddresses() const;
     
-    std::vector<TaggedDedupAddress> taggedDedupAddresses(const std::unordered_map<blocksci::DedupAddress, std::string> &tags) const;
+    std::vector<TaggedEquivAddress> taggedEquivAddresses(const std::unordered_map<blocksci::EquivAddress, std::string> &tags) const;
     
-    uint32_t countOfType(blocksci::DedupAddressType::Enum type) const;
+    uint32_t countOfType(blocksci::EquivAddressType::Enum type) const;
     
     uint32_t getSize() const;
     
