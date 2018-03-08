@@ -132,14 +132,14 @@ void init_address(py::module &m) {
     .def("__repr__", py::overload_cast<>(&script::ScriptHash::toString, py::const_))
     .def("__str__", py::overload_cast<>(&script::ScriptHash::toPrettyString, py::const_))
     .def_readonly("raw_address",  &script::ScriptHash::address, "The 160 bit P2SH address hash")
-    .def_property_readonly("address", py::overload_cast<>(&script::ScriptHash::addressString, py::const_), "Bitcoin address string")
+    .def_property_readonly("address_string", py::overload_cast<>(&script::ScriptHash::addressString, py::const_), "Bitcoin address string")
     ;
     
     py::class_<script::WitnessScriptHash>(m, "PayToWitnessScriptHashScript", scriptHashBase, "Extra data about pay to script hash address")
     .def("__repr__", py::overload_cast<>(&script::WitnessScriptHash::toString, py::const_))
     .def("__str__", py::overload_cast<>(&script::WitnessScriptHash::toPrettyString, py::const_))
     .def_readonly("raw_address",  &script::WitnessScriptHash::address, "The 256 bit Witness P2SH address hash")
-    .def_property_readonly("address", py::overload_cast<>(&script::WitnessScriptHash::addressString, py::const_), "Bitcoin address string")
+    .def_property_readonly("address_string", py::overload_cast<>(&script::WitnessScriptHash::addressString, py::const_), "Bitcoin address string")
     ;
     
     py::class_<script::OpReturn>(m, "NulldataScript", script, "Extra data about op_return address")
