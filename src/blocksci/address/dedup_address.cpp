@@ -24,9 +24,9 @@
 
 namespace blocksci {
     
-    DedupAddress::DedupAddress() : scriptNum(0), type(ScriptType::NONSTANDARD) {}
+    DedupAddress::DedupAddress() : scriptNum(0), type(DedupAddressType::NONSTANDARD) {}
     
-    DedupAddress::DedupAddress(uint32_t addressNum_, ScriptType::Enum type_) : scriptNum(addressNum_), type(type_) {}
+    DedupAddress::DedupAddress(uint32_t addressNum_, DedupAddressType::Enum type_) : scriptNum(addressNum_), type(type_) {}
     
     std::string DedupAddress::toString() const {
         if (scriptNum == 0) {
@@ -34,8 +34,8 @@ namespace blocksci {
         } else {
             std::stringstream ss;
             ss << "DedupAddress(";
-            ss << "addressNum=" << scriptNum;
-            ss << ", type=" << scriptName(type);
+            ss << "scriptNum=" << scriptNum;
+            ss << ", type=" << dedupAddressName(type);
             ss << ")";
             return ss.str();
         }

@@ -68,7 +68,7 @@ namespace blocksci {
         rocksdb::Iterator* getIterator(AddressType::Enum type) {
             return db->NewIterator(rocksdb::ReadOptions(), getColumn(type));
         }
-        rocksdb::Iterator* getIterator(ScriptType::Enum type) {
+        rocksdb::Iterator* getIterator(DedupAddressType::Enum type) {
             return db->NewIterator(rocksdb::ReadOptions(), getColumn(type));
         }
         rocksdb::Iterator *getTxIterator() {
@@ -76,7 +76,7 @@ namespace blocksci {
         }
         
         rocksdb::ColumnFamilyHandle *getColumn(AddressType::Enum type);
-        rocksdb::ColumnFamilyHandle *getColumn(ScriptType::Enum type);
+        rocksdb::ColumnFamilyHandle *getColumn(DedupAddressType::Enum type);
         rocksdb::ColumnFamilyHandle *getTxColumn() {
             return columnHandles.back();
         }

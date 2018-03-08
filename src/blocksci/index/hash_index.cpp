@@ -58,17 +58,17 @@ namespace blocksci {
         return columnHandles[index];
     }
     
-    rocksdb::ColumnFamilyHandle *HashIndex::getColumn(ScriptType::Enum type) {
+    rocksdb::ColumnFamilyHandle *HashIndex::getColumn(DedupAddressType::Enum type) {
         switch (type) {
-            case ScriptType::PUBKEY:
+            case DedupAddressType::PUBKEY:
                 return getColumn(AddressType::PUBKEYHASH);
-            case ScriptType::SCRIPTHASH:
+            case DedupAddressType::SCRIPTHASH:
                 return getColumn(AddressType::SCRIPTHASH);
-            case ScriptType::MULTISIG:
+            case DedupAddressType::MULTISIG:
                 return getColumn(AddressType::MULTISIG);
-            case ScriptType::NULL_DATA:
+            case DedupAddressType::NULL_DATA:
                 return getColumn(AddressType::NULL_DATA);
-            case ScriptType::NONSTANDARD:
+            case DedupAddressType::NONSTANDARD:
                 return getColumn(AddressType::NONSTANDARD);
         }
         assert(false);

@@ -41,8 +41,8 @@ AddressDB::AddressDB(const ParserConfigurationBase &config_, const std::string &
     
     std::vector<rocksdb::ColumnFamilyDescriptor> columnDescriptors;
     columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions());
-    for (auto script : ScriptType::all) {
-        columnDescriptors.push_back(rocksdb::ColumnFamilyDescriptor{scriptName(script), rocksdb::ColumnFamilyOptions{}});
+    for (auto script : DedupAddressType::all) {
+        columnDescriptors.push_back(rocksdb::ColumnFamilyDescriptor{dedupAddressName(script), rocksdb::ColumnFamilyOptions{}});
     }
     rocksdb::Status s = rocksdb::DB::Open(options, path.c_str(), columnDescriptors, &columnHandles, &db);
     assert(s.ok());
@@ -68,7 +68,7 @@ void AddressDB::processTx(const blocksci::Transaction &tx, const blocksci::Scrip
             std::vector<Address> addressesToAdd;
             bool insideP2SH = false;
             std::function<bool(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
-                if (scriptType(a.type) == blocksci::ScriptType::Enum::SCRIPTHASH) {
+                if (dedupType(a.type) == blocksci::DedupAddressType::SCRIPTHASH) {
                     auto p2sh = blocksci::script::ScriptHash{scripts, a.scriptNum};
                     if (!insideP2SH) {
                         if (p2sh.txRevealed < tx.txNum) {
@@ -117,7 +117,7 @@ void AddressDB::processTx(const blocksci::Transaction &tx, const blocksci::Scrip
         std::function<bool(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
             addAddress(a, pointer);
             // If address is p2sh then ignore the wrapped address if it was revealed after this transaction
-            if (scriptType(a.type) == blocksci::ScriptType::Enum::SCRIPTHASH) {
+            if (dedupType(a.type) == DedupAddressType::SCRIPTHASH) {
                 auto p2sh = blocksci::script::ScriptHash{scripts, a.scriptNum};
                 if (!p2sh.hasBeenSpent() || tx.txNum < p2sh.txRevealed) {
                     return false;
@@ -131,7 +131,7 @@ void AddressDB::processTx(const blocksci::Transaction &tx, const blocksci::Scrip
 }
 
 void AddressDB::revealedP2SH(uint32_t scriptNum, const std::vector<Address> &addresses) {
-    auto column = columnHandles[static_cast<size_t>(ScriptType::SCRIPTHASH) + 1];
+    auto column = columnHandles[static_cast<size_t>(DedupAddressType::SCRIPTHASH) + 1];
     rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
     rocksdb::Slice key(reinterpret_cast<const char *>(&scriptNum), sizeof(scriptNum));
     for (it->Seek(key); it->Valid() && it->key().starts_with(key); it->Next()) {
@@ -148,7 +148,7 @@ void AddressDB::revealedP2SH(uint32_t scriptNum, const std::vector<Address> &add
 }
 
 void AddressDB::addAddress(const blocksci::Address &address, const blocksci::OutputPointer &pointer) {
-    auto script = scriptType(address.type);
+    auto script = dedupType(address.type);
     std::array<rocksdb::Slice, 2> keyParts = {{
         rocksdb::Slice(reinterpret_cast<const char *>(&address), sizeof(address)),
         rocksdb::Slice(reinterpret_cast<const char *>(&pointer), sizeof(pointer))
@@ -159,7 +159,7 @@ void AddressDB::addAddress(const blocksci::Address &address, const blocksci::Out
 }
 
 void AddressDB::rollback(const blocksci::State &state) {
-    for (auto script : ScriptType::all) {
+    for (auto script : DedupAddressType::all) {
         auto column = columnHandles[static_cast<size_t>(script) + 1];
         rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
         for (it->SeekToFirst(); it->Valid(); it->Next()) {
@@ -167,7 +167,7 @@ void AddressDB::rollback(const blocksci::State &state) {
             key.remove_prefix(sizeof(Address));
             OutputPointer outPoint;
             memcpy(&outPoint, key.data(), sizeof(outPoint));
-            if (outPoint.txNum >= state.scriptCounts[static_cast<size_t>(blocksci::ScriptType::Enum::SCRIPTHASH)]) {
+            if (outPoint.txNum >= state.scriptCounts[static_cast<size_t>(blocksci::DedupAddressType::SCRIPTHASH)]) {
                 db->Delete(rocksdb::WriteOptions(), column, it->key());
             }
         }

@@ -8,15 +8,10 @@
 #ifndef dedup_address_hpp
 #define dedup_address_hpp
 
-#include <stdio.h>
-
-#include "address_types.hpp"
-
+#include "address_fwd.hpp"
 #include <blocksci/chain/chain_fwd.hpp>
-#include <blocksci/scripts/scripts_fwd.hpp>
 
 #include <range/v3/utility/optional.hpp>
-
 #include <functional>
 #include <vector>
 
@@ -28,10 +23,10 @@ namespace blocksci {
     struct DedupAddress {
         
         uint32_t scriptNum;
-        ScriptType::Enum type;
+        DedupAddressType::Enum type;
         
         DedupAddress();
-        DedupAddress(uint32_t addressNum, ScriptType::Enum type);
+        DedupAddress(uint32_t addressNum, DedupAddressType::Enum type);
         
         bool operator==(const DedupAddress& other) const {
             return type == other.type && scriptNum == other.scriptNum;

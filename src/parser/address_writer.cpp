@@ -11,8 +11,8 @@
 #include <blocksci/scripts/script.hpp>
 
 AddressWriter::AddressWriter(const ParserConfigurationBase &config) :
-scriptFiles(blocksci::apply(blocksci::ScriptInfoList(), [&] (auto tag) {
-    return ScriptFile<tag>(config.scriptsDirectory()/ std::string{scriptName(tag)});
+scriptFiles(blocksci::apply(blocksci::DedupAddressInfoList(), [&] (auto tag) {
+    return ScriptFile<tag>(config.scriptsDirectory()/ std::string{dedupAddressName(tag)});
 })) {
 }
 
@@ -26,28 +26,28 @@ void AddressWriter::serialize(const AnyScriptInput &input, uint32_t txNum, uint3
 
 using namespace blocksci;
 
-void AddressWriter::serializeImp(const ScriptOutput<blocksci::AddressType::Enum::PUBKEY> &output, ScriptFile<blocksci::ScriptType::Enum::PUBKEY> &file) {
+void AddressWriter::serializeImp(const ScriptOutput<blocksci::AddressType::PUBKEY> &output, ScriptFile<blocksci::DedupAddressType::PUBKEY> &file) {
     auto data = file.getData(output.scriptNum - 1);
     data->pubkey = output.data.pubkey;
 }
 
-void AddressWriter::serializeImp(const ScriptOutput<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> &output, ScriptFile<blocksci::ScriptType::Enum::SCRIPTHASH> &file) {
+void AddressWriter::serializeImp(const ScriptOutput<blocksci::AddressType::WITNESS_SCRIPTHASH> &output, ScriptFile<blocksci::DedupAddressType::SCRIPTHASH> &file) {
     auto data = file.getData(output.scriptNum - 1);
     data->hash256 = output.data.hash;
     data->isSegwit = true;
 }
 
-void AddressWriter::serializeImp(const ScriptInput<AddressType::Enum::PUBKEYHASH> &input, ScriptFile<ScriptType::Enum::PUBKEY> &file) {
+void AddressWriter::serializeImp(const ScriptInput<AddressType::PUBKEYHASH> &input, ScriptFile<DedupAddressType::PUBKEY> &file) {
     auto data = file.getData(input.scriptNum - 1);
     data->pubkey = input.data.pubkey;
 }
 
-void AddressWriter::serializeImp(const ScriptInput<AddressType::Enum::WITNESS_PUBKEYHASH> &input, ScriptFile<ScriptType::Enum::PUBKEY> &file) {
+void AddressWriter::serializeImp(const ScriptInput<AddressType::WITNESS_PUBKEYHASH> &input, ScriptFile<DedupAddressType::PUBKEY> &file) {
     auto data = file.getData(input.scriptNum - 1);
     data->pubkey = input.data.pubkey;
 }
 
-void AddressWriter::serializeImp(const ScriptInput<AddressType::Enum::WITNESS_SCRIPTHASH> &input, ScriptFile<ScriptType::Enum::SCRIPTHASH> &file) {
+void AddressWriter::serializeImp(const ScriptInput<AddressType::WITNESS_SCRIPTHASH> &input, ScriptFile<DedupAddressType::SCRIPTHASH> &file) {
     auto data = file.getData(input.scriptNum - 1);
     data->wrappedAddress = input.data.wrappedScriptOutput.address();
 }
@@ -57,7 +57,7 @@ void AddressWriter::serializeWrapped(const ScriptInputData<AddressType::Enum::WI
     serialize(*data.wrappedScriptInput, txNum, outputTxNum);
 }
 
-void AddressWriter::serializeImp(const ScriptInput<AddressType::Enum::SCRIPTHASH> &input, ScriptFile<ScriptType::Enum::SCRIPTHASH> &file) {
+void AddressWriter::serializeImp(const ScriptInput<AddressType::SCRIPTHASH> &input, ScriptFile<DedupAddressType::SCRIPTHASH> &file) {
     auto data = file.getData(input.scriptNum - 1);
     data->wrappedAddress = input.data.wrappedScriptOutput.address();
 }
@@ -67,7 +67,7 @@ void AddressWriter::serializeWrapped(const ScriptInputData<AddressType::Enum::SC
     return serialize(*data.wrappedScriptInput, txNum, outputTxNum);
 }
 
-void AddressWriter::serializeImp(const ScriptInput<AddressType::Enum::NONSTANDARD> &input, ScriptFile<ScriptType::Enum::NONSTANDARD> &file) {
+void AddressWriter::serializeImp(const ScriptInput<AddressType::NONSTANDARD> &input, ScriptFile<DedupAddressType::NONSTANDARD> &file) {
     NonstandardSpendScriptData scriptData(static_cast<uint32_t>(input.data.script.size()));
     blocksci::ArbitraryLengthData<NonstandardSpendScriptData> data(scriptData);
     data.add(input.data.script.begin(), input.data.script.end());
@@ -75,7 +75,7 @@ void AddressWriter::serializeImp(const ScriptInput<AddressType::Enum::NONSTANDAR
 }
 
 void AddressWriter::rollback(const blocksci::State &state) {
-    blocksci::for_each(blocksci::ScriptInfoList(), [&](auto tag) {
+    blocksci::for_each(blocksci::DedupAddressInfoList(), [&](auto tag) {
         auto &file = std::get<ScriptFile<tag()>>(scriptFiles);
         file.truncate(state.scriptCounts[static_cast<size_t>(tag)]);
     });

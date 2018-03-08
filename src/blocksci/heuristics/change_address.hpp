@@ -31,8 +31,8 @@ namespace heuristics {
     std::unordered_set<Output> changeByOptimalChange(const Transaction &tx);
     ranges::optional<Output> uniqueChangeByOptimalChange(const Transaction &tx);
     
-    std::unordered_set<Output> changeByScriptType(const Transaction &tx);
-    ranges::optional<Output> uniqueChangeByScriptType(const Transaction &tx);
+    std::unordered_set<Output> changeByDedupAddressType(const Transaction &tx);
+    ranges::optional<Output> uniqueChangeByDedupAddressType(const Transaction &tx);
     
     std::unordered_set<Output> changeByLocktime(const Transaction &tx);
     ranges::optional<Output> uniqueChangeByLocktime(const Transaction &tx);

@@ -9,10 +9,8 @@
 #ifndef address_index_hpp
 #define address_index_hpp
 
-#include <blocksci/address/address_types.hpp>
-#include <blocksci/scripts/script_type.hpp>
+#include <blocksci/address/address_fwd.hpp>
 #include <blocksci/chain/chain_fwd.hpp>
-#include <blocksci/scripts/scripts_fwd.hpp>
 
 #include <rocksdb/db.h>
 

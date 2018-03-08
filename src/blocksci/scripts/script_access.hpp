@@ -36,15 +36,15 @@ namespace blocksci {
     using ScriptFileType_t = typename ScriptFileType<T>::type;
     
     
-    template<ScriptType::Enum type>
+    template<DedupAddressType::Enum type>
     using ScriptFile = ScriptFileType_t<typename ScriptInfo<type>::storage>;
     
-    template<ScriptType::Enum type>
+    template<DedupAddressType::Enum type>
     using ScriptFilePtr = std::unique_ptr<ScriptFile<type>>;
     
     class ScriptAccess {
     private:
-        using ScriptFilesTuple = to_script_tuple_t<ScriptFilePtr>;
+        using ScriptFilesTuple = to_dedup_address_tuple_t<ScriptFilePtr>;
         ScriptFilesTuple scriptFiles;
         
         
@@ -53,33 +53,33 @@ namespace blocksci {
         
         DataConfiguration config;
         
-        template <ScriptType::Enum type>
+        template <DedupAddressType::Enum type>
         ScriptFile<type> &getFile() {
             return *std::get<ScriptFile<type>>(scriptFiles);
         }
         
-        template <ScriptType::Enum type>
+        template <DedupAddressType::Enum type>
         const ScriptFile<type> &getFile() const {
             return *std::get<ScriptFilePtr<type>>(scriptFiles);
         }
         
-        template <ScriptType::Enum type>
+        template <DedupAddressType::Enum type>
         auto getScriptData(uint32_t addressNum) const {
             return getFile<type>().getData(addressNum - 1);
         }
         
         template <AddressType::Enum type>
         auto getScriptData(uint32_t addressNum) const {
-            return getScriptData<scriptType(type)>(addressNum);
+            return getScriptData<dedupType(type)>(addressNum);
         }
         
-        template<ScriptType::Enum type>
+        template<DedupAddressType::Enum type>
         size_t scriptCount() const {
             return getFile<type>().size();
         }
         
-        std::array<uint32_t, ScriptType::size> scriptCounts() const;
-        uint32_t scriptCount(ScriptType::Enum type) const;
+        std::array<uint32_t, DedupAddressType::size> scriptCounts() const;
+        uint32_t scriptCount(DedupAddressType::Enum type) const;
         
         size_t totalAddressCount() const;
         

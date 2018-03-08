@@ -13,16 +13,11 @@
 #include "parser_index.hpp"
 
 #include <blocksci/chain/chain_fwd.hpp>
-#include <blocksci/scripts/scripts_fwd.hpp>
-#include <blocksci/scripts/script_type.hpp>
+#include <blocksci/address/address_fwd.hpp>
 
 #include <rocksdb/db.h>
 
 #include <unordered_map>
-
-namespace blocksci {
-    struct Address;
-}
 
 class AddressDB : public ParserIndex {
     rocksdb::DB *db;

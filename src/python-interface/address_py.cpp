@@ -53,7 +53,7 @@ void init_address(py::module &m) {
     ;
     
     py::class_<DedupAddress>(m, "DedupAddress", "Class representing a deduped address which coins are sent to")
-    .def(py::init<uint32_t, ScriptType::Enum>(), "Can be constructed directly by passing it an script index and script type")
+    .def(py::init<uint32_t, DedupAddressType::Enum>(), "Can be constructed directly by passing it an script index and script type")
     .def("__repr__", &DedupAddress::toString)
     .def(py::self == py::self)
     .def(hash(py::self))
@@ -195,27 +195,27 @@ void init_address(py::module &m) {
     })
     ;
     
-    py::enum_<ScriptType::Enum>(m, "script_type", py::arithmetic(), "Enumeration of all script types")
-    .value("nonstandard", ScriptType::Enum::NONSTANDARD)
-    .value("pubkey", ScriptType::Enum::PUBKEY)
-    .value("scripthash", ScriptType::Enum::SCRIPTHASH)
-    .value("multisig", ScriptType::Enum::MULTISIG)
-    .value("nulldata", ScriptType::Enum::NULL_DATA)
-    .def_property_readonly_static("types", [](py::object) -> std::array<ScriptType::Enum, 5> {
-        return {{ScriptType::Enum::PUBKEY, ScriptType::Enum::SCRIPTHASH,
-            ScriptType::Enum::MULTISIG, ScriptType::Enum::NULL_DATA, ScriptType::Enum::NONSTANDARD}};
-    }, "A list of all possible script types")
-    .def("__str__", [](ScriptType::Enum val) {
+    py::enum_<DedupAddressType::Enum>(m, "dedup_address_type", py::arithmetic(), "Enumeration of all dedup address types")
+    .value("nonstandard", DedupAddressType::NONSTANDARD)
+    .value("pubkey", DedupAddressType::PUBKEY)
+    .value("scripthash", DedupAddressType::SCRIPTHASH)
+    .value("multisig", DedupAddressType::MULTISIG)
+    .value("nulldata", DedupAddressType::NULL_DATA)
+    .def_property_readonly_static("types", [](py::object) -> std::array<DedupAddressType::Enum, 5> {
+        return {{DedupAddressType::PUBKEY, DedupAddressType::SCRIPTHASH,
+            DedupAddressType::MULTISIG, DedupAddressType::NULL_DATA, DedupAddressType::NONSTANDARD}};
+    }, "A list of all possible dedup address types")
+    .def("__str__", [](DedupAddressType::Enum val) {
         switch (val) {
-            case ScriptType::Enum::PUBKEY:
+            case DedupAddressType::PUBKEY:
                 return "Pay to pubkey";
-            case ScriptType::Enum::SCRIPTHASH:
+            case DedupAddressType::SCRIPTHASH:
                 return "Pay to script hash";
-            case ScriptType::Enum::MULTISIG:
+            case DedupAddressType::MULTISIG:
                 return "Multisig";
-            case ScriptType::Enum::NONSTANDARD:
+            case DedupAddressType::NONSTANDARD:
                 return "Nonstandard";
-            case ScriptType::Enum::NULL_DATA:
+            case DedupAddressType::NULL_DATA:
                 return "Null data";
             default:
                 return "Unknown Address Type";

@@ -55,18 +55,5 @@ void ParserIndex::runUpdate(const State &state) {
         }
     }
     
-//    for_each(ScriptType::all, [&](auto type) {
-//        auto typeIndex = static_cast<size_t>(type);
-//        auto progress = makeProgressBar(state.scriptCounts[typeIndex] - latestState.scriptCounts[typeIndex], [=]() {});
-//        uint32_t num = 0;
-//        std::cout << "Updating index with scripts of type " << scriptName(type) << "\n";
-//        for (uint32_t i = latestState.scriptCounts[typeIndex]; i < state.scriptCounts[typeIndex]; i++) {
-//            auto pointer = Script{i + 1, type};
-//            this->processScript(pointer, chain, scripts);
-//            progress.update(num);
-//            num++;
-//        }
-//    });
-    
     latestState = state;
 }

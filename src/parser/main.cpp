@@ -80,7 +80,7 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::B
         for (uint16_t i = 0; i < tx->outputCount; i++) {
             auto &output = tx->getOutput(i);
             if (output.getAddress().getScript(scripts).firstTxIndex() == txNum) {
-                auto &prevValue = state.scriptCounts[static_cast<size_t>(scriptType(output.getType()))];
+                auto &prevValue = state.scriptCounts[static_cast<size_t>(dedupType(output.getType()))];
                 auto addressNum = output.getAddress().scriptNum;
                 if (addressNum < prevValue) {
                     prevValue = addressNum;

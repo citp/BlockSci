@@ -26,12 +26,12 @@ namespace {
     static constexpr auto scriptCountsFileName = "scriptCounts.txt";
 }
 
-AddressState::AddressState(const boost::filesystem::path &path_, const boost::filesystem::path &hashIndexPath) : path(path_), db(hashIndexPath.native(), false), addressBloomFilters(blocksci::apply(blocksci::ScriptInfoList(), [&] (auto tag) {
+AddressState::AddressState(const boost::filesystem::path &path_, const boost::filesystem::path &hashIndexPath) : path(path_), db(hashIndexPath.native(), false), addressBloomFilters(blocksci::apply(blocksci::DedupAddressInfoList(), [&] (auto tag) {
     return AddressBloomFilter<tag>{path/std::string(bloomFileName)};
 }))  {
     blocksci::for_each(multiAddressMaps, [&](auto &multiAddressMap) {
         std::stringstream ss;
-        ss << multiAddressFileName << "_" << scriptName(multiAddressMap.type) << ".dat";
+        ss << multiAddressFileName << "_" << dedupAddressName(multiAddressMap.type) << ".dat";
         multiAddressMap.unserialize((path/ss.str()).native());
     });
     
@@ -43,7 +43,7 @@ AddressState::AddressState(const boost::filesystem::path &path_, const boost::fi
             scriptIndexes.push_back(value);
         }
     } else {
-        for (size_t i = 0; i < blocksci::ScriptType::all.size(); i++) {
+        for (size_t i = 0; i < blocksci::DedupAddressType::all.size(); i++) {
             scriptIndexes.push_back(1);
         }
     }
@@ -58,7 +58,7 @@ AddressState::~AddressState() {
     
     blocksci::for_each(multiAddressMaps, [&](auto &multiAddressMap) {
         std::stringstream ss;
-        ss << multiAddressFileName << "_" << scriptName(multiAddressMap.type) << ".dat";
+        ss << multiAddressFileName << "_" << dedupAddressName(multiAddressMap.type) << ".dat";
         multiAddressMap.serialize((path/ss.str()).native());
     });
     
@@ -68,7 +68,7 @@ AddressState::~AddressState() {
     }
 }
 
-uint32_t AddressState::getNewAddressIndex(blocksci::ScriptType::Enum type) {
+uint32_t AddressState::getNewAddressIndex(blocksci::DedupAddressType::Enum type) {
     auto &count = scriptIndexes[static_cast<uint8_t>(type)];
     auto scriptNum = count;
     count++;
@@ -85,7 +85,7 @@ void AddressState::rollback(const blocksci::State &state) {
         }
     });
     
-    blocksci::for_each(blocksci::ScriptInfoList(), [&](auto tag) {
+    blocksci::for_each(blocksci::DedupAddressInfoList(), [&](auto tag) {
         auto column = db.getColumn(tag);
         rocksdb::WriteBatch batch;
         auto it = db.getIterator(tag);

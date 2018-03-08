@@ -9,7 +9,6 @@
 #ifndef script_hpp
 #define script_hpp
 
-#include "script_type.hpp"
 #include "scripts_fwd.hpp"
 
 #include <blocksci/chain/chain_fwd.hpp>

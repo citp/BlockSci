@@ -52,8 +52,8 @@ namespace blocksci {
         
         std::vector<rocksdb::ColumnFamilyDescriptor> columnDescriptors;
         columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions());
-        blocksci::for_each(blocksci::ScriptInfoList(), [&](auto tag) {
-            columnDescriptors.emplace_back(scriptName(tag), rocksdb::ColumnFamilyOptions{});
+        blocksci::for_each(blocksci::DedupAddressInfoList(), [&](auto tag) {
+            columnDescriptors.emplace_back(dedupAddressName(tag), rocksdb::ColumnFamilyOptions{});
         });
         rocksdb::Status s = rocksdb::DB::OpenForReadOnly(options, path.c_str(), columnDescriptors, &columnHandles, &db);
         assert(s.ok());
@@ -165,8 +165,6 @@ namespace blocksci {
         return getInputTransactionsImp(getOutputPointers(script), access);
     }
     
-//    auto column = columnHandles[static_cast<size_t>(ScriptType::SCRIPTHASH) + 1];
-    
     std::vector<OutputPointer> getOutputPointersImp(rocksdb::DB *db, rocksdb::ColumnFamilyHandle *column, const rocksdb::Slice &key) {
         std::vector<OutputPointer> pointers;
         rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
@@ -181,7 +179,7 @@ namespace blocksci {
     }
                                                                       
     std::vector<OutputPointer> AddressIndex::getOutputPointers(const Address &searchAddress) const {
-        auto column = columnHandles[static_cast<size_t>(scriptType(searchAddress.type)) + 1];
+        auto column = columnHandles[static_cast<size_t>(dedupType(searchAddress.type)) + 1];
         rocksdb::Slice key{reinterpret_cast<const char *>(&searchAddress), sizeof(searchAddress)};
         return getOutputPointersImp(db, column, key);
     }
@@ -193,7 +191,7 @@ namespace blocksci {
     }
     
     void AddressIndex::checkDB(const ChainAccess &access) const {
-        for (auto scriptType : ScriptType::all) {
+        for (auto scriptType : DedupAddressType::all) {
             auto column = columnHandles[static_cast<size_t>(scriptType) + 1];
             rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
             for (it->SeekToFirst(); it->Valid(); it->Next()) {

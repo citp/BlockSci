@@ -32,12 +32,12 @@ namespace blocksci {
     
     
     DedupAddress Address::dedup() const {
-        return DedupAddress{scriptNum, scriptType(type)};
+        return DedupAddress{scriptNum, dedupType(type)};
     }
     
     
     bool Address::isSpendable() const {
-        return blocksci::isSpendable(scriptType(type));
+        return blocksci::isSpendable(dedupType(type));
     }
     
     std::string Address::toString() const {
@@ -151,7 +151,7 @@ namespace blocksci {
     template<AddressType::Enum type>
     std::vector<Address> getAddressesWithPrefixImp(const std::string &prefix, const ScriptAccess &scripts) {
         std::vector<Address> addresses;
-        auto count = scripts.scriptCount(scriptType(type));
+        auto count = scripts.scriptCount(dedupType(type));
         for (uint32_t scriptNum = 1; scriptNum <= count; scriptNum++) {
             ScriptAddress<type> script(scripts, scriptNum);
             if (script.addressString().compare(0, prefix.length(), prefix) == 0) {
@@ -174,8 +174,8 @@ namespace blocksci {
     std::string fullTypeImp(const Address &address, const ScriptAccess &scripts) {
         std::stringstream ss;
         ss << addressName(address.type);
-        switch (scriptType(address.type)) {
-            case ScriptType::Enum::SCRIPTHASH: {
+        switch (dedupType(address.type)) {
+            case DedupAddressType::SCRIPTHASH: {
                 auto script = script::ScriptHash(scripts, address.scriptNum);
                 auto wrapped = script.getWrappedAddress();
                 if (wrapped) {
@@ -183,7 +183,7 @@ namespace blocksci {
                 }
                 break;
             }
-            case ScriptType::Enum::MULTISIG: {
+            case DedupAddressType::MULTISIG: {
                 auto script = script::Multisig(scripts, address.scriptNum);
                 ss << int(script.required) << "Of" << int(script.total);
                 break;
