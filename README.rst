@@ -22,8 +22,8 @@ Latest release (BlockSci v0.4)
 
 Version 0.4 introduces full bech32 address support, adds segwit size support, and fixes a bug which had been preventing use of continuous incremental blockchain updates. Local setup contains best practices for setting up automatic blockchain updates. You can read more details about the release in the `release notes`_. We are also releasing new AMI image_ running version 0.4 (explained under "Quick setup" below) as well as updated documentation.
 
-.. _release notes: https://citp.github.io/BlockSci/changelog.html#version-0-3
-.. _image: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-7cf38706
+.. _release notes: https://citp.github.io/BlockSci/changelog.html#version-0-4
+.. _image: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-292dd554
 
 Quick setup using Amazon EC2
 ==============================
