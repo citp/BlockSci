@@ -13,11 +13,6 @@
 #include "chain/output.hpp"
 
 namespace blocksci {
-    
-//    AnyScript Script::getScript() const {
-//        return getScript(*DataAccess::Instance().scripts);
-//    }
-    
     Transaction Script::getFirstTransaction() const {
         return getFirstTransaction(*DataAccess::Instance().chain);
     }
@@ -25,34 +20,4 @@ namespace blocksci {
     ranges::optional<Transaction> Script::getTransactionRevealed() const {
         return getTransactionRevealed(*DataAccess::Instance().chain);
     }
-
-//    uint64_t Script::calculateBalance(BlockHeight height) const {
-//        auto &instance = DataAccess::Instance();
-//        return calculateBalance(height, *instance.addressIndex, *instance.chain);
-//    }
-//
-//    std::vector<Output> Script::getOutputs() const {
-//        auto &instance = DataAccess::Instance();
-//        return getOutputs(*instance.addressIndex, *instance.chain);
-//    }
-//
-//    std::vector<Input> Script::getInputs() const {
-//        auto &instance = DataAccess::Instance();
-//        return getInputs(*instance.addressIndex, *instance.chain);
-//    }
-//
-//    std::vector<Transaction> Script::getTransactions() const {
-//        auto &instance = DataAccess::Instance();
-//        return getTransactions(*instance.addressIndex, *instance.chain);
-//    }
-//
-//    std::vector<Transaction> Script::getOutputTransactions() const {
-//        auto &instance = DataAccess::Instance();
-//        return getOutputTransactions(*instance.addressIndex, *instance.chain);
-//    }
-//
-//    std::vector<Transaction> Script::getInputTransactions() const {
-//        auto &instance = DataAccess::Instance();
-//        return getInputTransactions(*instance.addressIndex, *instance.chain);
-//    }
 }

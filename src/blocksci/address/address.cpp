@@ -9,7 +9,7 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "address.hpp"
-#include "dedup_address.hpp"
+#include "equiv_address.hpp"
 #include "address_info.hpp"
 #include "scripts/bitcoin_base58.hpp"
 #include "scripts/bitcoin_segwit_addr.hpp"
@@ -31,13 +31,13 @@ namespace blocksci {
     Address::Address(uint32_t addressNum_, AddressType::Enum type_) : scriptNum(addressNum_), type(type_) {}
     
     
-    DedupAddress Address::dedup() const {
-        return DedupAddress{scriptNum, dedupType(type)};
+    EquivAddress Address::equiv() const {
+        return EquivAddress{scriptNum, equivType(type)};
     }
     
     
     bool Address::isSpendable() const {
-        return blocksci::isSpendable(dedupType(type));
+        return blocksci::isSpendable(equivType(type));
     }
     
     std::string Address::toString() const {
@@ -151,7 +151,7 @@ namespace blocksci {
     template<AddressType::Enum type>
     std::vector<Address> getAddressesWithPrefixImp(const std::string &prefix, const ScriptAccess &scripts) {
         std::vector<Address> addresses;
-        auto count = scripts.scriptCount(dedupType(type));
+        auto count = scripts.scriptCount(equivType(type));
         for (uint32_t scriptNum = 1; scriptNum <= count; scriptNum++) {
             ScriptAddress<type> script(scripts, scriptNum);
             if (script.addressString().compare(0, prefix.length(), prefix) == 0) {
@@ -174,8 +174,8 @@ namespace blocksci {
     std::string fullTypeImp(const Address &address, const ScriptAccess &scripts) {
         std::stringstream ss;
         ss << addressName(address.type);
-        switch (dedupType(address.type)) {
-            case DedupAddressType::SCRIPTHASH: {
+        switch (equivType(address.type)) {
+            case EquivAddressType::SCRIPTHASH: {
                 auto script = script::ScriptHash(scripts, address.scriptNum);
                 auto wrapped = script.getWrappedAddress();
                 if (wrapped) {
@@ -183,7 +183,7 @@ namespace blocksci {
                 }
                 break;
             }
-            case DedupAddressType::MULTISIG: {
+            case EquivAddressType::MULTISIG: {
                 auto script = script::Multisig(scripts, address.scriptNum);
                 ss << int(script.required) << "Of" << int(script.total);
                 break;

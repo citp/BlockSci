@@ -1,12 +1,12 @@
 //
-//  dedup_address.hpp
+//  equiv_address.hpp
 //  blocksci
 //
 //  Created by Harry Kalodner on 3/5/18.
 //
 
-#ifndef dedup_address_hpp
-#define dedup_address_hpp
+#ifndef equiv_address_hpp
+#define equiv_address_hpp
 
 #include "address_fwd.hpp"
 #include <blocksci/chain/chain_fwd.hpp>
@@ -20,19 +20,19 @@ namespace blocksci {
     class AddressIndex;
     struct DataConfiguration;
     
-    struct DedupAddress {
+    struct EquivAddress {
         
         uint32_t scriptNum;
-        DedupAddressType::Enum type;
+        EquivAddressType::Enum type;
         
-        DedupAddress();
-        DedupAddress(uint32_t addressNum, DedupAddressType::Enum type);
+        EquivAddress();
+        EquivAddress(uint32_t addressNum, EquivAddressType::Enum type);
         
-        bool operator==(const DedupAddress& other) const {
+        bool operator==(const EquivAddress& other) const {
             return type == other.type && scriptNum == other.scriptNum;
         }
         
-        bool operator!=(const DedupAddress& other) const {
+        bool operator!=(const EquivAddress& other) const {
             return !operator==(other);
         }
         
@@ -59,15 +59,15 @@ namespace blocksci {
 #endif
     };
     
-    inline std::ostream &operator<<(std::ostream &os, const DedupAddress &address) {
+    inline std::ostream &operator<<(std::ostream &os, const EquivAddress &address) {
         return os << address.toString();
     }
 }
 
 namespace std {
     template <>
-    struct hash<blocksci::DedupAddress> {
-        typedef blocksci::DedupAddress argument_type;
+    struct hash<blocksci::EquivAddress> {
+        typedef blocksci::EquivAddress argument_type;
         typedef size_t  result_type;
         result_type operator()(const argument_type &b) const {
             return (static_cast<size_t>(b.scriptNum) << 32) + static_cast<size_t>(b.type);
@@ -75,4 +75,4 @@ namespace std {
     };
 }
 
-#endif /* dedup_address_hpp */
+#endif /* equiv_address_hpp */

@@ -10,7 +10,7 @@
 #include "variant_py.hpp"
 
 #include <blocksci/address/address.hpp>
-#include <blocksci/address/dedup_address.hpp>
+#include <blocksci/address/equiv_address.hpp>
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/chain.hpp>
 #include <blocksci/script.hpp>
@@ -31,7 +31,7 @@ void init_address(py::module &m) {
     .def(hash(py::self))
     .def_readonly("script_num", &Address::scriptNum, "The internal identifier of the address")
     .def_readonly("type", &Address::type, "The type of address")
-    .def_property_readonly("dedup", &Address::dedup, "Returns the deduped address associated with this address")
+    .def_property_readonly("equiv", &Address::equiv, "Returns the EquivAddress associated with this address")
     .def("balance", py::overload_cast<BlockHeight>(&Address::calculateBalance, py::const_), py::arg("height") = 0, "Calculates the balance held by this address at the height (Defaults to the full chain)")
     .def("outs", py::overload_cast<>(&Address::getOutputs, py::const_), "Returns a list of all outputs sent to this address")
     .def("ins", py::overload_cast<>(&Address::getInputs, py::const_), "Returns a list of all inputs spent from this address")
@@ -52,19 +52,19 @@ void init_address(py::module &m) {
     .def_static("with_prefix", py::overload_cast<const std::string &>(getAddressesWithPrefix), "Find all addresses beginning with the given prefix")
     ;
     
-    py::class_<DedupAddress>(m, "DedupAddress", "Class representing a deduped address which coins are sent to")
-    .def(py::init<uint32_t, DedupAddressType::Enum>(), "Can be constructed directly by passing it an script index and script type")
-    .def("__repr__", &DedupAddress::toString)
+    py::class_<EquivAddress>(m, "EquivAddress", "Class representing a equivalent address which coins are sent to")
+    .def(py::init<uint32_t, EquivAddressType::Enum>(), "Can be constructed directly by passing it an script index and script type")
+    .def("__repr__", &EquivAddress::toString)
     .def(py::self == py::self)
     .def(hash(py::self))
-    .def_readonly("script_num", &DedupAddress::scriptNum, "The internal identifier of the address")
-    .def_readonly("type", &DedupAddress::type, "The kind of script")
-    .def("balance", py::overload_cast<BlockHeight>(&DedupAddress::calculateBalance, py::const_), py::arg("height") = 0, "Calculates the balance held by this deduped address at the height (Defaults to the full chain)")
-    .def("outs", py::overload_cast<>(&DedupAddress::getOutputs, py::const_), "Returns a list of all outputs sent to this deduped address")
-    .def("ins", py::overload_cast<>(&DedupAddress::getInputs, py::const_), "Returns a list of all inputs spent from this deduped address")
-    .def("txes", py::overload_cast<>(&DedupAddress::getTransactions, py::const_), "Returns a list of all transactions involving this deduped address")
-    .def("in_txes", py::overload_cast<>(&DedupAddress::getInputTransactions, py::const_), "Returns a list of all transaction where this deduped address was an input")
-    .def("out_txes", py::overload_cast<>(&DedupAddress::getOutputTransactions, py::const_), "Returns a list of all transaction where this deduped address was an output")
+    .def_readonly("script_num", &EquivAddress::scriptNum, "The internal identifier of the address")
+    .def_readonly("type", &EquivAddress::type, "The kind of script")
+    .def("balance", py::overload_cast<BlockHeight>(&EquivAddress::calculateBalance, py::const_), py::arg("height") = 0, "Calculates the balance held by this EquivAddress at the height (Defaults to the full chain)")
+    .def("outs", py::overload_cast<>(&EquivAddress::getOutputs, py::const_), "Returns a list of all outputs sent to this EquivAddress")
+    .def("ins", py::overload_cast<>(&EquivAddress::getInputs, py::const_), "Returns a list of all inputs spent from this EquivAddress")
+    .def("txes", py::overload_cast<>(&EquivAddress::getTransactions, py::const_), "Returns a list of all transactions involving this EquivAddress")
+    .def("in_txes", py::overload_cast<>(&EquivAddress::getInputTransactions, py::const_), "Returns a list of all transaction where this EquivAddress was an input")
+    .def("out_txes", py::overload_cast<>(&EquivAddress::getOutputTransactions, py::const_), "Returns a list of all transaction where this EquivAddress was an output")
     ;
     
     py::class_<Script> script(m, "Script", "Class representing a script which coins are sent to");
@@ -213,27 +213,27 @@ void init_address(py::module &m) {
     })
     ;
     
-    py::enum_<DedupAddressType::Enum>(m, "dedup_address_type", py::arithmetic(), "Enumeration of all dedup address types")
-    .value("nonstandard", DedupAddressType::NONSTANDARD)
-    .value("pubkey", DedupAddressType::PUBKEY)
-    .value("scripthash", DedupAddressType::SCRIPTHASH)
-    .value("multisig", DedupAddressType::MULTISIG)
-    .value("nulldata", DedupAddressType::NULL_DATA)
-    .def_property_readonly_static("types", [](py::object) -> std::array<DedupAddressType::Enum, 5> {
-        return {{DedupAddressType::PUBKEY, DedupAddressType::SCRIPTHASH,
-            DedupAddressType::MULTISIG, DedupAddressType::NULL_DATA, DedupAddressType::NONSTANDARD}};
-    }, "A list of all possible dedup address types")
-    .def("__str__", [](DedupAddressType::Enum val) {
+    py::enum_<EquivAddressType::Enum>(m, "equiv_address_type", py::arithmetic(), "Enumeration of all equiv address types")
+    .value("nonstandard", EquivAddressType::NONSTANDARD)
+    .value("pubkey", EquivAddressType::PUBKEY)
+    .value("scripthash", EquivAddressType::SCRIPTHASH)
+    .value("multisig", EquivAddressType::MULTISIG)
+    .value("nulldata", EquivAddressType::NULL_DATA)
+    .def_property_readonly_static("types", [](py::object) -> std::array<EquivAddressType::Enum, 5> {
+        return {{EquivAddressType::PUBKEY, EquivAddressType::SCRIPTHASH,
+            EquivAddressType::MULTISIG, EquivAddressType::NULL_DATA, EquivAddressType::NONSTANDARD}};
+    }, "A list of all possible equiv address types")
+    .def("__str__", [](EquivAddressType::Enum val) {
         switch (val) {
-            case DedupAddressType::PUBKEY:
+            case EquivAddressType::PUBKEY:
                 return "Pay to pubkey";
-            case DedupAddressType::SCRIPTHASH:
+            case EquivAddressType::SCRIPTHASH:
                 return "Pay to script hash";
-            case DedupAddressType::MULTISIG:
+            case EquivAddressType::MULTISIG:
                 return "Multisig";
-            case DedupAddressType::NONSTANDARD:
+            case EquivAddressType::NONSTANDARD:
                 return "Nonstandard";
-            case DedupAddressType::NULL_DATA:
+            case EquivAddressType::NULL_DATA:
                 return "Null data";
             default:
                 return "Unknown Address Type";

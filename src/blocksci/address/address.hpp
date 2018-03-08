@@ -55,7 +55,7 @@ namespace blocksci {
         std::vector<Transaction> getOutputTransactions(const AddressIndex &index, const ChainAccess &chain) const;
         std::vector<Transaction> getInputTransactions(const AddressIndex &index, const ChainAccess &chain) const;
         
-        DedupAddress dedup() const;
+        EquivAddress equiv() const;
 
         std::string fullType(const ScriptAccess &script) const;
 

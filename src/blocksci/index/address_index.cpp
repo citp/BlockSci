@@ -14,7 +14,7 @@
 #include "chain/output.hpp"
 #include "chain/input.hpp"
 #include "address/address.hpp"
-#include "address/dedup_address.hpp"
+#include "address/equiv_address.hpp"
 #include "address/address_info.hpp"
 #include "scripts/script_info.hpp"
 #include "scripts/script.hpp"
@@ -52,8 +52,8 @@ namespace blocksci {
         
         std::vector<rocksdb::ColumnFamilyDescriptor> columnDescriptors;
         columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions());
-        blocksci::for_each(blocksci::DedupAddressInfoList(), [&](auto tag) {
-            columnDescriptors.emplace_back(dedupAddressName(tag), rocksdb::ColumnFamilyOptions{});
+        blocksci::for_each(blocksci::EquivAddressInfoList(), [&](auto tag) {
+            columnDescriptors.emplace_back(equivAddressName(tag), rocksdb::ColumnFamilyOptions{});
         });
         rocksdb::Status s = rocksdb::DB::OpenForReadOnly(options, path.c_str(), columnDescriptors, &columnHandles, &db);
         assert(s.ok());
@@ -77,7 +77,7 @@ namespace blocksci {
         return getOutputsImp(getOutputPointers(address), access);
     }
     
-    std::vector<Output> AddressIndex::getOutputs(const DedupAddress &script, const ChainAccess &access) const {
+    std::vector<Output> AddressIndex::getOutputs(const EquivAddress &script, const ChainAccess &access) const {
         return getOutputsImp(getOutputPointers(script), access);
     }
     
@@ -103,7 +103,7 @@ namespace blocksci {
         return getInputsImp(getOutputPointers(address), access);
     }
     
-    std::vector<Input> AddressIndex::getInputs(const DedupAddress &script, const ChainAccess &access) const {
+    std::vector<Input> AddressIndex::getInputs(const EquivAddress &script, const ChainAccess &access) const {
         return getInputsImp(getOutputPointers(script), access);
     }
     
@@ -125,7 +125,7 @@ namespace blocksci {
         return getTransactionsImp(getOutputPointers(address), access);
     }
     
-    std::vector<Transaction> AddressIndex::getTransactions(const DedupAddress &script, const ChainAccess &access) const {
+    std::vector<Transaction> AddressIndex::getTransactions(const EquivAddress &script, const ChainAccess &access) const {
         return getTransactionsImp(getOutputPointers(script), access);
     }
     
@@ -140,7 +140,7 @@ namespace blocksci {
         return getOutputTransactionsImp(getOutputPointers(address), access);
     }
     
-    std::vector<Transaction> AddressIndex::getOutputTransactions(const DedupAddress &script, const ChainAccess &access) const {
+    std::vector<Transaction> AddressIndex::getOutputTransactions(const EquivAddress &script, const ChainAccess &access) const {
         return getOutputTransactionsImp(getOutputPointers(script), access);
     }
     
@@ -161,7 +161,7 @@ namespace blocksci {
         return getInputTransactionsImp(getOutputPointers(address), access);
     }
     
-    std::vector<Transaction> AddressIndex::getInputTransactions(const DedupAddress &script, const ChainAccess &access) const {
+    std::vector<Transaction> AddressIndex::getInputTransactions(const EquivAddress &script, const ChainAccess &access) const {
         return getInputTransactionsImp(getOutputPointers(script), access);
     }
     
@@ -179,19 +179,19 @@ namespace blocksci {
     }
                                                                       
     std::vector<OutputPointer> AddressIndex::getOutputPointers(const Address &searchAddress) const {
-        auto column = columnHandles[static_cast<size_t>(dedupType(searchAddress.type)) + 1];
+        auto column = columnHandles[static_cast<size_t>(equivType(searchAddress.type)) + 1];
         rocksdb::Slice key{reinterpret_cast<const char *>(&searchAddress), sizeof(searchAddress)};
         return getOutputPointersImp(db, column, key);
     }
     
-    std::vector<OutputPointer> AddressIndex::getOutputPointers(const DedupAddress &script) const {
+    std::vector<OutputPointer> AddressIndex::getOutputPointers(const EquivAddress &script) const {
         auto column = columnHandles[static_cast<size_t>(script.type) + 1];
         rocksdb::Slice key{reinterpret_cast<const char *>(&script.scriptNum), sizeof(script.scriptNum)};
         return getOutputPointersImp(db, column, key);
     }
     
     void AddressIndex::checkDB(const ChainAccess &access) const {
-        for (auto scriptType : DedupAddressType::all) {
+        for (auto scriptType : EquivAddressType::all) {
             auto column = columnHandles[static_cast<size_t>(scriptType) + 1];
             rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
             for (it->SeekToFirst(); it->Valid(); it->Next()) {

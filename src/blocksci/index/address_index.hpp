@@ -20,7 +20,7 @@
 
 namespace blocksci {
     struct Address;
-    struct DedupAddress;
+    struct EquivAddress;
     
     class AddressIndex {
         rocksdb::DB *db;
@@ -31,7 +31,7 @@ namespace blocksci {
         ~AddressIndex();
         
         std::vector<OutputPointer> getOutputPointers(const Address &address) const;
-        std::vector<OutputPointer> getOutputPointers(const DedupAddress &script) const;
+        std::vector<OutputPointer> getOutputPointers(const EquivAddress &script) const;
         
         std::vector<Output> getOutputs(const Address &address, const ChainAccess &access) const;
         std::vector<Input> getInputs(const Address &address, const ChainAccess &access) const;
@@ -39,11 +39,11 @@ namespace blocksci {
         std::vector<Transaction> getOutputTransactions(const Address &address, const ChainAccess &access) const;
         std::vector<Transaction> getInputTransactions(const Address &address, const ChainAccess &access) const;
         
-        std::vector<Output> getOutputs(const DedupAddress &script, const ChainAccess &access) const;
-        std::vector<Input> getInputs(const DedupAddress &script, const ChainAccess &access) const;
-        std::vector<Transaction> getTransactions(const DedupAddress &script, const ChainAccess &access) const;
-        std::vector<Transaction> getOutputTransactions(const DedupAddress &script, const ChainAccess &access) const;
-        std::vector<Transaction> getInputTransactions(const DedupAddress &script, const ChainAccess &access) const;
+        std::vector<Output> getOutputs(const EquivAddress &script, const ChainAccess &access) const;
+        std::vector<Input> getInputs(const EquivAddress &script, const ChainAccess &access) const;
+        std::vector<Transaction> getTransactions(const EquivAddress &script, const ChainAccess &access) const;
+        std::vector<Transaction> getOutputTransactions(const EquivAddress &script, const ChainAccess &access) const;
+        std::vector<Transaction> getInputTransactions(const EquivAddress &script, const ChainAccess &access) const;
         
         void checkDB(const ChainAccess &access) const;
     };

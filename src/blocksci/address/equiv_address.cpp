@@ -1,5 +1,5 @@
 //
-//  dedup_address.cpp
+//  equiv_address.cpp
 //  blocksci
 //
 //  Created by Harry Kalodner on 3/5/18.
@@ -8,7 +8,7 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 
-#include "dedup_address.hpp"
+#include "equiv_address.hpp"
 #include "address.hpp"
 #include "address_info.hpp"
 #include "scripts/bitcoin_base58.hpp"
@@ -24,24 +24,24 @@
 
 namespace blocksci {
     
-    DedupAddress::DedupAddress() : scriptNum(0), type(DedupAddressType::NONSTANDARD) {}
+    EquivAddress::EquivAddress() : scriptNum(0), type(EquivAddressType::NONSTANDARD) {}
     
-    DedupAddress::DedupAddress(uint32_t addressNum_, DedupAddressType::Enum type_) : scriptNum(addressNum_), type(type_) {}
+    EquivAddress::EquivAddress(uint32_t addressNum_, EquivAddressType::Enum type_) : scriptNum(addressNum_), type(type_) {}
     
-    std::string DedupAddress::toString() const {
+    std::string EquivAddress::toString() const {
         if (scriptNum == 0) {
-            return "InvalidDedupAddress()";
+            return "InvalidEquivAddress()";
         } else {
             std::stringstream ss;
-            ss << "DedupAddress(";
+            ss << "EquivAddress(";
             ss << "scriptNum=" << scriptNum;
-            ss << ", type=" << dedupAddressName(type);
+            ss << ", type=" << equivAddressName(type);
             ss << ")";
             return ss.str();
         }
     }
     
-    uint64_t DedupAddress::calculateBalance(BlockHeight height, const AddressIndex &index, const ChainAccess &chain) const {
+    uint64_t EquivAddress::calculateBalance(BlockHeight height, const AddressIndex &index, const ChainAccess &chain) const {
         uint64_t value = 0;
         if (height == 0) {
             for (auto &output : index.getOutputs(*this, chain)) {
@@ -59,28 +59,28 @@ namespace blocksci {
         return value;
     }
     
-    std::vector<Output> DedupAddress::getOutputs(const AddressIndex &index, const ChainAccess &chain) const {
+    std::vector<Output> EquivAddress::getOutputs(const AddressIndex &index, const ChainAccess &chain) const {
         return index.getOutputs(*this, chain);
     }
     
-    std::vector<Input> DedupAddress::getInputs(const AddressIndex &index, const ChainAccess &chain) const {
+    std::vector<Input> EquivAddress::getInputs(const AddressIndex &index, const ChainAccess &chain) const {
         return index.getInputs(*this, chain);
     }
     
-    std::vector<Transaction> DedupAddress::getTransactions(const AddressIndex &index, const ChainAccess &chain) const {
+    std::vector<Transaction> EquivAddress::getTransactions(const AddressIndex &index, const ChainAccess &chain) const {
         return index.getTransactions(*this, chain);
     }
     
-    std::vector<Transaction> DedupAddress::getOutputTransactions(const AddressIndex &index, const ChainAccess &chain) const {
+    std::vector<Transaction> EquivAddress::getOutputTransactions(const AddressIndex &index, const ChainAccess &chain) const {
         return index.getOutputTransactions(*this, chain);
     }
     
-    std::vector<Transaction> DedupAddress::getInputTransactions(const AddressIndex &index, const ChainAccess &chain) const {
+    std::vector<Transaction> EquivAddress::getInputTransactions(const AddressIndex &index, const ChainAccess &chain) const {
         return index.getInputTransactions(*this, chain);
     }
 }
 
-std::ostream &operator<<(std::ostream &os, const blocksci::DedupAddress &address) {
+std::ostream &operator<<(std::ostream &os, const blocksci::EquivAddress &address) {
     os << address.toString();
     return os;
 }

@@ -1,12 +1,12 @@
 //
-//  dedup_address_type.hpp
+//  equiv_address_type.hpp
 //  blocksci
 //
 //  Created by Harry Kalodner on 3/7/18.
 //
 
-#ifndef dedup_address_type_hpp
-#define dedup_address_type_hpp
+#ifndef equiv_address_type_hpp
+#define equiv_address_type_hpp
 
 #include <array>
 
@@ -15,7 +15,7 @@
 namespace blocksci {
     
     
-    struct DedupAddressType {
+    struct EquivAddressType {
         
         enum Enum {
 #define VAL(x) x
@@ -31,11 +31,11 @@ namespace blocksci {
 }
 
 namespace std {
-    template<> struct hash<blocksci::DedupAddressType::Enum> {
-        size_t operator()(blocksci::DedupAddressType::Enum val) const {
+    template<> struct hash<blocksci::EquivAddressType::Enum> {
+        size_t operator()(blocksci::EquivAddressType::Enum val) const {
             return static_cast<size_t>(val);
         }
     };
 }
 
-#endif /* dedup_address_type_hpp */
+#endif /* equiv_address_type_hpp */

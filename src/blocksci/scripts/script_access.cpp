@@ -12,23 +12,23 @@
 
 namespace blocksci {
     ScriptAccess::ScriptAccess(const DataConfiguration &config_) :
-    scriptFiles(blocksci::apply(DedupAddressInfoList(), [&] (auto tag) {
-        return std::make_unique<ScriptFile<tag.value>>(config_.scriptsDirectory()/ std::string{dedupAddressName(tag)});
+    scriptFiles(blocksci::apply(EquivAddressInfoList(), [&] (auto tag) {
+        return std::make_unique<ScriptFile<tag.value>>(config_.scriptsDirectory()/ std::string{equivAddressName(tag)});
     })), config(config_) {}
     
     void ScriptAccess::reload() {
         for_each(scriptFiles, [&](auto& file) -> decltype(auto) { file->reload(); });
     }
     
-    template<DedupAddressType::Enum type>
+    template<EquivAddressType::Enum type>
     struct ScriptCountFunctor {
         static uint32_t f(const ScriptAccess &access) {
             return static_cast<uint32_t>(access.scriptCount<type>());
         }
     };
     
-    uint32_t ScriptAccess::scriptCount(DedupAddressType::Enum type) const {
-        static constexpr auto table = make_dynamic_table<DedupAddressType, ScriptCountFunctor>();
+    uint32_t ScriptAccess::scriptCount(EquivAddressType::Enum type) const {
+        static constexpr auto table = make_dynamic_table<EquivAddressType, ScriptCountFunctor>();
         static constexpr std::size_t size = AddressType::all.size();
         
         auto index = static_cast<size_t>(type);
@@ -39,8 +39,8 @@ namespace blocksci {
         return table[index](*this);
     }
     
-    std::array<uint32_t, DedupAddressType::size> ScriptAccess::scriptCounts() const {
-        return make_static_table<DedupAddressType, ScriptCountFunctor>(*this);
+    std::array<uint32_t, EquivAddressType::size> ScriptAccess::scriptCounts() const {
+        return make_static_table<EquivAddressType, ScriptCountFunctor>(*this);
     }
     
     size_t ScriptAccess::totalAddressCount() const {

@@ -11,7 +11,7 @@
 
 #include "scripts_fwd.hpp"
 #include <blocksci/address/address_types.hpp>
-#include <blocksci/address/dedup_address_type.hpp>
+#include <blocksci/address/equiv_address_type.hpp>
 #include <blocksci/util/util.hpp>
 
 #include <string>
@@ -25,31 +25,31 @@ namespace blocksci {
     struct Indexed;
     
     template <>
-    struct ScriptInfo<DedupAddressType::PUBKEY> {
+    struct ScriptInfo<EquivAddressType::PUBKEY> {
         using outputType = PubkeyData;
         using storage = FixedSize<PubkeyData>;
     };
     
     template <>
-    struct ScriptInfo<DedupAddressType::SCRIPTHASH> {
+    struct ScriptInfo<EquivAddressType::SCRIPTHASH> {
         using outputType = ScriptHashData;
         using storage = FixedSize<ScriptHashData>;
     };
     
     template <>
-    struct ScriptInfo<DedupAddressType::MULTISIG> {
+    struct ScriptInfo<EquivAddressType::MULTISIG> {
         using outputType = MultisigData;
         using storage = Indexed<MultisigData>;
     };
     
     template <>
-    struct ScriptInfo<DedupAddressType::NONSTANDARD> {
+    struct ScriptInfo<EquivAddressType::NONSTANDARD> {
         using outputType = NonstandardScriptData;
         using storage = Indexed<NonstandardScriptData,NonstandardSpendScriptData>;
     };
     
     template <>
-    struct ScriptInfo<DedupAddressType::NULL_DATA> {
+    struct ScriptInfo<EquivAddressType::NULL_DATA> {
         using outputType = RawData;
         using storage = Indexed<RawData>;
     };

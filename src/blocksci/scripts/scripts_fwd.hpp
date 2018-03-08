@@ -9,11 +9,11 @@
 #ifndef scriptsfwd_h
 #define scriptsfwd_h
 
-#include <blocksci/address/dedup_address_type.hpp>
+#include <blocksci/address/equiv_address_type.hpp>
 #include <blocksci/address/address_types.hpp>
 
 namespace blocksci {
-    template <DedupAddressType::Enum>
+    template <EquivAddressType::Enum>
     struct ScriptData;
     
     class CBitcoinAddress;
@@ -35,7 +35,7 @@ namespace blocksci {
     template <AddressType::Enum>
     class ScriptAddress;
     
-    template <DedupAddressType::Enum>
+    template <EquivAddressType::Enum>
     struct ScriptInfo;
     
     namespace script {

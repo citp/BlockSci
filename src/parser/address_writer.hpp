@@ -34,34 +34,34 @@ struct ScriptFileType<blocksci::Indexed<T...>> {
     using type = blocksci::IndexedFileMapper<blocksci::AccessMode::readwrite, T...>;
 };
 
-template<blocksci::DedupAddressType::Enum type>
+template<blocksci::EquivAddressType::Enum type>
 using ScriptFileType_t = typename ScriptFileType<typename blocksci::ScriptInfo<type>::storage>::type;
 
-template<blocksci::DedupAddressType::Enum type>
+template<blocksci::EquivAddressType::Enum type>
 struct ScriptFile : public ScriptFileType_t<type> {
     using ScriptFileType_t<type>::ScriptFileType_t;
 };
 
 
 class AddressWriter {
-    using ScriptFilesTuple = blocksci::to_dedup_address_tuple_t<ScriptFile>;
+    using ScriptFilesTuple = blocksci::to_equiv_address_tuple_t<ScriptFile>;
     
     ScriptFilesTuple scriptFiles;
     
     template<blocksci::AddressType::Enum type>
-    void serializeImp(const ScriptInput<type> &, ScriptFile<dedupType(type)> &) {}
+    void serializeImp(const ScriptInput<type> &, ScriptFile<equivType(type)> &) {}
     
-    void serializeImp(const ScriptInput<blocksci::AddressType::PUBKEYHASH> &input, ScriptFile<blocksci::DedupAddressType::PUBKEY> &file);
-    void serializeImp(const ScriptInput<blocksci::AddressType::WITNESS_PUBKEYHASH> &input, ScriptFile<blocksci::DedupAddressType::PUBKEY> &file);
-    void serializeImp(const ScriptInput<blocksci::AddressType::SCRIPTHASH> &input, ScriptFile<blocksci::DedupAddressType::SCRIPTHASH> &file);
-    void serializeImp(const ScriptInput<blocksci::AddressType::WITNESS_SCRIPTHASH> &input, ScriptFile<blocksci::DedupAddressType::SCRIPTHASH> &file);
-    void serializeImp(const ScriptInput<blocksci::AddressType::NONSTANDARD> &input, ScriptFile<blocksci::DedupAddressType::NONSTANDARD> &file);
+    void serializeImp(const ScriptInput<blocksci::AddressType::PUBKEYHASH> &input, ScriptFile<blocksci::EquivAddressType::PUBKEY> &file);
+    void serializeImp(const ScriptInput<blocksci::AddressType::WITNESS_PUBKEYHASH> &input, ScriptFile<blocksci::EquivAddressType::PUBKEY> &file);
+    void serializeImp(const ScriptInput<blocksci::AddressType::SCRIPTHASH> &input, ScriptFile<blocksci::EquivAddressType::SCRIPTHASH> &file);
+    void serializeImp(const ScriptInput<blocksci::AddressType::WITNESS_SCRIPTHASH> &input, ScriptFile<blocksci::EquivAddressType::SCRIPTHASH> &file);
+    void serializeImp(const ScriptInput<blocksci::AddressType::NONSTANDARD> &input, ScriptFile<blocksci::EquivAddressType::NONSTANDARD> &file);
     
     template<blocksci::AddressType::Enum type>
-    void serializeImp(const ScriptOutput<type> &, ScriptFile<dedupType(type)> &) {}
+    void serializeImp(const ScriptOutput<type> &, ScriptFile<equivType(type)> &) {}
     
-    void serializeImp(const ScriptOutput<blocksci::AddressType::PUBKEY> &input, ScriptFile<blocksci::DedupAddressType::PUBKEY> &file);
-    void serializeImp(const ScriptOutput<blocksci::AddressType::WITNESS_SCRIPTHASH> &input, ScriptFile<blocksci::DedupAddressType::SCRIPTHASH> &file);
+    void serializeImp(const ScriptOutput<blocksci::AddressType::PUBKEY> &input, ScriptFile<blocksci::EquivAddressType::PUBKEY> &file);
+    void serializeImp(const ScriptOutput<blocksci::AddressType::WITNESS_SCRIPTHASH> &input, ScriptFile<blocksci::EquivAddressType::SCRIPTHASH> &file);
     
     template<blocksci::AddressType::Enum type>
     void serializeWrapped(const ScriptInputData<type> &, uint32_t, uint32_t) {}
@@ -71,12 +71,12 @@ class AddressWriter {
     
 public:
     
-    template <blocksci::DedupAddressType::Enum type>
+    template <blocksci::EquivAddressType::Enum type>
     ScriptFile<type> &getFile() {
         return std::get<ScriptFile<type>>(scriptFiles);
     }
     
-    template <blocksci::DedupAddressType::Enum type>
+    template <blocksci::EquivAddressType::Enum type>
     const ScriptFile<type> &getFile() const {
         return std::get<ScriptFile<type>>(scriptFiles);
     }
@@ -84,12 +84,12 @@ public:
     template<blocksci::AddressType::Enum type>
     size_t serialize(const ScriptOutput<type> &output, uint32_t txNum) {
         if (output.isNew) {
-            auto &file = std::get<ScriptFile<dedupType(type)>>(scriptFiles);
+            auto &file = std::get<ScriptFile<equivType(type)>>(scriptFiles);
             file.write(output.data.getData(txNum));
             output.data.visitWrapped([&](auto &output) { this->serialize(output, txNum); });
             return file.size();
         } else {
-            auto &file = std::get<ScriptFile<dedupType(type)>>(scriptFiles);
+            auto &file = std::get<ScriptFile<equivType(type)>>(scriptFiles);
             serializeImp(output, file);
         }
         return 0;
@@ -97,7 +97,7 @@ public:
     
     template<blocksci::AddressType::Enum type>
     void serialize(const ScriptInput<type> &input, uint32_t txNum, uint32_t outputTxNum) {
-        auto &file = std::get<ScriptFile<dedupType(type)>>(scriptFiles);
+        auto &file = std::get<ScriptFile<equivType(type)>>(scriptFiles);
         auto data = file.getDataAtIndex(input.scriptNum - 1);
         bool isFirstSpend = data->txFirstSpent == std::numeric_limits<uint32_t>::max();
         bool isNewerFirstSeen = outputTxNum < data->txFirstSeen;
