@@ -5,13 +5,7 @@ Script Classes
    :maxdepth: 2
    :caption: Scripts:
    
-   address_type
    address
-   script_type
+   dedup_address
    script
-   PubkeyScript
-   PayToScriptHashScript
-   MultisigScript
-   NulldataScript
-   NonStandardScript
 
