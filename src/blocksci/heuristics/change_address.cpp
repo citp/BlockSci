@@ -141,9 +141,9 @@ namespace blocksci { namespace heuristics {
     }
     
     
-    // If all inputs are of one script type (e.g., P2PKH or P2SH),
+    // If all inputs are of one address type (e.g., P2PKH or P2SH),
     // it is likely that the change output has the same type
-    std::unordered_set<Output> changeByDedupAddressType(const Transaction &tx) {
+    std::unordered_set<Output> changeByAddressType(const Transaction &tx) {
         std::unordered_set<Output> candidates;
         
         // check whether all inputs have the same type (e.g., P2SH)
@@ -165,8 +165,8 @@ namespace blocksci { namespace heuristics {
         return removeOpReturnOutputs(candidates);
     }
     
-    ranges::optional<Output> uniqueChangeByDedupAddressType(const Transaction &tx) {
-        return singleOrNullptr(changeByDedupAddressType(tx));
+    ranges::optional<Output> uniqueChangeByAddressType(const Transaction &tx) {
+        return singleOrNullptr(changeByAddressType(tx));
     }
     
     

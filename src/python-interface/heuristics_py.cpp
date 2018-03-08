@@ -33,8 +33,8 @@ void init_heuristics(py::module &m) {
         "If there exists an output that is smaller than any of the inputs it is likely the change. If a change output was larger than the smallest input, then the coin selection algorithm wouldn't need to add the input in the first place.");
     s.def("unique_change_by_optimal_change", heuristics::uniqueChangeByOptimalChange, "Returns a unique output from change_by_optimal_change or None");
     
-    s.def("change_by_script_type", heuristics::changeByDedupAddressType, "If all inputs are of one script type (e.g., P2PKH or P2SH), it is likely that the change output has the same type");
-    s.def("unique_change_by_script_type", heuristics::uniqueChangeByDedupAddressType, "Returns a unique output from change_by_script_type or None");
+    s.def("change_by_address_type", heuristics::changeByAddressType, "If all inputs are of one address type (e.g., P2PKH or P2SH), it is likely that the change output has the same type");
+    s.def("unique_change_by_address_type", heuristics::uniqueChangeByAddressType, "Returns a unique output from change_by_address_type or None");
     
     s.def("change_by_locktime", heuristics::changeByLocktime, "Bitcoin Core sets the locktime to the current block height to prevent fee sniping. If all outpus have been spent, and there is only one output that has been spent in a transaction that matches this transaction's locktime behavior, it is the change.");
     s.def("unique_change_by_locktime", heuristics::uniqueChangeByLocktime, "Returns a unique output from change_by_locktime or None");
