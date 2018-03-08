@@ -420,6 +420,7 @@ int main(int argc, char * argv[]) {
         case mode::updateHashIndex: {
             ParserConfigurationBase config{dataDirectory};
             updateHashDB(config);
+            break;
         }
 
         case mode::updateAddressIndex: {
