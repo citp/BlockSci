@@ -32,7 +32,7 @@ std::vector<TaggedDedupAddress> Cluster::taggedDedupAddresses(const std::unorder
     return tagged;
 }
 
-uint32_t Cluster::countOfType(blocksci::ScriptType::Enum type) const {
+uint32_t Cluster::countOfType(blocksci::DedupAddressType::Enum type) const {
     uint32_t count = 0;
     for (auto &address : getDedupAddresses()) {
         if (address.type == type) {

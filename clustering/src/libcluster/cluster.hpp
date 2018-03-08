@@ -39,7 +39,7 @@ public:
     
     std::vector<TaggedDedupAddress> taggedDedupAddresses(const std::unordered_map<blocksci::DedupAddress, std::string> &tags) const;
     
-    uint32_t countOfType(blocksci::ScriptType::Enum type) const;
+    uint32_t countOfType(blocksci::DedupAddressType::Enum type) const;
     
     uint32_t getSize() const;
     

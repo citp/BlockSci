@@ -23,7 +23,7 @@
 
 class Cluster;
 
-template<blocksci::ScriptType::Enum type>
+template<blocksci::DedupAddressType::Enum type>
 struct ScriptClusterIndexFile : public blocksci::FixedSizeFileMapper<uint32_t> {
     using blocksci::FixedSizeFileMapper<uint32_t>::FixedSizeFileMapper;
 };
@@ -41,7 +41,7 @@ class ClusterManager {
     blocksci::FixedSizeFileMapper<uint32_t> clusterOffsetFile;
     blocksci::FixedSizeFileMapper<blocksci::DedupAddress> clusterScriptsFile;
     
-    using ScriptClusterIndexTuple = blocksci::to_script_tuple_t<ScriptClusterIndexFile>;
+    using ScriptClusterIndexTuple = blocksci::to_dedup_address_tuple_t<ScriptClusterIndexFile>;
     
     ScriptClusterIndexTuple scriptClusterIndexFiles;
     
@@ -51,7 +51,7 @@ public:
     Cluster getCluster(const blocksci::Address &address) const;
     Cluster getCluster(const blocksci::DedupAddress &address) const;
     
-    template<blocksci::ScriptType::Enum type>
+    template<blocksci::DedupAddressType::Enum type>
     uint32_t getClusterNum(uint32_t scriptNum) const {
         auto &file = std::get<ScriptClusterIndexFile<type>>(scriptClusterIndexFiles);
         return *file.getData(scriptNum - 1);

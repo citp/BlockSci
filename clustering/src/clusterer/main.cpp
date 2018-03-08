@@ -79,9 +79,9 @@ void segmentWork(uint32_t start, uint32_t end, uint32_t segmentCount, Job job) {
 
 struct AddressDisjointSets {
     DisjointSets disjoinSets;
-    std::unordered_map<ScriptType::Enum, uint32_t> addressStarts;
+    std::unordered_map<DedupAddressType::Enum, uint32_t> addressStarts;
 
-    AddressDisjointSets(uint32_t totalSize, std::unordered_map<ScriptType::Enum, uint32_t> addressStarts_) : disjoinSets{totalSize}, addressStarts{std::move(addressStarts_)} {}
+    AddressDisjointSets(uint32_t totalSize, std::unordered_map<DedupAddressType::Enum, uint32_t> addressStarts_) : disjoinSets{totalSize}, addressStarts{std::move(addressStarts_)} {}
 
     uint32_t size() const {
         return disjoinSets.size();
@@ -104,17 +104,17 @@ struct AddressDisjointSets {
     }
 };
 
-std::vector<uint32_t> getClusters(Blockchain &chain, std::unordered_map<ScriptType::Enum, uint32_t> addressStarts, uint32_t totalScriptCount) {
+std::vector<uint32_t> getClusters(Blockchain &chain, std::unordered_map<DedupAddressType::Enum, uint32_t> addressStarts, uint32_t totalScriptCount) {
     
     AddressDisjointSets ds(totalScriptCount, std::move(addressStarts));
     
     auto &scripts = *chain.access->scripts;
 
-    auto scriptHashCount = scripts.scriptCount<ScriptType::Enum::SCRIPTHASH>();
+    auto scriptHashCount = scripts.scriptCount<DedupAddressType::SCRIPTHASH>();
     
     
     segmentWork(1, scriptHashCount + 1, 8, [&ds, &scripts](uint32_t index) {
-        DedupAddress pointer(index, ScriptType::Enum::SCRIPTHASH);
+        DedupAddress pointer(index, DedupAddressType::SCRIPTHASH);
         script::ScriptHash scripthash{scripts, index};
         auto wrappedAddress = scripthash.getWrappedAddress();
         if (wrappedAddress) {
@@ -160,9 +160,9 @@ uint32_t remapClusterIds(std::vector<uint32_t> &parents) {
     return clusterCount;
 }
 
-void recordOrderedAddresses(const std::vector<uint32_t> &parent, std::vector<uint32_t> &clusterPositions, const std::unordered_map<ScriptType::Enum, uint32_t> &scriptStarts) {
+void recordOrderedAddresses(const std::vector<uint32_t> &parent, std::vector<uint32_t> &clusterPositions, const std::unordered_map<DedupAddressType::Enum, uint32_t> &scriptStarts) {
     
-    std::map<uint32_t, ScriptType::Enum> typeIndexes;
+    std::map<uint32_t, DedupAddressType::Enum> typeIndexes;
     for (auto &pair : scriptStarts) {
         typeIndexes[pair.second] = pair.first;
     }
@@ -194,11 +194,11 @@ int main(int argc, const char * argv[]) {
     auto &scripts = *chain.access->scripts;
     size_t totalScriptCount = scripts.totalAddressCount();;
     
-    std::unordered_map<ScriptType::Enum, uint32_t> scriptStarts;
-    for (size_t i = 0; i < ScriptType::size; i++) {
-        scriptStarts[ScriptType::all[i]] = 0;
+    std::unordered_map<DedupAddressType::Enum, uint32_t> scriptStarts;
+    for (size_t i = 0; i < DedupAddressType::size; i++) {
+        scriptStarts[DedupAddressType::all[i]] = 0;
         for (size_t j = 0; j < i; j++) {
-            scriptStarts[ScriptType::all[i]] += scripts.scriptCount(ScriptType::all[j]);
+            scriptStarts[DedupAddressType::all[i]] += scripts.scriptCount(DedupAddressType::all[j]);
         }
     }
     
@@ -221,12 +221,12 @@ int main(int argc, const char * argv[]) {
     
     auto recordOrdered = std::async(std::launch::async, recordOrderedAddresses, parent, std::ref(clusterPositions), scriptStarts);
     
-    segmentWork(0, ScriptType::size, ScriptType::size, [&scriptStarts, &scripts, &parent](uint32_t index) {
-        auto type = ScriptType::all[index];
+    segmentWork(0, DedupAddressType::size, DedupAddressType::size, [&scriptStarts, &scripts, &parent](uint32_t index) {
+        auto type = DedupAddressType::all[index];
         uint32_t startIndex = scriptStarts[type];
         uint32_t totalCount = scripts.scriptCount(type);
         std::stringstream ss;
-        ss << scriptName(type) << "_cluster_index.dat";
+        ss << dedupAddressName(type) << "_cluster_index.dat";
         std::ofstream clusterIndexFile(ss.str(), std::ios::binary);
         clusterIndexFile.write(reinterpret_cast<char *>(parent.data() + startIndex), sizeof(uint32_t) * totalCount);
     });

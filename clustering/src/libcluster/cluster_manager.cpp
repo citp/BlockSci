@@ -12,9 +12,9 @@
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/address/dedup_address.hpp>
 
-ClusterManager::ClusterManager(std::string baseDirectory) : clusterOffsetFile(baseDirectory + "clusterOffsets"), clusterScriptsFile(baseDirectory + "clusterAddresses"), scriptClusterIndexFiles(blocksci::apply(blocksci::ScriptInfoList(), [&] (auto tag) {
+ClusterManager::ClusterManager(std::string baseDirectory) : clusterOffsetFile(baseDirectory + "clusterOffsets"), clusterScriptsFile(baseDirectory + "clusterAddresses"), scriptClusterIndexFiles(blocksci::apply(blocksci::DedupAddressInfoList(), [&] (auto tag) {
     std::stringstream ss;
-    ss << baseDirectory << blocksci::scriptName(tag) << "_cluster_index";
+    ss << baseDirectory << blocksci::dedupAddressName(tag) << "_cluster_index";
     return ss.str();
 }))  {
 }
@@ -23,7 +23,7 @@ uint32_t ClusterManager::clusterCount() const {
     return static_cast<uint32_t>(clusterOffsetFile.size());
 }
 
-template<blocksci::ScriptType::Enum type>
+template<blocksci::DedupAddressType::Enum type>
 struct ClusterNumFunctor {
     static uint32_t f(const ClusterManager *cm, uint32_t scriptNum) {
         return cm->getClusterNum<type>(scriptNum);
@@ -32,8 +32,8 @@ struct ClusterNumFunctor {
 
 
 uint32_t ClusterManager::getClusterNum(const blocksci::DedupAddress &address) const {
-    static auto table = blocksci::make_dynamic_table<blocksci::ScriptType, ClusterNumFunctor>();
-    static constexpr std::size_t size = blocksci::ScriptType::all.size();
+    static auto table = blocksci::make_dynamic_table<blocksci::DedupAddressType, ClusterNumFunctor>();
+    static constexpr std::size_t size = blocksci::DedupAddressType::all.size();
     
     auto index = static_cast<size_t>(address.type);
     if (index >= size)

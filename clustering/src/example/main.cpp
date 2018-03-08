@@ -24,7 +24,7 @@ int main(int argc, const char * argv[]) {
     std::vector<uint32_t> sizes;
     sizes.reserve(manager.clusterCount());
     for (auto cluster : manager.getClusters()) {
-        auto size = cluster.countOfType(ScriptType::Enum::PUBKEY) + cluster.countOfType(ScriptType::Enum::SCRIPTHASH);
+        auto size = cluster.countOfType(DedupAddressType::PUBKEY) + cluster.countOfType(DedupAddressType::SCRIPTHASH);
         std::cout << size << "\n";
     }
     
