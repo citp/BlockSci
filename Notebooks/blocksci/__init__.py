@@ -79,12 +79,11 @@ def filter_txes(self, filterFunc, start = None, end = None, cpu_count=psutil.cpu
     """Return all transactions in range which match the given criteria
     """
     def mapFunc(blocks):
-        return [tx.index for block in blocks for tx in block if filterFunc(tx)]
+        return [tx for block in blocks for tx in block if filterFunc(tx)]
     def reduceFunc(cur, el):
         return cur + [el]
     init = list()
-    tx_ids = mapreduce_block_ranges(self, mapFunc, reduceFunc, init, start, end, cpu_count)
-    return [Tx.tx_with_index(x) for x in tx_ids]
+    return mapreduce_block_ranges(self, mapFunc, reduceFunc, init, start, end, cpu_count)
 
 Blockchain.map_blocks = map_blocks
 Blockchain.filter_blocks = filter_blocks
