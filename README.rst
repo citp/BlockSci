@@ -176,7 +176,7 @@ Note that BlockSci only actively supports python 3.
 	sudo make install
 
 	sudo -H pip3 install --upgrade pip
-	sudo -H pip3 install --upgrade multiprocess psutil jupyter pycrypto matplotlib pandas dateparser
+	sudo -H pip3 install --upgrade multiprocess psutil jupyter pycrypto matplotlib pandas dateparser requests
 	
 Team & contact info
 ===================
