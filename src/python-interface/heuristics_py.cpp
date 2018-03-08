@@ -63,7 +63,7 @@ void init_heuristics(py::module &m) {
     .def("coinjoin_txes", heuristics::getCoinjoinTransactions, "Returns a list of all transactions in the blockchain that might be JoinMarket coinjoin transactions")
     .def("possible_coinjoin_txes", heuristics::getPossibleCoinjoinTransactions, "Returns a list of all transactions in the blockchain that might be coinjoin transactions")
     .def("script_deanon_txes", heuristics::getDeanonTxes, "Return a list of all the transactions in the blockchain for which is_script_deanon returns true")
-    .def("change_script_type_txes", heuristics::getChangeOverTxes, "Return a list of transactions in the blockchain for which is_change_over returns true")
+    .def("change_over_txes", heuristics::getChangeOverTxes, "Return a list of transactions in the blockchain for which is_change_over returns true")
     .def("keyset_change_txes", heuristics::getKeysetChangeTxes, "Return a list of transaction in the blockchain for which is_keyset_change returns true")
     ;
 
