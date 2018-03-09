@@ -4,27 +4,19 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Script Classes &#8212; BlockSci 0.2 documentation</title>
+    <title>Script Classes &#8212; BlockSci 0.4 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '0.2',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Address Type" href="address_type.html" />
+    <link rel="next" title="Addresses" href="address.html" />
     <link rel="prev" title="Output Range" href="../chain/AnyOutputRange.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -32,8 +24,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
@@ -46,15 +37,28 @@
 <div class="toctree-wrapper compound">
 <p class="caption"><span class="caption-text">Scripts:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="address_type.html">Address Type</a></li>
-<li class="toctree-l1"><a class="reference internal" href="address.html">Address</a></li>
-<li class="toctree-l1"><a class="reference internal" href="script_type.html">Script Type</a></li>
-<li class="toctree-l1"><a class="reference internal" href="script.html">Script</a></li>
-<li class="toctree-l1"><a class="reference internal" href="PubkeyScript.html">Pubkey Script</a></li>
-<li class="toctree-l1"><a class="reference internal" href="PayToScriptHashScript.html">Pay to ScriptHash Script</a></li>
-<li class="toctree-l1"><a class="reference internal" href="MultisigScript.html">Multisig Script</a></li>
-<li class="toctree-l1"><a class="reference internal" href="NulldataScript.html">Null Data Script</a></li>
-<li class="toctree-l1"><a class="reference internal" href="NonStandardScript.html">Non-Standard Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="address.html">Addresses</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="address.html#address-type">Address Type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="address.html#address">Address</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="equiv_address.html">Equivalent Addresses</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="equiv_address.html#equiv-address-type">Equiv Address Type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="equiv_address.html#equivaddress">EquivAddress</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="script.html">Script Data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="script.html#script">Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="script.html#pay-to-pubkey-script">Pay to pubkey Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="script.html#pay-to-pubkey-hash-script">Pay to pubkey hash Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="script.html#pay-to-witness-pubkey-hash-script">Pay to witness pubkey hash Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="script.html#multisignature-script">Multisignature Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="script.html#pay-to-script-hash-script">Pay to script hash Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="script.html#pay-to-script-witness-hash-script">Pay to script witness hash Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="script.html#non-standard-script">Non-standard Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="script.html#null-data-script">Null Data Script</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -81,15 +85,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../changelog.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chain/chain.html">Chain Classes</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Script Classes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="address_type.html">Address Type</a></li>
-<li class="toctree-l2"><a class="reference internal" href="address.html">Address</a></li>
-<li class="toctree-l2"><a class="reference internal" href="script_type.html">Script Type</a></li>
-<li class="toctree-l2"><a class="reference internal" href="script.html">Script</a></li>
-<li class="toctree-l2"><a class="reference internal" href="PubkeyScript.html">Pubkey Script</a></li>
-<li class="toctree-l2"><a class="reference internal" href="PayToScriptHashScript.html">Pay to ScriptHash Script</a></li>
-<li class="toctree-l2"><a class="reference internal" href="MultisigScript.html">Multisig Script</a></li>
-<li class="toctree-l2"><a class="reference internal" href="NulldataScript.html">Null Data Script</a></li>
-<li class="toctree-l2"><a class="reference internal" href="NonStandardScript.html">Non-Standard Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="address.html">Addresses</a></li>
+<li class="toctree-l2"><a class="reference internal" href="equiv_address.html">Equivalent Addresses</a></li>
+<li class="toctree-l2"><a class="reference internal" href="script.html">Script Data</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../heuristics/heuristics.html">Heuristics</a></li>
@@ -101,18 +99,20 @@
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
       <li>Previous: <a href="../chain/AnyOutputRange.html" title="previous chapter">Output Range</a></li>
-      <li>Next: <a href="address_type.html" title="next chapter">Address Type</a></li>
+      <li>Next: <a href="address.html" title="next chapter">Addresses</a></li>
   </ul></li>
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -123,7 +123,7 @@
       &copy;2017, Harry Kalodner.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |

@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Cluster &#8212; BlockSci 0.2 documentation</title>
+    <title>Cluster &#8212; BlockSci 0.4 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '0.2',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
@@ -32,8 +24,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
@@ -47,22 +38,22 @@
 <dt id="blocksci.cluster_python.Cluster">
 <em class="property">class </em><code class="descclassname">blocksci.cluster_python.</code><code class="descname">Cluster</code><a class="headerlink" href="#blocksci.cluster_python.Cluster" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class representing a cluster</p>
-<dl class="method">
-<dt id="blocksci.cluster_python.Cluster.script_count">
-<code class="descname">script_count</code><span class="sig-paren">(</span><em>self: blocksci.cluster_python.Cluster</em>, <em>arg0: blocksci.blocksci_interface.script_type</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#blocksci.cluster_python.Cluster.script_count" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the number of scripts of the given type in the cluster</p>
-</dd></dl>
-
 <dl class="attribute">
-<dt id="blocksci.cluster_python.Cluster.scripts">
-<code class="descname">scripts</code><a class="headerlink" href="#blocksci.cluster_python.Cluster.scripts" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get a iterable over all the scripts in the cluster</p>
+<dt id="blocksci.cluster_python.Cluster.addresses">
+<code class="descname">addresses</code><a class="headerlink" href="#blocksci.cluster_python.Cluster.addresses" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a iterable over all the equiv addresses in the cluster</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="blocksci.cluster_python.Cluster.tagged_scripts">
-<code class="descname">tagged_scripts</code><span class="sig-paren">(</span><em>self: blocksci.cluster_python.Cluster, arg0: Dict[blocksci.blocksci_interface.Script, str]</em><span class="sig-paren">)</span> &#x2192; List[TaggedScript]<a class="headerlink" href="#blocksci.cluster_python.Cluster.tagged_scripts" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given a dictionary of tags, return a list of TaggedScript objects for any tagged scripts in the cluster</p>
+<dt id="blocksci.cluster_python.Cluster.count_of_type">
+<code class="descname">count_of_type</code><span class="sig-paren">(</span><em>self: blocksci.cluster_python.Cluster</em>, <em>arg0: blocksci.blocksci_interface.equiv_address_type</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#blocksci.cluster_python.Cluster.count_of_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of equiv addresses of the given type in the cluster</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.cluster_python.Cluster.tagged_addresses">
+<code class="descname">tagged_addresses</code><span class="sig-paren">(</span><em>self: blocksci.cluster_python.Cluster, arg0: Dict[blocksci.blocksci_interface.EquivAddress, str]</em><span class="sig-paren">)</span> &#x2192; List[TaggedEquivAddress]<a class="headerlink" href="#blocksci.cluster_python.Cluster.tagged_addresses" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a dictionary of tags, return a list of TaggedEquivAddresses objects for any tagged equiv addresses in the cluster</p>
 </dd></dl>
 
 </dd></dl>
@@ -96,7 +87,7 @@
 <li class="toctree-l2"><a class="reference internal" href="cluster_manager.html">ClusterManager</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Cluster</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tagged_cluster.html">Tagged Cluster</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tagged_script.html">Tagged Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tagged_equiv_address.html">Tagged Equiv Address</a></li>
 </ul>
 </li>
 </ul>
@@ -114,12 +105,14 @@
 </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -130,7 +123,7 @@
       &copy;2017, Harry Kalodner.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |

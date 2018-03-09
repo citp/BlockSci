@@ -5,20 +5,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Index &#8212; BlockSci 0.2 documentation</title>
+    <title>Index &#8212; BlockSci 0.4 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.2',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -31,8 +23,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
@@ -49,6 +40,7 @@
  | <a href="#B"><strong>B</strong></a>
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
@@ -118,15 +110,25 @@
 </li>
         <li><a href="chain/output.html#blocksci.Output.address">(blocksci.Output attribute)</a>
 </li>
-        <li><a href="scripts/PayToScriptHashScript.html#blocksci.PayToScriptHashScript.address">(blocksci.PayToScriptHashScript attribute)</a>
+        <li><a href="clustering/tagged_equiv_address.html#blocksci.cluster_python.TaggedEquivAddress.address">(blocksci.cluster_python.TaggedEquivAddress attribute)</a>
 </li>
       </ul></li>
       <li><a href="scripts/address.html#blocksci.Address">Address (class in blocksci)</a>
 </li>
       <li><a href="scripts/address.html#blocksci.Address.address_count">address_count() (blocksci.Address method)</a>
 </li>
-      <li><a href="scripts/PubkeyScript.html#blocksci.PubkeyScript.address_string">address_string (blocksci.PubkeyScript attribute)</a>
+      <li><a href="scripts/script.html#blocksci.PayToScriptHashScript.address_string">address_string (blocksci.PayToScriptHashScript attribute)</a>
+
+      <ul>
+        <li><a href="scripts/script.html#blocksci.PayToWitnessScriptHashScript.address_string">(blocksci.PayToWitnessScriptHashScript attribute)</a>
 </li>
+        <li><a href="scripts/script.html#blocksci.PubkeyHashScript.address_string">(blocksci.PubkeyHashScript attribute)</a>
+</li>
+        <li><a href="scripts/script.html#blocksci.PubkeyScript.address_string">(blocksci.PubkeyScript attribute)</a>
+</li>
+        <li><a href="scripts/script.html#blocksci.WitnessPubkeyHashScript.address_string">(blocksci.WitnessPubkeyHashScript attribute)</a>
+</li>
+      </ul></li>
       <li><a href="chain/AnyInputRange.html#blocksci.AnyInputRange.address_type">address_type (blocksci.AnyInputRange attribute)</a>
 
       <ul>
@@ -136,13 +138,17 @@
 </li>
         <li><a href="chain/output.html#blocksci.Output.address_type">(blocksci.Output attribute)</a>
 </li>
-        <li><a href="scripts/address_type.html#blocksci.address_type">(class in blocksci)</a>
+        <li><a href="scripts/address.html#blocksci.address_type">(class in blocksci)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="scripts/MultisigScript.html#blocksci.MultisigScript.addresses">addresses (blocksci.MultisigScript attribute)</a>
+      <li><a href="clustering/cluster.html#blocksci.cluster_python.Cluster.addresses">addresses (blocksci.cluster_python.Cluster attribute)</a>
+
+      <ul>
+        <li><a href="scripts/script.html#blocksci.MultisigScript.addresses">(blocksci.MultisigScript attribute)</a>
 </li>
+      </ul></li>
       <li><a href="chain/AnyInputRange.html#blocksci.AnyInputRange.age">age (blocksci.AnyInputRange attribute)</a>
 
       <ul>
@@ -172,17 +178,15 @@
       <li><a href="scripts/address.html#blocksci.Address.balance">balance() (blocksci.Address method)</a>
 
       <ul>
-        <li><a href="scripts/MultisigScript.html#blocksci.MultisigScript.balance">(blocksci.MultisigScript method)</a>
+        <li><a href="scripts/equiv_address.html#blocksci.EquivAddress.balance">(blocksci.EquivAddress method)</a>
 </li>
-        <li><a href="scripts/NonStandardScript.html#blocksci.NonStandardScript.balance">(blocksci.NonStandardScript method)</a>
+      </ul></li>
+      <li><a href="chain/AnyTxRange.html#blocksci.AnyTxRange.base_size">base_size (blocksci.AnyTxRange attribute)</a>
+
+      <ul>
+        <li><a href="chain/block.html#blocksci.Block.base_size">(blocksci.Block attribute)</a>
 </li>
-        <li><a href="scripts/NulldataScript.html#blocksci.NulldataScript.balance">(blocksci.NulldataScript method)</a>
-</li>
-        <li><a href="scripts/PayToScriptHashScript.html#blocksci.PayToScriptHashScript.balance">(blocksci.PayToScriptHashScript method)</a>
-</li>
-        <li><a href="scripts/PubkeyScript.html#blocksci.PubkeyScript.balance">(blocksci.PubkeyScript method)</a>
-</li>
-        <li><a href="scripts/script.html#blocksci.Script.balance">(blocksci.Script method)</a>
+        <li><a href="chain/tx.html#blocksci.Tx.base_size">(blocksci.Tx attribute)</a>
 </li>
       </ul></li>
       <li><a href="chain/block.html#blocksci.Block.bits">bits (blocksci.Block attribute)</a>
@@ -229,6 +233,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="heuristics/heuristics.html#blocksci.blocksci_interface.heuristics.change_by_address_reuse">change_by_address_reuse() (in module blocksci.blocksci_interface.heuristics)</a>
 </li>
+      <li><a href="heuristics/heuristics.html#blocksci.blocksci_interface.heuristics.change_by_address_type">change_by_address_type() (in module blocksci.blocksci_interface.heuristics)</a>
+</li>
       <li><a href="heuristics/heuristics.html#blocksci.blocksci_interface.heuristics.change_by_client_change_address_behavior">change_by_client_change_address_behavior() (in module blocksci.blocksci_interface.heuristics)</a>
 </li>
       <li><a href="heuristics/heuristics.html#blocksci.blocksci_interface.heuristics.change_by_locktime">change_by_locktime() (in module blocksci.blocksci_interface.heuristics)</a>
@@ -239,20 +245,18 @@
 </li>
       <li><a href="heuristics/heuristics.html#blocksci.blocksci_interface.heuristics.change_by_power_of_ten_value">change_by_power_of_ten_value() (in module blocksci.blocksci_interface.heuristics)</a>
 </li>
-      <li><a href="heuristics/heuristics.html#blocksci.blocksci_interface.heuristics.change_by_script_type">change_by_script_type() (in module blocksci.blocksci_interface.heuristics)</a>
-</li>
       <li><a href="chain/AnyTxRange.html#blocksci.AnyTxRange.change_output">change_output (blocksci.AnyTxRange attribute)</a>
 
       <ul>
         <li><a href="chain/tx.html#blocksci.Tx.change_output">(blocksci.Tx attribute)</a>
 </li>
       </ul></li>
-      <li><a href="heuristics/heuristics.html#blocksci.blocksci_interface.heuristics.change_script_type_txes">change_script_type_txes() (in module blocksci.blocksci_interface.heuristics)</a>
+      <li><a href="heuristics/heuristics.html#blocksci.blocksci_interface.heuristics.change_over_txes">change_over_txes() (in module blocksci.blocksci_interface.heuristics)</a>
+</li>
+      <li><a href="clustering/tagged_cluster.html#blocksci.cluster_python.TaggedCluster.cluster">cluster (blocksci.cluster_python.TaggedCluster attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="clustering/tagged_cluster.html#blocksci.cluster_python.TaggedCluster.cluster">cluster (blocksci.cluster_python.TaggedCluster attribute)</a>
-</li>
       <li><a href="clustering/cluster.html#blocksci.cluster_python.Cluster">Cluster (class in blocksci.cluster_python)</a>
 </li>
       <li><a href="clustering/cluster_manager.html#blocksci.cluster_python.ClusterManager.cluster_count">cluster_count() (blocksci.cluster_python.ClusterManager method)</a>
@@ -273,13 +277,29 @@
 </li>
       <li><a href="heuristics/heuristics.html#blocksci.blocksci_interface.heuristics.coinjoin_txes">coinjoin_txes() (in module blocksci.blocksci_interface.heuristics)</a>
 </li>
+      <li><a href="clustering/cluster.html#blocksci.cluster_python.Cluster.count_of_type">count_of_type() (blocksci.cluster_python.Cluster method)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="scripts/NulldataScript.html#blocksci.NulldataScript.data">data (blocksci.NulldataScript attribute)</a>
+      <li><a href="scripts/script.html#blocksci.NulldataScript.data">data (blocksci.NulldataScript attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="scripts/address.html#blocksci.Address.equiv">equiv (blocksci.Address attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="scripts/equiv_address.html#blocksci.equiv_address_type">equiv_address_type (class in blocksci)</a>
+</li>
+      <li><a href="scripts/equiv_address.html#blocksci.EquivAddress">EquivAddress (class in blocksci)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -299,24 +319,14 @@
         <li><a href="chain/tx.html#blocksci.Tx.fee_per_byte">(blocksci.Tx attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="chain/blockchain.html#blocksci.Blockchain.filter_blocks">filter_blocks() (blocksci.Blockchain method)</a>
 </li>
       <li><a href="chain/blockchain.html#blocksci.Blockchain.filter_txes">filter_txes() (blocksci.Blockchain method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="scripts/MultisigScript.html#blocksci.MultisigScript.first_tx">first_tx (blocksci.MultisigScript attribute)</a>
-
-      <ul>
-        <li><a href="scripts/NonStandardScript.html#blocksci.NonStandardScript.first_tx">(blocksci.NonStandardScript attribute)</a>
+      <li><a href="scripts/script.html#blocksci.Script.first_tx">first_tx (blocksci.Script attribute)</a>
 </li>
-        <li><a href="scripts/NulldataScript.html#blocksci.NulldataScript.first_tx">(blocksci.NulldataScript attribute)</a>
-</li>
-        <li><a href="scripts/PayToScriptHashScript.html#blocksci.PayToScriptHashScript.first_tx">(blocksci.PayToScriptHashScript attribute)</a>
-</li>
-        <li><a href="scripts/PubkeyScript.html#blocksci.PubkeyScript.first_tx">(blocksci.PubkeyScript attribute)</a>
-</li>
-      </ul></li>
       <li><a href="scripts/address.html#blocksci.Address.from_string">from_string() (blocksci.Address method)</a>
 </li>
   </ul></td>
@@ -325,6 +335,8 @@
 <h2 id="H">H</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="scripts/script.html#blocksci.Script.has_been_spent">has_been_spent (blocksci.Script attribute)</a>
+</li>
       <li><a href="chain/AnyTxRange.html#blocksci.AnyTxRange.hash">hash (blocksci.AnyTxRange attribute)</a>
 
       <ul>
@@ -345,24 +357,16 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="scripts/NonStandardScript.html#blocksci.NonStandardScript.in_script">in_script (blocksci.NonStandardScript attribute)</a>
+      <li><a href="scripts/script.html#blocksci.NonStandardScript.in_script">in_script (blocksci.NonStandardScript attribute)</a>
 </li>
       <li><a href="scripts/address.html#blocksci.Address.in_txes">in_txes() (blocksci.Address method)</a>
 
       <ul>
-        <li><a href="scripts/MultisigScript.html#blocksci.MultisigScript.in_txes">(blocksci.MultisigScript method)</a>
-</li>
-        <li><a href="scripts/NonStandardScript.html#blocksci.NonStandardScript.in_txes">(blocksci.NonStandardScript method)</a>
-</li>
-        <li><a href="scripts/NulldataScript.html#blocksci.NulldataScript.in_txes">(blocksci.NulldataScript method)</a>
-</li>
-        <li><a href="scripts/PayToScriptHashScript.html#blocksci.PayToScriptHashScript.in_txes">(blocksci.PayToScriptHashScript method)</a>
-</li>
-        <li><a href="scripts/PubkeyScript.html#blocksci.PubkeyScript.in_txes">(blocksci.PubkeyScript method)</a>
-</li>
-        <li><a href="scripts/script.html#blocksci.Script.in_txes">(blocksci.Script method)</a>
+        <li><a href="scripts/equiv_address.html#blocksci.EquivAddress.in_txes">(blocksci.EquivAddress method)</a>
 </li>
       </ul></li>
+      <li><a href="scripts/address.html#blocksci.Address.in_txes_count">in_txes_count() (blocksci.Address method)</a>
+</li>
       <li><a href="chain/AnyTxRange.html#blocksci.AnyTxRange.index">index (blocksci.AnyTxRange attribute)</a>
 
       <ul>
@@ -402,17 +406,7 @@
       <li><a href="scripts/address.html#blocksci.Address.ins">ins() (blocksci.Address method)</a>
 
       <ul>
-        <li><a href="scripts/MultisigScript.html#blocksci.MultisigScript.ins">(blocksci.MultisigScript method)</a>
-</li>
-        <li><a href="scripts/NonStandardScript.html#blocksci.NonStandardScript.ins">(blocksci.NonStandardScript method)</a>
-</li>
-        <li><a href="scripts/NulldataScript.html#blocksci.NulldataScript.ins">(blocksci.NulldataScript method)</a>
-</li>
-        <li><a href="scripts/PayToScriptHashScript.html#blocksci.PayToScriptHashScript.ins">(blocksci.PayToScriptHashScript method)</a>
-</li>
-        <li><a href="scripts/PubkeyScript.html#blocksci.PubkeyScript.ins">(blocksci.PubkeyScript method)</a>
-</li>
-        <li><a href="scripts/script.html#blocksci.Script.ins">(blocksci.Script method)</a>
+        <li><a href="scripts/equiv_address.html#blocksci.EquivAddress.ins">(blocksci.EquivAddress method)</a>
 </li>
       </ul></li>
       <li><a href="heuristics/heuristics.html#blocksci.blocksci_interface.heuristics.is_change_over">is_change_over() (in module blocksci.blocksci_interface.heuristics)</a>
@@ -475,13 +469,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="chain/block.html#blocksci.Block.miner">miner() (blocksci.Block method)</a>
 </li>
-      <li><a href="scripts/address_type.html#blocksci.address_type.multisig">multisig (blocksci.address_type attribute)</a>
+      <li><a href="scripts/address.html#blocksci.address_type.multisig">multisig (blocksci.address_type attribute)</a>
 
       <ul>
-        <li><a href="scripts/script_type.html#blocksci.script_type.multisig">(blocksci.script_type attribute)</a>
+        <li><a href="scripts/equiv_address.html#blocksci.equiv_address_type.multisig">(blocksci.equiv_address_type attribute)</a>
 </li>
       </ul></li>
-      <li><a href="scripts/MultisigScript.html#blocksci.MultisigScript">MultisigScript (class in blocksci)</a>
+      <li><a href="scripts/script.html#blocksci.MultisigScript">MultisigScript (class in blocksci)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -497,23 +491,23 @@
 </li>
       <li><a href="chain/block.html#blocksci.Block.nonce">nonce (blocksci.Block attribute)</a>
 </li>
-      <li><a href="scripts/address_type.html#blocksci.address_type.nonstandard">nonstandard (blocksci.address_type attribute)</a>
+      <li><a href="scripts/address.html#blocksci.address_type.nonstandard">nonstandard (blocksci.address_type attribute)</a>
 
       <ul>
-        <li><a href="scripts/script_type.html#blocksci.script_type.nonstandard">(blocksci.script_type attribute)</a>
+        <li><a href="scripts/equiv_address.html#blocksci.equiv_address_type.nonstandard">(blocksci.equiv_address_type attribute)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="scripts/NonStandardScript.html#blocksci.NonStandardScript">NonStandardScript (class in blocksci)</a>
+      <li><a href="scripts/script.html#blocksci.NonStandardScript">NonStandardScript (class in blocksci)</a>
 </li>
-      <li><a href="scripts/address_type.html#blocksci.address_type.nulldata">nulldata (blocksci.address_type attribute)</a>
+      <li><a href="scripts/address.html#blocksci.address_type.nulldata">nulldata (blocksci.address_type attribute)</a>
 
       <ul>
-        <li><a href="scripts/script_type.html#blocksci.script_type.nulldata">(blocksci.script_type attribute)</a>
+        <li><a href="scripts/equiv_address.html#blocksci.equiv_address_type.nulldata">(blocksci.equiv_address_type attribute)</a>
 </li>
       </ul></li>
-      <li><a href="scripts/NulldataScript.html#blocksci.NulldataScript">NulldataScript (class in blocksci)</a>
+      <li><a href="scripts/script.html#blocksci.NulldataScript">NulldataScript (class in blocksci)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -527,24 +521,16 @@
         <li><a href="chain/tx.html#blocksci.Tx.op_return">(blocksci.Tx attribute)</a>
 </li>
       </ul></li>
-      <li><a href="scripts/NonStandardScript.html#blocksci.NonStandardScript.out_script">out_script (blocksci.NonStandardScript attribute)</a>
+      <li><a href="scripts/script.html#blocksci.NonStandardScript.out_script">out_script (blocksci.NonStandardScript attribute)</a>
 </li>
       <li><a href="scripts/address.html#blocksci.Address.out_txes">out_txes() (blocksci.Address method)</a>
 
       <ul>
-        <li><a href="scripts/MultisigScript.html#blocksci.MultisigScript.out_txes">(blocksci.MultisigScript method)</a>
-</li>
-        <li><a href="scripts/NonStandardScript.html#blocksci.NonStandardScript.out_txes">(blocksci.NonStandardScript method)</a>
-</li>
-        <li><a href="scripts/NulldataScript.html#blocksci.NulldataScript.out_txes">(blocksci.NulldataScript method)</a>
-</li>
-        <li><a href="scripts/PayToScriptHashScript.html#blocksci.PayToScriptHashScript.out_txes">(blocksci.PayToScriptHashScript method)</a>
-</li>
-        <li><a href="scripts/PubkeyScript.html#blocksci.PubkeyScript.out_txes">(blocksci.PubkeyScript method)</a>
-</li>
-        <li><a href="scripts/script.html#blocksci.Script.out_txes">(blocksci.Script method)</a>
+        <li><a href="scripts/equiv_address.html#blocksci.EquivAddress.out_txes">(blocksci.EquivAddress method)</a>
 </li>
       </ul></li>
+      <li><a href="scripts/address.html#blocksci.Address.out_txes_count">out_txes_count() (blocksci.Address method)</a>
+</li>
       <li><a href="chain/output.html#blocksci.Output">Output (class in blocksci)</a>
 </li>
       <li><a href="chain/AnyTxRange.html#blocksci.AnyTxRange.output_count">output_count (blocksci.AnyTxRange attribute)</a>
@@ -580,17 +566,7 @@
       <li><a href="scripts/address.html#blocksci.Address.outs">outs() (blocksci.Address method)</a>
 
       <ul>
-        <li><a href="scripts/MultisigScript.html#blocksci.MultisigScript.outs">(blocksci.MultisigScript method)</a>
-</li>
-        <li><a href="scripts/NonStandardScript.html#blocksci.NonStandardScript.outs">(blocksci.NonStandardScript method)</a>
-</li>
-        <li><a href="scripts/NulldataScript.html#blocksci.NulldataScript.outs">(blocksci.NulldataScript method)</a>
-</li>
-        <li><a href="scripts/PayToScriptHashScript.html#blocksci.PayToScriptHashScript.outs">(blocksci.PayToScriptHashScript method)</a>
-</li>
-        <li><a href="scripts/PubkeyScript.html#blocksci.PubkeyScript.outs">(blocksci.PubkeyScript method)</a>
-</li>
-        <li><a href="scripts/script.html#blocksci.Script.outs">(blocksci.Script method)</a>
+        <li><a href="scripts/equiv_address.html#blocksci.EquivAddress.outs">(blocksci.EquivAddress method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -599,29 +575,41 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="scripts/PayToScriptHashScript.html#blocksci.PayToScriptHashScript">PayToScriptHashScript (class in blocksci)</a>
+      <li><a href="scripts/script.html#blocksci.PayToScriptHashScript">PayToScriptHashScript (class in blocksci)</a>
+</li>
+      <li><a href="scripts/script.html#blocksci.PayToWitnessScriptHashScript">PayToWitnessScriptHashScript (class in blocksci)</a>
 </li>
       <li><a href="heuristics/heuristics.html#blocksci.blocksci_interface.heuristics.possible_coinjoin_txes">possible_coinjoin_txes() (in module blocksci.blocksci_interface.heuristics)</a>
 </li>
       <li><a href="chain/block.html#blocksci.Block.prev_block">prev_block (blocksci.Block attribute)</a>
 </li>
-      <li><a href="scripts/address_type.html#blocksci.address_type.pubkey">pubkey (blocksci.address_type attribute)</a>
+      <li><a href="scripts/address.html#blocksci.address_type.pubkey">pubkey (blocksci.address_type attribute)</a>
 
       <ul>
-        <li><a href="scripts/PubkeyScript.html#blocksci.PubkeyScript.pubkey">(blocksci.PubkeyScript attribute)</a>
+        <li><a href="scripts/script.html#blocksci.PubkeyHashScript.pubkey">(blocksci.PubkeyHashScript attribute)</a>
 </li>
-        <li><a href="scripts/script_type.html#blocksci.script_type.pubkey">(blocksci.script_type attribute)</a>
+        <li><a href="scripts/script.html#blocksci.PubkeyScript.pubkey">(blocksci.PubkeyScript attribute)</a>
+</li>
+        <li><a href="scripts/script.html#blocksci.WitnessPubkeyHashScript.pubkey">(blocksci.WitnessPubkeyHashScript attribute)</a>
+</li>
+        <li><a href="scripts/equiv_address.html#blocksci.equiv_address_type.pubkey">(blocksci.equiv_address_type attribute)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="scripts/address_type.html#blocksci.address_type.pubkeyhash">pubkeyhash (blocksci.address_type attribute)</a>
+      <li><a href="scripts/address.html#blocksci.address_type.pubkeyhash">pubkeyhash (blocksci.address_type attribute)</a>
 
       <ul>
-        <li><a href="scripts/PubkeyScript.html#blocksci.PubkeyScript.pubkeyhash">(blocksci.PubkeyScript attribute)</a>
+        <li><a href="scripts/script.html#blocksci.PubkeyHashScript.pubkeyhash">(blocksci.PubkeyHashScript attribute)</a>
+</li>
+        <li><a href="scripts/script.html#blocksci.PubkeyScript.pubkeyhash">(blocksci.PubkeyScript attribute)</a>
+</li>
+        <li><a href="scripts/script.html#blocksci.WitnessPubkeyHashScript.pubkeyhash">(blocksci.WitnessPubkeyHashScript attribute)</a>
 </li>
       </ul></li>
-      <li><a href="scripts/PubkeyScript.html#blocksci.PubkeyScript">PubkeyScript (class in blocksci)</a>
+      <li><a href="scripts/script.html#blocksci.PubkeyHashScript">PubkeyHashScript (class in blocksci)</a>
+</li>
+      <li><a href="scripts/script.html#blocksci.PubkeyScript">PubkeyScript (class in blocksci)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -631,22 +619,18 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="chain/blockchain.html#blocksci.Blockchain.range">range() (blocksci.Blockchain method)</a>
 </li>
-      <li><a href="scripts/PayToScriptHashScript.html#blocksci.PayToScriptHashScript.raw_address">raw_address (blocksci.PayToScriptHashScript attribute)</a>
-</li>
-      <li><a href="scripts/MultisigScript.html#blocksci.MultisigScript.required">required (blocksci.MultisigScript attribute)</a>
-</li>
-      <li><a href="scripts/MultisigScript.html#blocksci.MultisigScript.revealed_tx">revealed_tx (blocksci.MultisigScript attribute)</a>
+      <li><a href="scripts/script.html#blocksci.PayToScriptHashScript.raw_address">raw_address (blocksci.PayToScriptHashScript attribute)</a>
 
       <ul>
-        <li><a href="scripts/NonStandardScript.html#blocksci.NonStandardScript.revealed_tx">(blocksci.NonStandardScript attribute)</a>
-</li>
-        <li><a href="scripts/NulldataScript.html#blocksci.NulldataScript.revealed_tx">(blocksci.NulldataScript attribute)</a>
-</li>
-        <li><a href="scripts/PayToScriptHashScript.html#blocksci.PayToScriptHashScript.revealed_tx">(blocksci.PayToScriptHashScript attribute)</a>
-</li>
-        <li><a href="scripts/PubkeyScript.html#blocksci.PubkeyScript.revealed_tx">(blocksci.PubkeyScript attribute)</a>
+        <li><a href="scripts/script.html#blocksci.PayToWitnessScriptHashScript.raw_address">(blocksci.PayToWitnessScriptHashScript attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="scripts/script.html#blocksci.MultisigScript.required">required (blocksci.MultisigScript attribute)</a>
+</li>
+      <li><a href="scripts/script.html#blocksci.Script.revealed_tx">revealed_tx (blocksci.Script attribute)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -654,49 +638,31 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="scripts/address.html#blocksci.Address.script">script (blocksci.Address attribute)</a>
-
-      <ul>
-        <li><a href="scripts/MultisigScript.html#blocksci.MultisigScript.script">(blocksci.MultisigScript attribute)</a>
 </li>
-        <li><a href="scripts/NonStandardScript.html#blocksci.NonStandardScript.script">(blocksci.NonStandardScript attribute)</a>
-</li>
-        <li><a href="scripts/NulldataScript.html#blocksci.NulldataScript.script">(blocksci.NulldataScript attribute)</a>
-</li>
-        <li><a href="scripts/PayToScriptHashScript.html#blocksci.PayToScriptHashScript.script">(blocksci.PayToScriptHashScript attribute)</a>
-</li>
-        <li><a href="scripts/PubkeyScript.html#blocksci.PubkeyScript.script">(blocksci.PubkeyScript attribute)</a>
-</li>
-        <li><a href="scripts/script.html#blocksci.Script.script">(blocksci.Script attribute)</a>
-</li>
-        <li><a href="clustering/tagged_script.html#blocksci.cluster_python.TaggedScript.script">(blocksci.cluster_python.TaggedScript attribute)</a>
-</li>
-      </ul></li>
       <li><a href="scripts/script.html#blocksci.Script">Script (class in blocksci)</a>
-</li>
-      <li><a href="clustering/cluster.html#blocksci.cluster_python.Cluster.script_count">script_count() (blocksci.cluster_python.Cluster method)</a>
 </li>
       <li><a href="heuristics/heuristics.html#blocksci.blocksci_interface.heuristics.script_deanon_txes">script_deanon_txes() (in module blocksci.blocksci_interface.heuristics)</a>
 </li>
-      <li><a href="scripts/script_type.html#blocksci.script_type">script_type (class in blocksci)</a>
-</li>
-      <li><a href="chain/blockchain.html#blocksci.Blockchain.script_type_txes">script_type_txes() (blocksci.Blockchain method)</a>
-</li>
-      <li><a href="scripts/address_type.html#blocksci.address_type.scripthash">scripthash (blocksci.address_type attribute)</a>
+      <li><a href="scripts/address.html#blocksci.Address.script_num">script_num (blocksci.Address attribute)</a>
 
       <ul>
-        <li><a href="scripts/script_type.html#blocksci.script_type.scripthash">(blocksci.script_type attribute)</a>
+        <li><a href="scripts/equiv_address.html#blocksci.EquivAddress.script_num">(blocksci.EquivAddress attribute)</a>
 </li>
       </ul></li>
-      <li><a href="clustering/cluster.html#blocksci.cluster_python.Cluster.scripts">scripts (blocksci.cluster_python.Cluster attribute)</a>
+      <li><a href="chain/blockchain.html#blocksci.Blockchain.script_type_txes">script_type_txes() (blocksci.Blockchain method)</a>
 </li>
+      <li><a href="scripts/address.html#blocksci.address_type.scripthash">scripthash (blocksci.address_type attribute)</a>
+
+      <ul>
+        <li><a href="scripts/equiv_address.html#blocksci.equiv_address_type.scripthash">(blocksci.equiv_address_type attribute)</a>
+</li>
+      </ul></li>
       <li><a href="chain/blockchain.html#blocksci.Blockchain.scripts">scripts() (blocksci.Blockchain method)</a>
 </li>
       <li><a href="chain/blockchain.html#blocksci.Blockchain.segment">segment() (blocksci.Blockchain method)</a>
 </li>
       <li><a href="chain/AnyInputRange.html#blocksci.AnyInputRange.sent_after">sent_after() (blocksci.AnyInputRange method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="chain/AnyInputRange.html#blocksci.AnyInputRange.sent_before">sent_before() (blocksci.AnyInputRange method)</a>
 </li>
       <li><a href="chain/AnyInputRange.html#blocksci.AnyInputRange.sent_outside">sent_outside() (blocksci.AnyInputRange method)</a>
@@ -709,6 +675,8 @@
         <li><a href="chain/input.html#blocksci.Input.sequence_num">(blocksci.Input attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="chain/AnyTxRange.html#blocksci.AnyTxRange.size_bytes">size_bytes (blocksci.AnyTxRange attribute)</a>
 
       <ul>
@@ -755,24 +723,34 @@
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="clustering/tagged_script.html#blocksci.cluster_python.TaggedScript.tag">tag (blocksci.cluster_python.TaggedScript attribute)</a>
+      <li><a href="clustering/tagged_equiv_address.html#blocksci.cluster_python.TaggedEquivAddress.tag">tag (blocksci.cluster_python.TaggedEquivAddress attribute)</a>
 </li>
       <li><a href="clustering/tagged_cluster.html#blocksci.cluster_python.TaggedCluster.tagged_addresses">tagged_addresses (blocksci.cluster_python.TaggedCluster attribute)</a>
 </li>
-      <li><a href="clustering/cluster_manager.html#blocksci.cluster_python.ClusterManager.tagged_clusters">tagged_clusters() (blocksci.cluster_python.ClusterManager method)</a>
+      <li><a href="clustering/cluster.html#blocksci.cluster_python.Cluster.tagged_addresses">tagged_addresses() (blocksci.cluster_python.Cluster method)</a>
 </li>
-      <li><a href="clustering/cluster.html#blocksci.cluster_python.Cluster.tagged_scripts">tagged_scripts() (blocksci.cluster_python.Cluster method)</a>
+      <li><a href="clustering/cluster_manager.html#blocksci.cluster_python.ClusterManager.tagged_clusters">tagged_clusters() (blocksci.cluster_python.ClusterManager method)</a>
 </li>
       <li><a href="clustering/tagged_cluster.html#blocksci.cluster_python.TaggedCluster">TaggedCluster (class in blocksci.cluster_python)</a>
 </li>
-      <li><a href="clustering/tagged_script.html#blocksci.cluster_python.TaggedScript">TaggedScript (class in blocksci.cluster_python)</a>
+      <li><a href="clustering/tagged_equiv_address.html#blocksci.cluster_python.TaggedEquivAddress">TaggedEquivAddress (class in blocksci.cluster_python)</a>
 </li>
       <li><a href="chain/block.html#blocksci.Block.time">time (blocksci.Block attribute)</a>
 </li>
       <li><a href="chain/block.html#blocksci.Block.timestamp">timestamp (blocksci.Block attribute)</a>
 </li>
-      <li><a href="scripts/MultisigScript.html#blocksci.MultisigScript.total">total (blocksci.MultisigScript attribute)</a>
+      <li><a href="scripts/script.html#blocksci.MultisigScript.total">total (blocksci.MultisigScript attribute)</a>
 </li>
+      <li><a href="chain/AnyTxRange.html#blocksci.AnyTxRange.total_size">total_size (blocksci.AnyTxRange attribute)</a>
+
+      <ul>
+        <li><a href="chain/block.html#blocksci.Block.total_size">(blocksci.Block attribute)</a>
+</li>
+        <li><a href="chain/tx.html#blocksci.Tx.total_size">(blocksci.Tx attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="chain/block.html#blocksci.Block.total_spent_of_ages">total_spent_of_ages() (blocksci.Block method)</a>
 </li>
       <li><a href="chain/AnyInputRange.html#blocksci.AnyInputRange.tx">tx (blocksci.AnyInputRange attribute)</a>
@@ -785,8 +763,6 @@
         <li><a href="chain/output.html#blocksci.Output.tx">(blocksci.Output attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="chain/tx.html#blocksci.Tx">Tx (class in blocksci)</a>
 </li>
       <li><a href="chain/block.html#blocksci.Block.txes">txes (blocksci.Block attribute)</a>
@@ -794,23 +770,19 @@
       <li><a href="scripts/address.html#blocksci.Address.txes">txes() (blocksci.Address method)</a>
 
       <ul>
-        <li><a href="scripts/MultisigScript.html#blocksci.MultisigScript.txes">(blocksci.MultisigScript method)</a>
-</li>
-        <li><a href="scripts/NonStandardScript.html#blocksci.NonStandardScript.txes">(blocksci.NonStandardScript method)</a>
-</li>
-        <li><a href="scripts/NulldataScript.html#blocksci.NulldataScript.txes">(blocksci.NulldataScript method)</a>
-</li>
-        <li><a href="scripts/PayToScriptHashScript.html#blocksci.PayToScriptHashScript.txes">(blocksci.PayToScriptHashScript method)</a>
-</li>
-        <li><a href="scripts/PubkeyScript.html#blocksci.PubkeyScript.txes">(blocksci.PubkeyScript method)</a>
-</li>
-        <li><a href="scripts/script.html#blocksci.Script.txes">(blocksci.Script method)</a>
+        <li><a href="scripts/equiv_address.html#blocksci.EquivAddress.txes">(blocksci.EquivAddress method)</a>
 </li>
       </ul></li>
-      <li><a href="scripts/address_type.html#blocksci.address_type.types">types (blocksci.address_type attribute)</a>
+      <li><a href="scripts/address.html#blocksci.Address.type">type (blocksci.Address attribute)</a>
 
       <ul>
-        <li><a href="scripts/script_type.html#blocksci.script_type.types">(blocksci.script_type attribute)</a>
+        <li><a href="scripts/equiv_address.html#blocksci.EquivAddress.type">(blocksci.EquivAddress attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="scripts/address.html#blocksci.address_type.types">types (blocksci.address_type attribute)</a>
+
+      <ul>
+        <li><a href="scripts/equiv_address.html#blocksci.equiv_address_type.types">(blocksci.equiv_address_type attribute)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -821,19 +793,19 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="heuristics/heuristics.html#blocksci.blocksci_interface.heuristics.unique_change_by_address_reuse">unique_change_by_address_reuse() (in module blocksci.blocksci_interface.heuristics)</a>
 </li>
+      <li><a href="heuristics/heuristics.html#blocksci.blocksci_interface.heuristics.unique_change_by_address_type">unique_change_by_address_type() (in module blocksci.blocksci_interface.heuristics)</a>
+</li>
       <li><a href="heuristics/heuristics.html#blocksci.blocksci_interface.heuristics.unique_change_by_client_change_address_behavior">unique_change_by_client_change_address_behavior() (in module blocksci.blocksci_interface.heuristics)</a>
 </li>
       <li><a href="heuristics/heuristics.html#blocksci.blocksci_interface.heuristics.unique_change_by_locktime">unique_change_by_locktime() (in module blocksci.blocksci_interface.heuristics)</a>
 </li>
-      <li><a href="heuristics/heuristics.html#blocksci.blocksci_interface.heuristics.unique_change_by_optimal_change">unique_change_by_optimal_change() (in module blocksci.blocksci_interface.heuristics)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="heuristics/heuristics.html#blocksci.blocksci_interface.heuristics.unique_change_by_optimal_change">unique_change_by_optimal_change() (in module blocksci.blocksci_interface.heuristics)</a>
+</li>
       <li><a href="heuristics/heuristics.html#blocksci.blocksci_interface.heuristics.unique_change_by_peeling_chain">unique_change_by_peeling_chain() (in module blocksci.blocksci_interface.heuristics)</a>
 </li>
       <li><a href="heuristics/heuristics.html#blocksci.blocksci_interface.heuristics.unique_change_by_power_of_ten_value">unique_change_by_power_of_ten_value() (in module blocksci.blocksci_interface.heuristics)</a>
-</li>
-      <li><a href="heuristics/heuristics.html#blocksci.blocksci_interface.heuristics.unique_change_by_script_type">unique_change_by_script_type() (in module blocksci.blocksci_interface.heuristics)</a>
 </li>
       <li><a href="chain/AnyOutputRange.html#blocksci.AnyOutputRange.unspent">unspent (blocksci.AnyOutputRange attribute)</a>
 </li>
@@ -857,12 +829,28 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="chain/block.html#blocksci.Block.version">version (blocksci.Block attribute)</a>
 </li>
+      <li><a href="chain/AnyTxRange.html#blocksci.AnyTxRange.virtual_size">virtual_size (blocksci.AnyTxRange attribute)</a>
+
+      <ul>
+        <li><a href="chain/block.html#blocksci.Block.virtual_size">(blocksci.Block attribute)</a>
+</li>
+        <li><a href="chain/tx.html#blocksci.Tx.virtual_size">(blocksci.Tx attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="W">W</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="chain/AnyTxRange.html#blocksci.AnyTxRange.weight">weight (blocksci.AnyTxRange attribute)</a>
+
+      <ul>
+        <li><a href="chain/block.html#blocksci.Block.weight">(blocksci.Block attribute)</a>
+</li>
+        <li><a href="chain/tx.html#blocksci.Tx.weight">(blocksci.Tx attribute)</a>
+</li>
+      </ul></li>
       <li><a href="scripts/address.html#blocksci.Address.with_prefix">with_prefix() (blocksci.Address method)</a>
 </li>
       <li><a href="chain/AnyInputRange.html#blocksci.AnyInputRange.with_type">with_type() (blocksci.AnyInputRange method)</a>
@@ -873,14 +861,24 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="scripts/address_type.html#blocksci.address_type.witness_pubkeyhash">witness_pubkeyhash (blocksci.address_type attribute)</a>
+      <li><a href="scripts/address.html#blocksci.address_type.witness_pubkeyhash">witness_pubkeyhash (blocksci.address_type attribute)</a>
 </li>
-      <li><a href="scripts/address_type.html#blocksci.address_type.witness_scripthash">witness_scripthash (blocksci.address_type attribute)</a>
+      <li><a href="scripts/address.html#blocksci.address_type.witness_scripthash">witness_scripthash (blocksci.address_type attribute)</a>
 </li>
-      <li><a href="scripts/PayToScriptHashScript.html#blocksci.PayToScriptHashScript.wrapped_address">wrapped_address (blocksci.PayToScriptHashScript attribute)</a>
+      <li><a href="scripts/script.html#blocksci.WitnessPubkeyHashScript">WitnessPubkeyHashScript (class in blocksci)</a>
 </li>
-      <li><a href="scripts/PayToScriptHashScript.html#blocksci.PayToScriptHashScript.wrapped_script">wrapped_script (blocksci.PayToScriptHashScript attribute)</a>
+      <li><a href="scripts/script.html#blocksci.PayToScriptHashScript.wrapped_address">wrapped_address (blocksci.PayToScriptHashScript attribute)</a>
+
+      <ul>
+        <li><a href="scripts/script.html#blocksci.PayToWitnessScriptHashScript.wrapped_address">(blocksci.PayToWitnessScriptHashScript attribute)</a>
 </li>
+      </ul></li>
+      <li><a href="scripts/script.html#blocksci.PayToScriptHashScript.wrapped_script">wrapped_script (blocksci.PayToScriptHashScript attribute)</a>
+
+      <ul>
+        <li><a href="scripts/script.html#blocksci.PayToWitnessScriptHashScript.wrapped_script">(blocksci.PayToWitnessScriptHashScript attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -920,12 +918,14 @@
 </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -936,7 +936,7 @@
       &copy;2017, Harry Kalodner.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
     </div>

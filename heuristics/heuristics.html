@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Heuristics &#8212; BlockSci 0.2 documentation</title>
+    <title>Heuristics &#8212; BlockSci 0.4 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '0.2',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
@@ -25,15 +17,14 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Clustering" href="../clustering/clustering.html" />
-    <link rel="prev" title="Non-Standard Script" href="../scripts/NonStandardScript.html" />
+    <link rel="prev" title="Script Data" href="../scripts/script.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
@@ -47,6 +38,12 @@
 <dt id="blocksci.blocksci_interface.heuristics.change_by_address_reuse">
 <code class="descclassname">blocksci.blocksci_interface.heuristics.</code><code class="descname">change_by_address_reuse</code><span class="sig-paren">(</span><em>arg0: blocksci.blocksci_interface.Tx</em><span class="sig-paren">)</span> &#x2192; Set[blocksci.blocksci_interface.Output]<a class="headerlink" href="#blocksci.blocksci_interface.heuristics.change_by_address_reuse" title="Permalink to this definition">¶</a></dt>
 <dd><p>If input addresses appear as an output address, the client might have reused addresses for change.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blocksci.blocksci_interface.heuristics.change_by_address_type">
+<code class="descclassname">blocksci.blocksci_interface.heuristics.</code><code class="descname">change_by_address_type</code><span class="sig-paren">(</span><em>arg0: blocksci.blocksci_interface.Tx</em><span class="sig-paren">)</span> &#x2192; Set[blocksci.blocksci_interface.Output]<a class="headerlink" href="#blocksci.blocksci_interface.heuristics.change_by_address_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>If all inputs are of one address type (e.g., P2PKH or P2SH), it is likely that the change output has the same type</p>
 </dd></dl>
 
 <dl class="function">
@@ -80,14 +77,8 @@
 </dd></dl>
 
 <dl class="function">
-<dt id="blocksci.blocksci_interface.heuristics.change_by_script_type">
-<code class="descclassname">blocksci.blocksci_interface.heuristics.</code><code class="descname">change_by_script_type</code><span class="sig-paren">(</span><em>arg0: blocksci.blocksci_interface.Tx</em><span class="sig-paren">)</span> &#x2192; Set[blocksci.blocksci_interface.Output]<a class="headerlink" href="#blocksci.blocksci_interface.heuristics.change_by_script_type" title="Permalink to this definition">¶</a></dt>
-<dd><p>If all inputs are of one script type (e.g., P2PKH or P2SH), it is likely that the change output has the same type</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="blocksci.blocksci_interface.heuristics.change_script_type_txes">
-<code class="descclassname">blocksci.blocksci_interface.heuristics.</code><code class="descname">change_script_type_txes</code><span class="sig-paren">(</span><em>arg0: blocksci.blocksci_interface.Blockchain</em>, <em>arg1: int</em>, <em>arg2: int</em><span class="sig-paren">)</span> &#x2192; List[blocksci.blocksci_interface.Tx]<a class="headerlink" href="#blocksci.blocksci_interface.heuristics.change_script_type_txes" title="Permalink to this definition">¶</a></dt>
+<dt id="blocksci.blocksci_interface.heuristics.change_over_txes">
+<code class="descclassname">blocksci.blocksci_interface.heuristics.</code><code class="descname">change_over_txes</code><span class="sig-paren">(</span><em>arg0: blocksci.blocksci_interface.Blockchain</em>, <em>arg1: int</em>, <em>arg2: int</em><span class="sig-paren">)</span> &#x2192; List[blocksci.blocksci_interface.Tx]<a class="headerlink" href="#blocksci.blocksci_interface.heuristics.change_over_txes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of transactions in the blockchain for which is_change_over returns true</p>
 </dd></dl>
 
@@ -160,6 +151,12 @@
 </dd></dl>
 
 <dl class="function">
+<dt id="blocksci.blocksci_interface.heuristics.unique_change_by_address_type">
+<code class="descclassname">blocksci.blocksci_interface.heuristics.</code><code class="descname">unique_change_by_address_type</code><span class="sig-paren">(</span><em>arg0: blocksci.blocksci_interface.Tx</em><span class="sig-paren">)</span> &#x2192; Optional[blocksci.blocksci_interface.Output]<a class="headerlink" href="#blocksci.blocksci_interface.heuristics.unique_change_by_address_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a unique output from change_by_address_type or None</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="blocksci.blocksci_interface.heuristics.unique_change_by_client_change_address_behavior">
 <code class="descclassname">blocksci.blocksci_interface.heuristics.</code><code class="descname">unique_change_by_client_change_address_behavior</code><span class="sig-paren">(</span><em>arg0: blocksci.blocksci_interface.Tx</em><span class="sig-paren">)</span> &#x2192; Optional[blocksci.blocksci_interface.Output]<a class="headerlink" href="#blocksci.blocksci_interface.heuristics.unique_change_by_client_change_address_behavior" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a unique output from change_by_client_change_address_behavior or None</p>
@@ -187,12 +184,6 @@
 <dt id="blocksci.blocksci_interface.heuristics.unique_change_by_power_of_ten_value">
 <code class="descclassname">blocksci.blocksci_interface.heuristics.</code><code class="descname">unique_change_by_power_of_ten_value</code><span class="sig-paren">(</span><em>tx: blocksci.blocksci_interface.Tx</em>, <em>digits: int=6</em><span class="sig-paren">)</span> &#x2192; Optional[blocksci.blocksci_interface.Output]<a class="headerlink" href="#blocksci.blocksci_interface.heuristics.unique_change_by_power_of_ten_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a unique output from change_by_power_of_ten_value or none</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="blocksci.blocksci_interface.heuristics.unique_change_by_script_type">
-<code class="descclassname">blocksci.blocksci_interface.heuristics.</code><code class="descname">unique_change_by_script_type</code><span class="sig-paren">(</span><em>arg0: blocksci.blocksci_interface.Tx</em><span class="sig-paren">)</span> &#x2192; Optional[blocksci.blocksci_interface.Output]<a class="headerlink" href="#blocksci.blocksci_interface.heuristics.unique_change_by_script_type" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a unique output from change_by_script_type or None</p>
 </dd></dl>
 
 </div>
@@ -227,19 +218,21 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="../scripts/NonStandardScript.html" title="previous chapter">Non-Standard Script</a></li>
+      <li>Previous: <a href="../scripts/script.html" title="previous chapter">Script Data</a></li>
       <li>Next: <a href="../clustering/clustering.html" title="next chapter">Clustering</a></li>
   </ul></li>
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -250,7 +243,7 @@
       &copy;2017, Harry Kalodner.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |

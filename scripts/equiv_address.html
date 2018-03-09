@@ -1,0 +1,212 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Equivalent Addresses &#8212; BlockSci 0.4 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Script Data" href="script.html" />
+    <link rel="prev" title="Addresses" href="address.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="equivalent-addresses">
+<span id="equiv-addresses-label"></span><h1>Equivalent Addresses<a class="headerlink" href="#equivalent-addresses" title="Permalink to this headline">¶</a></h1>
+<p>Equivalent addresses reflect BlockSci’s understanding that various distinct address types actually require a common piece of information to spend them. Pay to pubkey, pay to pubkeyhash and pay to witness pubkey hash all require knowledge of a given pubkey in order to be spent and can thus be considered equivalent. Similarly pay to scripthash and pay to witness scripthash both require knowledge of a given spending script.</p>
+<p>While the <cite>Address</cite> type views these as distinct addresses, the <cite>EquivAddress</cite> type views them as the same. The API’s of the two classes are highly similar, but differ in what outputs they consider as sent to them and thus for example, may display difference balances.</p>
+<p>In other analysis tools, this distinction between <cite>Address</cite> and <cite>EquivAddress</cite> is not explicitly handled. Frequently Pay to Pubkey and Pay to Pubkey hash addresses using the same public key are treated as the same address and in many block explorers the balance of an ‘address’ is the sum of the balances of both types. However a Pay to witness pubkey hash address using the same pubkey is treated as completely distinct from the other addresses. BlockSci allows the user to decide which address concept they would like to work with.</p>
+<div class="section" id="equiv-address-type">
+<h2>Equiv Address Type<a class="headerlink" href="#equiv-address-type" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="blocksci.equiv_address_type">
+<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">equiv_address_type</code><a class="headerlink" href="#blocksci.equiv_address_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enumeration of all equiv address types</p>
+<dl class="attribute">
+<dt id="blocksci.equiv_address_type.multisig">
+<code class="descname">multisig</code><em class="property"> = equiv_address_type.multisig</em><a class="headerlink" href="#blocksci.equiv_address_type.multisig" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.equiv_address_type.nonstandard">
+<code class="descname">nonstandard</code><em class="property"> = equiv_address_type.nonstandard</em><a class="headerlink" href="#blocksci.equiv_address_type.nonstandard" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.equiv_address_type.nulldata">
+<code class="descname">nulldata</code><em class="property"> = equiv_address_type.nulldata</em><a class="headerlink" href="#blocksci.equiv_address_type.nulldata" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.equiv_address_type.pubkey">
+<code class="descname">pubkey</code><em class="property"> = equiv_address_type.pubkey</em><a class="headerlink" href="#blocksci.equiv_address_type.pubkey" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.equiv_address_type.scripthash">
+<code class="descname">scripthash</code><em class="property"> = equiv_address_type.scripthash</em><a class="headerlink" href="#blocksci.equiv_address_type.scripthash" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.equiv_address_type.types">
+<code class="descname">types</code><em class="property"> = [equiv_address_type.pubkey, equiv_address_type.scripthash, equiv_address_type.multisig, equiv_address_type.nulldata, equiv_address_type.nonstandard]</em><a class="headerlink" href="#blocksci.equiv_address_type.types" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="equivaddress">
+<h2>EquivAddress<a class="headerlink" href="#equivaddress" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="blocksci.EquivAddress">
+<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">EquivAddress</code><a class="headerlink" href="#blocksci.EquivAddress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing a equivalent address which coins are sent to</p>
+<dl class="method">
+<dt id="blocksci.EquivAddress.balance">
+<code class="descname">balance</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.EquivAddress</em>, <em>height: int=0</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#blocksci.EquivAddress.balance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the balance held by this EquivAddress at the height (Defaults to the full chain)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.EquivAddress.in_txes">
+<code class="descname">in_txes</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.EquivAddress</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Transaction]<a class="headerlink" href="#blocksci.EquivAddress.in_txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all transaction where this EquivAddress was an input</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.EquivAddress.ins">
+<code class="descname">ins</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.EquivAddress</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Input]<a class="headerlink" href="#blocksci.EquivAddress.ins" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all inputs spent from this EquivAddress</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.EquivAddress.out_txes">
+<code class="descname">out_txes</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.EquivAddress</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Transaction]<a class="headerlink" href="#blocksci.EquivAddress.out_txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all transaction where this EquivAddress was an output</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.EquivAddress.outs">
+<code class="descname">outs</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.EquivAddress</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Output]<a class="headerlink" href="#blocksci.EquivAddress.outs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all outputs sent to this EquivAddress</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.EquivAddress.script_num">
+<code class="descname">script_num</code><a class="headerlink" href="#blocksci.EquivAddress.script_num" title="Permalink to this definition">¶</a></dt>
+<dd><p>The internal identifier of the address</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.EquivAddress.txes">
+<code class="descname">txes</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.EquivAddress</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Transaction]<a class="headerlink" href="#blocksci.EquivAddress.txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all transactions involving this EquivAddress</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.EquivAddress.type">
+<code class="descname">type</code><a class="headerlink" href="#blocksci.EquivAddress.type" title="Permalink to this definition">¶</a></dt>
+<dd><p>The kind of script</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">BlockSci</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Release notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chain/chain.html">Chain Classes</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="scripts.html">Script Classes</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="address.html">Addresses</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Equivalent Addresses</a></li>
+<li class="toctree-l2"><a class="reference internal" href="script.html">Script Data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../heuristics/heuristics.html">Heuristics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../clustering/clustering.html">Clustering</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="scripts.html">Script Classes</a><ul>
+      <li>Previous: <a href="address.html" title="previous chapter">Addresses</a></li>
+      <li>Next: <a href="script.html" title="next chapter">Script Data</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Harry Kalodner.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/scripts/equiv_address.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,5 @@
+Tagged Dedup Address
+====================================
+
+.. autoclass:: blocksci.cluster_python.TaggedEquivAddress
+   :members:
