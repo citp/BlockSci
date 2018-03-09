@@ -84,7 +84,7 @@ def filter_txes(self, filterFunc, start = None, end = None, cpu_count=psutil.cpu
         return cur + [el]
     init = list()
     tx_ids = mapreduce_block_ranges(self, mapFunc, reduceFunc, init, start, end, cpu_count)
-    return [Tx.tx_with_index(x) for x in tx_ids]
+    return [Tx(x) for x in tx_ids]
 
 Blockchain.map_blocks = map_blocks
 Blockchain.filter_blocks = filter_blocks
