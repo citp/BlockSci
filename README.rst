@@ -127,8 +127,7 @@ which will open a window in your browser to the Jupyter server.
 
 Supported Compilers
 =======================
-GCC 6.3 or above
-Clang 5 or above
+BlockSci require GCC 6.3 or above or Clang 5 or above.
 
 BlockSci compilation instructions
 ======================================
