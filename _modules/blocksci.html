@@ -117,7 +117,7 @@
         <span class="k">return</span> <span class="n">cur</span> <span class="o">+</span> <span class="p">[</span><span class="n">el</span><span class="p">]</span>
     <span class="n">init</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">tx_ids</span> <span class="o">=</span> <span class="n">mapreduce_block_ranges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mapFunc</span><span class="p">,</span> <span class="n">reduceFunc</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">cpu_count</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">[</span><span class="n">Tx</span><span class="o">.</span><span class="n">tx_with_index</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">tx_ids</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">Tx</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">tx_ids</span><span class="p">]</span>
 
 <span class="n">Blockchain</span><span class="o">.</span><span class="n">map_blocks</span> <span class="o">=</span> <span class="n">map_blocks</span>
 <span class="n">Blockchain</span><span class="o">.</span><span class="n">filter_blocks</span> <span class="o">=</span> <span class="n">filter_blocks</span>
