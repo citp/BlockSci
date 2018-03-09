@@ -30,11 +30,11 @@ Breaking Changes
 
 - Updated to new data version for the parser output requiring a rerun of the blocksci_parser.
 
-- Introduced new distinction between Address.script and Address.dedup. Address.script returns an object specific to that address type the contains specific information about the script used for the address. Address.dedup provides a DedupAddress object which supports queries such as DedupAddress.outs() and DedupAddress.balance() to generate information about usages of the particular pubkey or script. Both of these functionalities were previously included inside Address.script.
+- Introduced new distinction between Address.script and Address.equiv. Address.script returns an object specific to that address type the contains specific information about the script used for the address. Address.equiv provides an EquivAddress object which supports queries such as EquivAddress.outs() and EquivAddress.balance() to generate information about usages of the particular pubkey or script. Both of these functionalities were previously included inside Address.script. Explanation and more details regarding EquivAddress can be found in it's page in the documentation.
 
-- Renamed various methods from using Script in their name to Dedup address in order to reflect updated terminology.
+- Renamed various methods from using Script in their name to Equiv address in order to reflect updated terminology.
 
-- Renamed ScriptType to DedupAddressType to reflect updated naming as well.
+- Renamed ScriptType to EquivAddressType to reflect updated naming as well.
 
 Bug Fixes
 -------------

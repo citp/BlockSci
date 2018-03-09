@@ -6,6 +6,6 @@ Script Classes
    :caption: Scripts:
    
    address
-   dedup_address
+   equiv_address
    script
 
