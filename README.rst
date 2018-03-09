@@ -125,6 +125,11 @@ which will open a window in your browser to the Jupyter server.
 .. _Jupyter Notebook: https://jupyter.readthedocs.io/en/latest/install.html
 
 
+Supported Compilers
+=======================
+GCC 6.3 or above
+Clang 5 or above
+
 BlockSci compilation instructions
 ======================================
 
