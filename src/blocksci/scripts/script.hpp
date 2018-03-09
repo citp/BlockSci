@@ -9,10 +9,10 @@
 #ifndef script_hpp
 #define script_hpp
 
-#include "script_type.hpp"
 #include "scripts_fwd.hpp"
 
 #include <blocksci/chain/chain_fwd.hpp>
+#include <blocksci/address/address.hpp>
 
 #include <range/v3/utility/optional.hpp>
 
@@ -27,50 +27,15 @@ namespace blocksci {
     struct DataConfiguration;
     class AddressIndex;
     
-    struct Script {
-        uint32_t scriptNum;
-        ScriptType::Enum type;
-        
-        Script() = default;
-        Script(uint32_t scriptNum_, ScriptType::Enum type_) : scriptNum(scriptNum_), type(type_) {}
-        Script(const Address &address);
-        
-        AnyScript getScript(const ScriptAccess &access) const;
-        
-        bool operator==(const Script& other) const {
-            return type == other.type && scriptNum == other.scriptNum;
-        }
-
-        uint64_t calculateBalance(BlockHeight height, const AddressIndex &index, const ChainAccess &chain) const;
-        
-        void visitPointers(const std::function<void(const Address &)> &) const {}
-
-        std::vector<Output> getOutputs(const AddressIndex &index, const ChainAccess &chain) const;
-        std::vector<Input> getInputs(const AddressIndex &index, const ChainAccess &chain) const;
-        std::vector<Transaction> getTransactions(const AddressIndex &index, const ChainAccess &chain) const;
-        std::vector<Transaction> getOutputTransactions(const AddressIndex &index, const ChainAccess &chain) const;
-        std::vector<Transaction> getInputTransactions(const AddressIndex &index, const ChainAccess &chain) const;
-        
-        std::string toString() const;
-        
-        #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        AnyScript getScript() const;
-        uint64_t calculateBalance(BlockHeight height) const;
-        std::vector<Output> getOutputs() const;
-        std::vector<Input> getInputs() const;
-        std::vector<Transaction> getTransactions() const;
-        std::vector<Transaction> getOutputTransactions() const;
-        std::vector<Transaction> getInputTransactions() const;
-        #endif
-    };
-    
-    struct BaseScript : public Script {
+    struct Script : public Address {
         const ScriptAccess *access;
         uint32_t firstTxIndex;
         uint32_t txRevealed;
         
-        BaseScript(uint32_t scriptNum_, ScriptType::Enum type_, const ScriptDataBase &data, const ScriptAccess &scripts);
-        BaseScript(const Address &address, const ScriptDataBase &data, const ScriptAccess &scripts);
+        Script(uint32_t scriptNum_, AddressType::Enum type_, const ScriptDataBase &data, const ScriptAccess &scripts);
+        Script(const Address &address, const ScriptDataBase &data, const ScriptAccess &scripts);
+        
+        void visitPointers(const std::function<void(const Address &)> &) const {}
         
         Transaction getFirstTransaction(const ChainAccess &chain) const;
         ranges::optional<Transaction> getTransactionRevealed(const ChainAccess &chain) const;

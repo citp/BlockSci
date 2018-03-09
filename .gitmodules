@@ -13,9 +13,6 @@
 [submodule "libs/range-v3"]
 	path = libs/range-v3
 	url = https://github.com/ericniebler/range-v3.git
-[submodule "libs/lmdbxx"]
-	path = libs/lmdbxx
-	url = https://github.com/bendiken/lmdbxx
 [submodule "libs/type_safe"]
 	path = libs/type_safe
 	url = https://github.com/foonathan/type_safe

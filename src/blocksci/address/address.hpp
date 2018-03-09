@@ -9,6 +9,7 @@
 #ifndef address_hpp
 #define address_hpp
 
+#include "address_fwd.hpp"
 #include "address_types.hpp"
 
 #include <blocksci/chain/chain_fwd.hpp>
@@ -42,9 +43,6 @@ namespace blocksci {
             return !operator==(other);
         }
         
-        bool operator==(const Script &other) const;
-        bool operator!=(const Script &other) const;
-        
         std::string toString() const;
         
         AnyScript getScript(const ScriptAccess &access) const;
@@ -57,6 +55,7 @@ namespace blocksci {
         std::vector<Transaction> getOutputTransactions(const AddressIndex &index, const ChainAccess &chain) const;
         std::vector<Transaction> getInputTransactions(const AddressIndex &index, const ChainAccess &chain) const;
         
+        EquivAddress equiv() const;
 
         std::string fullType(const ScriptAccess &script) const;
 
@@ -80,7 +79,7 @@ namespace blocksci {
     
     void visit(const Address &address, const std::function<bool(const Address &)> &visitFunc, const ScriptAccess &access);
     
-    ranges::optional<Address> getAddressFromString(const DataConfiguration &config, const HashIndex &index, const std::string &addressString);
+    ranges::optional<Address> getAddressFromString(const DataConfiguration &config, HashIndex &index, const std::string &addressString);
     
     std::vector<Address> getAddressesWithPrefix(const std::string &prefix, const ScriptAccess &scripts);
     

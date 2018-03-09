@@ -51,8 +51,8 @@ namespace blocksci {
         
         Transaction(uint32_t index, BlockHeight height, const ChainAccess &access_) : Transaction(access_.getTx(index), index, height, access_) {}
         
-        Transaction(uint256 hash, const HashIndex &index, const ChainAccess &access);
-        Transaction(std::string hash, const HashIndex &index, const ChainAccess &access);
+        Transaction(uint256 hash, HashIndex &index, const ChainAccess &access);
+        Transaction(std::string hash, HashIndex &index, const ChainAccess &access);
         
         uint256 getHash() const;
         std::string toString() const;
@@ -60,8 +60,24 @@ namespace blocksci {
         std::vector<OutputPointer> getOutputPointers(const InputPointer &pointer) const;
         std::vector<InputPointer> getInputPointers(const OutputPointer &pointer) const;
         
+        uint32_t baseSize() const {
+            return data->baseSize;
+        }
+        
+        uint32_t totalSize() const {
+            return data->realSize;
+        }
+        
+        uint32_t virtualSize() const {
+            return (weight() + 3) / 4;
+        }
+        
+        uint32_t weight() const {
+            return data->realSize + 3 * data->baseSize;
+        }
+        
         uint32_t sizeBytes() const {
-            return data->sizeBytes;
+            return virtualSize();
         }
         
         uint32_t locktime() const {
@@ -113,10 +129,10 @@ namespace blocksci {
         
         // Requires DataAccess
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        Transaction(uint32_t index);
+        explicit Transaction(uint32_t index);
         Transaction(uint32_t index, BlockHeight height);
-        Transaction(uint256 hash);
-        Transaction(std::string hash);
+        explicit Transaction(uint256 hash);
+        explicit Transaction(std::string hash);
         #endif
     };
     

@@ -13,65 +13,58 @@
 #include <blocksci/index/hash_index.hpp>
 #include <blocksci/chain/chain_access.hpp>
 #include <blocksci/chain/transaction.hpp>
+#include <blocksci/address/address_info.hpp>
 #include <blocksci/scripts/script.hpp>
+#include <blocksci/scripts/script_info.hpp>
 #include <blocksci/scripts/pubkey_script.hpp>
 #include <blocksci/scripts/scripthash_script.hpp>
 
 #include <sstream>
 
-HashIndexCreator::HashIndexCreator(const ParserConfigurationBase &config_, const std::string &path) : ParserIndex(config_, "hashIndex"), env(blocksci::createHashIndexEnviroment(path, false)), wtxn(lmdb::txn::begin(env)), pubkey_dbi(lmdb::dbi::open(wtxn, "pubkey", MDB_CREATE)), scripthash_dbi(lmdb::dbi::open(wtxn, "scripthash", MDB_CREATE)), tx_dbi(lmdb::dbi::open(wtxn, "tx", MDB_CREATE)) {
-}
+HashIndexCreator::HashIndexCreator(const ParserConfigurationBase &config_, const std::string &path) : ParserIndex(config_, "hashIndex"), db(path, false) {}
 
-void HashIndexCreator::tearDown() {
-    wtxn.commit();
-}
-
-void HashIndexCreator::processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &) {
+void HashIndexCreator::processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &scripts) {
     auto hash = tx.getHash();
-    tx_dbi.put(wtxn, hash, tx.txNum, lmdb::dbi::default_put_flags);
-}
-
-void HashIndexCreator::processScript(const blocksci::Script &script, const blocksci::ChainAccess &, const blocksci::ScriptAccess &scripts) {
-    if (script.type == blocksci::ScriptType::Enum::PUBKEY) {
-        blocksci::script::Pubkey pubkeyScript{scripts, script.scriptNum};
-        pubkey_dbi.put(wtxn, pubkeyScript.pubkeyhash, script.scriptNum, lmdb::dbi::default_put_flags);
-    } else if (script.type == blocksci::ScriptType::Enum::SCRIPTHASH) {
-        blocksci::script::ScriptHash p2shScript{scripts, script.scriptNum};
-        scripthash_dbi.put(wtxn, p2shScript.address, script.scriptNum, lmdb::dbi::default_put_flags);
+    db.addTx(hash, tx.txNum);
+    
+    for (auto txout : tx.outputs()) {
+        if (txout.getType() == blocksci::AddressType::WITNESS_SCRIPTHASH) {
+            auto scriptNum = txout.getAddress().scriptNum;
+            auto script = blocksci::script::WitnessScriptHash(scripts, scriptNum);
+            db.addAddress<blocksci::AddressType::WITNESS_SCRIPTHASH>(script.address, scriptNum);
+        }
     }
 }
 
 void HashIndexCreator::rollback(const blocksci::State &state) {
+
     {
-        // Delete pubkeys
-        auto cursor = lmdb::cursor::open(wtxn, pubkey_dbi);
-        lmdb::val key, value;
-        while (cursor.get(key, value, MDB_NEXT)) {
-            if (*value.data<uint32_t>() >= state.scriptCounts[static_cast<size_t>(blocksci::ScriptType::Enum::PUBKEY)]) {
-                lmdb::cursor_del(cursor.handle());
+        auto column = db.getColumn(blocksci::AddressType::WITNESS_SCRIPTHASH);
+        rocksdb::WriteBatch batch;
+        auto it = db.getIterator(blocksci::AddressType::WITNESS_SCRIPTHASH);
+        for (it->SeekToFirst(); it->Valid(); it->Next()) {
+            uint32_t destNum;
+            memcpy(&destNum, it->value().data(), sizeof(destNum));
+            auto count = state.scriptCounts[static_cast<size_t>(blocksci::EquivAddressType::SCRIPTHASH)];
+            if (destNum >= count) {
+                batch.Delete(column, it->key());
             }
         }
+        assert(it->status().ok());
+        delete it;
+        db.writeBatch(batch);
     }
     
     {
-        // Delete scripthashes
-        auto cursor = lmdb::cursor::open(wtxn, scripthash_dbi);
-        lmdb::val key, value;
-        while (cursor.get(key, value, MDB_NEXT)) {
-            if (*value.data<uint32_t>() >= state.scriptCounts[static_cast<size_t>(blocksci::ScriptType::Enum::SCRIPTHASH)]) {
-                lmdb::cursor_del(cursor.handle());
+        auto it = db.getTxIterator();
+        for (it->SeekToFirst(); it->Valid(); it->Next()) {
+            uint32_t value;
+            memcpy(&value, it->value().data(), sizeof(value));
+            if (value >= state.txCount) {
+                db.deleteTx(it->key());
             }
         }
-    }
-    
-    {
-        // Delete txes
-        auto cursor = lmdb::cursor::open(wtxn, tx_dbi);
-        lmdb::val key, value;
-        while (cursor.get(key, value, MDB_NEXT)) {
-            if (*value.data<uint32_t>() >= state.txCount) {
-                lmdb::cursor_del(cursor.handle());
-            }
-        }
+        assert(it->status().ok()); // Check for any errors found during the scan
+        delete it;
     }
 }

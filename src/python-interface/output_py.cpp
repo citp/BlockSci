@@ -89,11 +89,11 @@ void addOutputRangeMethods(Class &cl, FuncApplication func) {
             return outputsOfType(std::forward<decltype(r)>(r), type);
         });
     }, "Returns a range including the subset of outputs which were sent to the given address type")
-    .def("with_type", [=](Range &range, ScriptType::Enum type) {
+    .def("with_type", [=](Range &range, EquivAddressType::Enum type) {
         return func(range, [=](auto && r) -> ranges::any_view<blocksci::Output> {
             return outputsOfType(std::forward<decltype(r)>(r), type);
         });
-    }, "Returns a range including the subset of outputs which were sent to the given script type")
+    }, "Returns a range including the subset of outputs which were sent to the given equiv address type")
     ;
 }
 

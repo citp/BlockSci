@@ -16,9 +16,9 @@
 namespace blocksci {
     using namespace script;
     
-    Multisig::ScriptAddress(uint32_t scriptNum_, const MultisigData *rawData, const ScriptAccess &access) : BaseScript(scriptNum_, scriptType, *rawData, access), required(rawData->m), total(rawData->n), addresses(rawData->getAddresses()) {}
+    Multisig::ScriptAddress(uint32_t scriptNum_, const MultisigData *rawData, const ScriptAccess &access) : Script(scriptNum_, addressType, *rawData, access), required(rawData->m), total(rawData->n), addresses(rawData->getAddresses()) {}
     
-    Multisig::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : Multisig(addressNum, access.getScriptData<Multisig::scriptType>(addressNum), access) {}
+    Multisig::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : Multisig(addressNum, access.getScriptData<addressType>(addressNum), access) {}
     
     std::string Multisig::toString() const {
         std::stringstream ss;
@@ -51,8 +51,8 @@ namespace blocksci {
         return ss.str();
     }
     
-    std::vector<ScriptAddress<ScriptType::Enum::PUBKEY>> Multisig::pubkeyScripts() const {
-        std::vector<ScriptAddress<ScriptType::Enum::PUBKEY>> ret;
+    std::vector<ScriptAddress<AddressType::Enum::PUBKEY>> Multisig::pubkeyScripts() const {
+        std::vector<ScriptAddress<AddressType::Enum::PUBKEY>> ret;
         ret.reserve(addresses.size());
         for (auto &address : addresses) {
             ret.emplace_back(*access, address.scriptNum);

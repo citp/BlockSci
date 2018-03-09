@@ -14,10 +14,10 @@
 namespace blocksci {
     
     template <>
-    class ScriptAddress<ScriptType::Enum::MULTISIG> : public BaseScript {
+    class ScriptAddress<AddressType::MULTISIG> : public Script {
         
     public:
-        constexpr static ScriptType::Enum scriptType = ScriptType::Enum::MULTISIG;
+        constexpr static AddressType::Enum addressType = AddressType::MULTISIG;
         uint8_t required;
         uint8_t total;
         std::vector<Address> addresses;
@@ -35,7 +35,7 @@ namespace blocksci {
             }
         }
         
-        std::vector<ScriptAddress<ScriptType::Enum::PUBKEY>> pubkeyScripts() const;
+        std::vector<ScriptAddress<AddressType::PUBKEY>> pubkeyScripts() const;
     };
 }
 

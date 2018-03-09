@@ -29,53 +29,30 @@
 
 using namespace blocksci;
 
-std::unordered_map<ScriptType::Enum,  lmdb::dbi> setupInsertStatements(lmdb::txn &wtxn) {
-    std::unordered_map<ScriptType::Enum,  lmdb::dbi> scriptDbs;
+AddressDB::AddressDB(const ParserConfigurationBase &config_, const std::string &path) : ParserIndex(config_, "addressDB") {
+    rocksdb::Options options;
+    // Optimize RocksDB. This is the easiest way to get RocksDB to perform well
+    options.IncreaseParallelism();
+    options.OptimizeLevelStyleCompaction();
+    // create the DB if it's not already present
+    options.create_if_missing = true;
+    options.create_missing_column_families = true;
     
-    for (auto script : ScriptType::all) {
-        scriptDbs.emplace(std::piecewise_construct, std::forward_as_tuple(script), std::forward_as_tuple(lmdb::dbi::open(wtxn, std::string(scriptName(script)).c_str(), MDB_CREATE | MDB_DUPSORT| MDB_DUPFIXED)));
+    
+    std::vector<rocksdb::ColumnFamilyDescriptor> columnDescriptors;
+    columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions());
+    for (auto script : EquivAddressType::all) {
+        columnDescriptors.push_back(rocksdb::ColumnFamilyDescriptor{equivAddressName(script), rocksdb::ColumnFamilyOptions{}});
     }
-    return scriptDbs;
+    rocksdb::Status s = rocksdb::DB::Open(options, path.c_str(), columnDescriptors, &columnHandles, &db);
+    assert(s.ok());
 }
-
-AddressDB::AddressDB(const ParserConfigurationBase &config_, const std::string &path) : ParserIndex(config_, "addressDB"), env(createAddressIndexEnviroment(path, false)), wtxn(lmdb::txn::begin(env)), scriptDbs(setupInsertStatements(wtxn)) {
-}
-
-//namespace {
-//    void printStats(const MDB_stat &stat) {
-//        std::cout << "ms_psize: " << stat.ms_psize << "\n";
-//        std::cout << "ms_depth: " << stat.ms_depth << "\n";
-//        std::cout << "ms_branch_pages: " << stat.ms_branch_pages << "\n";
-//        std::cout << "ms_leaf_pages: " << stat.ms_leaf_pages << "\n";
-//        std::cout << "ms_overflow_pages: " << stat.ms_overflow_pages << "\n";
-//        std::cout << "ms_entries: " << stat.ms_entries << "\n";
-//    }
-//}
-
-
 
 void AddressDB::tearDown() {
-    
-//    MDB_stat stats;
-//    dbi_stat(wtxn, scriptDbs.at(ScriptType::Enum::PUBKEY), &stats);
-//    std::cout << "AddressDB\n";
-//    dbi_stat(wtxn, scriptDbs.at(ScriptType::Enum::PUBKEY), &stats);
-//    std::cout << "PUBKEY:\n";
-//    printStats(stats);
-//    dbi_stat(wtxn, scriptDbs.at(ScriptType::Enum::SCRIPTHASH), &stats);
-//    std::cout << "SCRIPTHASH:\n";
-//    printStats(stats);
-//    dbi_stat(wtxn, scriptDbs.at(ScriptType::Enum::MULTISIG), &stats);
-//    std::cout << "MULTISIG:\n";
-//    printStats(stats);
-//    dbi_stat(wtxn, scriptDbs.at(ScriptType::Enum::NONSTANDARD), &stats);
-//    std::cout << "NONSTANDARD:\n";
-//    printStats(stats);
-//    dbi_stat(wtxn, scriptDbs.at(ScriptType::Enum::NULL_DATA), &stats);
-//    std::cout << "NULL_DATA:\n";
-//    printStats(stats);
-//    std::cout << "\n";
-    wtxn.commit();
+    for (auto handle : columnHandles) {
+        delete handle;
+    }
+    delete db;
 }
 
 void AddressDB::processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &scripts) {
@@ -91,7 +68,7 @@ void AddressDB::processTx(const blocksci::Transaction &tx, const blocksci::Scrip
             std::vector<Address> addressesToAdd;
             bool insideP2SH = false;
             std::function<bool(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
-                if (scriptType(a.type) == blocksci::ScriptType::Enum::SCRIPTHASH) {
+                if (equivType(a.type) == blocksci::EquivAddressType::SCRIPTHASH) {
                     auto p2sh = blocksci::script::ScriptHash{scripts, a.scriptNum};
                     if (!insideP2SH) {
                         if (p2sh.txRevealed < tx.txNum) {
@@ -140,7 +117,7 @@ void AddressDB::processTx(const blocksci::Transaction &tx, const blocksci::Scrip
         std::function<bool(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
             addAddress(a, pointer);
             // If address is p2sh then ignore the wrapped address if it was revealed after this transaction
-            if (scriptType(a.type) == blocksci::ScriptType::Enum::SCRIPTHASH) {
+            if (equivType(a.type) == EquivAddressType::SCRIPTHASH) {
                 auto p2sh = blocksci::script::ScriptHash{scripts, a.scriptNum};
                 if (!p2sh.hasBeenSpent() || tx.txNum < p2sh.txRevealed) {
                     return false;
@@ -154,38 +131,47 @@ void AddressDB::processTx(const blocksci::Transaction &tx, const blocksci::Scrip
 }
 
 void AddressDB::revealedP2SH(uint32_t scriptNum, const std::vector<Address> &addresses) {
-    auto &dbi = scriptDbs.at(blocksci::ScriptType::SCRIPTHASH);
-    auto cursor = lmdb::cursor::open(wtxn, dbi);
-    lmdb::val key{&scriptNum, sizeof(scriptNum)};
-    lmdb::val value;
-    for (bool hasNext = cursor.get(key, value, MDB_SET_RANGE); hasNext; hasNext = cursor.get(key, value, MDB_NEXT)) {
-        Address *address = key.data<Address>();
-        if (address->scriptNum != scriptNum) {
-            break;
-        }
-        OutputPointer *pointer = value.data<OutputPointer>();
+    auto column = columnHandles[static_cast<size_t>(EquivAddressType::SCRIPTHASH) + 1];
+    rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
+    rocksdb::Slice key(reinterpret_cast<const char *>(&scriptNum), sizeof(scriptNum));
+    for (it->Seek(key); it->Valid() && it->key().starts_with(key); it->Next()) {
+        auto key = it->key();
+        key.remove_prefix(sizeof(Address));
+        OutputPointer outPoint;
+        memcpy(&outPoint, key.data(), sizeof(outPoint));
         for (auto &a : addresses) {
-            addAddress(a, *pointer);
+            addAddress(a, outPoint);
         }
     }
+    assert(it->status().ok());
+    delete it;
 }
 
 void AddressDB::addAddress(const blocksci::Address &address, const blocksci::OutputPointer &pointer) {
-    auto script = scriptType(address.type);
-    auto &dbi = scriptDbs.at(script);
-    dbi.put(wtxn, address, pointer);
+    auto script = equivType(address.type);
+    std::array<rocksdb::Slice, 2> keyParts = {{
+        rocksdb::Slice(reinterpret_cast<const char *>(&address), sizeof(address)),
+        rocksdb::Slice(reinterpret_cast<const char *>(&pointer), sizeof(pointer))
+    }};
+    std::string sliceStr;
+    rocksdb::Slice key{rocksdb::SliceParts{keyParts.data(), keyParts.size()}, &sliceStr};
+    db->Put(rocksdb::WriteOptions{}, columnHandles[static_cast<size_t>(script) + 1], key, rocksdb::Slice{});
 }
 
 void AddressDB::rollback(const blocksci::State &state) {
-    for (auto script : ScriptType::all) {
-        auto &dbi = scriptDbs.at(script);
-        auto cursor = lmdb::cursor::open(wtxn, dbi);
-        lmdb::val key, value;
-        while (cursor.get(key, value, MDB_NEXT)) {
-            blocksci::OutputPointer *pointer = value.data<blocksci::OutputPointer>();
-            if (pointer->txNum >= state.txCount) {
-                lmdb::cursor_del(cursor.handle());
+    for (auto script : EquivAddressType::all) {
+        auto column = columnHandles[static_cast<size_t>(script) + 1];
+        rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
+        for (it->SeekToFirst(); it->Valid(); it->Next()) {
+            auto key = it->key();
+            key.remove_prefix(sizeof(Address));
+            OutputPointer outPoint;
+            memcpy(&outPoint, key.data(), sizeof(outPoint));
+            if (outPoint.txNum >= state.scriptCounts[static_cast<size_t>(blocksci::EquivAddressType::SCRIPTHASH)]) {
+                db->Delete(rocksdb::WriteOptions(), column, it->key());
             }
         }
+        assert(it->status().ok()); // Check for any errors found during the scan
+        delete it;
     }
 }

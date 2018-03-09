@@ -45,13 +45,13 @@ struct ScriptInput {
         data.process(state);
     }
     
-    void check(const AddressState &state) {
+    void check(AddressState &state) {
         data.check(state);
     }
 };
 
 struct ScriptInputDataBase {
-    void check(const AddressState &) {}
+    void check(AddressState &) {}
     void process(AddressState &) {}
 };
 
@@ -76,7 +76,7 @@ struct ScriptInputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : public
 
 template<>
 struct ScriptInputData<blocksci::AddressType::Enum::NONSTANDARD> : public ScriptInputDataBase {
-    CScript script;
+    blocksci::CScript script;
     
     ScriptInputData() = default;
     ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::NONSTANDARD> &);
@@ -105,7 +105,7 @@ struct ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptI
     ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::SCRIPTHASH> &);
     
     void process(AddressState &state);
-    void check(const AddressState &state);
+    void check(AddressState &state);
     
 private:
     ScriptInputData(std::pair<AnyScriptOutput, std::unique_ptr<AnyScriptInput>> data);
@@ -119,7 +119,7 @@ struct ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> : public
     ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> &);
     
     void process(AddressState &state);
-    void check(const AddressState &state);
+    void check(AddressState &state);
     
 private:
     ScriptInputData(std::pair<AnyScriptOutput, std::unique_ptr<AnyScriptInput>> data);
@@ -135,7 +135,7 @@ public:
     AnyScriptInput(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const AnySpendData &spendData);
     
     void process(AddressState &state);
-    void check(const AddressState &state);
+    void check(AddressState &state);
     
     void setScriptNum(uint32_t scriptNum);
     

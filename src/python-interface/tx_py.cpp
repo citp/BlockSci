@@ -42,8 +42,20 @@ void addTransactionMethods(Class &cl, FuncApplication func, FuncDoc func2) {
         return tx.inputCount();
     }), func2("The number of inputs this transaction has"))
     .def_property_readonly("size_bytes", func([](const Transaction &tx) {
-        return tx.sizeBytes();
+        return tx.totalSize();
     }), func2("The size of this transaction in bytes"))
+    .def_property_readonly("base_size", func([](const Transaction &tx) {
+        return tx.baseSize();
+    }), func2("The size of the non-segwit data in bytes"))
+    .def_property_readonly("total_size", func([](const Transaction &tx) {
+        return tx.totalSize();
+    }), func2("The size all transaction data in bytes"))
+    .def_property_readonly("virtual_size", func([](const Transaction &tx) {
+        return tx.virtualSize();
+    }), func2("The weight of the transaction divided by 4"))
+    .def_property_readonly("weight", func([](const Transaction &tx) {
+        return tx.weight();
+    }), func2("Three times the base size plus the total size"))
     .def_property_readonly("locktime", func([](const Transaction &tx) {
         return tx.locktime();
     }), func2("The locktime of this transasction"))
@@ -57,7 +69,7 @@ void addTransactionMethods(Class &cl, FuncApplication func, FuncDoc func2) {
         return tx.block();
     }), func2("The block that this transaction was in"))
     .def_property_readonly("index", func([](const Transaction &tx) {
-        return tx.block();
+        return tx.txNum;
     }), func2("The internal index of this transaction"))
     .def_property_readonly("hash", func([](const Transaction &tx) {
         return tx.getHash();

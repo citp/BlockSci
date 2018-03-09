@@ -26,7 +26,6 @@
 template<blocksci::AddressType::Enum type>
 struct ScriptOutput {
     static constexpr auto address_v = type;
-    static constexpr auto script_v = scriptType(type);
     ScriptOutputData<type> data;
     uint32_t scriptNum = 0;
     bool isNew = false;
@@ -34,10 +33,8 @@ struct ScriptOutput {
     ScriptOutput() = default;
     ScriptOutput(const ScriptOutputData<type> &data_) : data(data_) {}
     
-    template<blocksci::AddressType::Enum t = type, std::enable_if_t<blocksci::ScriptInfo<scriptType(t)>::deduped, int> = 0>
     uint32_t resolve(AddressState &state) {
-        RawScript rawScript{data.getHash(), script_v};
-        auto addressInfo = state.findAddress(rawScript);
+        auto addressInfo = state.findAddress(data);
         std::tie(scriptNum, isNew) = state.resolveAddress(addressInfo);
         assert(scriptNum > 0);
         if (isNew) {
@@ -46,33 +43,17 @@ struct ScriptOutput {
         return scriptNum;
     }
     
-    template<blocksci::AddressType::Enum t = type, std::enable_if_t<!blocksci::ScriptInfo<scriptType(t)>::deduped, int> = 0>
-    uint32_t resolve(AddressState &state) {
-        scriptNum = state.getNewAddressIndex(script_v);
-        isNew = true;
-        assert(scriptNum > 0);
-        data.visitWrapped([&](auto &output) { output.resolve(state); });
-        return scriptNum;
-    }
-    
-    template<blocksci::AddressType::Enum t = type, std::enable_if_t<blocksci::ScriptInfo<scriptType(t)>::deduped, int> = 0>
-    void check(const AddressState &state) {
-        RawScript rawScript{data.getHash(), script_v};
-        auto addressInfo = state.findAddress(rawScript);
+    void check(AddressState &state) {
+        auto addressInfo = state.findAddress(data);
         scriptNum = addressInfo.addressNum;
         isNew = addressInfo.addressNum == 0;
-        data.visitWrapped([&](auto &output) { output.check(state); });
-    }
-    
-    template<blocksci::AddressType::Enum t = type, std::enable_if_t<!blocksci::ScriptInfo<scriptType(t)>::deduped, int> = 0>
-    void check(const AddressState &state) {
-        scriptNum = 0;
-        isNew = true;
         data.visitWrapped([&](auto &output) { output.check(state); });
     }
 };
 
 struct ScriptOutputDataBase {
+    static constexpr bool maybeUpdate = false;
+    
     bool isValid() const { return true; }
     
     template<typename Func>
@@ -84,6 +65,8 @@ struct ScriptOutputDataBase {
 
 template <>
 struct ScriptOutputData<blocksci::AddressType::Enum::PUBKEY> : public ScriptOutputDataBase {
+    static constexpr bool maybeUpdate = true;
+    
     blocksci::CPubKey pubkey;
     
     ScriptOutputData(const boost::iterator_range<const unsigned char *> &vch1);
@@ -132,6 +115,8 @@ struct ScriptOutputData<blocksci::AddressType::Enum::SCRIPTHASH> : public Script
 
 template <>
 struct ScriptOutputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> : public ScriptOutputDataBase {
+    static constexpr bool maybeUpdate = true;
+    
     blocksci::uint256 hash;
     
     ScriptOutputData(blocksci::uint256 hash_) : hash(hash_) {}
@@ -208,7 +193,7 @@ public:
     AnyScriptOutput() = default;
     AnyScriptOutput(const blocksci::CScriptView &scriptPubKey, bool witnessActivated);
     
-    void check(const AddressState &state);
+    void check(AddressState &state);
     uint32_t resolve(AddressState &state);
     bool isValid() const;
 };

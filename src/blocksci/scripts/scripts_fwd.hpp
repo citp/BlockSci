@@ -9,9 +9,13 @@
 #ifndef scriptsfwd_h
 #define scriptsfwd_h
 
-#include "script_type.hpp"
+#include <blocksci/address/equiv_address_type.hpp>
+#include <blocksci/address/address_types.hpp>
 
 namespace blocksci {
+    template <EquivAddressType::Enum>
+    struct ScriptData;
+    
     class CBitcoinAddress;
     class CKeyID;
     class CPubKey;
@@ -28,18 +32,21 @@ namespace blocksci {
     class AnyScript;
     class CScriptView;
     
-    template <ScriptType::Enum>
+    template <AddressType::Enum>
     class ScriptAddress;
     
-    template <ScriptType::Enum>
+    template <EquivAddressType::Enum>
     struct ScriptInfo;
     
     namespace script {
-        using Pubkey = ScriptAddress<ScriptType::Enum::PUBKEY>;
-        using ScriptHash = ScriptAddress<ScriptType::Enum::SCRIPTHASH>;
-        using Multisig = ScriptAddress<ScriptType::Enum::MULTISIG>;
-        using OpReturn = ScriptAddress<ScriptType::Enum::NULL_DATA>;
-        using Nonstandard = ScriptAddress<ScriptType::Enum::NONSTANDARD>;
+        using Pubkey = ScriptAddress<AddressType::PUBKEY>;
+        using PubkeyHash = ScriptAddress<AddressType::PUBKEYHASH>;
+        using WitnessPubkeyHash = ScriptAddress<AddressType::WITNESS_PUBKEYHASH>;
+        using ScriptHash = ScriptAddress<AddressType::SCRIPTHASH>;
+        using WitnessScriptHash = ScriptAddress<AddressType::WITNESS_SCRIPTHASH>;
+        using Multisig = ScriptAddress<AddressType::MULTISIG>;
+        using OpReturn = ScriptAddress<AddressType::NULL_DATA>;
+        using Nonstandard = ScriptAddress<AddressType::NONSTANDARD>;
     }
 }
 

@@ -14,6 +14,7 @@
 #include "chain/output.hpp"
 #include "chain/input.hpp"
 #include "address/address.hpp"
+#include "address/equiv_address.hpp"
 #include "address/address_info.hpp"
 #include "scripts/script_info.hpp"
 #include "scripts/script.hpp"
@@ -39,19 +40,30 @@ namespace blocksci {
     std::vector<Transaction> getOutputTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
     std::vector<Transaction> getInputTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
     
-    lmdb::env createAddressIndexEnviroment(const std::string &path, bool readonly) {
-        auto env = lmdb::env::create();
-        env.set_mapsize(40UL * 1024UL * 1024UL * 1024UL); /* 1 GiB */
-        env.set_max_dbs(5);
-        int flags = MDB_NOSUBDIR;
-        if (readonly) {
-            flags |= MDB_RDONLY;
-        }
-        env.open(path.c_str(), flags, 0664);
-        return env;
+    AddressIndex::AddressIndex(const std::string &path)  {
+        rocksdb::Options options;
+        // Optimize RocksDB. This is the easiest way to get RocksDB to perform well
+        options.IncreaseParallelism();
+        options.OptimizeLevelStyleCompaction();
+        // create the DB if it's not already present
+        options.create_if_missing = true;
+        options.create_missing_column_families = true;
+        
+        
+        std::vector<rocksdb::ColumnFamilyDescriptor> columnDescriptors;
+        columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions());
+        blocksci::for_each(blocksci::EquivAddressInfoList(), [&](auto tag) {
+            columnDescriptors.emplace_back(equivAddressName(tag), rocksdb::ColumnFamilyOptions{});
+        });
+        rocksdb::Status s = rocksdb::DB::OpenForReadOnly(options, path.c_str(), columnDescriptors, &columnHandles, &db);
+        assert(s.ok());
     }
     
-    AddressIndex::AddressIndex(const std::string &path) : env(createAddressIndexEnviroment(path, true))  {
+    AddressIndex::~AddressIndex() {
+        for (auto handle : columnHandles) {
+            delete handle;
+        }
+        delete db;
     }
     
     std::vector<Output> getOutputsImp(std::vector<OutputPointer> pointers, const ChainAccess &access) {
@@ -65,7 +77,7 @@ namespace blocksci {
         return getOutputsImp(getOutputPointers(address), access);
     }
     
-    std::vector<Output> AddressIndex::getOutputs(const Script &script, const ChainAccess &access) const {
+    std::vector<Output> AddressIndex::getOutputs(const EquivAddress &script, const ChainAccess &access) const {
         return getOutputsImp(getOutputPointers(script), access);
     }
     
@@ -91,7 +103,7 @@ namespace blocksci {
         return getInputsImp(getOutputPointers(address), access);
     }
     
-    std::vector<Input> AddressIndex::getInputs(const Script &script, const ChainAccess &access) const {
+    std::vector<Input> AddressIndex::getInputs(const EquivAddress &script, const ChainAccess &access) const {
         return getInputsImp(getOutputPointers(script), access);
     }
     
@@ -113,7 +125,7 @@ namespace blocksci {
         return getTransactionsImp(getOutputPointers(address), access);
     }
     
-    std::vector<Transaction> AddressIndex::getTransactions(const Script &script, const ChainAccess &access) const {
+    std::vector<Transaction> AddressIndex::getTransactions(const EquivAddress &script, const ChainAccess &access) const {
         return getTransactionsImp(getOutputPointers(script), access);
     }
     
@@ -128,7 +140,7 @@ namespace blocksci {
         return getOutputTransactionsImp(getOutputPointers(address), access);
     }
     
-    std::vector<Transaction> AddressIndex::getOutputTransactions(const Script &script, const ChainAccess &access) const {
+    std::vector<Transaction> AddressIndex::getOutputTransactions(const EquivAddress &script, const ChainAccess &access) const {
         return getOutputTransactionsImp(getOutputPointers(script), access);
     }
     
@@ -149,41 +161,53 @@ namespace blocksci {
         return getInputTransactionsImp(getOutputPointers(address), access);
     }
     
-    std::vector<Transaction> AddressIndex::getInputTransactions(const Script &script, const ChainAccess &access) const {
+    std::vector<Transaction> AddressIndex::getInputTransactions(const EquivAddress &script, const ChainAccess &access) const {
         return getInputTransactionsImp(getOutputPointers(script), access);
     }
     
-    template<typename Query>
-    std::vector<OutputPointer> getOutputPointersImp(lmdb::cursor &cursor, lmdb::val &key, const Query &query) {
+    std::vector<OutputPointer> getOutputPointersImp(rocksdb::DB *db, rocksdb::ColumnFamilyHandle *column, const rocksdb::Slice &key) {
         std::vector<OutputPointer> pointers;
-        lmdb::val value;
-        for (bool hasNext = cursor.get(key, value, MDB_SET_RANGE); hasNext; hasNext = cursor.get(key, value, MDB_NEXT)) {
-            Address *address = key.data<Address>();
-            if (*address != query) {
-                break;
-            }
-            OutputPointer *pointer = value.data<OutputPointer>();
-            pointers.push_back(*pointer);
+        rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
+        for (it->Seek(key); it->Valid() && it->key().starts_with(key); it->Next()) {
+            auto foundKey = it->key();
+            foundKey.remove_prefix(sizeof(Address));
+            OutputPointer outPoint;
+            memcpy(&outPoint, foundKey.data(), sizeof(outPoint));
+            pointers.push_back(outPoint);
         }
         return pointers;
     }
                                                                       
     std::vector<OutputPointer> AddressIndex::getOutputPointers(const Address &searchAddress) const {
-        std::vector<OutputPointer> pointers;
-        auto rtxn = lmdb::txn::begin(env, nullptr, MDB_RDONLY);
-        auto dbi = lmdb::dbi::open(rtxn, std::string(scriptName(scriptType(searchAddress.type))).c_str(), MDB_DUPSORT| MDB_DUPFIXED);
-        auto cursor = lmdb::cursor::open(rtxn, dbi);
-        lmdb::val key{&searchAddress, sizeof(searchAddress)};
-        return getOutputPointersImp(cursor, key, searchAddress);
+        auto column = columnHandles[static_cast<size_t>(equivType(searchAddress.type)) + 1];
+        rocksdb::Slice key{reinterpret_cast<const char *>(&searchAddress), sizeof(searchAddress)};
+        return getOutputPointersImp(db, column, key);
     }
     
-    std::vector<OutputPointer> AddressIndex::getOutputPointers(const Script &script) const {
-        std::vector<OutputPointer> pointers;
-        auto rtxn = lmdb::txn::begin(env, nullptr, MDB_RDONLY);
-        auto dbi = lmdb::dbi::open(rtxn, std::string(scriptName(script.type)).c_str(), MDB_DUPSORT| MDB_DUPFIXED);
-        auto cursor = lmdb::cursor::open(rtxn, dbi);
-        lmdb::val key{&script.scriptNum, sizeof(script.scriptNum)};
-        return getOutputPointersImp(cursor, key, script);
+    std::vector<OutputPointer> AddressIndex::getOutputPointers(const EquivAddress &script) const {
+        auto column = columnHandles[static_cast<size_t>(script.type) + 1];
+        rocksdb::Slice key{reinterpret_cast<const char *>(&script.scriptNum), sizeof(script.scriptNum)};
+        return getOutputPointersImp(db, column, key);
+    }
+    
+    void AddressIndex::checkDB(const ChainAccess &access) const {
+        for (auto scriptType : EquivAddressType::all) {
+            auto column = columnHandles[static_cast<size_t>(scriptType) + 1];
+            rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
+            for (it->SeekToFirst(); it->Valid(); it->Next()) {
+                auto foundKey = it->key();
+                Address address;
+                memcpy(&address, foundKey.data(), sizeof(address));
+                foundKey.remove_prefix(sizeof(Address));
+                OutputPointer outPoint;
+                memcpy(&outPoint, foundKey.data(), sizeof(outPoint));
+                Output output(outPoint, access);
+                if (output.getType() != address.type) {
+                    std::cout << "Output " << output << " matched with " << address << " instead of " << output.getAddress();
+                    continue;
+                }
+            }
+        }
     }
 }
 

@@ -10,11 +10,12 @@
 #include "cluster.hpp"
 
 #include <blocksci/address/address_info.hpp>
+#include <blocksci/address/equiv_address.hpp>
 
-ClusterManager::ClusterManager(std::string baseDirectory) : clusterOffsetFile(baseDirectory + "clusterOffsets"), clusterScriptsFile(baseDirectory + "clusterAddresses"), scriptClusterIndexFiles(blocksci::apply(blocksci::ScriptInfoList(), [&] (auto tag) {
+ClusterManager::ClusterManager(const boost::filesystem::path &baseDirectory) : clusterOffsetFile(baseDirectory/"clusterOffsets"), clusterScriptsFile(baseDirectory/"clusterAddresses"), scriptClusterIndexFiles(blocksci::apply(blocksci::EquivAddressInfoList(), [&] (auto tag) {
     std::stringstream ss;
-    ss << baseDirectory << blocksci::scriptName(tag) << "_cluster_index";
-    return ss.str();
+    ss << blocksci::equivAddressName(tag) << "_cluster_index";
+    return baseDirectory/ss.str();
 }))  {
 }
 
@@ -22,7 +23,7 @@ uint32_t ClusterManager::clusterCount() const {
     return static_cast<uint32_t>(clusterOffsetFile.size());
 }
 
-template<blocksci::ScriptType::Enum type>
+template<blocksci::EquivAddressType::Enum type>
 struct ClusterNumFunctor {
     static uint32_t f(const ClusterManager *cm, uint32_t scriptNum) {
         return cm->getClusterNum<type>(scriptNum);
@@ -30,30 +31,30 @@ struct ClusterNumFunctor {
 };
 
 
-uint32_t ClusterManager::getClusterNum(const blocksci::Script &script) const {
-    static auto table = blocksci::make_dynamic_table<blocksci::ScriptType, ClusterNumFunctor>();
-    static constexpr std::size_t size = blocksci::ScriptType::all.size();
+uint32_t ClusterManager::getClusterNum(const blocksci::EquivAddress &address) const {
+    static auto table = blocksci::make_dynamic_table<blocksci::EquivAddressType, ClusterNumFunctor>();
+    static constexpr std::size_t size = blocksci::EquivAddressType::all.size();
     
-    auto index = static_cast<size_t>(script.type);
+    auto index = static_cast<size_t>(address.type);
     if (index >= size)
     {
         throw std::invalid_argument("combination of enum values is not valid");
     }
-    return table[index](this, script.scriptNum);
+    return table[index](this, address.scriptNum);
 }
 
 Cluster ClusterManager::getCluster(const blocksci::Address &address) const {
+    return Cluster(getClusterNum(address.equiv()), *this);
+}
+
+Cluster ClusterManager::getCluster(const blocksci::EquivAddress &address) const {
     return Cluster(getClusterNum(address), *this);
 }
 
-Cluster ClusterManager::getCluster(const blocksci::Script &script) const {
-    return Cluster(getClusterNum(script), *this);
-}
-
-std::vector<TaggedCluster> ClusterManager::taggedClusters(const std::unordered_map<blocksci::Script, std::string> &tags) {
+std::vector<TaggedCluster> ClusterManager::taggedClusters(const std::unordered_map<blocksci::EquivAddress, std::string> &tags) {
     std::vector<TaggedCluster> taggedClusters;
     for (auto cluster : getClusters()) {
-        auto taggedAddresses = cluster.taggedScripts(tags);
+        auto taggedAddresses = cluster.taggedEquivAddresses(tags);
         if (!taggedAddresses.empty()) {
             taggedClusters.emplace_back(cluster, std::move(taggedAddresses));
         }
@@ -83,7 +84,7 @@ std::vector<uint32_t> ClusterManager::getClusterSizes() const {
     return clusterSizes;
 }
 
-boost::iterator_range<const blocksci::Script *> ClusterManager::getClusterScripts(uint32_t clusterNum) const {
+boost::iterator_range<const blocksci::EquivAddress *> ClusterManager::getClusterScripts(uint32_t clusterNum) const {
     auto nextClusterOffset = *clusterOffsetFile.getData(clusterNum);
     uint32_t clusterOffset = 0;
     if (clusterNum > 0) {

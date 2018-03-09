@@ -103,7 +103,8 @@ struct TransactionHeader {
     int32_t version;
     uint32_t inputCount;
     uint32_t outputCount;
-    uint32_t sizeBytes;
+    uint32_t baseSize;
+    uint32_t realSize;
     uint32_t locktime;
     TransactionHeader(SafeMemReader &reader);
 };
@@ -111,7 +112,8 @@ struct TransactionHeader {
 struct RawTransaction {
     uint32_t txNum;
     blocksci::uint256 hash;
-    uint32_t sizeBytes;
+    uint32_t baseSize;
+    uint32_t realSize;
     uint32_t locktime;
     int32_t version;
     blocksci::BlockHeight blockHeight;
@@ -128,7 +130,8 @@ struct RawTransaction {
     RawTransaction() :
       txNum(0),
       hash(),
-      sizeBytes(0),
+      baseSize(0),
+      realSize(0),
       locktime(0),
       version(0),
       blockHeight(0) {}
@@ -145,6 +148,8 @@ struct RawTransaction {
     
     blocksci::uint256 getHash(const InputView &info, const blocksci::CScriptView &scriptView, int hashType) const;
     blocksci::RawTransaction getRawTransaction() const;
+    
+    std::vector<char> getSer(const InputView &info, const blocksci::CScriptView &scriptView, int hashType) const;
 };
 
 

@@ -54,9 +54,8 @@ void replayBlock(const ParserConfiguration<FileTag> &config, blocksci::BlockHeig
     
     std::vector<unsigned char> coinbase;
     
-    AddressState addressState_{config.addressPath()};
+    AddressState addressState{config.addressPath(), config.hashIndexFilePath()};
     
-    const AddressState &addressState = addressState_;
     blocksci::ChainAccess currentChain(config, false, blocksci::BlockHeight{0});
     blocksci::ScriptAccess scripts(config);
     

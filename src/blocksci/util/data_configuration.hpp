@@ -16,7 +16,7 @@
 
 namespace blocksci {
     
-    static constexpr int dataVersion = 2;
+    static constexpr int dataVersion = 3;
     
     struct DataConfiguration {
         DataConfiguration() {}
@@ -24,6 +24,7 @@ namespace blocksci {
         
         std::vector<unsigned char> pubkeyPrefix;
         std::vector<unsigned char> scriptPrefix;
+        std::string segwitPrefix;
         
         boost::filesystem::path dataDirectory;
         
@@ -60,11 +61,11 @@ namespace blocksci {
         }
         
         boost::filesystem::path addressDBFilePath() const {
-            return dataDirectory/"addressesDb.dat";
+            return dataDirectory/"addressesDb";
         }
         
         boost::filesystem::path hashIndexFilePath() const {
-            return dataDirectory/"hashIndex.dat";
+            return dataDirectory/"hashIndex";
         }
         
         boost::filesystem::path scriptTypeCountFile() const {

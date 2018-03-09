@@ -148,8 +148,8 @@ namespace blocksci {
     }
     
     template <typename T>
-    inline auto outputsOfType(T && t, ScriptType::Enum type) {
-        return outputs(std::forward<T>(t)) | ranges::view::filter([=](const Output &output) { return scriptType(output.getType()) == type; });
+    inline auto outputsOfType(T && t, EquivAddressType::Enum type) {
+        return outputs(std::forward<T>(t)) | ranges::view::filter([=](const Output &output) { return equivType(output.getType()) == type; });
     }
     
     template <typename T>
@@ -158,8 +158,8 @@ namespace blocksci {
     }
     
     template <typename T>
-    inline auto inputsOfType(T && t, ScriptType::Enum type) {
-        return inputs(std::forward<T>(t)) | ranges::view::filter([=](const Input &input) { return scriptType(input.getType()) == type; });
+    inline auto inputsOfType(T && t, EquivAddressType::Enum type) {
+        return inputs(std::forward<T>(t)) | ranges::view::filter([=](const Input &input) { return equivType(input.getType()) == type; });
     }
     
     template <typename T>

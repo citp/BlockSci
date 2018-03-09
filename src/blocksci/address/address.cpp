@@ -9,8 +9,10 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "address.hpp"
+#include "equiv_address.hpp"
 #include "address_info.hpp"
 #include "scripts/bitcoin_base58.hpp"
+#include "scripts/bitcoin_segwit_addr.hpp"
 #include "scripts/script_access.hpp"
 #include "scripts/scripts_fwd.hpp"
 #include "scripts/script_variant.hpp"
@@ -20,6 +22,7 @@
 #include "index/hash_index.hpp"
 
 #include <unordered_set>
+#include <iostream>
 
 namespace blocksci {
     
@@ -27,8 +30,14 @@ namespace blocksci {
     
     Address::Address(uint32_t addressNum_, AddressType::Enum type_) : scriptNum(addressNum_), type(type_) {}
     
+    
+    EquivAddress Address::equiv() const {
+        return EquivAddress{scriptNum, equivType(type)};
+    }
+    
+    
     bool Address::isSpendable() const {
-        return blocksci::isSpendable(scriptType(type));
+        return blocksci::isSpendable(equivType(type));
     }
     
     std::string Address::toString() const {
@@ -44,20 +53,13 @@ namespace blocksci {
         }
     }
     
-    bool Address::operator==(const Script &other) const {
-        return scriptNum == other.scriptNum && scriptType(type) == other.type;
-    }
-    
-    bool Address::operator!=(const Script &other) const {
-        return !operator==(other);
-    }
-    
     void visit(const Address &address, const std::function<bool(const Address &)> &visitFunc, const ScriptAccess &scripts) {
         if (visitFunc(address)) {
             std::function<void(const blocksci::Address &)> nestedVisitor = [&](const blocksci::Address &nestedAddress) {
                 visit(nestedAddress, visitFunc, scripts);
             };
-            address.getScript(scripts).visitPointers(nestedVisitor);
+            auto script = address.getScript(scripts);
+            script.visitPointers(nestedVisitor);
         }
     }
 
@@ -107,7 +109,26 @@ namespace blocksci {
         return index.getInputTransactions(*this, chain);
     }
     
-    ranges::optional<Address> getAddressFromString(const DataConfiguration &config, const HashIndex &index, const std::string &addressString) {
+    ranges::optional<Address> getAddressFromString(const DataConfiguration &config, HashIndex &index, const std::string &addressString) {
+        if (addressString.compare(0, config.segwitPrefix.size(), config.segwitPrefix) == 0) {
+            std::pair<int, std::vector<uint8_t> > decoded = segwit_addr::decode(config.segwitPrefix, addressString);
+            if (decoded.first == 0) {
+                if (decoded.second.size() == 20) {
+                    uint160 pubkeyHash(decoded.second.begin(), decoded.second.end());
+                    uint32_t addressNum = index.getPubkeyHashIndex(pubkeyHash);
+                    if (addressNum > 0) {
+                        return Address{addressNum, AddressType::WITNESS_PUBKEYHASH};
+                    }
+                } else if (decoded.second.size() == 32) {
+                    uint256 scriptHash(decoded.second.begin(), decoded.second.end());
+                    uint32_t addressNum = index.getScriptHashIndex(scriptHash);
+                    if (addressNum > 0) {
+                        return Address{addressNum, AddressType::WITNESS_SCRIPTHASH};
+                    }
+                }
+            }
+            return ranges::nullopt;
+        }
         CBitcoinAddress address{addressString};
         uint160 hash;
         blocksci::AddressType::Enum type;
@@ -130,9 +151,9 @@ namespace blocksci {
     template<AddressType::Enum type>
     std::vector<Address> getAddressesWithPrefixImp(const std::string &prefix, const ScriptAccess &scripts) {
         std::vector<Address> addresses;
-        auto count = scripts.scriptCount(scriptType(type));
+        auto count = scripts.scriptCount(equivType(type));
         for (uint32_t scriptNum = 1; scriptNum <= count; scriptNum++) {
-            ScriptAddress<scriptType(type)> script(scripts, scriptNum);
+            ScriptAddress<type> script(scripts, scriptNum);
             if (script.addressString().compare(0, prefix.length(), prefix) == 0) {
                 addresses.push_back(Address(scriptNum, type));
             }
@@ -153,8 +174,8 @@ namespace blocksci {
     std::string fullTypeImp(const Address &address, const ScriptAccess &scripts) {
         std::stringstream ss;
         ss << addressName(address.type);
-        switch (scriptType(address.type)) {
-            case ScriptType::Enum::SCRIPTHASH: {
+        switch (equivType(address.type)) {
+            case EquivAddressType::SCRIPTHASH: {
                 auto script = script::ScriptHash(scripts, address.scriptNum);
                 auto wrapped = script.getWrappedAddress();
                 if (wrapped) {
@@ -162,7 +183,7 @@ namespace blocksci {
                 }
                 break;
             }
-            case ScriptType::Enum::MULTISIG: {
+            case EquivAddressType::MULTISIG: {
                 auto script = script::Multisig(scripts, address.scriptNum);
                 ss << int(script.required) << "Of" << int(script.total);
                 break;

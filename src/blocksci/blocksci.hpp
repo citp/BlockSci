@@ -15,9 +15,6 @@
 #include <blocksci/script.hpp>
 #include <blocksci/address.hpp>
 #include <blocksci/heuristics.hpp>
-#include <blocksci/address/address.hpp>
-#include <blocksci/address/address_info.hpp>
-#include <blocksci/address/address_types.hpp>
 
 #pragma GCC visibility pop
 

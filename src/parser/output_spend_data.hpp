@@ -21,24 +21,22 @@
 template<blocksci::AddressType::Enum type>
 struct SpendData {
     static constexpr auto address_v = type;
-    static constexpr auto script_v = scriptType(type);
     
     SpendData() = default;
     SpendData(const ScriptOutput<type> &) {}
-    SpendData(const blocksci::ScriptAddress<blocksci::scriptType(type)> &) {}
+    SpendData(const blocksci::ScriptAddress<type> &) {}
 };
 
 template<>
 struct SpendData<blocksci::AddressType::Enum::MULTISIG> {
     static constexpr auto address_v = blocksci::AddressType::Enum::MULTISIG;
-    static constexpr auto script_v = blocksci::ScriptType::Enum::MULTISIG;
     
     uint32_t addressCount;
     std::array<blocksci::CPubKey, 16> addresses;
     
     SpendData() = default;
     SpendData(const ScriptOutput<blocksci::AddressType::Enum::MULTISIG> &output);
-    SpendData(const blocksci::ScriptAddress<blocksci::ScriptType::Enum::MULTISIG> &output);
+    SpendData(const blocksci::ScriptAddress<blocksci::AddressType::Enum::MULTISIG> &output);
 };
 
 using SpendDataType = blocksci::to_variadic_t<blocksci::to_address_tuple_t<SpendData>, mpark::variant>;

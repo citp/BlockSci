@@ -36,7 +36,7 @@ void AnyScriptInput::process(AddressState &state) {
     mpark::visit([&](auto &scriptInput) { scriptInput.process(state); }, wrapped);
 }
 
-void AnyScriptInput::check(const AddressState &state) {
+void AnyScriptInput::check(AddressState &state) {
     mpark::visit([&](auto &scriptInput) { scriptInput.check(state); }, wrapped);
 }
 
@@ -52,7 +52,7 @@ std::pair<AnyScriptOutput, std::unique_ptr<AnyScriptInput>> p2shGenerate(const I
     blocksci::CScriptView::const_iterator pc1 = scriptView.begin();
     blocksci::CScriptView::const_iterator prevpc = scriptView.begin();
     blocksci::CScriptView::const_iterator prevprevpc = scriptView.begin();
-    opcodetype opcode1;
+    blocksci::opcodetype opcode1;
     ranges::iterator_range<const unsigned char *> vch1;
     
     ranges::iterator_range<const unsigned char *> lastScript;
@@ -85,7 +85,7 @@ void ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH>::process(AddressSt
     wrappedScriptInput->setScriptNum(scriptNum);
 }
 
-void ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH>::check(const AddressState &state) {
+void ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH>::check(AddressState &state) {
     wrappedScriptOutput.check(state);
     wrappedScriptInput->check(state);
 }
@@ -93,7 +93,7 @@ void ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH>::check(const Addre
 ScriptInputData<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::PUBKEYHASH> &) {
     if (scriptView.size() > 0) {
         auto pc = scriptView.begin();
-        opcodetype opcode;
+        blocksci::opcodetype opcode;
         ranges::iterator_range<const unsigned char *> vchSig;
         scriptView.GetOp(pc, opcode, vchSig);
         scriptView.GetOp(pc, opcode, vchSig);
@@ -106,10 +106,16 @@ ScriptInputData<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInputData(const 
 
 ScriptInputData<blocksci::AddressType::Enum::MULTISIG>::ScriptInputData(const InputView &, const blocksci::CScriptView &, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::MULTISIG> &) {
     // Prelimary work on code to track multisig spend sets
-    
-//    CScriptView::const_iterator pc1 = scriptView.begin();
-//    opcodetype opcode1;
-//    boost::iterator_range<const unsigned char *> vchSig;
+//    auto multisig = blocksci::CScript() << blocksci::OP_2;
+//    for (uint32_t i = 0; i < spendData.addressCount; i++) {
+//        std::vector<unsigned char> pubkeyData(spendData.addresses[i].begin(), spendData.addresses[i].end());
+//        multisig << pubkeyData;
+//    }
+//    multisig << blocksci::OP_3 << blocksci::OP_CHECKMULTISIG;
+//
+//    blocksci::CScriptView::const_iterator pc1 = scriptView.begin();
+//    blocksci::opcodetype opcode1;
+//    ranges::iterator_range<const unsigned char *> vchSig;
 //    scriptView.GetOp(pc1, opcode1, vchSig);
 //
 //    size_t pubkeyNum = 0;
@@ -120,11 +126,11 @@ ScriptInputData<blocksci::AddressType::Enum::MULTISIG>::ScriptInputData(const In
 //        }
 //        if (vchSig.size() > 0) {
 //            int hashType = vchSig.back();
-//            vchSig.pop_back();
-//            auto txHash = tx.getHash(inputView, scriptView, hashType);
+//            blocksci::CScriptView multisigView(multisig.data(), multisig.data() + multisig.size());
+//            auto txHash = rawTx.getHash(inputView, multisigView, hashType);
 //
 //            while (pubkeyNum < spendData.addressCount) {
-//                std::vector<unsigned char> sig{vchSig.begin(), vchSig.end()};
+//                std::vector<unsigned char> sig{vchSig.begin(), vchSig.end() - 1};
 //                if (spendData.addresses[pubkeyNum].Verify(txHash, sig)) {
 //                    spendSet[pubkeyNum] = 1;
 //                    pubkeyNum++;
@@ -145,7 +151,7 @@ ScriptInputData<blocksci::AddressType::Enum::MULTISIG>::ScriptInputData(const In
 
 ScriptInputData<blocksci::AddressType::Enum::NONSTANDARD>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::NONSTANDARD> &) {
     if (scriptView.size() > 0) {
-        script = CScript(scriptView.begin(), scriptView.end());
+        script = blocksci::CScript(scriptView.begin(), scriptView.end());
     } else if (inputView.witnessStack.size() > 0) {
         for (size_t i = 0; i < inputView.witnessStack.size() - 1; i++) {
             auto &stackItem = inputView.witnessStack[i];
@@ -182,7 +188,7 @@ void ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::process(A
     wrappedScriptInput->setScriptNum(scriptNum);
 }
 
-void ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::check(const AddressState &state) {
+void ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::check(AddressState &state) {
     wrappedScriptOutput.check(state);
     wrappedScriptInput->check(state);
 }

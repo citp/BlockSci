@@ -197,7 +197,7 @@ blocksci::AddressType::Enum AnyScriptOutput::type() const {
     return mpark::visit([&](auto &output) { return output.address_v; }, wrapped);
 }
 
-void AnyScriptOutput::check(const AddressState &state) {
+void AnyScriptOutput::check(AddressState &state) {
     mpark::visit([&](auto &output) { return output.check(state); }, wrapped);
 }
 
@@ -258,7 +258,7 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHA
 
 blocksci::ScriptHashData ScriptOutputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::getData(uint32_t txNum) const {
     blocksci::Address wrappedAddress;
-    return {txNum, getHash(), wrappedAddress};
+    return {txNum, hash, wrappedAddress};
 }
 
 // MARK: TX_MULTISIG
@@ -317,7 +317,7 @@ blocksci::ArbitraryLengthData<blocksci::NonstandardScriptData> ScriptOutputData<
 
 ScriptOutputData<blocksci::AddressType::Enum::NULL_DATA>::ScriptOutputData(const blocksci::CScriptView &script){
     blocksci::CScriptView::const_iterator pc1 = script.begin();
-    opcodetype opcode1;
+    blocksci::opcodetype opcode1;
     ranges::iterator_range<const unsigned char *> vch1;
     while(true) {
         if(!script.GetOp(pc1, opcode1, vch1)) {

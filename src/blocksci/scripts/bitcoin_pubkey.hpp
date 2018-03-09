@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_PUBKEY_H
-#define BITCOIN_PUBKEY_H
+#ifndef BLOCKSCI_BITCOIN_PUBKEY_H
+#define BLOCKSCI_BITCOIN_PUBKEY_H
 
 #include <blocksci/util/bitcoin_uint256.hpp>
 
@@ -172,4 +172,4 @@ namespace blocksci {
     };
 }
 
-#endif // BITCOIN_PUBKEY_H
+#endif // BLOCKSCI_BITCOIN_PUBKEY_H

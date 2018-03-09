@@ -50,13 +50,10 @@ target_include_directories(Ranges INTERFACE SYSTEM libs/range-v3/include)
 add_library(clipp INTERFACE)
 target_include_directories(clipp INTERFACE SYSTEM libs/clipp/include)
 
-add_library(lmdbxx INTERFACE)
-target_include_directories(lmdbxx INTERFACE SYSTEM libs)
-target_link_libraries(lmdbxx INTERFACE lmdb)
-
 link_directories(/usr/local/lib)
 include_directories("src")
 
+set(PYBIND11_INSTALL true)
 add_subdirectory(libs/pybind11)
 
 add_subdirectory(libs/variant)

@@ -1,7 +1,6 @@
-Script Type
+Cluster
 ====================================
 
-.. autoclass:: blocksci.script_type
+.. autoclass:: blocksci.cluster_python.Cluster
    :members:
    :inherited-members:
-   :undoc-members:
