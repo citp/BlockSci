@@ -19,6 +19,8 @@
 #include <range/v3/view/transform.hpp>
 #include <range/v3/view/iota.hpp>
 
+#include <boost/filesystem/path.hpp>
+
 #include <stdio.h>
 
 class Cluster;
@@ -46,7 +48,7 @@ class ClusterManager {
     ScriptClusterIndexTuple scriptClusterIndexFiles;
     
 public:
-    ClusterManager(std::string baseDirectory);
+    ClusterManager(const boost::filesystem::path &baseDirectory);
     
     Cluster getCluster(const blocksci::Address &address) const;
     Cluster getCluster(const blocksci::EquivAddress &address) const;

@@ -12,10 +12,10 @@
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/address/equiv_address.hpp>
 
-ClusterManager::ClusterManager(std::string baseDirectory) : clusterOffsetFile(baseDirectory + "clusterOffsets"), clusterScriptsFile(baseDirectory + "clusterAddresses"), scriptClusterIndexFiles(blocksci::apply(blocksci::EquivAddressInfoList(), [&] (auto tag) {
+ClusterManager::ClusterManager(const boost::filesystem::path &baseDirectory) : clusterOffsetFile(baseDirectory/"clusterOffsets"), clusterScriptsFile(baseDirectory/"clusterAddresses"), scriptClusterIndexFiles(blocksci::apply(blocksci::EquivAddressInfoList(), [&] (auto tag) {
     std::stringstream ss;
-    ss << baseDirectory << blocksci::equivAddressName(tag) << "_cluster_index";
-    return ss.str();
+    ss << blocksci::equivAddressName(tag) << "_cluster_index";
+    return baseDirectory/ss.str();
 }))  {
 }
 
