@@ -58,8 +58,8 @@ public:
         outputFile << latestState;
     }
     
-    template<blocksci::EquivAddressType::Enum type, typename std::enable_if_t<ParserIndexScriptInfo<T, type>::value, int> = 0>
-    void updateScript(const blocksci::State &state, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) {
+    template<blocksci::EquivAddressType::Enum type>
+    void updateScript(std::true_type, const blocksci::State &state, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) {
         auto typeIndex = static_cast<size_t>(type);
         auto progress = makeProgressBar(state.scriptCounts[typeIndex] - latestState.scriptCounts[typeIndex], [=]() {});
         uint32_t num = 0;
@@ -71,8 +71,8 @@ public:
         }
     }
     
-    template<blocksci::EquivAddressType::Enum type, typename std::enable_if_t<!ParserIndexScriptInfo<T, type>::value, int> = 0>
-    void updateScript(const blocksci::State &, const blocksci::ChainAccess &, const blocksci::ScriptAccess &) {}
+    template<blocksci::EquivAddressType::Enum type>
+    void updateScript(std::false_type, const blocksci::State &, const blocksci::ChainAccess &, const blocksci::ScriptAccess &) {}
     
     virtual void prepareUpdate() {}
     void runUpdate(const blocksci::State &state) {
@@ -93,12 +93,13 @@ public:
         }
         
         blocksci::for_each(blocksci::EquivAddressInfoList(), [&](auto type) {
-            updateScript<type>(state, chain, scripts);
+            updateScript<type>(ParserIndexScriptInfo<T, type>{}, state, chain, scripts);
         });
         latestState = state;
     };
     
     virtual void tearDown() {}
 };
+
 
 #endif /* parser_index_hpp */
