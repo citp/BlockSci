@@ -23,12 +23,8 @@ namespace blocksci {
 
 class HashIndexCreator;
 
-template<>
-struct ParserIndexInfo<HashIndexCreator> {
-    static constexpr bool processesScript(blocksci::EquivAddressType::Enum) {
-        return false;
-    }
-};
+template<blocksci::EquivAddressType::Enum type>
+struct ParserIndexScriptInfo<HashIndexCreator, type> : std::false_type {};
 
 class HashIndexCreator : public ParserIndex<HashIndexCreator> {
     blocksci::HashIndex db;

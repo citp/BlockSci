@@ -33,8 +33,8 @@ namespace blocksci {
     struct Address;
 }
 
-template <typename T>
-struct ParserIndexInfo;
+template <typename T, blocksci::EquivAddressType::Enum type>
+struct ParserIndexScriptInfo;
 
 template <typename T>
 class ParserIndex {
@@ -58,7 +58,7 @@ public:
         outputFile << latestState;
     }
     
-    template<blocksci::EquivAddressType::Enum type, typename std::enable_if_t<ParserIndexInfo<T>::processesScript(type), int> = 0>
+    template<blocksci::EquivAddressType::Enum type, typename std::enable_if_t<ParserIndexScriptInfo<T, type>::value, int> = 0>
     void updateScript(const blocksci::State &state, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) {
         auto typeIndex = static_cast<size_t>(type);
         auto progress = makeProgressBar(state.scriptCounts[typeIndex] - latestState.scriptCounts[typeIndex], [=]() {});
@@ -71,7 +71,7 @@ public:
         }
     }
     
-    template<blocksci::EquivAddressType::Enum type, typename std::enable_if_t<!ParserIndexInfo<T>::processesScript(type), int> = 0>
+    template<blocksci::EquivAddressType::Enum type, typename std::enable_if_t<!ParserIndexScriptInfo<T, type>::value, int> = 0>
     void updateScript(const blocksci::State &, const blocksci::ChainAccess &, const blocksci::ScriptAccess &) {}
     
     virtual void prepareUpdate() {}

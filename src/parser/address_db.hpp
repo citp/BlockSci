@@ -21,12 +21,12 @@
 
 class AddressDB;
 
+
+template<blocksci::EquivAddressType::Enum type>
+struct ParserIndexScriptInfo<AddressDB, type> : std::false_type {};
+
 template<>
-struct ParserIndexInfo<AddressDB> {
-    static constexpr bool processesScript(blocksci::EquivAddressType::Enum type) {
-        return type == blocksci::EquivAddressType::MULTISIG;
-    }
-};
+struct ParserIndexScriptInfo<AddressDB, blocksci::EquivAddressType::MULTISIG> : std::true_type {};
 
 class AddressDB : public ParserIndex<AddressDB> {
     blocksci::AddressIndex db;
