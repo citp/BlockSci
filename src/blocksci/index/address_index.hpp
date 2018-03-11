@@ -27,7 +27,7 @@ namespace blocksci {
         std::vector<rocksdb::ColumnFamilyHandle *> columnHandles;
     public:
         
-        AddressIndex(const std::string &path);
+        AddressIndex(const std::string &path, bool readonly);
         ~AddressIndex();
         
         std::vector<OutputPointer> getOutputPointers(const Address &address) const;
@@ -44,6 +44,24 @@ namespace blocksci {
         std::vector<Transaction> getTransactions(const EquivAddress &script, const ChainAccess &access) const;
         std::vector<Transaction> getOutputTransactions(const EquivAddress &script, const ChainAccess &access) const;
         std::vector<Transaction> getInputTransactions(const EquivAddress &script, const ChainAccess &access) const;
+        
+        void addAddressNested(const blocksci::Address &childAddress, const blocksci::EquivAddress &parentAddress);
+        void addAddressOutput(const blocksci::Address &address, const blocksci::OutputPointer &pointer);
+        
+        rocksdb::ColumnFamilyHandle *getOutputColumn(EquivAddressType::Enum type);
+        rocksdb::ColumnFamilyHandle *getNestedColumn(AddressType::Enum type);
+        
+        rocksdb::Iterator* getOutputIterator(EquivAddressType::Enum type) {
+            return db->NewIterator(rocksdb::ReadOptions(), getOutputColumn(type));
+        }
+        
+        rocksdb::Iterator* getNestedIterator(AddressType::Enum type) {
+            return db->NewIterator(rocksdb::ReadOptions(), getNestedColumn(type));
+        }
+        
+        void writeBatch(rocksdb::WriteBatch &batch) {
+            db->Write(rocksdb::WriteOptions(), &batch);
+        }
         
         void checkDB(const ChainAccess &access) const;
     };

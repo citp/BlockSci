@@ -41,6 +41,7 @@ namespace blocksci {
     namespace script {
         using Pubkey = ScriptAddress<AddressType::PUBKEY>;
         using PubkeyHash = ScriptAddress<AddressType::PUBKEYHASH>;
+        using MultisigPubkey = ScriptAddress<AddressType::MULTISIG_PUBKEY>;
         using WitnessPubkeyHash = ScriptAddress<AddressType::WITNESS_PUBKEYHASH>;
         using ScriptHash = ScriptAddress<AddressType::SCRIPTHASH>;
         using WitnessScriptHash = ScriptAddress<AddressType::WITNESS_SCRIPTHASH>;

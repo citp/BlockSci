@@ -27,8 +27,6 @@ namespace blocksci {
     struct State;
 }
 
-class ParserIndex;
-
 template <typename IndexType>
 class ParserIndexCreator {
 private:

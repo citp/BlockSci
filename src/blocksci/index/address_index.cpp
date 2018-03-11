@@ -40,7 +40,7 @@ namespace blocksci {
     std::vector<Transaction> getOutputTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
     std::vector<Transaction> getInputTransactionsImp(std::vector<OutputPointer> pointers, const ChainAccess &access);
     
-    AddressIndex::AddressIndex(const std::string &path)  {
+    AddressIndex::AddressIndex(const std::string &path, bool readonly) {
         rocksdb::Options options;
         // Optimize RocksDB. This is the easiest way to get RocksDB to perform well
         options.IncreaseParallelism();
@@ -51,12 +51,32 @@ namespace blocksci {
         
         
         std::vector<rocksdb::ColumnFamilyDescriptor> columnDescriptors;
-        columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions());
         blocksci::for_each(blocksci::EquivAddressInfoList(), [&](auto tag) {
-            columnDescriptors.emplace_back(equivAddressName(tag), rocksdb::ColumnFamilyOptions{});
+            std::stringstream ss;
+            ss << equivAddressName(tag) << "_output";
+            columnDescriptors.emplace_back(ss.str(), rocksdb::ColumnFamilyOptions{});
         });
-        rocksdb::Status s = rocksdb::DB::OpenForReadOnly(options, path.c_str(), columnDescriptors, &columnHandles, &db);
-        assert(s.ok());
+        blocksci::for_each(blocksci::AddressInfoList(), [&](auto tag) {
+            std::stringstream ss;
+            ss << addressName(tag) << "_nested";
+            columnDescriptors.emplace_back(ss.str(), rocksdb::ColumnFamilyOptions{});
+        });
+        columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions());
+        
+        if (readonly) {
+            rocksdb::Status s = rocksdb::DB::OpenForReadOnly(options, path.c_str(), columnDescriptors, &columnHandles, &db);
+            assert(s.ok());
+        } else {
+            rocksdb::Status s = rocksdb::DB::Open(options, path.c_str(), columnDescriptors, &columnHandles, &db);
+        }
+    }
+    
+    rocksdb::ColumnFamilyHandle *AddressIndex::getOutputColumn(EquivAddressType::Enum type) {
+        return columnHandles[static_cast<size_t>(type)];
+    }
+    
+    rocksdb::ColumnFamilyHandle *AddressIndex::getNestedColumn(AddressType::Enum type) {
+        return columnHandles[EquivAddressType::size + static_cast<size_t>(type)];
     }
     
     AddressIndex::~AddressIndex() {
@@ -188,6 +208,28 @@ namespace blocksci {
         auto column = columnHandles[static_cast<size_t>(script.type) + 1];
         rocksdb::Slice key{reinterpret_cast<const char *>(&script.scriptNum), sizeof(script.scriptNum)};
         return getOutputPointersImp(db, column, key);
+    }
+    
+    void AddressIndex::addAddressNested(const Address &childAddress, const EquivAddress &parentAddress) {
+        auto nestedColumn = getNestedColumn(childAddress.type);
+        std::array<rocksdb::Slice, 2> keyParts = {{
+            rocksdb::Slice(reinterpret_cast<const char *>(&childAddress), sizeof(childAddress)),
+            rocksdb::Slice(reinterpret_cast<const char *>(&parentAddress), sizeof(parentAddress))
+        }};
+        std::string sliceStr;
+        rocksdb::Slice key{rocksdb::SliceParts{keyParts.data(), keyParts.size()}, &sliceStr};
+        db->Put(rocksdb::WriteOptions{}, nestedColumn, key, rocksdb::Slice{});
+    }
+    
+    void AddressIndex::addAddressOutput(const blocksci::Address &address, const blocksci::OutputPointer &pointer) {
+        auto script = equivType(address.type);
+        std::array<rocksdb::Slice, 2> keyParts = {{
+            rocksdb::Slice(reinterpret_cast<const char *>(&address), sizeof(address)),
+            rocksdb::Slice(reinterpret_cast<const char *>(&pointer), sizeof(pointer))
+        }};
+        std::string sliceStr;
+        rocksdb::Slice key{rocksdb::SliceParts{keyParts.data(), keyParts.size()}, &sliceStr};
+        db->Put(rocksdb::WriteOptions{}, columnHandles[static_cast<size_t>(script) + 1], key, rocksdb::Slice{});
     }
     
     void AddressIndex::checkDB(const ChainAccess &access) const {

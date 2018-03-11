@@ -65,6 +65,24 @@ namespace blocksci {
         return addressString();
     }
     
+    MultisigPubkey::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : PubkeyAddressBase(addressNum, addressType, access.getScriptData<addressType>(addressNum), access) {}
+    
+    std::string MultisigPubkey::addressString() const {
+        return CBitcoinAddress(pubkeyhash, AddressType::Enum::MULTISIG_PUBKEY, access->config).ToString();
+    }
+    
+    std::string MultisigPubkey::toString() const {
+        std::stringstream ss;
+        ss << "MultisigPubkeyAddress(";
+        ss << "address=" << addressString();
+        ss << ")";
+        return ss.str();
+    }
+    
+    std::string MultisigPubkey::toPrettyString() const {
+        return addressString();
+    }
+    
     WitnessPubkeyHash::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : PubkeyAddressBase(addressNum, addressType, access.getScriptData<addressType>(addressNum), access) {}
     
     std::string WitnessPubkeyHash::addressString() const {

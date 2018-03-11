@@ -68,6 +68,11 @@ struct ScriptInputData<blocksci::AddressType::Enum::PUBKEYHASH> : public ScriptI
 };
 
 template<>
+struct ScriptInputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY> : public ScriptInputDataBase {
+    ScriptInputData(const InputView &, const blocksci::CScriptView &, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::MULTISIG_PUBKEY> &) {}
+};
+
+template<>
 struct ScriptInputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : public ScriptInputDataBase {
     blocksci::CPubKey pubkey;
     

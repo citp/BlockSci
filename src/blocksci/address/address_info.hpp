@@ -38,6 +38,14 @@ namespace blocksci {
     };
     
     template <>
+    struct AddressInfo<AddressType::Enum::MULTISIG_PUBKEY> {
+        static constexpr char name[] = "multisig_pubkey";
+        static constexpr EquivAddressType::Enum equivType = EquivAddressType::PUBKEY;
+        static constexpr AddressType::Enum exampleType = AddressType::PUBKEYHASH;
+        using IDType = uint160;
+    };
+    
+    template <>
     struct AddressInfo<AddressType::Enum::WITNESS_PUBKEYHASH> {
         static constexpr char name[] = "witness_pubkeyhash";
         static constexpr EquivAddressType::Enum equivType = EquivAddressType::PUBKEY;

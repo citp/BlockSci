@@ -228,6 +228,19 @@ blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::PUBKEYHASH>::
     return {txNum, nullPubkey, hash};
 }
 
+// MARK: MULTISIG_PUBKEY
+
+ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY>::ScriptOutputData(const boost::iterator_range<const unsigned char *> &vch1) : pubkey(vch1.begin(), vch1.end()) {}
+
+blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY>::getHash() const {
+    return pubkey.GetID();
+}
+
+blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY>::getData(uint32_t txNum) const {
+    blocksci::CPubKey nullPubkey{};
+    return {txNum, pubkey, pubkey.GetID()};
+}
+
 // MARK: WITNESS_PUBKEYHASH
 
 blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::getHash() const {
@@ -289,7 +302,7 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::MULTISIG>::getHa
 }
 
 void ScriptOutputData<blocksci::AddressType::Enum::MULTISIG>::addAddress(const boost::iterator_range<const unsigned char *> &vch1) {
-    addresses.push_back(ScriptOutputData<blocksci::AddressType::Enum::PUBKEY>(blocksci::CPubKey(vch1.begin(), vch1.end())));
+    addresses.push_back(ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY>(blocksci::CPubKey(vch1.begin(), vch1.end())));
     addressCount++;
 }
 

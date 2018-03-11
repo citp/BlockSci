@@ -64,6 +64,21 @@ namespace blocksci {
     };
     
     template <>
+    class ScriptAddress<AddressType::MULTISIG_PUBKEY> : public PubkeyAddressBase {
+    public:
+        using PubkeyAddressBase::PubkeyAddressBase;
+        
+        constexpr static AddressType::Enum addressType = AddressType::MULTISIG_PUBKEY;
+        
+        ScriptAddress(const ScriptAccess &access, uint32_t addressNum);
+        
+        std::string addressString() const;
+        
+        std::string toString() const;
+        std::string toPrettyString() const;
+    };
+    
+    template <>
     class ScriptAddress<AddressType::WITNESS_PUBKEYHASH> : public PubkeyAddressBase {
     public:
         using PubkeyAddressBase::PubkeyAddressBase;

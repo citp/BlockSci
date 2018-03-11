@@ -37,7 +37,6 @@ void HashIndexCreator::processTx(const blocksci::Transaction &tx, const blocksci
 }
 
 void HashIndexCreator::rollback(const blocksci::State &state) {
-
     {
         auto column = db.getColumn(blocksci::AddressType::WITNESS_SCRIPTHASH);
         rocksdb::WriteBatch batch;
