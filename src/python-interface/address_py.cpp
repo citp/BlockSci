@@ -38,11 +38,11 @@ void init_address(py::module &m) {
     .def("txes", &Address::getTransactions, "Returns a list of all transactions involving this address")
     .def("in_txes",&Address::getInputTransactions, "Returns a list of all transaction where this address was an input")
     .def("out_txes", &Address::getOutputTransactions, "Returns a list of all transaction where this address was an output")
-    .def("out_txes_count", [](const Address &address) {
-        return address.getOutputTransactions().size();
+    .def("out_txes_count", [](const Address &address, bool typeEquivalent, bool nestedEquivalent) {
+        return address.getOutputTransactions(typeEquivalent, nestedEquivalent).size();
     }, "Return the number of transactions where this address was an output")
-    .def("in_txes_count", [](const Address &address) {
-        return address.getInputTransactions().size();
+    .def("in_txes_count", [](const Address &address, bool typeEquivalent, bool nestedEquivalent) {
+        return address.getInputTransactions(typeEquivalent, nestedEquivalent).size();
     }, "Return the number of transactions where this address was an input")
     .def_property_readonly("script", [](const Address &address) {
         return address.getScript().wrapped;
