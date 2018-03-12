@@ -44,7 +44,7 @@ struct ScriptFile : public ScriptFileType_t<type> {
 
 
 class AddressWriter {
-    using ScriptFilesTuple = blocksci::to_equiv_address_tuple_t<ScriptFile>;
+    using ScriptFilesTuple = blocksci::to_dedup_address_tuple_t<ScriptFile>;
     
     ScriptFilesTuple scriptFiles;
     

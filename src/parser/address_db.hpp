@@ -49,8 +49,8 @@ public:
 template<>
 inline void AddressDB::processScript<blocksci::DedupAddressType::MULTISIG>(uint32_t equivNum, const blocksci::DataAccess &access) {
     blocksci::script::Multisig multisig(equivNum, access);
-    for (const auto &address : multisig.addresses) {
-        db.addAddressNested(address, blocksci::EquivAddress{equivNum, blocksci::DedupAddressType::MULTISIG});
+    for (const auto &address : multisig.getAddresses()) {
+        db.addAddressNested(address, blocksci::DedupAddress{equivNum, blocksci::DedupAddressType::MULTISIG});
     }
 }
 

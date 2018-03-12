@@ -13,7 +13,7 @@
 namespace blocksci {
     ScriptAccess::ScriptAccess(const DataConfiguration &config_) :
     scriptFiles(blocksci::apply(DedupAddressInfoList(), [&] (auto tag) {
-        return std::make_unique<ScriptFile<tag.value>>(config_.scriptsDirectory()/ std::string{equivAddressName(tag)});
+        return std::make_unique<ScriptFile<tag.value>>(config_.scriptsDirectory()/ std::string{dedupAddressName(tag)});
     })), config(config_) {}
     
     void ScriptAccess::reload() {

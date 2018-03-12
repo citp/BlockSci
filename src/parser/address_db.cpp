@@ -10,7 +10,7 @@
 #include "address_db.hpp"
 
 #include <blocksci/index/address_index.hpp>
-#include <blocksci/address/equiv_address.hpp>
+#include <blocksci/address/dedup_address.hpp>
 #include <blocksci/scripts/script_info.hpp>
 #include <blocksci/scripts/script_variant.hpp>
 #include <blocksci/chain/output.hpp>
@@ -39,9 +39,9 @@ void AddressDB::processTx(const blocksci::Transaction &tx) {
     std::function<bool(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
         if (dedupType(a.type) == DedupAddressType::SCRIPTHASH) {
             script::ScriptHash scriptHash(a.scriptNum, tx.getAccess());
-            if (scriptHash.txRevealed == tx.txNum) {
+            if (scriptHash.getTxRevealedIndex() == tx.txNum) {
                 auto wrapped = *scriptHash.getWrappedAddress();
-                db.addAddressNested(wrapped, a.equiv());
+                db.addAddressNested(wrapped, DedupAddress{a.scriptNum, DedupAddressType::SCRIPTHASH});
                 return true;
             } else {
                 return false;

@@ -11,7 +11,7 @@
 
 #include "scripts_fwd.hpp"
 #include <blocksci/address/address_types.hpp>
-#include <blocksci/address/equiv_address_type.hpp>
+#include <blocksci/address/dedup_address_type.hpp>
 #include <blocksci/util/util.hpp>
 
 #include <string>

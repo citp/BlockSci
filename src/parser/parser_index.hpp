@@ -16,7 +16,7 @@
 #include <blocksci/blocksci_fwd.hpp>
 #include <blocksci/util/state.hpp>
 
-#include <blocksci/address/equiv_address.hpp>
+#include <blocksci/address/dedup_address.hpp>
 #include <blocksci/chain/chain_access.hpp>
 #include <blocksci/chain/transaction_range.hpp>
 #include <blocksci/scripts/script_access.hpp>
@@ -59,7 +59,7 @@ public:
         auto typeIndex = static_cast<size_t>(type);
         auto progress = makeProgressBar(state.scriptCounts[typeIndex] - latestState.scriptCounts[typeIndex], [=]() {});
         uint32_t num = 0;
-        std::cout << "Updating index with scripts of type " << equivAddressName(type) << "\n";
+        std::cout << "Updating index with scripts of type " << dedupAddressName(type) << "\n";
         for (uint32_t i = latestState.scriptCounts[typeIndex]; i < state.scriptCounts[typeIndex]; i++) {
             static_cast<T*>(this)->template processScript<type>(i + 1, access);
             progress.update(num);

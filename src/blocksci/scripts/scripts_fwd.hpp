@@ -9,7 +9,7 @@
 #ifndef scriptsfwd_h
 #define scriptsfwd_h
 
-#include <blocksci/address/equiv_address_type.hpp>
+#include <blocksci/address/dedup_address_type.hpp>
 #include <blocksci/address/address_types.hpp>
 
 namespace blocksci {
@@ -28,7 +28,10 @@ namespace blocksci {
     struct NonstandardSpendScriptData;
     class ScriptAccess;
     struct DataConfiguration;
-    struct Script;
+    
+    template<typename T>
+    class ScriptBase;
+    
     class AnyScript;
     class CScriptView;
     

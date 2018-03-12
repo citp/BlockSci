@@ -12,7 +12,7 @@
 
 AddressWriter::AddressWriter(const ParserConfigurationBase &config) :
 scriptFiles(blocksci::apply(blocksci::DedupAddressInfoList(), [&] (auto tag) {
-    return ScriptFile<tag>(config.scriptsDirectory()/ std::string{equivAddressName(tag)});
+    return ScriptFile<tag>(config.scriptsDirectory()/ std::string{dedupAddressName(tag)});
 })) {
 }
 

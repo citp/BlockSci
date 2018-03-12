@@ -18,7 +18,7 @@
 #include <blocksci/util/bitcoin_uint256.hpp>
 #include <blocksci/scripts/script_info.hpp>
 #include <blocksci/address/address_info.hpp>
-#include <blocksci/address/equiv_address_info.hpp>
+#include <blocksci/address/dedup_address_info.hpp>
 
 #include <future>
 #include <unordered_map>
@@ -66,15 +66,15 @@ class AddressState {
     class AddressBloomFilter : public BloomFilter  {
     public:
         static constexpr auto type = scriptType;
-        AddressBloomFilter(const boost::filesystem::path &path) : BloomFilter(boost::filesystem::path(path).concat(equivAddressName(type)), startingCount<scriptType>, AddressFalsePositiveRate)  {}
+        AddressBloomFilter(const boost::filesystem::path &path) : BloomFilter(boost::filesystem::path(path).concat(dedupAddressName(type)), startingCount<scriptType>, AddressFalsePositiveRate)  {}
     };
     
     boost::filesystem::path path;
     
     blocksci::HashIndex db;
     
-    using AddressMapTuple = blocksci::to_equiv_address_tuple_t<AddressMap>;
-    using AddressBloomFilterTuple = blocksci::to_equiv_address_tuple_t<AddressBloomFilter>;
+    using AddressMapTuple = blocksci::to_dedup_address_tuple_t<AddressMap>;
+    using AddressBloomFilterTuple = blocksci::to_dedup_address_tuple_t<AddressBloomFilter>;
     
     AddressMapTuple multiAddressMaps;
     AddressBloomFilterTuple addressBloomFilters;

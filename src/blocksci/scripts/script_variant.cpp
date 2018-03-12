@@ -33,11 +33,11 @@ namespace blocksci {
     }
     
     uint32_t AnyScript::firstTxIndex() {
-        return mpark::visit([&](auto &scriptAddress) { return scriptAddress.firstTxIndex; }, wrapped);
+        return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getFirstTxIndex(); }, wrapped);
     }
     
     uint32_t AnyScript::txRevealedIndex() {
-        return mpark::visit([&](auto &scriptAddress) { return scriptAddress.txRevealed; }, wrapped);
+        return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getTxRevealedIndex(); }, wrapped);
     }
     
     Transaction AnyScript::getFirstTransaction() const {

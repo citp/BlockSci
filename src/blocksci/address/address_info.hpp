@@ -10,7 +10,7 @@
 #define address_info_hpp
 
 #include "address_types.hpp"
-#include "equiv_address_info.hpp"
+#include "dedup_address_info.hpp"
 
 #include <blocksci/util/util.hpp>
 

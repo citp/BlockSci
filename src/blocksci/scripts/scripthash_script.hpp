@@ -17,32 +17,37 @@
 #include <range/v3/utility/optional.hpp>
 
 namespace blocksci {
-    class ScriptHashBase : public Script {
-    private:
-        Address wrappedAddress;
-    public:
+    class ScriptHashBase : public ScriptBase<ScriptHashBase> {
+        friend class ScriptBase<ScriptHashBase>;
+        const ScriptHashData *rawData;
+    protected:
         ScriptHashBase(uint32_t scriptNum, AddressType::Enum type, const ScriptHashData *rawData, const DataAccess &access);
         
-        ranges::optional<Address> getWrappedAddress() const;
-        
+    public:
         void visitPointers(const std::function<void(const Address &)> &visitFunc) const {
-            if (hasBeenSpent()) {
-                visitFunc(wrappedAddress);
+            auto wrapped = getWrappedAddress();
+            if (wrapped) {
+                visitFunc(*wrapped);
             }
         }
         
+        ranges::optional<Address> getWrappedAddress() const;
         ranges::optional<AnyScript> wrappedScript() const;
+        
+        uint160 getUint160Address() const;
+        uint256 getUint256Address() const;
     };
     
     template <>
     class ScriptAddress<AddressType::SCRIPTHASH> : public ScriptHashBase {
     public:
-        uint160 address;
-        
         constexpr static AddressType::Enum addressType = AddressType::SCRIPTHASH;
         
-        ScriptAddress(uint32_t scriptNum, const ScriptHashData *rawData, const DataAccess &access);
         ScriptAddress(uint32_t addressNum, const DataAccess &access);
+        
+        uint160 getAddressHash() const {
+            return getUint160Address();
+        }
         
         std::string addressString() const;
         
@@ -53,12 +58,13 @@ namespace blocksci {
     template <>
     class ScriptAddress<AddressType::WITNESS_SCRIPTHASH> : public ScriptHashBase {
     public:
-        uint256 address;
-        
         constexpr static AddressType::Enum addressType = AddressType::WITNESS_SCRIPTHASH;
         
-        ScriptAddress(uint32_t scriptNum, const ScriptHashData *rawData, const DataAccess &access);
         ScriptAddress(uint32_t addressNum, const DataAccess &access);
+        
+        uint256 getAddressHash() const {
+            return getUint256Address();
+        }
         
         std::string addressString() const;
         

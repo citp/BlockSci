@@ -14,7 +14,7 @@
 #include "chain/output.hpp"
 #include "chain/input.hpp"
 #include "address/address.hpp"
-#include "address/equiv_address.hpp"
+#include "address/dedup_address.hpp"
 #include "address/address_info.hpp"
 #include "scripts/script_info.hpp"
 #include "scripts/script.hpp"
@@ -114,7 +114,7 @@ namespace blocksci {
             for (it->Seek(key); it->Valid() && it->key().starts_with(key); it->Next()) {
                 auto foundKey = it->key();
                 foundKey.remove_prefix(sizeof(uint32_t));
-                EquivAddress rawParent;
+                DedupAddress rawParent;
                 memcpy(&rawParent, foundKey.data(), sizeof(rawParent));
                 switch (rawParent.type) {
                     case DedupAddressType::SCRIPTHASH:
@@ -164,7 +164,7 @@ namespace blocksci {
         return outputs;
     }
     
-    void AddressIndex::addAddressNested(const Address &childAddress, const EquivAddress &parentAddress) {
+    void AddressIndex::addAddressNested(const Address &childAddress, const DedupAddress &parentAddress) {
         std::array<rocksdb::Slice, 2> keyParts = {{
             rocksdb::Slice(reinterpret_cast<const char *>(&childAddress.scriptNum), sizeof(childAddress.scriptNum)),
             rocksdb::Slice(reinterpret_cast<const char *>(&parentAddress), sizeof(parentAddress))

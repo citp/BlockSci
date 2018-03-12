@@ -8,7 +8,7 @@
 #ifndef state_hpp
 #define state_hpp
 
-#include <blocksci/address/equiv_address_type.hpp>
+#include <blocksci/address/dedup_address_type.hpp>
 #include <blocksci/scripts/scripts_fwd.hpp>
 #include <blocksci/chain/chain_fwd.hpp>
 

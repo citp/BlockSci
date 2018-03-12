@@ -31,7 +31,7 @@ void HashIndexCreator::processTx(const blocksci::Transaction &tx) {
         if (txout.getType() == blocksci::AddressType::WITNESS_SCRIPTHASH) {
             auto scriptNum = txout.getAddress().scriptNum;
             auto script = blocksci::script::WitnessScriptHash(scriptNum, tx.getAccess());
-            db.addAddress<blocksci::AddressType::WITNESS_SCRIPTHASH>(script.address, scriptNum);
+            db.addAddress<blocksci::AddressType::WITNESS_SCRIPTHASH>(script.getAddressHash(), scriptNum);
         }
     }
 }

@@ -44,7 +44,7 @@ namespace blocksci {
     
     class ScriptAccess {
     private:
-        using ScriptFilesTuple = to_equiv_address_tuple_t<ScriptFilePtr>;
+        using ScriptFilesTuple = to_dedup_address_tuple_t<ScriptFilePtr>;
         ScriptFilesTuple scriptFiles;
         
         

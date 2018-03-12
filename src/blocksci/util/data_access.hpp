@@ -36,12 +36,6 @@ namespace blocksci {
         DataAccess(DataAccess&&) = delete;                  // Move construct
         DataAccess& operator=(DataAccess const&) = delete;  // Copy assign
         DataAccess& operator=(DataAccess &&) = delete;      // Move assign
-        
-        std::vector<Output> getOutputs(const Address &address, bool typeEquivalent, bool nestedEquivalent) const;
-        std::vector<Input> getInputs(const Address &address, bool typeEquivalent, bool nestedEquivalent) const;
-        std::vector<Transaction> getTransactions(const Address &address, bool typeEquivalent, bool nestedEquivalent) const;
-        std::vector<Transaction> getOutputTransactions(const Address &address, bool typeEquivalent, bool nestedEquivalent) const;
-        std::vector<Transaction> getInputTransactions(const Address &address, bool typeEquivalent, bool nestedEquivalent) const;
     };
 }
 

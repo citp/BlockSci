@@ -63,7 +63,8 @@ namespace blocksci {
             auto output = coinbase.outputs()[i];
             if (output.getType() == AddressType::Enum::NULL_DATA) {
                 auto nulldata = script::OpReturn(output.getAddress().scriptNum, block.getAccess());
-                uint32_t startVal = *reinterpret_cast<const uint32_t *>(nulldata.data.c_str());
+                auto data = nulldata.getData();
+                uint32_t startVal = *reinterpret_cast<const uint32_t *>(data.c_str());
                 if (startVal == 0xaa21a9ed) {
                     return true;
                 }

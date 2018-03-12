@@ -16,20 +16,20 @@
 
 namespace blocksci {
 
-    class PubkeyAddressBase : public Script {
-    private:
-        CPubKey pubkey;
-    public:
-        uint160 pubkeyhash;
+    class PubkeyAddressBase : public ScriptBase<PubkeyAddressBase> {
+        friend class ScriptBase<PubkeyAddressBase>;
+        const PubkeyData *rawData;
         
+    protected:
         PubkeyAddressBase(uint32_t scriptNum, AddressType::Enum type, const PubkeyData *rawData, const DataAccess &access);
-        PubkeyAddressBase(uint32_t addressNum, AddressType::Enum type, const DataAccess &access);
         
+    public:
         std::string addressString() const;
         
         std::string toString() const;
         std::string toPrettyString() const;
         
+        uint160 getPubkeyHash() const;
         ranges::optional<CPubKey> getPubkey() const;
     };
     

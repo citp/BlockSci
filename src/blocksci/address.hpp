@@ -10,7 +10,7 @@
 #define address_group_header
 
 #include <blocksci/address/address.hpp>
-#include <blocksci/address/equiv_address.hpp>
+#include <blocksci/address/dedup_address.hpp>
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/address/address_types.hpp>
 

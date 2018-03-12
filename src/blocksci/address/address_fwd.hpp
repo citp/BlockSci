@@ -9,13 +9,13 @@
 #define address_fwd_h
 
 #include "address_types.hpp"
-#include "equiv_address_type.hpp"
+#include "dedup_address_type.hpp"
 
 namespace blocksci {
     struct RawAddress;
     
     class Address;
-    struct EquivAddress;
+    struct DedupAddress;
     
     template <AddressType::Enum>
     struct AddressInfo;

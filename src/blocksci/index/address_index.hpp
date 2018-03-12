@@ -35,7 +35,7 @@ namespace blocksci {
         
         std::vector<Address> getPossibleNestedEquivalent(const Address &address) const;
         
-        void addAddressNested(const blocksci::Address &childAddress, const blocksci::EquivAddress &parentAddress);
+        void addAddressNested(const blocksci::Address &childAddress, const blocksci::DedupAddress &parentAddress);
         void addAddressOutput(const blocksci::Address &address, const blocksci::OutputPointer &pointer);
         
         rocksdb::ColumnFamilyHandle *getOutputColumn(AddressType::Enum type) const;

@@ -9,7 +9,7 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "address.hpp"
-#include "equiv_address.hpp"
+#include "dedup_address.hpp"
 #include "address_info.hpp"
 #include "scripts/bitcoin_base58.hpp"
 #include "scripts/bitcoin_segwit_addr.hpp"
@@ -34,12 +34,6 @@ namespace blocksci {
     Address::Address() : access(nullptr), scriptNum(0), type(AddressType::Enum::NONSTANDARD) {}
     
     Address::Address(uint32_t addressNum_, AddressType::Enum type_, const DataAccess &access_) : access(&access_), scriptNum(addressNum_), type(type_) {}
-    
-    
-    EquivAddress Address::equiv() const {
-        return EquivAddress{scriptNum, dedupType(type)};
-    }
-    
     
     bool Address::isSpendable() const {
         return blocksci::isSpendable(dedupType(type));
@@ -168,7 +162,7 @@ namespace blocksci {
             }
             case DedupAddressType::MULTISIG: {
                 auto script = script::Multisig(address.scriptNum, access);
-                ss << int(script.required) << "Of" << int(script.total);
+                ss << int(script.getRequired()) << "Of" << int(script.getTotal());
                 break;
             }
             default: {

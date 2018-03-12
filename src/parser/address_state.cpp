@@ -31,7 +31,7 @@ AddressState::AddressState(const boost::filesystem::path &path_, const boost::fi
 }))  {
     blocksci::for_each(multiAddressMaps, [&](auto &multiAddressMap) {
         std::stringstream ss;
-        ss << multiAddressFileName << "_" << equivAddressName(multiAddressMap.type) << ".dat";
+        ss << multiAddressFileName << "_" << dedupAddressName(multiAddressMap.type) << ".dat";
         multiAddressMap.unserialize((path/ss.str()).native());
     });
     
@@ -58,7 +58,7 @@ AddressState::~AddressState() {
     
     blocksci::for_each(multiAddressMaps, [&](auto &multiAddressMap) {
         std::stringstream ss;
-        ss << multiAddressFileName << "_" << equivAddressName(multiAddressMap.type) << ".dat";
+        ss << multiAddressFileName << "_" << dedupAddressName(multiAddressMap.type) << ".dat";
         multiAddressMap.serialize((path/ss.str()).native());
     });
     

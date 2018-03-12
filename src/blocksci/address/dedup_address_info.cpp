@@ -1,11 +1,11 @@
 //
-//  equiv_address_info.cpp
+//  dedup_address_info.cpp
 //  blocksci
 //
 //  Created by Harry Kalodner on 3/7/18.
 //
 
-#include "equiv_address_info.hpp"
+#include "dedup_address_info.hpp"
 
 namespace blocksci {
     constexpr char DedupAddressInfo<DedupAddressType::PUBKEY>::name[];
@@ -15,14 +15,14 @@ namespace blocksci {
     constexpr char DedupAddressInfo<DedupAddressType::NONSTANDARD>::name[];
     
     template<DedupAddressType::Enum type>
-    struct EquivAddressNameFunctor {
+    struct DedupAddressNameFunctor {
         static std::string f() {
             return DedupAddressInfo<type>::name;
         }
     };
     
-    std::string equivAddressName(DedupAddressType::Enum type) {
-        static auto table = make_static_table<DedupAddressType, EquivAddressNameFunctor>();
+    std::string dedupAddressName(DedupAddressType::Enum type) {
+        static auto table = make_static_table<DedupAddressType, DedupAddressNameFunctor>();
         auto index = static_cast<size_t>(type);
         if (index >= DedupAddressType::size)
         {

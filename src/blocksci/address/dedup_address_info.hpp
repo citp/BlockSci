@@ -1,12 +1,12 @@
 //
-//  equiv_address_info.hpp
+//  dedup_address_info.hpp
 //  blocksci
 //
 //  Created by Harry Kalodner on 3/7/18.
 //
 
-#ifndef equiv_address_info_hpp
-#define equiv_address_info_hpp
+#ifndef dedup_address_info_hpp
+#define dedup_address_info_hpp
 
 #include "address_fwd.hpp"
 #include <blocksci/util/util.hpp>
@@ -60,7 +60,7 @@ namespace blocksci {
     using DedupAddressInfoList = array_to_tuple_t<DedupAddressType::Enum, DedupAddressType::size, DedupAddressType::all>;
     
     template <template<DedupAddressType::Enum> class K>
-    using to_equiv_address_tuple_t = apply_template_t<DedupAddressType::Enum, K, DedupAddressInfoList>;
+    using to_dedup_address_tuple_t = apply_template_t<DedupAddressType::Enum, K, DedupAddressInfoList>;
     
     template<DedupAddressType::Enum type>
     struct SpendableFunctor {
@@ -96,7 +96,7 @@ namespace blocksci {
         return equivedTable[index];
     }
     
-    std::string equivAddressName(DedupAddressType::Enum type);
+    std::string dedupAddressName(DedupAddressType::Enum type);
 }
 
-#endif /* equiv_address_info_hpp */
+#endif /* dedup_address_info_hpp */

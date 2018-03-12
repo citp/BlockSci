@@ -71,8 +71,6 @@ namespace blocksci {
         std::vector<Transaction> getInputTransactions(bool typeEquivalent, bool nestedEquivalent) const;
         
         std::string fullType() const;
-        
-        EquivAddress equiv() const;
     };
     
     void visit(const Address &address, const std::function<bool(const Address &)> &visitFunc);
