@@ -48,6 +48,10 @@ namespace blocksci {
         return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getTransactionRevealed(); }, wrapped);
     }
     
+    std::string AnyScript::toString() const {
+        return mpark::visit([&](auto &scriptAddress) { return scriptAddress.toString(); }, wrapped);
+    }
+    
     std::string AnyScript::toPrettyString() const {
         return mpark::visit([&](auto &scriptAddress) { return scriptAddress.toPrettyString(); }, wrapped);
     }
