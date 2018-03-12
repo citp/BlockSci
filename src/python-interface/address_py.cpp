@@ -47,7 +47,7 @@ void init_address(py::module &m) {
     }, "Returns the script associated with this address")
     ;
     
-    py::class_<script::Pubkey>(m, "PubkeyScript", "Extra data about pay to pubkey address")
+    py::class_<script::Pubkey>(m, "PubkeyScript", address, "Extra data about pay to pubkey address")
     .def("__repr__", py::overload_cast<>(&script::Pubkey::toString, py::const_))
     .def("__str__", py::overload_cast<>(&script::Pubkey::toPrettyString, py::const_))
     .def_property_readonly("has_been_spent", py::overload_cast<>(&script::Pubkey::hasBeenSpent, py::const_), "Check if this script has ever been spent")
@@ -65,7 +65,7 @@ void init_address(py::module &m) {
     .def_property_readonly("address_string", py::overload_cast<>(&script::Pubkey::addressString, py::const_), "Bitcoin address string")
     ;
     
-    py::class_<script::PubkeyHash>(m, "PubkeyHashScript", "Extra data about pay to pubkey address")
+    py::class_<script::PubkeyHash>(m, "PubkeyHashScript", address, "Extra data about pay to pubkey address")
     .def("__repr__", py::overload_cast<>(&script::PubkeyHash::toString, py::const_))
     .def("__str__", py::overload_cast<>(&script::PubkeyHash::toPrettyString, py::const_))
     .def_property_readonly("has_been_spent", py::overload_cast<>(&script::PubkeyHash::hasBeenSpent, py::const_), "Check if this script has ever been spent")
@@ -83,7 +83,7 @@ void init_address(py::module &m) {
     .def_property_readonly("address_string", py::overload_cast<>(&script::PubkeyHash::addressString, py::const_), "Bitcoin address string")
     ;
     
-    py::class_<script::WitnessPubkeyHash>(m, "WitnessPubkeyHashScript", "Extra data about pay to pubkey address")
+    py::class_<script::WitnessPubkeyHash>(m, "WitnessPubkeyHashScript", address, "Extra data about pay to pubkey address")
     .def("__repr__", py::overload_cast<>(&script::WitnessPubkeyHash::toString, py::const_))
     .def("__str__", py::overload_cast<>(&script::WitnessPubkeyHash::toPrettyString, py::const_))
     .def_property_readonly("has_been_spent", py::overload_cast<>(&script::WitnessPubkeyHash::hasBeenSpent, py::const_), "Check if this script has ever been spent")
@@ -101,7 +101,7 @@ void init_address(py::module &m) {
     .def_property_readonly("address_string", py::overload_cast<>(&script::WitnessPubkeyHash::addressString, py::const_), "Bitcoin address string")
     ;
     
-    py::class_<script::Multisig>(m, "MultisigScript", "Extra data about multi-signature address")
+    py::class_<script::Multisig>(m, "MultisigScript", address, "Extra data about multi-signature address")
     .def("__repr__", py::overload_cast<>(&script::Multisig::toString, py::const_))
     .def("__str__", py::overload_cast<>(&script::Multisig::toPrettyString, py::const_))
     .def_property_readonly("has_been_spent", py::overload_cast<>(&script::Multisig::hasBeenSpent, py::const_), "Check if this script has ever been spent")
@@ -113,7 +113,7 @@ void init_address(py::module &m) {
     ;
     
     
-    py::class_<script::ScriptHash>(m, "PayToScriptHashScript", "Extra data about pay to script hash address")
+    py::class_<script::ScriptHash>(m, "PayToScriptHashScript", address, "Extra data about pay to script hash address")
     .def("__repr__", py::overload_cast<>(&script::ScriptHash::toString, py::const_))
     .def("__str__", py::overload_cast<>(&script::ScriptHash::toPrettyString, py::const_))
     .def_property_readonly("has_been_spent", py::overload_cast<>(&script::ScriptHash::hasBeenSpent, py::const_), "Check if this script has ever been spent")
@@ -132,7 +132,7 @@ void init_address(py::module &m) {
     .def_property_readonly("address_string", py::overload_cast<>(&script::ScriptHash::addressString, py::const_), "Bitcoin address string")
     ;
     
-    py::class_<script::WitnessScriptHash>(m, "PayToWitnessScriptHashScript", "Extra data about pay to script hash address")
+    py::class_<script::WitnessScriptHash>(m, "PayToWitnessScriptHashScript", address, "Extra data about pay to script hash address")
     .def("__repr__", py::overload_cast<>(&script::WitnessScriptHash::toString, py::const_))
     .def("__str__", py::overload_cast<>(&script::WitnessScriptHash::toPrettyString, py::const_))
     .def_property_readonly("has_been_spent", py::overload_cast<>(&script::WitnessScriptHash::hasBeenSpent, py::const_), "Check if this script has ever been spent")
@@ -151,7 +151,7 @@ void init_address(py::module &m) {
     .def_property_readonly("address_string", py::overload_cast<>(&script::WitnessScriptHash::addressString, py::const_), "Bitcoin address string")
     ;
     
-    py::class_<script::OpReturn>(m, "NulldataScript", "Extra data about op_return address")
+    py::class_<script::OpReturn>(m, "NulldataScript", address, "Extra data about op_return address")
     .def("__repr__", py::overload_cast<>(&script::OpReturn::toString, py::const_))
     .def("__str__", py::overload_cast<>(&script::OpReturn::toPrettyString, py::const_))
     .def_property_readonly("has_been_spent", py::overload_cast<>(&script::OpReturn::hasBeenSpent, py::const_), "Check if this script has ever been spent")
@@ -162,7 +162,7 @@ void init_address(py::module &m) {
     }, pybind11::keep_alive<0, 1>(), "Data contained inside this script")
     ;
     
-    py::class_<script::Nonstandard>(m, "NonStandardScript", "Extra data about non-standard address")
+    py::class_<script::Nonstandard>(m, "NonStandardScript", address, "Extra data about non-standard address")
     .def("__repr__", py::overload_cast<>(&script::Nonstandard::toString, py::const_))
     .def("__str__", py::overload_cast<>(&script::Nonstandard::toPrettyString, py::const_))
     .def_property_readonly("has_been_spent", py::overload_cast<>(&script::Nonstandard::hasBeenSpent, py::const_), "Check if this script has ever been spent")

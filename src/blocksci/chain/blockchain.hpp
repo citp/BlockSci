@@ -172,7 +172,6 @@ namespace blocksci {
         template <AddressType::Enum type>
         auto scripts() const {
             return ranges::view::iota(uint32_t{1}, access.scripts->scriptCount<dedupType(type)>() + 1) | ranges::view::transform([&](uint32_t scriptNum) {
-                assert(scriptNum > 0);
                 return ScriptAddress<type>(scriptNum, access);
             });
         }
