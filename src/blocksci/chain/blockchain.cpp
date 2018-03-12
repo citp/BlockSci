@@ -13,6 +13,8 @@
 #include "heuristics/tx_identification.hpp"
 
 #include "chain/chain_access.hpp"
+#include "index/address_index.hpp"
+#include "index/hash_index.hpp"
 
 #include "util/data_configuration.hpp"
 
@@ -83,9 +85,11 @@ namespace blocksci {
     
     Blockchain::Blockchain(const std::string &dataDirectory) : Blockchain(DataConfiguration{dataDirectory, true, BlockHeight{0}}) {}
     
-    Blockchain::Blockchain(const DataConfiguration &config) : access(&DataAccess::Instance2(config)) {
-        lastBlockHeight = access->chain->blockCount();
+    Blockchain::Blockchain(const DataConfiguration &config) : access(config) {
+        lastBlockHeight = access.chain->blockCount();
     }
+    
+    Blockchain::~Blockchain() = default;
     
     template<AddressType::Enum type>
     struct ScriptRangeFunctor {

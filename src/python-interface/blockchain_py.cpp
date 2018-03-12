@@ -82,12 +82,12 @@ void init_blockchain(py::module &m) {
         return chain.scripts(type);
     })
     .def_property_readonly("outputs_unspent", [](const Blockchain &chain) -> ranges::any_view<Output> { return outputsUnspent(chain); }, "Returns a list of all of the outputs that are unspent")
-    .def_property_readonly("config", [](const Blockchain &chain) -> DataConfiguration { return chain.access->config; }, "Returns a list of all of the outputs that are unspent")
+    .def_property_readonly("config", [](const Blockchain &chain) -> DataConfiguration { return chain.getAccess().config; }, "Returns a list of all of the outputs that are unspent")
     .def("address_from_string", [](const Blockchain &chain, const std::string &addressString) {
-        return getAddressFromString(addressString, *chain.access);
+        return getAddressFromString(addressString, chain.getAccess());
     }, "Construct an address object from an address string")
     .def("addresses_with_prefix", [](const Blockchain &chain, const std::string &addressPrefix) {
-        return getAddressesWithPrefix(addressPrefix, *chain.access);
+        return getAddressesWithPrefix(addressPrefix, chain.getAccess());
     }, "Find all addresses beginning with the given prefix")
     ;
 }

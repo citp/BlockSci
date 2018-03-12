@@ -21,24 +21,6 @@
 namespace blocksci {
     
     DataAccess::DataAccess(const DataConfiguration &config_) : config(config_), chain{std::make_unique<ChainAccess>(config)}, scripts{std::make_unique<ScriptAccess>(config)}, addressIndex{std::make_unique<AddressIndex>(config.addressDBFilePath().native(), true)}, hashIndex{std::make_unique<HashIndex>(config.hashIndexFilePath().native(), true)} {}
-    
-    DataAccess &DataAccess::Instance2(const DataConfiguration &config_) {
-        // Since it's a static variable, if the class has already been created,
-        // It won't be created again.
-        // And it **is** thread-safe in C++11.
-        
-        static DataAccess myInstance(config_);
-        static DataConfiguration config = config_;
-        
-        if (!config_.isNull()) {
-            config = config_;
-            myInstance.chain->reload();
-            myInstance.scripts->reload();
-        }
-        
-        // Return a reference to our instance.
-        return myInstance;
-    }
 }
 
 

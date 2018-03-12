@@ -110,7 +110,7 @@ namespace blocksci {
             }
             
             Block read() const {
-                return Block(currentBlockHeight, *chain->access);
+                return Block(currentBlockHeight, chain->access);
             }
             
             void next() {
@@ -148,14 +148,15 @@ namespace blocksci {
         
         BlockHeight lastBlockHeight;
 
+        DataAccess access;
+        
     public:
         Blockchain() = default;
         Blockchain(const DataConfiguration &config);
         Blockchain(const std::string &dataDirectory);
+        ~Blockchain();
         
-        const DataAccess *access;
-        
-        operator const DataAccess &() const { return *access; }
+        const DataAccess &getAccess() const { return access; }
         
         uint32_t firstTxIndex() const;
         uint32_t endTxIndex() const;
@@ -165,14 +166,14 @@ namespace blocksci {
         }
         
         uint32_t scriptCount(DedupAddressType::Enum type) const {
-            return access->scripts->scriptCount(type);
+            return access.scripts->scriptCount(type);
         }
         
         template <AddressType::Enum type>
         auto scripts() const {
-            return ranges::view::iota(uint32_t{1}, access->scripts->scriptCount<dedupType(type)>() + 1) | ranges::view::transform([&](uint32_t scriptNum) {
+            return ranges::view::iota(uint32_t{1}, access.scripts->scriptCount<dedupType(type)>() + 1) | ranges::view::transform([&](uint32_t scriptNum) {
                 assert(scriptNum > 0);
-                return ScriptAddress<type>(scriptNum, *access);
+                return ScriptAddress<type>(scriptNum, access);
             });
         }
         
