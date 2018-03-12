@@ -42,7 +42,7 @@ def mapreduce_block_ranges(chain, mapFunc, reduceFunc, init,  start=None, end=No
     segments = [(raw_segment, config) for raw_segment in raw_segments]
 
     def real_map_func(input):
-        local_chain = blocksci.Blockchain(input[1])
+        local_chain = Blockchain(input[1])
         block_height_range = range(input[0][0], input[0][1])
         return mapFunc((local_chain[i] for i in block_height_range))
 
