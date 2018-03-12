@@ -14,6 +14,7 @@
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/index/address_index.hpp>
 #include <blocksci/index/hash_index.hpp>
+#include <blocksci/scripts/script_variant.hpp>
 #include <blocksci/heuristics/blockchain_heuristics.hpp>
 
 #include <pybind11/pybind11.h>
@@ -83,11 +84,21 @@ void init_blockchain(py::module &m) {
     })
     .def_property_readonly("outputs_unspent", [](const Blockchain &chain) -> ranges::any_view<Output> { return outputsUnspent(chain); }, "Returns a list of all of the outputs that are unspent")
     .def_property_readonly("config", [](const Blockchain &chain) -> DataConfiguration { return chain.getAccess().config; }, "Returns a list of all of the outputs that are unspent")
-    .def("address_from_string", [](const Blockchain &chain, const std::string &addressString) {
-        return getAddressFromString(addressString, chain.getAccess());
+    .def("address_from_string", [](const Blockchain &chain, const std::string &addressString) -> ranges::optional<AnyScript::ScriptVariant> {
+        auto address = getAddressFromString(addressString, chain.getAccess());
+        if (address) {
+            return address->getScript().wrapped;
+        } else {
+            return ranges::nullopt;
+        }
     }, "Construct an address object from an address string")
     .def("addresses_with_prefix", [](const Blockchain &chain, const std::string &addressPrefix) {
-        return getAddressesWithPrefix(addressPrefix, chain.getAccess());
+        py::list pyAddresses;
+        auto addresses = getAddressesWithPrefix(addressPrefix, chain.getAccess());
+        for (auto &address : addresses) {
+            pyAddresses.append(address.getScript().wrapped);
+        }
+        return pyAddresses;
     }, "Find all addresses beginning with the given prefix")
     ;
 }

@@ -7,6 +7,7 @@
 
 #include "optional_py.hpp"
 #include "ranges_py.hpp"
+#include "variant_py.hpp"
 
 #include <blocksci/address/address.hpp>
 #include <blocksci/chain/input.hpp>
@@ -14,6 +15,7 @@
 #include <blocksci/chain/algorithms.hpp>
 #include <blocksci/chain/inout_pointer.hpp>
 #include <blocksci/chain/transaction.hpp>
+#include <blocksci/scripts/script_variant.hpp>
 
 #include <range/v3/range_for.hpp>
 #include <range/v3/view/transform.hpp>
@@ -29,7 +31,7 @@ template <typename Class, typename FuncApplication, typename FuncDoc>
 void addOutputMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     cl
     .def_property_readonly("address", func([](const Output &output) {
-        return output.getAddress();
+        return output.getAddress().getScript().wrapped;
     }), func2("This address linked to this output"))
     .def_property_readonly("value", func([](const Output &output) {
         return output.getValue();
@@ -89,11 +91,6 @@ void addOutputRangeMethods(Class &cl, FuncApplication func) {
             return outputsOfType(std::forward<decltype(r)>(r), type);
         });
     }, "Returns a range including the subset of outputs which were sent to the given address type")
-    .def("with_type", [=](Range &range, DedupAddressType::Enum type) {
-        return func(range, [=](auto && r) -> ranges::any_view<blocksci::Output> {
-            return outputsOfType(std::forward<decltype(r)>(r), type);
-        });
-    }, "Returns a range including the subset of outputs which were sent to the given equiv address type")
     ;
 }
 

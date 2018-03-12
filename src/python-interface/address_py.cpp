@@ -42,9 +42,6 @@ void init_address(py::module &m) {
     .def("in_txes_count", [](const Address &address, bool typeEquivalent, bool nestedEquivalent) {
         return address.getInputTransactions(typeEquivalent, nestedEquivalent).size();
     }, py::arg("typeEquivalent") = true,  py::arg("nestedEquivalent") = true, "Return the number of transactions where this address was an input")
-    .def_property_readonly("script", [](const Address &address) {
-        return address.getScript().wrapped;
-    }, "Returns the script associated with this address")
     ;
     
     py::class_<script::Pubkey>(m, "PubkeyScript", address, "Extra data about pay to pubkey address")
@@ -138,15 +135,14 @@ void init_address(py::module &m) {
     .def_property_readonly("has_been_spent", py::overload_cast<>(&script::WitnessScriptHash::hasBeenSpent, py::const_), "Check if this script has ever been spent")
     .def_property_readonly("first_tx", py::overload_cast<>(&script::WitnessScriptHash::getFirstTransaction, py::const_), "Get the first transaction that was sent to this address")
     .def_property_readonly("revealed_tx",py::overload_cast<>(&script::WitnessScriptHash::getTransactionRevealed, py::const_), "The transaction where this wrapped script was first revealed")
-    .def_property_readonly("wrapped_address", &script::WitnessScriptHash::getWrappedAddress, "The address inside this witness script hash address")
-    .def_property_readonly("wrapped_script", [](const script::WitnessScriptHash &script) -> ranges::optional<AnyScript::ScriptVariant> {
+    .def_property_readonly("wrapped_address", [](const script::WitnessScriptHash &script) -> ranges::optional<AnyScript::ScriptVariant> {
         auto wrappedScript = script.wrappedScript();
         if (wrappedScript) {
             return wrappedScript->wrapped;
         } else {
             return ranges::nullopt;
         }
-    }, "The script inside this witness script hash address")
+    }, "The address inside this witness script hash address")
     .def_property_readonly("raw_address",  &script::WitnessScriptHash::getAddressHash, "The 256 bit Witness P2SH address hash")
     .def_property_readonly("address_string", py::overload_cast<>(&script::WitnessScriptHash::addressString, py::const_), "Bitcoin address string")
     ;
