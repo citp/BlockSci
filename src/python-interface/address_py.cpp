@@ -47,8 +47,6 @@ void init_address(py::module &m) {
     .def_property_readonly("script", [](const Address &address) {
         return address.getScript().wrapped;
     }, "Returns the script associated with this address")
-    .def_static("from_string", getAddressFromString, "Construct an address object from an address string")
-    .def_static("with_prefix", getAddressesWithPrefix, "Find all addresses beginning with the given prefix")
     ;
     
     py::class_<EquivAddress>(m, "EquivAddress", "Class representing a equivalent address which coins are sent to")
