@@ -15,7 +15,7 @@ namespace blocksci {
     struct RawAddress;
     
     class Address;
-    class EquivAddress;
+    struct EquivAddress;
     
     template <AddressType::Enum>
     struct AddressInfo;

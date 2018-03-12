@@ -19,19 +19,8 @@ namespace blocksci {
     class DataAccess;
     struct DataConfiguration;
     
-    struct RawEquivAddress {
-        uint32_t scriptNum;
-        DedupAddressType::Enum type;
-        
-        RawEquivAddress() {}
-        RawEquivAddress(uint32_t addressNum_, DedupAddressType::Enum type_) : scriptNum(addressNum_), type(type_) {}
-        RawEquivAddress(const EquivAddress &address);
-    };
     
-    class EquivAddress {
-        const DataAccess *access;
-        
-    public:
+    struct EquivAddress {
         uint32_t scriptNum;
         DedupAddressType::Enum type;
         
@@ -47,21 +36,11 @@ namespace blocksci {
         }
         
         std::string toString() const;
-        
-        uint64_t calculateBalance(BlockHeight height) const;
-        
-        std::vector<Output> getOutputs() const;
-        std::vector<Input> getInputs() const;
-        std::vector<Transaction> getTransactions() const;
-        std::vector<Transaction> getOutputTransactions() const;
-        std::vector<Transaction> getInputTransactions() const;
     };
     
     inline std::ostream &operator<<(std::ostream &os, const EquivAddress &address) {
         return os << address.toString();
     }
-    
-    inline RawEquivAddress::RawEquivAddress(const EquivAddress &address) : scriptNum(address.scriptNum), type(address.type) {}
 }
 
 namespace std {

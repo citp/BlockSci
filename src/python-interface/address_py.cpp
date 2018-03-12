@@ -56,12 +56,6 @@ void init_address(py::module &m) {
     .def(hash(py::self))
     .def_readonly("script_num", &EquivAddress::scriptNum, "The internal identifier of the address")
     .def_readonly("type", &EquivAddress::type, "The kind of script")
-    .def("balance", py::overload_cast<BlockHeight>(&EquivAddress::calculateBalance, py::const_), py::arg("height") = 0, "Calculates the balance held by this EquivAddress at the height (Defaults to the full chain)")
-    .def("outs", py::overload_cast<>(&EquivAddress::getOutputs, py::const_), "Returns a list of all outputs sent to this EquivAddress")
-    .def("ins", py::overload_cast<>(&EquivAddress::getInputs, py::const_), "Returns a list of all inputs spent from this EquivAddress")
-    .def("txes", py::overload_cast<>(&EquivAddress::getTransactions, py::const_), "Returns a list of all transactions involving this EquivAddress")
-    .def("in_txes", py::overload_cast<>(&EquivAddress::getInputTransactions, py::const_), "Returns a list of all transaction where this EquivAddress was an input")
-    .def("out_txes", py::overload_cast<>(&EquivAddress::getOutputTransactions, py::const_), "Returns a list of all transaction where this EquivAddress was an output")
     ;
     
     py::class_<Script> script(m, "Script", "Class representing a script which coins are sent to");

@@ -30,9 +30,7 @@ namespace blocksci {
         
         AddressIndex(const std::string &path, bool readonly);
         ~AddressIndex();
-        
-        std::vector<OutputPointer> getOutputPointers(const EquivAddress &script) const;
-        
+
         std::vector<OutputPointer> getOutputPointers(const Address &searchAddress, bool typeEquivalent, bool nestedEquivalent) const;
         
         std::vector<RawAddress> getPossibleNestedEquivalent(const RawAddress &address) const;

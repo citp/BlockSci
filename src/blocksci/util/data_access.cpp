@@ -16,11 +16,6 @@
 #include <blocksci/index/address_index.hpp>
 #include <blocksci/index/hash_index.hpp>
 
-#include <range/v3/view/transform.hpp>
-#include <range/v3/view/filter.hpp>
-#include <range/v3/action/unique.hpp>
-#include <range/v3/action/sort.hpp>
-
 #include <unordered_set>
 
 namespace blocksci {
@@ -43,101 +38,6 @@ namespace blocksci {
         
         // Return a reference to our instance.
         return myInstance;
-    }
-    
-    std::vector<Output> getOutputsImp(std::vector<OutputPointer> pointers, const DataAccess *access) {
-        return pointers
-        | ranges::view::transform([access](const OutputPointer &pointer) { return Output(pointer, *access); })
-        | ranges::to_vector;
-    }
-    
-    std::vector<Output> DataAccess::getOutputs(const Address &address, bool typeEquivalent, bool nestedEquivalent) const {
-        return getOutputsImp(addressIndex->getOutputPointers(address, typeEquivalent, nestedEquivalent), this);
-    }
-    
-    std::vector<Output> DataAccess::getOutputs(const EquivAddress &script) const {
-        return getOutputsImp(addressIndex->getOutputPointers(script), this);
-    }
-    
-    std::vector<Input> getInputsImp(std::vector<OutputPointer> pointers, const DataAccess *access) {
-        std::unordered_set<InputPointer> allPointers;
-        allPointers.reserve(pointers.size());
-        for (auto &pointer : pointers) {
-            auto inputTx = Output(pointer, *access).getSpendingTx();
-            if(inputTx) {
-                auto inputPointers = inputTx->getInputPointers(pointer);
-                for (auto &inputPointer : inputPointers) {
-                    allPointers.insert(inputPointer);
-                }
-            }
-        }
-        return allPointers
-        | ranges::view::transform([access](const InputPointer &pointer) { return Input(pointer, *access); })
-        | ranges::to_vector;
-    }
-    
-    std::vector<Input> DataAccess::getInputs(const Address &address, bool typeEquivalent, bool nestedEquivalent) const {
-        return getInputsImp(addressIndex->getOutputPointers(address, typeEquivalent, nestedEquivalent), this);
-    }
-    
-    std::vector<Input> DataAccess::getInputs(const EquivAddress &script) const {
-        return getInputsImp(addressIndex->getOutputPointers(script), this);
-    }
-    
-    std::vector<Transaction> getTransactionsImp(std::vector<OutputPointer> pointers, const DataAccess *access) {
-        
-        std::unordered_set<blocksci::Transaction> txes;
-        txes.reserve(pointers.size() * 2);
-        for (auto &pointer : pointers) {
-            txes.insert(Transaction(pointer.txNum, *access));
-            auto inputTx = Output(pointer, *access).getSpendingTx();
-            if (inputTx) {
-                txes.insert(*inputTx);
-            }
-        }
-        return {txes.begin(), txes.end()};
-    }
-    
-    std::vector<Transaction> DataAccess::getTransactions(const Address &address, bool typeEquivalent, bool nestedEquivalent) const {
-        return getTransactionsImp(addressIndex->getOutputPointers(address, typeEquivalent, nestedEquivalent), this);
-    }
-    
-    std::vector<Transaction> DataAccess::getTransactions(const EquivAddress &script) const {
-        return getTransactionsImp(addressIndex->getOutputPointers(script), this);
-    }
-    
-    std::vector<Transaction> getOutputTransactionsImp(std::vector<OutputPointer> pointers, const DataAccess *access) {
-        auto txNums = pointers | ranges::view::transform([](const OutputPointer &pointer) { return pointer.txNum; }) | ranges::to_vector;
-        txNums |= ranges::action::sort | ranges::action::unique;
-        return txNums | ranges::view::transform([access](uint32_t txNum) { return Transaction(txNum, *access); }) | ranges::to_vector;
-    }
-    
-    std::vector<Transaction> DataAccess::getOutputTransactions(const Address &address, bool typeEquivalent, bool nestedEquivalent) const {
-        return getOutputTransactionsImp(addressIndex->getOutputPointers(address, typeEquivalent, nestedEquivalent), this);
-    }
-    
-    std::vector<Transaction> DataAccess::getOutputTransactions(const EquivAddress &script) const {
-        return getOutputTransactionsImp(addressIndex->getOutputPointers(script), this);
-    }
-    
-    
-    auto flatMap() {
-        return ranges::view::filter([](const auto &optional) { return static_cast<bool>(optional); })
-        | ranges::view::transform([](const auto &optional) { return *optional; });
-    }
-    
-    std::vector<Transaction> getInputTransactionsImp(std::vector<OutputPointer> pointers, const DataAccess *access) {
-        auto txes = pointers | ranges::view::transform([access](const OutputPointer &pointer) { return Output(pointer, *access).getSpendingTx(); }) | flatMap() | ranges::to_vector;
-        txes |= ranges::action::sort | ranges::action::unique;
-        return txes;
-    }
-    
-    std::vector<Transaction> DataAccess::getInputTransactions(const Address &address, bool typeEquivalent, bool nestedEquivalent) const {
-        return getInputTransactionsImp(addressIndex->getOutputPointers(address, typeEquivalent, nestedEquivalent), this);
-    }
-    
-    std::vector<Transaction> DataAccess::getInputTransactions(const EquivAddress &script) const {
-        return getInputTransactionsImp(addressIndex->getOutputPointers(script), this);
     }
 }
 

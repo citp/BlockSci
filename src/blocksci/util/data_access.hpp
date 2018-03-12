@@ -42,12 +42,6 @@ namespace blocksci {
         std::vector<Transaction> getTransactions(const Address &address, bool typeEquivalent, bool nestedEquivalent) const;
         std::vector<Transaction> getOutputTransactions(const Address &address, bool typeEquivalent, bool nestedEquivalent) const;
         std::vector<Transaction> getInputTransactions(const Address &address, bool typeEquivalent, bool nestedEquivalent) const;
-        
-        std::vector<Output> getOutputs(const EquivAddress &script) const;
-        std::vector<Input> getInputs(const EquivAddress &script) const;
-        std::vector<Transaction> getTransactions(const EquivAddress &script) const;
-        std::vector<Transaction> getOutputTransactions(const EquivAddress &script) const;
-        std::vector<Transaction> getInputTransactions(const EquivAddress &script) const;
     };
 }
 

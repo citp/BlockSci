@@ -100,7 +100,7 @@ namespace blocksci {
             for (it->Seek(key); it->Valid() && it->key().starts_with(key); it->Next()) {
                 auto foundKey = it->key();
                 foundKey.remove_prefix(sizeof(RawAddress));
-                RawEquivAddress rawParent;
+                RawAddress rawParent;
                 memcpy(&rawParent, foundKey.data(), sizeof(rawParent));
                 switch (rawParent.type) {
                 case DedupAddressType::SCRIPTHASH:
@@ -148,10 +148,9 @@ namespace blocksci {
     void AddressIndex::addAddressNested(const Address &childAddress, const EquivAddress &parentAddress) {
         auto nestedColumn = getNestedColumn(childAddress.type);
         RawAddress rawChild(childAddress);
-        RawEquivAddress rawParent(parentAddress);
         std::array<rocksdb::Slice, 2> keyParts = {{
             rocksdb::Slice(reinterpret_cast<const char *>(&rawChild), sizeof(rawChild)),
-            rocksdb::Slice(reinterpret_cast<const char *>(&rawParent), sizeof(rawParent))
+            rocksdb::Slice(reinterpret_cast<const char *>(&parentAddress), sizeof(parentAddress))
         }};
         std::string sliceStr;
         rocksdb::Slice key{rocksdb::SliceParts{keyParts.data(), keyParts.size()}, &sliceStr};
