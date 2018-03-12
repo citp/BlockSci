@@ -32,12 +32,12 @@ void init_address(py::module &m) {
     .def_readonly("script_num", &Address::scriptNum, "The internal identifier of the address")
     .def_readonly("type", &Address::type, "The type of address")
     .def_property_readonly("equiv", &Address::equiv, "Returns the EquivAddress associated with this address")
-    .def("balance", py::overload_cast<BlockHeight>(&Address::calculateBalance, py::const_), py::arg("height") = 0, "Calculates the balance held by this address at the height (Defaults to the full chain)")
-    .def("outs", py::overload_cast<>(&Address::getOutputs, py::const_), "Returns a list of all outputs sent to this address")
-    .def("ins", py::overload_cast<>(&Address::getInputs, py::const_), "Returns a list of all inputs spent from this address")
-    .def("txes", py::overload_cast<>(&Address::getTransactions, py::const_), "Returns a list of all transactions involving this address")
-    .def("in_txes", py::overload_cast<>(&Address::getInputTransactions, py::const_), "Returns a list of all transaction where this address was an input")
-    .def("out_txes", py::overload_cast<>(&Address::getOutputTransactions, py::const_), "Returns a list of all transaction where this address was an output")
+    .def("balance", &Address::calculateBalance, py::arg("height") = 0, "Calculates the balance held by this address at the height (Defaults to the full chain)")
+    .def("outs", &Address::getOutputs, "Returns a list of all outputs sent to this address")
+    .def("ins", &Address::getInputs, "Returns a list of all inputs spent from this address")
+    .def("txes", &Address::getTransactions, "Returns a list of all transactions involving this address")
+    .def("in_txes",&Address::getInputTransactions, "Returns a list of all transaction where this address was an input")
+    .def("out_txes", &Address::getOutputTransactions, "Returns a list of all transaction where this address was an output")
     .def("out_txes_count", [](const Address &address) {
         return address.getOutputTransactions().size();
     }, "Return the number of transactions where this address was an output")
@@ -47,9 +47,8 @@ void init_address(py::module &m) {
     .def_property_readonly("script", [](const Address &address) {
         return address.getScript().wrapped;
     }, "Returns the script associated with this address")
-    .def_static("address_count", static_cast<size_t(*)()>(addressCount), "Get the total number of address of a given type")
-    .def_static("from_string", py::overload_cast<const std::string &>(getAddressFromString), "Construct an address object from an address string")
-    .def_static("with_prefix", py::overload_cast<const std::string &>(getAddressesWithPrefix), "Find all addresses beginning with the given prefix")
+    .def_static("from_string", getAddressFromString, "Construct an address object from an address string")
+    .def_static("with_prefix", getAddressesWithPrefix, "Find all addresses beginning with the given prefix")
     ;
     
     py::class_<EquivAddress>(m, "EquivAddress", "Class representing a equivalent address which coins are sent to")

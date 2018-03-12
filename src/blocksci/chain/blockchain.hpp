@@ -164,6 +164,10 @@ namespace blocksci {
             return lastBlockHeight;
         }
         
+        uint32_t scriptCount(EquivAddressType::Enum type) const {
+            return access->scripts->scriptCount(type);
+        }
+        
         template <AddressType::Enum type>
         auto scripts() const {
             return ranges::view::iota(uint32_t{1}, access->scripts->scriptCount<equivType(type)>() + 1) | ranges::view::transform([&](uint32_t scriptNum) {

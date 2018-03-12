@@ -70,20 +70,11 @@ namespace blocksci {
         EquivAddress equiv() const;
     };
     
-    size_t addressCount(const ScriptAccess &access);
-    
     void visit(const Address &address, const std::function<bool(const Address &)> &visitFunc);
     
     ranges::optional<Address> getAddressFromString(const std::string &addressString, const DataAccess &access);
     
     std::vector<Address> getAddressesWithPrefix(const std::string &prefix, const DataAccess &access);
-    
-    // Requires DataAccess
-    #ifndef BLOCKSCI_WITHOUT_SINGLETON
-    ranges::optional<Address> getAddressFromString(const std::string &addressString);
-    std::vector<Address> getAddressesWithPrefix(const std::string &prefix);
-    size_t addressCount();
-    #endif
 
     inline std::ostream &operator<<(std::ostream &os, const Address &address) { 
         return os << address.toString();

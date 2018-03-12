@@ -67,10 +67,6 @@ namespace blocksci {
         return AnyScript{*this, *access};
     }
     
-    size_t addressCount(const ScriptAccess &access) {
-        return access.totalAddressCount();
-    }
-    
     uint64_t Address::calculateBalance(BlockHeight height) const {
         uint64_t value = 0;
         if (height == 0) {
