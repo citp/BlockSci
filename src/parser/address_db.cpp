@@ -59,13 +59,13 @@ void AddressDB::processTx(const blocksci::Transaction &tx) {
 }
 
 void AddressDB::rollback(const blocksci::State &state) {
-    for (auto script : DedupAddressType::all) {
-        auto column = db.getOutputColumn(script);
-        auto it = db.getOutputIterator(script);
+    for_each(AddressInfoList(), [&](auto type) {
+        auto column = db.getOutputColumn(type);
+        auto it = db.getOutputIterator(type);
         rocksdb::WriteBatch batch;
         for (it->SeekToFirst(); it->Valid(); it->Next()) {
             auto key = it->key();
-            key.remove_prefix(sizeof(Address));
+            key.remove_prefix(sizeof(uint32_t));
             OutputPointer outPoint;
             memcpy(&outPoint, key.data(), sizeof(outPoint));
             if (outPoint.txNum >= state.scriptCounts[static_cast<size_t>(blocksci::DedupAddressType::SCRIPTHASH)]) {
@@ -74,5 +74,5 @@ void AddressDB::rollback(const blocksci::State &state) {
         }
         assert(it->status().ok()); // Check for any errors found during the scan
         delete it;
-    }
+    });
 }

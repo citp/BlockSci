@@ -41,9 +41,9 @@ namespace blocksci {
         
         
         std::vector<rocksdb::ColumnFamilyDescriptor> columnDescriptors;
-        blocksci::for_each(blocksci::DedupAddressInfoList(), [&](auto tag) {
+        blocksci::for_each(blocksci::AddressInfoList(), [&](auto tag) {
             std::stringstream ss;
-            ss << equivAddressName(tag) << "_output";
+            ss << addressName(tag) << "_output";
             columnDescriptors.emplace_back(ss.str(), rocksdb::ColumnFamilyOptions{});
         });
         blocksci::for_each(blocksci::AddressInfoList(), [&](auto tag) {
@@ -60,12 +60,12 @@ namespace blocksci {
         }
     }
     
-    rocksdb::ColumnFamilyHandle *AddressIndex::getOutputColumn(DedupAddressType::Enum type) const {
+    rocksdb::ColumnFamilyHandle *AddressIndex::getOutputColumn(AddressType::Enum type) const {
         return columnHandles[static_cast<size_t>(type)];
     }
     
     rocksdb::ColumnFamilyHandle *AddressIndex::getNestedColumn(AddressType::Enum type) const {
-        return columnHandles[DedupAddressType::size + static_cast<size_t>(type)];
+        return columnHandles[AddressType::size + static_cast<size_t>(type)];
     }
     
     AddressIndex::~AddressIndex() {
@@ -75,14 +75,14 @@ namespace blocksci {
         delete db;
     }
     
-    std::vector<OutputPointer> AddressIndex::getOutputPointersImp(const RawAddress &address) const {
-        auto column = getOutputColumn(dedupType(address.type));
-        rocksdb::Slice key{reinterpret_cast<const char *>(&address), sizeof(address)};
+    std::vector<OutputPointer> AddressIndex::getOutputPointersImp(uint32_t addressNum, AddressType::Enum type) const {
+        auto column = getOutputColumn(type);
+        rocksdb::Slice key{reinterpret_cast<const char *>(&addressNum), sizeof(addressNum)};
         std::vector<OutputPointer> pointers;
         rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
         for (it->Seek(key); it->Valid() && it->key().starts_with(key); it->Next()) {
             auto foundKey = it->key();
-            foundKey.remove_prefix(sizeof(RawAddress));
+            foundKey.remove_prefix(sizeof(uint32_t));
             OutputPointer outPoint;
             memcpy(&outPoint, foundKey.data(), sizeof(outPoint));
             pointers.push_back(outPoint);
@@ -95,12 +95,12 @@ namespace blocksci {
         for (size_t i = 0; i < addresses.size(); i++) {
             auto &address = addresses[i];
             auto column = getNestedColumn(address.type);
-            rocksdb::Slice key{reinterpret_cast<const char *>(&address), sizeof(address)};
+            rocksdb::Slice key{reinterpret_cast<const char *>(&address.scriptNum), sizeof(address.scriptNum)};
             rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
             for (it->Seek(key); it->Valid() && it->key().starts_with(key); it->Next()) {
                 auto foundKey = it->key();
-                foundKey.remove_prefix(sizeof(RawAddress));
-                RawAddress rawParent;
+                foundKey.remove_prefix(sizeof(uint32_t));
+                EquivAddress rawParent;
                 memcpy(&rawParent, foundKey.data(), sizeof(rawParent));
                 switch (rawParent.type) {
                 case DedupAddressType::SCRIPTHASH:
@@ -122,23 +122,22 @@ namespace blocksci {
             for (auto type : equivAddressTypes(searchAddress.type)) {
                 auto childAddress = RawAddress(searchAddress.scriptNum, type);
                 for (auto &address : getPossibleNestedEquivalent(childAddress)) {
-                    auto addrOuts = getOutputPointersImp(address);
+                    auto addrOuts = getOutputPointersImp(address.scriptNum, address.type);
                     outputs.insert(outputs.end(), addrOuts.begin(), addrOuts.end());
                 }
             }
         } else if (typeEquivalent) {
             for (auto type : equivAddressTypes(searchAddress.type)) {
-                auto childAddress = RawAddress(searchAddress.scriptNum, type);
-                auto addrOuts = getOutputPointersImp(childAddress);
+                auto addrOuts = getOutputPointersImp(searchAddress.scriptNum, type);
                 outputs.insert(outputs.end(), addrOuts.begin(), addrOuts.end());
             }
         } else if (nestedEquivalent) {
             for (auto &address : getPossibleNestedEquivalent(searchAddress)) {
-                auto addrOuts = getOutputPointersImp(address);
+                auto addrOuts = getOutputPointersImp(address.scriptNum, address.type);
                 outputs.insert(outputs.end(), addrOuts.begin(), addrOuts.end());
             }
         } else {
-            auto addrOuts = getOutputPointersImp(searchAddress);
+            auto addrOuts = getOutputPointersImp(searchAddress.scriptNum, searchAddress.type);
             outputs.insert(outputs.end(), addrOuts.begin(), addrOuts.end());
         }
        
@@ -146,9 +145,8 @@ namespace blocksci {
     }
     
     void AddressIndex::addAddressNested(const Address &childAddress, const EquivAddress &parentAddress) {
-        RawAddress rawChild(childAddress);
         std::array<rocksdb::Slice, 2> keyParts = {{
-            rocksdb::Slice(reinterpret_cast<const char *>(&rawChild), sizeof(rawChild)),
+            rocksdb::Slice(reinterpret_cast<const char *>(&childAddress.scriptNum), sizeof(childAddress.scriptNum)),
             rocksdb::Slice(reinterpret_cast<const char *>(&parentAddress), sizeof(parentAddress))
         }};
         std::string sliceStr;
@@ -158,14 +156,13 @@ namespace blocksci {
     }
     
     void AddressIndex::addAddressOutput(const Address &address, const blocksci::OutputPointer &pointer) {
-        RawAddress raw(address);
         std::array<rocksdb::Slice, 2> keyParts = {{
-            rocksdb::Slice(reinterpret_cast<const char *>(&raw), sizeof(raw)),
+            rocksdb::Slice(reinterpret_cast<const char *>(&address.scriptNum), sizeof(address.scriptNum)),
             rocksdb::Slice(reinterpret_cast<const char *>(&pointer), sizeof(pointer))
         }};
         std::string sliceStr;
         rocksdb::Slice key{rocksdb::SliceParts{keyParts.data(), keyParts.size()}, &sliceStr};
-        auto outputColumn = getOutputColumn(dedupType(address.type));
+        auto outputColumn = getOutputColumn(address.type);
         db->Put(rocksdb::WriteOptions{}, outputColumn, key, rocksdb::Slice{});
     }
 }

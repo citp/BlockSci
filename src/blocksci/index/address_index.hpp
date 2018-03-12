@@ -25,7 +25,7 @@ namespace blocksci {
         rocksdb::DB *db;
         std::vector<rocksdb::ColumnFamilyHandle *> columnHandles;
         
-        std::vector<OutputPointer> getOutputPointersImp(const RawAddress &address) const;
+        std::vector<OutputPointer> getOutputPointersImp(uint32_t addressNum, AddressType::Enum type) const;
     public:
         
         AddressIndex(const std::string &path, bool readonly);
@@ -38,10 +38,10 @@ namespace blocksci {
         void addAddressNested(const blocksci::Address &childAddress, const blocksci::EquivAddress &parentAddress);
         void addAddressOutput(const blocksci::Address &address, const blocksci::OutputPointer &pointer);
         
-        rocksdb::ColumnFamilyHandle *getOutputColumn(DedupAddressType::Enum type) const;
+        rocksdb::ColumnFamilyHandle *getOutputColumn(AddressType::Enum type) const;
         rocksdb::ColumnFamilyHandle *getNestedColumn(AddressType::Enum type) const;
         
-        rocksdb::Iterator* getOutputIterator(DedupAddressType::Enum type) {
+        rocksdb::Iterator* getOutputIterator(AddressType::Enum type) {
             return db->NewIterator(rocksdb::ReadOptions(), getOutputColumn(type));
         }
         
