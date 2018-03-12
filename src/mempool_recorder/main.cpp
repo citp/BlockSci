@@ -12,6 +12,8 @@
 #include <blocksci/util/data_configuration.hpp>
 #include <blocksci/util/data_access.hpp>
 #include <blocksci/util/file_mapper.hpp>
+#include <blocksci/index/address_index.hpp>
+#include <blocksci/index/hash_index.hpp>
 #include <blocksci/chain/chain_access.hpp>
 
 #include <bitcoinapi/bitcoinapi.h>
@@ -38,11 +40,11 @@ class MempoolRecorder {
     blocksci::FixedSizeFileMapper<time_t, blocksci::AccessMode::readwrite> txTimeFile;
 public:
     MempoolRecorder(const DataConfiguration &config_, BitcoinAPI &bitcoinAPI_) : config(config_), bitcoinAPI(bitcoinAPI_), txTimeFile(config.dataDirectory/"mempool") {
-        blocksci::ChainAccess chain(config, false, 0);
+        blocksci::ChainAccess chain(config);
         lastHeight = chain.blockCount();
         
-        auto mostRecentBlock = Block(chain.blockCount() - 1, chain);
-        auto lastTxIndex = mostRecentBlock.endTxIndex() - 1;
+        auto mostRecentBlock = chain.getBlock(lastHeight - 1);
+        auto lastTxIndex = mostRecentBlock->firstTxIndex + mostRecentBlock->numTxes - 1;
         if (txTimeFile.size() == 0) {
             // Record starting txNum in position 0
             txTimeFile.write(lastTxIndex + 1);
@@ -82,10 +84,10 @@ public:
     }
     
     void recordMempool() {
-        blocksci::ChainAccess chain(config, false, 0);
-        auto blockCount = chain.blockCount();
+        blocksci::DataAccess access(config);
+        auto blockCount = access.chain->blockCount();
         for (blocksci::BlockHeight i = lastHeight; i < blockCount; i++) {
-            auto block = Block(i, chain);
+            auto block = Block(i, access);
             RANGES_FOR(auto tx, block) {
                 auto it = mempool.find(tx.getHash());
                 if (it != mempool.end()) {
@@ -128,7 +130,7 @@ int main(int argc, const char * argv[]) {
 
     BitcoinAPI bitcoinAPI{user, password, host, port};
     
-    DataConfiguration config(argv[1]);
+    DataConfiguration config(argv[1], false, 0);
     
     MempoolRecorder recorder{config, bitcoinAPI};
     
