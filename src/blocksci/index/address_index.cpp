@@ -54,8 +54,7 @@ namespace blocksci {
         columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions());
         
         if (readonly) {
-            rocksdb::Status s = rocksdb::DB::OpenForReadOnly(options, path.c_str(), columnDescriptors, &columnHandles, &db);
-            assert(s.ok());
+            rocksdb::DB::OpenForReadOnly(options, path.c_str(), columnDescriptors, &columnHandles, &db);
         } else {
             rocksdb::Status s = rocksdb::DB::Open(options, path.c_str(), columnDescriptors, &columnHandles, &db);
         }
@@ -91,9 +90,10 @@ namespace blocksci {
         return pointers;
     }
     
-    std::vector<RawAddress> AddressIndex::getPossibleNestedEquivalent(const RawAddress &address) const {
-        std::vector<RawAddress> addresses{address};
+    std::vector<RawAddress> AddressIndex::getPossibleNestedEquivalent(const RawAddress &searchAddress) const {
+        std::vector<RawAddress> addresses{searchAddress};
         for (size_t i = 0; i < addresses.size(); i++) {
+            auto &address = addresses[i];
             auto column = getNestedColumn(address.type);
             rocksdb::Slice key{reinterpret_cast<const char *>(&address), sizeof(address)};
             rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
