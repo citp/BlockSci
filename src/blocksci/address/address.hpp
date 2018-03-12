@@ -44,6 +44,10 @@ namespace blocksci {
         Address(uint32_t addressNum, AddressType::Enum type, const DataAccess &access);
         Address(const RawAddress &raw, const DataAccess &access_) : access(&access_), scriptNum(raw.scriptNum), type(raw.type) {}
         
+        const DataAccess &getAccess() const {
+            return *access;
+        }
+        
         bool isSpendable() const;
         
         bool operator==(const Address& other) const {

@@ -33,7 +33,7 @@ namespace blocksci {
 
         std::vector<OutputPointer> getOutputPointers(const Address &searchAddress, bool typeEquivalent, bool nestedEquivalent) const;
         
-        std::vector<RawAddress> getPossibleNestedEquivalent(const RawAddress &address) const;
+        std::vector<Address> getPossibleNestedEquivalent(const Address &address) const;
         
         void addAddressNested(const blocksci::Address &childAddress, const blocksci::EquivAddress &parentAddress);
         void addAddressOutput(const blocksci::Address &address, const blocksci::OutputPointer &pointer);

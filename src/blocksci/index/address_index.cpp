@@ -18,6 +18,7 @@
 #include "address/address_info.hpp"
 #include "scripts/script_info.hpp"
 #include "scripts/script.hpp"
+#include "scripts/script_variant.hpp"
 
 #include <range/v3/utility/optional.hpp>
 #include <range/v3/view/filter.hpp>
@@ -90,10 +91,23 @@ namespace blocksci {
         return pointers;
     }
     
-    std::vector<RawAddress> AddressIndex::getPossibleNestedEquivalent(const RawAddress &searchAddress) const {
-        std::vector<RawAddress> addresses{searchAddress};
-        for (size_t i = 0; i < addresses.size(); i++) {
-            auto &address = addresses[i];
+    std::vector<Address> AddressIndex::getPossibleNestedEquivalent(const Address &searchAddress) const {
+        std::unordered_set<Address> addressesToSearch{searchAddress};
+        std::unordered_set<Address> searchedAddresses;
+        std::function<bool(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
+            if (dedupType(a.type) == DedupAddressType::SCRIPTHASH) {
+                script::ScriptHash scriptHash(a.scriptNum, searchAddress.getAccess());
+                auto wrapped = *scriptHash.getWrappedAddress();
+                if (searchedAddresses.find(wrapped) == searchedAddresses.end()) {
+                    addressesToSearch.insert(wrapped);
+                }
+                return true;
+            }
+            return false;
+        };
+        while (addressesToSearch.size() > 0) {
+            auto setIt = addressesToSearch.begin();
+            auto address = *setIt;
             auto column = getNestedColumn(address.type);
             rocksdb::Slice key{reinterpret_cast<const char *>(&address.scriptNum), sizeof(address.scriptNum)};
             rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
@@ -103,24 +117,30 @@ namespace blocksci {
                 EquivAddress rawParent;
                 memcpy(&rawParent, foundKey.data(), sizeof(rawParent));
                 switch (rawParent.type) {
-                case DedupAddressType::SCRIPTHASH:
-                    for (auto type : equivAddressTypes(AddressType::SCRIPTHASH)) {
-                        addresses.push_back(RawAddress(rawParent.scriptNum, type));
-                    }
-                    break;
-                default:
-                    break;
+                    case DedupAddressType::SCRIPTHASH:
+                        for (auto type : equivAddressTypes(AddressType::SCRIPTHASH)) {
+                            Address newAddress(rawParent.scriptNum, type, searchAddress.getAccess());
+                            if (searchedAddresses.find(newAddress) == searchedAddresses.end()) {
+                                addressesToSearch.insert(newAddress);
+                            }
+                        }
+                        break;
+                    default:
+                        break;
                 }
             }
+            searchedAddresses.insert(address);
+            addressesToSearch.erase(setIt);
         }
-        return addresses;
+        
+        return std::vector<Address>(searchedAddresses.begin(), searchedAddresses.end());
     }
     
     std::vector<OutputPointer> AddressIndex::getOutputPointers(const Address &searchAddress, bool typeEquivalent, bool nestedEquivalent) const {
         std::vector<OutputPointer> outputs;
         if (typeEquivalent && nestedEquivalent) {
             for (auto type : equivAddressTypes(searchAddress.type)) {
-                auto childAddress = RawAddress(searchAddress.scriptNum, type);
+                auto childAddress = Address(searchAddress.scriptNum, type, searchAddress.getAccess());
                 for (auto &address : getPossibleNestedEquivalent(childAddress)) {
                     auto addrOuts = getOutputPointersImp(address.scriptNum, address.type);
                     outputs.insert(outputs.end(), addrOuts.begin(), addrOuts.end());
