@@ -180,7 +180,7 @@ namespace blocksci {
     
     static auto equivAddressTypesTable = blocksci::make_static_table<AddressType, EquivAddressTypesFunctor>();
     
-    std::vector<AddressType::Enum> equivAddressTypes(AddressType::Enum t) {
+    inline std::vector<AddressType::Enum> equivAddressTypes(AddressType::Enum t) {
         auto index = static_cast<size_t>(t);
         addressTypeCheckThrow(index);
         return equivAddressTypesTable[index];
