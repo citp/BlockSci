@@ -239,8 +239,3 @@ namespace blocksci {
     }
 }
 
-std::ostream &operator<<(std::ostream &os, const blocksci::Address &address) {
-    os << address.toString();
-    return os;
-}
-

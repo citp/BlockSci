@@ -13,6 +13,7 @@
 #include "inout_pointer.hpp"
 #include "transaction.hpp"
 #include "address/address.hpp"
+#include "scripts/script_variant.hpp"
 #include "util/hash.hpp"
 
 #include <sstream>
@@ -29,7 +30,7 @@ namespace blocksci {
     
     std::string Output::toString() const {
         std::stringstream ss;
-        ss << "TxOut(spending_tx_index=" << inout->linkedTxNum << ", address=" << getAddress() <<", value=" << inout->getValue() << ")";
+        ss << "TxOut(spending_tx_index=" << inout->linkedTxNum << ", address=" << getAddress().getScript().toString() << ", value=" << inout->getValue() << ")";
         return ss.str();
     }
     

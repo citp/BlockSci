@@ -15,6 +15,7 @@
 #include "chain_access.hpp"
 #include "address/address.hpp"
 #include "util/hash.hpp"
+#include "scripts/script_variant.hpp"
 
 #include <sstream>
 
@@ -34,7 +35,7 @@ namespace blocksci {
     
     std::string Input::toString() const {
         std::stringstream ss;
-        ss << "TxIn(spent_tx_index=" << inout->linkedTxNum << ", address=" << getAddress() <<", value=" << inout->getValue() << ")";
+        ss << "TxIn(spent_tx_index=" << inout->linkedTxNum << ", address=" << getAddress().getScript().toString() <<", value=" << inout->getValue() << ")";
         return ss.str();
     }
 

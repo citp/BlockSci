@@ -79,10 +79,6 @@ namespace blocksci {
     
     std::vector<Address> getAddressesWithPrefix(const std::string &prefix, const DataAccess &access);
 
-    inline std::ostream &operator<<(std::ostream &os, const Address &address) { 
-        return os << address.toString();
-    }
-    
     inline RawAddress::RawAddress(const Address &address) : scriptNum(address.scriptNum), type(address.type) {}
 }
 
