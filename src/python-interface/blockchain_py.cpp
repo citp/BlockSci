@@ -80,5 +80,6 @@ void init_blockchain(py::module &m) {
         return chain.scripts(type);
     })
     .def_property_readonly("outputs_unspent", [](const Blockchain &chain) -> ranges::any_view<Output> { return outputsUnspent(chain); }, "Returns a list of all of the outputs that are unspent")
+    .def_property_readonly("config", [](const Blockchain &chain) -> DataConfiguration { return chain.access->config; }, "Returns a list of all of the outputs that are unspent")
     ;
 }
