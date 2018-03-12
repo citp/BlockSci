@@ -20,8 +20,6 @@
 
 
 namespace blocksci {
-    struct Address;
-    
     class HashIndex {
     public:
         struct IndexType {

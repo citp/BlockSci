@@ -13,7 +13,7 @@
 
 namespace blocksci {
     
-    TransactionRange::TransactionRange(const ChainAccess &access_, uint32_t begin, uint32_t end) : access(&access_), currentTxPos(reinterpret_cast<const char *>(access->getTx(begin))), currentTxIndex(begin), endTxIndex(end), blockNum(access->getBlockHeight(begin)) {
+    TransactionRange::TransactionRange(const DataAccess &access_, uint32_t begin, uint32_t end) : access(&access_), currentTxPos(reinterpret_cast<const char *>(access->chain->getTx(begin))), currentTxIndex(begin), endTxIndex(end), blockNum(access->chain->getBlockHeight(begin)) {
         updateNextBlock();
     }
     
@@ -23,17 +23,17 @@ namespace blocksci {
             blockNum--;
             updateNextBlock();
         }
-        currentTxPos = reinterpret_cast<const char *>(access->getTx(currentTxIndex));
+        currentTxPos = reinterpret_cast<const char *>(access->chain->getTx(currentTxIndex));
     }
     
     void TransactionRange::advance(int amount) {
         currentTxIndex += static_cast<uint32_t>(amount);
-        blockNum = access->getBlockHeight(currentTxIndex);
+        blockNum = access->chain->getBlockHeight(currentTxIndex);
         updateNextBlock();
-        currentTxPos = reinterpret_cast<const char *>(access->getTx(currentTxIndex));
+        currentTxPos = reinterpret_cast<const char *>(access->chain->getTx(currentTxIndex));
     }
     
-    RawTransactionRange::RawTransactionRange(const ChainAccess &access_, uint32_t begin, uint32_t end) : access(&access_), currentTxPos(reinterpret_cast<const char *>(access->getTx(begin))), currentTxIndex(begin), endTxIndex(end) {
+    RawTransactionRange::RawTransactionRange(const DataAccess &access_, uint32_t begin, uint32_t end) : access(&access_), currentTxPos(reinterpret_cast<const char *>(access->chain->getTx(begin))), currentTxIndex(begin), endTxIndex(end) {
     }
     
     void RawTransactionRange::next() {
@@ -46,12 +46,12 @@ namespace blocksci {
     
     void RawTransactionRange::prev() {
         currentTxIndex--;
-        currentTxPos = reinterpret_cast<const char *>(access->getTx(currentTxIndex));
+        currentTxPos = reinterpret_cast<const char *>(access->chain->getTx(currentTxIndex));
     }
     
     void RawTransactionRange::advance(int amount) {
         currentTxIndex = static_cast<uint32_t>(static_cast<int>(currentTxIndex) + amount);
-        currentTxPos = reinterpret_cast<const char *>(access->getTx(currentTxIndex));
+        currentTxPos = reinterpret_cast<const char *>(access->chain->getTx(currentTxIndex));
     }
     
     const RawTransaction *RawTransactionRange::read() const {

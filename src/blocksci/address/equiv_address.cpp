@@ -41,16 +41,16 @@ namespace blocksci {
         }
     }
     
-    uint64_t EquivAddress::calculateBalance(BlockHeight height, const AddressIndex &index, const ChainAccess &chain) const {
+    uint64_t EquivAddress::calculateBalance(BlockHeight height) const {
         uint64_t value = 0;
         if (height == 0) {
-            for (auto &output : index.getOutputs(*this, chain)) {
+            for (auto &output : access->getOutputs(*this)) {
                 if (!output.isSpent()) {
                     value += output.getValue();
                 }
             }
         } else {
-            for (auto &output : index.getOutputs(*this, chain)) {
+            for (auto &output : access->getOutputs(*this)) {
                 if (output.blockHeight <= height && (!output.isSpent() || output.getSpendingTx()->blockHeight > height)) {
                     value += output.getValue();
                 }
@@ -59,24 +59,24 @@ namespace blocksci {
         return value;
     }
     
-    std::vector<Output> EquivAddress::getOutputs(const AddressIndex &index, const ChainAccess &chain) const {
-        return index.getOutputs(*this, chain);
+    std::vector<Output> EquivAddress::getOutputs() const {
+        return access->getOutputs(*this);
     }
     
-    std::vector<Input> EquivAddress::getInputs(const AddressIndex &index, const ChainAccess &chain) const {
-        return index.getInputs(*this, chain);
+    std::vector<Input> EquivAddress::getInputs() const {
+        return access->getInputs(*this);
     }
     
-    std::vector<Transaction> EquivAddress::getTransactions(const AddressIndex &index, const ChainAccess &chain) const {
-        return index.getTransactions(*this, chain);
+    std::vector<Transaction> EquivAddress::getTransactions() const {
+        return access->getTransactions(*this);
     }
     
-    std::vector<Transaction> EquivAddress::getOutputTransactions(const AddressIndex &index, const ChainAccess &chain) const {
-        return index.getOutputTransactions(*this, chain);
+    std::vector<Transaction> EquivAddress::getOutputTransactions() const {
+        return access->getOutputTransactions(*this);
     }
     
-    std::vector<Transaction> EquivAddress::getInputTransactions(const AddressIndex &index, const ChainAccess &chain) const {
-        return index.getInputTransactions(*this, chain);
+    std::vector<Transaction> EquivAddress::getInputTransactions() const {
+        return access->getInputTransactions(*this);
     }
 }
 

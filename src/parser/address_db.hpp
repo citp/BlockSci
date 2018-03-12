@@ -37,17 +37,18 @@ public:
     
     AddressDB(const ParserConfigurationBase &config, const std::string &path);
     
-    void processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &scripts);
+    void processTx(const blocksci::Transaction &tx);
+    
     template<blocksci::EquivAddressType::Enum type>
-    void processScript(uint32_t, const blocksci::ChainAccess &, const blocksci::ScriptAccess &);
+    void processScript(uint32_t, const blocksci::DataAccess &);
     
     void rollback(const blocksci::State &state);
     void tearDown() override;
 };
 
 template<>
-inline void AddressDB::processScript<blocksci::EquivAddressType::MULTISIG>(uint32_t equivNum, const blocksci::ChainAccess &, const blocksci::ScriptAccess &scripts) {
-    blocksci::script::Multisig multisig(scripts, equivNum);
+inline void AddressDB::processScript<blocksci::EquivAddressType::MULTISIG>(uint32_t equivNum, const blocksci::DataAccess &access) {
+    blocksci::script::Multisig multisig(equivNum, access);
     for (const auto &address : multisig.addresses) {
         db.addAddressNested(address, blocksci::EquivAddress{equivNum, blocksci::EquivAddressType::MULTISIG});
     }

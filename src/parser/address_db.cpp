@@ -34,11 +34,11 @@ AddressDB::AddressDB(const ParserConfigurationBase &config_, const std::string &
 
 void AddressDB::tearDown() {}
 
-void AddressDB::processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &scripts) {
+void AddressDB::processTx(const blocksci::Transaction &tx) {
     std::unordered_set<Address> addresses;
     std::function<bool(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
         if (equivType(a.type) == EquivAddressType::SCRIPTHASH) {
-            script::ScriptHash scriptHash(scripts, a.scriptNum);
+            script::ScriptHash scriptHash(a.scriptNum, tx.getAccess());
             if (scriptHash.txRevealed == tx.txNum) {
                 auto wrapped = *scriptHash.getWrappedAddress();
                 db.addAddressNested(wrapped, a.equiv());
@@ -50,7 +50,7 @@ void AddressDB::processTx(const blocksci::Transaction &tx, const blocksci::Scrip
         return false;
     };
     for (auto input : tx.inputs()) {
-        visit(input.getAddress(), visitFunc, scripts);
+        visit(input.getAddress(), visitFunc);
     }
     
     for (auto output : tx.outputs()) {

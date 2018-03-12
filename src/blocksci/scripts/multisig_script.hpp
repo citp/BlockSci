@@ -22,8 +22,8 @@ namespace blocksci {
         uint8_t total;
         std::vector<Address> addresses;
         
-        ScriptAddress(uint32_t scriptNum, const MultisigData *rawData, const ScriptAccess &access);
-        ScriptAddress(const ScriptAccess &access, uint32_t addressNum);
+        ScriptAddress(uint32_t scriptNum, const MultisigData *rawData, const DataAccess &access);
+        ScriptAddress(uint32_t addressNum, const DataAccess &access);
         
         
         std::string toString() const;
@@ -35,7 +35,7 @@ namespace blocksci {
             }
         }
         
-        std::vector<ScriptAddress<AddressType::PUBKEY>> pubkeyScripts() const;
+        std::vector<script::MultisigPubkey> pubkeyScripts() const;
     };
 }
 

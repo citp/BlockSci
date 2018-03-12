@@ -38,14 +38,14 @@ namespace blocksci {
         }
     }
     
-    ChainAccess::ChainAccess(const DataConfiguration &config, bool errorOnReorg_, BlockHeight blocksIgnored_) :
+    ChainAccess::ChainAccess(const DataConfiguration &config) :
     blockFile(config.blockFilePath()),
     blockCoinbaseFile(config.blockCoinbaseFilePath()),
     txFile(config.txFilePath()),
     sequenceFile(config.sequenceFilePath()),
     txHashesFile(config.txHashesFilePath()),
-    blocksIgnored(blocksIgnored_),
-    errorOnReorg(errorOnReorg_) {
+    blocksIgnored(config.blocksIgnored),
+    errorOnReorg(config.errorOnReorg) {
         setup();
     }
     

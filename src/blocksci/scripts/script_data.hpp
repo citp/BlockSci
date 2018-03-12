@@ -43,7 +43,7 @@ namespace blocksci {
             uint160 hash160;
             uint256 hash256;
         };
-        Address wrappedAddress;
+        RawAddress wrappedAddress;
         bool isSegwit;
         
         ScriptHashData(uint32_t txNum, uint160 hash160_, Address wrappedAddress_) : ScriptDataBase(txNum), hash160(hash160_), wrappedAddress(wrappedAddress_), isSegwit(false) {}
@@ -66,17 +66,7 @@ namespace blocksci {
         MultisigData(MultisigData &&other) = delete;
         MultisigData &operator=(const MultisigData &other) = delete;
         MultisigData &operator=(MultisigData &&other) = delete;
-        
-        std::vector<Address> getAddresses() const {
-            std::vector<Address> res;
-            res.reserve(addresses.size());
-            for (auto scriptNum : addresses) {
-                res.emplace_back(scriptNum, AddressType::Enum::PUBKEYHASH);
-            }
-            
-            return res;
-        }
-        
+                
         size_t realSize() const {
             return sizeof(MultisigData) + addresses.extraSize();
         }

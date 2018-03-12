@@ -12,13 +12,19 @@
 #include "script_data.hpp"
 #include "script_access.hpp"
 #include "pubkey_script.hpp"
+#include <blocksci/util/data_access.hpp>
 
 namespace blocksci {
     using namespace script;
     
-    Multisig::ScriptAddress(uint32_t scriptNum_, const MultisigData *rawData, const ScriptAccess &access) : Script(scriptNum_, addressType, *rawData, access), required(rawData->m), total(rawData->n), addresses(rawData->getAddresses()) {}
+    Multisig::ScriptAddress(uint32_t scriptNum_, const MultisigData *rawData, const DataAccess &access) : Script(scriptNum_, addressType, *rawData, access), required(rawData->m), total(rawData->n) {
+        addresses.reserve(rawData->addresses.size());
+        for (auto scriptNum : rawData->addresses) {
+            addresses.emplace_back(scriptNum, AddressType::Enum::PUBKEYHASH, access);
+        }
+    }
     
-    Multisig::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : Multisig(addressNum, access.getScriptData<addressType>(addressNum), access) {}
+    Multisig::ScriptAddress(uint32_t addressNum, const DataAccess &access) : Multisig(addressNum, access.scripts->getScriptData<addressType>(addressNum), access) {}
     
     std::string Multisig::toString() const {
         std::stringstream ss;
@@ -40,7 +46,7 @@ namespace blocksci {
         ss << static_cast<int>(required) << " of " << static_cast<int>(addresses.size()) << " multisig with addresses : [";
         uint32_t i = 0;
         for (auto &address : addresses) {
-            script::Pubkey pubkeyScript(*access, address.scriptNum);
+            script::MultisigPubkey pubkeyScript(address.scriptNum, *access);
             ss << pubkeyScript.toPrettyString();
             if (i < addresses.size() - 1) {
                 ss << ", ";
@@ -51,11 +57,11 @@ namespace blocksci {
         return ss.str();
     }
     
-    std::vector<ScriptAddress<AddressType::Enum::PUBKEY>> Multisig::pubkeyScripts() const {
-        std::vector<ScriptAddress<AddressType::Enum::PUBKEY>> ret;
+    std::vector<script::MultisigPubkey> Multisig::pubkeyScripts() const {
+        std::vector<script::MultisigPubkey> ret;
         ret.reserve(addresses.size());
         for (auto &address : addresses) {
-            ret.emplace_back(*access, address.scriptNum);
+            ret.emplace_back(address.scriptNum, *access);
         }
         return ret;
     }

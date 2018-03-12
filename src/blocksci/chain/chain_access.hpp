@@ -55,7 +55,7 @@ namespace blocksci {
         void setup();
         
     public:
-        ChainAccess(const DataConfiguration &config, bool errorOnReorg, BlockHeight blocksIgnored);
+        ChainAccess(const DataConfiguration &config);
         
         uint32_t maxLoadedTx() const {
             return _maxLoadedTx;

@@ -26,9 +26,9 @@
 
 namespace blocksci {
     
-    Address::Address() : scriptNum(0), type(AddressType::Enum::NONSTANDARD) {}
+    Address::Address() : access(nullptr), scriptNum(0), type(AddressType::Enum::NONSTANDARD) {}
     
-    Address::Address(uint32_t addressNum_, AddressType::Enum type_) : scriptNum(addressNum_), type(type_) {}
+    Address::Address(uint32_t addressNum_, AddressType::Enum type_, const DataAccess &access_) : access(&access_), scriptNum(addressNum_), type(type_) {}
     
     
     EquivAddress Address::equiv() const {
@@ -53,34 +53,34 @@ namespace blocksci {
         }
     }
     
-    void visit(const Address &address, const std::function<bool(const Address &)> &visitFunc, const ScriptAccess &scripts) {
+    void visit(const Address &address, const std::function<bool(const Address &)> &visitFunc) {
         if (visitFunc(address)) {
             std::function<void(const blocksci::Address &)> nestedVisitor = [&](const blocksci::Address &nestedAddress) {
-                visit(nestedAddress, visitFunc, scripts);
+                visit(nestedAddress, visitFunc);
             };
-            auto script = address.getScript(scripts);
+            auto script = address.getScript();
             script.visitPointers(nestedVisitor);
         }
     }
 
-    AnyScript Address::getScript(const ScriptAccess &access) const {
-        return AnyScript{*this, access};
+    AnyScript Address::getScript() const {
+        return AnyScript{*this, *access};
     }
     
     size_t addressCount(const ScriptAccess &access) {
         return access.totalAddressCount();
     }
     
-    uint64_t Address::calculateBalance(BlockHeight height, const AddressIndex &index, const ChainAccess &chain) const {
+    uint64_t Address::calculateBalance(BlockHeight height) const {
         uint64_t value = 0;
         if (height == 0) {
-            for (auto &output : index.getOutputs(*this, chain)) {
+            for (auto &output : access->getOutputs(*this)) {
                 if (!output.isSpent()) {
                     value += output.getValue();
                 }
             }
         } else {
-            for (auto &output : index.getOutputs(*this, chain)) {
+            for (auto &output : access->getOutputs(*this)) {
                 if (output.blockHeight <= height && (!output.isSpent() || output.getSpendingTx()->blockHeight > height)) {
                     value += output.getValue();
                 }
@@ -89,41 +89,41 @@ namespace blocksci {
         return value;
     }
     
-    std::vector<Output> Address::getOutputs(const AddressIndex &index, const ChainAccess &chain) const {
-        return index.getOutputs(*this, chain);
+    std::vector<Output> Address::getOutputs() const {
+        return access->getOutputs(*this);
     }
     
-    std::vector<Input> Address::getInputs(const AddressIndex &index, const ChainAccess &chain) const {
-        return index.getInputs(*this, chain);
+    std::vector<Input> Address::getInputs() const {
+        return access->getInputs(*this);
     }
     
-    std::vector<Transaction> Address::getTransactions(const AddressIndex &index, const ChainAccess &chain) const {
-        return index.getTransactions(*this, chain);
+    std::vector<Transaction> Address::getTransactions() const {
+        return access->getTransactions(*this);
     }
     
-    std::vector<Transaction> Address::getOutputTransactions(const AddressIndex &index, const ChainAccess &chain) const {
-        return index.getOutputTransactions(*this, chain);
+    std::vector<Transaction> Address::getOutputTransactions() const {
+        return access->getOutputTransactions(*this);
     }
     
-    std::vector<Transaction> Address::getInputTransactions(const AddressIndex &index, const ChainAccess &chain) const {
-        return index.getInputTransactions(*this, chain);
+    std::vector<Transaction> Address::getInputTransactions() const {
+        return access->getInputTransactions(*this);
     }
     
-    ranges::optional<Address> getAddressFromString(const DataConfiguration &config, HashIndex &index, const std::string &addressString) {
-        if (addressString.compare(0, config.segwitPrefix.size(), config.segwitPrefix) == 0) {
-            std::pair<int, std::vector<uint8_t> > decoded = segwit_addr::decode(config.segwitPrefix, addressString);
+    ranges::optional<Address> getAddressFromString(const std::string &addressString, const DataAccess &access) {
+        if (addressString.compare(0, access.config.segwitPrefix.size(), access.config.segwitPrefix) == 0) {
+            std::pair<int, std::vector<uint8_t> > decoded = segwit_addr::decode(access.config.segwitPrefix, addressString);
             if (decoded.first == 0) {
                 if (decoded.second.size() == 20) {
                     uint160 pubkeyHash(decoded.second.begin(), decoded.second.end());
-                    uint32_t addressNum = index.getPubkeyHashIndex(pubkeyHash);
+                    uint32_t addressNum = access.hashIndex->getPubkeyHashIndex(pubkeyHash);
                     if (addressNum > 0) {
-                        return Address{addressNum, AddressType::WITNESS_PUBKEYHASH};
+                        return Address{addressNum, AddressType::WITNESS_PUBKEYHASH, access};
                     }
                 } else if (decoded.second.size() == 32) {
                     uint256 scriptHash(decoded.second.begin(), decoded.second.end());
-                    uint32_t addressNum = index.getScriptHashIndex(scriptHash);
+                    uint32_t addressNum = access.hashIndex->getScriptHashIndex(scriptHash);
                     if (addressNum > 0) {
-                        return Address{addressNum, AddressType::WITNESS_SCRIPTHASH};
+                        return Address{addressNum, AddressType::WITNESS_SCRIPTHASH, access};
                     }
                 }
             }
@@ -132,59 +132,59 @@ namespace blocksci {
         CBitcoinAddress address{addressString};
         uint160 hash;
         blocksci::AddressType::Enum type;
-        std::tie(hash, type) = address.Get(config);
+        std::tie(hash, type) = address.Get(access.config);
         if (type == AddressType::Enum::NONSTANDARD) {
             return ranges::nullopt;
         }
         uint32_t addressNum = 0;
         if (type == AddressType::Enum::PUBKEYHASH) {
-            addressNum = index.getPubkeyHashIndex(hash);
+            addressNum = access.hashIndex->getPubkeyHashIndex(hash);
         } else if (type == AddressType::Enum::SCRIPTHASH) {
-            addressNum = index.getScriptHashIndex(hash);
+            addressNum = access.hashIndex->getScriptHashIndex(hash);
         }
         if (addressNum > 0) {
-            return Address{addressNum, type};
+            return Address{addressNum, type, access};
         }
         return ranges::nullopt;
     }
     
     template<AddressType::Enum type>
-    std::vector<Address> getAddressesWithPrefixImp(const std::string &prefix, const ScriptAccess &scripts) {
+    std::vector<Address> getAddressesWithPrefixImp(const std::string &prefix, const DataAccess &access) {
         std::vector<Address> addresses;
-        auto count = scripts.scriptCount(equivType(type));
+        auto count = access.scripts->scriptCount(equivType(type));
         for (uint32_t scriptNum = 1; scriptNum <= count; scriptNum++) {
-            ScriptAddress<type> script(scripts, scriptNum);
+            ScriptAddress<type> script(scriptNum, access);
             if (script.addressString().compare(0, prefix.length(), prefix) == 0) {
-                addresses.push_back(Address(scriptNum, type));
+                addresses.push_back(Address(scriptNum, type, access));
             }
         }
         return addresses;
     }
     
-    std::vector<Address> getAddressesWithPrefix(const std::string &prefix, const ScriptAccess &scripts) {
+    std::vector<Address> getAddressesWithPrefix(const std::string &prefix, const DataAccess &access) {
         if (prefix.compare(0, 1, "1") == 0) {
-            return getAddressesWithPrefixImp<AddressType::Enum::PUBKEYHASH>(prefix, scripts);
+            return getAddressesWithPrefixImp<AddressType::Enum::PUBKEYHASH>(prefix, access);
         } else if (prefix.compare(0, 1, "3") == 0) {
-            return getAddressesWithPrefixImp<AddressType::Enum::SCRIPTHASH>(prefix, scripts);
+            return getAddressesWithPrefixImp<AddressType::Enum::SCRIPTHASH>(prefix, access);
         } else {
             return {};
         }
     }
     
-    std::string fullTypeImp(const Address &address, const ScriptAccess &scripts) {
+    std::string fullTypeImp(const Address &address, const DataAccess &access) {
         std::stringstream ss;
         ss << addressName(address.type);
         switch (equivType(address.type)) {
             case EquivAddressType::SCRIPTHASH: {
-                auto script = script::ScriptHash(scripts, address.scriptNum);
+                auto script = script::ScriptHash(address.scriptNum, access);
                 auto wrapped = script.getWrappedAddress();
                 if (wrapped) {
-                    ss << "/" << fullTypeImp(*wrapped, scripts);
+                    ss << "/" << fullTypeImp(*wrapped, access);
                 }
                 break;
             }
             case EquivAddressType::MULTISIG: {
-                auto script = script::Multisig(scripts, address.scriptNum);
+                auto script = script::Multisig(address.scriptNum, access);
                 ss << int(script.required) << "Of" << int(script.total);
                 break;
             }
@@ -195,8 +195,8 @@ namespace blocksci {
         return ss.str();
     }
 
-    std::string Address::fullType(const ScriptAccess &script) const {
-        return fullTypeImp(*this, script);
+    std::string Address::fullType() const {
+        return fullTypeImp(*this, *access);
     }
 }
 

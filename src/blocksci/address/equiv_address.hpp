@@ -16,12 +16,13 @@
 #include <vector>
 
 namespace blocksci {
-    class HashIndex;
-    class AddressIndex;
+    class DataAccess;
     struct DataConfiguration;
     
-    struct EquivAddress {
+    class EquivAddress {
+        const DataAccess *access;
         
+    public:
         uint32_t scriptNum;
         EquivAddressType::Enum type;
         
@@ -38,17 +39,6 @@ namespace blocksci {
         
         std::string toString() const;
         
-        uint64_t calculateBalance(BlockHeight height, const AddressIndex &index, const ChainAccess &chain) const;
-        
-        std::vector<Output> getOutputs(const AddressIndex &index, const ChainAccess &chain) const;
-        std::vector<Input> getInputs(const AddressIndex &index, const ChainAccess &chain) const;
-        std::vector<Transaction> getTransactions(const AddressIndex &index, const ChainAccess &chain) const;
-        std::vector<Transaction> getOutputTransactions(const AddressIndex &index, const ChainAccess &chain) const;
-        std::vector<Transaction> getInputTransactions(const AddressIndex &index, const ChainAccess &chain) const;
-        
-        
-        // Requires DataAccess
-#ifndef BLOCKSCI_WITHOUT_SINGLETON
         uint64_t calculateBalance(BlockHeight height) const;
         
         std::vector<Output> getOutputs() const;
@@ -56,7 +46,6 @@ namespace blocksci {
         std::vector<Transaction> getTransactions() const;
         std::vector<Transaction> getOutputTransactions() const;
         std::vector<Transaction> getInputTransactions() const;
-#endif
     };
     
     inline std::ostream &operator<<(std::ostream &os, const EquivAddress &address) {

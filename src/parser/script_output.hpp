@@ -201,7 +201,7 @@ using ScriptOutputType = blocksci::to_variadic_t<blocksci::to_address_tuple_t<Sc
 class AnyScriptOutput {
 public:
     ScriptOutputType wrapped;
-    blocksci::Address address() const;
+    blocksci::RawAddress address() const;
     bool isNew() const;
     blocksci::AddressType::Enum type() const;
     

@@ -13,13 +13,14 @@
 #include "script_access.hpp"
 #include "bitcoin_base58.hpp"
 #include "bitcoin_segwit_addr.hpp"
+#include <blocksci/util/data_access.hpp>
 
 #include <range/v3/utility/optional.hpp>
 
 namespace blocksci {
     using namespace script;
     
-    PubkeyAddressBase::PubkeyAddressBase(uint32_t scriptNum_, AddressType::Enum type_, const PubkeyData *rawData, const ScriptAccess &access) : Script(scriptNum_, type_, *rawData, access), pubkey(rawData->pubkey), pubkeyhash(rawData->address) {}
+    PubkeyAddressBase::PubkeyAddressBase(uint32_t scriptNum_, AddressType::Enum type_, const PubkeyData *rawData, const DataAccess &access) : Script(scriptNum_, type_, *rawData, access), pubkey(rawData->pubkey), pubkeyhash(rawData->address) {}
     
     ranges::optional<CPubKey> PubkeyAddressBase::getPubkey() const {
         if (pubkey.IsValid()) {
@@ -29,7 +30,7 @@ namespace blocksci {
         }
     }
     
-    Pubkey::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : PubkeyAddressBase(addressNum, addressType, access.getScriptData<addressType>(addressNum), access) {}
+    Pubkey::ScriptAddress(uint32_t addressNum, const DataAccess &access) : PubkeyAddressBase(addressNum, addressType, access.scripts->getScriptData<addressType>(addressNum), access) {}
     
     std::string Pubkey::addressString() const {
         return CBitcoinAddress(pubkeyhash, AddressType::Enum::PUBKEYHASH, access->config).ToString();
@@ -47,7 +48,7 @@ namespace blocksci {
         return addressString();
     }
     
-    PubkeyHash::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : PubkeyAddressBase(addressNum, addressType, access.getScriptData<addressType>(addressNum), access) {}
+    PubkeyHash::ScriptAddress(uint32_t addressNum, const DataAccess &access) : PubkeyAddressBase(addressNum, addressType, access.scripts->getScriptData<addressType>(addressNum), access) {}
     
     std::string PubkeyHash::addressString() const {
         return CBitcoinAddress(pubkeyhash, AddressType::Enum::PUBKEYHASH, access->config).ToString();
@@ -65,7 +66,7 @@ namespace blocksci {
         return addressString();
     }
     
-    MultisigPubkey::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : PubkeyAddressBase(addressNum, addressType, access.getScriptData<addressType>(addressNum), access) {}
+    MultisigPubkey::ScriptAddress(uint32_t addressNum, const DataAccess &access) : PubkeyAddressBase(addressNum, addressType, access.scripts->getScriptData<addressType>(addressNum), access) {}
     
     std::string MultisigPubkey::addressString() const {
         return CBitcoinAddress(pubkeyhash, AddressType::Enum::MULTISIG_PUBKEY, access->config).ToString();
@@ -83,7 +84,7 @@ namespace blocksci {
         return addressString();
     }
     
-    WitnessPubkeyHash::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : PubkeyAddressBase(addressNum, addressType, access.getScriptData<addressType>(addressNum), access) {}
+    WitnessPubkeyHash::ScriptAddress(uint32_t addressNum, const DataAccess &access) : PubkeyAddressBase(addressNum, addressType, access.scripts->getScriptData<addressType>(addressNum), access) {}
     
     std::string WitnessPubkeyHash::addressString() const {
         std::vector<uint8_t> witprog;

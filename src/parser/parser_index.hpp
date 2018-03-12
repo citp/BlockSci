@@ -29,10 +29,6 @@
 #include <iostream>
 #include <future>
 
-namespace blocksci {
-    struct Address;
-}
-
 template <typename T, blocksci::EquivAddressType::Enum type>
 struct ParserIndexScriptInfo;
 
@@ -59,41 +55,40 @@ public:
     }
     
     template<typename EquivType>
-    void updateScript(std::true_type, EquivType type, const blocksci::State &state, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) {
+    void updateScript(std::true_type, EquivType type, const blocksci::State &state, const blocksci::DataAccess &access) {
         auto typeIndex = static_cast<size_t>(type);
         auto progress = makeProgressBar(state.scriptCounts[typeIndex] - latestState.scriptCounts[typeIndex], [=]() {});
         uint32_t num = 0;
         std::cout << "Updating index with scripts of type " << equivAddressName(type) << "\n";
         for (uint32_t i = latestState.scriptCounts[typeIndex]; i < state.scriptCounts[typeIndex]; i++) {
-            static_cast<T*>(this)->template processScript<type>(i + 1, chain, scripts);
+            static_cast<T*>(this)->template processScript<type>(i + 1, access);
             progress.update(num);
             num++;
         }
     }
     
     template<typename EquivType>
-    void updateScript(std::false_type, EquivType, const blocksci::State &, const blocksci::ChainAccess &, const blocksci::ScriptAccess &) {}
+    void updateScript(std::false_type, EquivType, const blocksci::State &, const blocksci::DataAccess &) {}
     
     virtual void prepareUpdate() {}
     void runUpdate(const blocksci::State &state) {
-        blocksci::ChainAccess chain{config, false, blocksci::BlockHeight{0}};
-        blocksci::ScriptAccess scripts{config};
+        blocksci::DataAccess access(config);
         
         if (latestState.txCount < state.txCount) {
-            auto newTransactions = blocksci::TransactionRange(chain, latestState.txCount, state.txCount);
+            auto newTransactions = blocksci::TransactionRange(access, latestState.txCount, state.txCount);
             auto newCount = ranges::distance(newTransactions);
             std::cout << "Updating index with " << newCount << " txes\n";
             auto progress = makeProgressBar(newCount, [=]() {});
             uint32_t num = 0;
             RANGES_FOR(auto tx, newTransactions) {
-                static_cast<T*>(this)->processTx(tx, scripts);
+                static_cast<T*>(this)->processTx(tx);
                 progress.update(num);
                 num++;
             }
         }
         
         blocksci::for_each(blocksci::EquivAddressInfoList(), [&](auto type) {
-            updateScript(ParserIndexScriptInfo<T, type>{}, type, state, chain, scripts);
+            updateScript(ParserIndexScriptInfo<T, type>{}, type, state, access);
         });
         latestState = state;
     };

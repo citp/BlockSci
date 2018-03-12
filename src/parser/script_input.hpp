@@ -144,7 +144,7 @@ public:
     
     void setScriptNum(uint32_t scriptNum);
     
-    blocksci::Address address() const;
+    blocksci::RawAddress address() const;
 };
 
 #endif /* script_input_hpp */

@@ -12,8 +12,10 @@
 #include "equiv_address_type.hpp"
 
 namespace blocksci {
-    struct Address;
-    struct EquivAddress;
+    struct RawAddress;
+    
+    class Address;
+    class EquivAddress;
     
     template <AddressType::Enum>
     struct AddressInfo;

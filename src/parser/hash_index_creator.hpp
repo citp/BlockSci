@@ -31,10 +31,10 @@ class HashIndexCreator : public ParserIndex<HashIndexCreator> {
 public:
     
     HashIndexCreator(const ParserConfigurationBase &config, const std::string &path);
-    void processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &scripts);
+    void processTx(const blocksci::Transaction &tx);
     
     template<blocksci::EquivAddressType::Enum type>
-    void processScript(uint32_t equivNum, const blocksci::ChainAccess &, const blocksci::ScriptAccess &);
+    void processScript(uint32_t equivNum, const blocksci::DataAccess &);
     
     void rollback(const blocksci::State &state);
     void tearDown() override {}

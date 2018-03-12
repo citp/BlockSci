@@ -181,8 +181,8 @@ struct ScriptOutputGenerator {
                      
 AnyScriptOutput::AnyScriptOutput(const blocksci::CScriptView &scriptPubKey, bool witnessActivated) : wrapped(mpark::visit(ScriptOutputGenerator(), extractScriptData(scriptPubKey, witnessActivated))) {}
 
-blocksci::Address AnyScriptOutput::address() const {
-    return mpark::visit([&](auto &output) { return blocksci::Address{output.scriptNum, output.address_v}; }, wrapped);
+blocksci::RawAddress AnyScriptOutput::address() const {
+    return mpark::visit([&](auto &output) { return blocksci::RawAddress{output.scriptNum, output.address_v}; }, wrapped);
 }
 
 bool AnyScriptOutput::isNew() const {

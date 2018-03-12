@@ -12,8 +12,8 @@
 #include "chain_fwd.hpp"
 #include "transaction.hpp"
 #include "raw_block.hpp"
-#include <blocksci/chain/chain_access.hpp>
 
+#include <blocksci/util/data_access.hpp>
 #include <blocksci/scripts/scripts_fwd.hpp>
 #include <blocksci/address/address_types.hpp>
 
@@ -25,10 +25,12 @@
 #include <chrono>
 
 namespace blocksci {
+    class DataAccess;
+    
     class Block : public ranges::view_facade<Block> {
         friend ranges::range_access;
         
-        const ChainAccess *access;
+        const DataAccess *access;
         const RawBlock *rawBlock;
         BlockHeight blockNum;
         
@@ -40,8 +42,8 @@ namespace blocksci {
         public:
             cursor() = default;
             cursor(const Block &block_, uint32_t txNum) : block(&block_), currentTxIndex(txNum) {
-                if (currentTxIndex < block->access->txCount()) {
-                    currentTxPos = reinterpret_cast<const char *>(block->access->getTx(currentTxIndex));
+                if (currentTxIndex < block->access->chain->txCount()) {
+                    currentTxPos = reinterpret_cast<const char *>(block->access->chain->getTx(currentTxIndex));
                 } else {
                     currentTxPos = nullptr;
                 }
@@ -78,13 +80,13 @@ namespace blocksci {
             
             void prev() {
                 currentTxIndex--;
-                currentTxPos = reinterpret_cast<const char *>(block->access->getTx(currentTxIndex));
+                currentTxPos = reinterpret_cast<const char *>(block->access->chain->getTx(currentTxIndex));
             }
             
             void advance(int amount) {
                 currentTxIndex += static_cast<uint32_t>(amount);
-                if (currentTxIndex < block->access->txCount()) {
-                    currentTxPos = reinterpret_cast<const char *>(block->access->getTx(currentTxIndex));
+                if (currentTxIndex < block->access->chain->txCount()) {
+                    currentTxPos = reinterpret_cast<const char *>(block->access->chain->getTx(currentTxIndex));
                 } else {
                     currentTxPos = nullptr;
                 }
@@ -101,7 +103,11 @@ namespace blocksci {
         
     public:
         Block() = default;
-        Block(BlockHeight blockNum_, const ChainAccess &access_) : access(&access_), rawBlock(access->getBlock(blockNum_)), blockNum(blockNum_) {
+        Block(BlockHeight blockNum_, const DataAccess &access_) : access(&access_), rawBlock(access->chain->getBlock(blockNum_)), blockNum(blockNum_) {
+        }
+        
+        const DataAccess &getAccess() const {
+            return *access;
         }
         
         bool operator==(const Block &other) const {
@@ -184,23 +190,14 @@ namespace blocksci {
         
         std::vector<unsigned char> getCoinbase() const;
         Transaction coinbaseTx() const;
-        
-        #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        Block(BlockHeight blockNum);
-        #endif
     };
 
-    bool isSegwit(const Block &block, const ScriptAccess &scripts);
+    bool isSegwit(const Block &block);
     
     TransactionSummary transactionStatistics(const Block &block, const ChainAccess &access);
     std::vector<uint64_t> getTotalSpentOfAges(const Block &block, BlockHeight maxAge);
     std::unordered_map<AddressType::Enum, int64_t> netAddressTypeValue(const Block &block);
-    std::unordered_map<std::string, int64_t> netFullTypeValue(const Block &block, const ScriptAccess &scripts);
-
-    #ifndef BLOCKSCI_WITHOUT_SINGLETON
-    bool isSegwit(const Block &block);
     std::unordered_map<std::string, int64_t> netFullTypeValue(const Block &block);
-    #endif
 }
 
 std::ostream &operator<<(std::ostream &os, blocksci::Block const &output);

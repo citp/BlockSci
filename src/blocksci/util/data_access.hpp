@@ -19,16 +19,17 @@ namespace blocksci {
 
     class DataAccess {
     public:
-        const DataConfiguration config;
+        DataConfiguration config;
         std::unique_ptr<ChainAccess> chain;
         std::unique_ptr<ScriptAccess> scripts;
         std::unique_ptr<AddressIndex> addressIndex;
         std::unique_ptr<HashIndex> hashIndex;
         
-        static DataAccess &Instance(const DataConfiguration &config, bool errorOnReorg, BlockHeight blocksIgnored);
-        static DataAccess &Instance();
+        static DataAccess &Instance2(const DataConfiguration &config);
         
-        DataAccess(const DataConfiguration &config, bool errorOnReorg, BlockHeight blocksIgnored);
+        DataAccess(const DataConfiguration &config);
+        
+        operator DataConfiguration() const { return config; }
         
         // delete copy and move constructors and assign operators
         DataAccess(DataAccess const&) = delete;             // Copy construct
@@ -36,6 +37,17 @@ namespace blocksci {
         DataAccess& operator=(DataAccess const&) = delete;  // Copy assign
         DataAccess& operator=(DataAccess &&) = delete;      // Move assign
         
+        std::vector<Output> getOutputs(const Address &address) const;
+        std::vector<Input> getInputs(const Address &address) const;
+        std::vector<Transaction> getTransactions(const Address &address) const;
+        std::vector<Transaction> getOutputTransactions(const Address &address) const;
+        std::vector<Transaction> getInputTransactions(const Address &address) const;
+        
+        std::vector<Output> getOutputs(const EquivAddress &script) const;
+        std::vector<Input> getInputs(const EquivAddress &script) const;
+        std::vector<Transaction> getTransactions(const EquivAddress &script) const;
+        std::vector<Transaction> getOutputTransactions(const EquivAddress &script) const;
+        std::vector<Transaction> getInputTransactions(const EquivAddress &script) const;
     };
 }
 

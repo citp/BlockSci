@@ -340,17 +340,17 @@ namespace heuristics {
     }
     
     namespace {
-        ranges::optional<Address> getInsidePointer(const ranges::optional<Address> &address, const blocksci::ScriptAccess &access);
-        ranges::optional<Address> getInsidePointer(const Address &pointer, const blocksci::ScriptAccess &access) {
+        ranges::optional<Address> getInsidePointer(const ranges::optional<Address> &address, const DataAccess &access);
+        ranges::optional<Address> getInsidePointer(const Address &pointer, const DataAccess &access) {
             if (pointer.type == AddressType::Enum::SCRIPTHASH) {
-                script::ScriptHash scriptHashAddress(access, pointer.scriptNum);
+                script::ScriptHash scriptHashAddress(pointer.scriptNum, access);
                 return getInsidePointer(scriptHashAddress.getWrappedAddress(), access);
             } else {
                 return pointer;
             }
         }
         
-        ranges::optional<Address> getInsidePointer(const ranges::optional<Address> &address, const blocksci::ScriptAccess &access) {
+        ranges::optional<Address> getInsidePointer(const ranges::optional<Address> &address, const DataAccess &access) {
             if (address) {
                 return getInsidePointer(*address, access);
             } else {
@@ -367,13 +367,13 @@ namespace heuristics {
         int i;
         int j;
         
-        DetailedType(const Address &pointer, const ScriptAccess &scripts) : mainType(pointer.type), hasSubtype(false), subType(AddressType::Enum::NONSTANDARD), i(0), j(0) {
-            auto insidePointer = getInsidePointer(pointer, scripts);
+        DetailedType(const Address &pointer, const DataAccess &access) : mainType(pointer.type), hasSubtype(false), subType(AddressType::Enum::NONSTANDARD), i(0), j(0) {
+            auto insidePointer = getInsidePointer(pointer, access);
             if (insidePointer) {
                 subType = insidePointer->type;
                 hasSubtype = true;
                 if (subType == AddressType::Enum::MULTISIG) {
-                    script::Multisig multisigAddress(scripts, insidePointer->scriptNum);
+                    script::Multisig multisigAddress(insidePointer->scriptNum, access);
                     i = multisigAddress.required;
                     j = static_cast<int>(multisigAddress.addresses.size());
                 }
@@ -415,14 +415,14 @@ namespace heuristics {
         }
     };
     
-    bool isChangeOverTx(const Transaction &tx, const ScriptAccess &scripts) {
+    bool isChangeOverTx(const Transaction &tx) {
         if (tx.isCoinbase()) {
             return false;
         }
         
         std::unordered_set<DetailedType, DetailedTypeHasher> outputTypes;
         for (auto output : tx.outputs()) {
-            outputTypes.insert(DetailedType{output.getAddress(), scripts});
+            outputTypes.insert(DetailedType{output.getAddress(), tx.getAccess()});
         }
         
         if (outputTypes.size() != 1) {
@@ -431,7 +431,7 @@ namespace heuristics {
         
         std::unordered_set<DetailedType, DetailedTypeHasher> inputTypes;
         for (auto input : tx.inputs()) {
-            inputTypes.insert(DetailedType{input.getAddress(), scripts});
+            inputTypes.insert(DetailedType{input.getAddress(), tx.getAccess()});
         }
         
         if (inputTypes.size() != 1) {
@@ -441,14 +441,14 @@ namespace heuristics {
         return *outputTypes.begin() != *inputTypes.begin();
     }
     
-    bool containsKeysetChange(const Transaction &tx, const blocksci::ScriptAccess &access) {
+    bool containsKeysetChange(const Transaction &tx) {
         if (tx.isCoinbase()) {
             return false;
         }
         
         std::unordered_set<Address> multisigOutputs;
         for (auto output : tx.outputs()) {
-            auto pointer = getInsidePointer(output.getAddress(), access);
+            auto pointer = getInsidePointer(output.getAddress(), tx.getAccess());
             if (pointer && pointer->type == AddressType::Enum::MULTISIG) {
                 multisigOutputs.insert(*pointer);
             }
@@ -460,7 +460,7 @@ namespace heuristics {
         
         std::unordered_set<Address> multisigInputs;
         for (auto input : tx.inputs()) {
-            auto pointer = getInsidePointer(input.getAddress(), access);
+            auto pointer = getInsidePointer(input.getAddress(), tx.getAccess());
             if (pointer && pointer->type == AddressType::Enum::MULTISIG) {
                 if (multisigOutputs.find(*pointer) == multisigOutputs.end()) {
                     multisigInputs.insert(*pointer);
@@ -477,7 +477,7 @@ namespace heuristics {
             std::function<void(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &add) {
                 containedOutputs.insert(add);
             };
-            pointer.getScript(access).visitPointers(visitFunc);
+            pointer.getScript().visitPointers(visitFunc);
         }
         
         for (auto &pointer : multisigInputs) {
@@ -488,7 +488,7 @@ namespace heuristics {
                     return;
                 }
             };
-            pointer.getScript(access).visitPointers(visitFunc);
+            pointer.getScript().visitPointers(visitFunc);
             if (foundMatch) {
                 return true;
             }

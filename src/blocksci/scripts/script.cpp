@@ -27,15 +27,15 @@
 
 namespace blocksci {
     
-    Script::Script(uint32_t scriptNum_, AddressType::Enum type_, const ScriptDataBase &data, const ScriptAccess &scripts_) : Address(scriptNum_, type_), access(&scripts_), firstTxIndex(data.txFirstSeen), txRevealed(data.txFirstSpent) {}
+    Script::Script(uint32_t scriptNum_, AddressType::Enum type_, const ScriptDataBase &data, const DataAccess &access_) : Address(scriptNum_, type_, access_), access(&access_), firstTxIndex(data.txFirstSeen), txRevealed(data.txFirstSpent) {}
     
-    Transaction Script::getFirstTransaction(const ChainAccess &chain) const {
-        return Transaction(firstTxIndex, chain);
+    Transaction Script::getFirstTransaction() const {
+        return Transaction(firstTxIndex, *access);
     }
     
-    ranges::optional<Transaction> Script::getTransactionRevealed(const ChainAccess &chain) const {
+    ranges::optional<Transaction> Script::getTransactionRevealed() const {
         if (hasBeenSpent()) {
-            return Transaction(txRevealed, chain);
+            return Transaction(txRevealed, *access);
         } else {
             return ranges::nullopt;
         }

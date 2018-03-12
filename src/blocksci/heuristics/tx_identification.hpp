@@ -12,7 +12,9 @@
 #include <blocksci/scripts/scripts_fwd.hpp>
 #include <stdio.h>
 
-namespace blocksci { namespace heuristics {
+namespace blocksci {
+    class DataAccess;
+    namespace heuristics {
     
     enum class CoinJoinResult {
         True, False, Timeout
@@ -22,13 +24,8 @@ namespace blocksci { namespace heuristics {
     CoinJoinResult isPossibleCoinjoin(const Transaction &tx, uint64_t minBaseFee, double percentageFee, size_t maxDepth);
     CoinJoinResult isCoinjoinExtra(const Transaction &tx, uint64_t minBaseFee, double percentageFee, size_t maxDepth);
     bool isDeanonTx(const Transaction &tx);
-    bool isChangeOverTx(const Transaction &tx, const ScriptAccess &scripts);
-    bool containsKeysetChange(const Transaction &tx, const ScriptAccess &access);
-    
-    #ifndef BLOCKSCI_WITHOUT_SINGLETON
     bool containsKeysetChange(const Transaction &tx);
     bool isChangeOverTx(const Transaction &tx);
-    #endif
 }}
 
 

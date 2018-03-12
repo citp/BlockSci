@@ -11,6 +11,7 @@
 
 #include <blocksci/chain/inout.hpp>
 #include <blocksci/chain/inout_pointer.hpp>
+#include <blocksci/util/data_access.hpp>
 #include <blocksci/chain/chain_access.hpp>
 #include <blocksci/address/address.hpp>
 #include <blocksci/address/address_types.hpp>
@@ -25,10 +26,9 @@ namespace std {
 }
 
 namespace blocksci {
-    struct Address;
     
     class Input {
-        const ChainAccess *access;
+        const DataAccess *access;
         const Inout *inout;
         const uint32_t *sequenceNum;
         InputPointer pointer;
@@ -38,12 +38,12 @@ namespace blocksci {
         
         BlockHeight blockHeight;
 
-        Input(const InputPointer &pointer_, BlockHeight blockHeight_, const Inout &inout_, const uint32_t *sequenceNum_, const ChainAccess &access_) :
+        Input(const InputPointer &pointer_, BlockHeight blockHeight_, const Inout &inout_, const uint32_t *sequenceNum_, const DataAccess &access_) :
         access(&access_), inout(&inout_), sequenceNum(sequenceNum_), pointer(pointer_), blockHeight(blockHeight_) {
-            assert(pointer.isValid(access_));
+            assert(pointer.isValid(*access_.chain));
         }
-        Input(const InputPointer &pointer_, const ChainAccess &access_) : 
-        Input(pointer_, access_.getBlockHeight(pointer_.txNum), access_.getTx(pointer_.txNum)->getInput(pointer_.inoutNum), &access_.getSequenceNumbers(pointer_.txNum)[pointer_.inoutNum], access_) {}
+        Input(const InputPointer &pointer_, const DataAccess &access_) :
+        Input(pointer_, access_.chain->getBlockHeight(pointer_.txNum), access_.chain->getTx(pointer_.txNum)->getInput(pointer_.inoutNum), &access_.chain->getSequenceNumbers(pointer_.txNum)[pointer_.inoutNum], access_) {}
         
         uint32_t txIndex() const {
             return pointer.txNum;
@@ -83,7 +83,7 @@ namespace blocksci {
         }
         
         Address getAddress() const {
-            return inout->getAddress();
+            return Address(inout->toAddressNum, inout->getType(), *access);
         }
         
         uint32_t spentTxIndex() const {
@@ -93,10 +93,6 @@ namespace blocksci {
         
         std::string toString() const;
         Transaction getSpentTx() const;
-        
-        #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        Input(const InputPointer &pointer);
-        #endif
     };
 
     inline std::ostream &operator<<(std::ostream &os, const Input &input) { 

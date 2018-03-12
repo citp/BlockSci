@@ -23,7 +23,6 @@
 #include <vector>
 
 namespace blocksci {
-    struct Address;
     struct State;
 }
 

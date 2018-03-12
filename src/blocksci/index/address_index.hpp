@@ -19,8 +19,7 @@
 #include <vector>
 
 namespace blocksci {
-    struct Address;
-    struct EquivAddress;
+    class DataAccess;
     
     class AddressIndex {
         rocksdb::DB *db;
@@ -32,18 +31,6 @@ namespace blocksci {
         
         std::vector<OutputPointer> getOutputPointers(const Address &address) const;
         std::vector<OutputPointer> getOutputPointers(const EquivAddress &script) const;
-        
-        std::vector<Output> getOutputs(const Address &address, const ChainAccess &access) const;
-        std::vector<Input> getInputs(const Address &address, const ChainAccess &access) const;
-        std::vector<Transaction> getTransactions(const Address &address, const ChainAccess &access) const;
-        std::vector<Transaction> getOutputTransactions(const Address &address, const ChainAccess &access) const;
-        std::vector<Transaction> getInputTransactions(const Address &address, const ChainAccess &access) const;
-        
-        std::vector<Output> getOutputs(const EquivAddress &script, const ChainAccess &access) const;
-        std::vector<Input> getInputs(const EquivAddress &script, const ChainAccess &access) const;
-        std::vector<Transaction> getTransactions(const EquivAddress &script, const ChainAccess &access) const;
-        std::vector<Transaction> getOutputTransactions(const EquivAddress &script, const ChainAccess &access) const;
-        std::vector<Transaction> getInputTransactions(const EquivAddress &script, const ChainAccess &access) const;
         
         void addAddressNested(const blocksci::Address &childAddress, const blocksci::EquivAddress &parentAddress);
         void addAddressOutput(const blocksci::Address &address, const blocksci::OutputPointer &pointer);
@@ -63,7 +50,7 @@ namespace blocksci {
             db->Write(rocksdb::WriteOptions(), &batch);
         }
         
-        void checkDB(const ChainAccess &access) const;
+        void checkDB(const DataAccess &access) const;
     };
 }
 

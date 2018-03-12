@@ -12,6 +12,7 @@
 #include "scripts_fwd.hpp"
 
 #include <blocksci/chain/chain_fwd.hpp>
+#include <blocksci/address/address_fwd.hpp>
 #include <blocksci/address/address.hpp>
 
 #include <range/v3/utility/optional.hpp>
@@ -23,31 +24,25 @@
 
 namespace blocksci {
     
-    struct Address;
     struct DataConfiguration;
-    class AddressIndex;
+    class DataAccess;
     
     struct Script : public Address {
-        const ScriptAccess *access;
+        const DataAccess *access;
         uint32_t firstTxIndex;
         uint32_t txRevealed;
         
-        Script(uint32_t scriptNum_, AddressType::Enum type_, const ScriptDataBase &data, const ScriptAccess &scripts);
-        Script(const Address &address, const ScriptDataBase &data, const ScriptAccess &scripts);
+        Script(uint32_t scriptNum_, AddressType::Enum type_, const ScriptDataBase &data, const DataAccess &access);
+        Script(const Address &address, const ScriptDataBase &data, const DataAccess &access);
         
         void visitPointers(const std::function<void(const Address &)> &) const {}
         
-        Transaction getFirstTransaction(const ChainAccess &chain) const;
-        ranges::optional<Transaction> getTransactionRevealed(const ChainAccess &chain) const;
+        Transaction getFirstTransaction() const;
+        ranges::optional<Transaction> getTransactionRevealed() const;
 
         bool hasBeenSpent() const {
             return txRevealed != std::numeric_limits<uint32_t>::max();
         }
-        
-        #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        Transaction getFirstTransaction() const;
-        ranges::optional<Transaction> getTransactionRevealed() const;
-        #endif
     };
 }
 

@@ -23,8 +23,8 @@ namespace blocksci {
     public:
         constexpr static AddressType::Enum addressType = AddressType::NONSTANDARD;
         
-        ScriptAddress(uint32_t scriptNum, std::tuple<const NonstandardScriptData *, const NonstandardSpendScriptData *> &&rawData, const ScriptAccess &access);
-        ScriptAddress(const ScriptAccess &access, uint32_t addressNum);
+        ScriptAddress(uint32_t scriptNum, std::tuple<const NonstandardScriptData *, const NonstandardSpendScriptData *> &&rawData, const DataAccess &access);
+        ScriptAddress(uint32_t addressNum, const DataAccess &access);
         
         std::string inputString() const;
         std::string outputString() const;

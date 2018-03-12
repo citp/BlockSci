@@ -57,13 +57,13 @@ uint32_t getStartingTxCount(const blocksci::DataConfiguration &config);
 
 
 blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::BlockHeight firstDeletedBlock, uint32_t firstDeletedTxNum) {
-    blocksci::State state{blocksci::ChainAccess{config, false, blocksci::BlockHeight{0}}, blocksci::ScriptAccess{config}};
+    blocksci::State state{blocksci::ChainAccess{config}, blocksci::ScriptAccess{config}};
     state.blockCount = static_cast<uint32_t>(static_cast<int>(firstDeletedBlock));
     state.txCount = firstDeletedTxNum;
     
     blocksci::IndexedFileMapper<blocksci::AccessMode::readwrite, blocksci::RawTransaction> txFile{config.txFilePath()};
     blocksci::FixedSizeFileMapper<blocksci::uint256, blocksci::AccessMode::readwrite> txHashesFile{config.txHashesFilePath()};
-    blocksci::ScriptAccess scripts(config);
+    blocksci::DataAccess access(config);
     
     UTXOState utxoState;
     UTXOAddressState utxoAddressState;
@@ -79,11 +79,11 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::B
         auto hash = txHashesFile.getData(txNum);
         for (uint16_t i = 0; i < tx->outputCount; i++) {
             auto &output = tx->getOutput(i);
-            if (output.getAddress().getScript(scripts).firstTxIndex() == txNum) {
+            blocksci::AnyScript script(output.toAddressNum, output.getType(), access);
+            if (script.firstTxIndex() == txNum) {
                 auto &prevValue = state.scriptCounts[static_cast<size_t>(equivType(output.getType()))];
-                auto addressNum = output.getAddress().scriptNum;
-                if (addressNum < prevValue) {
-                    prevValue = addressNum;
+                if (output.toAddressNum < prevValue) {
+                    prevValue = output.toAddressNum;
                 }
             }
             if (isSpendable(output.getType())) {
@@ -105,7 +105,8 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::B
                     output.linkedTxNum = 0;
                     UTXO utxo(output.getValue(), spentTxNum, output.getType());
                     utxoState.add({*spentHash, j}, utxo);
-                    utxoAddressState.addOutput({output.getAddress().getScript(scripts), output.getType()}, {spentTxNum, j});
+                    blocksci::AnyScript script(output.toAddressNum, output.getType(), access);
+                    utxoAddressState.addOutput(script, {spentTxNum, j});
                     utxoScriptState.add({spentTxNum, j}, output.toAddressNum);
                     inputsAdded++;
                 }
@@ -167,7 +168,7 @@ struct ChainUpdateInfo {
 };
 
 uint32_t getStartingTxCount(const blocksci::DataConfiguration &config) {
-    blocksci::ChainAccess chain(config, false, blocksci::BlockHeight{0});
+    blocksci::ChainAccess chain(config);
     if (chain.blockCount() > 0) {
         auto lastBlock = chain.getBlock(chain.blockCount() - 1);
         return lastBlock->firstTxIndex + lastBlock->numTxes;
@@ -196,7 +197,7 @@ void updateChain(const ParserConfiguration<ParserTag> &config, blocksci::BlockHe
     }();
 
     blocksci::BlockHeight splitPoint = [&]() {
-        blocksci::ChainAccess oldChain(config, false, blocksci::BlockHeight{0});
+        blocksci::ChainAccess oldChain(config);
         blocksci::BlockHeight maxSize = std::min(oldChain.blockCount(), static_cast<blocksci::BlockHeight>(chainBlocks.size()));
         auto splitPoint = maxSize;
         for (blocksci::BlockHeight i{0}; i < maxSize; i++) {
@@ -272,7 +273,7 @@ void updateChain(const ParserConfiguration<ParserTag> &config, blocksci::BlockHe
 }
 
 void updateHashDB(const ParserConfigurationBase &config) {
-    blocksci::ChainAccess chain{config, false, blocksci::BlockHeight{0}};
+    blocksci::ChainAccess chain{config};
     blocksci::ScriptAccess scripts{config};
     
     blocksci::State updateState{chain, scripts};
@@ -286,7 +287,7 @@ void updateHashDB(const ParserConfigurationBase &config) {
 }
 
 void updateAddressDB(const ParserConfigurationBase &config) {
-    blocksci::ChainAccess chain{config, false, blocksci::BlockHeight{0}};
+    blocksci::ChainAccess chain{config};
     blocksci::ScriptAccess scripts{config};
     
     blocksci::State updateState{chain, scripts};

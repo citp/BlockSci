@@ -36,7 +36,7 @@ void init_input(py::module &m) {
     py::class_<Input> inputClass(m, "Input", "Class representing a transaction input");
     inputClass
     .def("__repr__", &Input::toString)
-    .def(py::init<InputPointer>())
+    .def(py::init<InputPointer, const DataAccess &>())
     .def(py::self == py::self)
     .def(hash(py::self))
     ;

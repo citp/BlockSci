@@ -11,6 +11,8 @@
 #include <blocksci/scripts/script_variant.hpp>
 #include <blocksci/address/address_types.hpp>
 
+#include <type_traits>
+
 struct SpendDataGenerator {
     template <blocksci::AddressType::Enum type>
     SpendDataType operator()(const ScriptOutput<type> &output) const {
@@ -18,27 +20,13 @@ struct SpendDataGenerator {
     }
 };
 
-template<blocksci::AddressType::Enum type>
-struct ScriptAddressGenerator {
-    static SpendDataType f(const blocksci::AnyScript &script) {
-        return SpendData<type>(mpark::get<blocksci::ScriptAddress<type>>(script.wrapped));
-    }
-};
-
-static auto scriptAddressGeneratorTable = blocksci::make_dynamic_table<blocksci::AddressType, ScriptAddressGenerator>();
-
-SpendDataType generateFromScriptAddress(const blocksci::AnyScript &scriptData, blocksci::AddressType::Enum type) {
-    auto index = static_cast<size_t>(type);
-    if (index >= blocksci::AddressType::size)
-    {
-        throw std::invalid_argument("combination of enum values is not valid");
-    }
-    return scriptAddressGeneratorTable[index](scriptData);
+SpendDataType generateFromScriptAddress(const blocksci::AnyScript &scriptData) {
+    return mpark::visit([](auto &script) -> SpendDataType { return SpendData<std::remove_cv_t<std::remove_reference_t<decltype(script)>>::addressType>{script}; }, scriptData.wrapped);
 }
 
 AnySpendData::AnySpendData(const AnyScriptOutput &output) : wrapped(mpark::visit(SpendDataGenerator(), output.wrapped)) {}
 
-AnySpendData::AnySpendData(const blocksci::AnyScript &scriptData, blocksci::AddressType::Enum addressType) : wrapped(generateFromScriptAddress(scriptData, addressType)) {}
+AnySpendData::AnySpendData(const blocksci::AnyScript &scriptData) : wrapped(generateFromScriptAddress(scriptData)) {}
 
 SpendData<blocksci::AddressType::Enum::MULTISIG>::SpendData(const ScriptOutput<blocksci::AddressType::Enum::MULTISIG> &output) {
     uint32_t i = 0;

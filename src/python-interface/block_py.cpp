@@ -119,18 +119,7 @@ void init_block(py::module &m) {
     
     py::class_<Block> cl(m, "Block", "Class representing a block in the blockchain");
     cl
-    .def(py::init<blocksci::BlockHeight>())
-    .def(py::pickle(
-        [](const Block &block) {
-            return py::make_tuple(block.height());
-        },
-        [](py::tuple t) {
-            if (t.size() != 1)
-                throw std::runtime_error("Invalid state!");
-
-            return Block(t[0].cast<blocksci::BlockHeight>(), *DataAccess::Instance().chain);
-        }
-    ))
+    .def(py::init<blocksci::BlockHeight, const DataAccess &>())
     .def("__repr__", &Block::getString)
     .def("__len__", [](const Block &block) {
         return block.size();

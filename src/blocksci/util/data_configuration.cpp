@@ -25,7 +25,7 @@ namespace blocksci {
         }
     }
     
-    DataConfiguration::DataConfiguration(const boost::filesystem::path &dataDirectory_) : dataDirectory(dataDirectory_) {
+    DataConfiguration::DataConfiguration(const boost::filesystem::path &dataDirectory_, bool errorOnReorg_, BlockHeight blocksIgnored_) : errorOnReorg(errorOnReorg_), blocksIgnored(blocksIgnored_), dataDirectory(dataDirectory_) {
         createDirectory(dataDirectory);
         createDirectory(scriptsDirectory());
         createDirectory(chainDirectory());

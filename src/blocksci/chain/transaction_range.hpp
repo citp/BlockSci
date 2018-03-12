@@ -10,6 +10,7 @@
 
 #include "chain_fwd.hpp"
 #include "transaction.hpp"
+#include <blocksci/util/data_access.hpp>
 #include <blocksci/chain/chain_access.hpp>
 #include <range/v3/view_facade.hpp>
 
@@ -17,7 +18,7 @@ namespace blocksci {
     class TransactionRange : public ranges::view_facade<TransactionRange> {
         friend ranges::range_access;
         
-        const ChainAccess *access;
+        const DataAccess *access;
         const char *currentTxPos;
         uint32_t currentTxIndex;
         uint32_t endTxIndex;
@@ -52,20 +53,20 @@ namespace blocksci {
         }
         
         void updateNextBlock() {
-            auto block = access->getBlock(blockNum);
+            auto block = access->chain->getBlock(blockNum);
             prevBlockLast = block->firstTxIndex - 1;
-            nextBlockFirst = blockNum < access->blockCount() - BlockHeight{1} ? block->firstTxIndex + static_cast<uint32_t>(block->numTxes) : std::numeric_limits<decltype(nextBlockFirst)>::max();
+            nextBlockFirst = blockNum < access->chain->blockCount() - BlockHeight{1} ? block->firstTxIndex + static_cast<uint32_t>(block->numTxes) : std::numeric_limits<decltype(nextBlockFirst)>::max();
         }
         
     public:
         TransactionRange() = default;
-        TransactionRange(const ChainAccess &access, uint32_t begin, uint32_t end);
+        TransactionRange(const DataAccess &access, uint32_t begin, uint32_t end);
     };
     
     class RawTransactionRange : public ranges::view_facade<RawTransactionRange> {
         friend ranges::range_access;
         
-        const ChainAccess *access;
+        const DataAccess *access;
         mutable const char *currentTxPos;
         uint32_t currentTxIndex;
         uint32_t endTxIndex;
@@ -85,7 +86,7 @@ namespace blocksci {
         
     public:
         RawTransactionRange() = default;
-        RawTransactionRange(const ChainAccess &access, uint32_t begin, uint32_t end);
+        RawTransactionRange(const DataAccess &access, uint32_t begin, uint32_t end);
     };
 }
 

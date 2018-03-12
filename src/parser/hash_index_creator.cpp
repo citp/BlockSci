@@ -23,14 +23,14 @@
 
 HashIndexCreator::HashIndexCreator(const ParserConfigurationBase &config_, const std::string &path) : ParserIndex(config_, "hashIndex"), db(path, false) {}
 
-void HashIndexCreator::processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &scripts) {
+void HashIndexCreator::processTx(const blocksci::Transaction &tx) {
     auto hash = tx.getHash();
     db.addTx(hash, tx.txNum);
     
     for (auto txout : tx.outputs()) {
         if (txout.getType() == blocksci::AddressType::WITNESS_SCRIPTHASH) {
             auto scriptNum = txout.getAddress().scriptNum;
-            auto script = blocksci::script::WitnessScriptHash(scripts, scriptNum);
+            auto script = blocksci::script::WitnessScriptHash(scriptNum, tx.getAccess());
             db.addAddress<blocksci::AddressType::WITNESS_SCRIPTHASH>(script.address, scriptNum);
         }
     }

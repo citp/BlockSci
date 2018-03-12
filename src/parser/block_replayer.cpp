@@ -25,6 +25,7 @@
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>
+#include <blocksci/index/address_index.hpp>
 
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
@@ -55,12 +56,10 @@ void replayBlock(const ParserConfiguration<FileTag> &config, blocksci::BlockHeig
     std::vector<unsigned char> coinbase;
     
     AddressState addressState{config.addressPath(), config.hashIndexFilePath()};
+    blocksci::DataAccess access(config);
     
-    blocksci::ChainAccess currentChain(config, false, blocksci::BlockHeight{0});
-    blocksci::ScriptAccess scripts(config);
-    
-    auto realBlock = blocksci::Block(blockNum, currentChain);
-    auto segwit = isSegwit(realBlock, scripts);
+    auto realBlock = blocksci::Block(blockNum, access);
+    auto segwit = isSegwit(realBlock);
     for (int txNum = 0; txNum < static_cast<int>(txCount); txNum++) {
         auto realTx = realBlock[txNum];
         
@@ -78,7 +77,7 @@ void replayBlock(const ParserConfiguration<FileTag> &config, blocksci::BlockHeig
             auto realInput = realTx.inputs()[i];
             auto address = realInput.getAddress();
             InputView inputView(i, tx.txNum, input.witnessStack, tx.isSegwit);
-            AnySpendData spendData(address.getScript(scripts), address.type);
+            AnySpendData spendData(address.getScript());
             tx.scriptInputs.emplace_back(inputView, input.getScriptView(), tx, spendData);
             i++;
         }

@@ -21,7 +21,7 @@ namespace blocksci {
     private:
         Address wrappedAddress;
     public:
-        ScriptHashBase(uint32_t scriptNum, AddressType::Enum type, const ScriptHashData *rawData, const ScriptAccess &access);
+        ScriptHashBase(uint32_t scriptNum, AddressType::Enum type, const ScriptHashData *rawData, const DataAccess &access);
         
         ranges::optional<Address> getWrappedAddress() const;
         
@@ -41,8 +41,8 @@ namespace blocksci {
         
         constexpr static AddressType::Enum addressType = AddressType::SCRIPTHASH;
         
-        ScriptAddress(uint32_t scriptNum, const ScriptHashData *rawData, const ScriptAccess &access);
-        ScriptAddress(const ScriptAccess &access, uint32_t addressNum);
+        ScriptAddress(uint32_t scriptNum, const ScriptHashData *rawData, const DataAccess &access);
+        ScriptAddress(uint32_t addressNum, const DataAccess &access);
         
         std::string addressString() const;
         
@@ -57,8 +57,8 @@ namespace blocksci {
         
         constexpr static AddressType::Enum addressType = AddressType::WITNESS_SCRIPTHASH;
         
-        ScriptAddress(uint32_t scriptNum, const ScriptHashData *rawData, const ScriptAccess &access);
-        ScriptAddress(const ScriptAccess &access, uint32_t addressNum);
+        ScriptAddress(uint32_t scriptNum, const ScriptHashData *rawData, const DataAccess &access);
+        ScriptAddress(uint32_t addressNum, const DataAccess &access);
         
         std::string addressString() const;
         

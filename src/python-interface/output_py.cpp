@@ -110,7 +110,7 @@ void init_output(py::module &m) {
     py::class_<Output> outputClass(m, "Output", "Class representing a transaction output");
     outputClass
     .def("__repr__", &Output::toString)
-    .def(py::init<OutputPointer>())
+    .def(py::init<OutputPointer, const DataAccess &>())
     .def(py::self == py::self)
     .def(hash(py::self))
     ;

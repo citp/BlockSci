@@ -146,13 +146,13 @@ void init_tx(py::module &m) {
     .def("__repr__", &Transaction::toString)
     .def(py::self == py::self)
     .def(hash(py::self))
-    .def(py::init<uint32_t>(), R"docstring(
+    .def(py::init<uint32_t, const DataAccess &>(), R"docstring(
          This functions gets the transaction with given index.
          
          :param int index: The index of the transation.
          :returns: Tx
          )docstring")
-    .def(py::init<std::string>(), R"docstring(
+    .def(py::init<std::string, const DataAccess &>(), R"docstring(
          This functions gets the transaction with given hash.
          
          :param string index: The hash of the transation.

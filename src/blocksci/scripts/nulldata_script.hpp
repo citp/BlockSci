@@ -21,8 +21,8 @@ namespace blocksci {
     public:
         constexpr static AddressType::Enum addressType = AddressType::NULL_DATA;
         
-        ScriptAddress(uint32_t scriptNum, const RawData *rawData, const ScriptAccess &access);
-        ScriptAddress(const ScriptAccess &access, uint32_t addressNum);
+        ScriptAddress(uint32_t scriptNum, const RawData *rawData, const DataAccess &access);
+        ScriptAddress(uint32_t addressNum, const DataAccess &access);
         std::string data;
         
         std::string toString() const;

@@ -61,6 +61,7 @@ namespace blocksci {
     class Blockchain;
     
     std::vector<std::vector<Block>> segmentChain(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, unsigned int segmentCount);
+    std::vector<std::pair<int, int>> segmentChainIndexes(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, unsigned int segmentCount);
     
     template<typename T>
     std::vector<std::vector<Block>> segmentBlocks(T && chain, int segmentCount) {
@@ -109,7 +110,7 @@ namespace blocksci {
             }
             
             Block read() const {
-                return Block(currentBlockHeight, *chain->access->chain);
+                return Block(currentBlockHeight, *chain->access);
             }
             
             void next() {
@@ -149,10 +150,12 @@ namespace blocksci {
 
     public:
         Blockchain() = default;
-        Blockchain(const DataConfiguration &config, bool errorOnReorg, BlockHeight blocksIgnored);
+        Blockchain(const DataConfiguration &config);
         Blockchain(const std::string &dataDirectory);
         
         const DataAccess *access;
+        
+        operator const DataAccess &() const { return *access; }
         
         uint32_t firstTxIndex() const;
         uint32_t endTxIndex() const;
@@ -165,7 +168,7 @@ namespace blocksci {
         auto scripts() const {
             return ranges::view::iota(uint32_t{1}, access->scripts->scriptCount<equivType(type)>() + 1) | ranges::view::transform([&](uint32_t scriptNum) {
                 assert(scriptNum > 0);
-                return ScriptAddress<type>(*access->scripts, scriptNum);
+                return ScriptAddress<type>(scriptNum, *access);
             });
         }
         
