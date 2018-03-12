@@ -36,22 +36,22 @@ exact_byte_matches = [
     b'*K\x94V\x827C\xfe\xc9\xc0\x7fv:\x9f\x0c\xa3@~\xba\xb2\xfa\xca\xe4\x0e\xbbm\x83\xc8\xf5k\x0b\xbf\x94\xcbn\xe7\xb0\x9a$\r'
 ]
 
-address_matches = {
-    Address(155316552, address_type.pubkeyhash):"Chainpoint",
-    Address(89427334, address_type.pubkeyhash):"Base64DataAddress1",
-    Address(156665979, address_type.pubkeyhash):"Base64DataAddress2",
-    Address(182075165, address_type.pubkeyhash):"Base64DataAddress3",
-    Address(156599323, address_type.pubkeyhash):"Base64DataAddress4",
-    Address(203933727, address_type.pubkeyhash):"Komodo",
-    Address(203831434, address_type.pubkey):"Komodo",
-    Address(127559021, address_type.pubkeyhash): "UnknownAddress1",
-    Address(16179390, address_type.scripthash):"SpamAddress1",
-    Address(16163151, address_type.scripthash):"SpamAddress2",
-    Address(89403362, address_type.pubkeyhash):"SpamAddress3",
-    Address(155249896, address_type.pubkeyhash):"SpamAddress4",
-    Address(77604537, address_type.pubkeyhash):"SpamAddress5",
-    Address(127504441, address_type.pubkeyhash):"SpamAddress5"
-}
+# address_matches = {
+#     Address(155316552, address_type.pubkeyhash):"Chainpoint", # 12m3EH1kCFWc9WvHmtLoby17xuYnSdNVYR 
+#     Address(89427334, address_type.pubkeyhash):"Base64DataAddress1",
+#     Address(156665979, address_type.pubkeyhash):"Base64DataAddress2",
+#     Address(182075165, address_type.pubkeyhash):"Base64DataAddress3",
+#     Address(156599323, address_type.pubkeyhash):"Base64DataAddress4",
+#     Address(203933727, address_type.pubkeyhash):"Komodo",
+#     Address(203831434, address_type.pubkey):"Komodo",
+#     Address(127559021, address_type.pubkeyhash): "UnknownAddress1",
+#     Address(16179390, address_type.scripthash):"SpamAddress1",
+#     Address(16163151, address_type.scripthash):"SpamAddress2",
+#     Address(89403362, address_type.pubkeyhash):"SpamAddress3",
+#     Address(155249896, address_type.pubkeyhash):"SpamAddress4",
+#     Address(77604537, address_type.pubkeyhash):"SpamAddress5",
+#     Address(127504441, address_type.pubkeyhash):"SpamAddress5"
+# }
 
 def label_application(tx):
     if tx.op_return is None:
@@ -76,10 +76,10 @@ def label_application(tx):
       for prefix in byte_prefixes:
           if data.startswith(prefix):
               return byte_prefixes[prefix]
-    elif len(set(txout.address for txout in tx.outs).intersection(set(address_matches.keys()))) > 0:
-        for txout in tx.outs:
-            if txout.address in address_matches:
-                return address_matches[txout.address]
+    # elif len(set(txout.address for txout in tx.outs).intersection(set(address_matches.keys()))) > 0:
+    #     for txout in tx.outs:
+    #         if txout.address in address_matches:
+    #             return address_matches[txout.address]
     elif len(tx.ins) > 0:
         first_vin_txid = binascii.unhexlify(str(tx.ins[0].spent_tx.hash))
         decoded = Crypto.Cipher.ARC4.new(first_vin_txid).decrypt(data)
