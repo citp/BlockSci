@@ -44,7 +44,7 @@ void HashIndexCreator::rollback(const blocksci::State &state) {
         for (it->SeekToFirst(); it->Valid(); it->Next()) {
             uint32_t destNum;
             memcpy(&destNum, it->value().data(), sizeof(destNum));
-            auto count = state.scriptCounts[static_cast<size_t>(blocksci::EquivAddressType::SCRIPTHASH)];
+            auto count = state.scriptCounts[static_cast<size_t>(blocksci::DedupAddressType::SCRIPTHASH)];
             if (destNum >= count) {
                 batch.Delete(column, it->key());
             }

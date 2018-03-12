@@ -15,7 +15,7 @@
 namespace blocksci {
     
     
-    struct EquivAddressType {
+    struct DedupAddressType {
         
         enum Enum {
 #define VAL(x) x
@@ -31,8 +31,8 @@ namespace blocksci {
 }
 
 namespace std {
-    template<> struct hash<blocksci::EquivAddressType::Enum> {
-        size_t operator()(blocksci::EquivAddressType::Enum val) const {
+    template<> struct hash<blocksci::DedupAddressType::Enum> {
+        size_t operator()(blocksci::DedupAddressType::Enum val) const {
             return static_cast<size_t>(val);
         }
     };

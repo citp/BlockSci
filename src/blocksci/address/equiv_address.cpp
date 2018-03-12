@@ -24,9 +24,9 @@
 
 namespace blocksci {
     
-    EquivAddress::EquivAddress() : scriptNum(0), type(EquivAddressType::NONSTANDARD) {}
+    EquivAddress::EquivAddress() : scriptNum(0), type(DedupAddressType::NONSTANDARD) {}
     
-    EquivAddress::EquivAddress(uint32_t addressNum_, EquivAddressType::Enum type_) : scriptNum(addressNum_), type(type_) {}
+    EquivAddress::EquivAddress(uint32_t addressNum_, DedupAddressType::Enum type_) : scriptNum(addressNum_), type(type_) {}
     
     std::string EquivAddress::toString() const {
         if (scriptNum == 0) {

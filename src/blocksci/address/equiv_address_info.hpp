@@ -13,7 +13,7 @@
 
 namespace blocksci {
     template <>
-    struct EquivAddressInfo<EquivAddressType::PUBKEY> {
+    struct DedupAddressInfo<DedupAddressType::PUBKEY> {
         static constexpr char name[] = "pubkey_script";
         static constexpr bool equived = true;
         static constexpr bool spendable = true;
@@ -22,7 +22,7 @@ namespace blocksci {
     };
     
     template <>
-    struct EquivAddressInfo<EquivAddressType::SCRIPTHASH> {
+    struct DedupAddressInfo<DedupAddressType::SCRIPTHASH> {
         static constexpr char name[] = "scripthash_script";
         static constexpr bool equived = true;
         static constexpr bool spendable = true;
@@ -31,7 +31,7 @@ namespace blocksci {
     };
     
     template <>
-    struct EquivAddressInfo<EquivAddressType::MULTISIG> {
+    struct DedupAddressInfo<DedupAddressType::MULTISIG> {
         static constexpr char name[] = "multisig_script";
         static constexpr bool equived = true;
         static constexpr bool spendable = true;
@@ -40,7 +40,7 @@ namespace blocksci {
     };
     
     template <>
-    struct EquivAddressInfo<EquivAddressType::NONSTANDARD> {
+    struct DedupAddressInfo<DedupAddressType::NONSTANDARD> {
         static constexpr char name[] = "nonstandard_script";
         static constexpr bool equived = false;
         static constexpr bool spendable = true;
@@ -49,7 +49,7 @@ namespace blocksci {
     };
     
     template <>
-    struct EquivAddressInfo<EquivAddressType::NULL_DATA> {
+    struct DedupAddressInfo<DedupAddressType::NULL_DATA> {
         static constexpr char name[] = "null_data_script";
         static constexpr bool equived = false;
         static constexpr bool spendable = false;
@@ -57,46 +57,46 @@ namespace blocksci {
         static constexpr std::array<AddressType::Enum, 1> addressTypes = {{AddressType::NULL_DATA}};
     };
     
-    using EquivAddressInfoList = array_to_tuple_t<EquivAddressType::Enum, EquivAddressType::size, EquivAddressType::all>;
+    using DedupAddressInfoList = array_to_tuple_t<DedupAddressType::Enum, DedupAddressType::size, DedupAddressType::all>;
     
-    template <template<EquivAddressType::Enum> class K>
-    using to_equiv_address_tuple_t = apply_template_t<EquivAddressType::Enum, K, EquivAddressInfoList>;
+    template <template<DedupAddressType::Enum> class K>
+    using to_equiv_address_tuple_t = apply_template_t<DedupAddressType::Enum, K, DedupAddressInfoList>;
     
-    template<EquivAddressType::Enum type>
+    template<DedupAddressType::Enum type>
     struct SpendableFunctor {
         static constexpr bool f() {
-            return EquivAddressInfo<type>::spendable;
+            return DedupAddressInfo<type>::spendable;
         }
     };
     
     constexpr void scriptTypeCheckThrow(size_t index) {
-        index >= EquivAddressType::size ? throw std::invalid_argument("combination of enum values is not valid") : 0;
+        index >= DedupAddressType::size ? throw std::invalid_argument("combination of enum values is not valid") : 0;
     }
     
-    static constexpr auto spendableTable = blocksci::make_static_table<EquivAddressType, SpendableFunctor>();
+    static constexpr auto spendableTable = blocksci::make_static_table<DedupAddressType, SpendableFunctor>();
     
-    constexpr bool isSpendable(EquivAddressType::Enum t) {
+    constexpr bool isSpendable(DedupAddressType::Enum t) {
         auto index = static_cast<size_t>(t);
         scriptTypeCheckThrow(index);
         return spendableTable[index];
     }
     
-    template<EquivAddressType::Enum type>
+    template<DedupAddressType::Enum type>
     struct EquivedFunctor {
         static constexpr bool f() {
-            return EquivAddressInfo<type>::equived;
+            return DedupAddressInfo<type>::equived;
         }
     };
     
-    static constexpr auto equivedTable = blocksci::make_static_table<EquivAddressType, EquivedFunctor>();
+    static constexpr auto equivedTable = blocksci::make_static_table<DedupAddressType, EquivedFunctor>();
     
-    constexpr bool isEquived(EquivAddressType::Enum t) {
+    constexpr bool isEquived(DedupAddressType::Enum t) {
         auto index = static_cast<size_t>(t);
         scriptTypeCheckThrow(index);
         return equivedTable[index];
     }
     
-    std::string equivAddressName(EquivAddressType::Enum type);
+    std::string equivAddressName(DedupAddressType::Enum type);
 }
 
 #endif /* equiv_address_info_hpp */

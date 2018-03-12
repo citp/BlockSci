@@ -23,7 +23,7 @@ namespace blocksci {
 
 class HashIndexCreator;
 
-template<blocksci::EquivAddressType::Enum type>
+template<blocksci::DedupAddressType::Enum type>
 struct ParserIndexScriptInfo<HashIndexCreator, type> : std::false_type {};
 
 class HashIndexCreator : public ParserIndex<HashIndexCreator> {
@@ -33,7 +33,7 @@ public:
     HashIndexCreator(const ParserConfigurationBase &config, const std::string &path);
     void processTx(const blocksci::Transaction &tx);
     
-    template<blocksci::EquivAddressType::Enum type>
+    template<blocksci::DedupAddressType::Enum type>
     void processScript(uint32_t equivNum, const blocksci::DataAccess &);
     
     void rollback(const blocksci::State &state);

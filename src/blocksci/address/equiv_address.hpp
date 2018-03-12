@@ -19,15 +19,24 @@ namespace blocksci {
     class DataAccess;
     struct DataConfiguration;
     
+    struct RawEquivAddress {
+        uint32_t scriptNum;
+        DedupAddressType::Enum type;
+        
+        RawEquivAddress() {}
+        RawEquivAddress(uint32_t addressNum_, DedupAddressType::Enum type_) : scriptNum(addressNum_), type(type_) {}
+        RawEquivAddress(const EquivAddress &address);
+    };
+    
     class EquivAddress {
         const DataAccess *access;
         
     public:
         uint32_t scriptNum;
-        EquivAddressType::Enum type;
+        DedupAddressType::Enum type;
         
         EquivAddress();
-        EquivAddress(uint32_t addressNum, EquivAddressType::Enum type);
+        EquivAddress(uint32_t addressNum, DedupAddressType::Enum type);
         
         bool operator==(const EquivAddress& other) const {
             return type == other.type && scriptNum == other.scriptNum;
@@ -51,6 +60,8 @@ namespace blocksci {
     inline std::ostream &operator<<(std::ostream &os, const EquivAddress &address) {
         return os << address.toString();
     }
+    
+    inline RawEquivAddress::RawEquivAddress(const EquivAddress &address) : scriptNum(address.scriptNum), type(address.type) {}
 }
 
 namespace std {

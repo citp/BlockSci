@@ -8,23 +8,23 @@
 #include "equiv_address_info.hpp"
 
 namespace blocksci {
-    constexpr char EquivAddressInfo<EquivAddressType::PUBKEY>::name[];
-    constexpr char EquivAddressInfo<EquivAddressType::SCRIPTHASH>::name[];
-    constexpr char EquivAddressInfo<EquivAddressType::MULTISIG>::name[];
-    constexpr char EquivAddressInfo<EquivAddressType::NULL_DATA>::name[];
-    constexpr char EquivAddressInfo<EquivAddressType::NONSTANDARD>::name[];
+    constexpr char DedupAddressInfo<DedupAddressType::PUBKEY>::name[];
+    constexpr char DedupAddressInfo<DedupAddressType::SCRIPTHASH>::name[];
+    constexpr char DedupAddressInfo<DedupAddressType::MULTISIG>::name[];
+    constexpr char DedupAddressInfo<DedupAddressType::NULL_DATA>::name[];
+    constexpr char DedupAddressInfo<DedupAddressType::NONSTANDARD>::name[];
     
-    template<EquivAddressType::Enum type>
+    template<DedupAddressType::Enum type>
     struct EquivAddressNameFunctor {
         static std::string f() {
-            return EquivAddressInfo<type>::name;
+            return DedupAddressInfo<type>::name;
         }
     };
     
-    std::string equivAddressName(EquivAddressType::Enum type) {
-        static auto table = make_static_table<EquivAddressType, EquivAddressNameFunctor>();
+    std::string equivAddressName(DedupAddressType::Enum type) {
+        static auto table = make_static_table<DedupAddressType, EquivAddressNameFunctor>();
         auto index = static_cast<size_t>(type);
-        if (index >= EquivAddressType::size)
+        if (index >= DedupAddressType::size)
         {
             throw std::invalid_argument("combination of enum values is not valid");
         }

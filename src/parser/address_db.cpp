@@ -37,7 +37,7 @@ void AddressDB::tearDown() {}
 void AddressDB::processTx(const blocksci::Transaction &tx) {
     std::unordered_set<Address> addresses;
     std::function<bool(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
-        if (equivType(a.type) == EquivAddressType::SCRIPTHASH) {
+        if (dedupType(a.type) == DedupAddressType::SCRIPTHASH) {
             script::ScriptHash scriptHash(a.scriptNum, tx.getAccess());
             if (scriptHash.txRevealed == tx.txNum) {
                 auto wrapped = *scriptHash.getWrappedAddress();
@@ -59,7 +59,7 @@ void AddressDB::processTx(const blocksci::Transaction &tx) {
 }
 
 void AddressDB::rollback(const blocksci::State &state) {
-    for (auto script : EquivAddressType::all) {
+    for (auto script : DedupAddressType::all) {
         auto column = db.getOutputColumn(script);
         auto it = db.getOutputIterator(script);
         rocksdb::WriteBatch batch;
@@ -68,7 +68,7 @@ void AddressDB::rollback(const blocksci::State &state) {
             key.remove_prefix(sizeof(Address));
             OutputPointer outPoint;
             memcpy(&outPoint, key.data(), sizeof(outPoint));
-            if (outPoint.txNum >= state.scriptCounts[static_cast<size_t>(blocksci::EquivAddressType::SCRIPTHASH)]) {
+            if (outPoint.txNum >= state.scriptCounts[static_cast<size_t>(blocksci::DedupAddressType::SCRIPTHASH)]) {
                 batch.Delete(column, it->key());
             }
         }

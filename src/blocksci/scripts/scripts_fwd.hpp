@@ -13,7 +13,7 @@
 #include <blocksci/address/address_types.hpp>
 
 namespace blocksci {
-    template <EquivAddressType::Enum>
+    template <DedupAddressType::Enum>
     struct ScriptData;
     
     class CBitcoinAddress;
@@ -35,7 +35,7 @@ namespace blocksci {
     template <AddressType::Enum>
     class ScriptAddress;
     
-    template <EquivAddressType::Enum>
+    template <DedupAddressType::Enum>
     struct ScriptInfo;
     
     namespace script {

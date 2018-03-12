@@ -29,7 +29,7 @@
 #include <iostream>
 #include <future>
 
-template <typename T, blocksci::EquivAddressType::Enum type>
+template <typename T, blocksci::DedupAddressType::Enum type>
 struct ParserIndexScriptInfo;
 
 template <typename T>
@@ -87,7 +87,7 @@ public:
             }
         }
         
-        blocksci::for_each(blocksci::EquivAddressInfoList(), [&](auto type) {
+        blocksci::for_each(blocksci::DedupAddressInfoList(), [&](auto type) {
             updateScript(ParserIndexScriptInfo<T, type>{}, type, state, access);
         });
         latestState = state;

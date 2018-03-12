@@ -16,7 +16,7 @@ namespace blocksci {
     struct State {
         uint32_t blockCount;
         uint32_t txCount;
-        std::array<uint32_t, EquivAddressType::size> scriptCounts;
+        std::array<uint32_t, DedupAddressType::size> scriptCounts;
         
         State(const ChainAccess &chain, const ScriptAccess &scripts);
         State();

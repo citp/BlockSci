@@ -51,8 +51,8 @@ namespace blocksci {
         | ranges::to_vector;
     }
     
-    std::vector<Output> DataAccess::getOutputs(const Address &address) const {
-        return getOutputsImp(addressIndex->getOutputPointers(address), this);
+    std::vector<Output> DataAccess::getOutputs(const Address &address, bool typeEquivalent, bool nestedEquivalent) const {
+        return getOutputsImp(addressIndex->getOutputPointers(address, typeEquivalent, nestedEquivalent), this);
     }
     
     std::vector<Output> DataAccess::getOutputs(const EquivAddress &script) const {
@@ -76,8 +76,8 @@ namespace blocksci {
         | ranges::to_vector;
     }
     
-    std::vector<Input> DataAccess::getInputs(const Address &address) const {
-        return getInputsImp(addressIndex->getOutputPointers(address), this);
+    std::vector<Input> DataAccess::getInputs(const Address &address, bool typeEquivalent, bool nestedEquivalent) const {
+        return getInputsImp(addressIndex->getOutputPointers(address, typeEquivalent, nestedEquivalent), this);
     }
     
     std::vector<Input> DataAccess::getInputs(const EquivAddress &script) const {
@@ -98,8 +98,8 @@ namespace blocksci {
         return {txes.begin(), txes.end()};
     }
     
-    std::vector<Transaction> DataAccess::getTransactions(const Address &address) const {
-        return getTransactionsImp(addressIndex->getOutputPointers(address), this);
+    std::vector<Transaction> DataAccess::getTransactions(const Address &address, bool typeEquivalent, bool nestedEquivalent) const {
+        return getTransactionsImp(addressIndex->getOutputPointers(address, typeEquivalent, nestedEquivalent), this);
     }
     
     std::vector<Transaction> DataAccess::getTransactions(const EquivAddress &script) const {
@@ -112,8 +112,8 @@ namespace blocksci {
         return txNums | ranges::view::transform([access](uint32_t txNum) { return Transaction(txNum, *access); }) | ranges::to_vector;
     }
     
-    std::vector<Transaction> DataAccess::getOutputTransactions(const Address &address) const {
-        return getOutputTransactionsImp(addressIndex->getOutputPointers(address), this);
+    std::vector<Transaction> DataAccess::getOutputTransactions(const Address &address, bool typeEquivalent, bool nestedEquivalent) const {
+        return getOutputTransactionsImp(addressIndex->getOutputPointers(address, typeEquivalent, nestedEquivalent), this);
     }
     
     std::vector<Transaction> DataAccess::getOutputTransactions(const EquivAddress &script) const {
@@ -132,8 +132,8 @@ namespace blocksci {
         return txes;
     }
     
-    std::vector<Transaction> DataAccess::getInputTransactions(const Address &address) const {
-        return getInputTransactionsImp(addressIndex->getOutputPointers(address), this);
+    std::vector<Transaction> DataAccess::getInputTransactions(const Address &address, bool typeEquivalent, bool nestedEquivalent) const {
+        return getInputTransactionsImp(addressIndex->getOutputPointers(address, typeEquivalent, nestedEquivalent), this);
     }
     
     std::vector<Transaction> DataAccess::getInputTransactions(const EquivAddress &script) const {

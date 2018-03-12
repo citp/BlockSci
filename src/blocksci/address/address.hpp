@@ -28,6 +28,7 @@ namespace blocksci {
         uint32_t scriptNum;
         AddressType::Enum type;
         
+        RawAddress() {}
         RawAddress(uint32_t addressNum_, AddressType::Enum type_) : scriptNum(addressNum_), type(type_) {}
         RawAddress(const Address &address);
     };
@@ -57,13 +58,13 @@ namespace blocksci {
         
         AnyScript getScript() const;
         
-        uint64_t calculateBalance(BlockHeight height) const;
+        uint64_t calculateBalance(BlockHeight height, bool typeEquivalent, bool nestedEquivalent) const;
         
-        std::vector<Output> getOutputs() const;
-        std::vector<Input> getInputs() const;
-        std::vector<Transaction> getTransactions() const;
-        std::vector<Transaction> getOutputTransactions() const;
-        std::vector<Transaction> getInputTransactions() const;
+        std::vector<Output> getOutputs(bool typeEquivalent, bool nestedEquivalent) const;
+        std::vector<Input> getInputs(bool typeEquivalent, bool nestedEquivalent) const;
+        std::vector<Transaction> getTransactions(bool typeEquivalent, bool nestedEquivalent) const;
+        std::vector<Transaction> getOutputTransactions(bool typeEquivalent, bool nestedEquivalent) const;
+        std::vector<Transaction> getInputTransactions(bool typeEquivalent, bool nestedEquivalent) const;
         
         std::string fullType() const;
         

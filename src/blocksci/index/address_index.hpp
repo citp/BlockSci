@@ -24,21 +24,26 @@ namespace blocksci {
     class AddressIndex {
         rocksdb::DB *db;
         std::vector<rocksdb::ColumnFamilyHandle *> columnHandles;
+        
+        std::vector<OutputPointer> getOutputPointersImp(const RawAddress &address) const;
     public:
         
         AddressIndex(const std::string &path, bool readonly);
         ~AddressIndex();
         
-        std::vector<OutputPointer> getOutputPointers(const Address &address) const;
         std::vector<OutputPointer> getOutputPointers(const EquivAddress &script) const;
+        
+        std::vector<OutputPointer> getOutputPointers(const Address &searchAddress, bool typeEquivalent, bool nestedEquivalent) const;
+        
+        std::vector<RawAddress> getPossibleNestedEquivalent(const RawAddress &address) const;
         
         void addAddressNested(const blocksci::Address &childAddress, const blocksci::EquivAddress &parentAddress);
         void addAddressOutput(const blocksci::Address &address, const blocksci::OutputPointer &pointer);
         
-        rocksdb::ColumnFamilyHandle *getOutputColumn(EquivAddressType::Enum type);
-        rocksdb::ColumnFamilyHandle *getNestedColumn(AddressType::Enum type);
+        rocksdb::ColumnFamilyHandle *getOutputColumn(DedupAddressType::Enum type) const;
+        rocksdb::ColumnFamilyHandle *getNestedColumn(AddressType::Enum type) const;
         
-        rocksdb::Iterator* getOutputIterator(EquivAddressType::Enum type) {
+        rocksdb::Iterator* getOutputIterator(DedupAddressType::Enum type) {
             return db->NewIterator(rocksdb::ReadOptions(), getOutputColumn(type));
         }
         
@@ -49,8 +54,6 @@ namespace blocksci {
         void writeBatch(rocksdb::WriteBatch &batch) {
             db->Write(rocksdb::WriteOptions(), &batch);
         }
-        
-        void checkDB(const DataAccess &access) const;
     };
 }
 

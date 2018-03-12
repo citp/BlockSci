@@ -8,5 +8,5 @@
 #include "equiv_address_type.hpp"
 
 namespace blocksci {
-    constexpr std::array<EquivAddressType::Enum, 5> EquivAddressType::all;
+    constexpr std::array<DedupAddressType::Enum, 5> DedupAddressType::all;
 }

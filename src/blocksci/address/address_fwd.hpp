@@ -20,6 +20,9 @@ namespace blocksci {
     template <AddressType::Enum>
     struct AddressInfo;
     
+    template <DedupAddressType::Enum>
+    struct DedupAddressInfo;
+    
     template <EquivAddressType::Enum>
     struct EquivAddressInfo;
 }

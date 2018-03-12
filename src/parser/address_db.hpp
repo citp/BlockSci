@@ -22,11 +22,11 @@
 class AddressDB;
 
 
-template<blocksci::EquivAddressType::Enum type>
+template<blocksci::DedupAddressType::Enum type>
 struct ParserIndexScriptInfo<AddressDB, type> : std::false_type {};
 
 template<>
-struct ParserIndexScriptInfo<AddressDB, blocksci::EquivAddressType::MULTISIG> : std::true_type {};
+struct ParserIndexScriptInfo<AddressDB, blocksci::DedupAddressType::MULTISIG> : std::true_type {};
 
 class AddressDB : public ParserIndex<AddressDB> {
     blocksci::AddressIndex db;
@@ -39,7 +39,7 @@ public:
     
     void processTx(const blocksci::Transaction &tx);
     
-    template<blocksci::EquivAddressType::Enum type>
+    template<blocksci::DedupAddressType::Enum type>
     void processScript(uint32_t, const blocksci::DataAccess &);
     
     void rollback(const blocksci::State &state);
@@ -47,10 +47,10 @@ public:
 };
 
 template<>
-inline void AddressDB::processScript<blocksci::EquivAddressType::MULTISIG>(uint32_t equivNum, const blocksci::DataAccess &access) {
+inline void AddressDB::processScript<blocksci::DedupAddressType::MULTISIG>(uint32_t equivNum, const blocksci::DataAccess &access) {
     blocksci::script::Multisig multisig(equivNum, access);
     for (const auto &address : multisig.addresses) {
-        db.addAddressNested(address, blocksci::EquivAddress{equivNum, blocksci::EquivAddressType::MULTISIG});
+        db.addAddressNested(address, blocksci::EquivAddress{equivNum, blocksci::DedupAddressType::MULTISIG});
     }
 }
 

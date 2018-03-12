@@ -81,7 +81,7 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::B
             auto &output = tx->getOutput(i);
             blocksci::AnyScript script(output.toAddressNum, output.getType(), access);
             if (script.firstTxIndex() == txNum) {
-                auto &prevValue = state.scriptCounts[static_cast<size_t>(equivType(output.getType()))];
+                auto &prevValue = state.scriptCounts[static_cast<size_t>(dedupType(output.getType()))];
                 if (output.toAddressNum < prevValue) {
                     prevValue = output.toAddressNum;
                 }

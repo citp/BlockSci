@@ -32,12 +32,12 @@ namespace blocksci {
     
     
     EquivAddress Address::equiv() const {
-        return EquivAddress{scriptNum, equivType(type)};
+        return EquivAddress{scriptNum, dedupType(type)};
     }
     
     
     bool Address::isSpendable() const {
-        return blocksci::isSpendable(equivType(type));
+        return blocksci::isSpendable(dedupType(type));
     }
     
     std::string Address::toString() const {
@@ -67,16 +67,16 @@ namespace blocksci {
         return AnyScript{*this, *access};
     }
     
-    uint64_t Address::calculateBalance(BlockHeight height) const {
+    uint64_t Address::calculateBalance(BlockHeight height, bool typeEquivalent, bool nestedEquivalent) const {
         uint64_t value = 0;
         if (height == 0) {
-            for (auto &output : access->getOutputs(*this)) {
+            for (auto &output : access->getOutputs(*this, typeEquivalent, nestedEquivalent)) {
                 if (!output.isSpent()) {
                     value += output.getValue();
                 }
             }
         } else {
-            for (auto &output : access->getOutputs(*this)) {
+            for (auto &output : access->getOutputs(*this, typeEquivalent, nestedEquivalent)) {
                 if (output.blockHeight <= height && (!output.isSpent() || output.getSpendingTx()->blockHeight > height)) {
                     value += output.getValue();
                 }
@@ -85,24 +85,24 @@ namespace blocksci {
         return value;
     }
     
-    std::vector<Output> Address::getOutputs() const {
-        return access->getOutputs(*this);
+    std::vector<Output> Address::getOutputs(bool typeEquivalent, bool nestedEquivalent) const {
+        return access->getOutputs(*this, typeEquivalent, nestedEquivalent);
     }
     
-    std::vector<Input> Address::getInputs() const {
-        return access->getInputs(*this);
+    std::vector<Input> Address::getInputs(bool typeEquivalent, bool nestedEquivalent) const {
+        return access->getInputs(*this, typeEquivalent, nestedEquivalent);
     }
     
-    std::vector<Transaction> Address::getTransactions() const {
-        return access->getTransactions(*this);
+    std::vector<Transaction> Address::getTransactions(bool typeEquivalent, bool nestedEquivalent) const {
+        return access->getTransactions(*this, typeEquivalent, nestedEquivalent);
     }
     
-    std::vector<Transaction> Address::getOutputTransactions() const {
-        return access->getOutputTransactions(*this);
+    std::vector<Transaction> Address::getOutputTransactions(bool typeEquivalent, bool nestedEquivalent) const {
+        return access->getOutputTransactions(*this, typeEquivalent, nestedEquivalent);
     }
     
-    std::vector<Transaction> Address::getInputTransactions() const {
-        return access->getInputTransactions(*this);
+    std::vector<Transaction> Address::getInputTransactions(bool typeEquivalent, bool nestedEquivalent) const {
+        return access->getInputTransactions(*this, typeEquivalent, nestedEquivalent);
     }
     
     ranges::optional<Address> getAddressFromString(const std::string &addressString, const DataAccess &access) {
@@ -147,7 +147,7 @@ namespace blocksci {
     template<AddressType::Enum type>
     std::vector<Address> getAddressesWithPrefixImp(const std::string &prefix, const DataAccess &access) {
         std::vector<Address> addresses;
-        auto count = access.scripts->scriptCount(equivType(type));
+        auto count = access.scripts->scriptCount(dedupType(type));
         for (uint32_t scriptNum = 1; scriptNum <= count; scriptNum++) {
             ScriptAddress<type> script(scriptNum, access);
             if (script.addressString().compare(0, prefix.length(), prefix) == 0) {
@@ -170,8 +170,8 @@ namespace blocksci {
     std::string fullTypeImp(const Address &address, const DataAccess &access) {
         std::stringstream ss;
         ss << addressName(address.type);
-        switch (equivType(address.type)) {
-            case EquivAddressType::SCRIPTHASH: {
+        switch (dedupType(address.type)) {
+            case DedupAddressType::SCRIPTHASH: {
                 auto script = script::ScriptHash(address.scriptNum, access);
                 auto wrapped = script.getWrappedAddress();
                 if (wrapped) {
@@ -179,7 +179,7 @@ namespace blocksci {
                 }
                 break;
             }
-            case EquivAddressType::MULTISIG: {
+            case DedupAddressType::MULTISIG: {
                 auto script = script::Multisig(address.scriptNum, access);
                 ss << int(script.required) << "Of" << int(script.total);
                 break;

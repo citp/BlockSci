@@ -82,7 +82,7 @@ void addInputRangeMethods(Class &cl, FuncApplication func) {
         	return inputsOfType(r, type);
         });
     }, "Return a range including only inputs sent to the given address type")
-    .def("with_type", [=](Range &range, EquivAddressType::Enum type) {
+    .def("with_type", [=](Range &range, DedupAddressType::Enum type) {
         return func(range, [=](auto && r) -> ranges::any_view<blocksci::Input> {
         	return inputsOfType(r, type);
         });

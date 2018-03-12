@@ -25,31 +25,31 @@ namespace blocksci {
     struct Indexed;
     
     template <>
-    struct ScriptInfo<EquivAddressType::PUBKEY> {
+    struct ScriptInfo<DedupAddressType::PUBKEY> {
         using outputType = PubkeyData;
         using storage = FixedSize<PubkeyData>;
     };
     
     template <>
-    struct ScriptInfo<EquivAddressType::SCRIPTHASH> {
+    struct ScriptInfo<DedupAddressType::SCRIPTHASH> {
         using outputType = ScriptHashData;
         using storage = FixedSize<ScriptHashData>;
     };
     
     template <>
-    struct ScriptInfo<EquivAddressType::MULTISIG> {
+    struct ScriptInfo<DedupAddressType::MULTISIG> {
         using outputType = MultisigData;
         using storage = Indexed<MultisigData>;
     };
     
     template <>
-    struct ScriptInfo<EquivAddressType::NONSTANDARD> {
+    struct ScriptInfo<DedupAddressType::NONSTANDARD> {
         using outputType = NonstandardScriptData;
         using storage = Indexed<NonstandardScriptData,NonstandardSpendScriptData>;
     };
     
     template <>
-    struct ScriptInfo<EquivAddressType::NULL_DATA> {
+    struct ScriptInfo<DedupAddressType::NULL_DATA> {
         using outputType = RawData;
         using storage = Indexed<RawData>;
     };
