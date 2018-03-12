@@ -56,7 +56,7 @@ exact_byte_matches = [
 def label_application(tx):
     if tx.op_return is None:
         return None
-    data = tx.op_return.address.script.data
+    data = tx.op_return.address.data
       
     if len(data) == 0:
         return "Empty"
