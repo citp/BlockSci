@@ -7,6 +7,7 @@
 //
 
 #include "variant_py.hpp"
+#include "optional_py.hpp"
 
 #include <blocksci/chain/algorithms.hpp>
 #include <blocksci/chain/blockchain.hpp>

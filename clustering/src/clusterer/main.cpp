@@ -108,14 +108,14 @@ std::vector<uint32_t> getClusters(Blockchain &chain, std::unordered_map<EquivAdd
     
     AddressDisjointSets ds(totalScriptCount, std::move(addressStarts));
     
-    auto &scripts = *chain.access->scripts;
+    auto &access = *chain.access;
 
-    auto scriptHashCount = scripts.scriptCount<EquivAddressType::SCRIPTHASH>();
+    auto scriptHashCount = chain.scriptCount(EquivAddressType::SCRIPTHASH);
     
     
-    segmentWork(1, scriptHashCount + 1, 8, [&ds, &scripts](uint32_t index) {
+    segmentWork(1, scriptHashCount + 1, 8, [&ds, &access](uint32_t index) {
         EquivAddress pointer(index, EquivAddressType::SCRIPTHASH);
-        script::ScriptHash scripthash{scripts, index};
+        script::ScriptHash scripthash{index, access};
         auto wrappedAddress = scripthash.getWrappedAddress();
         if (wrappedAddress) {
             ds.link_addresses(pointer, wrappedAddress->equiv());
