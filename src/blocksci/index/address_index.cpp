@@ -146,7 +146,6 @@ namespace blocksci {
     }
     
     void AddressIndex::addAddressNested(const Address &childAddress, const EquivAddress &parentAddress) {
-        auto nestedColumn = getNestedColumn(childAddress.type);
         RawAddress rawChild(childAddress);
         std::array<rocksdb::Slice, 2> keyParts = {{
             rocksdb::Slice(reinterpret_cast<const char *>(&rawChild), sizeof(rawChild)),
@@ -154,11 +153,11 @@ namespace blocksci {
         }};
         std::string sliceStr;
         rocksdb::Slice key{rocksdb::SliceParts{keyParts.data(), keyParts.size()}, &sliceStr};
+        auto nestedColumn = getNestedColumn(childAddress.type);
         db->Put(rocksdb::WriteOptions{}, nestedColumn, key, rocksdb::Slice{});
     }
     
     void AddressIndex::addAddressOutput(const Address &address, const blocksci::OutputPointer &pointer) {
-        auto script = dedupType(address.type);
         RawAddress raw(address);
         std::array<rocksdb::Slice, 2> keyParts = {{
             rocksdb::Slice(reinterpret_cast<const char *>(&raw), sizeof(raw)),
@@ -166,7 +165,8 @@ namespace blocksci {
         }};
         std::string sliceStr;
         rocksdb::Slice key{rocksdb::SliceParts{keyParts.data(), keyParts.size()}, &sliceStr};
-        db->Put(rocksdb::WriteOptions{}, columnHandles[static_cast<size_t>(script) + 1], key, rocksdb::Slice{});
+        auto outputColumn = getOutputColumn(dedupType(address.type));
+        db->Put(rocksdb::WriteOptions{}, outputColumn, key, rocksdb::Slice{});
     }
 }
 
