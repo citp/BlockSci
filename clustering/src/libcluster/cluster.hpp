@@ -40,6 +40,14 @@ public:
     uint32_t countOfType(blocksci::AddressType::Enum type) const;
     
     uint32_t getSize() const;
+
+    uint64_t calculateBalance(blocksci::BlockHeight height) const;
+
+    std::vector<blocksci::Output> getOutputs() const;
+    std::vector<blocksci::Input> getInputs() const;
+    std::vector<blocksci::Transaction> getTransactions() const;
+    std::vector<blocksci::Transaction> getOutputTransactions() const;
+    std::vector<blocksci::Transaction> getInputTransactions() const;
     
     bool operator==(const Cluster &other) {
         return clusterNum == other.clusterNum;

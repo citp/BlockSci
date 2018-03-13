@@ -60,3 +60,77 @@ uint32_t Cluster::countOfType(blocksci::AddressType::Enum type) const {
     }
     return count;
 }
+
+uint64_t Cluster::calculateBalance(blocksci::BlockHeight height) const {
+    uint64_t value = 0;
+    if (height == 0) {
+        for (auto &output : getOutputs()) {
+            if (!output.isSpent()) {
+                value += output.getValue();
+            }
+        }
+    } else {
+        for (auto &output : getOutputs()) {
+            if (output.blockHeight <= height && (!output.isSpent() || output.getSpendingTx()->blockHeight > height)) {
+                value += output.getValue();
+            }
+        }
+    }
+    return value;
+}
+
+std::vector<blocksci::Output> Cluster::getOutputs() const {
+    std::unordered_set<blocksci::Output> outputs;
+    for (auto &dedupAddress : manager.getClusterScripts(clusterNum)) {
+        for (auto &address : manager.access.addressIndex->getPossibleEquivAddresses(dedupAddress, false, manager.access)) {
+            auto addrOuts = address.getOutputs(false, false);
+            outputs.insert(addrOuts.begin(), addrOuts.end());
+        }
+    }
+    return std::vector<blocksci::Output>{outputs.begin(), outputs.end()};
+}
+
+std::vector<blocksci::Input> Cluster::getInputs() const {
+    std::unordered_set<blocksci::Input> outputs;
+    for (auto &dedupAddress : manager.getClusterScripts(clusterNum)) {
+        for (auto &address : manager.access.addressIndex->getPossibleEquivAddresses(dedupAddress, false, manager.access)) {
+            auto addrOuts = address.getInputs(false, false);
+            outputs.insert(addrOuts.begin(), addrOuts.end());
+        }
+    }
+    return std::vector<blocksci::Input>{outputs.begin(), outputs.end()};
+}
+
+std::vector<blocksci::Transaction> Cluster::getTransactions() const {
+    std::unordered_set<blocksci::Transaction> outputs;
+    for (auto &dedupAddress : manager.getClusterScripts(clusterNum)) {
+        for (auto &address : manager.access.addressIndex->getPossibleEquivAddresses(dedupAddress, false, manager.access)) {
+            auto addrOuts = address.getTransactions(false, false);
+            outputs.insert(addrOuts.begin(), addrOuts.end());
+        }
+    }
+    return std::vector<blocksci::Transaction>{outputs.begin(), outputs.end()};
+}
+
+std::vector<blocksci::Transaction> Cluster::getOutputTransactions() const {
+    std::unordered_set<blocksci::Transaction> outputs;
+    for (auto &dedupAddress : manager.getClusterScripts(clusterNum)) {
+        for (auto &address : manager.access.addressIndex->getPossibleEquivAddresses(dedupAddress, false, manager.access)) {
+            auto addrOuts = address.getOutputTransactions(false, false);
+            outputs.insert(addrOuts.begin(), addrOuts.end());
+        }
+    }
+    return std::vector<blocksci::Transaction>{outputs.begin(), outputs.end()};
+}
+
+std::vector<blocksci::Transaction> Cluster::getInputTransactions() const {
+    std::unordered_set<blocksci::Transaction> outputs;
+    for (auto &dedupAddress : manager.getClusterScripts(clusterNum)) {
+        for (auto &address : manager.access.addressIndex->getPossibleEquivAddresses(dedupAddress, false, manager.access)) {
+            auto addrOuts = address.getInputTransactions(false, false);
+            outputs.insert(addrOuts.begin(), addrOuts.end());
+        }
+    }
+    return std::vector<blocksci::Transaction>{outputs.begin(), outputs.end()};
+}
+
