@@ -27,6 +27,24 @@ void HashIndexCreator::processTx(const blocksci::Transaction &tx) {
     auto hash = tx.getHash();
     db.addTx(hash, tx.txNum);
     
+    bool insideP2SH;
+    std::function<bool(const blocksci::Address &)> inputVisitFunc = [&](const blocksci::Address &a) {
+        if (a.type == blocksci::AddressType::SCRIPTHASH) {
+            insideP2SH = true;
+            return true;
+        } else if (a.type == blocksci::AddressType::WITNESS_SCRIPTHASH && insideP2SH) {
+            auto script = blocksci::script::WitnessScriptHash(a.scriptNum, a.getAccess());
+            db.addAddress<blocksci::AddressType::WITNESS_SCRIPTHASH>(script.getAddressHash(), a.scriptNum);
+            return false;
+        } else {
+            return false;
+        }
+    };
+    for (auto input : tx.inputs()) {
+        insideP2SH = false;
+        visit(input.getAddress(), inputVisitFunc);
+    }
+    
     for (auto txout : tx.outputs()) {
         if (txout.getType() == blocksci::AddressType::WITNESS_SCRIPTHASH) {
             auto scriptNum = txout.getAddress().scriptNum;
