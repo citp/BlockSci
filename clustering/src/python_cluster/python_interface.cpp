@@ -67,9 +67,15 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
     .def("__hash__", [] (const Cluster &cluster) {
         return cluster.clusterNum;
     })
-    .def_property_readonly("addresses", &Cluster::getAddresses, "Get a iterable over all the equiv addresses in the cluster")
-    .def("tagged_addresses", &Cluster::taggedAddresses, "Given a dictionary of tags, return a list of TaggedAddress objects for any tagged equiv addresses in the cluster")
-    .def("count_of_type", &Cluster::countOfType, "Return the number of equiv addresses of the given type in the cluster")
+    .def_property_readonly("addresses", [](const Cluster &cluster) {
+        py::list ret;
+        for (const auto &address : cluster.getAddresses()) {
+            ret.append(address.getScript().wrapped);
+        }
+        return ret;
+    }, "Get a iterable over all the addresses in the cluster")
+    .def("tagged_addresses", &Cluster::taggedAddresses, "Given a dictionary of tags, return a list of TaggedAddress objects for any tagged addresses in the cluster")
+    .def("count_of_type", &Cluster::countOfType, "Return the number of addresses of the given type in the cluster")
     .def("balance", &Cluster::calculateBalance, py::arg("height") = 0, "Calculates the balance held by this cluster at the height (Defaults to the full chain)")
     .def("outs", &Cluster::getOutputs, "Returns a list of all outputs sent to this cluster")
     .def("ins", &Cluster::getInputs, "Returns a list of all inputs spent from this cluster")
@@ -86,15 +92,17 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
     ;
     
     py::class_<TaggedAddress>(m, "TaggedAddress")
-    .def_readonly("address", &TaggedAddress::address, "Return the equiv address object which has been tagged")
-    .def_readonly("tag", &TaggedAddress::tag, "Return the tag associated with the contained equiv address")
+    .def_property_readonly("address", [](const TaggedAddress &tagged) {
+        return tagged.address.getScript().wrapped;
+    }, "Return the address object which has been tagged")
+    .def_readonly("tag", &TaggedAddress::tag, "Return the tag associated with the contained address")
     ;
     
     py::class_<TaggedCluster>(m, "TaggedCluster")
     .def_property_readonly("cluster", [](const TaggedCluster &tc) {
         return tc.cluster;
     }, "Return the cluster object which has been tagged")
-    .def_readonly("tagged_addresses", &TaggedCluster::taggedAddresses, "Return the list of equiv addresses inside the cluster which have been tagged")
+    .def_readonly("tagged_addresses", &TaggedCluster::taggedAddresses, "Return the list of addresses inside the cluster which have been tagged")
     ;
     
     py::class_<cluster_range>(m, "ClusterRange")
