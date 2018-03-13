@@ -13,7 +13,7 @@
 
 #include "cluster_manager.hpp"
 
-boost::iterator_range<const blocksci::EquivAddress *> Cluster::getEquivAddresses() const {
+boost::iterator_range<const blocksci::DedupAddress *> Cluster::getDedupAddresses() const {
     return manager.getClusterScripts(clusterNum);
 }
 
@@ -21,9 +21,9 @@ uint32_t Cluster::getSize() const {
     return manager.getClusterSize(clusterNum);
 }
 
-std::vector<TaggedEquivAddress> Cluster::taggedEquivAddresses(const std::unordered_map<blocksci::EquivAddress, std::string> &tags) const {
-    std::vector<TaggedEquivAddress> tagged;
-    for (auto &address : getEquivAddresses()) {
+std::vector<TaggedDedupAddress> Cluster::taggedDedupAddresses(const std::unordered_map<blocksci::DedupAddress, std::string> &tags) const {
+    std::vector<TaggedDedupAddress> tagged;
+    for (auto &address : getDedupAddresses()) {
         auto it = tags.find(address);
         if (it != tags.end()) {
             tagged.emplace_back(it->first, it->second);
@@ -32,9 +32,9 @@ std::vector<TaggedEquivAddress> Cluster::taggedEquivAddresses(const std::unorder
     return tagged;
 }
 
-uint32_t Cluster::countOfType(blocksci::EquivAddressType::Enum type) const {
+uint32_t Cluster::countOfType(blocksci::DedupAddressType::Enum type) const {
     uint32_t count = 0;
-    for (auto &address : getEquivAddresses()) {
+    for (auto &address : getDedupAddresses()) {
         if (address.type == type) {
             ++count;
         }

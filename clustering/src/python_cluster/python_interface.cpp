@@ -49,9 +49,6 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
      .def("cluster_with_address", [](const ClusterManager &cm, const Address &address) {
         return cm.getCluster(address);
      }, "Return the cluster containing the given address")
-     .def("cluster_with_script", [](const ClusterManager &cm, const Script &script) {
-        return cm.getCluster(script);
-     }, "Return the cluster containing the given script")
      .def("cluster_count", &ClusterManager::clusterCount, "Get the total number of clusters")
      .def("clusters", &ClusterManager::getClusters
         , "Get a list of all clusters (The list is lazy so there is no cost to calling this method)")
@@ -67,21 +64,21 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
      .def("__hash__", [] (const Cluster &cluster) {
          return cluster.clusterNum;
      })
-     .def_property_readonly("addresses", &Cluster::getEquivAddresses, "Get a iterable over all the equiv addresses in the cluster")
-     .def("tagged_addresses", &Cluster::taggedEquivAddresses, "Given a dictionary of tags, return a list of TaggedEquivAddresses objects for any tagged equiv addresses in the cluster")
+     .def_property_readonly("addresses", &Cluster::getDedupAddresses, "Get a iterable over all the equiv addresses in the cluster")
+     .def("tagged_addresses", &Cluster::taggedDedupAddresses, "Given a dictionary of tags, return a list of TaggedDedupAddresses objects for any tagged equiv addresses in the cluster")
      .def("count_of_type", &Cluster::countOfType, "Return the number of equiv addresses of the given type in the cluster")
      ;
      
-     py::class_<TaggedEquivAddress>(m, "TaggedEquivAddress")
-     .def_readonly("address", &TaggedEquivAddress::address, "Return the equiv address object which has been tagged")
-     .def_readonly("tag", &TaggedEquivAddress::tag, "Return the tag associated with the contained equiv address")
+     py::class_<TaggedDedupAddress>(m, "TaggedDedupAddress")
+     .def_readonly("address", &TaggedDedupAddress::address, "Return the equiv address object which has been tagged")
+     .def_readonly("tag", &TaggedDedupAddress::tag, "Return the tag associated with the contained equiv address")
      ;
      
      py::class_<TaggedCluster>(m, "TaggedCluster")
      .def_property_readonly("cluster", [](const TaggedCluster &tc) {
          return tc.cluster;
      }, "Return the cluster object which has been tagged")
-     .def_readonly("tagged_addresses", &TaggedCluster::taggedEquivAddresses, "Return the list of equiv addresses inside the cluster which have been tagged")
+     .def_readonly("tagged_addresses", &TaggedCluster::taggedDedupAddresses, "Return the list of equiv addresses inside the cluster which have been tagged")
      ;
      
      py::class_<cluster_range>(m, "ClusterRange")
@@ -113,8 +110,8 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
      })
      ;
      
-     using script_range = boost::iterator_range<const blocksci::EquivAddress *>;
-     py::class_<script_range>(m, "EquivAddressRangeRange")
+     using script_range = boost::iterator_range<const blocksci::DedupAddress *>;
+     py::class_<script_range>(m, "DedupAddressRangeRange")
      .def("__len__", &script_range::size)
      /// Optional sequence protocol operations
      .def("__iter__", [](const script_range &range) { return py::make_iterator(range.begin(), range.end()); },
