@@ -49,6 +49,13 @@ void init_address(py::module &m) {
     .def_property_readonly("has_been_spent", py::overload_cast<>(&script::Pubkey::hasBeenSpent, py::const_), "Check if this script has ever been spent")
     .def_property_readonly("first_tx", py::overload_cast<>(&script::Pubkey::getFirstTransaction, py::const_), "Get the first transaction that was sent to this address")
     .def_property_readonly("revealed_tx",py::overload_cast<>(&script::Pubkey::getTransactionRevealed, py::const_), "The transaction where this wrapped script was first revealed")
+    .def("including_multisigs", [](script::Pubkey &script) {
+        py::list ret;
+        for (auto &address : script.getIncludingMultisigs()) {
+            ret.append(address.getScript().wrapped);
+        }
+        return ret;
+    })
     .def_property_readonly("pubkey", [](const script::Pubkey &script) -> ranges::optional<py::bytes> {
         auto pubkey = script.getPubkey();
         if (pubkey) {
@@ -67,6 +74,13 @@ void init_address(py::module &m) {
     .def_property_readonly("has_been_spent", py::overload_cast<>(&script::PubkeyHash::hasBeenSpent, py::const_), "Check if this script has ever been spent")
     .def_property_readonly("first_tx", py::overload_cast<>(&script::PubkeyHash::getFirstTransaction, py::const_), "Get the first transaction that was sent to this address")
     .def_property_readonly("revealed_tx",py::overload_cast<>(&script::PubkeyHash::getTransactionRevealed, py::const_), "The transaction where this wrapped script was first revealed")
+    .def("including_multisigs", [](script::PubkeyHash &script) {
+        py::list ret;
+        for (auto &address : script.getIncludingMultisigs()) {
+            ret.append(address.getScript().wrapped);
+        }
+        return ret;
+    })
     .def_property_readonly("pubkey", [](const script::PubkeyHash &script) -> ranges::optional<py::bytes> {
         auto pubkey = script.getPubkey();
         if (pubkey) {
@@ -85,6 +99,13 @@ void init_address(py::module &m) {
     .def_property_readonly("has_been_spent", py::overload_cast<>(&script::WitnessPubkeyHash::hasBeenSpent, py::const_), "Check if this script has ever been spent")
     .def_property_readonly("first_tx", py::overload_cast<>(&script::WitnessPubkeyHash::getFirstTransaction, py::const_), "Get the first transaction that was sent to this address")
     .def_property_readonly("revealed_tx",py::overload_cast<>(&script::WitnessPubkeyHash::getTransactionRevealed, py::const_), "The transaction where this wrapped script was first revealed")
+    .def("including_multisigs", [](script::WitnessPubkeyHash &script) {
+        py::list ret;
+        for (auto &address : script.getIncludingMultisigs()) {
+            ret.append(address.getScript().wrapped);
+        }
+        return ret;
+    })
     .def_property_readonly("pubkey", [](const script::WitnessPubkeyHash &script) -> ranges::optional<py::bytes> {
         auto pubkey = script.getPubkey();
         if (pubkey) {
@@ -95,6 +116,31 @@ void init_address(py::module &m) {
     }, pybind11::keep_alive<0, 1>(), "Public key for this address")
     .def_property_readonly("pubkeyhash", &script::WitnessPubkeyHash::getPubkeyHash, "160 bit address hash")
     .def_property_readonly("address_string", py::overload_cast<>(&script::WitnessPubkeyHash::addressString, py::const_), "Bitcoin address string")
+    ;
+    
+    py::class_<script::MultisigPubkey>(m, "MultisigPubkey", address, "Extra data about a pubkey inside a multisig address")
+    .def("__repr__", py::overload_cast<>(&script::MultisigPubkey::toString, py::const_))
+    .def("__str__", py::overload_cast<>(&script::MultisigPubkey::toPrettyString, py::const_))
+    .def_property_readonly("has_been_spent", py::overload_cast<>(&script::MultisigPubkey::hasBeenSpent, py::const_), "Check if this script has ever been spent")
+    .def_property_readonly("first_tx", py::overload_cast<>(&script::MultisigPubkey::getFirstTransaction, py::const_), "Get the first transaction that was sent to this address")
+    .def_property_readonly("revealed_tx",py::overload_cast<>(&script::MultisigPubkey::getTransactionRevealed, py::const_), "The transaction where this wrapped script was first revealed")
+    .def("including_multisigs", [](script::MultisigPubkey &script) {
+        py::list ret;
+        for (auto &address : script.getIncludingMultisigs()) {
+            ret.append(address.getScript().wrapped);
+        }
+        return ret;
+    })
+    .def_property_readonly("pubkey", [](const script::MultisigPubkey &script) -> ranges::optional<py::bytes> {
+        auto pubkey = script.getPubkey();
+        if (pubkey) {
+            return py::bytes(reinterpret_cast<const char *>(pubkey->begin()), pubkey->size());
+        } else {
+            return ranges::nullopt;
+        }
+    }, pybind11::keep_alive<0, 1>(), "Public key for this address")
+    .def_property_readonly("pubkeyhash", &script::MultisigPubkey::getPubkeyHash, "160 bit address hash")
+    .def_property_readonly("address_string", py::overload_cast<>(&script::MultisigPubkey::addressString, py::const_), "Bitcoin address string")
     ;
     
     py::class_<script::Multisig>(m, "MultisigScript", address, "Extra data about multi-signature address")
