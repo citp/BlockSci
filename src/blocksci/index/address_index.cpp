@@ -147,6 +147,7 @@ namespace blocksci {
         while (addressesToSearch.size() > 0) {
             auto setIt = addressesToSearch.begin();
             auto address = *setIt;
+            visit(address, visitFunc);
             auto column = getNestedColumn(address.type);
             rocksdb::Slice key{reinterpret_cast<const char *>(&address.scriptNum), sizeof(address.scriptNum)};
             rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
