@@ -29,7 +29,13 @@ void init_address(py::module &m) {
     .def(hash(py::self))
     .def_readonly("script_num", &Address::scriptNum, "The internal identifier of the address")
     .def_readonly("type", &Address::type, "The type of address")
-    .def("equiv_addresses", &Address::getEquivAddresses, py::arg("typeEquivalent") = true,  py::arg("nestedEquivalent") = true, "Returns a list of all addresses equivalent to this address")
+    .def("equiv_addresses", [](const Address &address, bool typeEquivalent, bool nestedEquivalent) {
+        py::list ret;
+        for (auto &address : address.getEquivAddresses(typeEquivalent, nestedEquivalent)) {
+            ret.append(address.getScript().wrapped);
+        }
+        return ret;
+    }, py::arg("typeEquivalent") = true,  py::arg("nestedEquivalent") = true, "Returns a list of all addresses equivalent to this address")
     .def("balance", &Address::calculateBalance, py::arg("height") = 0, py::arg("typeEquivalent") = true,  py::arg("nestedEquivalent") = true, "Calculates the balance held by this address at the height (Defaults to the full chain)")
     .def("outs", &Address::getOutputs, py::arg("typeEquivalent") = true,  py::arg("nestedEquivalent") = true, "Returns a list of all outputs sent to this address")
     .def("ins", &Address::getInputs, py::arg("typeEquivalent") = true,  py::arg("nestedEquivalent") = true, "Returns a list of all inputs spent from this address")
