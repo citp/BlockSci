@@ -35,19 +35,19 @@ void init_address(py::module &m) {
             ret.append(address.getScript().wrapped);
         }
         return ret;
-    }, py::arg("typeEquivalent") = true,  py::arg("nestedEquivalent") = true, "Returns a list of all addresses equivalent to this address")
-    .def("balance", &Address::calculateBalance, py::arg("height") = 0, py::arg("typeEquivalent") = true,  py::arg("nestedEquivalent") = true, "Calculates the balance held by this address at the height (Defaults to the full chain)")
-    .def("outs", &Address::getOutputs, py::arg("typeEquivalent") = true,  py::arg("nestedEquivalent") = true, "Returns a list of all outputs sent to this address")
-    .def("ins", &Address::getInputs, py::arg("typeEquivalent") = true,  py::arg("nestedEquivalent") = true, "Returns a list of all inputs spent from this address")
-    .def("txes", &Address::getTransactions, py::arg("typeEquivalent") = true,  py::arg("nestedEquivalent") = true, "Returns a list of all transactions involving this address")
-    .def("in_txes",&Address::getInputTransactions, py::arg("typeEquivalent") = true,  py::arg("nestedEquivalent") = true, "Returns a list of all transaction where this address was an input")
-    .def("out_txes", &Address::getOutputTransactions, py::arg("typeEquivalent") = true,  py::arg("nestedEquivalent") = true, "Returns a list of all transaction where this address was an output")
+    }, py::arg("equiv_type") = true,  py::arg("equiv_script") = true, "Returns a list of all addresses equivalent to this address")
+    .def("balance", &Address::calculateBalance, py::arg("height") = 0, py::arg("equiv_type") = true,  py::arg("equiv_script") = true, "Calculates the balance held by this address at the height (Defaults to the full chain)")
+    .def("outs", &Address::getOutputs, py::arg("equiv_type") = true,  py::arg("equiv_script") = true, "Returns a list of all outputs sent to this address")
+    .def("ins", &Address::getInputs, py::arg("equiv_type") = true,  py::arg("equiv_script") = true, "Returns a list of all inputs spent from this address")
+    .def("txes", &Address::getTransactions, py::arg("equiv_type") = true,  py::arg("equiv_script") = true, "Returns a list of all transactions involving this address")
+    .def("in_txes",&Address::getInputTransactions, py::arg("equiv_type") = true,  py::arg("equiv_script") = true, "Returns a list of all transaction where this address was an input")
+    .def("out_txes", &Address::getOutputTransactions, py::arg("equiv_type") = true,  py::arg("equiv_script") = true, "Returns a list of all transaction where this address was an output")
     .def("out_txes_count", [](const Address &address, bool typeEquivalent, bool nestedEquivalent) {
         return address.getOutputTransactions(typeEquivalent, nestedEquivalent).size();
-    }, py::arg("typeEquivalent") = true,  py::arg("nestedEquivalent") = true, "Return the number of transactions where this address was an output")
+    }, py::arg("equiv_type") = true,  py::arg("equiv_script") = true, "Return the number of transactions where this address was an output")
     .def("in_txes_count", [](const Address &address, bool typeEquivalent, bool nestedEquivalent) {
         return address.getInputTransactions(typeEquivalent, nestedEquivalent).size();
-    }, py::arg("typeEquivalent") = true,  py::arg("nestedEquivalent") = true, "Return the number of transactions where this address was an input")
+    }, py::arg("equiv_type") = true,  py::arg("equiv_script") = true, "Return the number of transactions where this address was an input")
     ;
     
     py::class_<script::Pubkey>(m, "PubkeyScript", address, "Extra data about pay to pubkey address")
