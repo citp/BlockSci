@@ -31,6 +31,8 @@ namespace blocksci {
         
         uint160 getPubkeyHash() const;
         ranges::optional<CPubKey> getPubkey() const;
+        
+        std::vector<Address> getIncludingMultisigs() const;
     };
     
     template <>

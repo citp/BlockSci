@@ -91,6 +91,24 @@ namespace blocksci {
         return pointers;
     }
     
+    std::vector<Address> AddressIndex::getIncludingMultisigs(const Address &searchAddress) const {
+        if (dedupType(searchAddress.type) != DedupAddressType::PUBKEY) {
+            return {};
+        }
+        auto column = getNestedColumn(AddressType::MULTISIG_PUBKEY);
+        rocksdb::Slice key{reinterpret_cast<const char *>(&searchAddress.scriptNum), sizeof(searchAddress.scriptNum)};
+        std::vector<Address> addresses;
+        rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
+        for (it->Seek(key); it->Valid() && it->key().starts_with(key); it->Next()) {
+            auto foundKey = it->key();
+            foundKey.remove_prefix(sizeof(uint32_t));
+            DedupAddress rawParent;
+            memcpy(&rawParent, foundKey.data(), sizeof(rawParent));
+            addresses.push_back(Address{rawParent.scriptNum, AddressType::MULTISIG, searchAddress.getAccess()});
+        }
+        return addresses;
+    }
+    
     std::vector<Address> AddressIndex::getPossibleNestedEquivalent(const Address &searchAddress) const {
         std::unordered_set<Address> addressesToSearch{searchAddress};
         std::unordered_set<Address> searchedAddresses;

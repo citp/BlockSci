@@ -85,7 +85,8 @@ public:
     size_t serialize(const ScriptOutput<type> &output, uint32_t txNum) {
         if (output.isNew) {
             auto &file = std::get<ScriptFile<dedupType(type)>>(scriptFiles);
-            file.write(output.data.getData(txNum));
+            auto data = output.data.getData(txNum);
+            file.write(data);
             output.data.visitWrapped([&](auto &output) { this->serialize(output, txNum); });
             return file.size();
         } else {

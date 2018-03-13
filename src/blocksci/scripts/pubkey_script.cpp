@@ -14,6 +14,7 @@
 #include "bitcoin_base58.hpp"
 #include "bitcoin_segwit_addr.hpp"
 #include <blocksci/util/data_access.hpp>
+#include <blocksci/index/address_index.hpp>
 
 #include <range/v3/utility/optional.hpp>
 
@@ -32,6 +33,10 @@ namespace blocksci {
     
     uint160 PubkeyAddressBase::getPubkeyHash() const {
         return rawData->address;
+    }
+    
+    std::vector<Address> PubkeyAddressBase::getIncludingMultisigs() const {
+        return getAccess().addressIndex->getIncludingMultisigs(*this);
     }
     
     Pubkey::ScriptAddress(uint32_t addressNum, const DataAccess &access) : PubkeyAddressBase(addressNum, addressType, access.scripts->getScriptData<addressType>(addressNum), access) {}

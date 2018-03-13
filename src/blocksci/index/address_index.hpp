@@ -35,6 +35,8 @@ namespace blocksci {
         
         std::vector<Address> getPossibleNestedEquivalent(const Address &address) const;
         
+        std::vector<Address> getIncludingMultisigs(const Address &searchAddress) const;
+        
         void addAddressNested(const blocksci::Address &childAddress, const blocksci::DedupAddress &parentAddress);
         void addAddressOutput(const blocksci::Address &address, const blocksci::OutputPointer &pointer);
         
