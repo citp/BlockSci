@@ -9,6 +9,7 @@
 #include "hash_index.hpp"
 #include "util/bitcoin_uint256.hpp"
 #include "scripts/bitcoin_base58.hpp"
+#include "scripts/script_info.hpp"
 #include "address/address.hpp"
 #include "util/util.hpp"
 
@@ -16,45 +17,83 @@
 
 namespace blocksci {
     
-    lmdb::env createHashIndexEnviroment(const std::string &path, bool readonly) {
-        auto env = lmdb::env::create();
-        env.set_mapsize(100UL * 1024UL * 1024UL * 1024UL); /* 1 GiB */
-        env.set_max_dbs(5);
-        int flags = MDB_NOSUBDIR;
-        if (readonly) {
-            flags |= MDB_RDONLY;
-        }
-        env.open(path.c_str(), flags, 0664);
-        return env;
-    }
-    
-    HashIndex::HashIndex(const std::string &path) : env(createHashIndexEnviroment(path, true)) {}
-    
-    template <typename T>
-    uint32_t getMatch(const lmdb::env &env, const char *name, const T &t) {
-        auto rtxn = lmdb::txn::begin(env, nullptr, MDB_RDONLY);
-        auto dbi = lmdb::dbi::open(rtxn, name);
-        auto cursor = lmdb::cursor::open(rtxn, dbi);
-        lmdb::val key{&t, sizeof(t)};
-        lmdb::val data;
-        bool found = dbi.get(rtxn, key, data);
-        if (found) {
-            return *data.data<uint32_t>();
-        } else {
-            return 0;
-        }
-    }
-    
-    uint32_t HashIndex::getTxIndex(const uint256 &txHash) const {
-        return getMatch(env, "tx", txHash);
-    }
-    
-    uint32_t HashIndex::getPubkeyHashIndex(const uint160 &pubkeyhash) const {
-        return getMatch(env, "pubkey", pubkeyhash);
+    HashIndex::HashIndex(const std::string &path, bool readonly) {
+        rocksdb::Options options;
+        // Optimize RocksDB. This is the easiest way to get RocksDB to perform well
+        options.IncreaseParallelism();
+        options.OptimizeLevelStyleCompaction();
+        // create the DB if it's not already present
+        options.create_if_missing = true;
+        options.create_missing_column_families = true;
         
+        
+        std::vector<rocksdb::ColumnFamilyDescriptor> columnDescriptors;
+        blocksci::for_each(blocksci::AddressInfoList(), [&](auto tag) {
+            columnDescriptors.emplace_back(addressName(tag), rocksdb::ColumnFamilyOptions{});
+        });
+        columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions{});
+        columnDescriptors.emplace_back("T", rocksdb::ColumnFamilyOptions{});
+        
+        if (readonly) {
+            rocksdb::Status s = rocksdb::DB::OpenForReadOnly(options, path.c_str(), columnDescriptors, &columnHandles, &db);
+            assert(s.ok());
+        } else {
+            rocksdb::Status s = rocksdb::DB::Open(options, path.c_str(), columnDescriptors, &columnHandles, &db);
+        }
     }
     
-    uint32_t HashIndex::getScriptHashIndex(const uint160 &scripthash) const {
-        return getMatch(env, "scripthash", scripthash);
+    HashIndex::~HashIndex() {
+        for (auto handle : columnHandles) {
+            delete handle;
+        }
+        delete db;
+    }
+    
+    rocksdb::ColumnFamilyHandle *HashIndex::getColumn(AddressType::Enum type) {
+        auto index = static_cast<size_t>(type);
+        if (index > AddressType::size) {
+            assert("Tried to get column for unindexed script type");
+            return nullptr;
+        }
+        return columnHandles[index];
+    }
+    
+    rocksdb::ColumnFamilyHandle *HashIndex::getColumn(EquivAddressType::Enum type) {
+        switch (type) {
+            case EquivAddressType::PUBKEY:
+                return getColumn(AddressType::PUBKEYHASH);
+            case EquivAddressType::SCRIPTHASH:
+                return getColumn(AddressType::SCRIPTHASH);
+            case EquivAddressType::MULTISIG:
+                return getColumn(AddressType::MULTISIG);
+            case EquivAddressType::NULL_DATA:
+                return getColumn(AddressType::NULL_DATA);
+            case EquivAddressType::NONSTANDARD:
+                return getColumn(AddressType::NONSTANDARD);
+        }
+        assert(false);
+        return nullptr;
+    }
+    
+    void HashIndex::addTx(const uint256 &hash, uint32_t txNum) {
+        rocksdb::Slice keySlice(reinterpret_cast<const char *>(&hash), sizeof(hash));
+        rocksdb::Slice valueSlice(reinterpret_cast<const char *>(&txNum), sizeof(txNum));
+        db->Put(rocksdb::WriteOptions(), columnHandles.back(), keySlice, valueSlice);
+    }
+    
+    uint32_t HashIndex::getTxIndex(const uint256 &txHash) {
+        return getMatch(columnHandles.back(), txHash);
+    }
+    
+    uint32_t HashIndex::getPubkeyHashIndex(const uint160 &pubkeyhash) {
+        return getMatch(getColumn(AddressType::PUBKEYHASH), pubkeyhash);
+    }
+    
+    uint32_t HashIndex::getScriptHashIndex(const uint160 &scripthash) {
+        return getMatch(getColumn(AddressType::SCRIPTHASH), scripthash);
+    }
+    
+    uint32_t HashIndex::getScriptHashIndex(const uint256 &scripthash) {
+        return getMatch(getColumn(AddressType::WITNESS_SCRIPTHASH), scripthash);
     }
 }

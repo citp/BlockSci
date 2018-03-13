@@ -1,7 +1,7 @@
 BlockSci
 ~~~~~~~~~~~~~~~~~~
 
-The Bitcoin blockchain — currently 160 GB and growing — contains a massive amount of data that can give us insights into the Bitcoin ecosystem, including how users, businesses, and miners operate. BlockSci enables fast and expressive analysis of Bitcoin’s and many other blockchains. The accompanying working paper explains its design and applications: https://arxiv.org/pdf/1709.02489.pdf
+The Bitcoin blockchain — currently 170 GB and growing — contains a massive amount of data that can give us insights into the Bitcoin ecosystem, including how users, businesses, and miners operate. BlockSci enables fast and expressive analysis of Bitcoin’s and many other blockchains. The accompanying working paper explains its design and applications: https://arxiv.org/pdf/1709.02489.pdf
 
 Current tools for blockchain analysis depend on general-purpose databases that provide "ACID" guarantees. But that’s unnecessary for blockchain analysis where the data structures are append-only. We take advantage of this observation in the design of our custom in-memory blockchain database as well as an analysis library. BlockSci’s core infrastructure is written in C++ and optimized for speed. (For example, traversing every transaction input and output on the Bitcoin blockchain takes only **1 second** on our r4.2xlarge EC2 machine.) To make analysis more convenient, we provide Python bindings and a Jupyter notebook interface. 
 
@@ -17,14 +17,13 @@ Additionally, a demonstration Notebook_ is available in the Notebooks folder.
 
 For installation instructions, see below. More detailed documentation is coming soon. Meanwhile, feel free to contact us at blocksci@lists.cs.princeton.edu.
 
-Latest release (BlockSci v0.3)
+Latest release (BlockSci v0.4)
 ================================
 
-Version 0.3 includes many bug fixes and a massive 5x performance improvement, 
-which you can read about in the `release notes`_. We are also releasing new AMI image_ running version 0.3 (explained under "Quick setup" below) as well as updated documentation.
+Version 0.4 introduces full bech32 address support, adds segwit size support, and fixes a bug which had been preventing use of continuous incremental blockchain updates. The "Local setup" section contains best practices for setting up automatic blockchain updates. You can read more details about the release in the `release notes`_. We are also releasing new AMI image_ running version 0.4 (explained under "Quick setup" below) as well as updated documentation.
 
-.. _release notes: https://citp.github.io/BlockSci/changelog.html#version-0-3
-.. _image: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-7cf38706
+.. _release notes: https://citp.github.io/BlockSci/changelog.html#version-0-4
+.. _image: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-acd923d1
 
 Quick setup using Amazon EC2
 ==============================
@@ -40,6 +39,8 @@ This sets up an SSH tunnel between port 8888 on your remote EC2 instance and por
 AWS instances suffer from a `known performance issue`_ when starting up from an existing AMI. When the machine starts up it doesn't actually load all of the data on the disk so that startup can be instant. Instead it only loads the data when it is accessed for the first time. Thus BlockSci will temporarly operate slowly when the image has first been launched. Within about 20 minutes after launch, the most crucial data files will be loaded to disk from the network, and most quries should run at full speed, including all examples in the demo Notebook. After about 3.5 hours, all data will be loaded to disk and all queries will reach full speed.
 
 There is no need for user intervention to resolve this issue since the machine will do so automatically on launch.
+
+The AMI contains a fully updated version of the Bitcoin blockchain as of the creation date of the AMI (March 8, 2017). Additionally it will automically start a Bitcoin full node and update the blockchain once every hour to the latest version of the chain.
 
 .. _ami-7cf38706: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-7cf38706
 .. _known performance issue: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-initialize.html
@@ -59,11 +60,24 @@ Disk mode is optimized for parsing Bitcoin's data files. It reads blockchain dat
 
 	blocksci_parser --output-directory bitcoin-data update disk --coin-directory .bitcoin
 
-RPC mode uses the RPC interface of a cryptocurrency to extract data regarding the blockchain. It works with a variety of cryptocurrencies which have the same general model as Bitcoin, but with minor changes to the serialization format which break the parser in disk mode. One example of this is Namecoin.
+RPC mode uses the RPC interface of a cryptocurrency to extract data regarding the blockchain. It works with a variety of cryptocurrencies which have the same general model as Bitcoin, but with minor changes to the serialization format which break the parser in disk mode. Examples of this are Zcash and Namecoin. To use the parser in RPC mode, you're full node must be running with txindex enabled.
 
 ..  code-block:: bash
 
 	blocksci_parser --output-directory bitcoin-data update rpc --username [user] --password [pass] --address [ip] --port [port]
+
+BlockSci can be kept up to date with the blockchain by setting up a cronjob to periodically run the parser command. Updates to the parser should not noticably impact usage of the analysis library. It is recommended that the Blockchain be kept approximately 6 blocks back from the head of the chain in order to avoid imperfect reorg handling in BlockSci.
+
+For example you can set BlockSci to update hourly and stay 6 blocks behind the head of the chain via adding
+
+..  code-block:: bash
+
+	@hourly /usr/local/bin/blocksci_parser --output-directory /home/ubuntu/bitcoin-data update --max-block -6 disk --coin-directory /home/ubuntu/.bitcoin
+
+to your system crontab_.
+
+
+.. _crontab: https://help.ubuntu.com/community/CronHowto
 
 Using the analysis library
 ============================
@@ -111,6 +125,10 @@ which will open a window in your browser to the Jupyter server.
 .. _Jupyter Notebook: https://jupyter.readthedocs.io/en/latest/install.html
 
 
+Supported Compilers
+=======================
+BlockSci require GCC 6.3 or above or Clang 5 or above.
+
 BlockSci compilation instructions
 ======================================
 
@@ -125,7 +143,8 @@ Note that BlockSci only actively supports python 3.
 	sudo apt install build-essential cmake libssl-dev libboost-all-dev libsqlite3-dev autogen \
 	autoconf libcurl4-openssl-dev libjsoncpp-dev libjsonrpccpp-dev libjsonrpccpp-tools \
 	python3-dev python3-pip liblmdb-dev libsparsehash-dev libargtable2-dev libmicrohttpd-dev \
-	libhiredis-dev libjsoncpp-dev catch gcc-7 g++-7
+	libhiredis-dev libjsoncpp-dev catch gcc-7 g++-7 libgflags-dev libsnappy-dev zlib1g-dev libbz2-dev \
+	liblz4-dev libzstd-dev
 	sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7
 
 	git clone https://github.com/bitcoin-core/secp256k1
@@ -145,13 +164,11 @@ Note that BlockSci only actively supports python 3.
 	exec bash
 	
 	cd ~
-	git clone https://github.com/rescrv/HyperLevelDB
-	cd HyperLevelDB
-	autoreconf -i
-	./configure
-	make
+	git clone https://github.com/facebook/rocksdb --branch v5.10.4
+	cd rocksdb
+	make static_lib
+	make shared_lib
 	sudo make install
-	sudo ldconfig
 	
 	cd ~
 	git clone https://github.com/citp/BlockSci.git

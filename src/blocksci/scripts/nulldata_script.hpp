@@ -16,13 +16,13 @@
 namespace blocksci {
  
     template <>
-    class ScriptAddress<ScriptType::Enum::NULL_DATA> : public BaseScript {
+    class ScriptAddress<AddressType::NULL_DATA> : public Script {
         
     public:
-        constexpr static ScriptType::Enum scriptType = ScriptType::Enum::NULL_DATA;
+        constexpr static AddressType::Enum addressType = AddressType::NULL_DATA;
         
-        ScriptAddress<scriptType>(uint32_t scriptNum, const RawData *rawData, const ScriptAccess &access);
-        ScriptAddress<scriptType>(const ScriptAccess &access, uint32_t addressNum);
+        ScriptAddress(uint32_t scriptNum, const RawData *rawData, const ScriptAccess &access);
+        ScriptAddress(const ScriptAccess &access, uint32_t addressNum);
         std::string data;
         
         std::string toString() const;

@@ -9,6 +9,7 @@
 #define blocksci_fwd_h
 
 #include <blocksci/chain/chain_fwd.hpp>
+#include <blocksci/address/address_fwd.hpp>
 #include <blocksci/scripts/scripts_fwd.hpp>
 
 namespace blocksci {

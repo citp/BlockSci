@@ -61,10 +61,6 @@ class BloomFilter {
 public:
     // Load or create
     BloomFilter(const boost::filesystem::path &path, uint64_t maxItems, double fpRate);
-    BloomFilter(const BloomFilter &) = delete;
-    BloomFilter &operator=(const BloomFilter &) = delete;
-    BloomFilter(BloomFilter &&) = delete;
-    BloomFilter &operator=(BloomFilter &&) = delete;
     ~BloomFilter();
     
     void reset(uint64_t maxItems, double fpRate);

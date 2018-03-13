@@ -4,6 +4,47 @@
 Release notes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Version 0.4
+========================
+
+Feature Enhancements
+---------------------
+
+- Safe incremental updates
+
+  Following an number of enhancements BlockSci is now capable of safely performing incremental updates. The AWS distribution of BlockSci now includes a Bitcoin full node and will automatically update the BlockChain once per hour. For local installations of BlockSci, see the readme for setup instructions.
+
+- Proper handling of segwit tx and block size distinctions. This included updating the parser to store the size of each transaction excluding segwit data and as as supporting the 3 new notions of size that segwit introduced.
+
+- Proper handling of bech32 addresses.
+
+  - Address.from_string() now supports lookup of bech32 addresses.
+
+  - Script objects (produced from calls to Address.script) now display the correct address depending on the address type.
+
+- Improved initial chain parsing from 24 hours down to 10 hours and reduced in parser data size due to unification of the hash index database and parser address hash index database.
+
+
+Breaking Changes
+---------------------
+
+- Updated to new data version for the parser output requiring a rerun of the blocksci_parser.
+
+- Introduced new distinction between Address.script and Address.equiv. Address.script returns an object specific to that address type the contains specific information about the script used for the address. Address.equiv provides an EquivAddress object which supports queries such as EquivAddress.outs() and EquivAddress.balance() to generate information about usages of the particular pubkey or script. Both of these functionalities were previously included inside Address.script. Explanation and more details regarding EquivAddress can be found in it's page in the documentation.
+
+- Renamed various methods from using Script in their name to Equiv address in order to reflect updated terminology.
+
+- Renamed ScriptType to EquivAddressType to reflect updated naming as well.
+
+Bug Fixes
+-------------
+- Fixed segwit size handling as stated above. (`Issue #43`_)
+- Fixed P2SH API issued. (`Issue #53`_)
+
+ .. _Issue #43: https://github.com/citp/BlockSci/issues/43
+ .. _Issue #53: https://github.com/citp/BlockSci/issues/53
+
+
 Version 0.3
 ========================
 

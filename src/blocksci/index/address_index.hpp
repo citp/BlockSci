@@ -9,12 +9,10 @@
 #ifndef address_index_hpp
 #define address_index_hpp
 
-#include <blocksci/address/address_types.hpp>
-#include <blocksci/scripts/script_type.hpp>
+#include <blocksci/address/address_fwd.hpp>
 #include <blocksci/chain/chain_fwd.hpp>
-#include <blocksci/scripts/scripts_fwd.hpp>
 
-#include <lmdbxx/lmdb++.h>
+#include <rocksdb/db.h>
 
 #include <unordered_map>
 #include <string>
@@ -22,18 +20,18 @@
 
 namespace blocksci {
     struct Address;
-    
-    lmdb::env createAddressIndexEnviroment(const std::string &path, bool readonly);
+    struct EquivAddress;
     
     class AddressIndex {
-        lmdb::env env;
-        std::unordered_map<blocksci::ScriptType::Enum,  lmdb::dbi> scriptDbs;
+        rocksdb::DB *db;
+        std::vector<rocksdb::ColumnFamilyHandle *> columnHandles;
     public:
         
         AddressIndex(const std::string &path);
+        ~AddressIndex();
         
         std::vector<OutputPointer> getOutputPointers(const Address &address) const;
-        std::vector<OutputPointer> getOutputPointers(const Script &script) const;
+        std::vector<OutputPointer> getOutputPointers(const EquivAddress &script) const;
         
         std::vector<Output> getOutputs(const Address &address, const ChainAccess &access) const;
         std::vector<Input> getInputs(const Address &address, const ChainAccess &access) const;
@@ -41,11 +39,13 @@ namespace blocksci {
         std::vector<Transaction> getOutputTransactions(const Address &address, const ChainAccess &access) const;
         std::vector<Transaction> getInputTransactions(const Address &address, const ChainAccess &access) const;
         
-        std::vector<Output> getOutputs(const Script &script, const ChainAccess &access) const;
-        std::vector<Input> getInputs(const Script &script, const ChainAccess &access) const;
-        std::vector<Transaction> getTransactions(const Script &script, const ChainAccess &access) const;
-        std::vector<Transaction> getOutputTransactions(const Script &script, const ChainAccess &access) const;
-        std::vector<Transaction> getInputTransactions(const Script &script, const ChainAccess &access) const;
+        std::vector<Output> getOutputs(const EquivAddress &script, const ChainAccess &access) const;
+        std::vector<Input> getInputs(const EquivAddress &script, const ChainAccess &access) const;
+        std::vector<Transaction> getTransactions(const EquivAddress &script, const ChainAccess &access) const;
+        std::vector<Transaction> getOutputTransactions(const EquivAddress &script, const ChainAccess &access) const;
+        std::vector<Transaction> getInputTransactions(const EquivAddress &script, const ChainAccess &access) const;
+        
+        void checkDB(const ChainAccess &access) const;
     };
 }
 

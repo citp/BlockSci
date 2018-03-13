@@ -14,13 +14,13 @@
 
 namespace blocksci {
     struct RawTransaction {
-        uint32_t sizeBytes;
+        uint32_t realSize;
+        uint32_t baseSize;
         uint32_t locktime;
         uint16_t inputCount;
         uint16_t outputCount;
-        InPlaceArray<Inout> inOuts;
         
-        RawTransaction(uint32_t sizeBytes, uint32_t locktime, uint16_t inputCount, uint16_t outputCount);
+        RawTransaction(uint32_t realSize, uint32_t baseSize, uint32_t locktime, uint16_t inputCount, uint16_t outputCount);
         
         RawTransaction(const RawTransaction &) = delete;
         RawTransaction(RawTransaction &&) = delete;
@@ -28,23 +28,32 @@ namespace blocksci {
         RawTransaction &operator=(RawTransaction &&) = delete;
         
         Inout &getOutput(uint16_t outputNum) {
-            return reinterpret_cast<Inout &>(inOuts[inputCount + outputNum]);
+            return getInouts()[inputCount + outputNum];
         }
         
         Inout &getInput(uint16_t inputNum) {
-            return reinterpret_cast<Inout &>(inOuts[inputNum]);
+            return getInouts()[inputNum];
         }
         
         const Inout &getOutput(uint16_t outputNum) const {
-            return reinterpret_cast<const Inout &>(inOuts[inputCount + outputNum]);
+            return getInouts()[inputCount + outputNum];
         }
         
         const Inout &getInput(uint16_t inputNum) const {
-            return reinterpret_cast<const Inout &>(inOuts[inputNum]);
+            return getInouts()[inputNum];
         }
         
-        size_t realSize() const {
-            return sizeof(RawTransaction) + inOuts.extraSize();
+        size_t serializedSize() const {
+            return sizeof(RawTransaction) + sizeof(Inout) * (inputCount + outputCount);
+        }
+        
+    private:
+        const Inout *getInouts() const {
+            return reinterpret_cast<const Inout *>(this + 1);
+        }
+        
+        Inout *getInouts() {
+            return reinterpret_cast<Inout *>(this + 1);
         }
     };
 }

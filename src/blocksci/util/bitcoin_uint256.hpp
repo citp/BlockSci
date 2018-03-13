@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_UINT256_H
-#define BITCOIN_UINT256_H
+#ifndef BLOCKSCI_BITCOIN_UINT256_H
+#define BLOCKSCI_BITCOIN_UINT256_H
 
 #include <boost/serialization/access.hpp>
 
@@ -209,4 +209,4 @@ namespace std {
     };
 }
 
-#endif // BITCOIN_UINT256_H
+#endif // BLOCKSCI_BITCOIN_UINT256_H

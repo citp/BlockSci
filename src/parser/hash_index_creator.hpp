@@ -13,8 +13,7 @@
 #include "parser_fwd.hpp"
 
 #include <blocksci/chain/chain_fwd.hpp>
-
-#include <lmdbxx/lmdb++.h>
+#include <blocksci/index/hash_index.hpp>
 
 #include <tuple>
 
@@ -23,20 +22,16 @@ namespace blocksci {
 }
 
 class HashIndexCreator : public ParserIndex {
-    lmdb::env env;
-    lmdb::txn wtxn;
-    lmdb::dbi pubkey_dbi;
-    lmdb::dbi scripthash_dbi;
-    lmdb::dbi tx_dbi;
+    blocksci::HashIndex db;
     
     void processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &scripts) override;
-    void processScript(const blocksci::Script &script, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override;
+//    void processScript(const blocksci::Script &script, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override {}
 
 public:
     HashIndexCreator(const ParserConfigurationBase &config, const std::string &path);
     void processTx(const blocksci::uint256 &hash, uint32_t index);
     void rollback(const blocksci::State &state) override;
-    void tearDown() override;
+    void tearDown() override {}
 };
 
 #endif /* hash_index_creator_hpp */

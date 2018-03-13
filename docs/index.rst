@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-BlockSci Version 0.3 Documentation
+BlockSci Version 0.4 Documentation
 ====================================
 
 .. toctree::
@@ -25,8 +25,11 @@ BlockSci Version 0.3 Documentation
 Old Documentation
 =======================
 
+BlockSci `Version 0.3 Documentation`_
+
 BlockSci `Version 0.2 Documentation`_
 
+.. _Version 0.3 Documentation: 0.3
 .. _Version 0.2 Documentation: 0.2
 
 

@@ -28,7 +28,7 @@ protected:
     blocksci::State latestState;
     
     virtual void processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &scripts) = 0;
-    virtual void processScript(const blocksci::Script &script, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) = 0;
+//    virtual void processScript(const blocksci::Script &script, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) = 0;
     
 public:
     ParserIndex(const ParserConfigurationBase &config, const std::string &resultName);

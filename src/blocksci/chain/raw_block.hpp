@@ -20,9 +20,11 @@ namespace blocksci {
         uint32_t timestamp;
         uint32_t bits;
         uint32_t nonce;
+        uint32_t realSize;
+        uint32_t baseSize;
         uint64_t coinbaseOffset;
         
-        RawBlock(uint32_t firstTxIndex, uint32_t numTxes, uint32_t height, uint256 hash, int32_t version, uint32_t timestamp, uint32_t bits, uint32_t nonce, uint64_t coinbaseOffset);
+        RawBlock(uint32_t firstTxIndex, uint32_t numTxes, uint32_t height, uint256 hash, int32_t version, uint32_t timestamp, uint32_t bits, uint32_t nonce, uint32_t realSize, uint32_t baseSize, uint64_t coinbaseOffset);
         
         bool operator==(const RawBlock& other) const;
     };

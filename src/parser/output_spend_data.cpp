@@ -21,7 +21,7 @@ struct SpendDataGenerator {
 template<blocksci::AddressType::Enum type>
 struct ScriptAddressGenerator {
     static SpendDataType f(const blocksci::AnyScript &script) {
-        return SpendData<type>(mpark::get<blocksci::ScriptAddress<blocksci::scriptType(type)>>(script.wrapped));
+        return SpendData<type>(mpark::get<blocksci::ScriptAddress<type>>(script.wrapped));
     }
 };
 
@@ -49,7 +49,7 @@ SpendData<blocksci::AddressType::Enum::MULTISIG>::SpendData(const ScriptOutput<b
     addressCount = i;
 }
 
-SpendData<blocksci::AddressType::Enum::MULTISIG>::SpendData(const blocksci::ScriptAddress<blocksci::ScriptType::Enum::MULTISIG> &output) {
+SpendData<blocksci::AddressType::Enum::MULTISIG>::SpendData(const blocksci::ScriptAddress<blocksci::AddressType::Enum::MULTISIG> &output) {
     uint32_t i = 0;
     for (auto pubkey : output.pubkeyScripts()) {
         addresses[i] = *pubkey.getPubkey();

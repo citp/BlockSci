@@ -68,9 +68,11 @@ void RawTransaction::load(SafeMemReader &reader, uint32_t txNum_, blocksci::Bloc
     isSegwit = witnessActivated;
     blockHeight = blockHeight_;
     auto startOffset = reader.offset();
+    auto curOffset = reader.offset();
     version = reader.readNext<decltype(version)>();
     txHashStart = reader.unsafePos();
-    
+    baseSize = static_cast<uint32_t>(reader.offset() - curOffset);
+    curOffset = reader.offset();
     auto inputCount = reader.readVariableLengthInteger();
     bool containsSegwit = false;
     if (inputCount == 0) {
@@ -78,9 +80,9 @@ void RawTransaction::load(SafeMemReader &reader, uint32_t txNum_, blocksci::Bloc
         assert(flag == 1);
         containsSegwit = true;
         txHashStart = reader.unsafePos();
+        curOffset = reader.offset();
         inputCount = reader.readVariableLengthInteger();
     }
-    
     inputs.clear();
     inputs.reserve(inputCount);
     for (decltype(inputCount) i = 0; i < inputCount; i++) {
@@ -94,9 +96,8 @@ void RawTransaction::load(SafeMemReader &reader, uint32_t txNum_, blocksci::Bloc
     for (decltype(outputCount) i = 0; i < outputCount; i++) {
         outputs.emplace_back(reader);
     }
-    
+    baseSize += static_cast<uint32_t>(reader.offset() - curOffset);
     txHashLength = static_cast<uint32_t>(reader.unsafePos() - txHashStart);
-    
     if (containsSegwit) {
         for (decltype(inputCount) i = 0; i < inputCount; i++) {
             auto &input = inputs[i];
@@ -106,21 +107,26 @@ void RawTransaction::load(SafeMemReader &reader, uint32_t txNum_, blocksci::Bloc
             }
         }
     }
+    curOffset = reader.offset();
     locktime = reader.readNext<Locktime>();
-    sizeBytes = static_cast<uint32_t>(reader.offset() - startOffset);
+    baseSize += static_cast<uint32_t>(reader.offset() - curOffset);
+    realSize = static_cast<uint32_t>(reader.offset() - startOffset);
     hash.SetNull();
 }
 
 TransactionHeader::TransactionHeader(SafeMemReader &reader) {
     auto startOffset = reader.offset();
+    auto curOffset = reader.offset();
     version = reader.readNext<decltype(version)>();
-    
-    inputCount = reader.readVariableLengthInteger();
+    baseSize = static_cast<uint32_t>(reader.offset() - curOffset);
+    curOffset = reader.offset();
+    auto inputCount = reader.readVariableLengthInteger();
     bool containsSegwit = false;
     if (inputCount == 0) {
         auto flag = reader.readNext<uint8_t>();
         assert(flag == 1);
         containsSegwit = true;
+        curOffset = reader.offset();
         inputCount = reader.readVariableLengthInteger();
     }
     
@@ -130,13 +136,14 @@ TransactionHeader::TransactionHeader(SafeMemReader &reader) {
         reader.advance(scriptLength + sizeof(SequenceNum));
     }
     
-    outputCount = reader.readVariableLengthInteger();
+    auto outputCount = reader.readVariableLengthInteger();
     for (decltype(outputCount) i = 0; i < outputCount; i++) {
         reader.advance(sizeof(Value));
         auto scriptLength = reader.readVariableLengthInteger();
         reader.advance(scriptLength);
     }
     
+    baseSize += static_cast<uint32_t>(reader.offset() - curOffset);
     if (containsSegwit) {
         for (decltype(inputCount) i = 0; i < inputCount; i++) {
             auto stackItemCount = reader.readVariableLengthInteger();
@@ -146,8 +153,10 @@ TransactionHeader::TransactionHeader(SafeMemReader &reader) {
             }
         }
     }
+    curOffset = reader.offset();
     locktime = reader.readNext<Locktime>();
-    sizeBytes = static_cast<uint32_t>(reader.offset() - startOffset);
+    baseSize += static_cast<uint32_t>(reader.offset() - curOffset);
+    realSize = static_cast<uint32_t>(reader.offset() - startOffset);
 }
 
 void RawTransaction::calculateHash() {
@@ -183,7 +192,7 @@ void RawTransaction::load(const getrawtransaction_t &txinfo, uint32_t txNum_, bl
     blockHeight = blockHeight_;
     version = txinfo.version;
     locktime = static_cast<uint32_t>(txinfo.locktime);
-    sizeBytes = static_cast<uint32_t>(txinfo.hex.size() / 2);
+    realSize = static_cast<uint32_t>(txinfo.hex.size() / 2);
     auto inputCount = txinfo.vin.size();
     inputs.clear();
     inputs.reserve(inputCount);
@@ -203,7 +212,7 @@ void RawTransaction::load(const getrawtransaction_t &txinfo, uint32_t txNum_, bl
 #endif
 
 blocksci::RawTransaction RawTransaction::getRawTransaction() const {
-    return {sizeBytes, locktime, static_cast<uint16_t>(inputs.size()), static_cast<uint16_t>(outputs.size())};
+    return {realSize, baseSize, locktime, static_cast<uint16_t>(inputs.size()), static_cast<uint16_t>(outputs.size())};
 }
 
 blocksci::OutputPointer RawInput::getOutputPointer() const {
@@ -245,11 +254,12 @@ struct Serializer {
     blocksci::uint256 finalize() {
         blocksci::uint256 hash;
         SHA256_Final(reinterpret_cast<unsigned char *>(&hash), &sha256);
-        return hash;
+        return ::sha256(reinterpret_cast<const uint8_t *>(&hash), sizeof(hash));
     }
 };
 
-enum {
+enum
+{
     SIGHASH_ALL = 1,
     SIGHASH_NONE = 2,
     SIGHASH_SINGLE = 3,
@@ -271,8 +281,10 @@ blocksci::uint256 RawTransaction::getHash(const InputView &info, const blocksci:
             nInput = info.inputNum;
         }
         // Serialize the prevout
-        uint32_t outputNum = inputs[nInput].rawOutputPointer.outputNum;
-        s.serialize(outputNum);
+        auto &outPointer = inputs[nInput].rawOutputPointer;
+        uint32_t outNum = outPointer.outputNum;
+        s.serialize(outPointer.hash);
+        s.serialize(outNum);
         // Serialize the script
         if (nInput != info.inputNum) {
             // Blank out other inputs' signatures
@@ -280,16 +292,16 @@ blocksci::uint256 RawTransaction::getHash(const InputView &info, const blocksci:
         } else {
             blocksci::CScriptView::const_iterator it = scriptView.begin();
             blocksci::CScriptView::const_iterator itBegin = it;
-            opcodetype opcode;
+            blocksci::opcodetype opcode;
             unsigned int nCodeSeparators = 0;
             while (scriptView.GetOp(it, opcode)) {
-                if (opcode == OP_CODESEPARATOR)
+                if (opcode == blocksci::OP_CODESEPARATOR)
                     nCodeSeparators++;
             }
             s.serializeCompact(scriptView.size() - nCodeSeparators);
             it = itBegin;
             while (scriptView.GetOp(it, opcode)) {
-                if (opcode == OP_CODESEPARATOR) {
+                if (opcode == blocksci::OP_CODESEPARATOR) {
                     s.serialize(&itBegin[0], static_cast<size_t>(it-itBegin-1));
                     itBegin = it;
                 }
@@ -301,7 +313,7 @@ blocksci::uint256 RawTransaction::getHash(const InputView &info, const blocksci:
         // Serialize the nSequence
         if (nInput != info.inputNum && (hashSingle || hashNone)) {
             // let the others update at will
-            s.serialize(uint32_t{0});
+            s.serialize(int32_t{0});
         } else {
             s.serialize(inputs[nInput].sequenceNum);
         }
@@ -323,5 +335,6 @@ blocksci::uint256 RawTransaction::getHash(const InputView &info, const blocksci:
         }
     }
     s.serialize(locktime);
+    s.serialize(hashType);
     return s.finalize();
 }

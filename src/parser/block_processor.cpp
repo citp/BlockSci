@@ -197,7 +197,7 @@ class BlockFileReader<RPCTag> : public BlockFileReaderBase {
             tx->outputs.clear();
             tx->outputs.reserve(1);
             
-            auto scriptPubKey = CScript() << ParseHex("040184a11fa689ad5123690c81a3a49c8f13f8d45bac857fbcbc8bc4a8ead3eb4b1ff4d4614fa18dce611aaf1f471216fe1b51851b4acf21b17fc45171ac7b13af") << OP_CHECKSIG;
+            auto scriptPubKey = blocksci::CScript() << ParseHex("040184a11fa689ad5123690c81a3a49c8f13f8d45bac857fbcbc8bc4a8ead3eb4b1ff4d4614fa18dce611aaf1f471216fe1b51851b4acf21b17fc45171ac7b13af") << blocksci::OP_CHECKSIG;
             std::vector<unsigned char> scriptBytes(scriptPubKey.begin(), scriptPubKey.end());
             //Set the desired initial block reward
             tx->outputs.emplace_back(scriptBytes, 50 * 100000000.0);
@@ -242,6 +242,9 @@ std::vector<unsigned char> readNewBlock(uint32_t firstTxNum, const BlockInfoBase
     bool isSegwit = false;
     blocksci::uint256 nullHash;
     nullHash.SetNull();
+    uint32_t headerSize = 80 + variableLengthIntSize(block.nTx);
+    uint32_t baseSize = headerSize;
+    uint32_t realSize = headerSize;
     for (uint32_t j = 0; j < block.nTx; j++) {
         RawTransaction *tx = nullptr;
         if (!loadFunc(tx)) {
@@ -269,9 +272,12 @@ std::vector<unsigned char> readNewBlock(uint32_t firstTxNum, const BlockInfoBase
             tx->inputs.clear();
         }
         
+        baseSize += tx->baseSize;
+        realSize += tx->realSize;
+        
         outFunc(tx);
     }
-    blocksci::RawBlock blocksciBlock{firstTxNum, block.nTx, static_cast<uint32_t>(static_cast<int>(block.height)), block.hash, block.header.nVersion, block.header.nTime, block.header.nBits, block.header.nNonce, files.blockCoinbaseFile.size()};
+    blocksci::RawBlock blocksciBlock{firstTxNum, block.nTx, static_cast<uint32_t>(static_cast<int>(block.height)), block.hash, block.header.nVersion, block.header.nTime, block.header.nBits, block.header.nNonce, realSize, baseSize, files.blockCoinbaseFile.size()};
     firstTxNum += block.nTx;
     files.blockFile.write(blocksciBlock);
     files.blockCoinbaseFile.write(coinbase.begin(), coinbase.end());
@@ -300,7 +306,7 @@ void connectUTXOs(RawTransaction *tx, UTXOState &utxoState) {
         auto &output = tx->outputs[i];
         auto &scriptOutput = tx->scriptOutputs[i];
         auto type = scriptOutput.type();
-        if (isSpendable(scriptType(type))) {
+        if (isSpendable(type)) {
             UTXO utxo{output.value, tx->txNum, type};
             RawOutputPointer pointer{tx->hash, i};
             utxoState.add(pointer, utxo);
@@ -333,8 +339,6 @@ void processAddresses(RawTransaction *tx, AddressState &addressState) {
     for (auto &scriptOutput : tx->scriptOutputs) {
         scriptOutput.resolve(addressState);
     }
-    
-    addressState.optionalSave();
 }
 
 void recordAddresses(RawTransaction *tx, UTXOScriptState &state) {
@@ -559,7 +563,7 @@ void BlockProcessor::addNewBlocks(const ParserConfiguration<ParseTag> &config, s
     };
     
     auto serializeAddressAdvanceFunc = [&](RawTransaction *tx) {
-        bool shouldSend = tx->sizeBytes < 800 && finished_transaction_queue.write_available() >= 1;
+        bool shouldSend = tx->realSize < 800 && finished_transaction_queue.write_available() >= 1;
         if (!shouldSend) delete tx;
         return shouldSend;
     };

@@ -11,8 +11,8 @@
  * - E-mail usually won't line-break if there's no punctuation to break at.
  * - Double-clicking selects the whole string as one word if it's all alphanumeric.
  */
-#ifndef BITCOIN_BASE58_H
-#define BITCOIN_BASE58_H
+#ifndef BLOCKSCI_BITCOIN_BASE58_H
+#define BLOCKSCI_BITCOIN_BASE58_H
 
 
 #include <blocksci/address/address_types.hpp>
@@ -113,6 +113,7 @@ namespace blocksci {
     class CBitcoinAddress : public CBase58Data {
     public:
         CBitcoinAddress(const uint160 &dest, AddressType::Enum type, const DataConfiguration &config);
+        CBitcoinAddress(const uint160 &dest, const std::vector<unsigned char>& version);
         CBitcoinAddress(const std::string& strAddress) { SetString(strAddress); }
         CBitcoinAddress(const char* pszAddress) { SetString(pszAddress); }
         
@@ -121,4 +122,4 @@ namespace blocksci {
 }
 
 
-#endif // BITCOIN_BASE58_H
+#endif // BLOCKSCI_BITCOIN_BASE58_H

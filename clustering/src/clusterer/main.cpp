@@ -9,6 +9,7 @@
 #include "dset/dset.h"
 
 #include <blocksci/blocksci.hpp>
+#include <blocksci/address/equiv_address.hpp>
 #include <blocksci/util/data_access.hpp>
 #include <blocksci/script.hpp>
 
@@ -21,18 +22,18 @@
 
 using namespace blocksci;
 
-std::vector<std::pair<Script, Script>> process_transaction(const Transaction &tx) {
-    std::vector<std::pair<Script, Script>> pairsToUnion;
+std::vector<std::pair<EquivAddress, EquivAddress>> process_transaction(const Transaction &tx) {
+    std::vector<std::pair<EquivAddress, EquivAddress>> pairsToUnion;
     
     if (!heuristics::isCoinjoin(tx) && !tx.isCoinbase()) {
         auto inputs = tx.inputs();
-        auto firstAddress = inputs[0].getAddress();
+        auto firstAddress = inputs[0].getAddress().equiv();
         for (uint16_t i = 1; i < inputs.size(); i++) {
-            pairsToUnion.emplace_back(firstAddress, inputs[i].getAddress());
+            pairsToUnion.emplace_back(firstAddress, inputs[i].getAddress().equiv());
         }
         
         if (auto change = heuristics::uniqueChangeByLegacyHeuristic(tx)) {
-            pairsToUnion.emplace_back(change->getAddress(), firstAddress);
+            pairsToUnion.emplace_back(change->getAddress().equiv(), firstAddress);
         }
     }
     return pairsToUnion;
@@ -78,15 +79,15 @@ void segmentWork(uint32_t start, uint32_t end, uint32_t segmentCount, Job job) {
 
 struct AddressDisjointSets {
     DisjointSets disjoinSets;
-    std::unordered_map<ScriptType::Enum, uint32_t> addressStarts;
+    std::unordered_map<EquivAddressType::Enum, uint32_t> addressStarts;
 
-    AddressDisjointSets(uint32_t totalSize, std::unordered_map<ScriptType::Enum, uint32_t> addressStarts_) : disjoinSets{totalSize}, addressStarts{std::move(addressStarts_)} {}
+    AddressDisjointSets(uint32_t totalSize, std::unordered_map<EquivAddressType::Enum, uint32_t> addressStarts_) : disjoinSets{totalSize}, addressStarts{std::move(addressStarts_)} {}
 
     uint32_t size() const {
         return disjoinSets.size();
     }
 
-    void link_addresses(const Script &address1, const Script &address2) {
+    void link_addresses(const EquivAddress &address1, const EquivAddress &address2) {
         auto firstAddressIndex = addressStarts.at(address1.type) + address1.scriptNum - 1;
         auto secondAddressIndex = addressStarts.at(address2.type) + address2.scriptNum - 1;
         disjoinSets.unite(firstAddressIndex, secondAddressIndex);
@@ -103,21 +104,21 @@ struct AddressDisjointSets {
     }
 };
 
-std::vector<uint32_t> getClusters(Blockchain &chain, std::unordered_map<ScriptType::Enum, uint32_t> addressStarts, uint32_t totalScriptCount) {
+std::vector<uint32_t> getClusters(Blockchain &chain, std::unordered_map<EquivAddressType::Enum, uint32_t> addressStarts, uint32_t totalScriptCount) {
     
     AddressDisjointSets ds(totalScriptCount, std::move(addressStarts));
     
     auto &scripts = *chain.access->scripts;
 
-    auto scriptHashCount = scripts.scriptCount<ScriptType::Enum::SCRIPTHASH>();
+    auto scriptHashCount = scripts.scriptCount<EquivAddressType::SCRIPTHASH>();
     
     
     segmentWork(1, scriptHashCount + 1, 8, [&ds, &scripts](uint32_t index) {
-        Script pointer(index, ScriptType::Enum::SCRIPTHASH);
+        EquivAddress pointer(index, EquivAddressType::SCRIPTHASH);
         script::ScriptHash scripthash{scripts, index};
         auto wrappedAddress = scripthash.getWrappedAddress();
         if (wrappedAddress) {
-            ds.link_addresses(pointer, *wrappedAddress);
+            ds.link_addresses(pointer, wrappedAddress->equiv());
         }
     });
     
@@ -159,14 +160,14 @@ uint32_t remapClusterIds(std::vector<uint32_t> &parents) {
     return clusterCount;
 }
 
-void recordOrderedAddresses(const std::vector<uint32_t> &parent, std::vector<uint32_t> &clusterPositions, const std::unordered_map<ScriptType::Enum, uint32_t> &scriptStarts) {
+void recordOrderedAddresses(const std::vector<uint32_t> &parent, std::vector<uint32_t> &clusterPositions, const std::unordered_map<EquivAddressType::Enum, uint32_t> &scriptStarts) {
     
-    std::map<uint32_t, ScriptType::Enum> typeIndexes;
+    std::map<uint32_t, EquivAddressType::Enum> typeIndexes;
     for (auto &pair : scriptStarts) {
         typeIndexes[pair.second] = pair.first;
     }
     
-    std::vector<Script> orderedScripts;
+    std::vector<EquivAddress> orderedScripts;
     orderedScripts.resize(parent.size());
     
     for (uint32_t i = 0; i < parent.size(); i++) {
@@ -175,7 +176,7 @@ void recordOrderedAddresses(const std::vector<uint32_t> &parent, std::vector<uin
         it--;
         uint32_t addressNum = i - it->first + 1;
         auto addressType = it->second;
-        orderedScripts[j] = Script(addressNum, addressType);
+        orderedScripts[j] = EquivAddress(addressNum, addressType);
         j++;
     }
     
@@ -193,11 +194,11 @@ int main(int argc, const char * argv[]) {
     auto &scripts = *chain.access->scripts;
     size_t totalScriptCount = scripts.totalAddressCount();;
     
-    std::unordered_map<ScriptType::Enum, uint32_t> scriptStarts;
-    for (size_t i = 0; i < ScriptType::size; i++) {
-        scriptStarts[ScriptType::all[i]] = 0;
+    std::unordered_map<EquivAddressType::Enum, uint32_t> scriptStarts;
+    for (size_t i = 0; i < EquivAddressType::size; i++) {
+        scriptStarts[EquivAddressType::all[i]] = 0;
         for (size_t j = 0; j < i; j++) {
-            scriptStarts[ScriptType::all[i]] += scripts.scriptCount(ScriptType::all[j]);
+            scriptStarts[EquivAddressType::all[i]] += scripts.scriptCount(EquivAddressType::all[j]);
         }
     }
     
@@ -220,12 +221,12 @@ int main(int argc, const char * argv[]) {
     
     auto recordOrdered = std::async(std::launch::async, recordOrderedAddresses, parent, std::ref(clusterPositions), scriptStarts);
     
-    segmentWork(0, ScriptType::size, ScriptType::size, [&scriptStarts, &scripts, &parent](uint32_t index) {
-        auto type = ScriptType::all[index];
+    segmentWork(0, EquivAddressType::size, EquivAddressType::size, [&scriptStarts, &scripts, &parent](uint32_t index) {
+        auto type = EquivAddressType::all[index];
         uint32_t startIndex = scriptStarts[type];
         uint32_t totalCount = scripts.scriptCount(type);
         std::stringstream ss;
-        ss << scriptName(type) << "_cluster_index.dat";
+        ss << equivAddressName(type) << "_cluster_index.dat";
         std::ofstream clusterIndexFile(ss.str(), std::ios::binary);
         clusterIndexFile.write(reinterpret_cast<char *>(parent.data() + startIndex), sizeof(uint32_t) * totalCount);
     });

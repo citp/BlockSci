@@ -80,13 +80,13 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::B
         for (uint16_t i = 0; i < tx->outputCount; i++) {
             auto &output = tx->getOutput(i);
             if (output.getAddress().getScript(scripts).firstTxIndex() == txNum) {
-                auto &prevValue = state.scriptCounts[static_cast<size_t>(scriptType(output.getType()))];
+                auto &prevValue = state.scriptCounts[static_cast<size_t>(equivType(output.getType()))];
                 auto addressNum = output.getAddress().scriptNum;
                 if (addressNum < prevValue) {
                     prevValue = addressNum;
                 }
             }
-            if (isSpendable(scriptType(output.getType()))) {
+            if (isSpendable(output.getType())) {
                 utxoState.erase({*hash, i});
                 utxoAddressState.spendOutput({txNum, i}, output.getType());
                 utxoScriptState.erase({txNum, i});
@@ -141,7 +141,7 @@ void rollbackTransactions(blocksci::BlockHeight blockKeepCount, const ParserConf
         blocksci::SimpleFileMapper<readwrite>(config.blockCoinbaseFilePath()).truncate(firstDeletedBlock->coinbaseOffset);
         blockFile.truncate(blockKeepSize);
         
-        AddressState(config.addressPath()).rollback(blocksciState);
+        AddressState{config.addressPath(), config.hashIndexFilePath()}.rollback(blocksciState);
         AddressWriter(config).rollback(blocksciState);
         AddressDB(config, config.addressDBFilePath().native()).rollback(blocksciState);
         HashIndexCreator(config, config.hashIndexFilePath().native()).rollback(blocksciState);
@@ -241,7 +241,7 @@ void updateChain(const ParserConfiguration<ParserTag> &config, blocksci::BlockHe
         BlockProcessor processor{startingTxCount, totalTxCount, maxBlockHeight};
         UTXOState utxoState;
         UTXOAddressState utxoAddressState;
-        AddressState addressState{config.addressPath()};
+        AddressState addressState{config.addressPath(), config.hashIndexFilePath()};
         UTXOScriptState utxoScriptState;
         
         utxoAddressState.unserialize(config.utxoAddressStatePath());
@@ -420,6 +420,7 @@ int main(int argc, char * argv[]) {
         case mode::updateHashIndex: {
             ParserConfigurationBase config{dataDirectory};
             updateHashDB(config);
+            break;
         }
 
         case mode::updateAddressIndex: {

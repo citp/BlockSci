@@ -13,19 +13,14 @@
 #include "script_access.hpp"
 #include "script_variant.hpp"
 #include "bitcoin_base58.hpp"
+#include "bitcoin_segwit_addr.hpp"
 
 namespace blocksci {
     using namespace script;
     
-    ScriptHash::ScriptAddress(uint32_t scriptNum_, const ScriptHashData *rawData, const ScriptAccess &access) : BaseScript(scriptNum_, scriptType, *rawData, access), wrappedAddress(rawData->wrappedAddress), address(rawData->address) {}
+    ScriptHashBase::ScriptHashBase(uint32_t scriptNum_, AddressType::Enum type_, const ScriptHashData *rawData, const ScriptAccess &access) : Script(scriptNum_, type_, *rawData, access), wrappedAddress(rawData->wrappedAddress) {}
     
-    ScriptHash::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : ScriptHash(addressNum, access.getScriptData<scriptType>(addressNum), access) {}
-    
-    std::string ScriptHash::addressString() const {
-        return CBitcoinAddress(address, AddressType::Enum::SCRIPTHASH, access->config).ToString();
-    }
-    
-    ranges::optional<Address> ScriptHash::getWrappedAddress() const {
+    ranges::optional<Address> ScriptHashBase::getWrappedAddress() const {
         if (wrappedAddress.scriptNum != 0) {
             return wrappedAddress;
         } else {
@@ -33,7 +28,7 @@ namespace blocksci {
         }
     }
     
-    ranges::optional<AnyScript> ScriptHash::wrappedScript() const {
+    ranges::optional<AnyScript> ScriptHashBase::wrappedScript() const {
         auto add = getWrappedAddress();
         if (add) {
             return add->getScript(*access);
@@ -41,9 +36,17 @@ namespace blocksci {
         return ranges::nullopt;
     }
     
+    ScriptHash::ScriptAddress(uint32_t scriptNum_, const ScriptHashData *rawData, const ScriptAccess &access) : ScriptHashBase(scriptNum_, addressType, rawData, access), address(rawData->getHash160()) {}
+    
+    ScriptHash::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : ScriptHash(addressNum, access.getScriptData<addressType>(addressNum), access) {}
+    
+    std::string ScriptHash::addressString() const {
+        return CBitcoinAddress(address, AddressType::Enum::SCRIPTHASH, access->config).ToString();
+    }
+    
     std::string ScriptHash::toString() const {
         std::stringstream ss;
-        ss << "P2SHAddress(";
+        ss << "ScriptHashAddress(";
         ss << "address=" << addressString();
         ss << ")";
         return ss.str();
@@ -51,7 +54,41 @@ namespace blocksci {
     
     std::string ScriptHash::toPrettyString() const {
         std::stringstream ss;
-        ss << "P2SHAddress(";
+        ss << "ScriptHashAddress(";
+        ss << "address=" << addressString();
+        ss << ", wrappedAddress=";
+        auto wrapped = wrappedScript();
+        if (wrapped) {
+            ss << wrapped->toPrettyString();
+        } else {
+            ss << "unknown";
+        }
+        
+        ss << ")";
+        return ss.str();
+    }
+    
+    WitnessScriptHash::ScriptAddress(uint32_t scriptNum_, const ScriptHashData *rawData, const ScriptAccess &access) : ScriptHashBase(scriptNum_, addressType, rawData, access), address(rawData->hash256) {}
+    
+    WitnessScriptHash::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : WitnessScriptHash(addressNum, access.getScriptData<addressType>(addressNum), access) {}
+    
+    std::string WitnessScriptHash::addressString() const {
+        std::vector<uint8_t> witprog;
+        witprog.insert(witprog.end(), reinterpret_cast<const uint8_t *>(&address), reinterpret_cast<const uint8_t *>(&address) + sizeof(address));
+        return segwit_addr::encode(access->config, 0, witprog);
+    }
+    
+    std::string WitnessScriptHash::toString() const {
+        std::stringstream ss;
+        ss << "WitnessScriptHashAddress(";
+        ss << "address=" << addressString();
+        ss << ")";
+        return ss.str();
+    }
+    
+    std::string WitnessScriptHash::toPrettyString() const {
+        std::stringstream ss;
+        ss << "WitnessScriptHashAddress(";
         ss << "address=" << addressString();
         ss << ", wrappedAddress=";
         auto wrapped = wrappedScript();

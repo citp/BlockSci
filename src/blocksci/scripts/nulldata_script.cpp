@@ -14,9 +14,9 @@
 
 namespace blocksci {
     using namespace script;
-    OpReturn::ScriptAddress(uint32_t scriptNum_, const RawData *raw, const ScriptAccess &access) : BaseScript(scriptNum_, scriptType, *raw, access), data(raw->getData()) {}
+    OpReturn::ScriptAddress(uint32_t scriptNum_, const RawData *raw, const ScriptAccess &access) : Script(scriptNum_, addressType, *raw, access), data(raw->getData()) {}
     
-    OpReturn::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : OpReturn(addressNum, access.getScriptData<scriptType>(addressNum), access) {}
+    OpReturn::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : OpReturn(addressNum, access.getScriptData<addressType>(addressNum), access) {}
     
     std::string OpReturn::toString() const {
         std::stringstream ss;
