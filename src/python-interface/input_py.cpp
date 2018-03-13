@@ -10,6 +10,7 @@
 #include "ranges_py.hpp"
 
 #include <blocksci/address/address.hpp>
+#include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/algorithms.hpp>
 #include <blocksci/chain/inout_pointer.hpp>
@@ -36,7 +37,9 @@ void init_input(py::module &m) {
     py::class_<Input> inputClass(m, "Input", "Class representing a transaction input");
     inputClass
     .def("__repr__", &Input::toString)
-    .def(py::init<InputPointer, const DataAccess &>())
+    .def(py::init([](const InputPointer pointer, const blocksci::Blockchain &chain) {
+        return Input{pointer, chain.getAccess()};
+    }))
     .def(py::self == py::self)
     .def(hash(py::self))
     ;

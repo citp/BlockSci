@@ -10,6 +10,7 @@
 #include "ranges_py.hpp"
 
 #include <blocksci/chain/algorithms.hpp>
+#include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/input.hpp>
@@ -146,13 +147,17 @@ void init_tx(py::module &m) {
     .def("__repr__", &Transaction::toString)
     .def(py::self == py::self)
     .def(hash(py::self))
-    .def(py::init<uint32_t, const DataAccess &>(), R"docstring(
+    .def(py::init([](uint32_t index, const blocksci::Blockchain &chain) {
+        return Transaction{index, chain.getAccess()};
+    }), R"docstring(
          This functions gets the transaction with given index.
          
          :param int index: The index of the transation.
          :returns: Tx
          )docstring")
-    .def(py::init<std::string, const DataAccess &>(), R"docstring(
+    .def(py::init([](const std::string hash, const blocksci::Blockchain &chain) {
+        return Transaction{hash, chain.getAccess()};
+    }), R"docstring(
          This functions gets the transaction with given hash.
          
          :param string index: The hash of the transation.

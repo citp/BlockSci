@@ -7,6 +7,7 @@
 //
 
 #include <blocksci/chain/block.hpp>
+#include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>
@@ -119,7 +120,9 @@ void init_block(py::module &m) {
     
     py::class_<Block> cl(m, "Block", "Class representing a block in the blockchain");
     cl
-    .def(py::init<blocksci::BlockHeight, const DataAccess &>())
+    .def(py::init([](blocksci::BlockHeight height, const blocksci::Blockchain &chain) {
+        return Block{height, chain.getAccess()};
+    }))
     .def("__repr__", &Block::getString)
     .def("__len__", [](const Block &block) {
         return block.size();

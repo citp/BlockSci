@@ -10,6 +10,7 @@
 #include "variant_py.hpp"
 
 #include <blocksci/address/address.hpp>
+#include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/algorithms.hpp>
@@ -107,7 +108,9 @@ void init_output(py::module &m) {
     py::class_<Output> outputClass(m, "Output", "Class representing a transaction output");
     outputClass
     .def("__repr__", &Output::toString)
-    .def(py::init<OutputPointer, const DataAccess &>())
+    .def(py::init([](const OutputPointer pointer, const blocksci::Blockchain &chain) {
+        return Output{pointer, chain.getAccess()};
+    }))
     .def(py::self == py::self)
     .def(hash(py::self))
     ;
