@@ -208,7 +208,7 @@ namespace blocksci {
 
 
     CBitcoinAddress::CBitcoinAddress(const uint160 &dest, AddressType::Enum type, const DataConfiguration &config) {
-        if (type == AddressType::Enum::PUBKEYHASH || type == AddressType::Enum::PUBKEY) {
+        if (type == AddressType::Enum::PUBKEYHASH || type == AddressType::Enum::PUBKEY || type == AddressType::Enum::MULTISIG_PUBKEY) {
             SetData(config.pubkeyPrefix, &dest, sizeof(dest));
         } else if (type == AddressType::Enum::SCRIPTHASH) {
             SetData(config.scriptPrefix, &dest, sizeof(dest));
