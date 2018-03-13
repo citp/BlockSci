@@ -9,6 +9,7 @@
 #include <libcluster/cluster.hpp>
 #include <libcluster/cluster_manager.hpp>
 
+#include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/block.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/input.hpp>
@@ -45,7 +46,9 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
      m.def("total_without_self_churn", totalOutWithoutSelfChurn);
      
      py::class_<ClusterManager>(m, "ClusterManager", "Class managing the cluster dat")
-     .def(py::init<std::string>())
+     .def(py::init([](std::string arg, const blocksci::Blockchain &chain) {
+        return ClusterManager(arg, chain.getAccess());
+     }))
      .def("cluster_with_address", [](const ClusterManager &cm, const Address &address) {
         return cm.getCluster(address);
      }, "Return the cluster containing the given address")
@@ -64,21 +67,21 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
      .def("__hash__", [] (const Cluster &cluster) {
          return cluster.clusterNum;
      })
-     .def_property_readonly("addresses", &Cluster::getDedupAddresses, "Get a iterable over all the equiv addresses in the cluster")
-     .def("tagged_addresses", &Cluster::taggedDedupAddresses, "Given a dictionary of tags, return a list of TaggedDedupAddresses objects for any tagged equiv addresses in the cluster")
+     .def_property_readonly("addresses", &Cluster::getAddresses, "Get a iterable over all the equiv addresses in the cluster")
+     .def("tagged_addresses", &Cluster::taggedAddresses, "Given a dictionary of tags, return a list of TaggedAddress objects for any tagged equiv addresses in the cluster")
      .def("count_of_type", &Cluster::countOfType, "Return the number of equiv addresses of the given type in the cluster")
      ;
      
-     py::class_<TaggedDedupAddress>(m, "TaggedDedupAddress")
-     .def_readonly("address", &TaggedDedupAddress::address, "Return the equiv address object which has been tagged")
-     .def_readonly("tag", &TaggedDedupAddress::tag, "Return the tag associated with the contained equiv address")
+     py::class_<TaggedAddress>(m, "TaggedAddress")
+     .def_readonly("address", &TaggedAddress::address, "Return the equiv address object which has been tagged")
+     .def_readonly("tag", &TaggedAddress::tag, "Return the tag associated with the contained equiv address")
      ;
      
      py::class_<TaggedCluster>(m, "TaggedCluster")
      .def_property_readonly("cluster", [](const TaggedCluster &tc) {
          return tc.cluster;
      }, "Return the cluster object which has been tagged")
-     .def_readonly("tagged_addresses", &TaggedCluster::taggedDedupAddresses, "Return the list of equiv addresses inside the cluster which have been tagged")
+     .def_readonly("tagged_addresses", &TaggedCluster::taggedAddresses, "Return the list of equiv addresses inside the cluster which have been tagged")
      ;
      
      py::class_<cluster_range>(m, "ClusterRange")
@@ -103,34 +106,6 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
              throw py::error_already_set();
          py::list txList;
          for (size_t i=0; i<slicelength; ++i) {
-             txList.append(range[start]);
-             start += step;
-         }
-         return txList;
-     })
-     ;
-     
-     using script_range = boost::iterator_range<const blocksci::DedupAddress *>;
-     py::class_<script_range>(m, "DedupAddressRangeRange")
-     .def("__len__", &script_range::size)
-     /// Optional sequence protocol operations
-     .def("__iter__", [](const script_range &range) { return py::make_iterator(range.begin(), range.end()); },
-          py::keep_alive<0, 1>() /* Essential: keep object alive while iterator exists */)
-     .def("__getitem__", [](const script_range &range, int64_t i) {
-         while (i < 0) {
-             i = range.size() - i;
-         }
-         uint64_t posIndex = static_cast<uint64_t>(i);
-         if (posIndex >= range.size())
-             throw py::index_error();
-         return range[i];
-     })
-     .def("__getitem__", [](const script_range &range, py::slice slice) -> py::list {
-         size_t start, stop, step, slicelength;
-         if (!slice.compute(range.size(), &start, &stop, &step, &slicelength))
-             throw py::error_already_set();
-         py::list txList;
-         for (size_t i=0; i<slicelength; i+= step) {
              txList.append(range[start]);
              start += step;
          }

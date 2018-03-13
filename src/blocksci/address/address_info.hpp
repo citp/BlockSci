@@ -171,16 +171,31 @@ namespace blocksci {
     }
     
     template<AddressType::Enum type>
+    struct AddressTypeEquivTypeFunctor {
+        static EquivAddressType::Enum f() {
+            return AddressInfo<type>::equivType;
+        }
+    };
+    
+    static auto addressTypeequivTypeTable = blocksci::make_static_table<AddressType, AddressTypeEquivTypeFunctor>();
+    
+    inline EquivAddressType::Enum equivType(AddressType::Enum t) {
+        auto index = static_cast<size_t>(t);
+        addressTypeCheckThrow(index);
+        return addressTypeequivTypeTable[index];
+    }
+    
+    template<EquivAddressType::Enum type>
     struct EquivAddressTypesFunctor {
         static std::vector<AddressType::Enum> f() {
-            auto types = EquivAddressInfo<AddressInfo<type>::equivType>::equivTypes;
+            auto types = EquivAddressInfo<type>::equivTypes;
             return std::vector<AddressType::Enum>{types.begin(), types.end()};
         }
     };
     
-    static auto equivAddressTypesTable = blocksci::make_static_table<AddressType, EquivAddressTypesFunctor>();
+    static auto equivAddressTypesTable = blocksci::make_static_table<EquivAddressType, EquivAddressTypesFunctor>();
     
-    inline std::vector<AddressType::Enum> equivAddressTypes(AddressType::Enum t) {
+    inline std::vector<AddressType::Enum> equivAddressTypes(EquivAddressType::Enum t) {
         auto index = static_cast<size_t>(t);
         addressTypeCheckThrow(index);
         return equivAddressTypesTable[index];

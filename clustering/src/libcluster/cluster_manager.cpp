@@ -12,12 +12,15 @@
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/address/dedup_address.hpp>
 
-ClusterManager::ClusterManager(const boost::filesystem::path &baseDirectory) : clusterOffsetFile(baseDirectory/"clusterOffsets"), clusterScriptsFile(baseDirectory/"clusterAddresses"), scriptClusterIndexFiles(blocksci::apply(blocksci::DedupAddressInfoList(), [&] (auto tag) {
-    std::stringstream ss;
-    ss << blocksci::dedupAddressName(tag) << "_cluster_index";
-    return baseDirectory/ss.str();
-}))  {
-}
+ClusterManager::ClusterManager(const boost::filesystem::path &baseDirectory, const blocksci::DataAccess &access_) : 
+    clusterOffsetFile(baseDirectory/"clusterOffsets"), 
+    clusterScriptsFile(baseDirectory/"clusterAddresses"), 
+    scriptClusterIndexFiles(blocksci::apply(blocksci::DedupAddressInfoList(), [&] (auto tag) {
+        std::stringstream ss;
+        ss << blocksci::dedupAddressName(tag) << "_cluster_index";
+        return baseDirectory/ss.str();
+    })),
+    access(access_)  {}
 
 uint32_t ClusterManager::clusterCount() const {
     return static_cast<uint32_t>(clusterOffsetFile.size());
@@ -26,7 +29,7 @@ uint32_t ClusterManager::clusterCount() const {
 template<blocksci::DedupAddressType::Enum type>
 struct ClusterNumFunctor {
     static uint32_t f(const ClusterManager *cm, uint32_t scriptNum) {
-        return cm->getClusterNum<type>(scriptNum);
+        return cm->getClusterNumImpl<type>(scriptNum);
     }
 };
 
@@ -47,10 +50,10 @@ Cluster ClusterManager::getCluster(const blocksci::Address &address) const {
     return Cluster(getClusterNum(address), *this);
 }
 
-std::vector<TaggedCluster> ClusterManager::taggedClusters(const std::unordered_map<blocksci::DedupAddress, std::string> &tags) {
+std::vector<TaggedCluster> ClusterManager::taggedClusters(const std::unordered_map<blocksci::Address, std::string> &tags) {
     std::vector<TaggedCluster> taggedClusters;
     for (auto cluster : getClusters()) {
-        auto taggedAddresses = cluster.taggedDedupAddresses(tags);
+        auto taggedAddresses = cluster.taggedAddresses(tags);
         if (!taggedAddresses.empty()) {
             taggedClusters.emplace_back(cluster, std::move(taggedAddresses));
         }

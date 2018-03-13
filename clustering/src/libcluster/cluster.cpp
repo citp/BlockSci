@@ -8,35 +8,54 @@
 
 #include "cluster.hpp"
 
+#include <blocksci/address/dedup_address.hpp>
+#include <blocksci/index/address_index.hpp>
+
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/algorithm/copy.hpp>
 
 #include "cluster_manager.hpp"
 
-boost::iterator_range<const blocksci::DedupAddress *> Cluster::getDedupAddresses() const {
-    return manager.getClusterScripts(clusterNum);
+std::vector<blocksci::Address> Cluster::getAddresses() const {
+    std::vector<blocksci::Address> addresses;
+    for (auto &dedupAddress : manager.getClusterScripts(clusterNum)) {
+        for (auto &address : manager.access.addressIndex->getEquivAddresses(dedupAddress, false, manager.access)) {
+            addresses.push_back(address);
+        }
+    }
+    return addresses;
 }
 
 uint32_t Cluster::getSize() const {
     return manager.getClusterSize(clusterNum);
 }
 
-std::vector<TaggedDedupAddress> Cluster::taggedDedupAddresses(const std::unordered_map<blocksci::DedupAddress, std::string> &tags) const {
-    std::vector<TaggedDedupAddress> tagged;
-    for (auto &address : getDedupAddresses()) {
-        auto it = tags.find(address);
-        if (it != tags.end()) {
-            tagged.emplace_back(it->first, it->second);
+std::vector<TaggedAddress> Cluster::taggedAddresses(const std::unordered_map<blocksci::Address, std::string> &tags) const {
+    if (tags.size() == 0) {
+        return {};
+    }
+    auto &access = tags.begin()->first.getAccess();
+    std::vector<TaggedAddress> tagged;
+    for (auto &dedupAddress : manager.getClusterScripts(clusterNum)) {
+        for (auto &address : access.addressIndex->getPossibleEquivAddresses(dedupAddress, false, access)) {
+            auto it = tags.find(address);
+            if (it != tags.end()) {
+                tagged.emplace_back(it->first, it->second);
+            }
         }
     }
     return tagged;
 }
 
-uint32_t Cluster::countOfType(blocksci::DedupAddressType::Enum type) const {
+uint32_t Cluster::countOfType(blocksci::AddressType::Enum type) const {
+    auto dedupSearchType = dedupType(type);
     uint32_t count = 0;
-    for (auto &address : getDedupAddresses()) {
-        if (address.type == type) {
-            ++count;
+    for (auto &address : manager.getClusterScripts(clusterNum)) {
+        if (address.type == dedupSearchType) {
+            auto searchAddress = blocksci::Address{address.scriptNum, type, manager.access};
+            if (manager.access.addressIndex->checkIfExists(searchAddress)) {
+                ++count;
+            }
         }
     }
     return count;
