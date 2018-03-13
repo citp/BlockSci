@@ -51,6 +51,8 @@ namespace blocksci {
     }
     
     std::string Nonstandard::toPrettyString() const {
-        return toString();
+        std::stringstream ss;
+        ss << "NonStandardScript(" << inputString() << ", " << outputString() << ")";
+        return ss.str();
     }
 }

@@ -47,14 +47,12 @@ namespace blocksci {
     
     std::string Pubkey::toString() const {
         std::stringstream ss;
-        ss << "PubkeyAddress(";
-        ss << "address=" << addressString();
-        ss << ")";
+        ss << "PubkeyAddress(" << addressString() << ")";
         return ss.str();
     }
     
     std::string Pubkey::toPrettyString() const {
-        return addressString();
+        return toString();
     }
     
     PubkeyHash::ScriptAddress(uint32_t addressNum, const DataAccess &access) : PubkeyAddressBase(addressNum, addressType, access.scripts->getScriptData<addressType>(addressNum), access) {}
@@ -65,14 +63,12 @@ namespace blocksci {
     
     std::string PubkeyHash::toString() const {
         std::stringstream ss;
-        ss << "PubkeyHashAddress(";
-        ss << "address=" << addressString();
-        ss << ")";
+        ss << "PubkeyHashAddress(" << addressString() << ")";
         return ss.str();
     }
     
     std::string PubkeyHash::toPrettyString() const {
-        return addressString();
+        return toString();
     }
     
     MultisigPubkey::ScriptAddress(uint32_t addressNum, const DataAccess &access) : PubkeyAddressBase(addressNum, addressType, access.scripts->getScriptData<addressType>(addressNum), access) {}
@@ -83,9 +79,7 @@ namespace blocksci {
     
     std::string MultisigPubkey::toString() const {
         std::stringstream ss;
-        ss << "MultisigPubkeyAddress(";
-        ss << "address=" << addressString();
-        ss << ")";
+        ss << "MultisigPubkeyAddress(" << addressString() << ")";
         return ss.str();
     }
     
@@ -104,9 +98,7 @@ namespace blocksci {
     
     std::string WitnessPubkeyHash::toString() const {
         std::stringstream ss;
-        ss << "WitnessPubkeyAddress(";
-        ss << "address=" << addressString();
-        ss << ")";
+        ss << "WitnessPubkeyAddress(" << addressString() << ")";
         return ss.str();
     }
     

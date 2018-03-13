@@ -38,22 +38,13 @@ namespace blocksci {
     
     std::string Multisig::toString() const {
         std::stringstream ss;
-        ss << "MultisigAddress(required=" << static_cast<int>(getRequired()) << ", n=" << static_cast<int>(getTotal()) << ", address_nums=[";
-        uint8_t i = 0;
-        for (auto &address : getAddresses()) {
-            ss << address.scriptNum;
-            if (i < getTotal() - 1) {
-                ss << ", ";
-            }
-            i++;
-        }
-        ss << "])";
+        ss << "MultisigAddress(" << static_cast<int>(getRequired()) << " of " << static_cast<int>(getTotal()) << ")";
         return ss.str();
     }
     
     std::string Multisig::toPrettyString() const {
         std::stringstream ss;
-        ss << static_cast<int>(getRequired()) << " of " << static_cast<int>(getTotal()) << " multisig with addresses : [";
+        ss << "MultisigAddress(" << static_cast<int>(getRequired()) << " of " << static_cast<int>(getTotal()) << " multisig with addresses ";
         uint8_t i = 0;
         for (auto &address : getAddresses()) {
             script::MultisigPubkey pubkeyScript(address.scriptNum, getAccess());
@@ -63,7 +54,7 @@ namespace blocksci {
             }
             i++;
         }
-        ss << "]";
+        ss << ")";
         return ss.str();
     }
     

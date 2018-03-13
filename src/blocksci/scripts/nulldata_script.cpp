@@ -28,6 +28,8 @@ namespace blocksci {
     }
     
     std::string OpReturn::toPrettyString() const {
-        return toString();
+        std::stringstream ss;
+        ss << "NulldataAddressData(" << getData() << ")";
+        return ss.str();
     }
 }
