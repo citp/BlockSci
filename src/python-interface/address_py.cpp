@@ -151,7 +151,13 @@ void init_address(py::module &m) {
     .def_property_readonly("revealed_tx",py::overload_cast<>(&script::Multisig::getTransactionRevealed, py::const_), "The transaction where this wrapped script was first revealed")
     .def_property_readonly("required", &script::Multisig::getRequired, "The number of signatures required for this address")
     .def_property_readonly("total", &script::Multisig::getTotal, "The total number of keys that can sign for this address")
-    .def_property_readonly("addresses", &script::Multisig::getAddresses, "The list of the keys that can sign for this address")
+    .def_property_readonly("addresses", [](const script::Multisig &script) {
+        py::list ret;
+        for (auto &address : script.getAddresses()) {
+            ret.append(address.getScript().wrapped);
+        }
+        return ret;
+    }, "The list of the keys that can sign for this address")
     ;
     
     
@@ -161,15 +167,14 @@ void init_address(py::module &m) {
     .def_property_readonly("has_been_spent", py::overload_cast<>(&script::ScriptHash::hasBeenSpent, py::const_), "Check if this script has ever been spent")
     .def_property_readonly("first_tx", py::overload_cast<>(&script::ScriptHash::getFirstTransaction, py::const_), "Get the first transaction that was sent to this address")
     .def_property_readonly("revealed_tx",py::overload_cast<>(&script::ScriptHash::getTransactionRevealed, py::const_), "The transaction where this wrapped script was first revealed")
-    .def_property_readonly("wrapped_address", &script::ScriptHash::getWrappedAddress, "The address inside this P2SH address")
-    .def_property_readonly("wrapped_script", [](const script::ScriptHash &script) -> ranges::optional<AnyScript::ScriptVariant> {
+    .def_property_readonly("wrapped_address", [](const script::ScriptHash &script) -> ranges::optional<AnyScript::ScriptVariant> {
         auto wrappedScript = script.wrappedScript();
         if (wrappedScript) {
             return wrappedScript->wrapped;
         } else {
             return ranges::nullopt;
         }
-    }, "The script inside this P2SH address")
+    }, "The address inside this P2SH address")
     .def_property_readonly("raw_address",  &script::ScriptHash::getAddressHash, "The 160 bit P2SH address hash")
     .def_property_readonly("address_string", py::overload_cast<>(&script::ScriptHash::addressString, py::const_), "Bitcoin address string")
     ;
