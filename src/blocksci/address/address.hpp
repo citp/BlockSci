@@ -64,6 +64,7 @@ namespace blocksci {
         
         uint64_t calculateBalance(BlockHeight height, bool typeEquivalent, bool nestedEquivalent) const;
         
+        std::vector<Address> getEquivAddresses(bool typeEquivalent, bool nestedEquivalent) const;
         std::vector<Output> getOutputs(bool typeEquivalent, bool nestedEquivalent) const;
         std::vector<Input> getInputs(bool typeEquivalent, bool nestedEquivalent) const;
         std::vector<Transaction> getTransactions(bool typeEquivalent, bool nestedEquivalent) const;

@@ -176,6 +176,10 @@ namespace blocksci {
         return fullTypeImp(*this, *access);
     }
     
+    std::vector<Address> Address::getEquivAddresses(bool typeEquivalent, bool nestedEquivalent) const {
+        return access->addressIndex->getEquivAddresses(*this, typeEquivalent, nestedEquivalent);
+    }
+    
     std::vector<Output> Address::getOutputs(bool typeEquivalent, bool nestedEquivalent) const {
         auto dataAccess = access;
         auto pointers = access->addressIndex->getOutputPointers(*this, typeEquivalent, nestedEquivalent);
