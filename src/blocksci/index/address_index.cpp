@@ -130,7 +130,7 @@ namespace blocksci {
         return addresses;
     }
     
-    std::vector<Address> AddressIndex::getPossibleNestedEquivalent(const Address &searchAddress) const {
+    std::unordered_set<Address> AddressIndex::getPossibleNestedEquivalentDown(const Address &searchAddress) const {
         std::unordered_set<Address> addressesToSearch{searchAddress};
         std::unordered_set<Address> searchedAddresses;
         std::function<bool(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
@@ -148,6 +148,19 @@ namespace blocksci {
             auto setIt = addressesToSearch.begin();
             auto address = *setIt;
             visit(address, visitFunc);
+            searchedAddresses.insert(address);
+            addressesToSearch.erase(setIt);
+        }
+        
+        return searchedAddresses;
+    }
+    
+    std::unordered_set<Address> AddressIndex::getPossibleNestedEquivalentUp(const Address &searchAddress) const {
+        std::unordered_set<Address> addressesToSearch{searchAddress};
+        std::unordered_set<Address> searchedAddresses;
+        while (addressesToSearch.size() > 0) {
+            auto setIt = addressesToSearch.begin();
+            auto address = *setIt;
             auto column = getNestedColumn(address.type);
             rocksdb::Slice key{reinterpret_cast<const char *>(&address.scriptNum), sizeof(address.scriptNum)};
             rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
@@ -173,7 +186,14 @@ namespace blocksci {
             addressesToSearch.erase(setIt);
         }
         
-        return std::vector<Address>(searchedAddresses.begin(), searchedAddresses.end());
+        return searchedAddresses;
+    }
+    
+    std::vector<Address> AddressIndex::getPossibleNestedEquivalent(const Address &searchAddress) const {
+        auto upAddresses = getPossibleNestedEquivalentUp(searchAddress);
+        auto downAddresses = getPossibleNestedEquivalentDown(searchAddress);
+        upAddresses.insert(downAddresses.begin(), downAddresses.end());
+        return std::vector<Address>{upAddresses.begin(), upAddresses.end()};
     }
     
     std::unordered_set<Address> AddressIndex::getPossibleEquivAddresses(const DedupAddress &searchAddress, bool nestedEquivalent, const DataAccess &access) const {

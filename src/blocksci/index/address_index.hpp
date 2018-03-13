@@ -26,7 +26,8 @@ namespace blocksci {
         std::vector<rocksdb::ColumnFamilyHandle *> columnHandles;
         
         std::vector<OutputPointer> getOutputPointersImp(uint32_t addressNum, AddressType::Enum type) const;
-        
+        std::unordered_set<Address> getPossibleNestedEquivalentUp(const Address &address) const;
+        std::unordered_set<Address> getPossibleNestedEquivalentDown(const Address &address) const;
     public:
         
         AddressIndex(const std::string &path, bool readonly);

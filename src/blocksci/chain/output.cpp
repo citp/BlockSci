@@ -30,7 +30,7 @@ namespace blocksci {
     
     std::string Output::toString() const {
         std::stringstream ss;
-        ss << "TxOut(spending_tx_index=" << inout->linkedTxNum << ", address=" << getAddress().getScript().toPrettyString() << ", value=" << inout->getValue() << ")";
+        ss << "TxOut(spending_tx_index=" << inout->linkedTxNum << ", address=" << getAddress().getScript().toString() << ", value=" << inout->getValue() << ")";
         return ss.str();
     }
     
