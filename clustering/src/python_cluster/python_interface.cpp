@@ -22,6 +22,22 @@ namespace py = pybind11;
 
 using namespace blocksci;
 
+#include <mpark/variant.hpp>
+
+namespace pybind11 { namespace detail {
+    template <typename... Ts>
+    struct type_caster<mpark::variant<Ts...>> : variant_caster<mpark::variant<Ts...>> {};
+    
+    // Specifies the function used to visit the variant -- `apply_visitor` instead of `visit`
+    template <>
+    struct visit_helper<mpark::variant> {
+        template <typename... Args>
+        static auto call(Args &&...args) -> decltype(mpark::visit(args...)) {
+            return mpark::visit(args...);
+        }
+    };
+}}
+
 uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
     uint64_t total = 0;
     for (auto tx : block) {
