@@ -53,9 +53,9 @@
 </pre></div>
 </div>
 <p>This sets up an SSH tunnel between port 8888 on your remote EC2 instance and port 8888 on your localhost. You can use whichever port you like on your local machine. Next, you can navigate to <a class="reference external" href="http://localhost:8888/">http://localhost:8888/</a> in your browser and log in with the password ‘blocksci’. A demo notebook will be available for you to run and you can begin exploring the blockchain. Don’t forget to shut down the EC2 instance when you are finished since EC2 charges hourly.</p>
-<p>AWS instances suffer from a <a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-initialize.html">known performance issue</a> when starting up from an existing AMI. When the machine starts up it doesn’t actually load all of the data on the disk so that startup can be instant. Instead it only loads the data when it is accessed for the first time. Thus BlockSci will temporarly operate slowly when the image has first been launched. Within about 20 minutes after launch, the most crucial data files will be loaded to disk from the network, and most quries should run at full speed, including all examples in the demo Notebook. After about 3.5 hours, all data will be loaded to disk and all queries will reach full speed.</p>
+<p>AWS instances suffer from a <a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-initialize.html">known performance issue</a> when starting up from an existing AMI. When the machine starts up it doesn’t actually load all of the data on the disk so that startup can be instant. Instead it only loads the data when it is accessed for the first time. Thus BlockSci will temporarily operate slowly when the image has first been launched. Within about 20 minutes after launch, the most crucial data files will be loaded to disk from the network, and most queries should run at full speed, including all examples in the demo Notebook. After about 3.5 hours, all data will be loaded to disk and all queries will reach full speed.</p>
 <p>There is no need for user intervention to resolve this issue since the machine will do so automatically on launch.</p>
-<p>The AMI contains a fully updated version of the Bitcoin blockchain as of the creation date of the AMI (March 8, 2017). Additionally it will automically start a Bitcoin full node and update the blockchain once every hour to the latest version of the chain.</p>
+<p>The AMI contains a fully updated version of the Bitcoin blockchain as of the creation date of the AMI (March 8, 2017). Additionally it will automatically start a Bitcoin full node and update the blockchain once every hour to the latest version of the chain.</p>
 </div>
 <div class="section" id="local-setup">
 <h2>Local setup<a class="headerlink" href="#local-setup" title="Permalink to this headline">¶</a></h2>
@@ -71,7 +71,7 @@
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>blocksci_parser --output-directory bitcoin-data update rpc --username <span class="o">[</span>user<span class="o">]</span> --password <span class="o">[</span>pass<span class="o">]</span> --address <span class="o">[</span>ip<span class="o">]</span> --port <span class="o">[</span>port<span class="o">]</span>
 </pre></div>
 </div>
-<p>BlockSci can be kept up to date with the blockchain by setting up a cronjob to periodically run the parser command. Updates to the parser should not noticably impact usage of the analysis library. It is recommended that the Blockchain be kept approximately 6 blocks back from the head of the chain in order to avoid imperfect reorg handling in BlockSci.</p>
+<p>BlockSci can be kept up to date with the blockchain by setting up a cronjob to periodically run the parser command. Updates to the parser should not noticeably impact usage of the analysis library. It is recommended that the Blockchain be kept approximately 6 blocks back from the head of the chain in order to avoid imperfect reorg handling in BlockSci.</p>
 <p>For example you can set BlockSci to update hourly and stay 6 blocks behind the head of the chain via adding</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>@hourly /usr/local/bin/blocksci_parser --output-directory /home/ubuntu/bitcoin-data update --max-block -6 disk --coin-directory /home/ubuntu/.bitcoin
 </pre></div>
@@ -100,7 +100,7 @@
 python3
 </pre></div>
 </div>
-<p>With the python interpretter open, the following code will load a Blockchain object created from the data output by the parser:</p>
+<p>With the python interpreter open, the following code will load a Blockchain object created from the data output by the parser:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">blocksci</span>
 <span class="n">chain</span> <span class="o">=</span> <span class="n">blocksci</span><span class="o">.</span><span class="n">Blockchain</span><span class="p">(</span><span class="s2">&quot;file_path_to_parser_output-directory&quot;</span><span class="p">)</span>
 </pre></div>
