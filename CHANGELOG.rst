@@ -14,7 +14,7 @@ Feature Enhancements
 
   Following an number of enhancements BlockSci is now capable of safely performing incremental updates. The AWS distribution of BlockSci now includes a Bitcoin full node and will automatically update the BlockChain once per hour. For local installations of BlockSci, see the readme for setup instructions.
 
-- Introduced new concept of Equivalent Addresses which includes two types of equivalences, Type Equivalent and Script Equivalent. Type equivalent refers to two addresses using the same secret in a different way such as how a single pubkey could be used for a Pay to Pubkey Hash address and a Pay To Witness Pubkey Hash address. Script Equivalent referes to a Pay tp Script Hash address being equivalent to the address it contains. Address.equiv() and the EquivAddress class were added to support these concepts. See the documentation for more information.
+- Introduced new concept of Equivalent Addresses which includes two types of equivalences, Type Equivalent and Script Equivalent. Type equivalent refers to two addresses using the same secret in a different way such as how a single pubkey could be used for a Pay to Pubkey Hash address and a Pay To Witness Pubkey Hash address. Script Equivalent refers to a Pay tp Script Hash address being equivalent to the address it contains. Address.equiv() and the EquivAddress class were added to support these concepts. See the documentation for more information.
 
 - Enabled the opening of multiple Blockchain objects in the same notebook by removing internal usage of Singleton pattern.
 
@@ -60,7 +60,7 @@ Version 0.3
 
 5x performance increase
 -----------------------
-We acheived a roughly 5x performance increase (for the C++ interface) at the cost of a small (under 4%) increase in memory consumption. BlockSci can now iterate over every transaction input and output on the Bitcoin blockchain in about 1 second on a single 4-core EC2 instance. Most of the improvements came from improving memory alignment in data files.
+We achieved a roughly 5x performance increase (for the C++ interface) at the cost of a small (under 4%) increase in memory consumption. BlockSci can now iterate over every transaction input and output on the Bitcoin blockchain in about 1 second on a single 4-core EC2 instance. Most of the improvements came from improving memory alignment in data files.
 
 In our paper_ we presented performance results for iterating over transactions using the C++ library (up to block 478,449 of the Bitcoin blockchain). In the table below we compare the timings reported in the paper (Old) to the corresponding timings for version 0.3 (New).
 
@@ -123,7 +123,7 @@ Additional index lookup
 ------------------------
 We have added an index to allow the lookup of transactions by hash and addresses by address string.
 
-Transactions can be looked up via :python:`blocksci.Tx(hash_string)` and addresses can be looked up via :python:`blockcsi.Address.from_string(address_string)`.
+Transactions can be looked up via :python:`blocksci.Tx(hash_string)` and addresses can be looked up via :python:`blocksci.Address.from_string(address_string)`.
    
 Bug fixes
 ---------------------
