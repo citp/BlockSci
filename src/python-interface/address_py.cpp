@@ -28,9 +28,6 @@ using namespace blocksci;
 void init_address(py::module &m) {
     py::class_<Address> address(m, "Address", "Represents an abstract address object which uniquely identifies a given address");
     address
-    .def(py::init([](uint32_t index, AddressType::Enum type, const blocksci::Blockchain &chain) {
-        return Address{index, type, chain.getAccess()};
-    }), "Can be constructed directly by passing it an address index and address type")
     .def(py::self == py::self)
     .def(hash(py::self))
     .def_readonly("address_num", &Address::scriptNum, "The internal identifier of the address")

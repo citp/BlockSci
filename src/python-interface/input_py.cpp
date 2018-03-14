@@ -26,20 +26,9 @@ namespace py = pybind11;
 using namespace blocksci;
 
 void init_input(py::module &m) {
-    py::class_<InputPointer>(m, "InputPointer", "Class representing a pointer to an input")
-    .def("__repr__", &InputPointer::toString)
-    .def(py::self == py::self)
-    .def(hash(py::self))
-    .def_readonly("tx_index", &InputPointer::txNum)
-    .def_readonly("int_index", &InputPointer::inoutNum)
-    ;
-    
     py::class_<Input> inputClass(m, "Input", "Class representing a transaction input");
     inputClass
     .def("__repr__", &Input::toString)
-    .def(py::init([](const InputPointer pointer, const blocksci::Blockchain &chain) {
-        return Input{pointer, chain.getAccess()};
-    }))
     .def(py::self == py::self)
     .def(hash(py::self))
     ;

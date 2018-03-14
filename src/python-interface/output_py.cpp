@@ -97,20 +97,9 @@ void addOutputRangeMethods(Class &cl, FuncApplication func) {
 
 
 void init_output(py::module &m) {
-    py::class_<OutputPointer>(m, "OutputPointer", "Class representing a pointer to an output")
-    .def("__repr__", &OutputPointer::toString)
-    .def(py::self == py::self)
-    .def(hash(py::self))
-    .def_readonly("tx_index", &OutputPointer::txNum, "The index of the transaction this points to")
-    .def_readonly("out_index", &OutputPointer::inoutNum, "The offset of the output in the pointed to transaction")
-    ;
-    
     py::class_<Output> outputClass(m, "Output", "Class representing a transaction output");
     outputClass
     .def("__repr__", &Output::toString)
-    .def(py::init([](const OutputPointer pointer, const blocksci::Blockchain &chain) {
-        return Output{pointer, chain.getAccess()};
-    }))
     .def(py::self == py::self)
     .def(hash(py::self))
     ;

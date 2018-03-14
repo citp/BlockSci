@@ -79,6 +79,25 @@ void init_blockchain(py::module &m) {
         return chain.scripts(type);
     })
     .def_property_readonly("outputs_unspent", [](const Blockchain &chain) -> ranges::any_view<Output> { return outputsUnspent(chain); }, "Returns a list of all of the outputs that are unspent")
+    .def("tx_with_index", [](const Blockchain &chain, uint32_t index) {
+        return Transaction{index, chain.getAccess()};
+    }), R"docstring(
+         This functions gets the transaction with given index.
+         
+         :param int index: The index of the transation.
+         :returns: Tx
+         )docstring")
+    .def("tx_with_hash", [](const Blockchain &chain, const std::string &hash) {
+        return Transaction{hash, chain.getAccess()};
+    }), R"docstring(
+         This functions gets the transaction with given hash.
+         
+         :param string index: The hash of the transation.
+         :returns: Tx
+         )docstring")
+    .def("address_from_index", [](const Blockchain &chain, uint32_t index, AddressType::Enum type) -> AnyScript::ScriptVariant {
+        return Address{index, type, chain.getAccess()}.getScript().wrapped;
+    }, "Construct an address object from an address num and type")
     .def("address_from_string", [](const Blockchain &chain, const std::string &addressString) -> ranges::optional<AnyScript::ScriptVariant> {
         auto address = getAddressFromString(addressString, chain.getAccess());
         if (address) {
