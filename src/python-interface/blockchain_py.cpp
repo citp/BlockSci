@@ -81,7 +81,7 @@ void init_blockchain(py::module &m) {
     .def_property_readonly("outputs_unspent", [](const Blockchain &chain) -> ranges::any_view<Output> { return outputsUnspent(chain); }, "Returns a list of all of the outputs that are unspent")
     .def("tx_with_index", [](const Blockchain &chain, uint32_t index) {
         return Transaction{index, chain.getAccess()};
-    }), R"docstring(
+    }, R"docstring(
          This functions gets the transaction with given index.
          
          :param int index: The index of the transation.
@@ -89,7 +89,7 @@ void init_blockchain(py::module &m) {
          )docstring")
     .def("tx_with_hash", [](const Blockchain &chain, const std::string &hash) {
         return Transaction{hash, chain.getAccess()};
-    }), R"docstring(
+    }, R"docstring(
          This functions gets the transaction with given hash.
          
          :param string index: The hash of the transation.
