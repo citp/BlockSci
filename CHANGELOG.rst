@@ -47,9 +47,11 @@ Breaking Changes
 Bug Fixes
 -------------
 - Fixed segwit size handling as stated above. (`Issue #43`_)
+- Fixed chain.filter_txes (`Issue #50`_)
 - Fixed P2SH API issued. (`Issue #53`_)
 
  .. _Issue #43: https://github.com/citp/BlockSci/issues/43
+ .. _Issue #50: https://github.com/citp/BlockSci/issues/50
  .. _Issue #53: https://github.com/citp/BlockSci/issues/53
 
 
