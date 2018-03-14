@@ -19,7 +19,7 @@ import sys
 import os
 import inspect
 
-version = "0.41"
+version = "0.45"
 
 def mapreduce_block_ranges(chain, mapFunc, reduceFunc, init,  start=None, end=None, cpu_count=psutil.cpu_count()):
     """Initialized multithreaded map reduce function over a stream of block ranges
@@ -91,10 +91,10 @@ def filter_txes(self, filterFunc, start = None, end = None, cpu_count=psutil.cpu
     def mapFunc(blocks):
         return [tx.index for block in blocks for tx in block if filterFunc(tx)]
     def reduceFunc(cur, el):
-        return cur + [el]
+        return cur + el
     init = list()
     tx_ids = mapreduce_block_ranges(self, mapFunc, reduceFunc, init, start, end, cpu_count)
-    return [Tx(x) for x in tx_ids]
+    return [chain.tx_with_index(x) for x in tx_ids]
 
 Blockchain.map_blocks = map_blocks
 Blockchain.filter_blocks = filter_blocks
