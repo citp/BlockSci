@@ -110,7 +110,7 @@ std::vector<uint32_t> getClusters(Blockchain &chain, std::unordered_map<DedupAdd
     
     auto &access = chain.getAccess();
 
-    auto scriptHashCount = chain.scriptCount(DedupAddressType::SCRIPTHASH);
+    auto scriptHashCount = chain.addressCount(AddressType::SCRIPTHASH);
     
     
     segmentWork(1, scriptHashCount + 1, 8, [&ds, &access](uint32_t index) {
