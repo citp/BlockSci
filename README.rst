@@ -20,16 +20,16 @@ For installation instructions, see below. More detailed documentation is coming 
 Latest release (BlockSci v0.4.5)
 ================================
 
-Version 0.4.5 introduces full bech32 address support, adds segwit size support, fixes a bug which had been preventing use of continuous incremental blockchain updates, and introduces the concept of Equivalent addresses. The "Local setup" section contains best practices for setting up automatic blockchain updates. You can read more details about the release in the `release notes`_. We will be releasing an new AMI for this version shortly. Until you can use an AMI image_ running version 0.4 (explained under "Quick setup" below).
+Version 0.4.5 introduces full bech32 address support, adds segwit size support, fixes a bug which had been preventing use of continuous incremental blockchain updates, and introduces the concept of Equivalent addresses. The "Local setup" section contains best practices for setting up automatic blockchain updates. You can read more details about the release in the `release notes`_. We are releasing an new AMI_ running version 0.4.5 (explained under "Quick setup" below).
 
 .. _release notes: https://citp.github.io/BlockSci/changelog.html#version-0-4-5
-.. _image: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-a09d66dd
+.. _AMI: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-766ead0b
 
 
 Quick setup using Amazon EC2
 ==============================
 
-If you want to start using BlockSci immediately, we have made available an EC2 image: ami-7cf38706_. We recommend using instance with 60 GB of memory or more for optimal performance (r4.2xlarge). On boot, a Jupyter Notebook running BlockSci will launch immediately. To access the notebook, you must set up port forwarding to your computer. Inserting the name of your private key file and the domain of your ec2 instance into the following command will make the Notebook available on your machine.
+If you want to start using BlockSci immediately, we have made available an EC2 image: ami-766ead0b_. We recommend using instance with 60 GB of memory or more for optimal performance (r4.2xlarge). On boot, a Jupyter Notebook running BlockSci will launch immediately. To access the notebook, you must set up port forwarding to your computer. Inserting the name of your private key file and the domain of your ec2 instance into the following command will make the Notebook available on your machine.
 
 .. code-block:: bash
 
@@ -43,7 +43,7 @@ There is no need for user intervention to resolve this issue since the machine w
 
 The AMI contains a fully updated version of the Bitcoin blockchain as of the creation date of the AMI (March 8, 2017). Additionally it will automatically start a Bitcoin full node and update the blockchain once every hour to the latest version of the chain.
 
-.. _ami-7cf38706: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-7cf38706
+.. _ami-766ead0b: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-766ead0b
 .. _known performance issue: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-initialize.html
 
 Local setup
