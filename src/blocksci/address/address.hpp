@@ -23,6 +23,7 @@
 namespace blocksci {
     class DataAccess;
     struct DataConfiguration;
+    class EquivAddress;
     
     struct RawAddress {
         uint32_t scriptNum;
@@ -62,14 +63,17 @@ namespace blocksci {
         
         AnyScript getScript() const;
         
-        uint64_t calculateBalance(BlockHeight height, bool typeEquivalent, bool nestedEquivalent) const;
+        uint64_t calculateBalance(BlockHeight height) const;
         
-        std::vector<Address> getEquivAddresses(bool typeEquivalent, bool nestedEquivalent) const;
-        std::vector<Output> getOutputs(bool typeEquivalent, bool nestedEquivalent) const;
-        std::vector<Input> getInputs(bool typeEquivalent, bool nestedEquivalent) const;
-        std::vector<Transaction> getTransactions(bool typeEquivalent, bool nestedEquivalent) const;
-        std::vector<Transaction> getOutputTransactions(bool typeEquivalent, bool nestedEquivalent) const;
-        std::vector<Transaction> getInputTransactions(bool typeEquivalent, bool nestedEquivalent) const;
+        EquivAddress getEquivAddresses(bool nestedEquivalent) const;
+        
+        std::vector<OutputPointer> getOutputPointers() const;
+        
+        std::vector<Output> getOutputs() const;
+        std::vector<Input> getInputs() const;
+        std::vector<Transaction> getTransactions() const;
+        std::vector<Transaction> getOutputTransactions() const;
+        std::vector<Transaction> getInputTransactions() const;
         
         std::string fullType() const;
     };

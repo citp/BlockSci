@@ -10,6 +10,7 @@
 #include "variant_py.hpp"
 
 #include <blocksci/address/address.hpp>
+#include <blocksci/address/equiv_address.hpp>
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/chain.hpp>
 #include <blocksci/script.hpp>
@@ -31,25 +32,36 @@ void init_address(py::module &m) {
     .def(hash(py::self))
     .def_readonly("script_num", &Address::scriptNum, "The internal identifier of the address")
     .def_readonly("type", &Address::type, "The type of address")
-    .def("equiv_addresses", [](const Address &address, bool typeEquivalent, bool nestedEquivalent) {
-        py::list ret;
-        for (auto &address : address.getEquivAddresses(typeEquivalent, nestedEquivalent)) {
-            ret.append(address.getScript().wrapped);
-        }
-        return ret;
-    }, py::arg("equiv_type") = true,  py::arg("equiv_script") = true, "Returns a list of all addresses equivalent to this address")
-    .def("balance", &Address::calculateBalance, py::arg("height") = 0, py::arg("equiv_type") = true,  py::arg("equiv_script") = true, "Calculates the balance held by this address at the height (Defaults to the full chain)")
-    .def("outs", &Address::getOutputs, py::arg("equiv_type") = true,  py::arg("equiv_script") = true, "Returns a list of all outputs sent to this address")
-    .def("ins", &Address::getInputs, py::arg("equiv_type") = true,  py::arg("equiv_script") = true, "Returns a list of all inputs spent from this address")
-    .def("txes", &Address::getTransactions, py::arg("equiv_type") = true,  py::arg("equiv_script") = true, "Returns a list of all transactions involving this address")
-    .def("in_txes",&Address::getInputTransactions, py::arg("equiv_type") = true,  py::arg("equiv_script") = true, "Returns a list of all transaction where this address was an input")
-    .def("out_txes", &Address::getOutputTransactions, py::arg("equiv_type") = true,  py::arg("equiv_script") = true, "Returns a list of all transaction where this address was an output")
-    .def("out_txes_count", [](const Address &address, bool typeEquivalent, bool nestedEquivalent) {
-        return address.getOutputTransactions(typeEquivalent, nestedEquivalent).size();
-    }, py::arg("equiv_type") = true,  py::arg("equiv_script") = true, "Return the number of transactions where this address was an output")
-    .def("in_txes_count", [](const Address &address, bool typeEquivalent, bool nestedEquivalent) {
-        return address.getInputTransactions(typeEquivalent, nestedEquivalent).size();
-    }, py::arg("equiv_type") = true,  py::arg("equiv_script") = true, "Return the number of transactions where this address was an input")
+    .def("equiv", &Address::getEquivAddresses, py::arg("equiv_script") = true, "Returns a list of all addresses equivalent to this address")
+    .def("balance", &Address::calculateBalance, py::arg("height") = 0, "Calculates the balance held by this address at the height (Defaults to the full chain)")
+    .def("outs", &Address::getOutputs, "Returns a list of all outputs sent to this address")
+    .def("ins", &Address::getInputs, "Returns a list of all inputs spent from this address")
+    .def("txes", &Address::getTransactions, "Returns a list of all transactions involving this address")
+    .def("in_txes",&Address::getInputTransactions, "Returns a list of all transaction where this address was an input")
+    .def("out_txes", &Address::getOutputTransactions, "Returns a list of all transaction where this address was an output")
+    .def("out_txes_count", [](const Address &address) {
+        return address.getOutputTransactions().size();
+    }, "Return the number of transactions where this address was an output")
+    .def("in_txes_count", [](const Address &address) {
+        return address.getInputTransactions().size();
+    }, "Return the number of transactions where this address was an input")
+    ;
+    
+    py::class_<EquivAddress>(m, "EquivAddress", "A set of equivalent addresses")
+    .def(py::self == py::self)
+    .def(hash(py::self))
+    .def("balance", &EquivAddress::calculateBalance, py::arg("height") = 0, "Calculates the balance held by these equivalent addresses at the height (Defaults to the full chain)")
+    .def("outs", &EquivAddress::getOutputs, "Returns a list of all outputs sent to these equivalent addresses")
+    .def("ins", &EquivAddress::getInputs, "Returns a list of all inputs spent from these equivalent addresses")
+    .def("txes", &EquivAddress::getTransactions, "Returns a list of all transactions involving these equivalent addresses")
+    .def("in_txes",&EquivAddress::getInputTransactions, "Returns a list of all transaction where these equivalent addresses were an input")
+    .def("out_txes", &EquivAddress::getOutputTransactions, "Returns a list of all transaction where these equivalent addresses were an output")
+    .def("out_txes_count", [](const EquivAddress &address) {
+        return address.getOutputTransactions().size();
+    }, "Return the number of transactions where these equivalent addresses were an output")
+    .def("in_txes_count", [](const EquivAddress &address) {
+        return address.getInputTransactions().size();
+    }, "Return the number of transactions where these equivalent addresses were an input")
     ;
     
     py::class_<script::Pubkey>(m, "PubkeyScript", address, "Extra data about pay to pubkey address")
@@ -58,7 +70,7 @@ void init_address(py::module &m) {
     .def_property_readonly("has_been_spent", py::overload_cast<>(&script::Pubkey::hasBeenSpent, py::const_), "Check if this script has ever been spent")
     .def_property_readonly("first_tx", py::overload_cast<>(&script::Pubkey::getFirstTransaction, py::const_), "Get the first transaction that was sent to this address")
     .def_property_readonly("revealed_tx",py::overload_cast<>(&script::Pubkey::getTransactionRevealed, py::const_), "The transaction where this wrapped script was first revealed")
-    .def("including_multisigs", [](script::Pubkey &script) {
+    .def("find_multisigs", [](script::Pubkey &script) {
         py::list ret;
         for (auto &address : script.getIncludingMultisigs()) {
             ret.append(address.getScript().wrapped);
@@ -83,7 +95,7 @@ void init_address(py::module &m) {
     .def_property_readonly("has_been_spent", py::overload_cast<>(&script::PubkeyHash::hasBeenSpent, py::const_), "Check if this script has ever been spent")
     .def_property_readonly("first_tx", py::overload_cast<>(&script::PubkeyHash::getFirstTransaction, py::const_), "Get the first transaction that was sent to this address")
     .def_property_readonly("revealed_tx",py::overload_cast<>(&script::PubkeyHash::getTransactionRevealed, py::const_), "The transaction where this wrapped script was first revealed")
-    .def("including_multisigs", [](script::PubkeyHash &script) {
+    .def("find_multisigs", [](script::PubkeyHash &script) {
         py::list ret;
         for (auto &address : script.getIncludingMultisigs()) {
             ret.append(address.getScript().wrapped);
@@ -108,7 +120,7 @@ void init_address(py::module &m) {
     .def_property_readonly("has_been_spent", py::overload_cast<>(&script::WitnessPubkeyHash::hasBeenSpent, py::const_), "Check if this script has ever been spent")
     .def_property_readonly("first_tx", py::overload_cast<>(&script::WitnessPubkeyHash::getFirstTransaction, py::const_), "Get the first transaction that was sent to this address")
     .def_property_readonly("revealed_tx",py::overload_cast<>(&script::WitnessPubkeyHash::getTransactionRevealed, py::const_), "The transaction where this wrapped script was first revealed")
-    .def("including_multisigs", [](script::WitnessPubkeyHash &script) {
+    .def("find_multisigs", [](script::WitnessPubkeyHash &script) {
         py::list ret;
         for (auto &address : script.getIncludingMultisigs()) {
             ret.append(address.getScript().wrapped);
@@ -133,7 +145,7 @@ void init_address(py::module &m) {
     .def_property_readonly("has_been_spent", py::overload_cast<>(&script::MultisigPubkey::hasBeenSpent, py::const_), "Check if this script has ever been spent")
     .def_property_readonly("first_tx", py::overload_cast<>(&script::MultisigPubkey::getFirstTransaction, py::const_), "Get the first transaction that was sent to this address")
     .def_property_readonly("revealed_tx",py::overload_cast<>(&script::MultisigPubkey::getTransactionRevealed, py::const_), "The transaction where this wrapped script was first revealed")
-    .def("including_multisigs", [](script::MultisigPubkey &script) {
+    .def("find_multisigs", [](script::MultisigPubkey &script) {
         py::list ret;
         for (auto &address : script.getIncludingMultisigs()) {
             ret.append(address.getScript().wrapped);

@@ -10,6 +10,7 @@
 
 #include "address.hpp"
 #include "dedup_address.hpp"
+#include "equiv_address.hpp"
 #include "address_info.hpp"
 #include "scripts/bitcoin_base58.hpp"
 #include "scripts/bitcoin_segwit_addr.hpp"
@@ -18,6 +19,7 @@
 #include "scripts/script_variant.hpp"
 #include "chain/transaction.hpp"
 #include "chain/output.hpp"
+#include "chain/inout_pointer.hpp"
 #include "index/address_index.hpp"
 #include "index/hash_index.hpp"
 
@@ -65,26 +67,6 @@ namespace blocksci {
     AnyScript Address::getScript() const {
         return AnyScript{*this, *access};
     }
-    
-    uint64_t Address::calculateBalance(BlockHeight height, bool typeEquivalent, bool nestedEquivalent) const {
-        uint64_t value = 0;
-        if (height == 0) {
-            for (auto &output : getOutputs(typeEquivalent, nestedEquivalent)) {
-                if (!output.isSpent()) {
-                    value += output.getValue();
-                }
-            }
-        } else {
-            for (auto &output : getOutputs(typeEquivalent, nestedEquivalent)) {
-                if (output.blockHeight <= height && (!output.isSpent() || output.getSpendingTx()->blockHeight > height)) {
-                    value += output.getValue();
-                }
-            }
-        }
-        return value;
-    }
-    
-
     
     ranges::optional<Address> getAddressFromString(const std::string &addressString, const DataAccess &access) {
         if (addressString.compare(0, access.config.segwitPrefix.size(), access.config.segwitPrefix) == 0) {
@@ -176,70 +158,36 @@ namespace blocksci {
         return fullTypeImp(*this, *access);
     }
     
-    std::vector<Address> Address::getEquivAddresses(bool typeEquivalent, bool nestedEquivalent) const {
-        return access->addressIndex->getEquivAddresses(*this, typeEquivalent, nestedEquivalent);
+    EquivAddress Address::getEquivAddresses(bool nestedEquivalent) const {
+        return access->addressIndex->getEquivAddresses(*this, nestedEquivalent);
     }
     
-    std::vector<Output> Address::getOutputs(bool typeEquivalent, bool nestedEquivalent) const {
-        auto dataAccess = access;
-        auto pointers = access->addressIndex->getOutputPointers(*this, typeEquivalent, nestedEquivalent);
-        return pointers
-        | ranges::view::transform([dataAccess](const OutputPointer &pointer) { return Output(pointer, *dataAccess); })
-        | ranges::to_vector;
+    uint64_t Address::calculateBalance(BlockHeight height) const {
+        return blocksci::calculateBalance(getOutputPointers(), height, *access);
     }
     
-    std::vector<Input> Address::getInputs(bool typeEquivalent, bool nestedEquivalent) const {
-        auto pointers = access->addressIndex->getOutputPointers(*this, typeEquivalent, nestedEquivalent);
-        std::unordered_set<InputPointer> allPointers;
-        allPointers.reserve(pointers.size());
-        for (auto &pointer : pointers) {
-            auto inputTx = Output(pointer, *access).getSpendingTx();
-            if(inputTx) {
-                auto inputPointers = inputTx->getInputPointers(pointer);
-                for (auto &inputPointer : inputPointers) {
-                    allPointers.insert(inputPointer);
-                }
-            }
-        }
-        auto dataAccess = access;
-        return allPointers
-        | ranges::view::transform([dataAccess](const InputPointer &pointer) { return Input(pointer, *dataAccess); })
-        | ranges::to_vector;
+    std::vector<OutputPointer> Address::getOutputPointers() const {
+        return access->addressIndex->getOutputPointers(*this);
     }
     
-    std::vector<Transaction> Address::getTransactions(bool typeEquivalent, bool nestedEquivalent) const {
-        auto pointers = access->addressIndex->getOutputPointers(*this, typeEquivalent, nestedEquivalent);
-        std::unordered_set<blocksci::Transaction> txes;
-        txes.reserve(pointers.size() * 2);
-        for (auto &pointer : pointers) {
-            txes.insert(Transaction(pointer.txNum, *access));
-            auto inputTx = Output(pointer, *access).getSpendingTx();
-            if (inputTx) {
-                txes.insert(*inputTx);
-            }
-        }
-        return {txes.begin(), txes.end()};
+    std::vector<Output> Address::getOutputs() const {
+        return blocksci::getOutputs(getOutputPointers(), *access);
     }
     
-    std::vector<Transaction> Address::getOutputTransactions(bool typeEquivalent, bool nestedEquivalent) const {
-        auto pointers = access->addressIndex->getOutputPointers(*this, typeEquivalent, nestedEquivalent);
-        auto txNums = pointers | ranges::view::transform([](const OutputPointer &pointer) { return pointer.txNum; }) | ranges::to_vector;
-        txNums |= ranges::action::sort | ranges::action::unique;
-        auto dataAccess = access;
-        return txNums | ranges::view::transform([dataAccess](uint32_t txNum) { return Transaction(txNum, *dataAccess); }) | ranges::to_vector;
-    }
-
-    auto flatMap() {
-        return ranges::view::filter([](const auto &optional) { return static_cast<bool>(optional); })
-        | ranges::view::transform([](const auto &optional) { return *optional; });
+    std::vector<Input> Address::getInputs() const {
+        return blocksci::getInputs(getOutputPointers(), *access);
     }
     
-    std::vector<Transaction> Address::getInputTransactions(bool typeEquivalent, bool nestedEquivalent) const {
-        auto pointers = access->addressIndex->getOutputPointers(*this, typeEquivalent, nestedEquivalent);
-        auto dataAccess = access;
-        auto txes = pointers | ranges::view::transform([dataAccess](const OutputPointer &pointer) { return Output(pointer, *dataAccess).getSpendingTx(); }) | flatMap() | ranges::to_vector;
-        txes |= ranges::action::sort | ranges::action::unique;
-        return txes;
+    std::vector<Transaction> Address::getTransactions() const {
+        return blocksci::getTransactions(getOutputPointers(), *access);
+    }
+    
+    std::vector<Transaction> Address::getOutputTransactions() const {
+        return blocksci::getOutputTransactions(getOutputPointers(), *access);
+    }
+    
+    std::vector<Transaction> Address::getInputTransactions() const {
+        return blocksci::getInputTransactions(getOutputPointers(), *access);
     }
 }
 

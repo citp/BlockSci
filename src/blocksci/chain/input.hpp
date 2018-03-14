@@ -13,7 +13,6 @@
 #include <blocksci/chain/inout_pointer.hpp>
 #include <blocksci/util/data_access.hpp>
 #include <blocksci/chain/chain_access.hpp>
-#include <blocksci/address/address.hpp>
 #include <blocksci/address/address_types.hpp>
 
 #include <cstdint>
@@ -82,14 +81,11 @@ namespace blocksci {
             return inout->getValue();
         }
         
-        Address getAddress() const {
-            return Address(inout->toAddressNum, inout->getType(), *access);
-        }
+        Address getAddress() const;
         
         uint32_t spentTxIndex() const {
             return inout->linkedTxNum;
         }
-        
         
         std::string toString() const;
         Transaction getSpentTx() const;

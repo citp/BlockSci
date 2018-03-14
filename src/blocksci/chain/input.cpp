@@ -25,6 +25,10 @@ namespace blocksci {
         return Transaction(pointer.txNum, blockHeight, *access);
     }
     
+    Address Input::getAddress() const {
+        return Address(inout->toAddressNum, inout->getType(), *access);
+    }
+    
     Block Input::block() const {
         return Block(blockHeight, *access);
     }

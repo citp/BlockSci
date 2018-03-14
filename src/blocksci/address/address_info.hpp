@@ -43,9 +43,9 @@ namespace blocksci {
     template <>
     struct AddressInfo<AddressType::MULTISIG_PUBKEY> {
         static constexpr char name[] = "multisig_pubkey";
-        static constexpr EquivAddressType::Enum equivType = EquivAddressType::MULTISIG_PUBKEY;
+        static constexpr EquivAddressType::Enum equivType = EquivAddressType::PUBKEY;
         static constexpr DedupAddressType::Enum dedupType = DedupAddressType::PUBKEY;
-        static constexpr AddressType::Enum exampleType = AddressType::PUBKEYHASH;
+        static constexpr AddressType::Enum exampleType = AddressType::PUBKEY;
         using IDType = uint160;
     };
     
@@ -105,13 +105,7 @@ namespace blocksci {
     
     template <>
     struct EquivAddressInfo<EquivAddressType::PUBKEY> {
-        static constexpr std::array<AddressType::Enum, 3> equivTypes = {{AddressType::PUBKEY, AddressType::PUBKEYHASH, AddressType::WITNESS_PUBKEYHASH}};
-        static constexpr DedupAddressType::Enum dedupType = DedupAddressType::PUBKEY;
-    };
-    
-    template <>
-    struct EquivAddressInfo<EquivAddressType::MULTISIG_PUBKEY> {
-        static constexpr std::array<AddressType::Enum, 1> equivTypes = {{AddressType::MULTISIG_PUBKEY}};
+        static constexpr std::array<AddressType::Enum, 4> equivTypes = {{AddressType::PUBKEY, AddressType::PUBKEYHASH, AddressType::WITNESS_PUBKEYHASH, AddressType::MULTISIG_PUBKEY}};
         static constexpr DedupAddressType::Enum dedupType = DedupAddressType::PUBKEY;
     };
 

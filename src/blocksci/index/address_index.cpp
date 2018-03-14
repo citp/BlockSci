@@ -9,6 +9,7 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "address_index.hpp"
+#include "address/equiv_address.hpp"
 #include "chain/transaction.hpp"
 #include "chain/inout_pointer.hpp"
 #include "chain/output.hpp"
@@ -95,9 +96,9 @@ namespace blocksci {
         return false;
     }
     
-    std::vector<OutputPointer> AddressIndex::getOutputPointersImp(uint32_t addressNum, AddressType::Enum type) const {
-        auto column = getOutputColumn(type);
-        rocksdb::Slice key{reinterpret_cast<const char *>(&addressNum), sizeof(addressNum)};
+    std::vector<OutputPointer> AddressIndex::getOutputPointers(const Address &address) const {
+        auto column = getOutputColumn(address.type);
+        rocksdb::Slice key{reinterpret_cast<const char *>(&address.scriptNum), sizeof(address.scriptNum)};
         std::vector<OutputPointer> pointers;
         rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
         for (it->Seek(key); it->Valid() && it->key().starts_with(key); it->Next()) {
@@ -196,7 +197,7 @@ namespace blocksci {
         return std::vector<Address>{upAddresses.begin(), upAddresses.end()};
     }
     
-    std::unordered_set<Address> AddressIndex::getPossibleEquivAddresses(const DedupAddress &searchAddress, bool nestedEquivalent, const DataAccess &access) const {
+    EquivAddress AddressIndex::getEquivAddresses(const DedupAddress &searchAddress, bool nestedEquivalent, const DataAccess &access) const {
         std::unordered_set<Address> addresses;
         if (nestedEquivalent) {
             for (auto type : equivAddressTypes(equivType(searchAddress.type))) {
@@ -209,66 +210,23 @@ namespace blocksci {
                 addresses.insert(Address(searchAddress.scriptNum, type, access));
             }
         }
-        return addresses;
+        return EquivAddress{std::move(addresses), nestedEquivalent, access};
     }
     
-    std::vector<Address> AddressIndex::getEquivAddresses(const DedupAddress &searchAddress, bool nestedEquivalent, const DataAccess &access) const {
-        std::vector<Address> addresses;
-        for (const auto &address : getPossibleEquivAddresses(searchAddress, nestedEquivalent, access)) {
-            if (checkIfExists(address)) {
-                addresses.push_back(address);
-            }
-        }
-        return addresses;
-    }
-    
-    std::vector<OutputPointer> AddressIndex::getOutputPointers(const DedupAddress &searchAddress, bool nestedEquivalent, const DataAccess &access) const {
-        std::vector<OutputPointer> outputs;
-        for (const auto &address : getPossibleEquivAddresses(searchAddress, nestedEquivalent, access)) {
-            auto addrOuts = getOutputPointersImp(address.scriptNum, address.type);
-            outputs.insert(outputs.end(), addrOuts.begin(), addrOuts.end());
-        }
-        return outputs;
-    }
-    
-    std::unordered_set<Address> AddressIndex::getPossibleEquivAddresses(const Address &searchAddress, bool typeEquivalent, bool nestedEquivalent) const {
+    EquivAddress AddressIndex::getEquivAddresses(const Address &searchAddress, bool nestedEquivalent) const {
         std::unordered_set<Address> addresses;
-        if (typeEquivalent && nestedEquivalent) {
+        if (nestedEquivalent) {
             for (auto type : equivAddressTypes(equivType(searchAddress.type))) {
                 auto childAddress = Address(searchAddress.scriptNum, type, searchAddress.getAccess());
                 auto nested = getPossibleNestedEquivalent(childAddress);
                 addresses.insert(nested.begin(), nested.end());
             }
-        } else if (typeEquivalent) {
+        } else {
             for (auto type : equivAddressTypes(equivType(searchAddress.type))) {
                 addresses.insert(Address(searchAddress.scriptNum, type, searchAddress.getAccess()));
             }
-        } else if (nestedEquivalent) {
-            auto nested = getPossibleNestedEquivalent(searchAddress);
-            addresses.insert(nested.begin(), nested.end());
-        } else {
-            addresses.insert(searchAddress);
         }
-        return addresses;
-    }
-    
-    std::vector<Address> AddressIndex::getEquivAddresses(const Address &searchAddress, bool typeEquivalent, bool nestedEquivalent) const {
-        std::vector<Address> addresses;
-        for (const auto &address : getPossibleEquivAddresses(searchAddress, typeEquivalent, nestedEquivalent)) {
-            if (checkIfExists(address)) {
-                addresses.push_back(address);
-            }
-        }
-        return addresses;
-    }
-    
-    std::vector<OutputPointer> AddressIndex::getOutputPointers(const Address &searchAddress, bool typeEquivalent, bool nestedEquivalent) const {
-        std::vector<OutputPointer> outputs;
-        for (const auto &address : getPossibleEquivAddresses(searchAddress, typeEquivalent, nestedEquivalent)) {
-            auto addrOuts = getOutputPointersImp(address.scriptNum, address.type);
-            outputs.insert(outputs.end(), addrOuts.begin(), addrOuts.end());
-        }
-        return outputs;
+        return EquivAddress{std::move(addresses), nestedEquivalent, searchAddress.getAccess()};
     }
     
     void AddressIndex::addAddressNested(const Address &childAddress, const DedupAddress &parentAddress) {

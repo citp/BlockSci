@@ -20,14 +20,15 @@
 
 namespace blocksci {
     class DataAccess;
+    class EquivAddress;
     
     class AddressIndex {
         rocksdb::DB *db;
         std::vector<rocksdb::ColumnFamilyHandle *> columnHandles;
         
-        std::vector<OutputPointer> getOutputPointersImp(uint32_t addressNum, AddressType::Enum type) const;
         std::unordered_set<Address> getPossibleNestedEquivalentUp(const Address &address) const;
         std::unordered_set<Address> getPossibleNestedEquivalentDown(const Address &address) const;
+        std::vector<Address> getPossibleNestedEquivalent(const Address &address) const;
     public:
         
         AddressIndex(const std::string &path, bool readonly);
@@ -35,16 +36,10 @@ namespace blocksci {
 
         bool checkIfExists(const Address &address) const;
         
-        std::unordered_set<Address> getPossibleEquivAddresses(const Address &searchAddress, bool typeEquivalent, bool nestedEquivalent) const;
-        std::unordered_set<Address> getPossibleEquivAddresses(const DedupAddress &searchAddress, bool nestedEquivalent, const DataAccess &access) const;
+        std::vector<OutputPointer> getOutputPointers(const Address &address) const;
         
-        std::vector<OutputPointer> getOutputPointers(const Address &searchAddress, bool typeEquivalent, bool nestedEquivalent) const;
-        std::vector<OutputPointer> getOutputPointers(const DedupAddress &searchAddress, bool nestedEquivalent, const DataAccess &access) const;
-        
-        std::vector<Address> getEquivAddresses(const Address &searchAddress, bool typeEquivalent, bool nestedEquivalent) const;
-        std::vector<Address> getEquivAddresses(const DedupAddress &searchAddress, bool nestedEquivalent, const DataAccess &access) const;
-        
-        std::vector<Address> getPossibleNestedEquivalent(const Address &address) const;
+        EquivAddress getEquivAddresses(const Address &searchAddress, bool nestedEquivalent) const;
+        EquivAddress getEquivAddresses(const DedupAddress &searchAddress, bool nestedEquivalent, const DataAccess &access) const;
         
         std::vector<Address> getIncludingMultisigs(const Address &searchAddress) const;
         

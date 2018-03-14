@@ -14,7 +14,6 @@
 #include <blocksci/chain/chain_access.hpp>
 #include <blocksci/util/data_access.hpp>
 #include <blocksci/address/address_fwd.hpp>
-#include <blocksci/address/address.hpp>
 #include <blocksci/address/address_types.hpp>
 
 #include <range/v3/utility/optional.hpp>
@@ -84,9 +83,7 @@ namespace blocksci {
             return inout->getType();
         }
         
-        Address getAddress() const {
-            return Address(inout->toAddressNum, inout->getType(), *access);
-        }
+        Address getAddress() const;
         
         uint64_t getValue() const {
             return inout->getValue();
