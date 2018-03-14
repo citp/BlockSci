@@ -15,13 +15,9 @@
 
 namespace blocksci {
     
-    Inout::Inout(uint32_t linkedTxNum_, const Address &address, uint64_t value) : linkedTxNum(linkedTxNum_), toAddressNum(address.scriptNum), other(0) {
+    Inout::Inout(uint32_t linkedTxNum_, const RawAddress &address, uint64_t value) : linkedTxNum(linkedTxNum_), toAddressNum(address.scriptNum), other(0) {
         setValue(value);
         setType(address.type);
-    }
-    
-    Address Inout::getAddress() const {
-        return Address(toAddressNum, getType());
     }
     
     bool Inout::operator==(const Inout& otherInout) const {

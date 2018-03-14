@@ -9,6 +9,7 @@
 #ifndef data_configuration_h
 #define data_configuration_h
 
+#include <blocksci/blocksci_fwd.hpp>
 #include <boost/filesystem/path.hpp>
 
 #include <string>
@@ -16,11 +17,14 @@
 
 namespace blocksci {
     
-    static constexpr int dataVersion = 3;
+    static constexpr int dataVersion = 4;
     
     struct DataConfiguration {
         DataConfiguration() {}
-        explicit DataConfiguration(const boost::filesystem::path &dataDirectory);
+        explicit DataConfiguration(const boost::filesystem::path &dataDirectory, bool errorOnReorg, BlockHeight blocksIgnored);
+        
+        bool errorOnReorg;
+        BlockHeight blocksIgnored;
         
         std::vector<unsigned char> pubkeyPrefix;
         std::vector<unsigned char> scriptPrefix;

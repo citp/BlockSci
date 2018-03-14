@@ -99,8 +99,9 @@ int main(int argc, const char * argv[]) {
 //    assert(argc == 2);
     
     Blockchain chain(argv[1]);
-    Address(42488757, AddressType::WITNESS_SCRIPTHASH).getOutputs(*chain.access->addressIndex, *chain.access->chain);
-    
+    Address multi(509, AddressType::NONSTANDARD, *chain.access);
+    auto outs = multi.getOutputs(true, true);
+    std::cout << outs.size() << std::endl;
 //    chain.access->addressIndex->checkDb();
     
 //    auto a = Transaction(1000);
@@ -495,7 +496,7 @@ void maxOutput(Blockchain &chain) {
     }
     std::cout << "Max value is " << maxValue << " in tx " << txNum << std::endl;
     
-    std::cout << "Tx has hash " << Transaction(txNum).getHash().GetHex() << std::endl;
+    std::cout << "Tx has hash " << Transaction(txNum, *chain.access).getHash().GetHex() << std::endl;
 }
 
 google::dense_hash_map<uint32_t, uint32_t> getAddressDistribution(Blockchain &chain, int start, int stop) {

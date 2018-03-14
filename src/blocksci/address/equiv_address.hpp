@@ -2,66 +2,60 @@
 //  equiv_address.hpp
 //  blocksci
 //
-//  Created by Harry Kalodner on 3/5/18.
+//  Created by Harry Kalodner on 3/13/18.
 //
 
 #ifndef equiv_address_hpp
 #define equiv_address_hpp
 
-#include "address_fwd.hpp"
-#include <blocksci/chain/chain_fwd.hpp>
+#include <blocksci/blocksci_fwd.hpp>
+#include <blocksci/address/address.hpp>
 
-#include <range/v3/utility/optional.hpp>
-#include <functional>
-#include <vector>
+#include <unordered_set>
 
 namespace blocksci {
-    class HashIndex;
-    class AddressIndex;
-    struct DataConfiguration;
-    
-    struct EquivAddress {
+    class EquivAddress {
+        std::unordered_set<Address> addresses;
+        bool scriptEquivalent;
+        const DataAccess &access;
         
-        uint32_t scriptNum;
-        EquivAddressType::Enum type;
+        friend struct std::hash<EquivAddress>;
         
-        EquivAddress();
-        EquivAddress(uint32_t addressNum, EquivAddressType::Enum type);
+        EquivAddress(uint32_t scriptNum, EquivAddressType::Enum type, bool scriptEquivalent_, const DataAccess &access_);
+    public:
+        EquivAddress(const Address &address, bool scriptEquivalent);
+        EquivAddress(const DedupAddress &address, bool scriptEquivalent, const DataAccess &access);
         
-        bool operator==(const EquivAddress& other) const {
-            return type == other.type && scriptNum == other.scriptNum;
-        }
-        
-        bool operator!=(const EquivAddress& other) const {
-            return !operator==(other);
+        bool operator==(const EquivAddress &other) const {
+            if (scriptEquivalent != other.scriptEquivalent) {
+                return false;
+            }
+            return addresses == other.addresses;
         }
         
         std::string toString() const;
         
-        uint64_t calculateBalance(BlockHeight height, const AddressIndex &index, const ChainAccess &chain) const;
+        size_t size() const {
+            return addresses.size();
+        }
         
-        std::vector<Output> getOutputs(const AddressIndex &index, const ChainAccess &chain) const;
-        std::vector<Input> getInputs(const AddressIndex &index, const ChainAccess &chain) const;
-        std::vector<Transaction> getTransactions(const AddressIndex &index, const ChainAccess &chain) const;
-        std::vector<Transaction> getOutputTransactions(const AddressIndex &index, const ChainAccess &chain) const;
-        std::vector<Transaction> getInputTransactions(const AddressIndex &index, const ChainAccess &chain) const;
+        std::unordered_set<Address>::const_iterator begin() const {
+            return addresses.begin();
+        }
         
+        std::unordered_set<Address>::const_iterator end() const {
+            return addresses.end();
+        }
         
-        // Requires DataAccess
-#ifndef BLOCKSCI_WITHOUT_SINGLETON
+        std::vector<OutputPointer> getOutputPointers() const;
+        
         uint64_t calculateBalance(BlockHeight height) const;
-        
         std::vector<Output> getOutputs() const;
         std::vector<Input> getInputs() const;
         std::vector<Transaction> getTransactions() const;
         std::vector<Transaction> getOutputTransactions() const;
         std::vector<Transaction> getInputTransactions() const;
-#endif
     };
-    
-    inline std::ostream &operator<<(std::ostream &os, const EquivAddress &address) {
-        return os << address.toString();
-    }
 }
 
 namespace std {
@@ -69,10 +63,9 @@ namespace std {
     struct hash<blocksci::EquivAddress> {
         typedef blocksci::EquivAddress argument_type;
         typedef size_t  result_type;
-        result_type operator()(const argument_type &b) const {
-            return (static_cast<size_t>(b.scriptNum) << 32) + static_cast<size_t>(b.type);
-        }
+        result_type operator()(const argument_type &b) const;
     };
 }
+
 
 #endif /* equiv_address_hpp */

@@ -46,7 +46,7 @@ void init_heuristics(py::module &m) {
     s.def("unique_change_by_client_change_address_behavior", py::overload_cast<const Transaction &>(heuristics::uniqueChangeByClientChangeAddressBehavior), "Returns a unique output from change_by_client_change_address_behavior or None");
     
     s.def("is_coinjoin", py::overload_cast<const Transaction &>(heuristics::isCoinjoin), "Uses basic structural features to quickly decide whether this transaction might be a JoinMarket coinjoin transaction")
-    .def("is_script_deanon", py::overload_cast<const Transaction &>(heuristics::isDeanonTx), "Returns true if this transaction's change address is deanonymized by the script types involved")
+    .def("is_address_deanon", py::overload_cast<const Transaction &>(heuristics::isDeanonTx), "Returns true if this transaction's change address is deanonymized by the address types involved")
     .def("is_change_over", py::overload_cast<const Transaction &>(heuristics::isChangeOverTx), "Returns true if this transaction contained all inputs of one address type and all outputs of a different type")
     .def("is_keyset_change", py::overload_cast<const Transaction &>(heuristics::containsKeysetChange), "Returns true if this transaction contains distinct addresses which share some of the same keys, indicating that the access control structure has changed")
     .def("is_definite_coinjoin", [](const Transaction &tx, uint64_t minBaseFee, double percentageFee, size_t maxDepth) {
@@ -62,7 +62,7 @@ void init_heuristics(py::module &m) {
     s
     .def("coinjoin_txes", heuristics::getCoinjoinTransactions, "Returns a list of all transactions in the blockchain that might be JoinMarket coinjoin transactions")
     .def("possible_coinjoin_txes", heuristics::getPossibleCoinjoinTransactions, "Returns a list of all transactions in the blockchain that might be coinjoin transactions")
-    .def("script_deanon_txes", heuristics::getDeanonTxes, "Return a list of all the transactions in the blockchain for which is_script_deanon returns true")
+    .def("address_deanon_txes", heuristics::getDeanonTxes, "Return a list of all the transactions in the blockchain for which is_address_deanon returns true")
     .def("change_over_txes", heuristics::getChangeOverTxes, "Return a list of transactions in the blockchain for which is_change_over returns true")
     .def("keyset_change_txes", heuristics::getKeysetChangeTxes, "Return a list of transaction in the blockchain for which is_keyset_change returns true")
     ;

@@ -21,17 +21,33 @@
 #include <vector>
 
 namespace blocksci {
-    class HashIndex;
-    class AddressIndex;
+    class DataAccess;
     struct DataConfiguration;
+    class EquivAddress;
     
-    struct Address {
+    struct RawAddress {
+        uint32_t scriptNum;
+        AddressType::Enum type;
         
+        RawAddress() {}
+        RawAddress(uint32_t addressNum_, AddressType::Enum type_) : scriptNum(addressNum_), type(type_) {}
+        RawAddress(const Address &address);
+    };
+    
+    class Address {
+        const DataAccess *access;
+        
+    public:
         uint32_t scriptNum;
         AddressType::Enum type;
         
         Address();
-        Address(uint32_t addressNum, AddressType::Enum type);
+        Address(uint32_t addressNum, AddressType::Enum type, const DataAccess &access);
+        Address(const RawAddress &raw, const DataAccess &access_) : access(&access_), scriptNum(raw.scriptNum), type(raw.type) {}
+        
+        const DataAccess &getAccess() const {
+            return *access;
+        }
         
         bool isSpendable() const;
         
@@ -45,54 +61,30 @@ namespace blocksci {
         
         std::string toString() const;
         
-        AnyScript getScript(const ScriptAccess &access) const;
-        
-        uint64_t calculateBalance(BlockHeight height, const AddressIndex &index, const ChainAccess &chain) const;
-        
-        std::vector<Output> getOutputs(const AddressIndex &index, const ChainAccess &chain) const;
-        std::vector<Input> getInputs(const AddressIndex &index, const ChainAccess &chain) const;
-        std::vector<Transaction> getTransactions(const AddressIndex &index, const ChainAccess &chain) const;
-        std::vector<Transaction> getOutputTransactions(const AddressIndex &index, const ChainAccess &chain) const;
-        std::vector<Transaction> getInputTransactions(const AddressIndex &index, const ChainAccess &chain) const;
-        
-        EquivAddress equiv() const;
-
-        std::string fullType(const ScriptAccess &script) const;
-
-        // Requires DataAccess
-        #ifndef BLOCKSCI_WITHOUT_SINGLETON        
         AnyScript getScript() const;
         
         uint64_t calculateBalance(BlockHeight height) const;
+        
+        EquivAddress getEquivAddresses(bool nestedEquivalent) const;
+        
+        std::vector<OutputPointer> getOutputPointers() const;
         
         std::vector<Output> getOutputs() const;
         std::vector<Input> getInputs() const;
         std::vector<Transaction> getTransactions() const;
         std::vector<Transaction> getOutputTransactions() const;
         std::vector<Transaction> getInputTransactions() const;
-
+        
         std::string fullType() const;
-        #endif
     };
     
-    size_t addressCount(const ScriptAccess &access);
+    void visit(const Address &address, const std::function<bool(const Address &)> &visitFunc);
     
-    void visit(const Address &address, const std::function<bool(const Address &)> &visitFunc, const ScriptAccess &access);
+    ranges::optional<Address> getAddressFromString(const std::string &addressString, const DataAccess &access);
     
-    ranges::optional<Address> getAddressFromString(const DataConfiguration &config, HashIndex &index, const std::string &addressString);
-    
-    std::vector<Address> getAddressesWithPrefix(const std::string &prefix, const ScriptAccess &scripts);
-    
-    // Requires DataAccess
-    #ifndef BLOCKSCI_WITHOUT_SINGLETON
-    ranges::optional<Address> getAddressFromString(const std::string &addressString);
-    std::vector<Address> getAddressesWithPrefix(const std::string &prefix);
-    size_t addressCount();
-    #endif
+    std::vector<Address> getAddressesWithPrefix(const std::string &prefix, const DataAccess &access);
 
-    inline std::ostream &operator<<(std::ostream &os, const Address &address) { 
-        return os << address.toString();
-    }
+    inline RawAddress::RawAddress(const Address &address) : scriptNum(address.scriptNum), type(address.type) {}
 }
 
 namespace std {

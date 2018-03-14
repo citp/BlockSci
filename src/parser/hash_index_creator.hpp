@@ -21,16 +21,22 @@ namespace blocksci {
     class uint256;
 }
 
-class HashIndexCreator : public ParserIndex {
-    blocksci::HashIndex db;
-    
-    void processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &scripts) override;
-//    void processScript(const blocksci::Script &script, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) override {}
+class HashIndexCreator;
 
+template<blocksci::DedupAddressType::Enum type>
+struct ParserIndexScriptInfo<HashIndexCreator, type> : std::false_type {};
+
+class HashIndexCreator : public ParserIndex<HashIndexCreator> {
+    blocksci::HashIndex db;
 public:
+    
     HashIndexCreator(const ParserConfigurationBase &config, const std::string &path);
-    void processTx(const blocksci::uint256 &hash, uint32_t index);
-    void rollback(const blocksci::State &state) override;
+    void processTx(const blocksci::Transaction &tx);
+    
+    template<blocksci::DedupAddressType::Enum type>
+    void processScript(uint32_t equivNum, const blocksci::DataAccess &);
+    
+    void rollback(const blocksci::State &state);
     void tearDown() override {}
 };
 

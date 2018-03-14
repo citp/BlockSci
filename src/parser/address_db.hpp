@@ -12,27 +12,46 @@
 #include "parser_fwd.hpp"
 #include "parser_index.hpp"
 
+#include <blocksci/index/address_index.hpp>
 #include <blocksci/chain/chain_fwd.hpp>
 #include <blocksci/address/address_fwd.hpp>
-
-#include <rocksdb/db.h>
+#include <blocksci/scripts/multisig_script.hpp>
 
 #include <unordered_map>
 
-class AddressDB : public ParserIndex {
-    rocksdb::DB *db;
-    std::vector<rocksdb::ColumnFamilyHandle *> columnHandles;
-    
-    void processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &scripts) override;
-//    void processScript(const blocksci::Script &, const blocksci::ChainAccess &, const blocksci::ScriptAccess &) override {}
-    void addAddress(const blocksci::Address &address, const blocksci::OutputPointer &pointer);
-    void revealedP2SH(uint32_t scriptNum, const std::vector<blocksci::Address> &addresses);
+class AddressDB;
+
+
+template<blocksci::DedupAddressType::Enum type>
+struct ParserIndexScriptInfo<AddressDB, type> : std::false_type {};
+
+template<>
+struct ParserIndexScriptInfo<AddressDB, blocksci::DedupAddressType::MULTISIG> : std::true_type {};
+
+class AddressDB : public ParserIndex<AddressDB> {
+    blocksci::AddressIndex db;
     
 public:
+    
+    
+    
     AddressDB(const ParserConfigurationBase &config, const std::string &path);
     
-    void rollback(const blocksci::State &state) override;
+    void processTx(const blocksci::Transaction &tx);
+    
+    template<blocksci::DedupAddressType::Enum type>
+    void processScript(uint32_t, const blocksci::DataAccess &);
+    
+    void rollback(const blocksci::State &state);
     void tearDown() override;
 };
+
+template<>
+inline void AddressDB::processScript<blocksci::DedupAddressType::MULTISIG>(uint32_t equivNum, const blocksci::DataAccess &access) {
+    blocksci::script::Multisig multisig(equivNum, access);
+    for (const auto &address : multisig.getAddresses()) {
+        db.addAddressNested(address, blocksci::DedupAddress{equivNum, blocksci::DedupAddressType::MULTISIG});
+    }
+}
 
 #endif /* address_db_h */

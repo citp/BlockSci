@@ -14,38 +14,48 @@
 
 #include <rocksdb/db.h>
 
-#include <unordered_map>
+#include <unordered_set>
 #include <string>
 #include <vector>
 
 namespace blocksci {
-    struct Address;
-    struct EquivAddress;
+    class DataAccess;
+    class EquivAddress;
     
     class AddressIndex {
         rocksdb::DB *db;
         std::vector<rocksdb::ColumnFamilyHandle *> columnHandles;
+        
+        std::unordered_set<Address> getPossibleNestedEquivalentUp(const Address &address) const;
+        std::unordered_set<Address> getPossibleNestedEquivalentDown(const Address &address) const;
+        
     public:
         
-        AddressIndex(const std::string &path);
+        AddressIndex(const std::string &path, bool readonly);
         ~AddressIndex();
-        
+
+        bool checkIfExists(const Address &address) const;
         std::vector<OutputPointer> getOutputPointers(const Address &address) const;
-        std::vector<OutputPointer> getOutputPointers(const EquivAddress &script) const;
+        std::vector<Address> getPossibleNestedEquivalent(const Address &address) const;
+        std::vector<Address> getIncludingMultisigs(const Address &searchAddress) const;
         
-        std::vector<Output> getOutputs(const Address &address, const ChainAccess &access) const;
-        std::vector<Input> getInputs(const Address &address, const ChainAccess &access) const;
-        std::vector<Transaction> getTransactions(const Address &address, const ChainAccess &access) const;
-        std::vector<Transaction> getOutputTransactions(const Address &address, const ChainAccess &access) const;
-        std::vector<Transaction> getInputTransactions(const Address &address, const ChainAccess &access) const;
+        void addAddressNested(const blocksci::Address &childAddress, const blocksci::DedupAddress &parentAddress);
+        void addAddressOutput(const blocksci::Address &address, const blocksci::OutputPointer &pointer);
         
-        std::vector<Output> getOutputs(const EquivAddress &script, const ChainAccess &access) const;
-        std::vector<Input> getInputs(const EquivAddress &script, const ChainAccess &access) const;
-        std::vector<Transaction> getTransactions(const EquivAddress &script, const ChainAccess &access) const;
-        std::vector<Transaction> getOutputTransactions(const EquivAddress &script, const ChainAccess &access) const;
-        std::vector<Transaction> getInputTransactions(const EquivAddress &script, const ChainAccess &access) const;
+        rocksdb::ColumnFamilyHandle *getOutputColumn(AddressType::Enum type) const;
+        rocksdb::ColumnFamilyHandle *getNestedColumn(AddressType::Enum type) const;
         
-        void checkDB(const ChainAccess &access) const;
+        rocksdb::Iterator* getOutputIterator(AddressType::Enum type) {
+            return db->NewIterator(rocksdb::ReadOptions(), getOutputColumn(type));
+        }
+        
+        rocksdb::Iterator* getNestedIterator(AddressType::Enum type) {
+            return db->NewIterator(rocksdb::ReadOptions(), getNestedColumn(type));
+        }
+        
+        void writeBatch(rocksdb::WriteBatch &batch) {
+            db->Write(rocksdb::WriteOptions(), &batch);
+        }
     };
 }
 

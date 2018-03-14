@@ -10,6 +10,7 @@
 #include "ranges_py.hpp"
 
 #include <blocksci/chain/algorithms.hpp>
+#include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/input.hpp>
@@ -91,7 +92,7 @@ void addTransactionMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     }), func2("The ratio of fee paid to size in bytes of this transaction"))
     .def_property_readonly("op_return", func([](const Transaction &tx) {
         return getOpReturn(tx);
-    }), func2("If this transaction included a null data script, return its output. Otherwise return None"))
+    }), func2("If this transaction included a null data address, return its output. Otherwise return None"))
     .def_property_readonly("is_coinbase", func([](const Transaction &tx) {
         return tx.isCoinbase();
     }), func2("Return's true if this transaction is a Coinbase transaction"))
@@ -146,13 +147,17 @@ void init_tx(py::module &m) {
     .def("__repr__", &Transaction::toString)
     .def(py::self == py::self)
     .def(hash(py::self))
-    .def(py::init<uint32_t>(), R"docstring(
+    .def(py::init([](uint32_t index, const blocksci::Blockchain &chain) {
+        return Transaction{index, chain.getAccess()};
+    }), R"docstring(
          This functions gets the transaction with given index.
          
          :param int index: The index of the transation.
          :returns: Tx
          )docstring")
-    .def(py::init<std::string>(), R"docstring(
+    .def(py::init([](const std::string hash, const blocksci::Blockchain &chain) {
+        return Transaction{hash, chain.getAccess()};
+    }), R"docstring(
          This functions gets the transaction with given hash.
          
          :param string index: The hash of the transation.

@@ -12,9 +12,10 @@
 #include "raw_transaction.hpp"
 #include "output.hpp"
 #include "input.hpp"
-#include "chain_access.hpp"
 
+#include <blocksci/util/data_access.hpp>
 #include <blocksci/scripts/scripts_fwd.hpp>
+#include <blocksci/address/address_fwd.hpp>
 #include <blocksci/address/address_info.hpp>
 
 #include <range/v3/iterator_range.hpp>
@@ -25,7 +26,6 @@
 #include <vector>
 
 namespace blocksci {
-    struct Address;
     class uint256;
     class HashIndex;
     
@@ -35,7 +35,7 @@ namespace blocksci {
     
     class Transaction {
     private:
-        const ChainAccess *access;
+        const DataAccess *access;
         const RawTransaction *data;
         const uint32_t *sequenceNumbers;
         friend TransactionSummary;
@@ -45,14 +45,19 @@ namespace blocksci {
         
         Transaction() = default;
         
-        Transaction(const RawTransaction *data_, uint32_t txNum_, BlockHeight blockHeight_, const ChainAccess &access_) : access(&access_), data(data_), sequenceNumbers(access_.getSequenceNumbers(txNum_)), txNum(txNum_), blockHeight(blockHeight_) {}
+        Transaction(const RawTransaction *data_, uint32_t txNum_, BlockHeight blockHeight_, const DataAccess &access_) : access(&access_), data(data_), sequenceNumbers(access_.chain->getSequenceNumbers(txNum_)), txNum(txNum_), blockHeight(blockHeight_) {}
         
-        Transaction(uint32_t index, const ChainAccess &access_) : Transaction(index, access_.getBlockHeight(index), access_) {}
+        Transaction(uint32_t index, const DataAccess &access_) : Transaction(index, access_.chain->getBlockHeight(index), access_) {}
         
-        Transaction(uint32_t index, BlockHeight height, const ChainAccess &access_) : Transaction(access_.getTx(index), index, height, access_) {}
+        Transaction(uint32_t index, BlockHeight height, const DataAccess &access_) : Transaction(access_.chain->getTx(index), index, height, access_) {}
         
-        Transaction(uint256 hash, HashIndex &index, const ChainAccess &access);
-        Transaction(std::string hash, HashIndex &index, const ChainAccess &access);
+        Transaction(uint256 hash, const DataAccess &access);
+        Transaction(std::string hash, const DataAccess &access);
+        
+        const DataAccess &getAccess() const {
+            return *access;
+        }
+
         
         uint256 getHash() const;
         std::string toString() const;
@@ -103,21 +108,21 @@ namespace blocksci {
         }
         
         auto outputs() const {
-            auto chainAccess = access;
+            auto dataAccess = access;
             uint32_t txIndex = txNum;
             BlockHeight height = blockHeight;
-            return ranges::view::zip_with([chainAccess, txIndex, height](uint16_t outputNum, const Inout &inout) {
-                return Output({txIndex, outputNum}, height, inout, *chainAccess);
+            return ranges::view::zip_with([dataAccess, txIndex, height](uint16_t outputNum, const Inout &inout) {
+                return Output({txIndex, outputNum}, height, inout, *dataAccess);
             }, ranges::view::iota(uint16_t{0}, outputCount()), rawOutputs());
         }
         
         auto inputs() const {
-            auto chainAccess = access;
+            auto dataAccess = access;
             uint32_t txIndex = txNum;
             BlockHeight height = blockHeight;
             auto seq = sequenceNumbers;
-            return ranges::view::zip_with([chainAccess, txIndex, height, seq](uint16_t inputNum, const Inout &inout) {
-                return Input({txIndex, inputNum}, height, inout, &seq[inputNum], *chainAccess);
+            return ranges::view::zip_with([dataAccess, txIndex, height, seq](uint16_t inputNum, const Inout &inout) {
+                return Input({txIndex, inputNum}, height, inout, &seq[inputNum], *dataAccess);
             }, ranges::view::iota(uint16_t{0}, inputCount()), rawInputs());
         }
         
@@ -126,14 +131,6 @@ namespace blocksci {
         }
         
         Block block() const;
-        
-        // Requires DataAccess
-        #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        explicit Transaction(uint32_t index);
-        Transaction(uint32_t index, BlockHeight height);
-        explicit Transaction(uint256 hash);
-        explicit Transaction(std::string hash);
-        #endif
     };
     
     inline bool operator==(const Transaction& a, const Transaction& b) {

@@ -44,8 +44,8 @@ void AnyScriptInput::setScriptNum(uint32_t scriptNum) {
     mpark::visit([&](auto &input) { input.scriptNum = scriptNum; }, wrapped);
 }
 
-blocksci::Address AnyScriptInput::address() const {
-    return mpark::visit([&](auto &input) { return blocksci::Address{input.scriptNum, input.address_v}; }, wrapped);
+blocksci::RawAddress AnyScriptInput::address() const {
+    return mpark::visit([&](auto &input) { return blocksci::RawAddress{input.scriptNum, input.address_v}; }, wrapped);
 }
 
 std::pair<AnyScriptOutput, std::unique_ptr<AnyScriptInput>> p2shGenerate(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::SCRIPTHASH> &) {

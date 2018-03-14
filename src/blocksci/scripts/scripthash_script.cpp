@@ -15,14 +15,17 @@
 #include "bitcoin_base58.hpp"
 #include "bitcoin_segwit_addr.hpp"
 
+#include <blocksci/util/data_access.hpp>
+
 namespace blocksci {
     using namespace script;
     
-    ScriptHashBase::ScriptHashBase(uint32_t scriptNum_, AddressType::Enum type_, const ScriptHashData *rawData, const ScriptAccess &access) : Script(scriptNum_, type_, *rawData, access), wrappedAddress(rawData->wrappedAddress) {}
+    ScriptHashBase::ScriptHashBase(uint32_t scriptNum_, AddressType::Enum type_, const ScriptHashData *rawData_, const DataAccess &access) : ScriptBase(scriptNum_, type_, access), rawData(rawData_) {}
     
     ranges::optional<Address> ScriptHashBase::getWrappedAddress() const {
-        if (wrappedAddress.scriptNum != 0) {
-            return wrappedAddress;
+        auto wrapped = rawData->wrappedAddress;
+        if (wrapped.scriptNum != 0) {
+            return Address(wrapped, getAccess());
         } else {
             return ranges::nullopt;
         }
@@ -31,32 +34,35 @@ namespace blocksci {
     ranges::optional<AnyScript> ScriptHashBase::wrappedScript() const {
         auto add = getWrappedAddress();
         if (add) {
-            return add->getScript(*access);
+            return add->getScript();
         }
         return ranges::nullopt;
     }
     
-    ScriptHash::ScriptAddress(uint32_t scriptNum_, const ScriptHashData *rawData, const ScriptAccess &access) : ScriptHashBase(scriptNum_, addressType, rawData, access), address(rawData->getHash160()) {}
+    uint160 ScriptHashBase::getUint160Address() const {
+        return rawData->getHash160();
+    }
     
-    ScriptHash::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : ScriptHash(addressNum, access.getScriptData<addressType>(addressNum), access) {}
+    uint256 ScriptHashBase::getUint256Address() const {
+        return rawData->hash256;
+    }
+    
+    ScriptHash::ScriptAddress(uint32_t addressNum, const DataAccess &access) : ScriptHashBase(addressNum, addressType, access.scripts->getScriptData<addressType>(addressNum), access) {}
     
     std::string ScriptHash::addressString() const {
-        return CBitcoinAddress(address, AddressType::Enum::SCRIPTHASH, access->config).ToString();
+        return CBitcoinAddress(getAddressHash(), AddressType::Enum::SCRIPTHASH, getAccess().config).ToString();
     }
     
     std::string ScriptHash::toString() const {
         std::stringstream ss;
-        ss << "ScriptHashAddress(";
-        ss << "address=" << addressString();
-        ss << ")";
+        ss << "ScriptHashAddress(" << addressString()<< ")";
         return ss.str();
     }
     
     std::string ScriptHash::toPrettyString() const {
         std::stringstream ss;
-        ss << "ScriptHashAddress(";
-        ss << "address=" << addressString();
-        ss << ", wrappedAddress=";
+        ss << "ScriptHashAddress(" << addressString();
+        ss << ", wrapped_address=";
         auto wrapped = wrappedScript();
         if (wrapped) {
             ss << wrapped->toPrettyString();
@@ -68,29 +74,25 @@ namespace blocksci {
         return ss.str();
     }
     
-    WitnessScriptHash::ScriptAddress(uint32_t scriptNum_, const ScriptHashData *rawData, const ScriptAccess &access) : ScriptHashBase(scriptNum_, addressType, rawData, access), address(rawData->hash256) {}
-    
-    WitnessScriptHash::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : WitnessScriptHash(addressNum, access.getScriptData<addressType>(addressNum), access) {}
+    WitnessScriptHash::ScriptAddress(uint32_t addressNum_, const DataAccess &access) : ScriptHashBase(addressNum_, addressType, access.scripts->getScriptData<addressType>(addressNum_), access) {}
     
     std::string WitnessScriptHash::addressString() const {
         std::vector<uint8_t> witprog;
-        witprog.insert(witprog.end(), reinterpret_cast<const uint8_t *>(&address), reinterpret_cast<const uint8_t *>(&address) + sizeof(address));
-        return segwit_addr::encode(access->config, 0, witprog);
+        auto addressHash = getAddressHash();
+        witprog.insert(witprog.end(), reinterpret_cast<const uint8_t *>(&addressHash), reinterpret_cast<const uint8_t *>(&addressHash) + sizeof(addressHash));
+        return segwit_addr::encode(getAccess().config, 0, witprog);
     }
     
     std::string WitnessScriptHash::toString() const {
         std::stringstream ss;
-        ss << "WitnessScriptHashAddress(";
-        ss << "address=" << addressString();
-        ss << ")";
+        ss << "WitnessScriptHashAddress(" << addressString() << ")";
         return ss.str();
     }
     
     std::string WitnessScriptHash::toPrettyString() const {
         std::stringstream ss;
-        ss << "WitnessScriptHashAddress(";
-        ss << "address=" << addressString();
-        ss << ", wrappedAddress=";
+        ss << "WitnessScriptHashAddress(" << addressString();
+        ss << ", wrapped_address=";
         auto wrapped = wrappedScript();
         if (wrapped) {
             ss << wrapped->toPrettyString();

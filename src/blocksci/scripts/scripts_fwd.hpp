@@ -9,11 +9,11 @@
 #ifndef scriptsfwd_h
 #define scriptsfwd_h
 
-#include <blocksci/address/equiv_address_type.hpp>
+#include <blocksci/address/dedup_address_type.hpp>
 #include <blocksci/address/address_types.hpp>
 
 namespace blocksci {
-    template <EquivAddressType::Enum>
+    template <DedupAddressType::Enum>
     struct ScriptData;
     
     class CBitcoinAddress;
@@ -28,19 +28,23 @@ namespace blocksci {
     struct NonstandardSpendScriptData;
     class ScriptAccess;
     struct DataConfiguration;
-    struct Script;
+    
+    template<typename T>
+    class ScriptBase;
+    
     class AnyScript;
     class CScriptView;
     
     template <AddressType::Enum>
     class ScriptAddress;
     
-    template <EquivAddressType::Enum>
+    template <DedupAddressType::Enum>
     struct ScriptInfo;
     
     namespace script {
         using Pubkey = ScriptAddress<AddressType::PUBKEY>;
         using PubkeyHash = ScriptAddress<AddressType::PUBKEYHASH>;
+        using MultisigPubkey = ScriptAddress<AddressType::MULTISIG_PUBKEY>;
         using WitnessPubkeyHash = ScriptAddress<AddressType::WITNESS_PUBKEYHASH>;
         using ScriptHash = ScriptAddress<AddressType::SCRIPTHASH>;
         using WitnessScriptHash = ScriptAddress<AddressType::WITNESS_SCRIPTHASH>;

@@ -13,14 +13,16 @@ namespace blocksci {
     
     template<AddressType::Enum type>
     struct ScriptCreateFunctor {
-        static AnyScript::ScriptVariant f(const ScriptAccess &access, uint32_t scriptNum) {
-            return ScriptAddress<type>(access, scriptNum);
+        static AnyScript::ScriptVariant f(uint32_t scriptNum, const DataAccess &access) {
+            return ScriptAddress<type>(scriptNum, access);
         }
     };
     
     static constexpr auto scriptCreator = make_dynamic_table<AddressType, ScriptCreateFunctor>();
     
-    AnyScript::AnyScript(const Address &address, const ScriptAccess &access) : wrapped(scriptCreator[static_cast<size_t>(address.type)](access, address.scriptNum)) {}
+    AnyScript::AnyScript(const Address &address, const DataAccess &access) : wrapped(scriptCreator[static_cast<size_t>(address.type)](address.scriptNum, access)) {}
+    
+    AnyScript::AnyScript(uint32_t addressNum, AddressType::Enum type, const DataAccess &access) : wrapped(scriptCreator[static_cast<size_t>(type)](addressNum, access)) {}
     
     AddressType::Enum AnyScript::type() const {
         return mpark::visit([&](auto &scriptAddress) { return scriptAddress.addressType; }, wrapped);
@@ -31,19 +33,23 @@ namespace blocksci {
     }
     
     uint32_t AnyScript::firstTxIndex() {
-        return mpark::visit([&](auto &scriptAddress) { return scriptAddress.firstTxIndex; }, wrapped);
+        return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getFirstTxIndex(); }, wrapped);
     }
     
     uint32_t AnyScript::txRevealedIndex() {
-        return mpark::visit([&](auto &scriptAddress) { return scriptAddress.txRevealed; }, wrapped);
+        return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getTxRevealedIndex(); }, wrapped);
     }
     
-    Transaction AnyScript::getFirstTransaction(const ChainAccess &chain) const {
-        return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getFirstTransaction(chain); }, wrapped);
+    Transaction AnyScript::getFirstTransaction() const {
+        return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getFirstTransaction(); }, wrapped);
     }
     
-    ranges::optional<Transaction> AnyScript::getTransactionRevealed(const ChainAccess &chain) const {
-        return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getTransactionRevealed(chain); }, wrapped);
+    ranges::optional<Transaction> AnyScript::getTransactionRevealed() const {
+        return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getTransactionRevealed(); }, wrapped);
+    }
+    
+    std::string AnyScript::toString() const {
+        return mpark::visit([&](auto &scriptAddress) { return scriptAddress.toString(); }, wrapped);
     }
     
     std::string AnyScript::toPrettyString() const {

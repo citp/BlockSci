@@ -11,10 +11,12 @@
 
 #include "chain_fwd.hpp"
 
+#include <vector>
 #include <cstdint>
 #include <string>
 
 namespace blocksci {
+    class DataAccess;
     
     struct InoutPointer {
         uint32_t txNum;
@@ -63,6 +65,13 @@ namespace blocksci {
         
         std::string toString() const;
     };
+    
+    uint64_t calculateBalance(const std::vector<OutputPointer> &pointers, BlockHeight height, const DataAccess &access);
+    std::vector<Output> getOutputs(const std::vector<OutputPointer> &pointers, const DataAccess &access);
+    std::vector<Input> getInputs(const std::vector<OutputPointer> &pointers, const DataAccess &access);
+    std::vector<Transaction> getTransactions(const std::vector<OutputPointer> &pointers, const DataAccess &access);
+    std::vector<Transaction> getOutputTransactions(const std::vector<OutputPointer> &pointers, const DataAccess &access);
+    std::vector<Transaction> getInputTransactions(const std::vector<OutputPointer> &pointers, const DataAccess &access);
 }
 
 std::ostream &operator<<(std::ostream &os, const blocksci::InputPointer &pointer);

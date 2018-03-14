@@ -9,14 +9,19 @@
 #define address_fwd_h
 
 #include "address_types.hpp"
-#include "equiv_address_type.hpp"
+#include "dedup_address_type.hpp"
 
 namespace blocksci {
-    struct Address;
-    struct EquivAddress;
+    struct RawAddress;
+    
+    class Address;
+    struct DedupAddress;
     
     template <AddressType::Enum>
     struct AddressInfo;
+    
+    template <DedupAddressType::Enum>
+    struct DedupAddressInfo;
     
     template <EquivAddressType::Enum>
     struct EquivAddressInfo;

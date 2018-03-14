@@ -91,6 +91,21 @@ struct ScriptOutputData<blocksci::AddressType::Enum::PUBKEYHASH> : public Script
 };
 
 template <>
+struct ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY> : public ScriptOutputDataBase {
+    static constexpr bool maybeUpdate = true;
+    
+    blocksci::CPubKey pubkey;
+    
+    ScriptOutputData(const boost::iterator_range<const unsigned char *> &vch1);
+    ScriptOutputData(const blocksci::CPubKey &pub) : pubkey(pub) {}
+    ScriptOutputData() = default;
+    
+    blocksci::uint160 getHash() const;
+    
+    blocksci::PubkeyData getData(uint32_t txNum) const;
+};
+
+template <>
 struct ScriptOutputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : public ScriptOutputDataBase {
     
     blocksci::CKeyID hash;
@@ -133,7 +148,7 @@ struct ScriptOutputData<blocksci::AddressType::Enum::MULTISIG> : public ScriptOu
     uint8_t numTotal;
     uint16_t addressCount;
     
-    std::vector<ScriptOutput<blocksci::AddressType::Enum::PUBKEY>> addresses;
+    std::vector<ScriptOutput<blocksci::AddressType::Enum::MULTISIG_PUBKEY>> addresses;
     
     ScriptOutputData() : addressCount(0) {}
     
@@ -186,7 +201,7 @@ using ScriptOutputType = blocksci::to_variadic_t<blocksci::to_address_tuple_t<Sc
 class AnyScriptOutput {
 public:
     ScriptOutputType wrapped;
-    blocksci::Address address() const;
+    blocksci::RawAddress address() const;
     bool isNew() const;
     blocksci::AddressType::Enum type() const;
     

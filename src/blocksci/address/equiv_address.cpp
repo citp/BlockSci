@@ -2,85 +2,105 @@
 //  equiv_address.cpp
 //  blocksci
 //
-//  Created by Harry Kalodner on 3/5/18.
+//  Created by Harry Kalodner on 3/13/18.
 //
 
-#define BLOCKSCI_WITHOUT_SINGLETON
-
-
 #include "equiv_address.hpp"
-#include "address.hpp"
-#include "address_info.hpp"
-#include "scripts/bitcoin_base58.hpp"
-#include "scripts/script_access.hpp"
-#include "scripts/scripts_fwd.hpp"
-#include "scripts/script_variant.hpp"
-#include "chain/transaction.hpp"
-#include "chain/output.hpp"
-#include "index/address_index.hpp"
-#include "index/hash_index.hpp"
+#include "dedup_address.hpp"
 
-#include <unordered_set>
+#include <blocksci/util/data_access.hpp>
+#include <blocksci/util/hash.hpp>
+#include <blocksci/index/address_index.hpp>
+#include <blocksci/chain/inout_pointer.hpp>
+#include <blocksci/chain/input.hpp>
+#include <blocksci/chain/output.hpp>
+#include <blocksci/chain/transaction.hpp>
+#include <blocksci/scripts/script_variant.hpp>
 
-namespace blocksci {
-    
-    EquivAddress::EquivAddress() : scriptNum(0), type(EquivAddressType::NONSTANDARD) {}
-    
-    EquivAddress::EquivAddress(uint32_t addressNum_, EquivAddressType::Enum type_) : scriptNum(addressNum_), type(type_) {}
-    
-    std::string EquivAddress::toString() const {
-        if (scriptNum == 0) {
-            return "InvalidEquivAddress()";
-        } else {
-            std::stringstream ss;
-            ss << "EquivAddress(";
-            ss << "scriptNum=" << scriptNum;
-            ss << ", type=" << equivAddressName(type);
-            ss << ")";
-            return ss.str();
+using namespace blocksci;
+
+namespace std
+{
+    size_t hash<blocksci::EquivAddress>::operator()(const blocksci::EquivAddress &equiv) const {
+        std::size_t seed = 123954;
+        for (const auto &address : equiv.addresses) {
+            seed ^= address.scriptNum + address.type;
         }
-    }
-    
-    uint64_t EquivAddress::calculateBalance(BlockHeight height, const AddressIndex &index, const ChainAccess &chain) const {
-        uint64_t value = 0;
-        if (height == 0) {
-            for (auto &output : index.getOutputs(*this, chain)) {
-                if (!output.isSpent()) {
-                    value += output.getValue();
-                }
-            }
-        } else {
-            for (auto &output : index.getOutputs(*this, chain)) {
-                if (output.blockHeight <= height && (!output.isSpent() || output.getSpendingTx()->blockHeight > height)) {
-                    value += output.getValue();
-                }
-            }
-        }
-        return value;
-    }
-    
-    std::vector<Output> EquivAddress::getOutputs(const AddressIndex &index, const ChainAccess &chain) const {
-        return index.getOutputs(*this, chain);
-    }
-    
-    std::vector<Input> EquivAddress::getInputs(const AddressIndex &index, const ChainAccess &chain) const {
-        return index.getInputs(*this, chain);
-    }
-    
-    std::vector<Transaction> EquivAddress::getTransactions(const AddressIndex &index, const ChainAccess &chain) const {
-        return index.getTransactions(*this, chain);
-    }
-    
-    std::vector<Transaction> EquivAddress::getOutputTransactions(const AddressIndex &index, const ChainAccess &chain) const {
-        return index.getOutputTransactions(*this, chain);
-    }
-    
-    std::vector<Transaction> EquivAddress::getInputTransactions(const AddressIndex &index, const ChainAccess &chain) const {
-        return index.getInputTransactions(*this, chain);
+        return seed;
     }
 }
 
-std::ostream &operator<<(std::ostream &os, const blocksci::EquivAddress &address) {
-    os << address.toString();
-    return os;
+EquivAddress::EquivAddress(uint32_t scriptNum, EquivAddressType::Enum type, bool scriptEquivalent_, const DataAccess &access_) : scriptEquivalent(scriptEquivalent_), access(access_) {
+    for (auto type : equivAddressTypes(type)) {
+        Address address(scriptNum, type, access);
+        if (scriptEquivalent) {
+            auto nested = access.addressIndex->getPossibleNestedEquivalent(address);
+            for (auto &nestedAddress : nested) {
+                if (access.addressIndex->checkIfExists(nestedAddress)) {
+                    addresses.insert(nestedAddress);
+                }
+            }
+        } else {
+            if (access.addressIndex->checkIfExists(address)) {
+                addresses.insert(address);
+            }
+        }
+        
+    }
 }
+
+EquivAddress::EquivAddress(const Address &searchAddress, bool scriptEquivalent_) :
+EquivAddress(searchAddress.scriptNum, equivType(searchAddress.type), scriptEquivalent_, searchAddress.getAccess()) {}
+
+EquivAddress::EquivAddress(const DedupAddress &searchAddress, bool scriptEquivalent_, const DataAccess &access_) :
+EquivAddress(searchAddress.scriptNum, equivType(searchAddress.type), scriptEquivalent_, access_) {}
+
+std::string EquivAddress::toString() const {
+    std::stringstream ss;
+    ss << "EquivAddress(";
+    size_t i = 0;
+    for (auto &address : addresses) {
+        ss << address.getScript().toString();
+        if (i < addresses.size() - 1) {
+            ss << ", ";
+        }
+        i++;
+    }
+    ss << ")";
+    return ss.str();
+}
+
+std::vector<OutputPointer> EquivAddress::getOutputPointers() const {
+    std::vector<OutputPointer> outputs;
+    for (const auto &address : addresses) {
+        auto addrOuts = access.addressIndex->getOutputPointers(address);
+        outputs.insert(outputs.end(), addrOuts.begin(), addrOuts.end());
+    }
+    return outputs;
+}
+
+uint64_t EquivAddress::calculateBalance(BlockHeight height) const {
+    return blocksci::calculateBalance(getOutputPointers(), height, access);
+}
+
+std::vector<Output> EquivAddress::getOutputs() const {
+    return blocksci::getOutputs(getOutputPointers(), access);
+}
+
+std::vector<Input> EquivAddress::getInputs() const {
+    return blocksci::getInputs(getOutputPointers(), access);
+}
+
+std::vector<Transaction> EquivAddress::getTransactions() const {
+    return blocksci::getTransactions(getOutputPointers(), access);
+}
+
+std::vector<Transaction> EquivAddress::getOutputTransactions() const {
+    return blocksci::getOutputTransactions(getOutputPointers(), access);
+}
+
+std::vector<Transaction> EquivAddress::getInputTransactions() const {
+    return blocksci::getInputTransactions(getOutputPointers(), access);
+}
+
+

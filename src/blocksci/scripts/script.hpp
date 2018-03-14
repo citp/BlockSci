@@ -10,8 +10,11 @@
 #define script_hpp
 
 #include "scripts_fwd.hpp"
+#include "script_data.hpp"
 
 #include <blocksci/chain/chain_fwd.hpp>
+#include <blocksci/chain/transaction.hpp>
+#include <blocksci/address/address_fwd.hpp>
 #include <blocksci/address/address.hpp>
 
 #include <range/v3/utility/optional.hpp>
@@ -23,44 +26,51 @@
 
 namespace blocksci {
     
-    struct Address;
     struct DataConfiguration;
-    class AddressIndex;
+    class DataAccess;
     
-    struct Script : public Address {
-        const ScriptAccess *access;
-        uint32_t firstTxIndex;
-        uint32_t txRevealed;
-        
-        Script(uint32_t scriptNum_, AddressType::Enum type_, const ScriptDataBase &data, const ScriptAccess &scripts);
-        Script(const Address &address, const ScriptDataBase &data, const ScriptAccess &scripts);
+    template<typename T>
+    class ScriptBase : public Address  {
+    public:
+        ScriptBase(uint32_t scriptNum_, AddressType::Enum type_, const DataAccess &access_) : Address(scriptNum_, type_, access_) {}
         
         void visitPointers(const std::function<void(const Address &)> &) const {}
+
+        uint32_t getFirstTxIndex() const {
+            return static_cast<const T *>(this)->rawData->txFirstSeen;
+        }
+        uint32_t getTxRevealedIndex() const {
+            return static_cast<const T *>(this)->rawData->txFirstSpent;
+        }
         
-        Transaction getFirstTransaction(const ChainAccess &chain) const;
-        ranges::optional<Transaction> getTransactionRevealed(const ChainAccess &chain) const;
+        Transaction getFirstTransaction() const {
+            return Transaction(getFirstTxIndex(), getAccess());
+        }
+        
+        ranges::optional<Transaction> getTransactionRevealed() const {
+            if (hasBeenSpent()) {
+                return Transaction(getTxRevealedIndex(), getAccess());
+            } else {
+                return ranges::nullopt;
+            }
+        }
 
         bool hasBeenSpent() const {
-            return txRevealed != std::numeric_limits<uint32_t>::max();
+            return getTxRevealedIndex() != std::numeric_limits<uint32_t>::max();
         }
-        
-        #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        Transaction getFirstTransaction() const;
-        ranges::optional<Transaction> getTransactionRevealed() const;
-        #endif
     };
 }
 
-namespace std {
-    template <>
-    struct hash<blocksci::Script> {
-        typedef blocksci::Script argument_type;
-        typedef size_t  result_type;
-        result_type operator()(const argument_type &b) const {
-            return (static_cast<size_t>(b.scriptNum) << 32) + static_cast<size_t>(b.type);
-        }
-    };
-}
+//namespace std {
+//    template<typename T>
+//    struct hash<blocksci::ScriptBase<T>> {
+//        typedef blocksci::ScriptBase<T> argument_type;
+//        typedef size_t  result_type;
+//        result_type operator()(const argument_type &b) const {
+//            return (static_cast<size_t>(b.scriptNum) << 32) + static_cast<size_t>(b.type);
+//        }
+//    };
+//}
 
 
 #endif /* script_hpp */

@@ -17,6 +17,7 @@ namespace blocksci {
     
     constexpr char AddressInfo<AddressType::Enum::PUBKEY>::name[];
     constexpr char AddressInfo<AddressType::Enum::PUBKEYHASH>::name[];
+    constexpr char AddressInfo<AddressType::Enum::MULTISIG_PUBKEY>::name[];
     constexpr char AddressInfo<AddressType::Enum::WITNESS_PUBKEYHASH>::name[];
     constexpr char AddressInfo<AddressType::Enum::SCRIPTHASH>::name[];
     constexpr char AddressInfo<AddressType::Enum::WITNESS_SCRIPTHASH>::name[];

@@ -9,10 +9,13 @@
 #ifndef input_py_hpp
 #define input_py_hpp
 
+#include "variant_py.hpp"
+
 #include <blocksci/chain/algorithms.hpp>
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/block.hpp>
 #include <blocksci/chain/transaction.hpp>
+#include <blocksci/scripts/script_variant.hpp>
 
 #include <range/v3/view/any_view.hpp>
 
@@ -23,7 +26,7 @@ void addInputMethods(Class &cl, FuncApplication func, FuncDoc func2) {
 	using namespace blocksci;
     cl
     .def_property_readonly("address", func([](const Input &input) {
-        return input.getAddress();
+        return input.getAddress().getScript().wrapped;
     }), func2("The address linked to this input"))
     .def_property_readonly("value", func([](const Input &input) {
         return input.getValue();
@@ -82,11 +85,6 @@ void addInputRangeMethods(Class &cl, FuncApplication func) {
         	return inputsOfType(r, type);
         });
     }, "Return a range including only inputs sent to the given address type")
-    .def("with_type", [=](Range &range, EquivAddressType::Enum type) {
-        return func(range, [=](auto && r) -> ranges::any_view<blocksci::Input> {
-        	return inputsOfType(r, type);
-        });
-    }, "Return a range including only inputs sent to the given equiv address type")
     ;
 }
 

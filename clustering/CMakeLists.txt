@@ -31,6 +31,7 @@ find_package( Boost 1.58 COMPONENTS program_options system filesystem thread ios
 
 include_directories( ${Boost_INCLUDE_DIR} )
 include_directories(./src)
+include_directories(../src)
 include_directories(../libs/range-v3/include)
 
 link_directories(${Boost_LIBRARY_DIR})

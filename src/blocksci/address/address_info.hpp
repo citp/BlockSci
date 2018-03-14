@@ -10,11 +10,12 @@
 #define address_info_hpp
 
 #include "address_types.hpp"
-#include "equiv_address_info.hpp"
+#include "dedup_address_info.hpp"
 
 #include <blocksci/util/util.hpp>
 
 #include <tuple>
+#include <vector>
 #include <sstream>
 
 namespace blocksci {
@@ -22,68 +23,116 @@ namespace blocksci {
     class uint256;
     
     template <>
-    struct AddressInfo<AddressType::Enum::PUBKEY> {
+    struct AddressInfo<AddressType::PUBKEY> {
         static constexpr char name[] = "pubkey";
         static constexpr EquivAddressType::Enum equivType = EquivAddressType::PUBKEY;
+        static constexpr DedupAddressType::Enum dedupType = DedupAddressType::PUBKEY;
         static constexpr AddressType::Enum exampleType = AddressType::PUBKEYHASH;
         using IDType = uint160;
     };
     
     template <>
-    struct AddressInfo<AddressType::Enum::PUBKEYHASH> {
+    struct AddressInfo<AddressType::PUBKEYHASH> {
         static constexpr char name[] = "pubkeyhash";
         static constexpr EquivAddressType::Enum equivType = EquivAddressType::PUBKEY;
+        static constexpr DedupAddressType::Enum dedupType = DedupAddressType::PUBKEY;
         static constexpr AddressType::Enum exampleType = AddressType::PUBKEYHASH;
         using IDType = uint160;
     };
     
     template <>
-    struct AddressInfo<AddressType::Enum::WITNESS_PUBKEYHASH> {
+    struct AddressInfo<AddressType::MULTISIG_PUBKEY> {
+        static constexpr char name[] = "multisig_pubkey";
+        static constexpr EquivAddressType::Enum equivType = EquivAddressType::PUBKEY;
+        static constexpr DedupAddressType::Enum dedupType = DedupAddressType::PUBKEY;
+        static constexpr AddressType::Enum exampleType = AddressType::PUBKEY;
+        using IDType = uint160;
+    };
+    
+    template <>
+    struct AddressInfo<AddressType::WITNESS_PUBKEYHASH> {
         static constexpr char name[] = "witness_pubkeyhash";
         static constexpr EquivAddressType::Enum equivType = EquivAddressType::PUBKEY;
+        static constexpr DedupAddressType::Enum dedupType = DedupAddressType::PUBKEY;
         static constexpr AddressType::Enum exampleType = AddressType::PUBKEYHASH;
         using IDType = uint160;
     };
     
     template <>
-    struct AddressInfo<AddressType::Enum::SCRIPTHASH> {
+    struct AddressInfo<AddressType::SCRIPTHASH> {
         static constexpr char name[] = "scripthash";
         static constexpr EquivAddressType::Enum equivType = EquivAddressType::SCRIPTHASH;
+        static constexpr DedupAddressType::Enum dedupType = DedupAddressType::SCRIPTHASH;
         static constexpr AddressType::Enum exampleType = AddressType::SCRIPTHASH;
         using IDType = uint160;
     };
     
     template <>
-    struct AddressInfo<AddressType::Enum::WITNESS_SCRIPTHASH> {
+    struct AddressInfo<AddressType::WITNESS_SCRIPTHASH> {
         static constexpr char name[] = "witness_scripthash";
         static constexpr EquivAddressType::Enum equivType = EquivAddressType::SCRIPTHASH;
+        static constexpr DedupAddressType::Enum dedupType = DedupAddressType::SCRIPTHASH;
         static constexpr AddressType::Enum exampleType = AddressType::SCRIPTHASH;
         using IDType = uint256;
     };
     
     template <>
-    struct AddressInfo<AddressType::Enum::MULTISIG> {
+    struct AddressInfo<AddressType::MULTISIG> {
         static constexpr char name[] = "multisig";
         static constexpr EquivAddressType::Enum equivType = EquivAddressType::MULTISIG;
+        static constexpr DedupAddressType::Enum dedupType = DedupAddressType::MULTISIG;
         static constexpr AddressType::Enum exampleType = AddressType::MULTISIG;
         using IDType = uint160;
     };
     
     template <>
-    struct AddressInfo<AddressType::Enum::NONSTANDARD> {
+    struct AddressInfo<AddressType::NONSTANDARD> {
         static constexpr char name[] = "nonstandard";
         static constexpr EquivAddressType::Enum equivType = EquivAddressType::NONSTANDARD;
+        static constexpr DedupAddressType::Enum dedupType = DedupAddressType::NONSTANDARD;
         static constexpr AddressType::Enum exampleType = AddressType::NONSTANDARD;
         using IDType = void;
     };
     
     template <>
-    struct AddressInfo<AddressType::Enum::NULL_DATA> {
+    struct AddressInfo<AddressType::NULL_DATA> {
         static constexpr char name[] = "nulldata";
         static constexpr EquivAddressType::Enum equivType = EquivAddressType::NULL_DATA;
+        static constexpr DedupAddressType::Enum dedupType = DedupAddressType::NULL_DATA;
         static constexpr AddressType::Enum exampleType = AddressType::NULL_DATA;
         using IDType = void;
     };
+    
+    template <>
+    struct EquivAddressInfo<EquivAddressType::PUBKEY> {
+        static constexpr std::array<AddressType::Enum, 4> equivTypes = {{AddressType::PUBKEY, AddressType::PUBKEYHASH, AddressType::WITNESS_PUBKEYHASH, AddressType::MULTISIG_PUBKEY}};
+        static constexpr DedupAddressType::Enum dedupType = DedupAddressType::PUBKEY;
+    };
+
+    template <>
+    struct EquivAddressInfo<EquivAddressType::SCRIPTHASH> {
+        static constexpr std::array<AddressType::Enum, 2> equivTypes = {{AddressType::SCRIPTHASH, AddressType::WITNESS_SCRIPTHASH}};
+        static constexpr DedupAddressType::Enum dedupType = DedupAddressType::SCRIPTHASH;
+    };
+
+    template <>
+    struct EquivAddressInfo<EquivAddressType::MULTISIG> {
+        static constexpr std::array<AddressType::Enum, 1> equivTypes = {{AddressType::MULTISIG}};
+        static constexpr DedupAddressType::Enum dedupType = DedupAddressType::MULTISIG;
+    };
+    
+    template <>
+    struct EquivAddressInfo<EquivAddressType::NONSTANDARD> {
+        static constexpr std::array<AddressType::Enum, 1> equivTypes = {{AddressType::NONSTANDARD}};
+        static constexpr DedupAddressType::Enum dedupType = DedupAddressType::NONSTANDARD;
+    };
+    
+    template <>
+    struct EquivAddressInfo<EquivAddressType::NULL_DATA> {
+        static constexpr std::array<AddressType::Enum, 1> equivTypes = {{AddressType::NULL_DATA}};
+        static constexpr DedupAddressType::Enum dedupType = DedupAddressType::NULL_DATA;
+    };
+    
     
     using AddressInfoList = array_to_tuple_t<AddressType::Enum, AddressType::size, AddressType::all>;
     
@@ -91,28 +140,59 @@ namespace blocksci {
     using to_address_tuple_t = apply_template_t<AddressType::Enum, K, AddressInfoList>;
     
     template<AddressType::Enum type>
-    struct EquivAddressTypeFunctor {
-        static constexpr EquivAddressType::Enum f() {
-            return AddressInfo<type>::equivType;
+    struct DedupAddressTypeFunctor {
+        static constexpr DedupAddressType::Enum f() {
+            return AddressInfo<type>::dedupType;
         }
     };
     
-    static constexpr auto equivTypeTable = blocksci::make_static_table<AddressType, EquivAddressTypeFunctor>();
+    static constexpr auto dedupTypeTable = blocksci::make_static_table<AddressType, DedupAddressTypeFunctor>();
     
     constexpr void addressTypeCheckThrow(size_t index) {  
         index >= AddressType::size ? throw std::invalid_argument("combination of enum values is not valid") : 0;
     }
 
-    constexpr EquivAddressType::Enum equivType(AddressType::Enum t) {
+    constexpr DedupAddressType::Enum dedupType(AddressType::Enum t) {
         auto index = static_cast<size_t>(t);
         addressTypeCheckThrow(index);
-        return equivTypeTable[index];
+        return dedupTypeTable[index];
     }
     
     std::string addressName(AddressType::Enum type);
     
     constexpr bool isSpendable(AddressType::Enum t) {
-        return isSpendable(equivType(t));
+        return isSpendable(dedupType(t));
+    }
+    
+    template<AddressType::Enum type>
+    struct AddressTypeEquivTypeFunctor {
+        static EquivAddressType::Enum f() {
+            return AddressInfo<type>::equivType;
+        }
+    };
+    
+    static auto addressTypeequivTypeTable = blocksci::make_static_table<AddressType, AddressTypeEquivTypeFunctor>();
+    
+    inline EquivAddressType::Enum equivType(AddressType::Enum t) {
+        auto index = static_cast<size_t>(t);
+        addressTypeCheckThrow(index);
+        return addressTypeequivTypeTable[index];
+    }
+    
+    template<EquivAddressType::Enum type>
+    struct EquivAddressTypesFunctor {
+        static std::vector<AddressType::Enum> f() {
+            auto types = EquivAddressInfo<type>::equivTypes;
+            return std::vector<AddressType::Enum>{types.begin(), types.end()};
+        }
+    };
+    
+    static auto equivAddressTypesTable = blocksci::make_static_table<EquivAddressType, EquivAddressTypesFunctor>();
+    
+    inline std::vector<AddressType::Enum> equivAddressTypes(EquivAddressType::Enum t) {
+        auto index = static_cast<size_t>(t);
+        addressTypeCheckThrow(index);
+        return equivAddressTypesTable[index];
     }
 }
 

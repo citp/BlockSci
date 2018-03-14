@@ -17,13 +17,14 @@ Additionally, a demonstration Notebook_ is available in the Notebooks folder.
 
 For installation instructions, see below. More detailed documentation is coming soon. Meanwhile, feel free to contact us at blocksci@lists.cs.princeton.edu.
 
-Latest release (BlockSci v0.4)
+Latest release (BlockSci v0.4.5)
 ================================
 
-Version 0.4 introduces full bech32 address support, adds segwit size support, and fixes a bug which had been preventing use of continuous incremental blockchain updates. The "Local setup" section contains best practices for setting up automatic blockchain updates. You can read more details about the release in the `release notes`_. We are also releasing new AMI image_ running version 0.4 (explained under "Quick setup" below) as well as updated documentation.
+Version 0.4.5 introduces full bech32 address support, adds segwit size support, fixes a bug which had been preventing use of continuous incremental blockchain updates, and introduces the concept of Equivalent addresses. The "Local setup" section contains best practices for setting up automatic blockchain updates. You can read more details about the release in the `release notes`_. We will be releasing an new AMI for this version shortly. Until you can use an AMI image_ running version 0.4 (explained under "Quick setup" below).
 
-.. _release notes: https://citp.github.io/BlockSci/changelog.html#version-0-4
-.. _image: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-acd923d1
+.. _release notes: https://citp.github.io/BlockSci/changelog.html#version-0-4-5
+.. _image: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-a09d66dd
+
 
 Quick setup using Amazon EC2
 ==============================

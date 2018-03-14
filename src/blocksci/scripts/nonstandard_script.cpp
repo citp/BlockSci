@@ -11,21 +11,28 @@
 #include "nonstandard_script.hpp"
 #include "script_data.hpp"
 #include "script_access.hpp"
+#include <blocksci/util/data_access.hpp>
 
 namespace blocksci {
     using namespace script;
-    Nonstandard::ScriptAddress(uint32_t scriptNum_, std::tuple<const NonstandardScriptData *, const NonstandardSpendScriptData *> &&rawData, const ScriptAccess &access) : Script(scriptNum_, addressType, *std::get<0>(rawData), access), outputScript(std::get<0>(rawData)->getScript()) {
-        auto inputPointer = std::get<1>(rawData);
-        if (inputPointer != nullptr) {
-            inputScript = inputPointer->getScript();
+    Nonstandard::ScriptAddress(uint32_t scriptNum_, std::tuple<const NonstandardScriptData *, const NonstandardSpendScriptData *> &&rawData, const DataAccess &access) : ScriptBase(scriptNum_, addressType, access), rawData(std::get<0>(rawData)), rawInputData(std::get<1>(rawData)) {}
+    
+    Nonstandard::ScriptAddress(uint32_t addressNum, const DataAccess &access) : Nonstandard(addressNum, access.scripts->getScriptData<addressType>(addressNum), access) {}
+    
+    CScriptView Nonstandard::getOutputScript() const {
+        return rawData->getScript();
+    }
+    
+    ranges::optional<CScriptView> Nonstandard::getInputScript() const {
+        if (rawInputData != nullptr) {
+            return rawInputData->getScript();
         } else {
-            inputScript = ranges::nullopt;
+            return ranges::nullopt;
         }
     }
     
-    Nonstandard::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : Nonstandard(addressNum, access.getScriptData<addressType>(addressNum), access) {}
-    
     std::string Nonstandard::inputString() const {
+        auto inputScript = getInputScript();
         if (inputScript) {
             return ScriptToAsmStr(*inputScript);
         } else {
@@ -34,7 +41,7 @@ namespace blocksci {
     }
     
     std::string Nonstandard::outputString() const {
-        return ScriptToAsmStr(outputScript);
+        return ScriptToAsmStr(getOutputScript());
     }
     
     std::string Nonstandard::toString() const {
@@ -44,6 +51,8 @@ namespace blocksci {
     }
     
     std::string Nonstandard::toPrettyString() const {
-        return toString();
+        std::stringstream ss;
+        ss << "NonStandardScript(" << inputString() << ", " << outputString() << ")";
+        return ss.str();
     }
 }

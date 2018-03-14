@@ -14,28 +14,27 @@
 namespace blocksci {
     
     template <>
-    class ScriptAddress<AddressType::MULTISIG> : public Script {
-        
+    class ScriptAddress<AddressType::MULTISIG> : public ScriptBase<ScriptAddress<AddressType::MULTISIG>> {
+        friend class ScriptBase<ScriptAddress<AddressType::MULTISIG>>;
+        const MultisigData *rawData;
     public:
         constexpr static AddressType::Enum addressType = AddressType::MULTISIG;
-        uint8_t required;
-        uint8_t total;
-        std::vector<Address> addresses;
-        
-        ScriptAddress(uint32_t scriptNum, const MultisigData *rawData, const ScriptAccess &access);
-        ScriptAddress(const ScriptAccess &access, uint32_t addressNum);
-        
+        ScriptAddress(uint32_t addressNum, const DataAccess &access);
         
         std::string toString() const;
         std::string toPrettyString() const;
 
         void visitPointers(const std::function<void(const Address &)> &visitFunc) const {
-            for (auto &address : addresses) {
+            for (auto &address : getAddresses()) {
                 visitFunc(address);
             }
         }
         
-        std::vector<ScriptAddress<AddressType::PUBKEY>> pubkeyScripts() const;
+        uint8_t getRequired() const;
+        uint8_t getTotal() const;
+        std::vector<Address> getAddresses() const;
+        
+        std::vector<script::MultisigPubkey> pubkeyScripts() const;
     };
 }
 

@@ -10,6 +10,7 @@
 #include "ranges_py.hpp"
 
 #include <blocksci/address/address.hpp>
+#include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/algorithms.hpp>
 #include <blocksci/chain/inout_pointer.hpp>
@@ -25,18 +26,9 @@ namespace py = pybind11;
 using namespace blocksci;
 
 void init_input(py::module &m) {
-    py::class_<InputPointer>(m, "InputPointer", "Class representing a pointer to an input")
-    .def("__repr__", &InputPointer::toString)
-    .def(py::self == py::self)
-    .def(hash(py::self))
-    .def_readonly("tx_index", &InputPointer::txNum)
-    .def_readonly("int_index", &InputPointer::inoutNum)
-    ;
-    
     py::class_<Input> inputClass(m, "Input", "Class representing a transaction input");
     inputClass
     .def("__repr__", &Input::toString)
-    .def(py::init<InputPointer>())
     .def(py::self == py::self)
     .def(hash(py::self))
     ;

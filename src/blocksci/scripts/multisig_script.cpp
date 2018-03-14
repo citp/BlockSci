@@ -12,50 +12,57 @@
 #include "script_data.hpp"
 #include "script_access.hpp"
 #include "pubkey_script.hpp"
+#include <blocksci/util/data_access.hpp>
 
 namespace blocksci {
     using namespace script;
     
-    Multisig::ScriptAddress(uint32_t scriptNum_, const MultisigData *rawData, const ScriptAccess &access) : Script(scriptNum_, addressType, *rawData, access), required(rawData->m), total(rawData->n), addresses(rawData->getAddresses()) {}
+    Multisig::ScriptAddress(uint32_t addressNum_, const DataAccess &access) : ScriptBase(addressNum_, addressType, access), rawData(access.scripts->getScriptData<addressType>(addressNum_)) {}
     
-    Multisig::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : Multisig(addressNum, access.getScriptData<addressType>(addressNum), access) {}
+    uint8_t Multisig::getRequired() const {
+        return rawData->m;
+    }
+    
+    uint8_t Multisig::getTotal() const {
+        return rawData->n;
+    }
+    
+    std::vector<Address> Multisig::getAddresses() const {
+        std::vector<Address> addresses;
+        addresses.reserve(rawData->addresses.size());
+        for (auto scriptNum : rawData->addresses) {
+            addresses.emplace_back(scriptNum, AddressType::Enum::MULTISIG_PUBKEY, getAccess());
+        }
+        return addresses;
+    }
     
     std::string Multisig::toString() const {
         std::stringstream ss;
-        ss << "MultisigAddress(required=" << static_cast<int>(required) << ", n=" << static_cast<int>(addresses.size()) << ", address_nums=[";
-        uint32_t i = 0;
-        for (auto &address : addresses) {
-            ss << address.scriptNum;
-            if (i < addresses.size() - 1) {
-                ss << ", ";
-            }
-            i++;
-        }
-        ss << "])";
+        ss << "MultisigAddress(" << static_cast<int>(getRequired()) << " of " << static_cast<int>(getTotal()) << ")";
         return ss.str();
     }
     
     std::string Multisig::toPrettyString() const {
         std::stringstream ss;
-        ss << static_cast<int>(required) << " of " << static_cast<int>(addresses.size()) << " multisig with addresses : [";
-        uint32_t i = 0;
-        for (auto &address : addresses) {
-            script::Pubkey pubkeyScript(*access, address.scriptNum);
+        ss << "MultisigAddress(" << static_cast<int>(getRequired()) << " of " << static_cast<int>(getTotal()) << " multisig with addresses ";
+        uint8_t i = 0;
+        for (auto &address : getAddresses()) {
+            script::MultisigPubkey pubkeyScript(address.scriptNum, getAccess());
             ss << pubkeyScript.toPrettyString();
-            if (i < addresses.size() - 1) {
+            if (i < getTotal() - 1) {
                 ss << ", ";
             }
             i++;
         }
-        ss << "]";
+        ss << ")";
         return ss.str();
     }
     
-    std::vector<ScriptAddress<AddressType::Enum::PUBKEY>> Multisig::pubkeyScripts() const {
-        std::vector<ScriptAddress<AddressType::Enum::PUBKEY>> ret;
-        ret.reserve(addresses.size());
-        for (auto &address : addresses) {
-            ret.emplace_back(*access, address.scriptNum);
+    std::vector<script::MultisigPubkey> Multisig::pubkeyScripts() const {
+        std::vector<script::MultisigPubkey> ret;
+        ret.reserve(getTotal());
+        for (auto &address : getAddresses()) {
+            ret.emplace_back(address.scriptNum, getAccess());
         }
         return ret;
     }

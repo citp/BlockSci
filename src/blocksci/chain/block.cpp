@@ -16,7 +16,6 @@
 #include "address/address.hpp"
 #include "scripts/nulldata_script.hpp"
 
-#include <range/v3/view/transform.hpp>
 #include <range/v3/to_container.hpp>
 #include <range/v3/range_for.hpp>
 #include <range/v3/view/remove_if.hpp>
@@ -46,7 +45,7 @@ namespace blocksci {
     }
     
     std::vector<unsigned char> Block::getCoinbase() const {
-        return access->getCoinbase(rawBlock->coinbaseOffset);
+        return access->chain->getCoinbase(rawBlock->coinbaseOffset);
     }
     
     std::chrono::system_clock::time_point Block::getTime() const {
@@ -57,13 +56,14 @@ namespace blocksci {
         return (*this)[0];
     }
     
-    bool isSegwit(const Block &block, const ScriptAccess &scripts) {
+    bool isSegwit(const Block &block) {
         auto coinbase = block.coinbaseTx();
         for (int i = coinbase.outputCount() - 1; i >= 0; i--) {
             auto output = coinbase.outputs()[i];
             if (output.getType() == AddressType::Enum::NULL_DATA) {
-                auto nulldata = script::OpReturn(scripts, output.getAddress().scriptNum);
-                uint32_t startVal = *reinterpret_cast<const uint32_t *>(nulldata.data.c_str());
+                auto nulldata = script::OpReturn(output.getAddress().scriptNum, block.getAccess());
+                auto data = nulldata.getData();
+                uint32_t startVal = *reinterpret_cast<const uint32_t *>(data.c_str());
                 if (startVal == 0xaa21a9ed) {
                     return true;
                 }
@@ -89,14 +89,14 @@ namespace blocksci {
         return net;
     }
 
-    std::unordered_map<std::string, int64_t> netFullTypeValue(const Block &block, const ScriptAccess &scripts) {
+    std::unordered_map<std::string, int64_t> netFullTypeValue(const Block &block) {
         std::unordered_map<std::string, int64_t> net;
         RANGES_FOR(auto tx, block) {
             RANGES_FOR(auto output, tx.outputs()) {
-                net[output.getAddress().fullType(scripts)] += output.getValue();
+                net[output.getAddress().fullType()] += output.getValue();
             }
             RANGES_FOR(auto input, tx.inputs()) {
-                net[input.getAddress().fullType(scripts)] -= input.getValue();
+                net[input.getAddress().fullType()] -= input.getValue();
             }
         }
         return net;

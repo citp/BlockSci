@@ -90,8 +90,9 @@ void BloomFilter::reset(uint64_t maxItems, double fpRate) {
 }
 
 inline std::array<uint64_t, 2> hash(const uint8_t *data, int len) {
-    uint64_t hashA = *reinterpret_cast<const uint64_t *>(data + len - sizeof(uint64_t));
-    uint64_t hashB = *reinterpret_cast<const uint64_t *>(data + len - 2*sizeof(uint64_t));
+    uint64_t hashA, hashB;
+    memcpy(&hashA, data + len - sizeof(uint64_t), sizeof(uint64_t));
+    memcpy(&hashB, data + len - 2*sizeof(uint64_t), sizeof(uint64_t));
     return {{hashA, hashB}};
 }
 

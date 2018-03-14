@@ -9,9 +9,7 @@
 #ifndef cluster_hpp
 #define cluster_hpp
 
-#include <blocksci/address/equiv_address.hpp>
-
-
+#include <blocksci/address/address.hpp>
 #include <boost/range/iterator_range.hpp>
 
 #include <vector>
@@ -21,11 +19,11 @@
 
 class ClusterManager;
 
-struct TaggedEquivAddress {
-    blocksci::EquivAddress address;
+struct TaggedAddress {
+    blocksci::Address address;
     std::string tag;
     
-    TaggedEquivAddress(const blocksci::EquivAddress &address_, const std::string &tag_) : address(address_), tag(tag_) {}
+    TaggedAddress(const blocksci::Address &address_, const std::string &tag_) : address(address_), tag(tag_) {}
 };
 
 class Cluster {
@@ -35,13 +33,21 @@ public:
     uint32_t clusterNum;
     
     Cluster(uint32_t clusterNum_, const ClusterManager &manager_) : manager(manager_), clusterNum(clusterNum_) {}
-    boost::iterator_range<const blocksci::EquivAddress *> getEquivAddresses() const;
+    std::vector<blocksci::Address> getAddresses() const;
     
-    std::vector<TaggedEquivAddress> taggedEquivAddresses(const std::unordered_map<blocksci::EquivAddress, std::string> &tags) const;
+    std::vector<TaggedAddress> taggedAddresses(const std::unordered_map<blocksci::Address, std::string> &tags) const;
     
-    uint32_t countOfType(blocksci::EquivAddressType::Enum type) const;
+    uint32_t countOfType(blocksci::AddressType::Enum type) const;
     
     uint32_t getSize() const;
+
+    std::vector<blocksci::OutputPointer> getOutputPointers() const;
+    uint64_t calculateBalance(blocksci::BlockHeight height) const;
+    std::vector<blocksci::Output> getOutputs() const;
+    std::vector<blocksci::Input> getInputs() const;
+    std::vector<blocksci::Transaction> getTransactions() const;
+    std::vector<blocksci::Transaction> getOutputTransactions() const;
+    std::vector<blocksci::Transaction> getInputTransactions() const;
     
     bool operator==(const Cluster &other) {
         return clusterNum == other.clusterNum;

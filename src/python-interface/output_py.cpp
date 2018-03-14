@@ -7,13 +7,16 @@
 
 #include "optional_py.hpp"
 #include "ranges_py.hpp"
+#include "variant_py.hpp"
 
 #include <blocksci/address/address.hpp>
+#include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/algorithms.hpp>
 #include <blocksci/chain/inout_pointer.hpp>
 #include <blocksci/chain/transaction.hpp>
+#include <blocksci/scripts/script_variant.hpp>
 
 #include <range/v3/range_for.hpp>
 #include <range/v3/view/transform.hpp>
@@ -29,7 +32,7 @@ template <typename Class, typename FuncApplication, typename FuncDoc>
 void addOutputMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     cl
     .def_property_readonly("address", func([](const Output &output) {
-        return output.getAddress();
+        return output.getAddress().getScript().wrapped;
     }), func2("This address linked to this output"))
     .def_property_readonly("value", func([](const Output &output) {
         return output.getValue();
@@ -89,28 +92,14 @@ void addOutputRangeMethods(Class &cl, FuncApplication func) {
             return outputsOfType(std::forward<decltype(r)>(r), type);
         });
     }, "Returns a range including the subset of outputs which were sent to the given address type")
-    .def("with_type", [=](Range &range, EquivAddressType::Enum type) {
-        return func(range, [=](auto && r) -> ranges::any_view<blocksci::Output> {
-            return outputsOfType(std::forward<decltype(r)>(r), type);
-        });
-    }, "Returns a range including the subset of outputs which were sent to the given equiv address type")
     ;
 }
 
 
 void init_output(py::module &m) {
-    py::class_<OutputPointer>(m, "OutputPointer", "Class representing a pointer to an output")
-    .def("__repr__", &OutputPointer::toString)
-    .def(py::self == py::self)
-    .def(hash(py::self))
-    .def_readonly("tx_index", &OutputPointer::txNum, "The index of the transaction this points to")
-    .def_readonly("out_index", &OutputPointer::inoutNum, "The offset of the output in the pointed to transaction")
-    ;
-    
     py::class_<Output> outputClass(m, "Output", "Class representing a transaction output");
     outputClass
     .def("__repr__", &Output::toString)
-    .def(py::init<OutputPointer>())
     .def(py::self == py::self)
     .def(hash(py::self))
     ;

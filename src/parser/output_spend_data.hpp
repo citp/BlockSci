@@ -48,7 +48,7 @@ public:
     AnySpendData(const SpendDataType &var) : wrapped(var) {}
     
     AnySpendData(const AnyScriptOutput &scriptOutput);
-    AnySpendData(const blocksci::AnyScript &scriptData, blocksci::AddressType::Enum addressType);
+    AnySpendData(const blocksci::AnyScript &scriptData);
 };
 
 

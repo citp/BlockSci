@@ -16,15 +16,19 @@
 
 namespace blocksci {
     template <>
-    class ScriptAddress<AddressType::NONSTANDARD> : public Script {
-        ranges::optional<CScriptView> inputScript;
-        CScriptView outputScript;
+    class ScriptAddress<AddressType::NONSTANDARD> : public ScriptBase<ScriptAddress<AddressType::NONSTANDARD>> {
+        friend class ScriptBase<ScriptAddress<AddressType::NONSTANDARD>>;
+        const NonstandardScriptData *rawData;
+        const NonstandardSpendScriptData *rawInputData;
         
+        ScriptAddress(uint32_t scriptNum, std::tuple<const NonstandardScriptData *, const NonstandardSpendScriptData *> &&rawData, const DataAccess &access);
+        
+        ranges::optional<CScriptView> getInputScript() const;
+        CScriptView getOutputScript() const;
     public:
         constexpr static AddressType::Enum addressType = AddressType::NONSTANDARD;
         
-        ScriptAddress(uint32_t scriptNum, std::tuple<const NonstandardScriptData *, const NonstandardSpendScriptData *> &&rawData, const ScriptAccess &access);
-        ScriptAddress(const ScriptAccess &access, uint32_t addressNum);
+        ScriptAddress(uint32_t addressNum, const DataAccess &access);
         
         std::string inputString() const;
         std::string outputString() const;

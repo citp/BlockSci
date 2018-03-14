@@ -23,11 +23,8 @@
 #include <vector>
 
 namespace blocksci {
-    struct Address;
     struct State;
 }
-
-class ParserIndex;
 
 template <typename IndexType>
 class ParserIndexCreator {

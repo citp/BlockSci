@@ -13,6 +13,8 @@
 #include "heuristics/tx_identification.hpp"
 
 #include "chain/chain_access.hpp"
+#include "index/address_index.hpp"
+#include "index/hash_index.hpp"
 
 #include "util/data_configuration.hpp"
 
@@ -52,11 +54,42 @@ namespace blocksci {
         return segments;
     }
     
-    Blockchain::Blockchain(const std::string &dataDirectory) : Blockchain(DataConfiguration{dataDirectory}, true, BlockHeight{0}) {}
-    
-    Blockchain::Blockchain(const DataConfiguration &config, bool errorOnReorg, BlockHeight blocksIgnored) : access(&DataAccess::Instance(config, errorOnReorg, blocksIgnored)) {
-        lastBlockHeight = access->chain->blockCount();
+     std::vector<std::pair<int, int>> segmentChainIndexes(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, unsigned int segmentCount) {
+        auto lastTx = chain[endBlock - BlockHeight{1}].endTxIndex();
+        auto firstTx = chain[startBlock].firstTxIndex();
+        auto totalTxCount = lastTx - firstTx;
+        double segmentSize = static_cast<double>(totalTxCount) / segmentCount;
+        
+        std::vector<std::pair<int, int>> segments;
+        auto it = chain.begin();
+        std::advance(it, static_cast<int>(startBlock));
+        auto chainEnd = chain.begin();
+        std::advance(chainEnd, static_cast<int>(endBlock));
+        while(lastTx - (*it).firstTxIndex() > segmentSize) {
+            auto endIt = std::lower_bound(it, chainEnd, (*it).firstTxIndex() + segmentSize, [](const Block &block, uint32_t txNum) {
+                return block.firstTxIndex() < txNum;
+            });
+            auto startBlock = *it;
+            auto endBlock = *endIt;
+            segments.emplace_back(startBlock.height(), endBlock.height());
+            it = endIt;
+        }
+        if (segments.size() == segmentCount) {
+            segments.back().second = endBlock;
+        } else {
+            auto startBlock = *it;
+            segments.emplace_back(startBlock.height(), endBlock);
+        }
+        return segments;
     }
+    
+    Blockchain::Blockchain(const std::string &dataDirectory) : Blockchain(DataConfiguration{dataDirectory, true, BlockHeight{0}}) {}
+    
+    Blockchain::Blockchain(const DataConfiguration &config) : access(config) {
+        lastBlockHeight = access.chain->blockCount();
+    }
+    
+    Blockchain::~Blockchain() = default;
     
     template<AddressType::Enum type>
     struct ScriptRangeFunctor {

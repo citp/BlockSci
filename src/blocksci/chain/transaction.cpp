@@ -30,7 +30,7 @@
 namespace blocksci {
     
     uint256 Transaction::getHash() const {
-        return *access->getTxHash(txNum);
+        return *access->chain->getTxHash(txNum);
     }
     
     Block Transaction::block() const {
@@ -52,9 +52,9 @@ namespace blocksci {
         return txIndex;
     }
     
-    Transaction::Transaction(uint256 hash, HashIndex &index, const ChainAccess &chain) : Transaction(getTxIndex(hash, index), chain) {}
+    Transaction::Transaction(uint256 hash, const DataAccess &access) : Transaction(getTxIndex(hash, *access.hashIndex), access) {}
     
-    Transaction::Transaction(std::string hash, HashIndex &index, const ChainAccess &chain) : Transaction(uint256S(hash), index, chain) {}
+    Transaction::Transaction(std::string hash, const DataAccess &access) : Transaction(uint256S(hash), access) {}
     
     std::vector<OutputPointer> Transaction::getOutputPointers(const InputPointer &pointer) const {
         std::vector<OutputPointer> pointers;

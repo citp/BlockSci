@@ -19,23 +19,16 @@ namespace blocksci {
 
     class DataAccess {
     public:
-        const DataConfiguration config;
+        DataConfiguration config;
         std::unique_ptr<ChainAccess> chain;
         std::unique_ptr<ScriptAccess> scripts;
         std::unique_ptr<AddressIndex> addressIndex;
         std::unique_ptr<HashIndex> hashIndex;
         
-        static DataAccess &Instance(const DataConfiguration &config, bool errorOnReorg, BlockHeight blocksIgnored);
-        static DataAccess &Instance();
+        DataAccess() = default;
+        DataAccess(const DataConfiguration &config);
         
-        DataAccess(const DataConfiguration &config, bool errorOnReorg, BlockHeight blocksIgnored);
-        
-        // delete copy and move constructors and assign operators
-        DataAccess(DataAccess const&) = delete;             // Copy construct
-        DataAccess(DataAccess&&) = delete;                  // Move construct
-        DataAccess& operator=(DataAccess const&) = delete;  // Copy assign
-        DataAccess& operator=(DataAccess &&) = delete;      // Move assign
-        
+        operator DataConfiguration() const { return config; }
     };
 }
 

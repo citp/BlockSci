@@ -23,21 +23,38 @@
 
 HashIndexCreator::HashIndexCreator(const ParserConfigurationBase &config_, const std::string &path) : ParserIndex(config_, "hashIndex"), db(path, false) {}
 
-void HashIndexCreator::processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &scripts) {
+void HashIndexCreator::processTx(const blocksci::Transaction &tx) {
     auto hash = tx.getHash();
     db.addTx(hash, tx.txNum);
+    
+    bool insideP2SH;
+    std::function<bool(const blocksci::Address &)> inputVisitFunc = [&](const blocksci::Address &a) {
+        if (a.type == blocksci::AddressType::SCRIPTHASH) {
+            insideP2SH = true;
+            return true;
+        } else if (a.type == blocksci::AddressType::WITNESS_SCRIPTHASH && insideP2SH) {
+            auto script = blocksci::script::WitnessScriptHash(a.scriptNum, a.getAccess());
+            db.addAddress<blocksci::AddressType::WITNESS_SCRIPTHASH>(script.getAddressHash(), a.scriptNum);
+            return false;
+        } else {
+            return false;
+        }
+    };
+    for (auto input : tx.inputs()) {
+        insideP2SH = false;
+        visit(input.getAddress(), inputVisitFunc);
+    }
     
     for (auto txout : tx.outputs()) {
         if (txout.getType() == blocksci::AddressType::WITNESS_SCRIPTHASH) {
             auto scriptNum = txout.getAddress().scriptNum;
-            auto script = blocksci::script::WitnessScriptHash(scripts, scriptNum);
-            db.addAddress<blocksci::AddressType::WITNESS_SCRIPTHASH>(script.address, scriptNum);
+            auto script = blocksci::script::WitnessScriptHash(scriptNum, tx.getAccess());
+            db.addAddress<blocksci::AddressType::WITNESS_SCRIPTHASH>(script.getAddressHash(), scriptNum);
         }
     }
 }
 
 void HashIndexCreator::rollback(const blocksci::State &state) {
-
     {
         auto column = db.getColumn(blocksci::AddressType::WITNESS_SCRIPTHASH);
         rocksdb::WriteBatch batch;
@@ -45,7 +62,7 @@ void HashIndexCreator::rollback(const blocksci::State &state) {
         for (it->SeekToFirst(); it->Valid(); it->Next()) {
             uint32_t destNum;
             memcpy(&destNum, it->value().data(), sizeof(destNum));
-            auto count = state.scriptCounts[static_cast<size_t>(blocksci::EquivAddressType::SCRIPTHASH)];
+            auto count = state.scriptCounts[static_cast<size_t>(blocksci::DedupAddressType::SCRIPTHASH)];
             if (destNum >= count) {
                 batch.Delete(column, it->key());
             }

@@ -115,7 +115,13 @@ namespace blocksci {
             return rawData.size();
         }
         
-        const char *dataView() const {
+        const char *finalize() {
+            auto charsToAdd = rawData.size() % alignof(MainType);
+            if (charsToAdd > 0) {
+                for (size_t i = 0; i < (alignof(MainType) - charsToAdd); i++) {
+                    rawData.push_back(0);
+                }
+            }
             return rawData.data();
         }
     };
@@ -361,6 +367,7 @@ namespace blocksci {
         FixedSizeFileMapper<FileIndex<indexCount>, mode> indexFile;
         
         void writeNewImp(const char *valuePos, size_t amountToWrite) {
+            assert(amountToWrite % alignof(nth_element<0>) == 0);
             FileIndex<indexCount> fileIndex;
             fileIndex[0] = dataFile.getWriteOffset();
             for(size_t i = 1; i < indexCount; i++) {
@@ -374,9 +381,11 @@ namespace blocksci {
         void writeUpdateImp(uint32_t addressNum, const char *valuePos, size_t amountToWrite) {
             static_assert(indexNum > 0, "Must call write without addressNum for first element");
             static_assert(indexNum < indexCount, "Index out of range");
+            assert(amountToWrite % alignof(nth_element<indexNum>) == 0);
             auto &fileIndex = *indexFile.getData(addressNum);
             fileIndex[indexNum] = dataFile.getWriteOffset();
             dataFile.write(valuePos, amountToWrite);
+            
         }
         
         template<size_t indexNum = 0>
@@ -492,8 +501,9 @@ namespace blocksci {
             writeNewImp(&t, sizeof(t));
         }
         
-        void write(const ArbitraryLengthData<nth_element<0>> &t) {
-            writeNewImp(t.dataView(), t.size());
+        void write(ArbitraryLengthData<nth_element<0>> &t) {
+            auto finalData = t.finalize();
+            writeNewImp(finalData, t.size());
         }
         
         template<size_t indexNum>
@@ -502,8 +512,9 @@ namespace blocksci {
         }
         
         template<size_t indexNum>
-        void write(uint32_t addressNum, const ArbitraryLengthData<nth_element<indexNum>> &t) {
-            writeUpdateImp<indexNum>(addressNum, t.dataView(), t.size());
+        void write(uint32_t addressNum, ArbitraryLengthData<nth_element<indexNum>> &t) {
+            auto finalData = t.finalize();
+            writeUpdateImp<indexNum>(addressNum, finalData, t.size());
         }
         
         template<size_t indexNum = 0>

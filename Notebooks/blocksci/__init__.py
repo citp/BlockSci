@@ -19,7 +19,7 @@ import sys
 import os
 import inspect
 
-version = "0.3"
+version = "0.45"
 
 def mapreduce_block_ranges(chain, mapFunc, reduceFunc, init,  start=None, end=None, cpu_count=psutil.cpu_count()):
     """Initialized multithreaded map reduce function over a stream of block ranges
@@ -36,12 +36,22 @@ def mapreduce_block_ranges(chain, mapFunc, reduceFunc, init,  start=None, end=No
     if cpu_count == 1:
         return mapFunc(chain[start:end])
 
-    segments = chain.segment(start, end, cpu_count)
+    raw_segments = chain.segment_indexes(start, end, cpu_count)
+    config = chain.config
+
+    segments = [(raw_segment, config) for raw_segment in raw_segments]
+
+    def real_map_func(input):
+        local_chain = Blockchain(input[1])
+        block_height_range = range(input[0][0], input[0][1])
+        return mapFunc((local_chain[i] for i in block_height_range))
+
     with Pool(cpu_count - 1) as p:
-        results_future = p.map_async(mapFunc, segments[1:])
-        last = mapFunc(segments[0])
+        results_future = p.map_async(real_map_func, segments[1:])
+        block_height_range = range(raw_segments[0][0], raw_segments[0][1])
+        first = mapFunc((chain[i] for i in block_height_range))
         results = results_future.get()
-        results.insert(0, last)
+        results.insert(0, first)
     return reduce(reduceFunc, results, init)
 
 
@@ -81,10 +91,10 @@ def filter_txes(self, filterFunc, start = None, end = None, cpu_count=psutil.cpu
     def mapFunc(blocks):
         return [tx.index for block in blocks for tx in block if filterFunc(tx)]
     def reduceFunc(cur, el):
-        return cur + [el]
+        return cur + el
     init = list()
     tx_ids = mapreduce_block_ranges(self, mapFunc, reduceFunc, init, start, end, cpu_count)
-    return [Tx(x) for x in tx_ids]
+    return [chain.tx_with_index(x) for x in tx_ids]
 
 Blockchain.map_blocks = map_blocks
 Blockchain.filter_blocks = filter_blocks

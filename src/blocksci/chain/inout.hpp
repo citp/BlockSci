@@ -10,6 +10,7 @@
 #define inout_hpp
 
 #include "chain_fwd.hpp"
+#include <blocksci/address/address_fwd.hpp>
 #include <blocksci/address/address_types.hpp>
 
 namespace std
@@ -20,9 +21,6 @@ namespace std
 }
 
 namespace blocksci {
-    
-    struct Address;
-    
     struct Inout {
         uint32_t linkedTxNum;
         uint32_t toAddressNum;
@@ -40,7 +38,7 @@ namespace blocksci {
             other |= (intType & uint64_t(0b1111)) << 60;
         }
         
-        Inout(uint32_t linkedTxNum, const Address &address, uint64_t value);
+        Inout(uint32_t linkedTxNum, const RawAddress &address, uint64_t value);
         Inout() : linkedTxNum(0), toAddressNum(0), other(0) {}
         
         uint64_t getValue() const {
@@ -57,8 +55,6 @@ namespace blocksci {
         bool operator!=(const Inout& otherInout) const {
             return ! operator==(otherInout);
         }
-        
-        Address getAddress() const;
     };
 }
 
