@@ -41,8 +41,8 @@ public:
     
     uint32_t getSize() const;
 
+    std::vector<blocksci::OutputPointer> getOutputPointers() const;
     uint64_t calculateBalance(blocksci::BlockHeight height) const;
-
     std::vector<blocksci::Output> getOutputs() const;
     std::vector<blocksci::Input> getInputs() const;
     std::vector<blocksci::Transaction> getTransactions() const;

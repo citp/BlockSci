@@ -159,7 +159,7 @@ namespace blocksci {
     }
     
     EquivAddress Address::getEquivAddresses(bool nestedEquivalent) const {
-        return access->addressIndex->getEquivAddresses(*this, nestedEquivalent);
+        return EquivAddress{*this, nestedEquivalent};
     }
     
     uint64_t Address::calculateBalance(BlockHeight height) const {

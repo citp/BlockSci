@@ -28,19 +28,15 @@ namespace blocksci {
         
         std::unordered_set<Address> getPossibleNestedEquivalentUp(const Address &address) const;
         std::unordered_set<Address> getPossibleNestedEquivalentDown(const Address &address) const;
-        std::vector<Address> getPossibleNestedEquivalent(const Address &address) const;
+        
     public:
         
         AddressIndex(const std::string &path, bool readonly);
         ~AddressIndex();
 
         bool checkIfExists(const Address &address) const;
-        
         std::vector<OutputPointer> getOutputPointers(const Address &address) const;
-        
-        EquivAddress getEquivAddresses(const Address &searchAddress, bool nestedEquivalent) const;
-        EquivAddress getEquivAddresses(const DedupAddress &searchAddress, bool nestedEquivalent, const DataAccess &access) const;
-        
+        std::vector<Address> getPossibleNestedEquivalent(const Address &address) const;
         std::vector<Address> getIncludingMultisigs(const Address &searchAddress) const;
         
         void addAddressNested(const blocksci::Address &childAddress, const blocksci::DedupAddress &parentAddress);

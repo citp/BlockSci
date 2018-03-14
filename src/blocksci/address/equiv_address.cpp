@@ -6,6 +6,7 @@
 //
 
 #include "equiv_address.hpp"
+#include "dedup_address.hpp"
 
 #include <blocksci/util/data_access.hpp>
 #include <blocksci/util/hash.hpp>
@@ -21,36 +22,41 @@ namespace std
 {
     size_t hash<blocksci::EquivAddress>::operator()(const blocksci::EquivAddress &equiv) const {
         std::size_t seed = 123954;
-        for (const auto &address : equiv.getAddresses()) {
-            hash_combine(seed, address);
+        for (const auto &address : equiv.addresses) {
+            seed ^= address.scriptNum + address.type;
         }
         return seed;
     }
 }
 
-void EquivAddress::validateAddresses() {
-    if (!validated) {
-        possibleAddresses = getAddresses();
-        validated = true;
+EquivAddress::EquivAddress(uint32_t scriptNum, EquivAddressType::Enum type, bool scriptEquivalent_, const DataAccess &access_) : scriptEquivalent(scriptEquivalent_), access(access_) {
+    for (auto type : equivAddressTypes(type)) {
+        Address address(scriptNum, type, access);
+        if (scriptEquivalent) {
+            auto nested = access.addressIndex->getPossibleNestedEquivalent(address);
+            for (auto &nestedAddress : nested) {
+                if (access.addressIndex->checkIfExists(nestedAddress)) {
+                    addresses.insert(nestedAddress);
+                }
+            }
+        } else {
+            if (access.addressIndex->checkIfExists(address)) {
+                addresses.insert(address);
+            }
+        }
+        
     }
 }
 
-std::unordered_set<Address> EquivAddress::getAddresses() const {
-    if (!validated) {
-        std::unordered_set<Address> newAddresses;
-        for (const auto &address : possibleAddresses) {
-            if (access.addressIndex->checkIfExists(address)) {
-                newAddresses.insert(address);
-            }
-        }
-        return newAddresses;
-    }
-    return possibleAddresses;
-}
+EquivAddress::EquivAddress(const Address &searchAddress, bool scriptEquivalent_) :
+EquivAddress(searchAddress.scriptNum, equivType(searchAddress.type), scriptEquivalent_, searchAddress.getAccess()) {}
+
+EquivAddress::EquivAddress(const DedupAddress &searchAddress, bool scriptEquivalent_, const DataAccess &access_) :
+EquivAddress(searchAddress.scriptNum, equivType(searchAddress.type), scriptEquivalent_, access_) {}
 
 std::vector<OutputPointer> EquivAddress::getOutputPointers() const {
     std::vector<OutputPointer> outputs;
-    for (const auto &address : possibleAddresses) {
+    for (const auto &address : addresses) {
         auto addrOuts = access.addressIndex->getOutputPointers(address);
         outputs.insert(outputs.end(), addrOuts.begin(), addrOuts.end());
     }

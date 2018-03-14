@@ -15,35 +15,30 @@
 
 namespace blocksci {
     class EquivAddress {
-        std::unordered_set<Address> possibleAddresses;
-        bool validated;
+        std::unordered_set<Address> addresses;
         bool scriptEquivalent;
         const DataAccess &access;
         
-        void validateAddresses();
-    public:
+        friend struct std::hash<EquivAddress>;
         
-        EquivAddress(std::unordered_set<Address> possibleAddresses_, bool scriptEquivalent_, const DataAccess &access_) : possibleAddresses(std::move(possibleAddresses_)), validated(false), scriptEquivalent(scriptEquivalent_), access(access_) {}
+        EquivAddress(uint32_t scriptNum, EquivAddressType::Enum type, bool scriptEquivalent_, const DataAccess &access_);
+    public:
+        EquivAddress(const Address &address, bool scriptEquivalent);
+        EquivAddress(const DedupAddress &address, bool scriptEquivalent, const DataAccess &access);
         
         bool operator==(const EquivAddress &other) const {
             if (scriptEquivalent != other.scriptEquivalent) {
                 return false;
             }
-            auto a = getAddresses();
-            auto b = other.getAddresses();
-            return a == b;
+            return addresses == other.addresses;
         }
         
-        std::unordered_set<Address> getAddresses() const;
-        
-        std::unordered_set<Address>::const_iterator begin() {
-            validateAddresses();
-            return possibleAddresses.begin();
+        std::unordered_set<Address>::const_iterator begin() const {
+            return addresses.begin();
         }
         
-        std::unordered_set<Address>::const_iterator end() {
-            validateAddresses();
-            return possibleAddresses.end();
+        std::unordered_set<Address>::const_iterator end() const {
+            return addresses.end();
         }
         
         std::vector<OutputPointer> getOutputPointers() const;
