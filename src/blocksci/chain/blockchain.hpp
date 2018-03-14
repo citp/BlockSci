@@ -165,8 +165,8 @@ namespace blocksci {
             return lastBlockHeight;
         }
         
-        uint32_t scriptCount(DedupAddressType::Enum type) const {
-            return access.scripts->scriptCount(type);
+        uint32_t addressCount(AddressType::Enum type) const {
+            return access.scripts->scriptCount(dedupType(type));
         }
         
         template <AddressType::Enum type>

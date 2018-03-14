@@ -73,9 +73,9 @@ void init_blockchain(py::module &m) {
     .def_property_readonly("config", [](const Blockchain &chain) -> DataConfiguration { return chain.getAccess().config; }, "Returns the configuration settings for this blockchain")
     .def("segment", segmentChain, "Divide the blockchain into the given number of chunks with roughly the same number of transactions in each")
     .def("segment_indexes", segmentChainIndexes, "Return a list of [start, end] block height pairs representing chunks with roughly the same number of transactions in each")
-    .def("dedup_address_count", &Blockchain::scriptCount, "Get the total number of address of a given type")
-    .def("script_type_txes", getTransactionIncludingOutput, "Returns a list of all transactions that include outputs of the given script type")
-    .def("scripts", [](const Blockchain &chain, AddressType::Enum type) {
+    .def("address_count", &Blockchain::addressCount, "Get an upper bound of the number of address of a given type (This reflects the number of type equivlant addresses of that type).")
+    .def("address_type_txes", getTransactionIncludingOutput, "Returns a list of all transactions that include outputs of the given address type")
+    .def("addresses", [](const Blockchain &chain, AddressType::Enum type) {
         return chain.scripts(type);
     })
     .def_property_readonly("outputs_unspent", [](const Blockchain &chain) -> ranges::any_view<Output> { return outputsUnspent(chain); }, "Returns a list of all of the outputs that are unspent")

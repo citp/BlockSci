@@ -20,17 +20,25 @@ using namespace blocksci;
 void init_ranges(py::module &m) {
 	addRangeClass<ranges::any_view<Block>>(m, "AnyBlockRange");
  
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::PUBKEY>>>(m, "AnyPubkeyScriptRange");
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::SCRIPTHASH>>>(m, "AnyScripthashScriptRange");
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::MULTISIG>>>(m, "AnyMultisigScriptRange");
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::NONSTANDARD>>>(m, "AnyNonStandardScriptRange");
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::NULL_DATA>>>(m, "AnyNullDataScriptRange");
+    addRangeClass<ranges::any_view<ScriptAddress<AddressType::PUBKEY>>>(m, "AnyPubkeyAddressRange");
+    addRangeClass<ranges::any_view<ScriptAddress<AddressType::PUBKEYHASH>>>(m, "AnyPubkeyHashAddressRange");
+    addRangeClass<ranges::any_view<ScriptAddress<AddressType::MULTISIG_PUBKEY>>>(m, "AnyMultisigPubkeyAddressRange");
+    addRangeClass<ranges::any_view<ScriptAddress<AddressType::WITNESS_PUBKEYHASH>>>(m, "AnyWitnessPubkeyHashAddressRange");
+    addRangeClass<ranges::any_view<ScriptAddress<AddressType::SCRIPTHASH>>>(m, "AnyScriptHashAddressRange");
+    addRangeClass<ranges::any_view<ScriptAddress<AddressType::WITNESS_SCRIPTHASH>>>(m, "AnyWitnessScriptHashAddressRange");
+    addRangeClass<ranges::any_view<ScriptAddress<AddressType::MULTISIG>>>(m, "AnyMultisigAddressRange");
+    addRangeClass<ranges::any_view<ScriptAddress<AddressType::NONSTANDARD>>>(m, "AnyNonStandardAddressRange");
+    addRangeClass<ranges::any_view<ScriptAddress<AddressType::NULL_DATA>>>(m, "AnyOpReturnAddressRange");
     
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::PUBKEY>, ranges::category::random_access | ranges::category::sized>>(m, "PubkeyScriptRange");
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::SCRIPTHASH>, ranges::category::random_access | ranges::category::sized>>(m, "ScripthashScriptRange");
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::MULTISIG>, ranges::category::random_access | ranges::category::sized>>(m, "MultisigScriptRange");
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::NONSTANDARD>, ranges::category::random_access | ranges::category::sized>>(m, "NonStandardScriptRange");
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::NULL_DATA>, ranges::category::random_access | ranges::category::sized>>(m, "NullDataScriptRange");
+    addRangeClass<ranges::any_view<ScriptAddress<AddressType::PUBKEY>, ranges::category::random_access | ranges::category::sized>>(m, "PubkeyAddressRange");
+    addRangeClass<ranges::any_view<ScriptAddress<AddressType::PUBKEYHASH>, ranges::category::random_access | ranges::category::sized>>(m, "PubkeyHashAddressRange");
+    addRangeClass<ranges::any_view<ScriptAddress<AddressType::MULTISIG_PUBKEY>, ranges::category::random_access | ranges::category::sized>>(m, "MultisigPubkeyAddressRange");
+    addRangeClass<ranges::any_view<ScriptAddress<AddressType::WITNESS_PUBKEYHASH>, ranges::category::random_access | ranges::category::sized>>(m, "WitnessPubkeyHashAddressRange");
+    addRangeClass<ranges::any_view<ScriptAddress<AddressType::SCRIPTHASH>, ranges::category::random_access | ranges::category::sized>>(m, "ScriptHashAddressRange");
+    addRangeClass<ranges::any_view<ScriptAddress<AddressType::WITNESS_SCRIPTHASH>, ranges::category::random_access | ranges::category::sized>>(m, "WitnessScriptHashAddressRange");
+    addRangeClass<ranges::any_view<ScriptAddress<AddressType::MULTISIG>, ranges::category::random_access | ranges::category::sized>>(m, "MultisigAddressRange");
+    addRangeClass<ranges::any_view<ScriptAddress<AddressType::NONSTANDARD>, ranges::category::random_access | ranges::category::sized>>(m, "NonStandardAddressRange");
+    addRangeClass<ranges::any_view<ScriptAddress<AddressType::NULL_DATA>, ranges::category::random_access | ranges::category::sized>>(m, "OpReturnAddressRange");
     
     
     

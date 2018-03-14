@@ -92,7 +92,7 @@ void addTransactionMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     }), func2("The ratio of fee paid to size in bytes of this transaction"))
     .def_property_readonly("op_return", func([](const Transaction &tx) {
         return getOpReturn(tx);
-    }), func2("If this transaction included a null data script, return its output. Otherwise return None"))
+    }), func2("If this transaction included a null data address, return its output. Otherwise return None"))
     .def_property_readonly("is_coinbase", func([](const Transaction &tx) {
         return tx.isCoinbase();
     }), func2("Return's true if this transaction is a Coinbase transaction"))
