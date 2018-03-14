@@ -16,7 +16,7 @@ BlockSci Version 0.4 Documentation
 
    chain/chain
 
-   scripts/scripts
+   addresses/addresses
 
    heuristics/heuristics
 

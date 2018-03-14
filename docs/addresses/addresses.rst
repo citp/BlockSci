@@ -1,11 +1,10 @@
-Script Classes
+Address Classes
 ====================================
 
 .. toctree::
    :maxdepth: 2
-   :caption: Scripts:
+   :caption: Addresses:
    
    address
    equiv_address
-   script
-
+   types

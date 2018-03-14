@@ -4,7 +4,7 @@
 Release notes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Version 0.4
+Version 0.4.5
 ========================
 
 Feature Enhancements
@@ -14,15 +14,19 @@ Feature Enhancements
 
   Following an number of enhancements BlockSci is now capable of safely performing incremental updates. The AWS distribution of BlockSci now includes a Bitcoin full node and will automatically update the BlockChain once per hour. For local installations of BlockSci, see the readme for setup instructions.
 
+- Introduced new concept of Equivalent Addresses which includes two types of equivalences, Type Equivalent and Script Equivalent. Type equivalent refers to two addresses using the same secret in a different way such as how a single pubkey could be used for a Pay to Pubkey Hash address and a Pay To Witness Pubkey Hash address. Script Equivalent referes to a Pay tp Script Hash address being equivalent to the address it contains. Address.equiv() and the EquivAddress class were added to support these concepts. See the documentation for more information.
+
+- Enabled the opening of multiple Blockchain objects in the same notebook by removing internal usage of Singleton pattern.
+
 - Proper handling of segwit tx and block size distinctions. This included updating the parser to store the size of each transaction excluding segwit data and as as supporting the 3 new notions of size that segwit introduced.
 
 - Proper handling of bech32 addresses.
 
-  - Address.from_string() now supports lookup of bech32 addresses.
+  - Blockchain.address_from_string() now supports lookup of bech32 addresses.
 
-  - Script objects (produced from calls to Address.script) now display the correct address depending on the address type.
+  - Address objects now display the correct human readable address depending on the address type.
 
-- Improved initial chain parsing from 24 hours down to 10 hours and reduced in parser data size due to unification of the hash index database and parser address hash index database.
+- Improved initial chain parsing from 24 hours down to 12 hours and reduced in parser data size due to unification of the hash index database and parser address hash index database.
 
 
 Breaking Changes
@@ -30,11 +34,15 @@ Breaking Changes
 
 - Updated to new data version for the parser output requiring a rerun of the blocksci_parser.
 
-- Introduced new distinction between Address.script and Address.equiv. Address.script returns an object specific to that address type the contains specific information about the script used for the address. Address.equiv provides an EquivAddress object which supports queries such as EquivAddress.outs() and EquivAddress.balance() to generate information about usages of the particular pubkey or script. Both of these functionalities were previously included inside Address.script. Explanation and more details regarding EquivAddress can be found in it's page in the documentation.
+- In order to allow multiple blockchain objects. All constructors and factory methods were removed with parallel methods added to the chain object. For instance Tx(hash) is now chain.tx_with_hash(hash).
 
-- Renamed various methods from using Script in their name to Equiv address in order to reflect updated terminology.
+- Removed Address.script and merged its functionality into Address
 
-- Renamed ScriptType to EquivAddressType to reflect updated naming as well.
+- Modified Address.outs(), Address.balance(), and related functions to only return results for places on the Blockchain where that address appeared in a top level context (Not wrapped inside another address).
+
+- Renamed various methods from using script in their name to address in order to reflect updated terminology.
+
+- Removed ScriptType since its functionality was superseded by EquivAddress
 
 Bug Fixes
 -------------
