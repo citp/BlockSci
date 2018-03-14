@@ -25,6 +25,7 @@ Version 0.4.5 introduces full bech32 address support, adds segwit size support, 
 .. _release notes: https://citp.github.io/BlockSci/changelog.html#version-0-4-5
 .. _image: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-a09d66dd
 
+
 Quick setup using Amazon EC2
 ==============================
 
@@ -60,7 +61,7 @@ Disk mode is optimized for parsing Bitcoin's data files. It reads blockchain dat
 
 	blocksci_parser --output-directory bitcoin-data update disk --coin-directory .bitcoin
 
-RPC mode uses the RPC interface of a cryptocurrency to extract data regarding the blockchain. It works with a variety of cryptocurrencies which have the same general model as Bitcoin, but with minor changes to the serialization format which break the parser in disk mode. One example of this is Namecoin.
+RPC mode uses the RPC interface of a cryptocurrency to extract data regarding the blockchain. It works with a variety of cryptocurrencies which have the same general model as Bitcoin, but with minor changes to the serialization format which break the parser in disk mode. Examples of this are Zcash and Namecoin. To use the parser in RPC mode, you're full node must be running with txindex enabled.
 
 ..  code-block:: bash
 
@@ -124,6 +125,10 @@ which will open a window in your browser to the Jupyter server.
 
 .. _Jupyter Notebook: https://jupyter.readthedocs.io/en/latest/install.html
 
+
+Supported Compilers
+=======================
+BlockSci require GCC 6.3 or above or Clang 5 or above.
 
 BlockSci compilation instructions
 ======================================
