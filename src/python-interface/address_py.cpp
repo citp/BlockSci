@@ -50,6 +50,12 @@ void init_address(py::module &m) {
     py::class_<EquivAddress>(m, "EquivAddress", "A set of equivalent addresses")
     .def(py::self == py::self)
     .def(hash(py::self))
+    .def("__repr__", &EquivAddress::toString)
+    .def("__len__", [](const EquivAddress &address) { return address.size(); })
+    .def("__bool__", [](const EquivAddress &address) { return address.size() == 0; })
+    .def("__iter__", [](const EquivAddress &address) {
+        return py::make_iterator(address.begin(), address.end());
+    },py::keep_alive<0, 1>())
     .def("balance", &EquivAddress::calculateBalance, py::arg("height") = 0, "Calculates the balance held by these equivalent addresses at the height (Defaults to the full chain)")
     .def("outs", &EquivAddress::getOutputs, "Returns a list of all outputs sent to these equivalent addresses")
     .def("ins", &EquivAddress::getInputs, "Returns a list of all inputs spent from these equivalent addresses")

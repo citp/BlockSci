@@ -15,6 +15,7 @@
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/transaction.hpp>
+#include <blocksci/scripts/script_variant.hpp>
 
 using namespace blocksci;
 
@@ -53,6 +54,21 @@ EquivAddress(searchAddress.scriptNum, equivType(searchAddress.type), scriptEquiv
 
 EquivAddress::EquivAddress(const DedupAddress &searchAddress, bool scriptEquivalent_, const DataAccess &access_) :
 EquivAddress(searchAddress.scriptNum, equivType(searchAddress.type), scriptEquivalent_, access_) {}
+
+std::string EquivAddress::toString() const {
+    std::stringstream ss;
+    ss << "EquivAddress(";
+    size_t i = 0;
+    for (auto &address : addresses) {
+        ss << address.getScript().toString();
+        if (i < addresses.size() - 1) {
+            ss << ", ";
+        }
+        i++;
+    }
+    ss << ")";
+    return ss.str();
+}
 
 std::vector<OutputPointer> EquivAddress::getOutputPointers() const {
     std::vector<OutputPointer> outputs;

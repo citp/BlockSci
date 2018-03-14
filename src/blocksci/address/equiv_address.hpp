@@ -33,6 +33,12 @@ namespace blocksci {
             return addresses == other.addresses;
         }
         
+        std::string toString() const;
+        
+        size_t size() const {
+            return addresses.size();
+        }
+        
         std::unordered_set<Address>::const_iterator begin() const {
             return addresses.begin();
         }
