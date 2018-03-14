@@ -63,7 +63,7 @@ void addBlockMethods(Class &cl, FuncApplication func) {
     .def_property_readonly("fee", func([](const Block &block) {
         return totalFee(block);
     }), "The sum of the transaction fees contained in this block")
-    .def_property_readonly("reward", func([](const Block &block) {
+    .def_property_readonly("revenue", func([](const Block &block) {
         return totalOutputValue(block[0]);
     }), "Total reward received by the miner of this block")
     .def_property_readonly("base_size", func([](const Block &block) {
