@@ -9,14 +9,6 @@ While the `Address` type views these as distinct addresses, the `EquivAddress` t
 
 In other analysis tools, this distinction between `Address` and `EquivAddress` is not explicitly handled. Frequently Pay to Pubkey and Pay to Pubkey hash addresses using the same public key are treated as the same address and in many block explorers the balance of an 'address' is the sum of the balances of both types. However a Pay to witness pubkey hash address using the same pubkey is treated as completely distinct from the other addresses. BlockSci allows the user to decide which address concept they would like to work with.
 
-Equiv Address Type
-====================================
-
-.. autoclass:: blocksci.equiv_address_type
-   :members:
-   :inherited-members:
-   :undoc-members:
-
 EquivAddress
 ====================================
 

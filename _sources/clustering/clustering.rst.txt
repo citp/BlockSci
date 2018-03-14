@@ -7,5 +7,4 @@ Clustering
    
    cluster_manager
    cluster
-   tagged_cluster
-   tagged_equiv_address
+   tagging

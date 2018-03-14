@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Heuristics &#8212; BlockSci 0.4 documentation</title>
+    <title>Heuristics &#8212; BlockSci 0.4.5 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" src="../_static/documentation_options.js"></script>
@@ -17,7 +17,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Clustering" href="../clustering/clustering.html" />
-    <link rel="prev" title="Script Data" href="../scripts/script.html" />
+    <link rel="prev" title="Address Types" href="../addresses/types.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -34,6 +34,12 @@
             
   <div class="section" id="module-blocksci.blocksci_interface.heuristics">
 <span id="heuristics"></span><h1>Heuristics<a class="headerlink" href="#module-blocksci.blocksci_interface.heuristics" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="blocksci.blocksci_interface.heuristics.address_deanon_txes">
+<code class="descclassname">blocksci.blocksci_interface.heuristics.</code><code class="descname">address_deanon_txes</code><span class="sig-paren">(</span><em>arg0: blocksci.blocksci_interface.Blockchain</em>, <em>arg1: int</em>, <em>arg2: int</em><span class="sig-paren">)</span> &#x2192; List[blocksci.blocksci_interface.Tx]<a class="headerlink" href="#blocksci.blocksci_interface.heuristics.address_deanon_txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of all the transactions in the blockchain for which is_address_deanon returns true</p>
+</dd></dl>
+
 <dl class="function">
 <dt id="blocksci.blocksci_interface.heuristics.change_by_address_reuse">
 <code class="descclassname">blocksci.blocksci_interface.heuristics.</code><code class="descname">change_by_address_reuse</code><span class="sig-paren">(</span><em>arg0: blocksci.blocksci_interface.Tx</em><span class="sig-paren">)</span> &#x2192; Set[blocksci.blocksci_interface.Output]<a class="headerlink" href="#blocksci.blocksci_interface.heuristics.change_by_address_reuse" title="Permalink to this definition">¶</a></dt>
@@ -89,6 +95,12 @@
 </dd></dl>
 
 <dl class="function">
+<dt id="blocksci.blocksci_interface.heuristics.is_address_deanon">
+<code class="descclassname">blocksci.blocksci_interface.heuristics.</code><code class="descname">is_address_deanon</code><span class="sig-paren">(</span><em>arg0: blocksci.blocksci_interface.Tx</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#blocksci.blocksci_interface.heuristics.is_address_deanon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns true if this transaction’s change address is deanonymized by the address types involved</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="blocksci.blocksci_interface.heuristics.is_change_over">
 <code class="descclassname">blocksci.blocksci_interface.heuristics.</code><code class="descname">is_change_over</code><span class="sig-paren">(</span><em>arg0: blocksci.blocksci_interface.Tx</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#blocksci.blocksci_interface.heuristics.is_change_over" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns true if this transaction contained all inputs of one address type and all outputs of a different type</p>
@@ -121,12 +133,6 @@
 </dd></dl>
 
 <dl class="function">
-<dt id="blocksci.blocksci_interface.heuristics.is_script_deanon">
-<code class="descclassname">blocksci.blocksci_interface.heuristics.</code><code class="descname">is_script_deanon</code><span class="sig-paren">(</span><em>arg0: blocksci.blocksci_interface.Tx</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#blocksci.blocksci_interface.heuristics.is_script_deanon" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns true if this transaction’s change address is deanonymized by the script types involved</p>
-</dd></dl>
-
-<dl class="function">
 <dt id="blocksci.blocksci_interface.heuristics.keyset_change_txes">
 <code class="descclassname">blocksci.blocksci_interface.heuristics.</code><code class="descname">keyset_change_txes</code><span class="sig-paren">(</span><em>arg0: blocksci.blocksci_interface.Blockchain</em>, <em>arg1: int</em>, <em>arg2: int</em><span class="sig-paren">)</span> &#x2192; List[blocksci.blocksci_interface.Tx]<a class="headerlink" href="#blocksci.blocksci_interface.heuristics.keyset_change_txes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of transaction in the blockchain for which is_keyset_change returns true</p>
@@ -136,12 +142,6 @@
 <dt id="blocksci.blocksci_interface.heuristics.possible_coinjoin_txes">
 <code class="descclassname">blocksci.blocksci_interface.heuristics.</code><code class="descname">possible_coinjoin_txes</code><span class="sig-paren">(</span><em>arg0: blocksci.blocksci_interface.Blockchain</em>, <em>arg1: int</em>, <em>arg2: float</em>, <em>arg3: int</em><span class="sig-paren">)</span> &#x2192; Tuple[List[blocksci.blocksci_interface.Tx], List[blocksci.blocksci_interface.Tx]]<a class="headerlink" href="#blocksci.blocksci_interface.heuristics.possible_coinjoin_txes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a list of all transactions in the blockchain that might be coinjoin transactions</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="blocksci.blocksci_interface.heuristics.script_deanon_txes">
-<code class="descclassname">blocksci.blocksci_interface.heuristics.</code><code class="descname">script_deanon_txes</code><span class="sig-paren">(</span><em>arg0: blocksci.blocksci_interface.Blockchain</em>, <em>arg1: int</em>, <em>arg2: int</em><span class="sig-paren">)</span> &#x2192; List[blocksci.blocksci_interface.Tx]<a class="headerlink" href="#blocksci.blocksci_interface.heuristics.script_deanon_txes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a list of all the transactions in the blockchain for which is_script_deanon returns true</p>
 </dd></dl>
 
 <dl class="function">
@@ -209,7 +209,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../readme.html">BlockSci</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../changelog.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chain/chain.html">Chain Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../scripts/scripts.html">Script Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../addresses/addresses.html">Address Classes</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Heuristics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../clustering/clustering.html">Clustering</a></li>
 </ul>
@@ -218,7 +218,7 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="../scripts/script.html" title="previous chapter">Script Data</a></li>
+      <li>Previous: <a href="../addresses/types.html" title="previous chapter">Address Types</a></li>
       <li>Next: <a href="../clustering/clustering.html" title="next chapter">Clustering</a></li>
   </ul></li>
 </ul>

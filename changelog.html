@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Release notes &#8212; BlockSci 0.4 documentation</title>
+    <title>Release notes &#8212; BlockSci 0.4.5 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" src="_static/documentation_options.js"></script>
@@ -34,23 +34,27 @@
             
   <div class="section" id="release-notes">
 <h1>Release notes<a class="headerlink" href="#release-notes" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="version-0-4">
-<h2>Version 0.4<a class="headerlink" href="#version-0-4" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="version-0-4-5">
+<h2>Version 0.4.5<a class="headerlink" href="#version-0-4-5" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="feature-enhancements">
 <h3>Feature Enhancements<a class="headerlink" href="#feature-enhancements" title="Permalink to this headline">¶</a></h3>
 <ul>
 <li><p class="first">Safe incremental updates</p>
 <p>Following an number of enhancements BlockSci is now capable of safely performing incremental updates. The AWS distribution of BlockSci now includes a Bitcoin full node and will automatically update the BlockChain once per hour. For local installations of BlockSci, see the readme for setup instructions.</p>
 </li>
+<li><p class="first">Introduced new concept of Equivalent Addresses which includes two types of equivalences, Type Equivalent and Script Equivalent. Type equivalent refers to two addresses using the same secret in a different way such as how a single pubkey could be used for a Pay to Pubkey Hash address and a Pay To Witness Pubkey Hash address. Script Equivalent referes to a Pay tp Script Hash address being equivalent to the address it contains. Address.equiv() and the EquivAddress class were added to support these concepts. See the documentation for more information.</p>
+</li>
+<li><p class="first">Enabled the opening of multiple Blockchain objects in the same notebook by removing internal usage of Singleton pattern.</p>
+</li>
 <li><p class="first">Proper handling of segwit tx and block size distinctions. This included updating the parser to store the size of each transaction excluding segwit data and as as supporting the 3 new notions of size that segwit introduced.</p>
 </li>
 <li><p class="first">Proper handling of bech32 addresses.</p>
 <ul class="simple">
-<li>Address.from_string() now supports lookup of bech32 addresses.</li>
-<li>Script objects (produced from calls to Address.script) now display the correct address depending on the address type.</li>
+<li>Blockchain.address_from_string() now supports lookup of bech32 addresses.</li>
+<li>Address objects now display the correct human readable address depending on the address type.</li>
 </ul>
 </li>
-<li><p class="first">Improved initial chain parsing from 24 hours down to 10 hours and reduced in parser data size due to unification of the hash index database and parser address hash index database.</p>
+<li><p class="first">Improved initial chain parsing from 24 hours down to 12 hours and reduced in parser data size due to unification of the hash index database and parser address hash index database.</p>
 </li>
 </ul>
 </div>
@@ -58,15 +62,18 @@
 <h3>Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Updated to new data version for the parser output requiring a rerun of the blocksci_parser.</li>
-<li>Introduced new distinction between Address.script and Address.equiv. Address.script returns an object specific to that address type the contains specific information about the script used for the address. Address.equiv provides an EquivAddress object which supports queries such as EquivAddress.outs() and EquivAddress.balance() to generate information about usages of the particular pubkey or script. Both of these functionalities were previously included inside Address.script. Explanation and more details regarding EquivAddress can be found in it’s page in the documentation.</li>
-<li>Renamed various methods from using Script in their name to Equiv address in order to reflect updated terminology.</li>
-<li>Renamed ScriptType to EquivAddressType to reflect updated naming as well.</li>
+<li>In order to allow multiple blockchain objects. All constructors and factory methods were removed with parallel methods added to the chain object. For instance Tx(hash) is now chain.tx_with_hash(hash).</li>
+<li>Removed Address.script and merged its functionality into Address</li>
+<li>Modified Address.outs(), Address.balance(), and related functions to only return results for places on the Blockchain where that address appeared in a top level context (Not wrapped inside another address).</li>
+<li>Renamed various methods from using script in their name to address in order to reflect updated terminology.</li>
+<li>Removed ScriptType since its functionality was superseded by EquivAddress</li>
 </ul>
 </div>
 <div class="section" id="bug-fixes">
 <h3>Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fixed segwit size handling as stated above. (<a class="reference external" href="https://github.com/citp/BlockSci/issues/43">Issue #43</a>)</li>
+<li>Fixed chain.filter_txes (<a class="reference external" href="https://github.com/citp/BlockSci/issues/50">Issue #50</a>)</li>
 <li>Fixed P2SH API issued. (<a class="reference external" href="https://github.com/citp/BlockSci/issues/53">Issue #53</a>)</li>
 </ul>
 <blockquote>
@@ -211,13 +218,13 @@ Rerunning the parser in the uncommon situation that a previously parsed block ha
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="readme.html">BlockSci</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Release notes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-4">Version 0.4</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-4-5">Version 0.4.5</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-0-3">Version 0.3</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-0-2">Version 0.2</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="chain/chain.html">Chain Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="scripts/scripts.html">Script Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="addresses/addresses.html">Address Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="heuristics/heuristics.html">Heuristics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="clustering/clustering.html">Clustering</a></li>
 </ul>

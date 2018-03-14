@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Clustering &#8212; BlockSci 0.4.5 documentation</title>
+    <title>Tagging Classes &#8212; BlockSci 0.4.5 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" src="../_static/documentation_options.js"></script>
@@ -16,8 +16,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="ClusterManager" href="cluster_manager.html" />
-    <link rel="prev" title="Heuristics" href="../heuristics/heuristics.html" />
+    <link rel="prev" title="Cluster" href="cluster.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -32,19 +31,47 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="clustering">
-<h1>Clustering<a class="headerlink" href="#clustering" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Clustering:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="cluster_manager.html">ClusterManager</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cluster.html">Cluster</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tagging.html">Tagging Classes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tagging.html#tagged-cluster">Tagged Cluster</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tagging.html#tagged-address">Tagged Address</a></li>
-</ul>
-</li>
-</ul>
+  <div class="section" id="tagging-classes">
+<h1>Tagging Classes<a class="headerlink" href="#tagging-classes" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="tagged-cluster">
+<h2>Tagged Cluster<a class="headerlink" href="#tagged-cluster" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="blocksci.cluster_python.TaggedCluster">
+<em class="property">class </em><code class="descclassname">blocksci.cluster_python.</code><code class="descname">TaggedCluster</code><a class="headerlink" href="#blocksci.cluster_python.TaggedCluster" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="blocksci.cluster_python.TaggedCluster.cluster">
+<code class="descname">cluster</code><a class="headerlink" href="#blocksci.cluster_python.TaggedCluster.cluster" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the cluster object which has been tagged</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.cluster_python.TaggedCluster.tagged_addresses">
+<code class="descname">tagged_addresses</code><a class="headerlink" href="#blocksci.cluster_python.TaggedCluster.tagged_addresses" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the list of addresses inside the cluster which have been tagged</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="tagged-address">
+<h2>Tagged Address<a class="headerlink" href="#tagged-address" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="blocksci.cluster_python.TaggedAddress">
+<em class="property">class </em><code class="descclassname">blocksci.cluster_python.</code><code class="descname">TaggedAddress</code><a class="headerlink" href="#blocksci.cluster_python.TaggedAddress" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="blocksci.cluster_python.TaggedAddress.address">
+<code class="descname">address</code><a class="headerlink" href="#blocksci.cluster_python.TaggedAddress.address" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the address object which has been tagged</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.cluster_python.TaggedAddress.tag">
+<code class="descname">tag</code><a class="headerlink" href="#blocksci.cluster_python.TaggedAddress.tag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the tag associated with the contained address</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 </div>
 
@@ -71,10 +98,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../chain/chain.html">Chain Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../addresses/addresses.html">Address Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../heuristics/heuristics.html">Heuristics</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Clustering</a><ul>
+<li class="toctree-l1 current"><a class="reference internal" href="clustering.html">Clustering</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="cluster_manager.html">ClusterManager</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cluster.html">Cluster</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tagging.html">Tagging Classes</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Tagging Classes</a></li>
 </ul>
 </li>
 </ul>
@@ -83,8 +110,9 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="../heuristics/heuristics.html" title="previous chapter">Heuristics</a></li>
-      <li>Next: <a href="cluster_manager.html" title="next chapter">ClusterManager</a></li>
+  <li><a href="clustering.html">Clustering</a><ul>
+      <li>Previous: <a href="cluster.html" title="previous chapter">Cluster</a></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>
@@ -112,7 +140,7 @@
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
-      <a href="../_sources/clustering/clustering.rst.txt"
+      <a href="../_sources/clustering/tagging.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

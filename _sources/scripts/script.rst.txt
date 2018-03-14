@@ -1,68 +1,68 @@
-Script Data
+Addresses
 ~~~~~~~~~~~~~~~~
 
 All address types have a matching Script Data type accessable through `address.script`.
 
-Script
+Address
 ====================================
 
-.. autoclass:: blocksci.Script
+.. autoclass:: blocksci.Address
    :members:
 
-Pay to pubkey Script
+Pay to pubkey Address
 ====================================
 
-.. autoclass:: blocksci.PubkeyScript
-   :members:
-   :show-inheritance:
-
-Pay to pubkey hash Script
-====================================
-
-.. autoclass:: blocksci.PubkeyHashScript
+.. autoclass:: blocksci.PubkeyAddress
    :members:
    :show-inheritance:
 
-
-Pay to witness pubkey hash Script
+Pay to pubkey hash Address
 ====================================
 
-.. autoclass:: blocksci.WitnessPubkeyHashScript
+.. autoclass:: blocksci.PubkeyHashAddress
    :members:
    :show-inheritance:
 
 
-Multisignature Script
+Pay to witness pubkey hash Address
 ====================================
 
-.. autoclass:: blocksci.MultisigScript
+.. autoclass:: blocksci.WitnessPubkeyHashAddress
    :members:
    :show-inheritance:
 
-Pay to script hash Script
+
+Multisignature Address
 ====================================
 
-.. autoclass:: blocksci.PayToScriptHashScript
+.. autoclass:: blocksci.MultisigAddress
    :members:
    :show-inheritance:
 
-Pay to script witness hash Script
+Pay to script hash Address
 ====================================
 
-.. autoclass:: blocksci.PayToWitnessScriptHashScript
+.. autoclass:: blocksci.PayToScriptHashAddress
    :members:
    :show-inheritance:
 
-Non-standard Script
+Pay to witness script hash Address
 ====================================
 
-.. autoclass:: blocksci.NonStandardScript
+.. autoclass:: blocksci.PayToWitnessScriptHashAddress
    :members:
    :show-inheritance:
 
-Null Data Script
+Non-standard Address
 ====================================
 
-.. autoclass:: blocksci.NulldataScript
+.. autoclass:: blocksci.NonStandardAddress
+   :members:
+   :show-inheritance:
+
+Op Return Address
+====================================
+
+.. autoclass:: blocksci.OpReturnAddress
    :members:
    :show-inheritance:

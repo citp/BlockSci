@@ -13542,7 +13542,7 @@ if (IPython.notebook.kernel != null) {
 <div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">time</span> txes = chain.script_type_txes(0, len(chain), blocksci.address_type.nulldata)
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">time</span> txes = chain.address_type_txes(0, len(chain), blocksci.address_type.nulldata)
 </pre></div>
 
 </div>
@@ -16192,9 +16192,9 @@ if (IPython.notebook.kernel != null) {
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Find the balance held by the cluster containing the given address at block height 494653 </span>
-<span class="n">address</span> <span class="o">=</span> <span class="n">blocksci</span><span class="o">.</span><span class="n">Address</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="s2">&quot;3EhLZarJUNSfV6TWMZY1Nh5mi3FMsdHa5U&quot;</span><span class="p">)</span>
+<span class="n">address</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">address_from_string</span><span class="p">(</span><span class="s2">&quot;3EhLZarJUNSfV6TWMZY1Nh5mi3FMsdHa5U&quot;</span><span class="p">)</span>
 <span class="n">cluster</span> <span class="o">=</span> <span class="n">cm</span><span class="o">.</span><span class="n">cluster_with_address</span><span class="p">(</span><span class="n">address</span><span class="p">)</span>
-<span class="nb">sum</span><span class="p">(</span><span class="n">script</span><span class="o">.</span><span class="n">balance</span><span class="p">(</span><span class="mi">494653</span><span class="p">)</span> <span class="k">for</span> <span class="n">script</span> <span class="ow">in</span> <span class="n">cluster</span><span class="o">.</span><span class="n">addresses</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1e8</span>
+<span class="nb">sum</span><span class="p">(</span><span class="n">address</span><span class="o">.</span><span class="n">balance</span><span class="p">(</span><span class="mi">494653</span><span class="p">)</span> <span class="k">for</span> <span class="n">address</span> <span class="ow">in</span> <span class="n">cluster</span><span class="o">.</span><span class="n">addresses</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1e8</span>
 </pre></div>
 
 </div>

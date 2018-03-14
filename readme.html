@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>BlockSci &#8212; BlockSci 0.4 documentation</title>
+    <title>BlockSci &#8212; BlockSci 0.4.5 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" src="_static/documentation_options.js"></script>
@@ -17,7 +17,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Release notes" href="changelog.html" />
-    <link rel="prev" title="BlockSci Version 0.4 Documentation" href="index.html" />
+    <link rel="prev" title="BlockSci Version 0.4.5 Documentation" href="index.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -42,9 +42,9 @@
 <p>Additionally, a demonstration <a class="reference external" href="https://citp.github.io/BlockSci/demo.html">Notebook</a> is available in the Notebooks folder.</p>
 <p>For installation instructions, see below. More detailed documentation is coming soon. Meanwhile, feel free to contact us at <a class="reference external" href="mailto:blocksci&#37;&#52;&#48;lists&#46;cs&#46;princeton&#46;edu">blocksci<span>&#64;</span>lists<span>&#46;</span>cs<span>&#46;</span>princeton<span>&#46;</span>edu</a>.</p>
 </div>
-<div class="section" id="latest-release-blocksci-v0-4">
-<h2>Latest release (BlockSci v0.4)<a class="headerlink" href="#latest-release-blocksci-v0-4" title="Permalink to this headline">¶</a></h2>
-<p>Version 0.4 introduces full bech32 address support, adds segwit size support, and fixes a bug which had been preventing use of continuous incremental blockchain updates. The “Local setup” section contains best practices for setting up automatic blockchain updates. You can read more details about the release in the <a class="reference external" href="https://citp.github.io/BlockSci/changelog.html#version-0-4">release notes</a>. We are also releasing new AMI <a class="reference external" href="https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-acd923d1">image</a> running version 0.4 (explained under “Quick setup” below) as well as updated documentation.</p>
+<div class="section" id="latest-release-blocksci-v0-4-5">
+<h2>Latest release (BlockSci v0.4.5)<a class="headerlink" href="#latest-release-blocksci-v0-4-5" title="Permalink to this headline">¶</a></h2>
+<p>Version 0.4.5 introduces full bech32 address support, adds segwit size support, fixes a bug which had been preventing use of continuous incremental blockchain updates, and introduces the concept of Equivalent addresses. The “Local setup” section contains best practices for setting up automatic blockchain updates. You can read more details about the release in the <a class="reference external" href="https://citp.github.io/BlockSci/changelog.html#version-0-4-5">release notes</a>. We will be releasing an new AMI for this version shortly. Until you can use an AMI <a class="reference external" href="https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-a09d66dd">image</a> running version 0.4 (explained under “Quick setup” below).</p>
 </div>
 <div class="section" id="quick-setup-using-amazon-ec2">
 <h2>Quick setup using Amazon EC2<a class="headerlink" href="#quick-setup-using-amazon-ec2" title="Permalink to this headline">¶</a></h2>
@@ -67,7 +67,7 @@
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>blocksci_parser --output-directory bitcoin-data update disk --coin-directory .bitcoin
 </pre></div>
 </div>
-<p>RPC mode uses the RPC interface of a cryptocurrency to extract data regarding the blockchain. It works with a variety of cryptocurrencies which have the same general model as Bitcoin, but with minor changes to the serialization format which break the parser in disk mode. Examples of this are Zcash and Namecoin. To use the parser in RPC mode, you’re full node must be running with txindex enabled.</p>
+<p>RPC mode uses the RPC interface of a cryptocurrency to extract data regarding the blockchain. It works with a variety of cryptocurrencies which have the same general model as Bitcoin, but with minor changes to the serialization format which break the parser in disk mode. One example of this is Namecoin.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>blocksci_parser --output-directory bitcoin-data update rpc --username <span class="o">[</span>user<span class="o">]</span> --password <span class="o">[</span>pass<span class="o">]</span> --address <span class="o">[</span>ip<span class="o">]</span> --port <span class="o">[</span>port<span class="o">]</span>
 </pre></div>
 </div>
@@ -111,10 +111,6 @@ python3
 </div>
 <p>which will open a window in your browser to the Jupyter server.</p>
 </div>
-</div>
-<div class="section" id="supported-compilers">
-<h2>Supported Compilers<a class="headerlink" href="#supported-compilers" title="Permalink to this headline">¶</a></h2>
-<p>BlockSci require GCC 6.3 or above or Clang 5 or above.</p>
 </div>
 <div class="section" id="blocksci-compilation-instructions">
 <h2>BlockSci compilation instructions<a class="headerlink" href="#blocksci-compilation-instructions" title="Permalink to this headline">¶</a></h2>
@@ -205,18 +201,17 @@ sudo -H pip3 install --upgrade multiprocess psutil jupyter pycrypto matplotlib p
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">BlockSci</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#latest-release-blocksci-v0-4">Latest release (BlockSci v0.4)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#latest-release-blocksci-v0-4-5">Latest release (BlockSci v0.4.5)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#quick-setup-using-amazon-ec2">Quick setup using Amazon EC2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#local-setup">Local setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#using-the-analysis-library">Using the analysis library</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#supported-compilers">Supported Compilers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#blocksci-compilation-instructions">BlockSci compilation instructions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#team-contact-info">Team &amp; contact info</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="changelog.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="chain/chain.html">Chain Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="scripts/scripts.html">Script Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="addresses/addresses.html">Address Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="heuristics/heuristics.html">Heuristics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="clustering/clustering.html">Clustering</a></li>
 </ul>
@@ -225,7 +220,7 @@ sudo -H pip3 install --upgrade multiprocess psutil jupyter pycrypto matplotlib p
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="index.html" title="previous chapter">BlockSci Version 0.4 Documentation</a></li>
+      <li>Previous: <a href="index.html" title="previous chapter">BlockSci Version 0.4.5 Documentation</a></li>
       <li>Next: <a href="changelog.html" title="next chapter">Release notes</a></li>
   </ul></li>
 </ul>

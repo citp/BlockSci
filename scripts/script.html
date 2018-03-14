@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Script Data &#8212; BlockSci 0.4 documentation</title>
+    <title>Addresses &#8212; BlockSci 0.4 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" src="../_static/documentation_options.js"></script>
@@ -32,249 +32,444 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="script-data">
-<h1>Script Data<a class="headerlink" href="#script-data" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="addresses">
+<h1>Addresses<a class="headerlink" href="#addresses" title="Permalink to this headline">¶</a></h1>
 <p>All address types have a matching Script Data type accessable through <cite>address.script</cite>.</p>
-<div class="section" id="script">
-<h2>Script<a class="headerlink" href="#script" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="address">
+<h2>Address<a class="headerlink" href="#address" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
-<dt id="blocksci.Script">
-<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">Script</code><a class="headerlink" href="#blocksci.Script" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class representing a script which coins are sent to</p>
+<dt id="blocksci.Address">
+<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">Address</code><a class="headerlink" href="#blocksci.Address" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents an abstract address object which uniquely identifies a given address</p>
 <dl class="attribute">
-<dt id="blocksci.Script.first_tx">
-<code class="descname">first_tx</code><a class="headerlink" href="#blocksci.Script.first_tx" title="Permalink to this definition">¶</a></dt>
+<dt id="blocksci.Address.address_num">
+<code class="descname">address_num</code><a class="headerlink" href="#blocksci.Address.address_num" title="Permalink to this definition">¶</a></dt>
+<dd><p>The internal identifier of the address</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Address.balance">
+<code class="descname">balance</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Address</em>, <em>height: int=0</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#blocksci.Address.balance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the balance held by this address at the height (Defaults to the full chain)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Address.equiv">
+<code class="descname">equiv</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Address</em>, <em>equiv_script: bool=True</em><span class="sig-paren">)</span> &#x2192; blocksci::EquivAddress<a class="headerlink" href="#blocksci.Address.equiv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all addresses equivalent to this address</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Address.in_txes">
+<code class="descname">in_txes</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Address</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Transaction]<a class="headerlink" href="#blocksci.Address.in_txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all transaction where this address was an input</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Address.in_txes_count">
+<code class="descname">in_txes_count</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Address</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#blocksci.Address.in_txes_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of transactions where this address was an input</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Address.ins">
+<code class="descname">ins</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Address</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Input]<a class="headerlink" href="#blocksci.Address.ins" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all inputs spent from this address</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Address.out_txes">
+<code class="descname">out_txes</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Address</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Transaction]<a class="headerlink" href="#blocksci.Address.out_txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all transaction where this address was an output</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Address.out_txes_count">
+<code class="descname">out_txes_count</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Address</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#blocksci.Address.out_txes_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of transactions where this address was an output</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Address.outs">
+<code class="descname">outs</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Address</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Output]<a class="headerlink" href="#blocksci.Address.outs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all outputs sent to this address</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.Address.txes">
+<code class="descname">txes</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.Address</em><span class="sig-paren">)</span> &#x2192; List[blocksci::Transaction]<a class="headerlink" href="#blocksci.Address.txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all transactions involving this address</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.Address.type">
+<code class="descname">type</code><a class="headerlink" href="#blocksci.Address.type" title="Permalink to this definition">¶</a></dt>
+<dd><p>The type of address</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="pay-to-pubkey-address">
+<h2>Pay to pubkey Address<a class="headerlink" href="#pay-to-pubkey-address" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="blocksci.PubkeyAddress">
+<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">PubkeyAddress</code><a class="headerlink" href="#blocksci.PubkeyAddress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.blocksci_interface.Address</span></code></p>
+<p>Extra data about pay to pubkey address</p>
+<dl class="attribute">
+<dt id="blocksci.PubkeyAddress.address_string">
+<code class="descname">address_string</code><a class="headerlink" href="#blocksci.PubkeyAddress.address_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bitcoin address string</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.PubkeyAddress.find_multisigs">
+<code class="descname">find_multisigs</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.PubkeyAddress</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#blocksci.PubkeyAddress.find_multisigs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.PubkeyAddress.first_tx">
+<code class="descname">first_tx</code><a class="headerlink" href="#blocksci.PubkeyAddress.first_tx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the first transaction that was sent to this address</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="blocksci.Script.has_been_spent">
-<code class="descname">has_been_spent</code><a class="headerlink" href="#blocksci.Script.has_been_spent" title="Permalink to this definition">¶</a></dt>
+<dt id="blocksci.PubkeyAddress.has_been_spent">
+<code class="descname">has_been_spent</code><a class="headerlink" href="#blocksci.PubkeyAddress.has_been_spent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if this script has ever been spent</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="blocksci.Script.revealed_tx">
-<code class="descname">revealed_tx</code><a class="headerlink" href="#blocksci.Script.revealed_tx" title="Permalink to this definition">¶</a></dt>
+<dt id="blocksci.PubkeyAddress.pubkey">
+<code class="descname">pubkey</code><a class="headerlink" href="#blocksci.PubkeyAddress.pubkey" title="Permalink to this definition">¶</a></dt>
+<dd><p>Public key for this address</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.PubkeyAddress.pubkeyhash">
+<code class="descname">pubkeyhash</code><a class="headerlink" href="#blocksci.PubkeyAddress.pubkeyhash" title="Permalink to this definition">¶</a></dt>
+<dd><p>160 bit address hash</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.PubkeyAddress.revealed_tx">
+<code class="descname">revealed_tx</code><a class="headerlink" href="#blocksci.PubkeyAddress.revealed_tx" title="Permalink to this definition">¶</a></dt>
 <dd><p>The transaction where this wrapped script was first revealed</p>
 </dd></dl>
 
 </dd></dl>
 
 </div>
-<div class="section" id="pay-to-pubkey-script">
-<h2>Pay to pubkey Script<a class="headerlink" href="#pay-to-pubkey-script" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="pay-to-pubkey-hash-address">
+<h2>Pay to pubkey hash Address<a class="headerlink" href="#pay-to-pubkey-hash-address" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
-<dt id="blocksci.PubkeyScript">
-<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">PubkeyScript</code><a class="headerlink" href="#blocksci.PubkeyScript" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.blocksci_interface.Script</span></code></p>
+<dt id="blocksci.PubkeyHashAddress">
+<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">PubkeyHashAddress</code><a class="headerlink" href="#blocksci.PubkeyHashAddress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.blocksci_interface.Address</span></code></p>
 <p>Extra data about pay to pubkey address</p>
 <dl class="attribute">
-<dt id="blocksci.PubkeyScript.address_string">
-<code class="descname">address_string</code><a class="headerlink" href="#blocksci.PubkeyScript.address_string" title="Permalink to this definition">¶</a></dt>
+<dt id="blocksci.PubkeyHashAddress.address_string">
+<code class="descname">address_string</code><a class="headerlink" href="#blocksci.PubkeyHashAddress.address_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bitcoin address string</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="blocksci.PubkeyHashAddress.find_multisigs">
+<code class="descname">find_multisigs</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.PubkeyHashAddress</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#blocksci.PubkeyHashAddress.find_multisigs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="attribute">
-<dt id="blocksci.PubkeyScript.pubkey">
-<code class="descname">pubkey</code><a class="headerlink" href="#blocksci.PubkeyScript.pubkey" title="Permalink to this definition">¶</a></dt>
+<dt id="blocksci.PubkeyHashAddress.first_tx">
+<code class="descname">first_tx</code><a class="headerlink" href="#blocksci.PubkeyHashAddress.first_tx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the first transaction that was sent to this address</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.PubkeyHashAddress.has_been_spent">
+<code class="descname">has_been_spent</code><a class="headerlink" href="#blocksci.PubkeyHashAddress.has_been_spent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if this script has ever been spent</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.PubkeyHashAddress.pubkey">
+<code class="descname">pubkey</code><a class="headerlink" href="#blocksci.PubkeyHashAddress.pubkey" title="Permalink to this definition">¶</a></dt>
 <dd><p>Public key for this address</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="blocksci.PubkeyScript.pubkeyhash">
-<code class="descname">pubkeyhash</code><a class="headerlink" href="#blocksci.PubkeyScript.pubkeyhash" title="Permalink to this definition">¶</a></dt>
+<dt id="blocksci.PubkeyHashAddress.pubkeyhash">
+<code class="descname">pubkeyhash</code><a class="headerlink" href="#blocksci.PubkeyHashAddress.pubkeyhash" title="Permalink to this definition">¶</a></dt>
 <dd><p>160 bit address hash</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.PubkeyHashAddress.revealed_tx">
+<code class="descname">revealed_tx</code><a class="headerlink" href="#blocksci.PubkeyHashAddress.revealed_tx" title="Permalink to this definition">¶</a></dt>
+<dd><p>The transaction where this wrapped script was first revealed</p>
 </dd></dl>
 
 </dd></dl>
 
 </div>
-<div class="section" id="pay-to-pubkey-hash-script">
-<h2>Pay to pubkey hash Script<a class="headerlink" href="#pay-to-pubkey-hash-script" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="pay-to-witness-pubkey-hash-address">
+<h2>Pay to witness pubkey hash Address<a class="headerlink" href="#pay-to-witness-pubkey-hash-address" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
-<dt id="blocksci.PubkeyHashScript">
-<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">PubkeyHashScript</code><a class="headerlink" href="#blocksci.PubkeyHashScript" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.blocksci_interface.Script</span></code></p>
+<dt id="blocksci.WitnessPubkeyHashAddress">
+<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">WitnessPubkeyHashAddress</code><a class="headerlink" href="#blocksci.WitnessPubkeyHashAddress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.blocksci_interface.Address</span></code></p>
 <p>Extra data about pay to pubkey address</p>
 <dl class="attribute">
-<dt id="blocksci.PubkeyHashScript.address_string">
-<code class="descname">address_string</code><a class="headerlink" href="#blocksci.PubkeyHashScript.address_string" title="Permalink to this definition">¶</a></dt>
+<dt id="blocksci.WitnessPubkeyHashAddress.address_string">
+<code class="descname">address_string</code><a class="headerlink" href="#blocksci.WitnessPubkeyHashAddress.address_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bitcoin address string</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="blocksci.WitnessPubkeyHashAddress.find_multisigs">
+<code class="descname">find_multisigs</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.WitnessPubkeyHashAddress</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#blocksci.WitnessPubkeyHashAddress.find_multisigs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="attribute">
-<dt id="blocksci.PubkeyHashScript.pubkey">
-<code class="descname">pubkey</code><a class="headerlink" href="#blocksci.PubkeyHashScript.pubkey" title="Permalink to this definition">¶</a></dt>
+<dt id="blocksci.WitnessPubkeyHashAddress.first_tx">
+<code class="descname">first_tx</code><a class="headerlink" href="#blocksci.WitnessPubkeyHashAddress.first_tx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the first transaction that was sent to this address</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.WitnessPubkeyHashAddress.has_been_spent">
+<code class="descname">has_been_spent</code><a class="headerlink" href="#blocksci.WitnessPubkeyHashAddress.has_been_spent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if this script has ever been spent</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.WitnessPubkeyHashAddress.pubkey">
+<code class="descname">pubkey</code><a class="headerlink" href="#blocksci.WitnessPubkeyHashAddress.pubkey" title="Permalink to this definition">¶</a></dt>
 <dd><p>Public key for this address</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="blocksci.PubkeyHashScript.pubkeyhash">
-<code class="descname">pubkeyhash</code><a class="headerlink" href="#blocksci.PubkeyHashScript.pubkeyhash" title="Permalink to this definition">¶</a></dt>
+<dt id="blocksci.WitnessPubkeyHashAddress.pubkeyhash">
+<code class="descname">pubkeyhash</code><a class="headerlink" href="#blocksci.WitnessPubkeyHashAddress.pubkeyhash" title="Permalink to this definition">¶</a></dt>
 <dd><p>160 bit address hash</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.WitnessPubkeyHashAddress.revealed_tx">
+<code class="descname">revealed_tx</code><a class="headerlink" href="#blocksci.WitnessPubkeyHashAddress.revealed_tx" title="Permalink to this definition">¶</a></dt>
+<dd><p>The transaction where this wrapped script was first revealed</p>
 </dd></dl>
 
 </dd></dl>
 
 </div>
-<div class="section" id="pay-to-witness-pubkey-hash-script">
-<h2>Pay to witness pubkey hash Script<a class="headerlink" href="#pay-to-witness-pubkey-hash-script" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="multisignature-address">
+<h2>Multisignature Address<a class="headerlink" href="#multisignature-address" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
-<dt id="blocksci.WitnessPubkeyHashScript">
-<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">WitnessPubkeyHashScript</code><a class="headerlink" href="#blocksci.WitnessPubkeyHashScript" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.blocksci_interface.Script</span></code></p>
-<p>Extra data about pay to pubkey address</p>
-<dl class="attribute">
-<dt id="blocksci.WitnessPubkeyHashScript.address_string">
-<code class="descname">address_string</code><a class="headerlink" href="#blocksci.WitnessPubkeyHashScript.address_string" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bitcoin address string</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="blocksci.WitnessPubkeyHashScript.pubkey">
-<code class="descname">pubkey</code><a class="headerlink" href="#blocksci.WitnessPubkeyHashScript.pubkey" title="Permalink to this definition">¶</a></dt>
-<dd><p>Public key for this address</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="blocksci.WitnessPubkeyHashScript.pubkeyhash">
-<code class="descname">pubkeyhash</code><a class="headerlink" href="#blocksci.WitnessPubkeyHashScript.pubkeyhash" title="Permalink to this definition">¶</a></dt>
-<dd><p>160 bit address hash</p>
-</dd></dl>
-
-</dd></dl>
-
-</div>
-<div class="section" id="multisignature-script">
-<h2>Multisignature Script<a class="headerlink" href="#multisignature-script" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="blocksci.MultisigScript">
-<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">MultisigScript</code><a class="headerlink" href="#blocksci.MultisigScript" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.blocksci_interface.Script</span></code></p>
+<dt id="blocksci.MultisigAddress">
+<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">MultisigAddress</code><a class="headerlink" href="#blocksci.MultisigAddress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.blocksci_interface.Address</span></code></p>
 <p>Extra data about multi-signature address</p>
 <dl class="attribute">
-<dt id="blocksci.MultisigScript.addresses">
-<code class="descname">addresses</code><a class="headerlink" href="#blocksci.MultisigScript.addresses" title="Permalink to this definition">¶</a></dt>
+<dt id="blocksci.MultisigAddress.addresses">
+<code class="descname">addresses</code><a class="headerlink" href="#blocksci.MultisigAddress.addresses" title="Permalink to this definition">¶</a></dt>
 <dd><p>The list of the keys that can sign for this address</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="blocksci.MultisigScript.required">
-<code class="descname">required</code><a class="headerlink" href="#blocksci.MultisigScript.required" title="Permalink to this definition">¶</a></dt>
+<dt id="blocksci.MultisigAddress.first_tx">
+<code class="descname">first_tx</code><a class="headerlink" href="#blocksci.MultisigAddress.first_tx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the first transaction that was sent to this address</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.MultisigAddress.has_been_spent">
+<code class="descname">has_been_spent</code><a class="headerlink" href="#blocksci.MultisigAddress.has_been_spent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if this script has ever been spent</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.MultisigAddress.required">
+<code class="descname">required</code><a class="headerlink" href="#blocksci.MultisigAddress.required" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of signatures required for this address</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="blocksci.MultisigScript.total">
-<code class="descname">total</code><a class="headerlink" href="#blocksci.MultisigScript.total" title="Permalink to this definition">¶</a></dt>
+<dt id="blocksci.MultisigAddress.revealed_tx">
+<code class="descname">revealed_tx</code><a class="headerlink" href="#blocksci.MultisigAddress.revealed_tx" title="Permalink to this definition">¶</a></dt>
+<dd><p>The transaction where this wrapped script was first revealed</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.MultisigAddress.total">
+<code class="descname">total</code><a class="headerlink" href="#blocksci.MultisigAddress.total" title="Permalink to this definition">¶</a></dt>
 <dd><p>The total number of keys that can sign for this address</p>
 </dd></dl>
 
 </dd></dl>
 
 </div>
-<div class="section" id="pay-to-script-hash-script">
-<h2>Pay to script hash Script<a class="headerlink" href="#pay-to-script-hash-script" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="pay-to-script-hash-address">
+<h2>Pay to script hash Address<a class="headerlink" href="#pay-to-script-hash-address" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
-<dt id="blocksci.PayToScriptHashScript">
-<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">PayToScriptHashScript</code><a class="headerlink" href="#blocksci.PayToScriptHashScript" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.blocksci_interface.Script</span></code></p>
+<dt id="blocksci.PayToScriptHashAddress">
+<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">PayToScriptHashAddress</code><a class="headerlink" href="#blocksci.PayToScriptHashAddress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.blocksci_interface.Address</span></code></p>
 <p>Extra data about pay to script hash address</p>
 <dl class="attribute">
-<dt id="blocksci.PayToScriptHashScript.address_string">
-<code class="descname">address_string</code><a class="headerlink" href="#blocksci.PayToScriptHashScript.address_string" title="Permalink to this definition">¶</a></dt>
+<dt id="blocksci.PayToScriptHashAddress.address_string">
+<code class="descname">address_string</code><a class="headerlink" href="#blocksci.PayToScriptHashAddress.address_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bitcoin address string</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="blocksci.PayToScriptHashScript.raw_address">
-<code class="descname">raw_address</code><a class="headerlink" href="#blocksci.PayToScriptHashScript.raw_address" title="Permalink to this definition">¶</a></dt>
+<dt id="blocksci.PayToScriptHashAddress.first_tx">
+<code class="descname">first_tx</code><a class="headerlink" href="#blocksci.PayToScriptHashAddress.first_tx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the first transaction that was sent to this address</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.PayToScriptHashAddress.has_been_spent">
+<code class="descname">has_been_spent</code><a class="headerlink" href="#blocksci.PayToScriptHashAddress.has_been_spent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if this script has ever been spent</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.PayToScriptHashAddress.raw_address">
+<code class="descname">raw_address</code><a class="headerlink" href="#blocksci.PayToScriptHashAddress.raw_address" title="Permalink to this definition">¶</a></dt>
 <dd><p>The 160 bit P2SH address hash</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="blocksci.PayToScriptHashScript.wrapped_address">
-<code class="descname">wrapped_address</code><a class="headerlink" href="#blocksci.PayToScriptHashScript.wrapped_address" title="Permalink to this definition">¶</a></dt>
-<dd><p>The address inside this P2SH address</p>
+<dt id="blocksci.PayToScriptHashAddress.revealed_tx">
+<code class="descname">revealed_tx</code><a class="headerlink" href="#blocksci.PayToScriptHashAddress.revealed_tx" title="Permalink to this definition">¶</a></dt>
+<dd><p>The transaction where this wrapped script was first revealed</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="blocksci.PayToScriptHashScript.wrapped_script">
-<code class="descname">wrapped_script</code><a class="headerlink" href="#blocksci.PayToScriptHashScript.wrapped_script" title="Permalink to this definition">¶</a></dt>
-<dd><p>The script inside this P2SH address</p>
+<dt id="blocksci.PayToScriptHashAddress.wrapped_address">
+<code class="descname">wrapped_address</code><a class="headerlink" href="#blocksci.PayToScriptHashAddress.wrapped_address" title="Permalink to this definition">¶</a></dt>
+<dd><p>The address inside this P2SH address</p>
 </dd></dl>
 
 </dd></dl>
 
 </div>
-<div class="section" id="pay-to-script-witness-hash-script">
-<h2>Pay to script witness hash Script<a class="headerlink" href="#pay-to-script-witness-hash-script" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="pay-to-witness-script-hash-address">
+<h2>Pay to witness script hash Address<a class="headerlink" href="#pay-to-witness-script-hash-address" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
-<dt id="blocksci.PayToWitnessScriptHashScript">
-<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">PayToWitnessScriptHashScript</code><a class="headerlink" href="#blocksci.PayToWitnessScriptHashScript" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.blocksci_interface.Script</span></code></p>
+<dt id="blocksci.PayToWitnessScriptHashAddress">
+<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">PayToWitnessScriptHashAddress</code><a class="headerlink" href="#blocksci.PayToWitnessScriptHashAddress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.blocksci_interface.Address</span></code></p>
 <p>Extra data about pay to script hash address</p>
 <dl class="attribute">
-<dt id="blocksci.PayToWitnessScriptHashScript.address_string">
-<code class="descname">address_string</code><a class="headerlink" href="#blocksci.PayToWitnessScriptHashScript.address_string" title="Permalink to this definition">¶</a></dt>
+<dt id="blocksci.PayToWitnessScriptHashAddress.address_string">
+<code class="descname">address_string</code><a class="headerlink" href="#blocksci.PayToWitnessScriptHashAddress.address_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bitcoin address string</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="blocksci.PayToWitnessScriptHashScript.raw_address">
-<code class="descname">raw_address</code><a class="headerlink" href="#blocksci.PayToWitnessScriptHashScript.raw_address" title="Permalink to this definition">¶</a></dt>
+<dt id="blocksci.PayToWitnessScriptHashAddress.first_tx">
+<code class="descname">first_tx</code><a class="headerlink" href="#blocksci.PayToWitnessScriptHashAddress.first_tx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the first transaction that was sent to this address</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.PayToWitnessScriptHashAddress.has_been_spent">
+<code class="descname">has_been_spent</code><a class="headerlink" href="#blocksci.PayToWitnessScriptHashAddress.has_been_spent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if this script has ever been spent</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.PayToWitnessScriptHashAddress.raw_address">
+<code class="descname">raw_address</code><a class="headerlink" href="#blocksci.PayToWitnessScriptHashAddress.raw_address" title="Permalink to this definition">¶</a></dt>
 <dd><p>The 256 bit Witness P2SH address hash</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="blocksci.PayToWitnessScriptHashScript.wrapped_address">
-<code class="descname">wrapped_address</code><a class="headerlink" href="#blocksci.PayToWitnessScriptHashScript.wrapped_address" title="Permalink to this definition">¶</a></dt>
-<dd><p>The address inside this witness script hash address</p>
+<dt id="blocksci.PayToWitnessScriptHashAddress.revealed_tx">
+<code class="descname">revealed_tx</code><a class="headerlink" href="#blocksci.PayToWitnessScriptHashAddress.revealed_tx" title="Permalink to this definition">¶</a></dt>
+<dd><p>The transaction where this wrapped script was first revealed</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="blocksci.PayToWitnessScriptHashScript.wrapped_script">
-<code class="descname">wrapped_script</code><a class="headerlink" href="#blocksci.PayToWitnessScriptHashScript.wrapped_script" title="Permalink to this definition">¶</a></dt>
-<dd><p>The script inside this witness script hash address</p>
+<dt id="blocksci.PayToWitnessScriptHashAddress.wrapped_address">
+<code class="descname">wrapped_address</code><a class="headerlink" href="#blocksci.PayToWitnessScriptHashAddress.wrapped_address" title="Permalink to this definition">¶</a></dt>
+<dd><p>The address inside this witness script hash address</p>
 </dd></dl>
 
 </dd></dl>
 
 </div>
-<div class="section" id="non-standard-script">
-<h2>Non-standard Script<a class="headerlink" href="#non-standard-script" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="non-standard-address">
+<h2>Non-standard Address<a class="headerlink" href="#non-standard-address" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
-<dt id="blocksci.NonStandardScript">
-<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">NonStandardScript</code><a class="headerlink" href="#blocksci.NonStandardScript" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.blocksci_interface.Script</span></code></p>
+<dt id="blocksci.NonStandardAddress">
+<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">NonStandardAddress</code><a class="headerlink" href="#blocksci.NonStandardAddress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.blocksci_interface.Address</span></code></p>
 <p>Extra data about non-standard address</p>
 <dl class="attribute">
-<dt id="blocksci.NonStandardScript.in_script">
-<code class="descname">in_script</code><a class="headerlink" href="#blocksci.NonStandardScript.in_script" title="Permalink to this definition">¶</a></dt>
+<dt id="blocksci.NonStandardAddress.first_tx">
+<code class="descname">first_tx</code><a class="headerlink" href="#blocksci.NonStandardAddress.first_tx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the first transaction that was sent to this address</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.NonStandardAddress.has_been_spent">
+<code class="descname">has_been_spent</code><a class="headerlink" href="#blocksci.NonStandardAddress.has_been_spent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if this script has ever been spent</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.NonStandardAddress.in_script">
+<code class="descname">in_script</code><a class="headerlink" href="#blocksci.NonStandardAddress.in_script" title="Permalink to this definition">¶</a></dt>
 <dd><p>Nonstandard input script</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="blocksci.NonStandardScript.out_script">
-<code class="descname">out_script</code><a class="headerlink" href="#blocksci.NonStandardScript.out_script" title="Permalink to this definition">¶</a></dt>
+<dt id="blocksci.NonStandardAddress.out_script">
+<code class="descname">out_script</code><a class="headerlink" href="#blocksci.NonStandardAddress.out_script" title="Permalink to this definition">¶</a></dt>
 <dd><p>Nonstandard output script</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.NonStandardAddress.revealed_tx">
+<code class="descname">revealed_tx</code><a class="headerlink" href="#blocksci.NonStandardAddress.revealed_tx" title="Permalink to this definition">¶</a></dt>
+<dd><p>The transaction where this wrapped script was first revealed</p>
 </dd></dl>
 
 </dd></dl>
 
 </div>
-<div class="section" id="null-data-script">
-<h2>Null Data Script<a class="headerlink" href="#null-data-script" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="op-return-address">
+<h2>Op Return Address<a class="headerlink" href="#op-return-address" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
-<dt id="blocksci.NulldataScript">
-<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">NulldataScript</code><a class="headerlink" href="#blocksci.NulldataScript" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.blocksci_interface.Script</span></code></p>
+<dt id="blocksci.OpReturnAddress">
+<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">OpReturnAddress</code><a class="headerlink" href="#blocksci.OpReturnAddress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.blocksci_interface.Address</span></code></p>
 <p>Extra data about op_return address</p>
 <dl class="attribute">
-<dt id="blocksci.NulldataScript.data">
-<code class="descname">data</code><a class="headerlink" href="#blocksci.NulldataScript.data" title="Permalink to this definition">¶</a></dt>
+<dt id="blocksci.OpReturnAddress.data">
+<code class="descname">data</code><a class="headerlink" href="#blocksci.OpReturnAddress.data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Data contained inside this script</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.OpReturnAddress.first_tx">
+<code class="descname">first_tx</code><a class="headerlink" href="#blocksci.OpReturnAddress.first_tx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the first transaction that was sent to this address</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.OpReturnAddress.has_been_spent">
+<code class="descname">has_been_spent</code><a class="headerlink" href="#blocksci.OpReturnAddress.has_been_spent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if this script has ever been spent</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.OpReturnAddress.revealed_tx">
+<code class="descname">revealed_tx</code><a class="headerlink" href="#blocksci.OpReturnAddress.revealed_tx" title="Permalink to this definition">¶</a></dt>
+<dd><p>The transaction where this wrapped script was first revealed</p>
 </dd></dl>
 
 </dd></dl>
@@ -306,7 +501,7 @@
 <li class="toctree-l1 current"><a class="reference internal" href="scripts.html">Script Classes</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="address.html">Addresses</a></li>
 <li class="toctree-l2"><a class="reference internal" href="equiv_address.html">Equivalent Addresses</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Script Data</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Addresses</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../heuristics/heuristics.html">Heuristics</a></li>
