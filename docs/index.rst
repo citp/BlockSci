@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-BlockSci Version 0.4 Documentation
+BlockSci Version 0.4.5 Documentation
 ====================================
 
 .. toctree::
