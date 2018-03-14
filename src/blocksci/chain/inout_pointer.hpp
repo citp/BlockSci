@@ -11,6 +11,7 @@
 
 #include "chain_fwd.hpp"
 
+#include <vector>
 #include <cstdint>
 #include <string>
 
