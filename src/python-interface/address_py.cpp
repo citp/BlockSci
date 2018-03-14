@@ -18,6 +18,9 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
 
+#include <range/v3/iterator_range.hpp>
+#include <range/v3/view/transform.hpp>
+
 namespace py = pybind11;
 
 using namespace blocksci;
@@ -54,7 +57,10 @@ void init_address(py::module &m) {
     .def("__len__", [](const EquivAddress &address) { return address.size(); })
     .def("__bool__", [](const EquivAddress &address) { return address.size() == 0; })
     .def("__iter__", [](const EquivAddress &address) {
-        return py::make_iterator(address.begin(), address.end());
+        auto transformed = address | ranges::view::transform([](const Address &address) {
+            return address.getScript().wrapped;
+        });
+        return py::make_iterator(transformed.begin(), transformed.end());
     },py::keep_alive<0, 1>())
     .def("balance", &EquivAddress::calculateBalance, py::arg("height") = 0, "Calculates the balance held by these equivalent addresses at the height (Defaults to the full chain)")
     .def("outs", &EquivAddress::getOutputs, "Returns a list of all outputs sent to these equivalent addresses")

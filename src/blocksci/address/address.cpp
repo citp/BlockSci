@@ -23,11 +23,6 @@
 #include "index/address_index.hpp"
 #include "index/hash_index.hpp"
 
-#include <range/v3/view/transform.hpp>
-#include <range/v3/view/filter.hpp>
-#include <range/v3/action/unique.hpp>
-#include <range/v3/action/sort.hpp>
-
 #include <unordered_set>
 #include <iostream>
 
