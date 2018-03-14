@@ -87,9 +87,6 @@ void addTransactionMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     .def_property_readonly("fee", func([](const Transaction &tx) {
         return fee(tx);
     }), func2("The fee paid by this transaction"))
-    .def_property_readonly("fee_per_byte", func([](const Transaction &tx) {
-        return feePerByte(tx);
-    }), func2("The ratio of fee paid to size in bytes of this transaction"))
     .def_property_readonly("op_return", func([](const Transaction &tx) {
         return getOpReturn(tx);
     }), func2("If this transaction included a null data address, return its output. Otherwise return None"))

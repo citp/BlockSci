@@ -39,9 +39,7 @@ template<typename Class>
 void addTxRangeAlgorithms(pybind11::module &m, Class & cl) {
     using Range = typename Class::type;
     
-    m.def("fees", [](Range &range) { return fees(range) | ranges::to_vector; }, "Returns a list of all of the outputs in this range that are still unspent");
-    
-    m.def("fees_per_byte", [](Range &range){ return feesPerByte(range) | ranges::to_vector; }, "Returns a list of all of the outputs in this range that are still unspent");
+    m.def("fee", [](Range &range) { return fees(range) | ranges::to_vector; }, "Returns a list of all of the outputs in this range that are still unspent");
 }
 
 template<typename Class>

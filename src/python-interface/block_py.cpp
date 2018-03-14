@@ -60,6 +60,12 @@ void addBlockMethods(Class &cl, FuncApplication func) {
     .def_property_readonly("size_bytes", func([](Block &block) {
         return block.totalSize();
     }), "Returns the total size of the block in bytes")
+    .def_property_readonly("fee", func([](const Block &block) {
+        return totalFee(block);
+    }), "The sum of the transaction fees contained in this block")
+    .def_property_readonly("reward", func([](const Block &block) {
+        return totalOutputValue(block[0]);
+    }), "Total reward received by the miner of this block")
     .def_property_readonly("base_size", func([](const Block &block) {
         return block.baseSize();
     }), "The size of the non-segwit data in bytes")
@@ -68,7 +74,7 @@ void addBlockMethods(Class &cl, FuncApplication func) {
     }), "The size all block data in bytes")
     .def_property_readonly("virtual_size", func([](const Block &block) {
         return block.virtualSize();
-    }), "The weight of the blockc divided by 4")
+    }), "The weight of the block divided by 4")
     .def_property_readonly("weight", func([](const Block &block) {
         return block.weight();
     }), "Three times the base size plus the total size")
