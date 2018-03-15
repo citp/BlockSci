@@ -79,10 +79,10 @@
 <dd><p>For each transaction: The fee paid by this transaction</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="method">
 <dt id="blocksci.AnyTxRange.fee_per_byte">
-<code class="descname">fee_per_byte</code><a class="headerlink" href="#blocksci.AnyTxRange.fee_per_byte" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each transaction: The ratio of fee paid to size in bytes of this transaction</p>
+<code class="descname">fee_per_byte</code><span class="sig-paren">(</span><em>self: blocksci.blocksci_interface.AnyTxRange</em>, <em>size_measure: str='virtual'</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#blocksci.AnyTxRange.fee_per_byte" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each transaction: The ratio of fee paid to size of this transaction. By default this uses veritual size, but passing total, base, weight, or virtual let’s you choose what measure of size you want</p>
 </dd></dl>
 
 <dl class="attribute">
