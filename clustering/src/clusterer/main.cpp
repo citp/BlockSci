@@ -42,6 +42,15 @@ std::vector<std::pair<Address, Address>> process_transaction(const Transaction &
 template <typename Job>
 void segmentWork(uint32_t start, uint32_t end, uint32_t segmentCount, Job job) {
     uint32_t total = end - start;
+
+    // Don't partition over threads if there are less items than segment count
+    if (total < segmentCount) {
+        for (uint32_t i = start; i < end; ++i) {
+            job(i);
+        }
+        return;
+    }
+
     auto segmentSize = total / segmentCount;
     auto segmentsRemaining = total % segmentCount;
     std::vector<std::pair<uint32_t, uint32_t>> segments;

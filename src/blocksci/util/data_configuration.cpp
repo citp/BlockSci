@@ -39,6 +39,10 @@ namespace blocksci {
             if (versionNum != dataVersion) {
                 throw std::runtime_error("Error, parser data is not in the correct format. To fix you must delete the data file and rerun the parser");
             }
+        } else {
+            std::stringstream ss;
+            ss << "Error, data directory does not contain config.ini. Are you sure " << dataDirectory << "was the output directory of blocksci_parser?";
+            throw std::runtime_error(ss.str());
         }
         
         auto dataDirectoryString = dataDirectory.native();
