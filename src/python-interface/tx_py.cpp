@@ -138,6 +138,23 @@ auto lambda_to_func(F f) {
     return lambda_to_func_impl(f, std::make_index_sequence<traits::arity>{}, traits{});
 }
 
+//template <class F, std::size_t ... Is, class T>
+//auto applyTxMethodsToTxRangeImpl(F f, std::index_sequence<Is...>, T) {
+//    return [&f](ranges::any_view<Transaction> &view, const std::tuple_element_t<Is, typename T::arg_tuple> &... args) {
+//        std::vector<typename T::result_type> ret;
+//        RANGES_FOR(auto && tx, view) {
+//            ret.push_back(f(std::forward<decltype(tx)>(tx), args...));
+//        }
+//        return py::array(ret.size(), ret.data());
+//    };
+//}
+//
+//template <typename F>
+//auto applyTxMethodsToTxRange(F f) {
+//    using traits = function_traits<F>;
+//    return applyTxMethodsToTxRangeImpl(f, std::make_index_sequence<traits::arity>{}, traits{});
+//}
+
 template <class F, std::size_t ... Is, class T>
 auto applyTxMethodsToTxRangeImpl(F f, std::index_sequence<Is...>, T, std::true_type) {
     return [&f](ranges::any_view<Transaction> &view, const std::tuple_element_t<Is, typename T::arg_tuple> &... args) {
@@ -160,12 +177,35 @@ auto applyTxMethodsToTxRangeImpl(F f, std::index_sequence<Is...>, T, std::false_
     };
 }
 
+template<typename... Conds>
+struct and_
+: std::true_type
+{ };
+
+template<typename Cond, typename... Conds>
+struct and_<Cond, Conds...>
+: std::conditional<Cond::value, and_<Conds...>, std::false_type>::type
+{ };
 
 template <typename F>
 auto applyTxMethodsToTxRange(F f) {
     using traits = function_traits<F>;
-    return applyTxMethodsToTxRangeImpl(f, std::make_index_sequence<traits::arity>{}, traits{}, py::detail::is_pod_struct<typename traits::result_type>{});
+    return applyTxMethodsToTxRangeImpl(f, std::make_index_sequence<traits::arity>{}, traits{}, and_<py::detail::satisfies_any_of<typename traits::result_type, std::is_arithmetic, py::detail::is_complex>, py::detail::vector_has_data_and_format<std::vector<typename traits::result_type>>>{});
 }
+
+//template <typename F>
+//auto applyTxMethodsToTxRange(F f) {
+//    using traits = function_traits<F>;
+//    return applyTxMethodsToTxRangeImpl(f, std::make_index_sequence<traits::arity>{}, traits{}, py::detail::satisfies_any_of<typename traits::result_type, std::is_arithmetic, py::detail::is_complex>{});
+//}
+
+//template <typename F>
+//auto applyTxMethodsToTxRange(F f) {
+//    using traits = function_traits<F>;
+//    return applyTxMethodsToTxRangeImpl(f, std::make_index_sequence<traits::arity>{}, traits{}, py::detail::is_pod_struct<typename traits::result_type>{});
+//}
+
+
 
 template <class F, std::size_t ... Is, class T>
 auto applyTxMethodsToTxImpl(F f, std::index_sequence<Is...>, T) {
