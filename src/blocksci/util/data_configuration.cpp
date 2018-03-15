@@ -41,7 +41,7 @@ namespace blocksci {
             }
         } else {
             std::stringstream ss;
-            ss << "Error, data directory does not contain config.ini. Are you sure " << dataDirectory << "was the output directory of blocksci_parser?";
+            ss << "Error, data directory does not contain config.ini. Are you sure " << dataDirectory << " was the output directory of blocksci_parser?";
             throw std::runtime_error(ss.str());
         }
         
