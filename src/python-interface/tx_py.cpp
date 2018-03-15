@@ -23,6 +23,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
+#include <pybind11/numpy.h>
 #include <pybind11/chrono.h>
 
 #include <range/v3/iterator_range.hpp>
@@ -138,7 +139,18 @@ auto lambda_to_func(F f) {
 }
 
 template <class F, std::size_t ... Is, class T>
-auto applyTxMethodsToTxRangeImpl(F f, std::index_sequence<Is...>, T) {
+auto applyTxMethodsToTxRangeImpl(F f, std::index_sequence<Is...>, T, std::true_type) {
+    return [&f](ranges::any_view<Transaction> &view, const std::tuple_element_t<Is, typename T::arg_tuple> &... args) {
+        std::vector<typename T::result_type> ret;
+        RANGES_FOR(auto && tx, view) {
+            ret.push_back(f(std::forward<decltype(tx)>(tx), args...));
+        }
+        return py::array(ret.size(), ret.data());
+    };
+}
+
+template <class F, std::size_t ... Is, class T>
+auto applyTxMethodsToTxRangeImpl(F f, std::index_sequence<Is...>, T, std::false_type) {
     return [&f](ranges::any_view<Transaction> &view, const std::tuple_element_t<Is, typename T::arg_tuple> &... args) {
         py::list list;
         RANGES_FOR(auto && tx, view) {
@@ -148,10 +160,11 @@ auto applyTxMethodsToTxRangeImpl(F f, std::index_sequence<Is...>, T) {
     };
 }
 
+
 template <typename F>
 auto applyTxMethodsToTxRange(F f) {
     using traits = function_traits<F>;
-    return applyTxMethodsToTxRangeImpl(f, std::make_index_sequence<traits::arity>{}, traits{});
+    return applyTxMethodsToTxRangeImpl(f, std::make_index_sequence<traits::arity>{}, traits{}, py::detail::is_pod_struct<typename traits::result_type>{});
 }
 
 template <class F, std::size_t ... Is, class T>
