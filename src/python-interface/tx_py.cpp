@@ -87,6 +87,19 @@ void addTransactionMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     .def_property_readonly("fee", func([](const Transaction &tx) {
         return fee(tx);
     }), func2("The fee paid by this transaction"))
+    .def("fee_per_byte", func([](const Transaction &tx, const std::string &sizeMeasure) {
+        if (sizeMeasure == "total") {
+            return tx.totalSize() / fee(tx);
+        } else if (sizeMeasure == "base") {
+            return tx.baseSize() / fee(tx);
+        } else if(sizeMeasure == "weight") {
+            return tx.weight() / fee(tx);
+        } else if(sizeMeasure == "virtual") {
+            return tx.virtualSize() / fee(tx);
+        } else {
+            throw std::invalid_argument{"Size measure must be one of total, base, weight, or virtual"};
+        }
+    }), py::arg("size_measure") = "virtual", func2("The ratio of fee paid to size of this transaction. By default this uses veritual size, but passing total, base, weight, or virtual let's you choose what measure of size you want"))
     .def_property_readonly("op_return", func([](const Transaction &tx) {
         return getOpReturn(tx);
     }), func2("If this transaction included a null data address, return its output. Otherwise return None"))
@@ -99,17 +112,74 @@ void addTransactionMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     ;
 }
 
+template <typename T>
+struct function_traits : public function_traits<decltype(&T::operator())>
+{};
+
+template <typename ClassType, typename ReturnType, typename First, typename... Args>
+struct function_traits<ReturnType(ClassType::*)(First, Args...) const>
+// we specialize for pointers to member function
+{
+    using result_type = ReturnType;
+    using arg_tuple = std::tuple<Args...>;
+    static constexpr auto arity = sizeof...(Args);
+};
+
+template <class F, std::size_t ... Is, class T>
+auto lambda_to_func_impl(F f, std::index_sequence<Is...>, T) {
+    return std::function<typename T::result_type(std::tuple_element_t<Is, typename T::arg_tuple>...)>(f);
+}
+
+template <class F>
+auto lambda_to_func(F f) {
+    using traits = function_traits<F>;
+    return lambda_to_func_impl(f, std::make_index_sequence<traits::arity>{}, traits{});
+}
+
+template <class F, std::size_t ... Is, class T>
+auto applyTxMethodsToTxRangeImpl(F f, std::index_sequence<Is...>, T) {
+    return [&f](ranges::any_view<Transaction> &view, const std::tuple_element_t<Is, typename T::arg_tuple> &... args) {
+        py::list list;
+        RANGES_FOR(auto && tx, view) {
+            list.append(f(std::forward<decltype(tx)>(tx), args...));
+        }
+        return list;
+    };
+}
+
+template <typename F>
+auto applyTxMethodsToTxRange(F f) {
+    using traits = function_traits<F>;
+    return applyTxMethodsToTxRangeImpl(f, std::make_index_sequence<traits::arity>{}, traits{});
+}
+
+template <class F, std::size_t ... Is, class T>
+auto applyTxMethodsToTxImpl(F f, std::index_sequence<Is...>, T) {
+    return [&f](const Transaction &tx, const std::tuple_element_t<Is, typename T::arg_tuple> &... args) {
+        return f(std::forward<decltype(tx)>(tx), args...);
+    };
+}
+
+template <typename F>
+auto applyTxMethodsToTx(F f) {
+    using traits = function_traits<F>;
+    return applyTxMethodsToTxImpl(f, std::make_index_sequence<traits::arity>{}, traits{});
+}
+
+
 void init_tx(py::module &m) {
+    
+//    template <typename Ret, typename... Args>
+//    auto applyTxMethodsToTx(std::function<Ret(const Transaction &tx, Args...)>) {
+//        return [](const Transaction &tx, Args && ...args) {
+//            return func(tx, std::forward<Args>(args)...);
+//        }
+//    }
+
     
     auto txRangeClass = addRangeClass<ranges::any_view<Transaction>>(m, "AnyTxRange");
     addTransactionMethods(txRangeClass, [](auto func) {
-        return [=](ranges::any_view<Transaction> &view) {
-            py::list list;
-            RANGES_FOR(auto && tx, view) {
-                list.append(func(std::forward<decltype(tx)>(tx)));
-            }
-            return list;
-        };
+        return applyTxMethodsToTxRange(func);
     }, [](std::string docstring) {
         std::stringstream ss;
         ss << "For each transaction: " << docstring;
@@ -132,9 +202,7 @@ void init_tx(py::module &m) {
     
     py::class_<Transaction> txClass(m, "Tx", "Class representing a transaction in a block");
     addTransactionMethods(txClass, [](auto func) {
-        return [=](Transaction &tx) {
-            return func(tx);
-        };
+        return applyTxMethodsToTx(func);
     }, [](auto && docstring) {
         return std::forward<decltype(docstring)>(docstring);
     });
