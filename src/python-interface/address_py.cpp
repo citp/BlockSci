@@ -33,7 +33,7 @@ void init_address(py::module &m) {
     .def_readonly("address_num", &Address::scriptNum, "The internal identifier of the address")
     .def_readonly("type", &Address::type, "The type of address")
     .def("equiv", &Address::getEquivAddresses, py::arg("equiv_script") = true, "Returns a list of all addresses equivalent to this address")
-    .def("balance", &Address::calculateBalance, py::arg("height") = 0, "Calculates the balance held by this address at the height (Defaults to the full chain)")
+    .def("balance", &Address::calculateBalance, py::arg("height") = -1, "Calculates the balance held by this address at the height (Defaults to the full chain)")
     .def("outs", &Address::getOutputs, "Returns a list of all outputs sent to this address")
     .def("ins", &Address::getInputs, "Returns a list of all inputs spent from this address")
     .def("txes", &Address::getTransactions, "Returns a list of all transactions involving this address")
@@ -59,7 +59,7 @@ void init_address(py::module &m) {
         });
         return py::make_iterator(transformed.begin(), transformed.end());
     },py::keep_alive<0, 1>())
-    .def("balance", &EquivAddress::calculateBalance, py::arg("height") = 0, "Calculates the balance held by these equivalent addresses at the height (Defaults to the full chain)")
+    .def("balance", &EquivAddress::calculateBalance, py::arg("height") = -1, "Calculates the balance held by these equivalent addresses at the height (Defaults to the full chain)")
     .def("outs", &EquivAddress::getOutputs, "Returns a list of all outputs sent to these equivalent addresses")
     .def("ins", &EquivAddress::getInputs, "Returns a list of all inputs spent from these equivalent addresses")
     .def("txes", &EquivAddress::getTransactions, "Returns a list of all transactions involving these equivalent addresses")

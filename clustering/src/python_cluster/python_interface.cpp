@@ -92,7 +92,7 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
     }, "Get a iterable over all the addresses in the cluster")
     .def("tagged_addresses", &Cluster::taggedAddresses, "Given a dictionary of tags, return a list of TaggedAddress objects for any tagged addresses in the cluster")
     .def("count_of_type", &Cluster::countOfType, "Return the number of addresses of the given type in the cluster")
-    .def("balance", &Cluster::calculateBalance, py::arg("height") = 0, "Calculates the balance held by this cluster at the height (Defaults to the full chain)")
+    .def("balance", &Cluster::calculateBalance, py::arg("height") = -1, "Calculates the balance held by this cluster at the height (Defaults to the full chain)")
     .def("outs", &Cluster::getOutputs, "Returns a list of all outputs sent to this cluster")
     .def("ins", &Cluster::getInputs, "Returns a list of all inputs spent from this cluster")
     .def("txes", &Cluster::getTransactions, "Returns a list of all transactions involving this cluster")

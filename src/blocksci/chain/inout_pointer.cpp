@@ -44,7 +44,7 @@ namespace blocksci {
     
     uint64_t calculateBalance(const std::vector<OutputPointer> &pointers, BlockHeight height, const DataAccess &access) {
         uint64_t value = 0;
-        if (height == 0) {
+        if (height == -1) {
             for (auto &output : getOutputs(pointers, access)) {
                 if (!output.isSpent()) {
                     value += output.getValue();
