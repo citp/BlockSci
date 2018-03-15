@@ -88,14 +88,15 @@ void addTransactionMethods(Class &cl, FuncApplication func, FuncDoc func2) {
         return fee(tx);
     }), func2("The fee paid by this transaction"))
     .def("fee_per_byte", func([](const Transaction &tx, const std::string &sizeMeasure) {
+        auto txFee = fee(tx);
         if (sizeMeasure == "total") {
-            return tx.totalSize() / fee(tx);
+            return txFee / tx.totalSize();
         } else if (sizeMeasure == "base") {
-            return tx.baseSize() / fee(tx);
+            return txFee / tx.baseSize();
         } else if(sizeMeasure == "weight") {
-            return tx.weight() / fee(tx);
+            return txFee / tx.weight();
         } else if(sizeMeasure == "virtual") {
-            return tx.virtualSize() / fee(tx);
+            return txFee / tx.virtualSize();
         } else {
             throw std::invalid_argument{"Size measure must be one of total, base, weight, or virtual"};
         }
