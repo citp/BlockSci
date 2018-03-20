@@ -17,7 +17,7 @@
 
 ParserConfigurationBase::ParserConfigurationBase() : DataConfiguration() {}
 
-ParserConfigurationBase::ParserConfigurationBase(const boost::filesystem::path &dataDirectory_) : DataConfiguration(dataDirectory_, false, blocksci::BlockHeight{0}) {
+ParserConfigurationBase::ParserConfigurationBase(const boost::filesystem::path &dataDirectory_) : DataConfiguration(dataDirectory_) {
     boost::filesystem::path dir(parserDirectory());
     
     if(!(boost::filesystem::exists(dir))){

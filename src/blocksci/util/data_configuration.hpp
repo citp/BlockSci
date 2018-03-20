@@ -21,7 +21,11 @@ namespace blocksci {
     
     struct DataConfiguration {
         DataConfiguration() {}
-        explicit DataConfiguration(const boost::filesystem::path &dataDirectory, bool errorOnReorg, BlockHeight blocksIgnored);
+        // May create data directory (Used by parser)
+        explicit DataConfiguration(const boost::filesystem::path &dataDirectory);
+        
+        // Must point to existing data directory
+        DataConfiguration(const boost::filesystem::path &dataDirectory, bool errorOnReorg, BlockHeight blocksIgnored);
         
         bool errorOnReorg;
         BlockHeight blocksIgnored;
