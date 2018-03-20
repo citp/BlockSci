@@ -146,7 +146,7 @@ Note that BlockSci only actively supports python 3.
 	sudo apt install build-essential cmake libssl-dev libboost-all-dev libsqlite3-dev autogen \
 	autoconf libcurl4-openssl-dev libjsoncpp-dev libjsonrpccpp-dev libjsonrpccpp-tools \
 	python3-dev python3-pip liblmdb-dev libsparsehash-dev libargtable2-dev libmicrohttpd-dev \
-	libhiredis-dev libjsoncpp-dev catch gcc-7 g++-7 libgflags-dev libsnappy-dev zlib1g-dev libbz2-dev \
+	libhiredis-dev catch gcc-7 g++-7 libgflags-dev libsnappy-dev zlib1g-dev libbz2-dev \
 	liblz4-dev libzstd-dev
 	sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7
 
