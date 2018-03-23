@@ -29,7 +29,7 @@ Version 0.4.5 introduces full bech32 address support, adds segwit size support, 
 Quick setup using Amazon EC2
 ==============================
 
-AMI Last updated on March 20, 2018.
+AMI Last updated on March 23, 2018.
 
 If you want to start using BlockSci immediately, we have made available an EC2 image: ami-0650807b_. We recommend using instance with 60 GB of memory or more for optimal performance (r4.2xlarge). On boot, a Jupyter Notebook running BlockSci will launch immediately. To access the notebook, you must set up port forwarding to your computer. Inserting the name of your private key file and the domain of your ec2 instance into the following command will make the Notebook available on your machine.
 
