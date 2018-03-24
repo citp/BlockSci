@@ -13,6 +13,7 @@
 #include "optional_py.hpp"
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 
 namespace py = pybind11;
@@ -68,9 +69,11 @@ void init_heuristics(py::module &m) {
     ;
 
 
-   py::enum_<heuristics::CoinJoinResult>(m, "CoinJoinResult")
-   .value("True", heuristics::CoinJoinResult::True)
-   .value("False", heuristics::CoinJoinResult::False)
-   .value("Timeout", heuristics::CoinJoinResult::Timeout)
-   ;
+    py::enum_<heuristics::CoinJoinResult>(s, "CoinJoinResult")
+    .value("True", heuristics::CoinJoinResult::True)
+    .value("False", heuristics::CoinJoinResult::False)
+    .value("Timeout", heuristics::CoinJoinResult::Timeout)
+    ;
+    
+    s.def("haircut_tainted_outputs", heuristics::getHaircutTainted, "Returns the list of current UTXOs haircut tainted by this output");
 }

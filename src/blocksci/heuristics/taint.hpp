@@ -10,17 +10,10 @@
 
 #include <blocksci/chain/output.hpp>
 #include <stdio.h>
+#include <unordered_map>
 
-namespace blocksci {
-    struct TaintedOutput {
-        Output output;
-        uint64_t taintedValue;
-        
-        TaintedOutput(const Output &output_, uint64_t value) : output(output_), taintedValue(value) {}
-        TaintedOutput(const Output &output_) : TaintedOutput(output_, output_.getValue()) {}
-    };
-    
-    std::vector<TaintedOutput> getHaircutTainted(const TaintedOutput &taintedOutput);
-}
+namespace blocksci { namespace heuristics {
+    std::unordered_map<Output, uint64_t> getHaircutTainted(const Output &output, uint64_t taintedValue);
+}}
 
 #endif /* taint_hpp */
