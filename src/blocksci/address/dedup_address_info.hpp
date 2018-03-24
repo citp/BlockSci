@@ -18,7 +18,7 @@ namespace blocksci {
         static constexpr bool equived = true;
         static constexpr bool spendable = true;
         static constexpr bool indexed = false;
-        static constexpr std::array<AddressType::Enum, 3> addressTypes = {{AddressType::PUBKEY, AddressType::PUBKEYHASH, AddressType::WITNESS_PUBKEYHASH}};
+        static constexpr std::array<AddressType::Enum, 4> addressTypes = {{AddressType::PUBKEY, AddressType::PUBKEYHASH, AddressType::MULTISIG_PUBKEY, AddressType::WITNESS_PUBKEYHASH}};
         static constexpr EquivAddressType::Enum equivType = EquivAddressType::PUBKEY;
     };
     

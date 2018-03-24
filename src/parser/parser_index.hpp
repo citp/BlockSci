@@ -33,6 +33,21 @@ template <typename T, blocksci::DedupAddressType::Enum type>
 struct ParserIndexScriptInfo;
 
 template <typename T>
+class ParserIndex;
+
+template <typename T>
+struct ParserScriptUpdater {
+    ParserIndex<T> &index;
+    const blocksci::State &state;
+    const blocksci::DataAccess &access;
+    
+    ParserScriptUpdater(ParserIndex<T> &index_, const blocksci::State &state_, const blocksci::DataAccess &access_): index(index_), state(state_), access(access_) {}
+    
+    template <typename V>
+    void operator()(V);
+};
+
+template <typename T>
 class ParserIndex {
 protected:
     const ParserConfigurationBase &config;
@@ -87,14 +102,18 @@ public:
             }
         }
         
-        blocksci::for_each(blocksci::DedupAddressInfoList(), [&](auto type) {
-            updateScript(ParserIndexScriptInfo<T, type>{}, type, state, access);
-        });
+        ParserScriptUpdater<T> updater(*this, state, access);
+        blocksci::for_each(blocksci::DedupAddressInfoList(), updater);
         latestState = state;
     };
     
     virtual void tearDown() {}
 };
 
+template <typename T>
+template <typename V>
+void ParserScriptUpdater<T>::operator()(V v) {
+    index.updateScript(ParserIndexScriptInfo<T, V{}>{}, v, state, access);
+}
 
 #endif /* parser_index_hpp */

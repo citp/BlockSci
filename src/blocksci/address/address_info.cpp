@@ -15,15 +15,21 @@
 namespace blocksci {
     
     
-    constexpr char AddressInfo<AddressType::Enum::PUBKEY>::name[];
-    constexpr char AddressInfo<AddressType::Enum::PUBKEYHASH>::name[];
-    constexpr char AddressInfo<AddressType::Enum::MULTISIG_PUBKEY>::name[];
-    constexpr char AddressInfo<AddressType::Enum::WITNESS_PUBKEYHASH>::name[];
-    constexpr char AddressInfo<AddressType::Enum::SCRIPTHASH>::name[];
-    constexpr char AddressInfo<AddressType::Enum::WITNESS_SCRIPTHASH>::name[];
-    constexpr char AddressInfo<AddressType::Enum::MULTISIG>::name[];
-    constexpr char AddressInfo<AddressType::Enum::NULL_DATA>::name[];
-    constexpr char AddressInfo<AddressType::Enum::NONSTANDARD>::name[];
+    constexpr char AddressInfo<AddressType::PUBKEY>::name[];
+    constexpr char AddressInfo<AddressType::PUBKEYHASH>::name[];
+    constexpr char AddressInfo<AddressType::MULTISIG_PUBKEY>::name[];
+    constexpr char AddressInfo<AddressType::WITNESS_PUBKEYHASH>::name[];
+    constexpr char AddressInfo<AddressType::SCRIPTHASH>::name[];
+    constexpr char AddressInfo<AddressType::WITNESS_SCRIPTHASH>::name[];
+    constexpr char AddressInfo<AddressType::MULTISIG>::name[];
+    constexpr char AddressInfo<AddressType::NULL_DATA>::name[];
+    constexpr char AddressInfo<AddressType::NONSTANDARD>::name[];
+    
+    constexpr std::array<AddressType::Enum, 4> EquivAddressInfo<EquivAddressType::PUBKEY>::equivTypes;
+    constexpr std::array<AddressType::Enum, 2> EquivAddressInfo<EquivAddressType::SCRIPTHASH>::equivTypes;
+    constexpr std::array<AddressType::Enum, 1> EquivAddressInfo<EquivAddressType::MULTISIG>::equivTypes;
+    constexpr std::array<AddressType::Enum, 1> EquivAddressInfo<EquivAddressType::NULL_DATA>::equivTypes;
+    constexpr std::array<AddressType::Enum, 1> EquivAddressInfo<EquivAddressType::NONSTANDARD>::equivTypes;
     
     template<AddressType::Enum type>
     struct AddressNameFunctor {
