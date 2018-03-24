@@ -33,8 +33,6 @@ class AddressDB : public ParserIndex<AddressDB> {
     
 public:
     
-    
-    
     AddressDB(const ParserConfigurationBase &config, const std::string &path);
     
     void processTx(const blocksci::Transaction &tx);
@@ -44,6 +42,10 @@ public:
     
     void rollback(const blocksci::State &state);
     void tearDown() override;
+    
+    void compact() {
+        db.compactDB();
+    }
 };
 
 template<>

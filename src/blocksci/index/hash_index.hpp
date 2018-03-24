@@ -22,15 +22,6 @@
 namespace blocksci {
     class HashIndex {
     public:
-        struct IndexType {
-            enum Enum {
-                PubkeyHash, ScriptHash, Tx
-            };
-            static constexpr size_t size = 3;
-            static constexpr std::array<Enum, size> all = {{PubkeyHash, ScriptHash, Tx}};
-            static constexpr std::array<const char*, 3> tableNames = {{"PUBKEYHASH_ADDRESS", "P2SH_ADDRESS", "TXHASH"}};
-        };
-        
         HashIndex(const std::string &path, bool readonly);
         ~HashIndex();
         
@@ -87,6 +78,11 @@ namespace blocksci {
             db->Delete(rocksdb::WriteOptions(), getTxColumn(), slice);
         }
         
+        void compactDB() {
+            for (auto column : columnHandles) {
+                db->CompactRange(rocksdb::CompactRangeOptions{}, column, nullptr, nullptr);
+            }
+        }
         
     private:
         rocksdb::DB *db;

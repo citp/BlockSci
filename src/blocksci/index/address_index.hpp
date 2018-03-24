@@ -56,6 +56,12 @@ namespace blocksci {
         void writeBatch(rocksdb::WriteBatch &batch) {
             db->Write(rocksdb::WriteOptions(), &batch);
         }
+        
+        void compactDB() {
+            for (auto column : columnHandles) {
+                db->CompactRange(rocksdb::CompactRangeOptions{}, column, nullptr, nullptr);
+            }
+        }
     };
 }
 

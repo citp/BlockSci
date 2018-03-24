@@ -312,7 +312,7 @@ void updateConfig(boost::filesystem::path &dataDirectory) {
 
 int main(int argc, char * argv[]) {
     
-    enum class mode {update, updateCore, updateIndexes, updateHashIndex, updateAddressIndex, help};
+    enum class mode {update, updateCore, updateIndexes, updateHashIndex, updateAddressIndex, compactIndexes, help};
     mode selected = mode::help;
 
 
@@ -320,11 +320,8 @@ int main(int argc, char * argv[]) {
         disk, rpc
     };
     updateMode selectedUpdateMode = updateMode::disk;
-
-
-    std::string dataDirectoryString;
     
-
+    std::string dataDirectoryString;
 
     auto outputDirOpt = (clipp::required("--output-directory", "-o") & clipp::value("output directory", dataDirectoryString)) % "Path to output parsed data";
 
@@ -351,17 +348,16 @@ int main(int argc, char * argv[]) {
     auto indexUpdateCommand = clipp::command("index-update").set(selected,mode::updateIndexes) % "Update indexes to latest chain state";
     auto addressIndexUpdateCommand = clipp::command("address-index-update").set(selected,mode::updateAddressIndex) % "Update address index to latest state";
     auto hashIndexUpdateCommand = clipp::command("hash-index-update").set(selected,mode::updateHashIndex) % "Update hash index to latest state";
+    auto compactIndexesCommand = clipp::command("compact-indexes").set(selected, mode::compactIndexes) % "Compact indexes to speed up blockchain construction";
     
     int maxBlockNum = 0;
     auto maxBlockOpt = (clipp::option("--max-block", "-m") & clipp::value("max block", maxBlockNum)) % "Max block height to scan up to";
     
     auto coreUpdateOptions = (maxBlockOpt, (fileOptions | rpcOptions));
     
-    auto commands = ((updateCommand | updateCoreCommand), coreUpdateOptions) | indexUpdateCommand | addressIndexUpdateCommand | hashIndexUpdateCommand;
+    auto commands = ((updateCommand | updateCoreCommand), coreUpdateOptions) | indexUpdateCommand | addressIndexUpdateCommand | hashIndexUpdateCommand | compactIndexesCommand;
     
     auto cli = (outputDirOpt, commands);
-    
-    
     
     auto res = parse(argc, argv, cli);
     if (res.any_error()) {
@@ -427,6 +423,19 @@ int main(int argc, char * argv[]) {
         case mode::updateAddressIndex: {
             ParserConfigurationBase config{dataDirectory};
             updateAddressDB(config);
+            break;
+        }
+            
+        case mode::compactIndexes: {
+            ParserConfigurationBase config{dataDirectory};
+            {
+                AddressDB db(config, config.addressDBFilePath().native());
+                db.compact();
+            }
+            {
+                HashIndexCreator db(config, config.hashIndexFilePath().native());
+                db.compact();
+            }
             break;
         }
 

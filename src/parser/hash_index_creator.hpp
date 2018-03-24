@@ -38,6 +38,10 @@ public:
     
     void rollback(const blocksci::State &state);
     void tearDown() override {}
+    
+    void compact() {
+        db.compactDB();
+    }
 };
 
 #endif /* hash_index_creator_hpp */
