@@ -78,7 +78,7 @@ namespace blocksci { namespace heuristics {
             uint16_t currentOutputNum = 0;
             uint64_t currentOutputTaintValue = 0;
             uint64_t currentOutputValueLeft = tx.outputs()[currentOutputNum].getValue();
-            auto addVal = [&](auto &val, bool isTaint) {
+            auto addVal = [&](auto &val, bool isTaint) -> bool {
                 uint64_t valToAdd = std::min(val, currentOutputValueLeft);
                 currentOutputValueLeft -= valToAdd;
                 val -= valToAdd;
@@ -88,9 +88,14 @@ namespace blocksci { namespace heuristics {
                 if (currentOutputValueLeft == 0) {
                     outs.emplace_back(tx.outputs()[currentOutputNum], currentOutputTaintValue);
                     currentOutputNum++;
-                    currentOutputTaintValue = 0;
-                    currentOutputValueLeft = tx.outputs()[currentOutputNum].getValue();
+                    if (currentOutputNum == tx.outputCount()) {
+                        return false;
+                    } else {
+                        currentOutputTaintValue = 0;
+                        currentOutputValueLeft = tx.outputs()[currentOutputNum].getValue();
+                    }
                 }
+                return true;
             };
             std::unordered_map<Inout, uint64_t> taintedInputsMap;
             for (auto &pair : taintedInputs) {
@@ -107,10 +112,14 @@ namespace blocksci { namespace heuristics {
                 }
                 uint64_t untaintedValue = input.getValue() - taintedValue;
                 while (taintedValue > 0 ) {
-                    addVal(taintedValue, true);
+                    if !(addVal(taintedValue, true)) {
+                        break;
+                    }
                 }
                 while (untaintedValue > 0) {
-                    addVal(untaintedValue, false);
+                    if !(addVal(taintedValue, false)) {
+                        break;
+                    }
                 }
             }
             return outs;
