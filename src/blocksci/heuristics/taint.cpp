@@ -18,16 +18,18 @@ namespace blocksci { namespace heuristics {
         std::map<uint32_t, std::unordered_map<Inout, uint64_t>> taintedTxesToCheck;
         std::vector<std::pair<Output, uint64_t>> taintedOutputs;
         auto processOutput = [&](const Output &spendingOut, uint64_t newTaintedValue) {
-            if (spendingOut.isSpent()) {
-                auto &txData = taintedTxesToCheck[spendingOut.getSpendingTxIndex()];
-                auto newTaintedInput = Inout{spendingOut.pointer.txNum, spendingOut.getAddress(), spendingOut.getValue()};
-                auto inserted = txData.insert(std::make_pair(newTaintedInput, newTaintedValue)).second;
-                if (!inserted) {
-                    throw std::runtime_error{"Error: Cannot distinguish between inputs"};
-                }
-            } else {
-                if (spendingOut.getAddress().isSpendable() && spendingOut.getValue() > 0) {
-                    taintedOutputs.emplace_back(spendingOut, newTaintedValue);
+            if (spendingOut.getValue() > 0) {
+                if (spendingOut.isSpent()) {
+                    auto &txData = taintedTxesToCheck[spendingOut.getSpendingTxIndex()];
+                    auto newTaintedInput = Inout{spendingOut.pointer.txNum, spendingOut.getAddress(), spendingOut.getValue()};
+                    auto inserted = txData.insert(std::make_pair(newTaintedInput, newTaintedValue)).second;
+                    if (!inserted) {
+                        throw std::runtime_error{"Error: Cannot distinguish between inputs"};
+                    }
+                } else {
+                    if (spendingOut.getAddress().isSpendable()) {
+                        taintedOutputs.emplace_back(spendingOut, newTaintedValue);
+                    }
                 }
             }
         };
