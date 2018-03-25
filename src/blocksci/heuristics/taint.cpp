@@ -64,7 +64,7 @@ namespace blocksci { namespace heuristics {
             auto totalOut = static_cast<double>(totalOutputValue(tx));
             for (auto spendingOut : tx.outputs()) {
                 auto percentage = static_cast<double>(spendingOut.getValue()) / totalOut;
-                auto newTaintedValue = std::max(static_cast<uint64_t>(percentage * static_cast<double>(taintedValue)), spendingOut.getValue());
+                auto newTaintedValue = std::min(static_cast<uint64_t>(percentage * static_cast<double>(taintedValue)), spendingOut.getValue());
                 outs.emplace_back(spendingOut, newTaintedValue);
             }
             return outs;
