@@ -26,7 +26,9 @@ namespace blocksci { namespace heuristics {
                     throw std::runtime_error{"Error: Cannot distinguish between inputs"};
                 }
             } else {
-                taintedOutputs.emplace_back(spendingOut, newTaintedValue);
+                if (spendingOut.getAddress().isSpendable() && spendingOut.getValue() > 0) {
+                    taintedOutputs.emplace_back(spendingOut, newTaintedValue);
+                }
             }
         };
         processOutput(output, taintedValue);
