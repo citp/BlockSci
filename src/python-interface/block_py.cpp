@@ -127,6 +127,8 @@ void init_block(py::module &m) {
     py::class_<Block> cl(m, "Block", "Class representing a block in the blockchain");
     cl
     .def("__repr__", &Block::getString)
+    .def(py::self == py::self)
+    .def(hash(py::self))
     .def("__len__", [](const Block &block) {
         return block.size();
     })

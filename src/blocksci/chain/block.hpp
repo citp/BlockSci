@@ -202,4 +202,15 @@ namespace blocksci {
 
 std::ostream &operator<<(std::ostream &os, blocksci::Block const &output);
 
+namespace std {
+    template <>
+    struct hash<blocksci::Block> {
+        typedef blocksci::Block argument_type;
+        typedef size_t  result_type;
+        result_type operator()(const argument_type &b) const {
+            return static_cast<size_t>(b.height());
+        }
+    };
+}
+
 #endif /* block_hpp */
