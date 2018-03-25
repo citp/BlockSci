@@ -15,6 +15,14 @@ namespace blocksci { namespace heuristics {
     std::vector<std::pair<Output, uint64_t>> getHaircutTainted(const Output &output, uint64_t taintedValue) {
         std::map<uint32_t, std::vector<std::pair<Inout, uint64_t>>> taintedTxesToCheck;
         std::vector<std::pair<Output, uint64_t>> taintedOutputs;
+        auto processOutput = [&](const Output &spendingOut, uint64_t newTaintedValue) {
+            if (spendingOut.isSpent()) {
+                taintedTxesToCheck[spendingOut.getSpendingTxIndex()].emplace_back(Inout{spendingOut.pointer.txNum, spendingOut.getAddress(), spendingOut.getValue()}, newTaintedValue);
+            } else {
+                taintedOutputs.emplace_back(spendingOut, newTaintedValue);
+            }
+        };
+        processOutput(output, taintedValue);
         while (!taintedTxesToCheck.empty()) {
             auto taintedTxData = *taintedTxesToCheck.begin();
             taintedTxesToCheck.erase(taintedTxesToCheck.begin());
@@ -27,11 +35,7 @@ namespace blocksci { namespace heuristics {
             for (auto spendingOut : tx.outputs()) {
                 auto percentage = static_cast<double>(spendingOut.getValue()) / totalOut;
                 auto newTaintedValue = static_cast<uint64_t>(percentage * static_cast<double>(taintedValue));
-                if (spendingOut.isSpent()) {
-                    taintedTxesToCheck[spendingOut.getSpendingTxIndex()].emplace_back(Inout{tx.txNum, spendingOut.getAddress(), spendingOut.getValue()}, newTaintedValue);
-                } else {
-                    taintedOutputs.emplace_back(spendingOut, newTaintedValue);
-                }
+                processOutput(spendingOut, newTaintedValue);
             }
         }
         return taintedOutputs;
