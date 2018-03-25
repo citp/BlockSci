@@ -15,17 +15,14 @@
 namespace blocksci { namespace heuristics {
     template <typename Func>
     std::vector<std::pair<Output, uint64_t>> getTaintedImpl(Func func, const Output &output, uint64_t taintedValue) {
-        std::map<uint32_t, std::unordered_map<Inout, uint64_t>> taintedTxesToCheck;
+        std::map<uint32_t, std::vector<std::pair<Inout, uint64_t>>> taintedTxesToCheck;
         std::vector<std::pair<Output, uint64_t>> taintedOutputs;
         auto processOutput = [&](const Output &spendingOut, uint64_t newTaintedValue) {
             if (newTaintedValue > 0) {
                 if (spendingOut.isSpent()) {
                     auto &txData = taintedTxesToCheck[spendingOut.getSpendingTxIndex()];
                     auto newTaintedInput = Inout{spendingOut.pointer.txNum, spendingOut.getAddress(), spendingOut.getValue()};
-                    auto inserted = txData.insert(std::make_pair(newTaintedInput, newTaintedValue)).second;
-                    if (!inserted) {
-                        throw std::runtime_error{"Error: Cannot distinguish between inputs"};
-                    }
+                    txData.emplace_back(newTaintedInput, newTaintedValue);
                 } else {
                     if (spendingOut.getAddress().isSpendable()) {
                         taintedOutputs.emplace_back(spendingOut, newTaintedValue);
@@ -47,7 +44,7 @@ namespace blocksci { namespace heuristics {
     }
     
     std::vector<std::pair<Output, uint64_t>> getPoisonTainted(const Output &output, uint64_t taintedValue) {
-        auto poisonTaint = [](const Transaction &tx, std::unordered_map<Inout, uint64_t> &taintedInputs) {
+        auto poisonTaint = [](const Transaction &tx, std::vector<std::pair<Inout, uint64_t>> &) {
             std::vector<std::pair<Output, uint64_t>> outs;
             for (auto spendingOut : tx.outputs()) {
                 outs.emplace_back(spendingOut, spendingOut.getValue());
@@ -58,7 +55,7 @@ namespace blocksci { namespace heuristics {
     }
     
     std::vector<std::pair<Output, uint64_t>> getHaircutTainted(const Output &output, uint64_t taintedValue) {
-        auto haircutTaint = [](const Transaction &tx, std::unordered_map<Inout, uint64_t> &taintedInputs) {
+        auto haircutTaint = [](const Transaction &tx, std::vector<std::pair<Inout, uint64_t>> &taintedInputs) {
             std::vector<std::pair<Output, uint64_t>> outs;
             uint64_t taintedValue = 0;
             for (auto &pair : taintedInputs) {
@@ -76,7 +73,7 @@ namespace blocksci { namespace heuristics {
     }
     
     std::vector<std::pair<Output, uint64_t>> getFifoTainted(const Output &output, uint64_t taintedValue) {
-        auto fifoTaint = [](const Transaction &tx, std::unordered_map<Inout, uint64_t> &taintedInputs) {
+        auto fifoTaint = [](const Transaction &tx, std::vector<std::pair<Inout, uint64_t>> &taintedInputs) {
             std::vector<std::pair<Output, uint64_t>> outs;
             uint16_t currentOutputNum = 0;
             uint64_t currentOutputTaintValue = 0;
@@ -95,10 +92,17 @@ namespace blocksci { namespace heuristics {
                     currentOutputValueLeft = tx.outputs()[currentOutputNum].getValue();
                 }
             };
+            std::unordered_map<Inout, uint64_t> taintedInputsMap;
+            for (auto &pair : taintedInputs) {
+                auto inserted = taintedInputsMap.insert(pair).second;
+                if (!inserted) {
+                    throw std::runtime_error{"Error: Cannot distinguish between inputs"};
+                }
+            }
             for (auto input : tx.inputs()) {
-                auto it = taintedInputs.find(Inout(input.spentTxIndex(), input.getAddress(), input.getValue()));
+                auto it = taintedInputsMap.find(Inout(input.spentTxIndex(), input.getAddress(), input.getValue()));
                 uint64_t taintedValue = 0;
-                if (it != taintedInputs.end()) {
+                if (it != taintedInputsMap.end()) {
                     taintedValue = it->second;
                 }
                 uint64_t untaintedValue = input.getValue() - taintedValue;
