@@ -61,9 +61,9 @@ namespace blocksci { namespace heuristics {
             for (auto &pair : taintedInputs) {
                 taintedValue += pair.second;
             }
-            auto totalOut = static_cast<double>(totalOutputValue(tx));
+            auto totalIn = static_cast<double>(totalInputValue(tx));
             for (auto spendingOut : tx.outputs()) {
-                auto percentage = static_cast<double>(spendingOut.getValue()) / totalOut;
+                auto percentage = static_cast<double>(spendingOut.getValue()) / totalIn;
                 auto newTaintedValue = std::min(static_cast<uint64_t>(percentage * static_cast<double>(taintedValue)), spendingOut.getValue());
                 outs.emplace_back(spendingOut, newTaintedValue);
             }
@@ -112,13 +112,13 @@ namespace blocksci { namespace heuristics {
                 }
                 uint64_t untaintedValue = input.getValue() - taintedValue;
                 while (taintedValue > 0 ) {
-                    if !(addVal(taintedValue, true)) {
-                        break;
+                    if (!addVal(taintedValue, true)) {
+                        return outs;
                     }
                 }
                 while (untaintedValue > 0) {
-                    if !(addVal(taintedValue, false)) {
-                        break;
+                    if (!addVal(taintedValue, false)) {
+                        return outs;
                     }
                 }
             }
