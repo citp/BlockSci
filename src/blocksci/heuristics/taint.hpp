@@ -13,7 +13,9 @@
 #include <vector>
 
 namespace blocksci { namespace heuristics {
+    std::vector<std::pair<Output, uint64_t>> getPoisonTainted(const Output &output, uint64_t taintedValue);
     std::vector<std::pair<Output, uint64_t>> getHaircutTainted(const Output &output, uint64_t taintedValue);
+    std::vector<std::pair<Output, uint64_t>> getFifoTainted(const Output &output, uint64_t taintedValue);
 }}
 
 #endif /* taint_hpp */

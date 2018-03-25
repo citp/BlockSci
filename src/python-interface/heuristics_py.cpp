@@ -75,5 +75,9 @@ void init_heuristics(py::module &m) {
     .value("Timeout", heuristics::CoinJoinResult::Timeout)
     ;
     
-    s.def("haircut_tainted_outputs", heuristics::getHaircutTainted, "Returns the list of current UTXOs haircut tainted by this output");
+    s
+    .def("poison_tainted_outputs", heuristics::getPoisonTainted, "Returns the list of current UTXOs poison tainted by this output")
+    .def("haircut_tainted_outputs", heuristics::getHaircutTainted, "Returns the list of current UTXOs haircut tainted by this output")
+    .def("fifo_tainted_outputs", heuristics::getFifoTainted, "Returns the list of current UTXOs FIFO tainted by this output")
+    ;
 }
