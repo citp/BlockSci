@@ -18,7 +18,7 @@ namespace blocksci { namespace heuristics {
         std::map<uint32_t, std::unordered_map<Inout, uint64_t>> taintedTxesToCheck;
         std::vector<std::pair<Output, uint64_t>> taintedOutputs;
         auto processOutput = [&](const Output &spendingOut, uint64_t newTaintedValue) {
-            if (spendingOut.getValue() > 0) {
+            if (newTaintedValue > 0) {
                 if (spendingOut.isSpent()) {
                     auto &txData = taintedTxesToCheck[spendingOut.getSpendingTxIndex()];
                     auto newTaintedInput = Inout{spendingOut.pointer.txNum, spendingOut.getAddress(), spendingOut.getValue()};
