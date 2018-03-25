@@ -9,8 +9,6 @@
 #include <blocksci/address/address.hpp>
 #include <blocksci/chain/algorithms.hpp>
 
-#include <boost/multiprecision/cpp_int.hpp>
-
 #include <map>
 #include <unordered_map>
 
@@ -62,12 +60,11 @@ namespace blocksci { namespace heuristics {
             for (auto &pair : taintedInputs) {
                 taintedValue += pair.second;
             }
-            auto totalOut = totalOutputValue(tx);
+            auto totalOut = static_cast<double>(totalOutputValue(tx));
             for (auto spendingOut : tx.outputs()) {
-                boost::multiprecision::int128_t val = spendingOut.getValue();
-                val *= taintedValue;
-                val /= totalOut;
-                outs.emplace_back(spendingOut, val);
+                auto percentage = static_cast<double>(spendingOut.getValue()) / totalOut;
+                auto newTaintedValue = std::max(static_cast<uint64_t>(percentage * static_cast<double>(taintedValue)), spendingOut.getValue());
+                outs.emplace_back(spendingOut, newTaintedValue);
             }
             return outs;
         };
