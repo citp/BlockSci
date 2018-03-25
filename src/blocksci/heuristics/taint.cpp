@@ -90,19 +90,19 @@ namespace blocksci { namespace heuristics {
                     currentOutputTaintValue = 0;
                     currentOutputValueLeft = tx.outputs()[currentOutputNum].getValue();
                 }
-                return valToAdd;
             };
             for (auto input : tx.inputs()) {
                 auto it = taintedInputs.find(Inout(input.spentTxIndex(), input.getAddress(), input.getValue()));
+                uint64_t taintedValue = 0;
                 if (it != taintedInputs.end()) {
-                    uint64_t taintedValue = it->second;
-                    uint64_t untaintedValue = input.getValue() - taintedValue;
-                    while (taintedValue > 0 ) {
-                        addVal(taintedValue, true);
-                    }
-                    while (untaintedValue > 0) {
-                        addVal(untaintedValue, false);
-                    }
+                    taintedValue = it->second;
+                }
+                uint64_t untaintedValue = input.getValue() - taintedValue;
+                while (taintedValue > 0 ) {
+                    addVal(taintedValue, true);
+                }
+                while (untaintedValue > 0) {
+                    addVal(untaintedValue, false);
                 }
             }
             return outs;
