@@ -48,6 +48,10 @@ namespace blocksci {
         Output(const OutputPointer &pointer_, const DataAccess &access_) :
         Output(pointer_, access_.chain->getBlockHeight(pointer_.txNum), access_.chain->getTx(pointer_.txNum)->getOutput(pointer_.inoutNum), access_) {}
         
+        const DataAccess &getAccess() const {
+            return *access;
+        }
+        
         uint32_t getSpendingTxIndex() const {
             return spendingTxIndex;
         }

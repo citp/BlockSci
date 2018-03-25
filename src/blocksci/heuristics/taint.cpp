@@ -6,28 +6,34 @@
 //
 
 #include "taint.hpp"
+#include <blocksci/address/address.hpp>
 #include <blocksci/chain/algorithms.hpp>
 
+#include <map>
+
 namespace blocksci { namespace heuristics {
-    std::unordered_map<Output, uint64_t> getHaircutTainted(const Output &output, uint64_t taintedValue) {
-        std::unordered_map<Output, uint64_t> outputs;
-        std::vector<std::pair<Output, uint64_t>> outputsToCheck;
-        outputsToCheck.emplace_back(output, taintedValue);
-        while (!outputsToCheck.empty()) {
-            auto tainted = outputsToCheck.back();
-            outputsToCheck.pop_back();
-            auto spendingTx = tainted.first.getSpendingTx();
-            if (spendingTx) {
-                auto totalOut = static_cast<double>(totalOutputValue(*spendingTx));
-                for (auto spendingOut : spendingTx->outputs()) {
-                    auto percentage = static_cast<double>(spendingOut.getValue()) / totalOut;
-                    auto value = static_cast<uint64_t>(percentage * static_cast<double>(tainted.second));
-                    outputsToCheck.emplace_back(spendingOut, value);
+    std::vector<std::pair<Output, uint64_t>> getHaircutTainted(const Output &output, uint64_t taintedValue) {
+        std::map<uint32_t, std::vector<std::pair<Inout, uint64_t>>> taintedTxesToCheck;
+        std::vector<std::pair<Output, uint64_t>> taintedOutputs;
+        while (!taintedTxesToCheck.empty()) {
+            auto taintedTxData = *taintedTxesToCheck.begin();
+            taintedTxesToCheck.erase(taintedTxesToCheck.begin());
+            uint64_t taintedValue = 0;
+            for (auto &pair : taintedTxData.second) {
+                taintedValue += pair.second;
+            }
+            auto tx = Transaction(taintedTxData.first, output.getAccess());
+            auto totalOut = static_cast<double>(totalOutputValue(tx));
+            for (auto spendingOut : tx.outputs()) {
+                auto percentage = static_cast<double>(spendingOut.getValue()) / totalOut;
+                auto newTaintedValue = static_cast<uint64_t>(percentage * static_cast<double>(taintedValue));
+                if (spendingOut.isSpent()) {
+                    taintedTxesToCheck[spendingOut.getSpendingTxIndex()].emplace_back(Inout{tx.txNum, spendingOut.getAddress(), spendingOut.getValue()}, newTaintedValue);
+                } else {
+                    taintedOutputs.emplace_back(spendingOut, newTaintedValue);
                 }
-            } else {
-                outputs[tainted.first] += tainted.second;
             }
         }
-        return outputs;
+        return taintedOutputs;
     }
 }}

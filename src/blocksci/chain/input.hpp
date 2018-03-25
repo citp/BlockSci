@@ -44,6 +44,10 @@ namespace blocksci {
         Input(const InputPointer &pointer_, const DataAccess &access_) :
         Input(pointer_, access_.chain->getBlockHeight(pointer_.txNum), access_.chain->getTx(pointer_.txNum)->getInput(pointer_.inoutNum), &access_.chain->getSequenceNumbers(pointer_.txNum)[pointer_.inoutNum], access_) {}
         
+        const DataAccess &getAccess() const {
+            return *access;
+        }
+        
         uint32_t txIndex() const {
             return pointer.txNum;
         }
