@@ -65,8 +65,8 @@ void init_blockchain(py::module &m) {
     .def("address_from_index", [](const DataAccess &access, uint32_t index, AddressType::Enum type) -> AnyScript::ScriptVariant {
         return Address{index, type, access}.getScript().wrapped;
     }, "Construct an address object from an address num and type")
-    .def("address_from_string", [](const Blockchain &chain, const std::string &addressString) -> ranges::optional<AnyScript::ScriptVariant> {
-        auto address = getAddressFromString(addressString, chain.getAccess());
+    .def("address_from_string", [](const DataAccess &access, const std::string &addressString) -> ranges::optional<AnyScript::ScriptVariant> {
+        auto address = getAddressFromString(addressString, access);
         if (address) {
             return address->getScript().wrapped;
         } else {
