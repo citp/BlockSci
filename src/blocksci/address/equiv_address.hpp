@@ -47,6 +47,10 @@ namespace blocksci {
             return addresses.end();
         }
         
+        bool isScriptEquiv() const {
+            return scriptEquivalent;
+        }
+        
         std::vector<OutputPointer> getOutputPointers() const;
         
         uint64_t calculateBalance(BlockHeight height) const;

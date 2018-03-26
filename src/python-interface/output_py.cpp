@@ -55,6 +55,12 @@ void addOutputMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     .def_property_readonly("block", func([](const Output &output) {
         return output.block();
     }), func2("The block that contains this input"))
+    .def_property_readonly("index", func([](const Output &output) {
+        return output.outputIndex();
+    }), func2("The output index inside this output's transaction"))
+    .def_property_readonly("tx_index", func([](const Output &output) {
+        return output.txIndex();
+    }), func2("The tx index of this output's transaction"))
     ;
 }
 

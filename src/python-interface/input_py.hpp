@@ -52,6 +52,12 @@ void addInputMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     .def_property_readonly("block", func([](const Input &input) {
         return input.block();
     }), func2("The block that contains this input"))
+    .def_property_readonly("index", func([](const Input &input) {
+        return input.inputIndex();
+    }), func2("The index index inside this input's transaction"))
+    .def_property_readonly("tx_index", func([](const Input &input) {
+        return input.txIndex();
+    }), func2("The tx index of this input's transaction"))
     ;
 }
 

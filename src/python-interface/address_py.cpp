@@ -59,6 +59,7 @@ void init_address(py::module &m) {
         });
         return py::make_iterator(transformed.begin(), transformed.end());
     },py::keep_alive<0, 1>())
+    .def_property_readonly("is_script_equiv", &EquivAddress::isScriptEquiv, "Returns whether this equiv address is script equivalent or not")
     .def("balance", &EquivAddress::calculateBalance, py::arg("height") = -1, "Calculates the balance held by these equivalent addresses at the height (Defaults to the full chain)")
     .def("outs", &EquivAddress::getOutputs, "Returns a list of all outputs sent to these equivalent addresses")
     .def("ins", &EquivAddress::getInputs, "Returns a list of all inputs spent from these equivalent addresses")
