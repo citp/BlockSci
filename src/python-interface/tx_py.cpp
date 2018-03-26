@@ -268,7 +268,7 @@ void init_tx(py::module &m) {
     .def("__repr__", &Transaction::toString)
     .def(py::self == py::self)
     .def(hash(py::self))
-    .def_property_readonly("_access", &Transaction::getAccess)
+    .def_property_readonly("_access", &Transaction::getAccess, py::return_value_policy::reference)
     .def(py::init([](uint32_t index, const blocksci::Blockchain &chain) {
         return Transaction{index, chain.getAccess()};
     }), R"docstring(

@@ -110,7 +110,7 @@ void init_output(py::module &m) {
     .def("__repr__", &Output::toString)
     .def(py::self == py::self)
     .def(hash(py::self))
-    .def_property_readonly("_access", &Output::getAccess)
+    .def_property_readonly("_access", &Output::getAccess, py::return_value_policy::reference)
     ;
     
     addOutputMethods(outputClass, [](auto func) {

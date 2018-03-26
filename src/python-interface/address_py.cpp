@@ -32,7 +32,7 @@ void init_address(py::module &m) {
     address
     .def(py::self == py::self)
     .def(hash(py::self))
-    .def_property_readonly("_access", &Address::getAccess)
+    .def_property_readonly("_access", &Address::getAccess, py::return_value_policy::reference)
     .def_readonly("address_num", &Address::scriptNum, "The internal identifier of the address")
     .def_readonly("type", &Address::type, "The type of address")
     .def("equiv", &Address::getEquivAddresses, py::arg("equiv_script") = true, "Returns a list of all addresses equivalent to this address")

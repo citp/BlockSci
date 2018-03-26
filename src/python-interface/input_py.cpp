@@ -33,7 +33,7 @@ void init_input(py::module &m) {
     .def("__repr__", &Input::toString)
     .def(py::self == py::self)
     .def(hash(py::self))
-    .def_property_readonly("_access", &Input::getAccess)
+    .def_property_readonly("_access", &Input::getAccess, py::return_value_policy::reference)
     ;
     
     addInputMethods(inputClass, [](auto func) {

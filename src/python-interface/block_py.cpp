@@ -159,7 +159,7 @@ void init_block(py::module &m) {
             throw py::error_already_set();
         return block | ranges::view::slice(start, stop) | ranges::view::stride(step);
     })
-    .def_property_readonly("_access", &Block::getAccess)
+    .def_property_readonly("_access", &Block::getAccess, py::return_value_policy::reference)
     .def_property_readonly("txes", [](const Block &block) -> ranges::any_view<Transaction> {
         return block;
     }, R"docstring(
