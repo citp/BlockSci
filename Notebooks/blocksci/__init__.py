@@ -3,6 +3,7 @@ from blocksci.currency import *
 from blocksci.blockchain_info import *
 from blocksci.blocktrail import *
 from blocksci.opreturn import *
+from blocksci.pickler import *
 
 from multiprocess import Pool
 from functools import reduce
@@ -18,10 +19,18 @@ import subprocess
 import sys
 import os
 import inspect
+import copy
+import io
 
 version = "0.45"
 
-def mapreduce_block_ranges(chain, mapFunc, reduceFunc, init,  start=None, end=None, cpu_count=psutil.cpu_count()):
+class _NoDefault(object):
+    def __repr__(self):
+        return '(no default)'
+
+missing_param = _NoDefault()
+
+def mapreduce_block_ranges(chain, mapFunc, reduceFunc, init=missing_param,  start=None, end=None, cpu_count=psutil.cpu_count()):
     """Initialized multithreaded map reduce function over a stream of block ranges
     """
     if start is None:
@@ -44,31 +53,45 @@ def mapreduce_block_ranges(chain, mapFunc, reduceFunc, init,  start=None, end=No
     def real_map_func(input):
         local_chain = Blockchain(input[1])
         block_height_range = range(input[0][0], input[0][1])
-        return mapFunc((local_chain[i] for i in block_height_range))
+        file = io.BytesIO()
+        pickler = Pickler(file)
+        mapped = mapFunc((local_chain[i] for i in block_height_range))
+        pickler.dump(mapped)
+        file.seek(0)
+        return file
 
     with Pool(cpu_count - 1) as p:
         results_future = p.map_async(real_map_func, segments[1:])
         block_height_range = range(raw_segments[0][0], raw_segments[0][1])
         first = mapFunc((chain[i] for i in block_height_range))
         results = results_future.get()
-        results.insert(0, first)
-    return reduce(reduceFunc, results, init)
+        results = [Unpickler(res, chain).load() for res in results]
+    results.insert(0, first)
+    if type(init) == type(missing_param): 
+        return reduce(reduceFunc, results)
+    else:
+        return reduce(reduceFunc, results, init)
 
 
-def mapreduce_blocks(chain, mapFunc, reduceFunc, init, start=None, end=None, cpu_count=psutil.cpu_count()):
+def mapreduce_blocks(chain, mapFunc, reduceFunc, init=missing_param, start=None, end=None, cpu_count=psutil.cpu_count()):
     """Initialized multithreaded map reduce function over a stream of blocks
     """
     def mapRangeFunc(blocks):
-        return reduce(reduceFunc, (mapFunc(block) for block in blocks), init)
+        if type(init) == type(missing_param):
+            return reduce(reduceFunc, (mapFunc(block) for block in blocks))
+        else:
+            return reduce(reduceFunc, (mapFunc(block) for block in blocks), copy.deepcopy(init))
     return mapreduce_block_ranges(chain, mapRangeFunc, reduceFunc, init, start, end, cpu_count)
 
-def mapreduce_txes(chain, mapFunc, reduceFunc, init,  start=None, end=None, cpu_count=psutil.cpu_count()):
+def mapreduce_txes(chain, mapFunc, reduceFunc, init=missing_param,  start=None, end=None, cpu_count=psutil.cpu_count()):
     """Initialized multithreaded map reduce function over a stream of transactions
     """
     def mapRangeFunc(blocks):
-        return reduce(reduceFunc, (mapFunc(tx) for block in blocks for tx in block))
+        if type(init) == type(missing_param):
+            return reduce(reduceFunc, (mapFunc(tx) for block in blocks for tx in block))
+        else:
+            return reduce(reduceFunc, (mapFunc(tx) for block in blocks for tx in block), copy.deepcopy(init))
     return mapreduce_block_ranges(chain, mapRangeFunc, reduceFunc, init, start, end, cpu_count)
-
 
 def map_blocks(self, blockFunc, start = None, end = None, cpu_count=psutil.cpu_count()):
     """Runs the given function over each block in range and returns a list of the results
@@ -89,12 +112,11 @@ def filter_txes(self, filterFunc, start = None, end = None, cpu_count=psutil.cpu
     """Return all transactions in range which match the given criteria
     """
     def mapFunc(blocks):
-        return [tx.index for block in blocks for tx in block if filterFunc(tx)]
+        return [tx for block in blocks for tx in block if filterFunc(tx)]
     def reduceFunc(cur, el):
         return cur + el
     init = list()
-    tx_ids = mapreduce_block_ranges(self, mapFunc, reduceFunc, init, start, end, cpu_count)
-    return [chain.tx_with_index(x) for x in tx_ids]
+    return mapreduce_block_ranges(self, mapFunc, reduceFunc, init, start, end, cpu_count)
 
 Blockchain.map_blocks = map_blocks
 Blockchain.filter_blocks = filter_blocks
