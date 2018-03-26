@@ -12,6 +12,8 @@
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/algorithms.hpp>
+#include <blocksci/index/address_index.hpp>
+#include <blocksci/index/hash_index.hpp>
 #include <blocksci/util/data_access.hpp>
 
 #include <pybind11/pybind11.h>
@@ -157,6 +159,7 @@ void init_block(py::module &m) {
             throw py::error_already_set();
         return block | ranges::view::slice(start, stop) | ranges::view::stride(step);
     })
+    .def_property_readonly("_access", &Block::getAccess)
     .def_property_readonly("txes", [](const Block &block) -> ranges::any_view<Transaction> {
         return block;
     }, R"docstring(

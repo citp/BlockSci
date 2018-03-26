@@ -17,6 +17,8 @@
 #include <blocksci/chain/inout_pointer.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/scripts/script_variant.hpp>
+#include <blocksci/index/address_index.hpp>
+#include <blocksci/index/hash_index.hpp>
 
 #include <range/v3/range_for.hpp>
 #include <range/v3/view/transform.hpp>
@@ -108,6 +110,7 @@ void init_output(py::module &m) {
     .def("__repr__", &Output::toString)
     .def(py::self == py::self)
     .def(hash(py::self))
+    .def_property_readonly("_access", &Output::getAccess)
     ;
     
     addOutputMethods(outputClass, [](auto func) {

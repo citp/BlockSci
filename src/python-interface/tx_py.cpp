@@ -19,6 +19,8 @@
 #include <blocksci/util/bitcoin_uint256.hpp>
 #include <blocksci/heuristics/tx_identification.hpp>
 #include <blocksci/heuristics/change_address.hpp>
+#include <blocksci/index/address_index.hpp>
+#include <blocksci/index/hash_index.hpp>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -266,6 +268,7 @@ void init_tx(py::module &m) {
     .def("__repr__", &Transaction::toString)
     .def(py::self == py::self)
     .def(hash(py::self))
+    .def_property_readonly("_access", &Transaction::getAccess)
     .def(py::init([](uint32_t index, const blocksci::Blockchain &chain) {
         return Transaction{index, chain.getAccess()};
     }), R"docstring(

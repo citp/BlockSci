@@ -12,6 +12,8 @@
 #include <blocksci/address/address.hpp>
 #include <blocksci/address/equiv_address.hpp>
 #include <blocksci/address/address_info.hpp>
+#include <blocksci/index/address_index.hpp>
+#include <blocksci/index/hash_index.hpp>
 #include <blocksci/chain.hpp>
 #include <blocksci/script.hpp>
 
@@ -30,6 +32,7 @@ void init_address(py::module &m) {
     address
     .def(py::self == py::self)
     .def(hash(py::self))
+    .def_property_readonly("_access", &Address::getAccess)
     .def_readonly("address_num", &Address::scriptNum, "The internal identifier of the address")
     .def_readonly("type", &Address::type, "The type of address")
     .def("equiv", &Address::getEquivAddresses, py::arg("equiv_script") = true, "Returns a list of all addresses equivalent to this address")
