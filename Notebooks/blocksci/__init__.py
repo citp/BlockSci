@@ -97,26 +97,33 @@ def map_blocks(self, blockFunc, start = None, end = None, cpu_count=psutil.cpu_c
     """Runs the given function over each block in range and returns a list of the results
     """
     def mapFunc(blocks):
-        return [blockFunc(block) for block in blocks]
+        return [[blockFunc(block)] for block in blocks]
 
-    return mapreduce_block_ranges(self, mapFunc, operator.concat, list(), start, end, cpu_count)
+    def reduceFunc(accum, new_val):
+        accum.extend(new_val)
+        return accum
+
+    return mapreduce_block_ranges(self, mapFunc, reduceFunc, missing_param, start, end, cpu_count)
 
 def filter_blocks(self, filterFunc, start = None, end = None, cpu_count=psutil.cpu_count()):
     """Return all blocks in range which match the given criteria
     """
     def mapFunc(blocks):
         return [block for block in blocks if filterFunc(block)]
-    return  mapreduce_block_ranges(self, mapFunc, operator.concat, list(), start, end, cpu_count=cpu_count)
+    def reduceFunc(accum, new_val):
+        accum.extend(new_val)
+        return accum
+    return  mapreduce_block_ranges(self, mapFunc, reduceFunc, missing_param, start, end, cpu_count=cpu_count)
 
 def filter_txes(self, filterFunc, start = None, end = None, cpu_count=psutil.cpu_count()):
     """Return all transactions in range which match the given criteria
     """
     def mapFunc(blocks):
         return [tx for block in blocks for tx in block if filterFunc(tx)]
-    def reduceFunc(cur, el):
-        return cur + el
-    init = list()
-    return mapreduce_block_ranges(self, mapFunc, reduceFunc, init, start, end, cpu_count)
+    def reduceFunc(accum, new_val):
+        accum.extend(new_val)
+        return accum
+    return mapreduce_block_ranges(self, mapFunc, reduceFunc, missing_param, start, end, cpu_count)
 
 Blockchain.map_blocks = map_blocks
 Blockchain.filter_blocks = filter_blocks
@@ -186,7 +193,7 @@ def get_miner(block):
         import json
         with open(loaderDirectory + "/Blockchain-Known-Pools/pools.json") as f:
             pool_data = json.load(f)
-        addresses = [Address.from_string(addr_string) for addr_string in pool_data["payout_addresses"]]
+        addresses = [block._access.address_from_string(addr_string) for addr_string in pool_data["payout_addresses"]]
         tagged_addresses = {pointer: pool_data["payout_addresses"][address] for address in addresses if address in pool_data["payout_addresses"]}
         coinbase_tag_re = re.compile('|'.join(map(re.escape, pool_data["coinbase_tags"])))
         first_miner_run = False
