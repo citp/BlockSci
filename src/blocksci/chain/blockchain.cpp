@@ -14,12 +14,15 @@
 
 #include "chain/chain_access.hpp"
 #include "index/address_index.hpp"
+#include "index/address_output_range.hpp"
 #include "index/hash_index.hpp"
 
 #include "util/data_configuration.hpp"
 
 #include <range/v3/view/drop.hpp>
+#include <range/v3/view/group_by.hpp>
 #include <range/v3/view/filter.hpp>
+#include <range/v3/front.hpp>
 #include <range/v3/action/push_back.hpp>
 #include <range/v3/algorithm/any_of.hpp>
 
@@ -153,5 +156,35 @@ namespace blocksci {
                 return output.getType() == type;
             });
         });
+    }
+    
+    std::map<uint64_t, Address> mostValuableAddresses(const Blockchain &chain) {
+        AddressOutputRange range{chain.getAccess()};
+        auto grouped = range | ranges::view::group_by([](auto pair1, auto pair2) { return pair1.first == pair2.first; });
+        std::map<uint64_t, Address> topAddresses;
+        
+        RANGES_FOR(auto outputGroup, grouped) {
+            auto address = ranges::front(outputGroup).first;
+            auto balancesIfUnspent = outputGroup | ranges::view::transform([&](auto pair) -> uint64_t {
+                Output out{pair.second, chain.getAccess()};
+                if (!out.isSpent()) {
+                    return out.getValue();
+                } else {
+                    return 0;
+                }
+            });
+            
+            uint64_t balance = ranges::accumulate(balancesIfUnspent, uint64_t{0});
+            if (topAddresses.size() < 100) {
+                topAddresses.insert(std::make_pair(balance, address));
+            } else {
+                auto lowestVal = topAddresses.begin();
+                if (balance > lowestVal->first) {
+                    topAddresses.erase(lowestVal);
+                    topAddresses.insert(std::make_pair(balance, address));
+                }
+            }
+        }
+        return topAddresses;
     }
 }

@@ -19,6 +19,7 @@
 #include <range/v3/view/any_view.hpp>
 #include <range/v3/range_for.hpp>
 
+#include <map>
 #include <type_traits>
 #include <future>
 
@@ -246,6 +247,8 @@ namespace blocksci {
     std::vector<Transaction> filter(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, std::function<bool(const Transaction &tx)> testFunc);
     
     std::vector<Transaction> getTransactionIncludingOutput(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, AddressType::Enum type);
+    
+    std::map<uint64_t, Address> mostValuableAddresses(const Blockchain &chain);
 }
 
 

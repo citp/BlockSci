@@ -6,6 +6,7 @@
 //
 //
 
+#include "ranges_py.hpp"
 #include <blocksci/chain/block.hpp>
 #include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/transaction.hpp>
@@ -59,7 +60,7 @@ void addBlockMethods(Class &cl, FuncApplication func) {
     .def_property_readonly("coinbase_tx", func([](const Block &block) {
         return block.coinbaseTx();
     }), "Return the coinbase transaction in this block")
-    .def_property_readonly("size_bytes", func([](Block &block) {
+    .def_property_readonly("size_bytes", func([](const Block &block) {
         return block.totalSize();
     }), "Returns the total size of the block in bytes")
     .def_property_readonly("fee", func([](const Block &block) {
@@ -126,41 +127,13 @@ void init_block(py::module &m) {
     ))
     ;
     
-    py::class_<Block> cl(m, "Block", "Class representing a block in the blockchain");
-    cl
+    auto blockCl = addRangeClass<Block>(m, "Block", "Class representing a block in the blockchain");
+    blockCl
     .def("__repr__", &Block::getString)
     .def(py::self == py::self)
     .def(hash(py::self))
-    .def("__len__", [](const Block &block) {
-        return block.size();
-    })
-    /// Optional sequence protocol operations
-    .def("__iter__", [](const Block &block) { return py::make_iterator(block.begin(), block.end()); },
-         py::keep_alive<0, 1>() /* Essential: keep object alive while iterator exists */)
-    .def("__getitem__", [](const Block &block, blocksci::BlockHeight i) {
-        if (i < 0) {
-            i += block.size();
-        }
-        
-        if (i < 0) {
-            throw py::index_error();
-        }
-        
-        uint64_t posIndex = static_cast<uint64_t>(i);
-        if (posIndex >= block.size()) {
-            throw py::index_error();
-        }
-        
-        return block[i];
-    })
-    .def("__getitem__", [](const Block &block, py::slice slice) -> ranges::any_view<Transaction> {
-        size_t start, stop, step, slicelength;
-        if (!slice.compute(block.size(), &start, &stop, &step, &slicelength))
-            throw py::error_already_set();
-        return block | ranges::view::slice(start, stop) | ranges::view::stride(step);
-    })
     .def_property_readonly("_access", &Block::getAccess, py::return_value_policy::reference)
-    .def_property_readonly("txes", [](const Block &block) -> ranges::any_view<Transaction> {
+    .def_property_readonly("txes", [](const Block &block) -> ranges::any_view<Transaction, ranges::category::random_access> {
         return block;
     }, R"docstring(
          Returns a range of all of the txes in the block.
@@ -189,9 +162,14 @@ void init_block(py::module &m) {
     .def("net_full_type_value", py::overload_cast<const Block &>(netFullTypeValue), "Returns a set of the net change in the utxo pool after this block split up by full type")
     ;
 
-    addBlockMethods(cl, [](auto func) {
+    addBlockMethods(blockCl, [](auto func) {
         return [=](Block &block) {
             return func(block);
         };
+    });
+    
+    auto blockRangeCl = addRangeClass<ranges::any_view<Block, ranges::category::random_access>>(m, "BlockRange");
+    addBlockMethods(blockRangeCl, [](auto func) {
+        return applyMethodsToRange<ranges::any_view<Block, ranges::category::random_access>>(func);
     });
 }

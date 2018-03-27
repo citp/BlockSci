@@ -29,7 +29,9 @@ namespace blocksci {
         
         std::vector<rocksdb::ColumnFamilyDescriptor> columnDescriptors;
         blocksci::for_each(blocksci::AddressInfoList(), [&](auto tag) {
-            columnDescriptors.emplace_back(addressName(tag), rocksdb::ColumnFamilyOptions{});
+            auto options = rocksdb::ColumnFamilyOptions{};
+            auto descriptor = rocksdb::ColumnFamilyDescriptor{addressName(tag), options};
+            columnDescriptors.push_back(descriptor);
         });
         columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions{});
         columnDescriptors.emplace_back("T", rocksdb::ColumnFamilyOptions{});

@@ -114,22 +114,14 @@ void init_output(py::module &m) {
     ;
     
     addOutputMethods(outputClass, [](auto func) {
-        return [=](Output &output) {
-            return func(output);
-        };
+        return applyMethodsToSelf<Output>(func);
     }, [](auto && docstring) {
         return std::forward<decltype(docstring)>(docstring);
     });
     
     auto outputRangeClass = addRangeClass<ranges::any_view<Output>>(m, "AnyOutputRange");
     addOutputMethods(outputRangeClass, [](auto func) {
-        return [=](ranges::any_view<Output> &range) {
-            py::list list;
-            RANGES_FOR(const auto &output, range) {
-                list.append(func(output));
-            }
-            return list;
-        };
+        return applyMethodsToRange<ranges::any_view<Output>>(func);
     }, [](std::string docstring) {
         std::stringstream ss;
         ss << "For each output: " << docstring;
@@ -139,21 +131,15 @@ void init_output(py::module &m) {
         return func(range);
     });
     
-    auto outputRangeClass2 = addRangeClass<ranges::any_view<Output, ranges::category::random_access | ranges::category::sized>>(m, "OutputRange");
+    auto outputRangeClass2 = addRangeClass<ranges::any_view<Output, ranges::category::random_access>>(m, "OutputRange");
     addOutputMethods(outputRangeClass2, [](auto func) {
-        return [=](ranges::any_view<Output, ranges::category::random_access | ranges::category::sized> &view) {
-            py::list list;
-            RANGES_FOR(const auto &output, view) {
-                list.append(func(output));
-            }
-            return list;
-        };
+        return applyMethodsToRange<ranges::any_view<Output, ranges::category::random_access>>(func);
     }, [](std::string docstring) {
         std::stringstream ss;
         ss << "For each output: " << docstring;
         return strdup(ss.str().c_str());
     });
-    addOutputRangeMethods(outputRangeClass2, [](ranges::any_view<Output, ranges::category::random_access | ranges::category::sized> &range, auto func) {
+    addOutputRangeMethods(outputRangeClass2, [](ranges::any_view<Output, ranges::category::random_access> &range, auto func) {
         return func(range);
     });
     

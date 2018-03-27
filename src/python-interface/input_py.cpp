@@ -37,22 +37,14 @@ void init_input(py::module &m) {
     ;
     
     addInputMethods(inputClass, [](auto func) {
-        return [=](Input &input) {
-            return func(input);
-        };
+        return applyMethodsToSelf<Input>(func);
     }, [](auto && docstring) {
         return std::forward<decltype(docstring)>(docstring);
     });
     
     auto inputRangeClass = addRangeClass<ranges::any_view<Input>>(m, "AnyInputRange");
     addInputMethods(inputRangeClass, [](auto func) {
-        return [=](ranges::any_view<Input> &view) {
-            py::list list;
-            RANGES_FOR(const auto &input, view) {
-                list.append(func(input));
-            }
-            return list;
-        };
+        return applyMethodsToRange<ranges::any_view<Input>>(func);
     }, [](std::string docstring) {
         std::stringstream ss;
         ss << "For each input: " << docstring;
@@ -62,21 +54,15 @@ void init_input(py::module &m) {
         return func(range);
     });
     
-    auto inputRangeClass2 = addRangeClass<ranges::any_view<Input, ranges::category::random_access | ranges::category::sized>>(m, "InputRange");
+    auto inputRangeClass2 = addRangeClass<ranges::any_view<Input, ranges::category::random_access>>(m, "InputRange");
     addInputMethods(inputRangeClass2, [](auto func) {
-        return [=](ranges::any_view<Input, ranges::category::random_access | ranges::category::sized> &view) {
-            py::list list;
-            RANGES_FOR(const auto &input, view) {
-                list.append(func(input));
-            }
-            return list;
-        };
+        return applyMethodsToRange<ranges::any_view<Input, ranges::category::random_access>>(func);
     }, [](std::string docstring) {
         std::stringstream ss;
         ss << "For each input: " << docstring;
         return strdup(ss.str().c_str());
     });
-    addInputRangeMethods(inputRangeClass2, [](ranges::any_view<Input, ranges::category::random_access | ranges::category::sized> &view, auto func) {
+    addInputRangeMethods(inputRangeClass2, [](ranges::any_view<Input, ranges::category::random_access> &view, auto func) {
         return func(view);
     });
 

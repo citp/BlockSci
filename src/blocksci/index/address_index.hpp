@@ -11,6 +11,7 @@
 
 #include <blocksci/address/address_fwd.hpp>
 #include <blocksci/chain/chain_fwd.hpp>
+#include <blocksci/address/address_info.hpp>
 
 #include <rocksdb/db.h>
 

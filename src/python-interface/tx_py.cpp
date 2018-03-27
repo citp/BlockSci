@@ -25,7 +25,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
-#include <pybind11/numpy.h>
 #include <pybind11/chrono.h>
 
 #include <range/v3/iterator_range.hpp>
@@ -116,126 +115,20 @@ void addTransactionMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     ;
 }
 
-template <typename T>
-struct function_traits : public function_traits<decltype(&T::operator())>
-{};
-
-template <typename ClassType, typename ReturnType, typename First, typename... Args>
-struct function_traits<ReturnType(ClassType::*)(First, Args...) const>
-// we specialize for pointers to member function
-{
-    using result_type = ReturnType;
-    using arg_tuple = std::tuple<Args...>;
-    static constexpr auto arity = sizeof...(Args);
-};
-
-template <class F, std::size_t ... Is, class T>
-auto lambda_to_func_impl(F f, std::index_sequence<Is...>, T) {
-    return std::function<typename T::result_type(std::tuple_element_t<Is, typename T::arg_tuple>...)>(f);
-}
-
-template <class F>
-auto lambda_to_func(F f) {
-    using traits = function_traits<F>;
-    return lambda_to_func_impl(f, std::make_index_sequence<traits::arity>{}, traits{});
-}
-
-//template <class F, std::size_t ... Is, class T>
-//auto applyTxMethodsToTxRangeImpl(F f, std::index_sequence<Is...>, T) {
-//    return [&f](ranges::any_view<Transaction> &view, const std::tuple_element_t<Is, typename T::arg_tuple> &... args) {
-//        std::vector<typename T::result_type> ret;
-//        RANGES_FOR(auto && tx, view) {
-//            ret.push_back(f(std::forward<decltype(tx)>(tx), args...));
-//        }
-//        return py::array(ret.size(), ret.data());
-//    };
-//}
-//
-//template <typename F>
-//auto applyTxMethodsToTxRange(F f) {
-//    using traits = function_traits<F>;
-//    return applyTxMethodsToTxRangeImpl(f, std::make_index_sequence<traits::arity>{}, traits{});
-//}
-
-template <class F, std::size_t ... Is, class T>
-auto applyTxMethodsToTxRangeImpl(F f, std::index_sequence<Is...>, T, std::true_type) {
-    return [&f](ranges::any_view<Transaction> &view, const std::tuple_element_t<Is, typename T::arg_tuple> &... args) {
-        std::vector<typename T::result_type> ret;
-        RANGES_FOR(auto && tx, view) {
-            ret.push_back(f(std::forward<decltype(tx)>(tx), args...));
-        }
-        return py::array(ret.size(), ret.data());
-    };
-}
-
-template <class F, std::size_t ... Is, class T>
-auto applyTxMethodsToTxRangeImpl(F f, std::index_sequence<Is...>, T, std::false_type) {
-    return [&f](ranges::any_view<Transaction> &view, const std::tuple_element_t<Is, typename T::arg_tuple> &... args) {
-        py::list list;
-        RANGES_FOR(auto && tx, view) {
-            list.append(f(std::forward<decltype(tx)>(tx), args...));
-        }
-        return list;
-    };
-}
-
-template<typename... Conds>
-struct and_
-: std::true_type
-{ };
-
-template<typename Cond, typename... Conds>
-struct and_<Cond, Conds...>
-: std::conditional<Cond::value, and_<Conds...>, std::false_type>::type
-{ };
-
-template <typename F>
-auto applyTxMethodsToTxRange(F f) {
-    using traits = function_traits<F>;
-    return applyTxMethodsToTxRangeImpl(f, std::make_index_sequence<traits::arity>{}, traits{}, and_<py::detail::satisfies_any_of<typename traits::result_type, std::is_arithmetic, py::detail::is_complex>, py::detail::vector_has_data_and_format<std::vector<typename traits::result_type>>>{});
-}
-
-//template <typename F>
-//auto applyTxMethodsToTxRange(F f) {
-//    using traits = function_traits<F>;
-//    return applyTxMethodsToTxRangeImpl(f, std::make_index_sequence<traits::arity>{}, traits{}, py::detail::satisfies_any_of<typename traits::result_type, std::is_arithmetic, py::detail::is_complex>{});
-//}
-
-//template <typename F>
-//auto applyTxMethodsToTxRange(F f) {
-//    using traits = function_traits<F>;
-//    return applyTxMethodsToTxRangeImpl(f, std::make_index_sequence<traits::arity>{}, traits{}, py::detail::is_pod_struct<typename traits::result_type>{});
-//}
-
-
-
-template <class F, std::size_t ... Is, class T>
-auto applyTxMethodsToTxImpl(F f, std::index_sequence<Is...>, T) {
-    return [&f](const Transaction &tx, const std::tuple_element_t<Is, typename T::arg_tuple> &... args) {
-        return f(std::forward<decltype(tx)>(tx), args...);
-    };
-}
-
-template <typename F>
-auto applyTxMethodsToTx(F f) {
-    using traits = function_traits<F>;
-    return applyTxMethodsToTxImpl(f, std::make_index_sequence<traits::arity>{}, traits{});
-}
-
-
 void init_tx(py::module &m) {
-    
-//    template <typename Ret, typename... Args>
-//    auto applyTxMethodsToTx(std::function<Ret(const Transaction &tx, Args...)>) {
-//        return [](const Transaction &tx, Args && ...args) {
-//            return func(tx, std::forward<Args>(args)...);
-//        }
-//    }
-
     
     auto txRangeClass = addRangeClass<ranges::any_view<Transaction>>(m, "AnyTxRange");
     addTransactionMethods(txRangeClass, [](auto func) {
-        return applyTxMethodsToTxRange(func);
+        return applyMethodsToRange<ranges::any_view<Transaction>>(func);
+    }, [](std::string docstring) {
+        std::stringstream ss;
+        ss << "For each transaction: " << docstring;
+        return strdup(ss.str().c_str());
+    });
+    
+    auto txRangeClass2 = addRangeClass<ranges::any_view<Transaction, ranges::category::random_access>>(m, "TxRange");
+    addTransactionMethods(txRangeClass2, [](auto func) {
+        return applyMethodsToRange<ranges::any_view<Transaction, ranges::category::random_access>>(func);
     }, [](std::string docstring) {
         std::stringstream ss;
         ss << "For each transaction: " << docstring;
@@ -258,7 +151,7 @@ void init_tx(py::module &m) {
     
     py::class_<Transaction> txClass(m, "Tx", "Class representing a transaction in a block");
     addTransactionMethods(txClass, [](auto func) {
-        return applyTxMethodsToTx(func);
+        return applyMethodsToSelf<Transaction>(func);
     }, [](auto && docstring) {
         return std::forward<decltype(docstring)>(docstring);
     });
