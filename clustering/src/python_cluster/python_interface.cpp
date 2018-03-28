@@ -40,15 +40,15 @@ namespace pybind11 { namespace detail {
 
 uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
     uint64_t total = 0;
-    for (auto tx : block) {
+    RANGES_FOR(auto tx, block) {
         std::set<uint32_t> inputClusters;
-        for (auto input : tx.inputs()) {
+        RANGES_FOR(auto input, tx.inputs()) {
             auto cluster = manager.getCluster(input.getAddress());
             if (cluster.getSize() < 30000) {
                 inputClusters.insert(cluster.clusterNum);
             }
         }
-        for (auto output : tx.outputs()) {
+        RANGES_FOR(auto output, tx.outputs()) {
             if ((!output.isSpent() || output.getSpendingTx()->blockHeight - block.height() > 3) && inputClusters.find(manager.getCluster(output.getAddress()).clusterNum) == inputClusters.end()) {
                 total += output.getValue();
             }
