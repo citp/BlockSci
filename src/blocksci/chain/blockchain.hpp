@@ -51,9 +51,9 @@ namespace blocksci {
             std::advance(mid, segmentCount / 2);
             auto handle = std::async(std::launch::async, mapReduceBlocksImp<ResultType, It, MapFunc, ReduceFunc>, begin, mid, mapFunc, reduceFunc);
             ResultType res{};
-            auto ret1 = mapReduceBlocksImp<ResultType>(mid, end, mapFunc, reduceFunc);
+            auto ret2 = mapReduceBlocksImp<ResultType>(mid, end, mapFunc, reduceFunc);
+            auto ret1 = handle.get();
             res = reduceFunc(res, ret1);
-            auto ret2 = handle.get();
             res = reduceFunc(res, ret2);
             return res;
         }
