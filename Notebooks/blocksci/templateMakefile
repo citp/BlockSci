@@ -4,7 +4,6 @@ project(${module_name})
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
-#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG")
 
 # use, i.e. don't skip the full RPATH for the build tree
 SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
@@ -27,15 +26,9 @@ ENDIF("${isSystemDir}" STREQUAL "-1")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-find_package( Boost COMPONENTS program_options system filesystem thread iostreams REQUIRED )
+find_package(BlockSci REQUIRED)
 
-include_directories( ${Boost_INCLUDE_DIR} )
-include_directories ("/home/ubuntu/BlockSci/libs/range-v3/include")
-
-link_directories(${Boost_LIBRARY_DIR})
-link_directories(/usr/local/lib)
-
-add_subdirectory(/home/ubuntu/BlockSci/libs/pybind11 ${CMAKE_CURRENT_BINARY_DIR}/pybind11)
+add_subdirectory(${python_blocksci_dir}/pybind11 ${CMAKE_CURRENT_BINARY_DIR}/pybind11)
 
 file(GLOB PYTHON_CLUSTER_SOURCES "*.cpp")
 

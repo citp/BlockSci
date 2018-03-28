@@ -83,7 +83,7 @@ std::vector<uint32_t> ClusterManager::getClusterSizes() const {
     return clusterSizes;
 }
 
-boost::iterator_range<const blocksci::DedupAddress *> ClusterManager::getClusterScripts(uint32_t clusterNum) const {
+ranges::iterator_range<const blocksci::DedupAddress *> ClusterManager::getClusterScripts(uint32_t clusterNum) const {
     auto nextClusterOffset = *clusterOffsetFile.getData(clusterNum);
     uint32_t clusterOffset = 0;
     if (clusterNum > 0) {
@@ -93,5 +93,5 @@ boost::iterator_range<const blocksci::DedupAddress *> ClusterManager::getCluster
     
     auto firstAddressOffset = clusterScriptsFile.getData(clusterOffset);
     
-    return boost::make_iterator_range_n(firstAddressOffset, clusterSize);
+    return ranges::make_iterator_range(firstAddressOffset, firstAddressOffset + clusterSize);
 }

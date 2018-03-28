@@ -13,9 +13,6 @@
 #include <blocksci/index/address_index.hpp>
 #include <blocksci/chain/inout_pointer.hpp>
 
-#include <boost/range/adaptor/filtered.hpp>
-#include <boost/range/algorithm/copy.hpp>
-
 #include "cluster_manager.hpp"
 
 std::vector<blocksci::Address> Cluster::getAddresses() const {

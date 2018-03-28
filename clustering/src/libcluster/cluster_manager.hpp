@@ -54,7 +54,7 @@ class ClusterManager {
     template<blocksci::DedupAddressType::Enum type>
     friend struct ClusterNumFunctor;
 
-    boost::iterator_range<const blocksci::DedupAddress *> getClusterScripts(uint32_t clusterNum) const;
+    ranges::iterator_range<const blocksci::DedupAddress *> getClusterScripts(uint32_t clusterNum) const;
 
     template<blocksci::DedupAddressType::Enum type>
     uint32_t getClusterNumImpl(uint32_t scriptNum) const {

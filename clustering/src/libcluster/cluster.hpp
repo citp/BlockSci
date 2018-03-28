@@ -10,7 +10,6 @@
 #define cluster_hpp
 
 #include <blocksci/address/address.hpp>
-#include <boost/range/iterator_range.hpp>
 
 #include <vector>
 #include <unordered_map>

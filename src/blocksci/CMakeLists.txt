@@ -1,5 +1,8 @@
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native")
 
+find_package( Boost 1.58 COMPONENTS system filesystem thread iostreams serialization REQUIRED )
+find_package(OpenSSL REQUIRED)
+
 file(GLOB BLOCKSCI_HEADERS "*.hpp")
 file(GLOB BLOCKSCI_SOURCES "*.cpp")
 file(GLOB ADDRESS_HEADERS "address/*.hpp")
@@ -20,6 +23,9 @@ set(ALL_SOURCES ${BLOCKSCI_HEADERS} ${BLOCKSCI_SOURCES} ${ADDRESS_HEADERS} ${ADD
 add_library(blocksci SHARED ${ALL_SOURCES})
 add_library(blocksci_static STATIC ${ALL_SOURCES})
 
+set_property(TARGET blocksci PROPERTY VERSION ${Upstream_VERSION})
+set_property(TARGET blocksci_static PROPERTY VERSION ${Upstream_VERSION})
+
 set_property(TARGET blocksci_static PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 if( supported )
@@ -37,30 +43,36 @@ source_group(blocksci\\util FILES ${UTIL_HEADERS} ${UTIL_SOURCES})
 source_group(blocksci\\heuristics FILES ${HEURISTICS_HEADERS} ${HEURISTICS_SOURCES})
 source_group(blocksci FILES ${BLOCKSCI_HEADERS} ${BLOCKSCI_SOURCES})
 
+
 target_link_libraries( blocksci Threads::Threads)
-target_link_libraries( blocksci boost )
+target_link_libraries( blocksci ${Boost_LIBRARIES})
 target_link_libraries( blocksci secp256k1)
-target_link_libraries( blocksci openssl )
+target_link_libraries( blocksci OpenSSL::Crypto )
 target_link_libraries( blocksci rocksdb )
-target_link_libraries( blocksci mpark_variant Ranges type_safe)
+target_link_libraries( blocksci blocksci_mpark_variant blocksci_ranges)
 
 SET_TARGET_PROPERTIES(blocksci_static PROPERTIES OUTPUT_NAME blocksci)
 
 TARGET_LINK_LIBRARIES(blocksci_static
                         Threads::Threads
-                        boost
+                        ${Boost_LIBRARIES}
                         secp256k1
-                        openssl
+                        OpenSSL::Crypto
                         rocksdb
-                        mpark_variant Ranges type_safe
+                        blocksci_mpark_variant blocksci_ranges
                         )
 
-target_include_directories(blocksci PUBLIC BEFORE
+
+
+target_include_directories(blocksci INTERFACE ${Boost_INCLUDE_DIR})
+target_include_directories(blocksci_static INTERFACE ${Boost_INCLUDE_DIR})
+
+target_include_directories(blocksci PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<INSTALL_INTERFACE:include/blocksci>
 )
 
-target_include_directories(blocksci_static PUBLIC BEFORE
+target_include_directories(blocksci_static PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<INSTALL_INTERFACE:include/blocksci>
 )
@@ -71,16 +83,42 @@ SET_TARGET_PROPERTIES(blocksci blocksci_static PROPERTIES
     VERSION "${VERSION_STRING}"
     SOVERSION "${SO_VERSION}")
 
-INSTALL(TARGETS blocksci blocksci_static
-            LIBRARY DESTINATION lib
-            ARCHIVE DESTINATION lib)
+set(INCLUDE_INSTALL_DIR include/blocksci )
+set(LIB_INSTALL_DIR lib/ )
+set(SYSCONFIG_INSTALL_DIR etc/blocksci/ . )
+
+include(CMakePackageConfigHelpers)
+
+INSTALL(TARGETS blocksci EXPORT blocksci-targets LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+INSTALL(TARGETS blocksci_static EXPORT blocksci_static LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+
+export(EXPORT blocksci-targets
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/blocksci-targets.cmake"
+)
+
+set(ConfigPackageLocation "${LIB_INSTALL_DIR}/cmake/blocksci")
+
+configure_package_config_file(blocksci-config.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/blocksci-config.cmake
+  INSTALL_DESTINATION "${ConfigPackageLocation}"
+  PATH_VARS INCLUDE_INSTALL_DIR SYSCONFIG_INSTALL_DIR)
+
+#install (EXPORT  DESTINATION ${CMAKE_CONFIG_DEST}/blocksci-config.cmake)
+install (EXPORT blocksci-targets FILE blocksci-targets.cmake DESTINATION ${ConfigPackageLocation} )
+
+install(
+  FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/blocksci-config.cmake"
+  DESTINATION
+    ${ConfigPackageLocation}
+  COMPONENT
+    Devel
+)
+
 install(FILES ${BLOCKSCI_HEADERS} DESTINATION include/blocksci)
 install(FILES ${ADDRESS_HEADERS} DESTINATION include/blocksci/address)
 install(FILES ${SCRIPT_HEADERS} DESTINATION include/blocksci/scripts)
 install(FILES ${UTIL_HEADERS} DESTINATION include/blocksci/util)
-install(FILES ${INDEX_SOURCES} DESTINATION include/blocksci/index)
+install(FILES ${INDEX_HEADERS} DESTINATION include/blocksci/index)
 install(FILES ${CHAIN_HEADERS} DESTINATION include/blocksci/chain)
 install(FILES ${HEURISTICS_HEADERS} DESTINATION include/blocksci/heuristics)
-
-
-

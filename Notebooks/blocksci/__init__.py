@@ -183,7 +183,6 @@ class DummyClass:
     pass
 
 loaderDirectory = os.path.dirname(os.path.abspath(inspect.getsourcefile(DummyClass)))
-
 def get_miner(block):
     global first_miner_run
     global tagged_addresses
@@ -262,7 +261,12 @@ class CPP(object):
         import os
         filein = open(loaderDirectory + '/templateMakefile')
         template = Template(filein.read())
-        subs = {"module_name" : module_name, "install_location" : self.module_directory.name, "srcname" : module_name + ".cpp", "loaderDirectory":loaderDirectory}
+        subs = {
+            "module_name" : module_name,
+            "install_location" : self.module_directory.name,
+            "srcname" : module_name + ".cpp",
+            "python_blocksci_dir":loaderDirectory
+        }
         return template.safe_substitute(subs)
 
     def build_function(self, full_code, makefile, module_name):
@@ -271,7 +275,11 @@ class CPP(object):
             f.write(full_code)
         with open(builddir.name + '/CMakeLists.txt', 'w') as f:
             f.write(makefile)
-        process = subprocess.Popen(["cmake", "."], cwd=builddir.name, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if sys.platform == "darwin":
+            process_params = ["cmake", "-DOPENSSL_ROOT_DIR=/usr/local/opt/openssl", "."]
+        else:
+            process_params = ["cmake", "."]
+        process = subprocess.Popen(process_params, cwd=builddir.name, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         print(err.decode('utf8'))
         process = subprocess.Popen(["make"], cwd=builddir.name, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

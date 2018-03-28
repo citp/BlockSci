@@ -4,6 +4,8 @@ project(blocksci)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_MACOSX_RPATH 1)
 
+set(Upstream_VERSION 0.5.0)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
 
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-old-style-cast -Wno-documentation-unknown-command -Wno-documentation -Wno-shadow -Wno-switch-enum -Wno-missing-prototypes -Wno-weak-vtables -Wno-exit-time-destructors -Wno-unused-macros -Wno-padded -Wno-undefined-func-template")
@@ -34,18 +36,24 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-find_package( Boost 1.58 COMPONENTS system filesystem thread iostreams serialization REQUIRED )
-add_library(boost INTERFACE)
-target_link_libraries(boost INTERFACE ${Boost_LIBRARIES})
-target_include_directories(boost INTERFACE SYSTEM ${Boost_INCLUDE_DIR})
+add_library(blocksci_ranges INTERFACE)
+target_include_directories(blocksci_ranges INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libs/range-v3/include>
+  $<INSTALL_INTERFACE:include/blocksci/libs>
+)
+INSTALL(TARGETS blocksci_ranges EXPORT blocksci-targets)
 
-find_package(OpenSSL REQUIRED)
-add_library(openssl INTERFACE)
-target_link_libraries(openssl INTERFACE ${OPENSSL_LIBRARIES})
-target_include_directories(openssl INTERFACE SYSTEM ${OPENSSL_INCLUDE_DIR})
+add_library(blocksci_mpark_variant INTERFACE)
+target_include_directories(blocksci_mpark_variant INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libs/variant/include>
+  $<INSTALL_INTERFACE:include/blocksci/libs>
+)
+INSTALL(TARGETS blocksci_mpark_variant EXPORT blocksci-targets)
 
-add_library(Ranges INTERFACE)
-target_include_directories(Ranges INTERFACE SYSTEM libs/range-v3/include)
+
+install(DIRECTORY libs/range-v3/include/ DESTINATION include/blocksci/libs FILES_MATCHING PATTERN "*.hpp")
+install(DIRECTORY libs/variant/include/ DESTINATION include/blocksci/libs FILES_MATCHING PATTERN "*.hpp")
+install(DIRECTORY libs/pybind11 DESTINATION ${CMAKE_SOURCE_DIR}/Notebooks/blocksci)
 
 add_library(clipp INTERFACE)
 target_include_directories(clipp INTERFACE SYSTEM libs/clipp/include)
@@ -53,15 +61,16 @@ target_include_directories(clipp INTERFACE SYSTEM libs/clipp/include)
 link_directories(/usr/local/lib)
 include_directories("src")
 
-set(PYBIND11_INSTALL true)
 add_subdirectory(libs/pybind11)
-
-add_subdirectory(libs/variant)
-
-add_subdirectory(libs/type_safe)
 
 add_subdirectory(src/blocksci)
 add_subdirectory(src/parser)
 add_subdirectory(src/mempool_recorder)
 add_subdirectory(src/python-interface)
 add_subdirectory(src/example)
+
+include( CMakePackageConfigHelpers )
+set(CONFIG_PACKAGE_INSTALL_DIR lib/cmake/blocksci)
+
+#install(EXPORT blocksci_ranges DESTINATION ${CONFIG_PACKAGE_INSTALL_DIR})
+#install(EXPORT blocksci-targets FILE blocksci-config.cmake DESTINATION ${CONFIG_PACKAGE_INSTALL_DIR})
