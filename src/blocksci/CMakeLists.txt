@@ -44,8 +44,9 @@ source_group(blocksci\\heuristics FILES ${HEURISTICS_HEADERS} ${HEURISTICS_SOURC
 source_group(blocksci FILES ${BLOCKSCI_HEADERS} ${BLOCKSCI_SOURCES})
 
 
+
 target_link_libraries( blocksci Threads::Threads)
-target_link_libraries( blocksci ${Boost_LIBRARIES})
+target_link_libraries( blocksci Boost::system Boost::filesystem Boost::thread Boost::iostreams Boost::serialization)
 target_link_libraries( blocksci secp256k1)
 target_link_libraries( blocksci OpenSSL::Crypto )
 target_link_libraries( blocksci rocksdb )
@@ -55,17 +56,12 @@ SET_TARGET_PROPERTIES(blocksci_static PROPERTIES OUTPUT_NAME blocksci)
 
 TARGET_LINK_LIBRARIES(blocksci_static
                         Threads::Threads
-                        ${Boost_LIBRARIES}
+                        Boost::system Boost::filesystem Boost::thread Boost::iostreams Boost::serialization
                         secp256k1
                         OpenSSL::Crypto
                         rocksdb
                         blocksci_mpark_variant blocksci_ranges
                         )
-
-
-
-target_include_directories(blocksci INTERFACE ${Boost_INCLUDE_DIR})
-target_include_directories(blocksci_static INTERFACE ${Boost_INCLUDE_DIR})
 
 target_include_directories(blocksci PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

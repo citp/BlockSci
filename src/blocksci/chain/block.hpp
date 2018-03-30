@@ -117,6 +117,10 @@ namespace blocksci {
         bool operator!=(const Block &other) const {
             return !(*rawBlock == *other.rawBlock);
         }
+        
+        uint256 getHash() const {
+            return rawBlock->hash;
+        }
 
         auto allInputs() const {
             return *this | ranges::view::transform([](const Transaction &tx) { return tx.inputs(); }) | ranges::view::join;
