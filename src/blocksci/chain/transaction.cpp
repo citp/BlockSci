@@ -34,7 +34,7 @@ namespace blocksci {
     }
     
     Block Transaction::block() const {
-        return Block(blockHeight, *access);
+        return {blockHeight, *access};
     }
     
     std::string Transaction::toString() const {
@@ -44,7 +44,7 @@ namespace blocksci {
     }
     
     
-    uint32_t getTxIndex(uint256 hash, HashIndex &index) {
+    uint32_t getTxIndex(const uint256 &hash, HashIndex &index) {
         auto txIndex = index.getTxIndex(hash);
         if (txIndex == 0) {
             throw InvalidHashException();
@@ -52,14 +52,14 @@ namespace blocksci {
         return txIndex;
     }
     
-    Transaction::Transaction(uint256 hash, const DataAccess &access) : Transaction(getTxIndex(hash, *access.hashIndex), access) {}
+    Transaction::Transaction(const uint256 &hash, const DataAccess &access) : Transaction(getTxIndex(hash, *access.hashIndex), access) {}
     
-    Transaction::Transaction(std::string hash, const DataAccess &access) : Transaction(uint256S(hash), access) {}
+    Transaction::Transaction(const std::string &hash, const DataAccess &access) : Transaction(uint256S(hash), access) {}
     
     std::vector<OutputPointer> Transaction::getOutputPointers(const InputPointer &pointer) const {
         std::vector<OutputPointer> pointers;
         auto input = Input(pointer, *access);
-        auto search = Inout{pointer.txNum, input.getAddress(), input.getValue()};
+        auto search = Inout{pointer.txNum, RawAddress{input.getAddress()}, input.getValue()};
         uint16_t i = 0;
         for (auto output : outputs()) {
             if (output == search) {
@@ -73,7 +73,7 @@ namespace blocksci {
     std::vector<InputPointer> Transaction::getInputPointers(const OutputPointer &pointer) const {
         std::vector<InputPointer> pointers;
         auto output = Output(pointer, *access);
-        auto search = Inout{pointer.txNum, output.getAddress(), output.getValue()};
+        auto search = Inout{pointer.txNum, RawAddress{output.getAddress()}, output.getValue()};
         uint16_t i = 0;
         for (auto input : inputs()) {
             if (input == search) {

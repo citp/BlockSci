@@ -18,9 +18,9 @@ namespace blocksci {
     }
     
     void TransactionRange::prev() {
-        currentTxIndex--;
+        --currentTxIndex;
         if (currentTxIndex == prevBlockLast) {
-            blockNum--;
+            --blockNum;
             updateNextBlock();
         }
         currentTxPos = reinterpret_cast<const char *>(access->chain->getTx(currentTxIndex));
@@ -41,11 +41,11 @@ namespace blocksci {
         currentTxPos += sizeof(RawTransaction) +
         static_cast<size_t>(tx->inputCount) * sizeof(Inout) +
         static_cast<size_t>(tx->outputCount) * sizeof(Inout);
-        currentTxIndex++;
+        ++currentTxIndex;
     }
     
     void RawTransactionRange::prev() {
-        currentTxIndex--;
+        --currentTxIndex;
         currentTxPos = reinterpret_cast<const char *>(access->chain->getTx(currentTxIndex));
     }
     

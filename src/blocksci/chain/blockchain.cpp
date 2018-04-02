@@ -46,13 +46,13 @@ namespace blocksci {
             auto endIt = std::lower_bound(it, chainEnd, (*it).firstTxIndex() + segmentSize, [](const Block &block, uint32_t txNum) {
                 return block.firstTxIndex() < txNum;
             });
-            segments.push_back(std::vector<Block>(it, endIt));
+            segments.emplace_back(it, endIt);
             it = endIt;
         }
         if (segments.size() == segmentCount) {
             segments.back().insert(segments.back().end(), it, chainEnd);
         } else {
-            segments.push_back(std::vector<Block>(it, chainEnd));
+            segments.emplace_back(it, chainEnd);
         }
         return segments;
     }
@@ -103,14 +103,8 @@ namespace blocksci {
     
     ScriptRangeVariant Blockchain::scripts(AddressType::Enum type) const {
         static auto table = make_static_table<AddressType, ScriptRangeFunctor>(*this);
-        static constexpr std::size_t size = AddressType::all.size();
-        
         auto index = static_cast<size_t>(type);
-        if (index >= size)
-        {
-            throw std::invalid_argument("combination of enum values is not valid");
-        }
-        return table[index];
+        return table.at(index);
     }
     
     uint32_t txCount(const Blockchain &chain) {
@@ -119,7 +113,7 @@ namespace blocksci {
     }
     
     std::vector<Block> filter(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, std::function<bool(const Block &tx)> testFunc)  {
-        auto mapFunc = [&chain, &testFunc](const std::vector<Block> &segment) -> std::vector<Block> {
+        auto mapFunc = [&testFunc](const std::vector<Block> &segment) -> std::vector<Block> {
             return segment | ranges::view::filter(testFunc) | ranges::to_vector;
         };
         
@@ -133,7 +127,7 @@ namespace blocksci {
     }
     
     std::vector<Transaction> filter(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, std::function<bool(const Transaction &tx)> testFunc)  {
-        auto mapFunc = [&chain, &testFunc](const std::vector<Block> &segment) -> std::vector<Transaction> {
+        auto mapFunc = [&testFunc](const std::vector<Block> &segment) -> std::vector<Transaction> {
             std::vector<Transaction> txes;
             for (auto &block : segment) {
                 txes |= ranges::action::push_back(block | ranges::view::filter(testFunc));

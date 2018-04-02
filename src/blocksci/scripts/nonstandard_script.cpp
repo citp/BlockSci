@@ -14,7 +14,8 @@
 #include <blocksci/util/data_access.hpp>
 
 namespace blocksci {
-    using namespace script;
+    using script::Nonstandard;
+    
     Nonstandard::ScriptAddress(uint32_t scriptNum_, std::tuple<const NonstandardScriptData *, const NonstandardSpendScriptData *> &&rawData, const DataAccess &access) : ScriptBase(scriptNum_, addressType, access), rawData(std::get<0>(rawData)), rawInputData(std::get<1>(rawData)) {}
     
     Nonstandard::ScriptAddress(uint32_t addressNum, const DataAccess &access) : Nonstandard(addressNum, access.scripts->getScriptData<addressType>(addressNum), access) {}

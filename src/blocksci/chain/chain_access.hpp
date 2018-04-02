@@ -40,11 +40,11 @@ namespace blocksci {
         FixedSizeFileMapper<uint256> txHashesFile;
         
         uint256 lastBlockHash;
-        const uint256 *lastBlockHashDisk;
-        BlockHeight maxHeight;
-        uint32_t _maxLoadedTx;
-        BlockHeight blocksIgnored;
-        bool errorOnReorg;
+        const uint256 *lastBlockHashDisk = nullptr;
+        BlockHeight maxHeight = 0;
+        uint32_t _maxLoadedTx = 0;
+        BlockHeight blocksIgnored = 0;
+        bool errorOnReorg = false;
         
         void reorgCheck() const {
             if (errorOnReorg && lastBlockHash != *lastBlockHashDisk) {
@@ -55,7 +55,7 @@ namespace blocksci {
         void setup();
         
     public:
-        ChainAccess(const DataConfiguration &config);
+        explicit ChainAccess(const DataConfiguration &config);
         
         uint32_t maxLoadedTx() const {
             return _maxLoadedTx;

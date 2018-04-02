@@ -21,15 +21,15 @@
 namespace blocksci {
     
     Transaction Output::transaction() const {
-        return Transaction(pointer.txNum, blockHeight, *access);
+        return {pointer.txNum, blockHeight, *access};
     }
     
     Address Output::getAddress() const {
-        return Address(inout->toAddressNum, inout->getType(), *access);
+        return {inout->toAddressNum, inout->getType(), *access};
     }
     
     Block Output::block() const {
-        return Block(blockHeight, *access);
+        return {blockHeight, *access};
     }
     
     std::string Output::toString() const {

@@ -24,8 +24,8 @@ namespace blocksci {
     class EquivAddress;
     
     class AddressIndex {
-        rocksdb::DB *db;
-        std::vector<rocksdb::ColumnFamilyHandle *> columnHandles;
+        std::unique_ptr<rocksdb::DB> db;
+        std::vector<std::unique_ptr<rocksdb::ColumnFamilyHandle>> columnHandles;
         
         std::unordered_set<Address> getPossibleNestedEquivalentUp(const Address &address) const;
         std::unordered_set<Address> getPossibleNestedEquivalentDown(const Address &address) const;
@@ -33,7 +33,6 @@ namespace blocksci {
     public:
         
         AddressIndex(const std::string &path, bool readonly);
-        ~AddressIndex();
 
         bool checkIfExists(const Address &address) const;
         std::vector<OutputPointer> getOutputPointers(const Address &address) const;
@@ -43,15 +42,15 @@ namespace blocksci {
         void addAddressNested(const blocksci::Address &childAddress, const blocksci::DedupAddress &parentAddress);
         void addAddressOutput(const blocksci::Address &address, const blocksci::OutputPointer &pointer);
         
-        rocksdb::ColumnFamilyHandle *getOutputColumn(AddressType::Enum type) const;
-        rocksdb::ColumnFamilyHandle *getNestedColumn(AddressType::Enum type) const;
+        const std::unique_ptr<rocksdb::ColumnFamilyHandle> &getOutputColumn(AddressType::Enum type) const;
+        const std::unique_ptr<rocksdb::ColumnFamilyHandle> &getNestedColumn(AddressType::Enum type) const;
         
-        rocksdb::Iterator* getOutputIterator(AddressType::Enum type) {
-            return db->NewIterator(rocksdb::ReadOptions(), getOutputColumn(type));
+       std::unique_ptr<rocksdb::Iterator> getOutputIterator(AddressType::Enum type) const {
+           return std::unique_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), getOutputColumn(type).get())};
         }
         
-        rocksdb::Iterator* getNestedIterator(AddressType::Enum type) {
-            return db->NewIterator(rocksdb::ReadOptions(), getNestedColumn(type));
+        std::unique_ptr<rocksdb::Iterator> getNestedIterator(AddressType::Enum type) const {
+            return std::unique_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), getNestedColumn(type).get())};
         }
         
         void writeBatch(rocksdb::WriteBatch &batch) {
@@ -59,8 +58,8 @@ namespace blocksci {
         }
         
         void compactDB() {
-            for (auto column : columnHandles) {
-                db->CompactRange(rocksdb::CompactRangeOptions{}, column, nullptr, nullptr);
+            for (auto &column : columnHandles) {
+                db->CompactRange(rocksdb::CompactRangeOptions{}, column.get(), nullptr, nullptr);
             }
         }
     };

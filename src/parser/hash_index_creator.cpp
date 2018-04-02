@@ -56,7 +56,7 @@ void HashIndexCreator::processTx(const blocksci::Transaction &tx) {
 
 void HashIndexCreator::rollback(const blocksci::State &state) {
     {
-        auto column = db.getColumn(blocksci::AddressType::WITNESS_SCRIPTHASH);
+        auto &column = db.getColumn(blocksci::AddressType::WITNESS_SCRIPTHASH);
         rocksdb::WriteBatch batch;
         auto it = db.getIterator(blocksci::AddressType::WITNESS_SCRIPTHASH);
         for (it->SeekToFirst(); it->Valid(); it->Next()) {
@@ -64,11 +64,10 @@ void HashIndexCreator::rollback(const blocksci::State &state) {
             memcpy(&destNum, it->value().data(), sizeof(destNum));
             auto count = state.scriptCounts[static_cast<size_t>(blocksci::DedupAddressType::SCRIPTHASH)];
             if (destNum >= count) {
-                batch.Delete(column, it->key());
+                batch.Delete(column.get(), it->key());
             }
         }
         assert(it->status().ok());
-        delete it;
         db.writeBatch(batch);
     }
     
@@ -82,6 +81,5 @@ void HashIndexCreator::rollback(const blocksci::State &state) {
             }
         }
         assert(it->status().ok()); // Check for any errors found during the scan
-        delete it;
     }
 }

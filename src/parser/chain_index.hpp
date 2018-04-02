@@ -16,6 +16,8 @@
 #include <blocksci/chain/chain_fwd.hpp>
 
 #include <boost/serialization/base_object.hpp>
+#include <boost/serialization/unordered_map.hpp>
+#include <boost/serialization/vector.hpp>
 
 #include <unordered_map>
 #include <algorithm>
@@ -169,7 +171,7 @@ struct ChainIndex {
         
         auto maxSize = std::min(static_cast<blocksci::BlockHeight>(oldBlocks.size()), blockHeight);
         auto splitPoint = maxSize;
-        for (blocksci::BlockHeight i{0}; i < maxSize; i++) {
+        for (blocksci::BlockHeight i{0}; i < maxSize; ++i) {
             blocksci::uint256 oldHash = oldBlocks[static_cast<size_t>(static_cast<int>(maxSize - 1 - i))].hash;
             blocksci::uint256 newHash = getBlockHash(maxSize - 1 - i);
             if (oldHash == newHash) {
@@ -182,7 +184,12 @@ struct ChainIndex {
     
 private:
     friend class boost::serialization::access;
-    template<class Archive> void serialize(Archive & ar, const unsigned int);
+    
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int) {
+        ar & blockList;
+        ar & newestBlock;
+    }
     
     int updateHeight(size_t blockNum, const std::unordered_map<blocksci::uint256, size_t> &indexMap);
 };

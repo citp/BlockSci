@@ -62,7 +62,7 @@ namespace heuristics {
         uint64_t currentValue;
         uint64_t goalValue;
         
-        OutputBucket(uint64_t goal) : currentValue(0), goalValue(goal) {}
+        explicit OutputBucket(uint64_t goal) : currentValue(0), goalValue(goal) {}
         
         bool isFull() const {
             return currentValue >= goalValue;

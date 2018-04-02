@@ -19,9 +19,9 @@ inline void hash_combine(std::size_t& seed, const T& v) {
 
 blocksci::uint256 sha256(const uint8_t *data, size_t len);
 blocksci::uint256 sha256(const unsigned char *begin, const unsigned char *end);
-blocksci::uint256 doubleSha256(const char *data, unsigned long len);
-blocksci::uint160 ripemd160(const char *data, unsigned long len);
-blocksci::uint160 hash160(const void *data, unsigned long len);
+blocksci::uint256 doubleSha256(const char *data, uint64_t len);
+blocksci::uint160 ripemd160(const char *data, uint64_t len);
+blocksci::uint160 hash160(const void *data, uint64_t len);
 
 bool base58_sha256(void *digest, const void *data, size_t datasz);
 

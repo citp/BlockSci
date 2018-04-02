@@ -28,20 +28,18 @@ using SequenceNum = uint32_t;
 using Value = uint64_t;
 using Locktime = uint32_t;
 
-std::vector<unsigned char> hexStringToVec(const std::string scripthex);
-
-std::vector<unsigned char> hexStringToVec(const std::string scripthex) {
+std::vector<unsigned char> hexStringToVec(const std::string &scripthex) {
     std::vector<unsigned char> scriptBytes;
     for (unsigned int i = 0; i < scripthex.size(); i += 2) {
         std::string byteString = scripthex.substr(i, 2);
-        unsigned char byte = static_cast<unsigned char>(strtol(byteString.c_str(), NULL, 16));
+        auto byte = static_cast<unsigned char>(strtol(byteString.c_str(), nullptr, 16));
         scriptBytes.push_back(byte);
     }
     return scriptBytes;
 }
 
 #ifdef BLOCKSCI_FILE_PARSER
-RawInput::RawInput(SafeMemReader &reader) {
+RawInput::RawInput(SafeMemReader &reader) : utxo{} {
     rawOutputPointer.hash = reader.readNext<blocksci::uint256>();
     rawOutputPointer.outputNum = static_cast<uint16_t>(reader.readNext<uint32_t>());
     scriptLength = reader.readVariableLengthInteger();
@@ -181,7 +179,7 @@ RawInput::RawInput(const vin_t &vin) {
     scriptLength = 0;
 }
 
-RawOutput::RawOutput(std::vector<unsigned char> scriptBytes_, uint64_t value_) : scriptLength(0), scriptBytes(std::move(scriptBytes_)), value(value_)  {
+RawOutput::RawOutput(std::vector<unsigned char> scriptBytes_, uint64_t value_) : scriptBytes(std::move(scriptBytes_)), value(value_)  {
 }
 
 RawOutput::RawOutput(const vout_t &vout) : RawOutput(hexStringToVec(vout.scriptPubKey.hex), static_cast<uint64_t>(vout.value * 100000000)) {}
@@ -222,7 +220,7 @@ blocksci::OutputPointer RawInput::getOutputPointer() const {
 struct Serializer {
     SHA256_CTX sha256;
     
-    Serializer() {
+    Serializer() : sha256{} {
         SHA256_Init(&sha256);
     }
     
@@ -238,10 +236,10 @@ struct Serializer {
     void serializeCompact(uint64_t t) {
         if (t < 253) {
             serialize(static_cast<uint8_t>(t));
-        } else if (t <= std::numeric_limits<unsigned short>::max()) {
+        } else if (t <= std::numeric_limits<uint16_t>::max()) {
             serialize(uint8_t{253});
             serialize(static_cast<uint16_t>(t));
-        } else if (t <= std::numeric_limits<unsigned int>::max()) {
+        } else if (t <= std::numeric_limits<uint32_t>::max()) {
             serialize(uint8_t{254});
             serialize(static_cast<uint32_t>(t));
         } else {
@@ -295,8 +293,9 @@ blocksci::uint256 RawTransaction::getHash(const InputView &info, const blocksci:
             blocksci::opcodetype opcode;
             unsigned int nCodeSeparators = 0;
             while (scriptView.GetOp(it, opcode)) {
-                if (opcode == blocksci::OP_CODESEPARATOR)
+                if (opcode == blocksci::OP_CODESEPARATOR) {
                     nCodeSeparators++;
+                }
             }
             s.serializeCompact(scriptView.size() - nCodeSeparators);
             it = itBegin;
@@ -321,9 +320,9 @@ blocksci::uint256 RawTransaction::getHash(const InputView &info, const blocksci:
     size_t nOutputs = hashNone ? 0 : (hashSingle ? info.inputNum+1 : outputs.size());
     s.serializeCompact(nOutputs);
     for (unsigned int nOutput = 0; nOutput < nOutputs; nOutput++) {
-        int64_t value = static_cast<int64_t>(outputs[nOutput].value);
+        auto value = static_cast<int64_t>(outputs[nOutput].value);
         auto script = outputs[nOutput].getScriptView();
-        uint32_t scriptLength = static_cast<uint32_t>(script.size());
+        auto scriptLength = static_cast<uint32_t>(script.size());
         if (hashSingle && nOutput != info.inputNum) {
             value = -1;
             scriptLength = 0;

@@ -10,9 +10,12 @@
 #include "address_writer.hpp"
 #include <blocksci/scripts/script.hpp>
 
+using blocksci::AddressType;
+using blocksci::DedupAddressType;
+
 AddressWriter::AddressWriter(const ParserConfigurationBase &config) :
 scriptFiles(blocksci::apply(blocksci::DedupAddressInfoList(), [&] (auto tag) {
-    return ScriptFile<tag>(config.scriptsDirectory()/ std::string{dedupAddressName(tag)});
+    return ScriptFile<tag>(config.dataConfig.scriptsDirectory()/ std::string{dedupAddressName(tag)});
 })) {
 }
 
@@ -24,14 +27,12 @@ void AddressWriter::serialize(const AnyScriptInput &input, uint32_t txNum, uint3
     mpark::visit([&](auto &scriptInput) { this->serialize(scriptInput, txNum, outputTxNum); }, input.wrapped);
 }
 
-using namespace blocksci;
-
-void AddressWriter::serializeImp(const ScriptOutput<blocksci::AddressType::PUBKEY> &output, ScriptFile<blocksci::DedupAddressType::PUBKEY> &file) {
+void AddressWriter::serializeImp(const ScriptOutput<AddressType::PUBKEY> &output, ScriptFile<DedupAddressType::PUBKEY> &file) {
     auto data = file.getData(output.scriptNum - 1);
     data->pubkey = output.data.pubkey;
 }
 
-void AddressWriter::serializeImp(const ScriptOutput<blocksci::AddressType::WITNESS_SCRIPTHASH> &output, ScriptFile<blocksci::DedupAddressType::SCRIPTHASH> &file) {
+void AddressWriter::serializeImp(const ScriptOutput<AddressType::WITNESS_SCRIPTHASH> &output, ScriptFile<blocksci::DedupAddressType::SCRIPTHASH> &file) {
     auto data = file.getData(output.scriptNum - 1);
     data->hash256 = output.data.hash;
     data->isSegwit = true;
@@ -68,8 +69,8 @@ void AddressWriter::serializeWrapped(const ScriptInputData<AddressType::Enum::SC
 }
 
 void AddressWriter::serializeImp(const ScriptInput<AddressType::NONSTANDARD> &input, ScriptFile<DedupAddressType::NONSTANDARD> &file) {
-    NonstandardSpendScriptData scriptData(static_cast<uint32_t>(input.data.script.size()));
-    blocksci::ArbitraryLengthData<NonstandardSpendScriptData> data(scriptData);
+    blocksci::NonstandardSpendScriptData scriptData(static_cast<uint32_t>(input.data.script.size()));
+    blocksci::ArbitraryLengthData<blocksci::NonstandardSpendScriptData> data(scriptData);
     data.add(input.data.script.begin(), input.data.script.end());
     file.write<1>(input.scriptNum - 1, data);
 }

@@ -6,10 +6,10 @@
 //
 //
 
-#ifndef config_h
-#define config_h
+#ifndef blocksci_parser_config_h
+#define blocksci_parser_config_h
 
 #define BLOCKSCI_FILE_PARSER
 #define BLOCKSCI_RPC_PARSER
 
-#endif /* config_h */
+#endif /* blocksci_parser_config_h */

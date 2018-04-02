@@ -30,10 +30,6 @@ namespace blocksci {
     std::string dedupAddressName(DedupAddressType::Enum type) {
         static auto table = make_static_table<DedupAddressType, DedupAddressNameFunctor>();
         auto index = static_cast<size_t>(type);
-        if (index >= DedupAddressType::size)
-        {
-            throw std::invalid_argument("combination of enum values is not valid");
-        }
-        return table[index];
+        return table.at(index);
     }
 }

@@ -15,7 +15,7 @@
 #include <blocksci/util/data_access.hpp>
 
 namespace blocksci {
-    using namespace script;
+    using script::Multisig;
     
     Multisig::ScriptAddress(uint32_t addressNum_, const DataAccess &access) : ScriptBase(addressNum_, addressType, access), rawData(access.scripts->getScriptData<addressType>(addressNum_)) {}
     

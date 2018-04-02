@@ -41,9 +41,9 @@ google::dense_hash_map<uint32_t, uint32_t> getMultisigAddressDistribution(Blockc
 
 // std::cout << "Time in secs for " << name << ": " << timeSecs << std::endl;
 template <typename Func, typename... Args>
-auto timeFunc(std::string name, Func func, Args... args) -> decltype(func(args...)) {
+auto timeFunc(const std::string &name, Func func, Args&& ...args) -> decltype(func(args...)) {
     auto begin = std::chrono::steady_clock::now();
-    auto ret = func(args...);
+    auto ret = func(std::forward<Args>(args)...);
     auto endTime = std::chrono::steady_clock::now();
     
     double timeSecs = std::chrono::duration_cast<std::chrono::microseconds>(endTime - begin).count() / 1000000.0;

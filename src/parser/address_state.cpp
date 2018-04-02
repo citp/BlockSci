@@ -18,15 +18,13 @@
 
 #include <iostream>
 
-using namespace blocksci;
-
 namespace {
     static constexpr auto multiAddressFileName = "multi";
     static constexpr auto bloomFileName = "bloom_";
     static constexpr auto scriptCountsFileName = "scriptCounts.txt";
 }
 
-AddressState::AddressState(const boost::filesystem::path &path_, const boost::filesystem::path &hashIndexPath) : path(path_), db(hashIndexPath.native(), false), addressBloomFilters(blocksci::apply(blocksci::DedupAddressInfoList(), [&] (auto tag) {
+AddressState::AddressState(boost::filesystem::path path_, const boost::filesystem::path &hashIndexPath) : path(std::move(path_)), db(hashIndexPath.native(), false), addressBloomFilters(blocksci::apply(blocksci::DedupAddressInfoList(), [&] (auto tag) {
     return AddressBloomFilter<tag>{path/std::string(bloomFileName)};
 }))  {
     blocksci::for_each(multiAddressMaps, [&](auto &multiAddressMap) {
@@ -86,7 +84,7 @@ void AddressState::rollback(const blocksci::State &state) {
     });
     
     blocksci::for_each(blocksci::DedupAddressInfoList(), [&](auto tag) {
-        auto column = db.getColumn(tag);
+        auto &column = db.getColumn(tag);
         rocksdb::WriteBatch batch;
         auto it = db.getIterator(tag);
         for (it->SeekToFirst(); it->Valid(); it->Next()) {
@@ -94,11 +92,10 @@ void AddressState::rollback(const blocksci::State &state) {
             memcpy(&destNum, it->value().data(), sizeof(destNum));
             auto count = state.scriptCounts[static_cast<size_t>(tag)];
             if (destNum >= count) {
-                batch.Delete(column, it->key());
+                batch.Delete(column.get(), it->key());
             }
         }
         assert(it->status().ok());
-        delete it;
         db.writeBatch(batch);
     });
     

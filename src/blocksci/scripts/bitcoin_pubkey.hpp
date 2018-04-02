@@ -31,7 +31,7 @@ namespace blocksci {
     {
     public:
         CKeyID() : uint160() {}
-        CKeyID(const uint160& in) : uint160(in) {}
+        explicit CKeyID(const uint160& in) : uint160(in) {}
     };
     
     typedef uint256 ChainCode;
@@ -89,7 +89,7 @@ namespace blocksci {
         }
         
         //! Construct a public key from a byte vector.
-        CPubKey(const std::vector<unsigned char>& _vch)
+        explicit CPubKey(const std::vector<unsigned char>& _vch)
         {
             Set(_vch.begin(), _vch.end());
         }

@@ -26,11 +26,13 @@ namespace blocksci {
     struct OutputPointer;
 }
 
+std::vector<unsigned char> hexStringToVec(const std::string &scripthex);
+
 class SafeMemReader;
 
 struct WitnessStackItem {
-    uint32_t length;
-    const char *itemBegin;
+    uint32_t length = 0;
+    const char *itemBegin = nullptr;
     
     #ifdef BLOCKSCI_FILE_PARSER
     WitnessStackItem(SafeMemReader &reader);
@@ -39,8 +41,8 @@ struct WitnessStackItem {
 
 struct RawInput {
 private:
-    const unsigned char *scriptBegin;
-    uint32_t scriptLength;
+    const unsigned char *scriptBegin = nullptr;
+    uint32_t scriptLength = 0;
     
     std::vector<unsigned char> scriptBytes;
     
@@ -61,7 +63,7 @@ public:
         }
     }
     
-    RawInput(){}
+    RawInput() : utxo{} {}
     
     #ifdef BLOCKSCI_FILE_PARSER
     RawInput(SafeMemReader &reader);
@@ -74,8 +76,8 @@ public:
 
 struct RawOutput {
 private:
-    const unsigned char *scriptBegin;
-    uint32_t scriptLength;
+    const unsigned char *scriptBegin = nullptr;
+    uint32_t scriptLength = 0;
     
     std::vector<unsigned char> scriptBytes;
 public:
@@ -100,22 +102,22 @@ public:
 };
 
 struct TransactionHeader {
-    int32_t version;
-    uint32_t inputCount;
-    uint32_t outputCount;
-    uint32_t baseSize;
-    uint32_t realSize;
-    uint32_t locktime;
+    int32_t version = 0;
+    uint32_t inputCount = 0;
+    uint32_t outputCount = 0;
+    uint32_t baseSize = 0;
+    uint32_t realSize = 0;
+    uint32_t locktime = 0;
     TransactionHeader(SafeMemReader &reader);
 };
 
 struct RawTransaction {
     uint32_t txNum;
     blocksci::uint256 hash;
-    uint32_t baseSize;
-    uint32_t realSize;
-    uint32_t locktime;
-    int32_t version;
+    uint32_t baseSize = 0;
+    uint32_t realSize = 0;
+    uint32_t locktime = 0;
+    int32_t version = 0;
     blocksci::BlockHeight blockHeight;
     bool isSegwit;
     const char *txHashStart;

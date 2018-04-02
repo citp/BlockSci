@@ -22,19 +22,19 @@
 namespace blocksci {
     
     Transaction Input::transaction() const {
-        return Transaction(pointer.txNum, blockHeight, *access);
+        return {pointer.txNum, blockHeight, *access};
     }
     
     Address Input::getAddress() const {
-        return Address(inout->toAddressNum, inout->getType(), *access);
+        return {inout->toAddressNum, inout->getType(), *access};
     }
     
     Block Input::block() const {
-        return Block(blockHeight, *access);
+        return {blockHeight, *access};
     }
     
     Transaction Input::getSpentTx() const {
-        return Transaction(inout->linkedTxNum, *access);
+        return {inout->linkedTxNum, *access};
     }
     
     std::string Input::toString() const {

@@ -59,11 +59,10 @@ void backUpdateTxes(const ParserConfigurationBase &config);
 
 
 class BlockProcessor {
-    
-    uint32_t startingTxCount;
-    uint32_t currentTxNum;
-    uint32_t totalTxCount;
-    blocksci::BlockHeight maxBlockHeight;
+    uint32_t startingTxCount = 0;
+    uint32_t currentTxNum = 0;
+    uint32_t totalTxCount = 0;
+    blocksci::BlockHeight maxBlockHeight = 0;
 
 public:
     

@@ -19,7 +19,11 @@
 #include <range/v3/utility/optional.hpp>
 
 namespace blocksci {
-    using namespace script;
+    using script::Pubkey;
+    using script::PubkeyHash;
+    using script::MultisigPubkey;
+    using script::WitnessPubkeyHash;
+    using script::Multisig;
     
     PubkeyAddressBase::PubkeyAddressBase(uint32_t scriptNum_, AddressType::Enum type_, const PubkeyData *rawData_, const DataAccess &access) : ScriptBase(scriptNum_, type_, access), rawData(rawData_) {}
     

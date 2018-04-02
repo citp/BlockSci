@@ -55,52 +55,51 @@ namespace blocksci {
         });
         columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions());
         
+        rocksdb::DB *dbPtr;
+        std::vector<rocksdb::ColumnFamilyHandle *> columnHandlePtrs;
         if (readonly) {
-            rocksdb::DB::OpenForReadOnly(options, path.c_str(), columnDescriptors, &columnHandles, &db);
+            rocksdb::Status s = rocksdb::DB::OpenForReadOnly(options, path.c_str(), columnDescriptors, &columnHandlePtrs, &dbPtr);
+            assert(s.ok());
         } else {
-            rocksdb::Status s = rocksdb::DB::Open(options, path.c_str(), columnDescriptors, &columnHandles, &db);
+            rocksdb::Status s = rocksdb::DB::Open(options, path.c_str(), columnDescriptors, &columnHandlePtrs, &dbPtr);
+        }
+        db = std::unique_ptr<rocksdb::DB>(dbPtr);
+        for (auto handle : columnHandlePtrs) {
+            columnHandles.emplace_back(std::unique_ptr<rocksdb::ColumnFamilyHandle>(handle));
         }
     }
     
-    rocksdb::ColumnFamilyHandle *AddressIndex::getOutputColumn(AddressType::Enum type) const {
+    const std::unique_ptr<rocksdb::ColumnFamilyHandle> &AddressIndex::getOutputColumn(AddressType::Enum type) const {
         return columnHandles[static_cast<size_t>(type)];
     }
     
-    rocksdb::ColumnFamilyHandle *AddressIndex::getNestedColumn(AddressType::Enum type) const {
+    const std::unique_ptr<rocksdb::ColumnFamilyHandle> &AddressIndex::getNestedColumn(AddressType::Enum type) const {
         return columnHandles[AddressType::size + static_cast<size_t>(type)];
     }
     
-    AddressIndex::~AddressIndex() {
-        for (auto handle : columnHandles) {
-            delete handle;
-        }
-        delete db;
-    }
-    
     bool AddressIndex::checkIfExists(const Address &address) const {
-        auto column = getOutputColumn(address.type);
         rocksdb::Slice key{reinterpret_cast<const char *>(&address.scriptNum), sizeof(address.scriptNum)};
-        rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
-        it->Seek(key);
-        if (it->Valid() && it->key().starts_with(key)) {
-            return true;
+        {
+            auto it = getOutputIterator(address.type);
+            it->Seek(key);
+            if (it->Valid() && it->key().starts_with(key)) {
+                return true;
+            }
         }
-        delete it;
-        column = getNestedColumn(address.type);
-        it = db->NewIterator(rocksdb::ReadOptions(), column);
-        it->Seek(key);
-        if (it->Valid() && it->key().starts_with(key)) {
-            return true;
+        {
+            auto it = getNestedIterator(address.type);
+            it->Seek(key);
+            if (it->Valid() && it->key().starts_with(key)) {
+                return true;
+            }
         }
-        delete it;
         return false;
     }
     
     std::vector<OutputPointer> AddressIndex::getOutputPointers(const Address &address) const {
-        auto column = getOutputColumn(address.type);
         rocksdb::Slice key{reinterpret_cast<const char *>(&address.scriptNum), sizeof(address.scriptNum)};
         std::vector<OutputPointer> pointers;
-        rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
+        auto it = getOutputIterator(address.type);
         for (it->Seek(key); it->Valid() && it->key().starts_with(key); it->Next()) {
             auto foundKey = it->key();
             foundKey.remove_prefix(sizeof(uint32_t));
@@ -108,7 +107,6 @@ namespace blocksci {
             memcpy(&outPoint, foundKey.data(), sizeof(outPoint));
             pointers.push_back(outPoint);
         }
-        delete it;
         return pointers;
     }
     
@@ -116,18 +114,17 @@ namespace blocksci {
         if (dedupType(searchAddress.type) != DedupAddressType::PUBKEY) {
             return {};
         }
-        auto column = getNestedColumn(AddressType::MULTISIG_PUBKEY);
+        
         rocksdb::Slice key{reinterpret_cast<const char *>(&searchAddress.scriptNum), sizeof(searchAddress.scriptNum)};
         std::vector<Address> addresses;
-        rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
+        auto it = getNestedIterator(AddressType::MULTISIG_PUBKEY);
         for (it->Seek(key); it->Valid() && it->key().starts_with(key); it->Next()) {
             auto foundKey = it->key();
             foundKey.remove_prefix(sizeof(uint32_t));
             DedupAddress rawParent;
             memcpy(&rawParent, foundKey.data(), sizeof(rawParent));
-            addresses.push_back(Address{rawParent.scriptNum, AddressType::MULTISIG, searchAddress.getAccess()});
+            addresses.emplace_back(rawParent.scriptNum, AddressType::MULTISIG, searchAddress.getAccess());
         }
-        delete it;
         return addresses;
     }
     
@@ -167,9 +164,8 @@ namespace blocksci {
         while (addressesToSearch.size() > 0) {
             auto setIt = addressesToSearch.begin();
             auto address = *setIt;
-            auto column = getNestedColumn(address.type);
             rocksdb::Slice key{reinterpret_cast<const char *>(&address.scriptNum), sizeof(address.scriptNum)};
-            rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
+            auto it = getNestedIterator(address.type);
             for (it->Seek(key); it->Valid() && it->key().starts_with(key); it->Next()) {
                 auto foundKey = it->key();
                 foundKey.remove_prefix(sizeof(uint32_t));
@@ -209,8 +205,8 @@ namespace blocksci {
         }};
         std::string sliceStr;
         rocksdb::Slice key{rocksdb::SliceParts{keyParts.data(), keyParts.size()}, &sliceStr};
-        auto nestedColumn = getNestedColumn(childAddress.type);
-        db->Put(rocksdb::WriteOptions{}, nestedColumn, key, rocksdb::Slice{});
+        auto &nestedColumn = getNestedColumn(childAddress.type);
+        db->Put(rocksdb::WriteOptions{}, nestedColumn.get(), key, rocksdb::Slice{});
     }
     
     void AddressIndex::addAddressOutput(const Address &address, const blocksci::OutputPointer &pointer) {
@@ -220,8 +216,8 @@ namespace blocksci {
         }};
         std::string sliceStr;
         rocksdb::Slice key{rocksdb::SliceParts{keyParts.data(), keyParts.size()}, &sliceStr};
-        auto outputColumn = getOutputColumn(address.type);
-        db->Put(rocksdb::WriteOptions{}, outputColumn, key, rocksdb::Slice{});
+        auto &outputColumn = getOutputColumn(address.type);
+        db->Put(rocksdb::WriteOptions{}, outputColumn.get(), key, rocksdb::Slice{});
     }
 }
 

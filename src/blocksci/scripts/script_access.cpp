@@ -29,14 +29,8 @@ namespace blocksci {
     
     uint32_t ScriptAccess::scriptCount(DedupAddressType::Enum type) const {
         static constexpr auto table = make_dynamic_table<DedupAddressType, ScriptCountFunctor>();
-        static constexpr std::size_t size = AddressType::all.size();
-        
         auto index = static_cast<size_t>(type);
-        if (index >= size)
-        {
-            throw std::invalid_argument("combination of enum values is not valid");
-        }
-        return table[index](*this);
+        return table.at(index)(*this);
     }
     
     std::array<uint32_t, DedupAddressType::size> ScriptAccess::scriptCounts() const {

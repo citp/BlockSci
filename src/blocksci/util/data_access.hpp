@@ -26,7 +26,7 @@ namespace blocksci {
         std::unique_ptr<HashIndex> hashIndex;
         
         DataAccess() = default;
-        DataAccess(const DataConfiguration &config);
+        explicit DataAccess(DataConfiguration config);
         
         operator DataConfiguration() const { return config; }
     };

@@ -24,14 +24,14 @@ namespace blocksci {
         uint32_t txFirstSeen;
         uint32_t txFirstSpent;
         
-        ScriptDataBase(uint32_t txNum) : txFirstSeen(txNum), txFirstSpent(std::numeric_limits<uint32_t>::max()) {}
+        explicit ScriptDataBase(uint32_t txNum) : txFirstSeen(txNum), txFirstSpent(std::numeric_limits<uint32_t>::max()) {}
     };
     
     struct PubkeyData : public ScriptDataBase {
         CPubKey pubkey;
         uint160 address;
         
-        PubkeyData(uint32_t txNum, CPubKey pubkey_, uint160 address_) : ScriptDataBase(txNum), pubkey(pubkey_), address(address_) {}
+        PubkeyData(uint32_t txNum, const CPubKey &pubkey_, uint160 address_) : ScriptDataBase(txNum), pubkey(pubkey_), address(address_) {}
         
         size_t size() {
             return sizeof(PubkeyData);
@@ -95,7 +95,7 @@ namespace blocksci {
             return sizeof(NonstandardScriptData) + scriptData.extraSize();
         }
         
-        NonstandardSpendScriptData(uint32_t scriptLength) : scriptData(scriptLength) {}
+        explicit NonstandardSpendScriptData(uint32_t scriptLength) : scriptData(scriptLength) {}
     };
     
     struct RawData : public ScriptDataBase {

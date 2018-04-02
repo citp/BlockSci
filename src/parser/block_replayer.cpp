@@ -55,8 +55,8 @@ void replayBlock(const ParserConfiguration<FileTag> &config, blocksci::BlockHeig
     
     std::vector<unsigned char> coinbase;
     
-    AddressState addressState{config.addressPath(), config.hashIndexFilePath()};
-    blocksci::DataAccess access(config);
+    AddressState addressState{config.addressPath(), config.dataConfig.hashIndexFilePath()};
+    blocksci::DataAccess access(config.dataConfig);
     
     auto realBlock = blocksci::Block(blockNum, access);
     auto segwit = isSegwit(realBlock);
@@ -82,7 +82,6 @@ void replayBlock(const ParserConfiguration<FileTag> &config, blocksci::BlockHeig
             i++;
         }
         
-        i = 0;
         for (auto &output : tx.outputs) {
             tx.scriptOutputs.emplace_back(output.getScriptView(), tx.isSegwit);
         }

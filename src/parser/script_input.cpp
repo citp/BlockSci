@@ -72,7 +72,7 @@ std::pair<AnyScriptOutput, std::unique_ptr<AnyScriptInput>> p2shGenerate(const I
     blocksci::CScriptView wrappedOutputScript(lastScript.begin(), lastScript.end());
     blocksci::CScriptView p2shScriptView{wrappedInputBegin, wrappedInputBegin + wrappedInputLength};
     AnyScriptOutput wrappedScriptOutput(wrappedOutputScript, inputView.witnessActivated);
-    return std::make_pair(wrappedScriptOutput, std::make_unique<AnyScriptInput>(inputView, p2shScriptView, tx, wrappedScriptOutput));
+    return std::make_pair(wrappedScriptOutput, std::make_unique<AnyScriptInput>(inputView, p2shScriptView, tx, AnySpendData{wrappedScriptOutput}));
 }
 
 ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH>::ScriptInputData(std::pair<AnyScriptOutput, std::unique_ptr<AnyScriptInput>> data) : wrappedScriptOutput(data.first), wrappedScriptInput(std::move(data.second)) {}
@@ -174,7 +174,7 @@ std::pair<AnyScriptOutput, std::unique_ptr<AnyScriptInput>> p2shWitnessGenerate(
     auto outputBegin = reinterpret_cast<const unsigned char *>(witnessScriptItem.itemBegin);
     blocksci::CScriptView witnessView(outputBegin, outputBegin + witnessScriptItem.length);
     AnyScriptOutput wrappedScriptOutput(witnessView, inputView.witnessActivated);
-    return std::make_pair(wrappedScriptOutput, std::make_unique<AnyScriptInput>(inputView, scriptView, tx, wrappedScriptOutput));
+    return std::make_pair(wrappedScriptOutput, std::make_unique<AnyScriptInput>(inputView, scriptView, tx, AnySpendData{wrappedScriptOutput}));
 }
 
 ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::ScriptInputData(std::pair<AnyScriptOutput, std::unique_ptr<AnyScriptInput>> data) : wrappedScriptOutput(data.first), wrappedScriptInput(std::move(data.second)) {

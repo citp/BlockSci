@@ -40,19 +40,22 @@ namespace blocksci {
         memset(data, 0, sizeof(data));
         
         // skip leading spaces
-        while (isspace(*psz))
+        while (isspace(*psz)) {
             psz++;
+        }
         
         // skip 0x
-        if (psz[0] == '0' && tolower(psz[1]) == 'x')
+        if (psz[0] == '0' && tolower(psz[1]) == 'x') {
             psz += 2;
+        }
         
         // hex string to uint
         const char* pbegin = psz;
-        while (HexDigit(*psz) != -1)
+        while (HexDigit(*psz) != -1) {
             psz++;
+        }
         psz--;
-        unsigned char* p1 = reinterpret_cast<unsigned char *>(data);
+        auto p1 = reinterpret_cast<unsigned char *>(data);
         unsigned char* pend = p1 + WIDTH;
         while (psz >= pbegin && p1 < pend) {
             *p1 = static_cast<unsigned char>(HexDigit(*psz--));

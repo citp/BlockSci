@@ -13,13 +13,9 @@
 
 namespace blocksci {
     
-    State::State(const ChainAccess &chain, const ScriptAccess &scripts) {
-        txCount = static_cast<uint32_t>(chain.txCount());
-        blockCount = static_cast<uint32_t>(static_cast<int>(chain.blockCount()));
-        scriptCounts = scripts.scriptCounts();
-    }
+    State::State(const ChainAccess &chain, const ScriptAccess &scripts) : blockCount{static_cast<uint32_t>(static_cast<int>(chain.blockCount()))}, txCount{static_cast<uint32_t>(chain.txCount())}, scriptCounts{scripts.scriptCounts()} {}
     
-    State::State() : blockCount(0), txCount(0) {
+    State::State() : blockCount(0), txCount(0), scriptCounts{} {
         scriptCounts.fill(0);
     }
     

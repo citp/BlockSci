@@ -14,7 +14,8 @@
 #include <blocksci/util/data_access.hpp>
 
 namespace blocksci {
-    using namespace script;
+    using script::OpReturn;
+    
     OpReturn::ScriptAddress(uint32_t scriptNum_, const DataAccess &access) : ScriptBase(scriptNum_, addressType, access), rawData(access.scripts->getScriptData<addressType>(scriptNum_)) {}
     
     std::string OpReturn::getData() const {

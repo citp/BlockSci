@@ -33,21 +33,6 @@ template <typename T, blocksci::DedupAddressType::Enum type>
 struct ParserIndexScriptInfo;
 
 template <typename T>
-class ParserIndex;
-
-template <typename T>
-struct ParserScriptUpdater {
-    ParserIndex<T> &index;
-    const blocksci::State &state;
-    const blocksci::DataAccess &access;
-    
-    ParserScriptUpdater(ParserIndex<T> &index_, const blocksci::State &state_, const blocksci::DataAccess &access_): index(index_), state(state_), access(access_) {}
-    
-    template <typename V>
-    void operator()(V);
-};
-
-template <typename T>
 class ParserIndex {
 protected:
     const ParserConfigurationBase &config;
@@ -86,34 +71,46 @@ public:
     void updateScript(std::false_type, EquivType, const blocksci::State &, const blocksci::DataAccess &) {}
     
     virtual void prepareUpdate() {}
-    void runUpdate(const blocksci::State &state) {
-        blocksci::DataAccess access(config);
-        
-        if (latestState.txCount < state.txCount) {
-            auto newTransactions = blocksci::TransactionRange(access, latestState.txCount, state.txCount);
-            auto newCount = ranges::distance(newTransactions);
-            std::cout << "Updating index with " << newCount << " txes\n";
-            auto progress = makeProgressBar(newCount, [=]() {});
-            uint32_t num = 0;
-            RANGES_FOR(auto tx, newTransactions) {
-                static_cast<T*>(this)->processTx(tx);
-                progress.update(num);
-                num++;
-            }
-        }
-        
-        ParserScriptUpdater<T> updater(*this, state, access);
-        blocksci::for_each(blocksci::DedupAddressInfoList(), updater);
-        latestState = state;
-    };
+    
+    void runUpdate(const blocksci::State &state);
     
     virtual void tearDown() {}
 };
 
 template <typename T>
-template <typename V>
-void ParserScriptUpdater<T>::operator()(V v) {
-    index.updateScript(ParserIndexScriptInfo<T, V{}>{}, v, state, access);
+struct ParserScriptUpdater {
+    ParserIndex<T> &index;
+    const blocksci::State &state;
+    const blocksci::DataAccess &access;
+    
+    ParserScriptUpdater(ParserIndex<T> &index_, const blocksci::State &state_, const blocksci::DataAccess &access_): index(index_), state(state_), access(access_) {}
+    
+    template <typename V>
+    void operator()(V v) {
+        index.updateScript(ParserIndexScriptInfo<T, V{}>{}, v, state, access);
+    }
+};
+
+template <typename T>
+void ParserIndex<T>::runUpdate(const blocksci::State &state) {
+    blocksci::DataAccess access(config.dataConfig);
+    
+    if (latestState.txCount < state.txCount) {
+        auto newTransactions = blocksci::TransactionRange(access, latestState.txCount, state.txCount);
+        auto newCount = ranges::distance(newTransactions);
+        std::cout << "Updating index with " << newCount << " txes\n";
+        auto progress = makeProgressBar(newCount, [=]() {});
+        uint32_t num = 0;
+        RANGES_FOR(auto tx, newTransactions) {
+            static_cast<T*>(this)->processTx(tx);
+            progress.update(num);
+            num++;
+        }
+    }
+        
+    ParserScriptUpdater<T> updater(*this, state, access);
+    blocksci::for_each(blocksci::DedupAddressInfoList(), updater);
+    latestState = state;
 }
 
 #endif /* parser_index_hpp */

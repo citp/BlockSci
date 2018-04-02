@@ -31,7 +31,7 @@ AnySpendData::AnySpendData(const blocksci::AnyScript &scriptData) : wrapped(gene
 SpendData<blocksci::AddressType::Enum::MULTISIG>::SpendData(const ScriptOutput<blocksci::AddressType::Enum::MULTISIG> &output) {
     uint32_t i = 0;
     for (auto &address : output.data.addresses) {
-        addresses[i] = address.data.pubkey;
+        addresses.at(i) = address.data.pubkey;
         i++;
     }
     addressCount = i;
@@ -40,7 +40,7 @@ SpendData<blocksci::AddressType::Enum::MULTISIG>::SpendData(const ScriptOutput<b
 SpendData<blocksci::AddressType::Enum::MULTISIG>::SpendData(const blocksci::ScriptAddress<blocksci::AddressType::Enum::MULTISIG> &output) {
     uint32_t i = 0;
     for (auto pubkey : output.pubkeyScripts()) {
-        addresses[i] = *pubkey.getPubkey();
+        addresses.at(i) = *pubkey.getPubkey();
         i++;
     }
     addressCount = i;

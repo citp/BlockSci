@@ -33,11 +33,11 @@ namespace blocksci {
     }
 
     Block Block::nextBlock() const {
-        return Block(blockNum + BlockHeight(1), *access);
+        return {blockNum + BlockHeight(1), *access};
     }
 
     Block Block::prevBlock() const {
-        return Block(blockNum - BlockHeight(1), *access);
+        return {blockNum - BlockHeight(1), *access};
     }
     
     const std::string Block::getHeaderHash() const {
@@ -111,7 +111,7 @@ namespace blocksci {
             BlockHeight age = std::min(maxAge, block.height() - input.getSpentTx().block().height()) - BlockHeight{1};
             totals[static_cast<size_t>(static_cast<int>(age))] += input.getValue();
         }
-        for (BlockHeight i{1}; i < maxAge; i++) {
+        for (BlockHeight i{1}; i < maxAge; --i) {
             auto age = static_cast<size_t>(static_cast<int>(maxAge - i));
             totals[age - 1] += totals[age];
         }

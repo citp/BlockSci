@@ -28,17 +28,24 @@
 #include <string>
 #include <iostream>
 
-using namespace blocksci;
+using blocksci::Address;
+using blocksci::DedupAddress;
+using blocksci::AddressInfoList;
+using blocksci::Transaction;
+using blocksci::OutputPointer;
+using blocksci::State;
+using blocksci::DedupAddressType;
+using blocksci::script::ScriptHash;
 
 AddressDB::AddressDB(const ParserConfigurationBase &config_, const std::string &path) : ParserIndex(config_, "addressDB"), db(path, false) {}
 
 void AddressDB::tearDown() {}
 
-void AddressDB::processTx(const blocksci::Transaction &tx) {
+void AddressDB::processTx(const Transaction &tx) {
     std::unordered_set<Address> addresses;
     std::function<bool(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
         if (dedupType(a.type) == DedupAddressType::SCRIPTHASH) {
-            script::ScriptHash scriptHash(a.scriptNum, tx.getAccess());
+            ScriptHash scriptHash(a.scriptNum, tx.getAccess());
             if (scriptHash.getTxRevealedIndex() == tx.txNum) {
                 auto wrapped = *scriptHash.getWrappedAddress();
                 db.addAddressNested(wrapped, DedupAddress{a.scriptNum, DedupAddressType::SCRIPTHASH});
@@ -58,9 +65,9 @@ void AddressDB::processTx(const blocksci::Transaction &tx) {
     }
 }
 
-void AddressDB::rollback(const blocksci::State &state) {
+void AddressDB::rollback(const State &state) {
     for_each(AddressInfoList(), [&](auto type) {
-        auto column = db.getOutputColumn(type);
+        auto &column = db.getOutputColumn(type);
         auto it = db.getOutputIterator(type);
         rocksdb::WriteBatch batch;
         for (it->SeekToFirst(); it->Valid(); it->Next()) {
@@ -69,10 +76,9 @@ void AddressDB::rollback(const blocksci::State &state) {
             OutputPointer outPoint;
             memcpy(&outPoint, key.data(), sizeof(outPoint));
             if (outPoint.txNum >= state.scriptCounts[static_cast<size_t>(blocksci::DedupAddressType::SCRIPTHASH)]) {
-                batch.Delete(column, it->key());
+                batch.Delete(column.get(), it->key());
             }
         }
         assert(it->status().ok()); // Check for any errors found during the scan
-        delete it;
     });
 }

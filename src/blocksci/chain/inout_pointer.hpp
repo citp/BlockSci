@@ -45,7 +45,7 @@ namespace blocksci {
             }
         }
         
-        bool isValid(const ChainAccess &access);
+        bool isValid(const ChainAccess &access) const;
         
         std::string toString() const;
     };
@@ -61,7 +61,7 @@ namespace blocksci {
             }
         }
         
-        bool isValid(const ChainAccess &access);
+        bool isValid(const ChainAccess &access) const;
         
         std::string toString() const;
     };

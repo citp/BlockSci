@@ -51,8 +51,8 @@ namespace blocksci {
         
         Transaction(uint32_t index, BlockHeight height, const DataAccess &access_) : Transaction(access_.chain->getTx(index), index, height, access_) {}
         
-        Transaction(uint256 hash, const DataAccess &access);
-        Transaction(std::string hash, const DataAccess &access);
+        Transaction(const uint256 &hash, const DataAccess &access);
+        Transaction(const std::string &hash, const DataAccess &access);
         
         const DataAccess &getAccess() const {
             return *access;

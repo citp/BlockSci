@@ -50,21 +50,22 @@ BlockProcessor::BlockProcessor(uint32_t startingTxCount_, uint32_t totalTxCount_
     
 }
 
-std::vector<unsigned char> ParseHex(const char* psz)
-{
+std::vector<unsigned char> ParseHex(const char* psz) {
     // convert hex dump to vector
     std::vector<unsigned char> vch;
-    while (true)
-    {
-        while (isspace(*psz))
+    while (true) {
+        while (isspace(*psz)) {
             psz++;
+        }
         signed char c = blocksci::HexDigit(*psz++);
-        if (c == static_cast<signed char>(-1))
+        if (c == static_cast<signed char>(-1)) {
             break;
-        unsigned char n = static_cast<unsigned char>(c << 4);
+        }
+        auto n = static_cast<unsigned char>(c << 4);
         c = blocksci::HexDigit(*psz++);
-        if (c == static_cast<signed char>(-1))
+        if (c == static_cast<signed char>(-1)) {
             break;
+        }
         n |= c;
         vch.push_back(n);
     }
@@ -106,10 +107,10 @@ class BlockFileReader<FileTag> : public BlockFileReaderBase {
     std::unordered_map<int, std::pair<SafeMemReader, uint32_t>> files;
     std::unordered_map<int, uint32_t> lastTxRequired;
     const ParserConfiguration<FileTag> &config;
-    SafeMemReader *reader;
+    SafeMemReader *reader = nullptr;
     
-    blocksci::BlockHeight currentHeight;
-    uint32_t currentTxNum;
+    blocksci::BlockHeight currentHeight = 0;
+    uint32_t currentTxNum = 0;
     
     template<bool shouldAdvance>
     void nextTxImp(RawTransaction *tx, bool isSegwit) {
@@ -186,9 +187,9 @@ template <>
 class BlockFileReader<RPCTag> : public BlockFileReaderBase {
     BitcoinAPI bapi;
     
-    uint32_t firstTxNum;
-    uint32_t currentTxOffset;
-    blocksci::BlockHeight currentHeight;
+    uint32_t firstTxNum = 0;
+    uint32_t currentTxOffset = 0;
+    blocksci::BlockHeight currentHeight = 0;
     BlockInfo<RPCTag> block;
     
     template<bool shouldAdvance>
@@ -278,7 +279,6 @@ std::vector<unsigned char> readNewBlock(uint32_t firstTxNum, const BlockInfoBase
         outFunc(tx);
     }
     blocksci::RawBlock blocksciBlock{firstTxNum, block.nTx, static_cast<uint32_t>(static_cast<int>(block.height)), block.hash, block.header.nVersion, block.header.nTime, block.header.nBits, block.header.nNonce, realSize, baseSize, files.blockCoinbaseFile.size()};
-    firstTxNum += block.nTx;
     files.blockFile.write(blocksciBlock);
     files.blockCoinbaseFile.write(coinbase.begin(), coinbase.end());
     
@@ -326,7 +326,7 @@ void generateScriptInput(RawTransaction *tx, UTXOAddressState &utxoAddressState)
     
     i = 0;
     for (auto &scriptOutput : tx->scriptOutputs) {
-        utxoAddressState.addOutput(scriptOutput, {tx->txNum, i});
+        utxoAddressState.addOutput(AnySpendData{scriptOutput}, {tx->txNum, i});
         i++;
     }
 }
@@ -393,7 +393,7 @@ void serializeAddressess(RawTransaction *tx, AddressWriter &addressWriter) {
 
 void backUpdateTxes(const ParserConfigurationBase &config) {
     {
-        blocksci::IndexedFileMapper<blocksci::AccessMode::readwrite, blocksci::RawTransaction> txFile(config.txFilePath());
+        blocksci::IndexedFileMapper<blocksci::AccessMode::readwrite, blocksci::RawTransaction> txFile(config.dataConfig.txFilePath());
         
         blocksci::FixedSizeFileMapper<OutputLinkData> linkDataFile_(config.txUpdatesFilePath());
         const auto &linkDataFile = linkDataFile_;
@@ -427,8 +427,11 @@ void backUpdateTxes(const ParserConfigurationBase &config) {
 }
 
 struct CompletionGuard {
-    CompletionGuard(std::atomic<bool> &isDone_) : isDone(isDone_) {}
-    
+    explicit CompletionGuard(std::atomic<bool> &isDone_) : isDone(isDone_) {}
+    CompletionGuard(const CompletionGuard &) = delete;
+    CompletionGuard &operator=(const CompletionGuard &) = delete;
+    CompletionGuard(CompletionGuard &&) = delete;
+    CompletionGuard &operator=(CompletionGuard &&) = delete;
     ~CompletionGuard() {
         isDone = true;
     }
@@ -438,8 +441,6 @@ private:
 
 struct NextQueueFinishedEarlyException : public std::runtime_error {
     NextQueueFinishedEarlyException() : std::runtime_error("Next queue finished early") {}
-    NextQueueFinishedEarlyException(const NextQueueFinishedEarlyException &) = default;
-    virtual ~NextQueueFinishedEarlyException() = default;
 };
 
 template <typename ProcessFunc, typename AdvanceFunc>
@@ -450,14 +451,14 @@ public:
     std::atomic<bool> isDone{false};
     boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<10000>> inputQueue;
     
-    boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<10000>> *nextQueue;
-    std::atomic<bool> *nextDone;
+    boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<10000>> *nextQueue = nullptr;
+    std::atomic<bool> *nextDone = nullptr;
     
     ProcessFunc func;
     AdvanceFunc advanceFunc;
     
-    long prevWaitCount = 0;
-    long nextWaitCount = 0;
+    int64_t prevWaitCount = 0;
+    int64_t nextWaitCount = 0;
     
     // AdvanceFunc
     ProcessStep(std::atomic<bool> &prevDone_, ProcessFunc func_, AdvanceFunc advanceFunc_) : prevDone(prevDone_), func(func_), advanceFunc(advanceFunc_) {}
@@ -508,7 +509,7 @@ ProcessStep<ProcessFunc, AdvanceFunc> makeProcessStep(std::atomic<bool> &prevDon
     return ProcessStep<ProcessFunc, AdvanceFunc>(prevDone, func, advanceFunc);
 }
 
-NewBlocksFiles::NewBlocksFiles(const ParserConfigurationBase &config) : blockCoinbaseFile(config.blockCoinbaseFilePath()), blockFile(config.blockFilePath()), sequenceFile(config.sequenceFilePath()) {}
+NewBlocksFiles::NewBlocksFiles(const ParserConfigurationBase &config) : blockCoinbaseFile(config.dataConfig.blockCoinbaseFilePath()), blockFile(config.dataConfig.blockFilePath()), sequenceFile(config.dataConfig.sequenceFilePath()) {}
 
 template <typename ParseTag>
 void BlockProcessor::addNewBlocks(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> blocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState) {
@@ -516,7 +517,7 @@ void BlockProcessor::addNewBlocks(const ParserConfiguration<ParseTag> &config, s
     std::atomic<bool> rawDone{false};
     boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<10000>> finished_transaction_queue;
     
-    FixedSizeFileWriter<blocksci::uint256> hashFile{config.txHashesFilePath()};
+    FixedSizeFileWriter<blocksci::uint256> hashFile{config.dataConfig.txHashesFilePath()};
     AddressWriter addressWriter{config};
     
     auto progressBar = makeProgressBar(totalTxCount, [=](RawTransaction *tx) {
@@ -550,7 +551,7 @@ void BlockProcessor::addNewBlocks(const ParserConfiguration<ParseTag> &config, s
         recordAddresses(tx, utxoScriptState);
     };
     
-    IndexedFileWriter<1> txFile(config.txFilePath());
+    IndexedFileWriter<1> txFile(config.dataConfig.txFilePath());
     FixedSizeFileWriter<OutputLinkData> linkDataFile(config.txUpdatesFilePath());
     
     auto serializeTransactionFunc = [&](RawTransaction *tx) {
@@ -564,7 +565,9 @@ void BlockProcessor::addNewBlocks(const ParserConfiguration<ParseTag> &config, s
     
     auto serializeAddressAdvanceFunc = [&](RawTransaction *tx) {
         bool shouldSend = tx->realSize < 800 && finished_transaction_queue.write_available() >= 1;
-        if (!shouldSend) delete tx;
+        if (!shouldSend)  {
+            delete tx;
+        }
         return shouldSend;
     };
     
@@ -578,7 +581,7 @@ void BlockProcessor::addNewBlocks(const ParserConfiguration<ParseTag> &config, s
     ProcessStep<decltype(serializeAddressFunc), decltype(serializeAddressAdvanceFunc)> serializeAddressStep(serializeTransactionStep, serializeAddressFunc, serializeAddressAdvanceFunc);
     serializeAddressStep.nextQueue = &finished_transaction_queue;
     
-    long nextWaitCount = 0;
+    int64_t nextWaitCount = 0;
     
     auto importer = std::async(std::launch::async, [&] {
         CompletionGuard guard(rawDone);
@@ -677,7 +680,7 @@ void BlockProcessor::addNewBlocksSingle(const ParserConfiguration<ParseTag> &con
         return true;
     };
         
-    FixedSizeFileWriter<blocksci::uint256> hashFile{config.txHashesFilePath()};
+    FixedSizeFileWriter<blocksci::uint256> hashFile{config.dataConfig.txHashesFilePath()};
     AddressWriter addressWriter{config};
     blocksci::ECCVerifyHandle handle;
     
@@ -687,7 +690,7 @@ void BlockProcessor::addNewBlocksSingle(const ParserConfiguration<ParseTag> &con
     });
     
     FixedSizeFileWriter<OutputLinkData> linkDataFile(config.txUpdatesFilePath());
-    IndexedFileWriter<1> txFile(config.txFilePath());
+    IndexedFileWriter<1> txFile(config.dataConfig.txFilePath());
 
     auto outFunc = [&](RawTransaction *tx) {
         calculateHash(tx, hashFile);

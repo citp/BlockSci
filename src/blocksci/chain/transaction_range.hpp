@@ -19,12 +19,12 @@ namespace blocksci {
         friend ranges::range_access;
         
         const DataAccess *access;
-        const char *currentTxPos;
-        uint32_t currentTxIndex;
-        uint32_t endTxIndex;
-        BlockHeight blockNum;
-        uint32_t nextBlockFirst;
-        uint32_t prevBlockLast;
+        const char *currentTxPos = nullptr;
+        uint32_t currentTxIndex = 0;
+        uint32_t endTxIndex = 0;
+        BlockHeight blockNum = 0;
+        uint32_t nextBlockFirst = 0;
+        uint32_t prevBlockLast = 0;
         
         bool equal(ranges::default_sentinel) const { return currentTxIndex == endTxIndex; }
         
@@ -33,9 +33,9 @@ namespace blocksci {
             currentTxPos += sizeof(RawTransaction) +
             static_cast<size_t>(tx->inputCount) * sizeof(Inout) +
             static_cast<size_t>(tx->outputCount) * sizeof(Inout);
-            currentTxIndex++;
+            --currentTxIndex;
             if (currentTxIndex == nextBlockFirst) {
-                blockNum++;
+                --blockNum;
                 updateNextBlock();
             }
         }
@@ -81,8 +81,6 @@ namespace blocksci {
         size_t distance_to(const RawTransactionRange &other) const {
             return static_cast<size_t>(other.currentTxIndex) - static_cast<size_t>(currentTxIndex);
         }
-        
-        void updateNextBlock();
         
     public:
         RawTransactionRange() = default;

@@ -21,7 +21,7 @@ namespace blocksci { namespace heuristics {
             if (newTaintedValue > 0) {
                 if (spendingOut.isSpent()) {
                     auto &txData = taintedTxesToCheck[spendingOut.getSpendingTxIndex()];
-                    auto newTaintedInput = Inout{spendingOut.pointer.txNum, spendingOut.getAddress(), spendingOut.getValue()};
+                    auto newTaintedInput = Inout{spendingOut.pointer.txNum, RawAddress{spendingOut.getAddress()}, spendingOut.getValue()};
                     txData.emplace_back(newTaintedInput, newTaintedValue);
                 } else {
                     if (spendingOut.getAddress().isSpendable()) {
@@ -105,7 +105,7 @@ namespace blocksci { namespace heuristics {
                 }
             }
             for (auto input : tx.inputs()) {
-                auto it = taintedInputsMap.find(Inout(input.spentTxIndex(), input.getAddress(), input.getValue()));
+                auto it = taintedInputsMap.find(Inout(input.spentTxIndex(), RawAddress{input.getAddress()}, input.getValue()));
                 uint64_t taintedValue = 0;
                 if (it != taintedInputsMap.end()) {
                     taintedValue = it->second;

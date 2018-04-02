@@ -18,7 +18,8 @@
 #include <blocksci/util/data_access.hpp>
 
 namespace blocksci {
-    using namespace script;
+    using script::ScriptHash;
+    using script::WitnessScriptHash;
     
     ScriptHashBase::ScriptHashBase(uint32_t scriptNum_, AddressType::Enum type_, const ScriptHashData *rawData_, const DataAccess &access) : ScriptBase(scriptNum_, type_, access), rawData(rawData_) {}
     

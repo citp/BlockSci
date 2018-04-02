@@ -91,7 +91,7 @@ class AddressState {
     void reloadBloomFilter() {
         auto &addressBloomFilter = std::get<AddressBloomFilter<type>>(addressBloomFilters);
         addressBloomFilter.reset(addressBloomFilter.getMaxItems(), addressBloomFilter.getFPRate());
-        rocksdb::Iterator* it = db.getIterator(type);
+        auto it = db.getIterator(type);
         for (it->SeekToFirst(); it->Valid(); it->Next()) {
             uint32_t scriptNum;
             memcpy(&scriptNum, it->value().data(), sizeof(scriptNum));
@@ -106,7 +106,7 @@ class AddressState {
         blocksci::for_each(blocksci::DedupAddressInfoList(), [&](auto tag) {
             auto &addressBloomFilter = std::get<AddressBloomFilter<tag>>(addressBloomFilters);
             addressBloomFilter.reset(addressBloomFilter.getMaxItems(), addressBloomFilter.getFPRate());
-            rocksdb::Iterator* it = db.getIterator(tag);
+            auto it = db.getIterator(tag);
             for (it->SeekToFirst(); it->Valid(); it->Next()) {
                 uint32_t scriptNum;
                 memcpy(&scriptNum, it->value().data(), sizeof(scriptNum));
@@ -118,7 +118,7 @@ class AddressState {
     }
     
 public:
-    AddressState(const boost::filesystem::path &path, const boost::filesystem::path &hashIndexPath);
+    AddressState(boost::filesystem::path path, const boost::filesystem::path &hashIndexPath);
     AddressState(const AddressState &) = delete;
     AddressState &operator=(const AddressState &) = delete;
     AddressState(AddressState &&) = delete;

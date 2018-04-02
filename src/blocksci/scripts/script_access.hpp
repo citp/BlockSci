@@ -49,7 +49,7 @@ namespace blocksci {
         
         
     public:
-        ScriptAccess(const DataConfiguration &config);
+        explicit ScriptAccess(const DataConfiguration &config);
         
         DataConfiguration config;
         

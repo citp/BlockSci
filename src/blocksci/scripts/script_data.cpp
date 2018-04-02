@@ -12,20 +12,21 @@
 #include "script_view.hpp"
 #include <blocksci/util/hash.hpp>
 
-using namespace blocksci;
-
-uint160 ScriptHashData::getHash160() const {
-    if (isSegwit) {
-        return ripemd160(reinterpret_cast<const char *>(&hash256), sizeof(hash256));
-    } else {
-        return hash160;
+namespace blocksci {
+    uint160 ScriptHashData::getHash160() const {
+        if (isSegwit) {
+            return ripemd160(reinterpret_cast<const char *>(&hash256), sizeof(hash256));
+        } else {
+            return hash160;
+        }
     }
-}
+    
+    CScriptView NonstandardScriptData::getScript() const {
+        return {scriptData.begin(), scriptData.end()};
+    }
+    
+    CScriptView NonstandardSpendScriptData::getScript() const {
+        return {scriptData.begin(), scriptData.end()};
+    }
 
-CScriptView NonstandardScriptData::getScript() const {
-    return CScriptView(scriptData.begin(), scriptData.end());
-}
-
-CScriptView NonstandardSpendScriptData::getScript() const {
-    return CScriptView(scriptData.begin(), scriptData.end());
 }

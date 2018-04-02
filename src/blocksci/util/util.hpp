@@ -6,8 +6,8 @@
 //
 //
 
-#ifndef util_h
-#define util_h
+#ifndef blocksci_util_util_h
+#define blocksci_util_util_h
 
 #include <tuple>
 #include <utility>
@@ -99,13 +99,13 @@ namespace blocksci {
     using to_variadic_t = typename internal::to_variadic<A, O>::type;
     
     template <typename EnumStruct, template<typename EnumStruct::Enum> class Functor, class ...Args>
-    constexpr auto make_static_table(Args&&... args) {
+    constexpr auto make_static_table(Args&&... args) noexcept {
         internal::MakeStaticTableImpl<EnumStruct, Args...> tableMaker{};
         return tableMaker.template makeTable<Functor>(std::make_index_sequence<EnumStruct::all.size()>{}, std::forward<Args>(args)...);
     }
     
     template <typename EnumStruct, template<typename EnumStruct::Enum> class Functor>
-    constexpr auto make_dynamic_table() {
+    constexpr auto make_dynamic_table() noexcept {
         internal::MakeDynamicTableImpl<EnumStruct> tableMaker{};
         return tableMaker.template makeTable<Functor>(std::make_index_sequence<EnumStruct::all.size()>{});
     }
@@ -127,7 +127,7 @@ namespace blocksci {
         Index dataSize;
         
     public:
-        InPlaceArray(Index size) : dataSize(size) {}
+        explicit InPlaceArray(Index size) : dataSize(size) {}
         
         Index size() const {
             return dataSize;
@@ -164,4 +164,4 @@ namespace blocksci {
     };
 }
 
-#endif /* util_h */
+#endif /* blocksci_util_util_h */

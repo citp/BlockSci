@@ -9,7 +9,6 @@
 #ifndef parser_configuration_h
 #define parser_configuration_h
 
-#include "config.hpp"
 #include "parser_fwd.hpp"
 
 #include <blocksci/util/bitcoin_uint256.hpp>
@@ -19,12 +18,14 @@
 
 #include <functional>
 
-struct ParserConfigurationBase : public blocksci::DataConfiguration {
+struct ParserConfigurationBase {
+    blocksci::DataConfiguration dataConfig;
+    
     ParserConfigurationBase();
-    ParserConfigurationBase(const boost::filesystem::path &dataDirectory_);
+    ParserConfigurationBase(boost::filesystem::path dataDirectory_);
     
     boost::filesystem::path parserDirectory() const {
-        return dataDirectory/"parser";
+        return dataConfig.dataDirectory/"parser";
     }
     
     boost::filesystem::path utxoCacheFile() const {
@@ -38,8 +39,6 @@ struct ParserConfigurationBase : public blocksci::DataConfiguration {
     boost::filesystem::path utxoScriptStatePath() const {
         return parserDirectory()/"utxoScriptState";
     }
-    
-    
     
     boost::filesystem::path addressPath() const {
         return parserDirectory()/"address";
@@ -60,10 +59,10 @@ struct ParserConfigurationBase : public blocksci::DataConfiguration {
 template<>
 struct ParserConfiguration<FileTag> : public ParserConfigurationBase {
     ParserConfiguration();
-    ParserConfiguration(const boost::filesystem::path &bitcoinDirectory_, const boost::filesystem::path &dataDirectory_);
+    ParserConfiguration(boost::filesystem::path bitcoinDirectory_, boost::filesystem::path dataDirectory_);
     
     boost::filesystem::path bitcoinDirectory;
-    uint32_t blockMagic;
+    uint32_t blockMagic = 0;
     std::function<blocksci::uint256(const char *data, unsigned long len)> workHashFunction;
     
     
@@ -78,12 +77,12 @@ class BitcoinAPI;
 template<>
 struct ParserConfiguration<RPCTag> : public ParserConfigurationBase {
     ParserConfiguration();
-    ParserConfiguration(std::string username, std::string password, std::string address, int port, const boost::filesystem::path &dataDirectory_);
+    ParserConfiguration(std::string username, std::string password, std::string address, int port, boost::filesystem::path dataDirectory_);
     
     std::string username;
     std::string password;
     std::string address;
-    int port;
+    int port = 0;
     
     BitcoinAPI createBitcoinAPI() const;
 };

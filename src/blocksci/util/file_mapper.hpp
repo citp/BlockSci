@@ -53,8 +53,6 @@ namespace blocksci {
     struct SimpleFileMapperBase {
         using FileType = boost::iostreams::mapped_file;
     private:
-        const char *constData;
-        
         void openFile(size_t size);
         
     protected:
@@ -85,7 +83,7 @@ namespace blocksci {
     
     template <>
     struct SimpleFileMapper<AccessMode::readonly> : public SimpleFileMapperBase {
-        SimpleFileMapper(boost::filesystem::path path) : SimpleFileMapperBase(path, AccessMode::readonly) {}
+        SimpleFileMapper(boost::filesystem::path path) : SimpleFileMapperBase(std::move(path), AccessMode::readonly) {}
     };
     
     template <typename MainType>
@@ -93,7 +91,7 @@ namespace blocksci {
         std::vector<char> rawData;
         
     public:
-        ArbitraryLengthData(const MainType &head) {
+        explicit ArbitraryLengthData(const MainType &head) {
             rawData.reserve(head.realSize());
             add(head);
         }
@@ -132,7 +130,7 @@ namespace blocksci {
         std::vector<char> buffer;
         static constexpr auto mode = AccessMode::readwrite;
         
-        SimpleFileMapper(boost::filesystem::path path) : SimpleFileMapperBase(path, AccessMode::readwrite), writePos(size()) {}
+        explicit SimpleFileMapper(boost::filesystem::path path) : SimpleFileMapperBase(std::move(path), AccessMode::readwrite), writePos(size()) {}
         
         ~SimpleFileMapper() {
             clearBuffer();
@@ -250,7 +248,7 @@ namespace blocksci {
         
     public:
         
-        FixedSizeFileMapper(boost::filesystem::path path) : dataFile(path) {}
+        explicit FixedSizeFileMapper(boost::filesystem::path path) : dataFile(std::move(path)) {}
         
         add_const_ptr_t<T> getData(size_t index) const {
             assert(index < size());
@@ -323,7 +321,6 @@ namespace blocksci {
         template<typename Test>
         ranges::optional<uint32_t> find(Test test) const {
             auto itemCount = size();
-            std::vector<uint32_t> indexes;
             uint32_t index = 0;
             while (index < itemCount) {
                 auto nextItem = getData(index);
@@ -449,7 +446,7 @@ namespace blocksci {
         }
         
     public:
-        IndexedFileMapper(const boost::filesystem::path &pathPrefix) : dataFile(boost::filesystem::path(pathPrefix).concat("_data")), indexFile(boost::filesystem::path(pathPrefix).concat("_index")) {
+        explicit IndexedFileMapper(const boost::filesystem::path &pathPrefix) : dataFile(boost::filesystem::path(pathPrefix).concat("_data")), indexFile(boost::filesystem::path(pathPrefix).concat("_index")) {
         }
         
         void reload() {

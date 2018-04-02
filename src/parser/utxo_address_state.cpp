@@ -22,12 +22,12 @@ struct SpendOutputFunctor {
 static auto spendOutputTable = blocksci::make_dynamic_table<blocksci::AddressType, SpendOutputFunctor>();
 
 AnySpendData UTXOAddressState::spendOutput(const blocksci::OutputPointer &pointer, blocksci::AddressType::Enum type) {
-        auto index = static_cast<size_t>(type);
-        if (index >= blocksci::AddressType::size)
-        {
-            throw std::invalid_argument("combination of enum values is not valid");
-        }
-        return spendOutputTable[index](pointer, *this);
+    auto index = static_cast<size_t>(type);
+    if (index >= blocksci::AddressType::size)
+    {
+        throw std::invalid_argument("combination of enum values is not valid");
+    }
+    return AnySpendData{spendOutputTable.at(index)(pointer, *this)};
 }
 
 void UTXOAddressState::unserialize(const boost::filesystem::path &path) {

@@ -20,7 +20,7 @@ struct BloomStore {
     using BlockType = size_t;
     static constexpr size_t BlockSize = sizeof(BlockType) * 8;
 
-    BloomStore(const boost::filesystem::path &path, uint64_t length);
+    BloomStore(boost::filesystem::path path, uint64_t length);
     
     void setBit(uint64_t bitPos);
     bool isSet(uint64_t bitPos) const;
@@ -60,7 +60,7 @@ struct BloomFilterData {
 class BloomFilter {
 public:
     // Load or create
-    BloomFilter(const boost::filesystem::path &path, uint64_t maxItems, double fpRate);
+    BloomFilter(boost::filesystem::path path, uint64_t maxItems, double fpRate);
     ~BloomFilter();
     
     void reset(uint64_t maxItems, double fpRate);

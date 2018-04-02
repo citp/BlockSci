@@ -115,11 +115,11 @@ namespace blocksci {
             }
             
             void next() {
-                currentBlockHeight++;
+                ++currentBlockHeight;
             }
             
             void prev() {
-                currentBlockHeight--;
+                --currentBlockHeight;
             }
             
             int distance_to(cursor const &that) const {
@@ -153,8 +153,8 @@ namespace blocksci {
         
     public:
         Blockchain() = default;
-        Blockchain(const DataConfiguration &config);
-        Blockchain(const std::string &dataDirectory);
+        explicit Blockchain(const DataConfiguration &config);
+        explicit Blockchain(const std::string &dataDirectory);
         ~Blockchain();
         
         const DataAccess &getAccess() const { return access; }

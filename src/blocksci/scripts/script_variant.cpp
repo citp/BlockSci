@@ -20,9 +20,9 @@ namespace blocksci {
     
     static constexpr auto scriptCreator = make_dynamic_table<AddressType, ScriptCreateFunctor>();
     
-    AnyScript::AnyScript(const Address &address, const DataAccess &access) : wrapped(scriptCreator[static_cast<size_t>(address.type)](address.scriptNum, access)) {}
+    AnyScript::AnyScript(const Address &address, const DataAccess &access) : wrapped(scriptCreator.at(static_cast<size_t>(address.type))(address.scriptNum, access)) {}
     
-    AnyScript::AnyScript(uint32_t addressNum, AddressType::Enum type, const DataAccess &access) : wrapped(scriptCreator[static_cast<size_t>(type)](addressNum, access)) {}
+    AnyScript::AnyScript(uint32_t addressNum, AddressType::Enum type, const DataAccess &access) : wrapped(scriptCreator.at(static_cast<size_t>(type))(addressNum, access)) {}
     
     AddressType::Enum AnyScript::type() const {
         return mpark::visit([&](auto &scriptAddress) { return scriptAddress.addressType; }, wrapped);

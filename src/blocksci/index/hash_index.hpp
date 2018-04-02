@@ -23,7 +23,6 @@ namespace blocksci {
     class HashIndex {
     public:
         HashIndex(const std::string &path, bool readonly);
-        ~HashIndex();
         
         uint32_t getPubkeyHashIndex(const uint160 &pubkeyhash);
         uint32_t getScriptHashIndex(const uint160 &scripthash);
@@ -32,20 +31,19 @@ namespace blocksci {
         
         template<AddressType::Enum type>
         uint32_t lookupAddress(const typename AddressInfo<type>::IDType &hash) {
-            return getMatch(getColumn(type), hash);
+            return getMatch(getColumn(type).get(), hash);
         }
         
         template<AddressType::Enum type>
         void addAddress(const typename AddressInfo<type>::IDType &hash, uint32_t scriptNum) {
             rocksdb::Slice key(reinterpret_cast<const char *>(&hash), sizeof(hash));
             rocksdb::Slice value(reinterpret_cast<const char *>(&scriptNum), sizeof(scriptNum));
-            db->Put(rocksdb::WriteOptions{}, getColumn(type), key, value);
+            db->Put(rocksdb::WriteOptions{}, getColumn(type).get(), key, value);
         }
         
         uint32_t countColumn(AddressType::Enum type) {
             uint32_t keyCount = 0;
-            auto column = getColumn(type);
-            rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions(), column);
+            auto it = getIterator(type);
             for (it->SeekToFirst(); it->Valid(); it->Next()) {
                 keyCount++;
             }
@@ -54,19 +52,21 @@ namespace blocksci {
         
         void addTx(const uint256 &hash, uint32_t txID);
         
-        rocksdb::Iterator* getIterator(AddressType::Enum type) {
-            return db->NewIterator(rocksdb::ReadOptions(), getColumn(type));
+        std::unique_ptr<rocksdb::Iterator> getIterator(AddressType::Enum type) {
+            return std::unique_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), getColumn(type).get())};
         }
-        rocksdb::Iterator* getIterator(DedupAddressType::Enum type) {
-            return db->NewIterator(rocksdb::ReadOptions(), getColumn(type));
+        std::unique_ptr<rocksdb::Iterator> getIterator(DedupAddressType::Enum type) {
+            return std::unique_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), getColumn(type).get())};
         }
-        rocksdb::Iterator *getTxIterator() {
-            return db->NewIterator(rocksdb::ReadOptions(), columnHandles.back());
+        std::unique_ptr<rocksdb::Iterator> getTxIterator() {
+            return std::unique_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), columnHandles.back().get())};
         }
         
-        rocksdb::ColumnFamilyHandle *getColumn(AddressType::Enum type);
-        rocksdb::ColumnFamilyHandle *getColumn(DedupAddressType::Enum type);
-        rocksdb::ColumnFamilyHandle *getTxColumn() {
+        std::unique_ptr<rocksdb::ColumnFamilyHandle> &getColumn(AddressType::Enum type);
+        
+        std::unique_ptr<rocksdb::ColumnFamilyHandle> &getColumn(DedupAddressType::Enum type);
+        
+        std::unique_ptr<rocksdb::ColumnFamilyHandle> &getTxColumn() {
             return columnHandles.back();
         }
         
@@ -75,18 +75,18 @@ namespace blocksci {
         }
         
         void deleteTx(const rocksdb::Slice &slice) {
-            db->Delete(rocksdb::WriteOptions(), getTxColumn(), slice);
+            db->Delete(rocksdb::WriteOptions(), getTxColumn().get(), slice);
         }
         
         void compactDB() {
-            for (auto column : columnHandles) {
-                db->CompactRange(rocksdb::CompactRangeOptions{}, column, nullptr, nullptr);
+            for (auto &column : columnHandles) {
+                db->CompactRange(rocksdb::CompactRangeOptions{}, column.get(), nullptr, nullptr);
             }
         }
         
     private:
-        rocksdb::DB *db;
-        std::vector<rocksdb::ColumnFamilyHandle *> columnHandles;
+        std::unique_ptr<rocksdb::DB> db;
+        std::vector<std::unique_ptr<rocksdb::ColumnFamilyHandle>> columnHandles;
         
         template <typename T>
         uint32_t getMatch(rocksdb::ColumnFamilyHandle *handle, const T &t) {

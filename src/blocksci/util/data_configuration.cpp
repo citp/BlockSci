@@ -16,16 +16,13 @@
 
 namespace blocksci {
     
-    void createDirectory(boost::filesystem::path dir);
-    
-    
-    void createDirectory(boost::filesystem::path dir) {
+    void createDirectory(const boost::filesystem::path &dir) {
         if(!(boost::filesystem::exists(dir))){
             boost::filesystem::create_directory(dir);
         }
     }
     
-    DataConfiguration::DataConfiguration(const boost::filesystem::path &dataDirectory_) : errorOnReorg(false), blocksIgnored(0), dataDirectory(dataDirectory_) {
+    DataConfiguration::DataConfiguration(boost::filesystem::path dataDirectory_) : errorOnReorg(false), blocksIgnored(0), dataDirectory(std::move(dataDirectory_)) {
         createDirectory(dataDirectory);
         createDirectory(scriptsDirectory());
         createDirectory(chainDirectory());
@@ -42,7 +39,7 @@ namespace blocksci {
         }
     }
     
-    DataConfiguration::DataConfiguration(const boost::filesystem::path &dataDirectory_, bool errorOnReorg_, BlockHeight blocksIgnored_) : errorOnReorg(errorOnReorg_), blocksIgnored(blocksIgnored_), dataDirectory(dataDirectory_) {
+    DataConfiguration::DataConfiguration(boost::filesystem::path dataDirectory_, bool errorOnReorg_, BlockHeight blocksIgnored_) : errorOnReorg(errorOnReorg_), blocksIgnored(blocksIgnored_), dataDirectory(std::move(dataDirectory_)) {
         if(!(boost::filesystem::exists(dataDirectory))){
             throw std::runtime_error("Error, blocksci data directory does not exist");
         }

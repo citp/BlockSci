@@ -15,9 +15,9 @@
 
 #include <boost/filesystem/operations.hpp>
 
-ParserConfigurationBase::ParserConfigurationBase() : DataConfiguration() {}
+ParserConfigurationBase::ParserConfigurationBase() : dataConfig() {}
 
-ParserConfigurationBase::ParserConfigurationBase(const boost::filesystem::path &dataDirectory_) : DataConfiguration(dataDirectory_) {
+ParserConfigurationBase::ParserConfigurationBase(boost::filesystem::path dataDirectory_) : dataConfig(std::move(dataDirectory_)) {
     boost::filesystem::path dir(parserDirectory());
     
     if(!(boost::filesystem::exists(dir))){
@@ -38,7 +38,7 @@ ParserConfiguration<FileTag>::ParserConfiguration() : ParserConfigurationBase() 
 
 }
 
-ParserConfiguration<FileTag>::ParserConfiguration(const boost::filesystem::path &bitcoinDirectory_, const boost::filesystem::path &dataDirectory_) : ParserConfigurationBase(dataDirectory_), bitcoinDirectory(bitcoinDirectory_) {
+ParserConfiguration<FileTag>::ParserConfiguration(boost::filesystem::path bitcoinDirectory_, boost::filesystem::path dataDirectory_) : ParserConfigurationBase(std::move(dataDirectory_)), bitcoinDirectory(std::move(bitcoinDirectory_)) {
     auto bitcoinDirectoryString = bitcoinDirectory.native();
     if (bitcoinDirectoryString.find("litecoin") != std::string::npos || bitcoinDirectoryString.find("Litecoin") != std::string::npos) {
         blockMagic = 0xdbb6c0fb;
@@ -67,7 +67,7 @@ boost::filesystem::path ParserConfiguration<FileTag>::pathForBlockFile(int fileN
 #ifdef BLOCKSCI_RPC_PARSER
 ParserConfiguration<RPCTag>::ParserConfiguration() : ParserConfigurationBase() {}
 
-ParserConfiguration<RPCTag>::ParserConfiguration(std::string username_, std::string password_, std::string address_, int port_, const boost::filesystem::path &dataDirectory_) : ParserConfigurationBase(dataDirectory_), username(username_), password(password_), address(address_), port(port_) {}
+ParserConfiguration<RPCTag>::ParserConfiguration(std::string username_, std::string password_, std::string address_, int port_, boost::filesystem::path dataDirectory_) : ParserConfigurationBase(std::move(dataDirectory_)), username(std::move(username_)), password(std::move(password_)), address(std::move(address_)), port(port_) {}
 
 
 BitcoinAPI ParserConfiguration<RPCTag>::createBitcoinAPI() const {

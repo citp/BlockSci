@@ -34,11 +34,11 @@ namespace blocksci {
         return ss.str();
     }
     
-    bool InputPointer::isValid(const ChainAccess &access) {
+    bool InputPointer::isValid(const ChainAccess &access) const {
         return inoutNum < access.getTx(txNum)->inputCount;
     }
     
-    bool OutputPointer::isValid(const ChainAccess &access) {
+    bool OutputPointer::isValid(const ChainAccess &access) const {
         return inoutNum < access.getTx(txNum)->outputCount;
     }
     

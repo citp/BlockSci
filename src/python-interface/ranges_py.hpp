@@ -314,7 +314,9 @@ auto applyMethodsToRangeImpl(F f, std::index_sequence<Is...>, T, std::false_type
 template <typename Ty, class F, std::size_t ... Is, class T>
 auto applyMethodsToRangeImpl(F f, std::index_sequence<Is...>, T, std::true_type) {
     return [&f](Ty &view, const std::tuple_element_t<Is, typename T::arg_tuple> &... args) -> ranges::any_view<typename T::result_type, ranges::get_categories<Ty>()> {
-        return view | ranges::view::transform(f);
+        return view | ranges::view::transform([=](auto && item) {
+            return f(item, args...);
+        });
     };
     
 }

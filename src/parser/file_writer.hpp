@@ -100,7 +100,7 @@ class FixedSizeFileWriter {
     
 public:
     
-    FixedSizeFileWriter(const boost::filesystem::path &path) : dataFile(path) {}
+    explicit FixedSizeFileWriter(const boost::filesystem::path &path) : dataFile(path) {}
     
     void expandToFit(uint32_t size) {
         dataFile.expandToFit(sizeof(T) * size);
@@ -135,7 +135,7 @@ private:
     FixedSizeFileWriter<FileIndex<indexCount>> indexFile;
 public:
     
-    IndexedFileWriter(boost::filesystem::path pathPrefix) : dataFile(boost::filesystem::path{pathPrefix}.concat("_data")), indexFile(boost::filesystem::path{pathPrefix}.concat("_index")) {}
+    explicit IndexedFileWriter(const boost::filesystem::path &pathPrefix) : dataFile(boost::filesystem::path{pathPrefix}.concat("_data")), indexFile(boost::filesystem::path{pathPrefix}.concat("_index")) {}
     
     void writeIndexGroup() {
         FileIndex<indexCount> fileIndex;

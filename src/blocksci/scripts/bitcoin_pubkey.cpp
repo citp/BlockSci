@@ -11,7 +11,7 @@
 namespace
 {
 /* Global secp256k1_context object used for verification. */
-secp256k1_context* secp256k1_context_verify = NULL;
+secp256k1_context* secp256k1_context_verify = nullptr;
 } // namespace
 
 /** This function is taken from the libsecp256k1 distribution and implements

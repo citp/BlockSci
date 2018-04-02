@@ -52,18 +52,14 @@
 #include <iomanip>
 #include <cassert>
 
-std::vector<char> HexToBytes(const std::string& hex);
-uint32_t getStartingTxCount(const blocksci::DataConfiguration &config);
-
-
 blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::BlockHeight firstDeletedBlock, uint32_t firstDeletedTxNum) {
-    blocksci::State state{blocksci::ChainAccess{config}, blocksci::ScriptAccess{config}};
+    blocksci::State state{blocksci::ChainAccess{config.dataConfig}, blocksci::ScriptAccess{config.dataConfig}};
     state.blockCount = static_cast<uint32_t>(static_cast<int>(firstDeletedBlock));
     state.txCount = firstDeletedTxNum;
     
-    blocksci::IndexedFileMapper<blocksci::AccessMode::readwrite, blocksci::RawTransaction> txFile{config.txFilePath()};
-    blocksci::FixedSizeFileMapper<blocksci::uint256, blocksci::AccessMode::readwrite> txHashesFile{config.txHashesFilePath()};
-    blocksci::DataAccess access(config);
+    blocksci::IndexedFileMapper<blocksci::AccessMode::readwrite, blocksci::RawTransaction> txFile{config.dataConfig.txFilePath()};
+    blocksci::FixedSizeFileMapper<blocksci::uint256, blocksci::AccessMode::readwrite> txHashesFile{config.dataConfig.txHashesFilePath()};
+    blocksci::DataAccess access(config.dataConfig);
     
     UTXOState utxoState;
     UTXOAddressState utxoAddressState;
@@ -73,7 +69,7 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::B
     utxoState.unserialize(config.utxoCacheFile().native());
     utxoScriptState.unserialize(config.utxoScriptStatePath().native());
     
-    uint32_t totalTxCount = static_cast<uint32_t>(txFile.size());
+    auto totalTxCount = static_cast<uint32_t>(txFile.size());
     for (uint32_t txNum = totalTxCount - 1; txNum >= firstDeletedTxNum; txNum--) {
         auto tx = txFile.getData(txNum);
         auto hash = txHashesFile.getData(txNum);
@@ -81,7 +77,7 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::B
             auto &output = tx->getOutput(i);
             blocksci::AnyScript script(output.toAddressNum, output.getType(), access);
             if (script.firstTxIndex() == txNum) {
-                auto &prevValue = state.scriptCounts[static_cast<size_t>(dedupType(output.getType()))];
+                auto &prevValue = state.scriptCounts.at(static_cast<size_t>(dedupType(output.getType())));
                 if (output.toAddressNum < prevValue) {
                     prevValue = output.toAddressNum;
                 }
@@ -106,7 +102,7 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::B
                     UTXO utxo(output.getValue(), spentTxNum, output.getType());
                     utxoState.add({*spentHash, j}, utxo);
                     blocksci::AnyScript script(output.toAddressNum, output.getType(), access);
-                    utxoAddressState.addOutput(script, {spentTxNum, j});
+                    utxoAddressState.addOutput(AnySpendData{script}, {spentTxNum, j});
                     utxoScriptState.add({spentTxNum, j}, output.toAddressNum);
                     inputsAdded++;
                 }
@@ -123,10 +119,15 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::B
 }
 
 void rollbackTransactions(blocksci::BlockHeight blockKeepCount, const ParserConfigurationBase &config) {
-    using namespace blocksci;
+    using blocksci::AccessMode;
+    using blocksci::RawBlock;
+    using blocksci::IndexedFileMapper;
+    using blocksci::SimpleFileMapper;
+    using blocksci::FixedSizeFileMapper;
     
-    constexpr auto readwrite = blocksci::AccessMode::readwrite;
-    blocksci::FixedSizeFileMapper<blocksci::RawBlock, readwrite> blockFile(config.blockFilePath());
+    
+    constexpr auto readwrite = AccessMode::readwrite;
+    blocksci::FixedSizeFileMapper<RawBlock, readwrite> blockFile(config.dataConfig.blockFilePath());
     
     auto blockKeepSize = static_cast<size_t>(static_cast<int>(blockKeepCount));
     if (blockFile.size() > blockKeepSize) {
@@ -136,29 +137,17 @@ void rollbackTransactions(blocksci::BlockHeight blockKeepCount, const ParserConf
         
         auto blocksciState = rollbackState(config, blockKeepCount, firstDeletedTxNum);
         
-        blocksci::IndexedFileMapper<readwrite, blocksci::RawTransaction>(config.txFilePath()).truncate(firstDeletedTxNum);
-        blocksci::FixedSizeFileMapper<blocksci::uint256, readwrite>(config.txHashesFilePath()).truncate(firstDeletedTxNum);
-        blocksci::IndexedFileMapper<readwrite, uint32_t>(config.sequenceFilePath()).truncate(firstDeletedTxNum);
-        blocksci::SimpleFileMapper<readwrite>(config.blockCoinbaseFilePath()).truncate(firstDeletedBlock->coinbaseOffset);
+        IndexedFileMapper<readwrite, blocksci::RawTransaction>(config.dataConfig.txFilePath()).truncate(firstDeletedTxNum);
+        FixedSizeFileMapper<blocksci::uint256, readwrite>(config.dataConfig.txHashesFilePath()).truncate(firstDeletedTxNum);
+        IndexedFileMapper<readwrite, uint32_t>(config.dataConfig.sequenceFilePath()).truncate(firstDeletedTxNum);
+        SimpleFileMapper<readwrite>(config.dataConfig.blockCoinbaseFilePath()).truncate(firstDeletedBlock->coinbaseOffset);
         blockFile.truncate(blockKeepSize);
         
-        AddressState{config.addressPath(), config.hashIndexFilePath()}.rollback(blocksciState);
+        AddressState{config.addressPath(), config.dataConfig.hashIndexFilePath()}.rollback(blocksciState);
         AddressWriter(config).rollback(blocksciState);
-        AddressDB(config, config.addressDBFilePath().native()).rollback(blocksciState);
-        HashIndexCreator(config, config.hashIndexFilePath().native()).rollback(blocksciState);
+        AddressDB(config, config.dataConfig.addressDBFilePath().native()).rollback(blocksciState);
+        HashIndexCreator(config, config.dataConfig.hashIndexFilePath().native()).rollback(blocksciState);
     }
-}
-
-std::vector<char> HexToBytes(const std::string& hex) {
-    std::vector<char> bytes;
-    
-    for (unsigned int i = 0; i < hex.length(); i += 2) {
-        std::string byteString = hex.substr(i, 2);
-        char byte = static_cast<char>(strtol(byteString.c_str(), NULL, 16));
-        bytes.push_back(byte);
-    }
-    
-    return bytes;
 }
 
 template <typename BlockType>
@@ -197,7 +186,7 @@ void updateChain(const ParserConfiguration<ParserTag> &config, blocksci::BlockHe
     }();
 
     blocksci::BlockHeight splitPoint = [&]() {
-        blocksci::ChainAccess oldChain(config);
+        blocksci::ChainAccess oldChain(config.dataConfig);
         blocksci::BlockHeight maxSize = std::min(oldChain.blockCount(), static_cast<blocksci::BlockHeight>(chainBlocks.size()));
         auto splitPoint = maxSize;
         for (blocksci::BlockHeight i{0}; i < maxSize; i++) {
@@ -226,7 +215,7 @@ void updateChain(const ParserConfiguration<ParserTag> &config, blocksci::BlockHe
         return;
     }
     
-    uint32_t startingTxCount = getStartingTxCount(config);
+    uint32_t startingTxCount = getStartingTxCount(config.dataConfig);
     auto maxBlockHeight = blocksToAdd.back().height;
     
     uint32_t totalTxCount = 0;
@@ -242,7 +231,7 @@ void updateChain(const ParserConfiguration<ParserTag> &config, blocksci::BlockHe
         BlockProcessor processor{startingTxCount, totalTxCount, maxBlockHeight};
         UTXOState utxoState;
         UTXOAddressState utxoAddressState;
-        AddressState addressState{config.addressPath(), config.hashIndexFilePath()};
+        AddressState addressState{config.addressPath(), config.dataConfig.hashIndexFilePath()};
         UTXOScriptState utxoScriptState;
         
         utxoAddressState.unserialize(config.utxoAddressStatePath());
@@ -273,11 +262,11 @@ void updateChain(const ParserConfiguration<ParserTag> &config, blocksci::BlockHe
 }
 
 void updateHashDB(const ParserConfigurationBase &config) {
-    blocksci::ChainAccess chain{config};
-    blocksci::ScriptAccess scripts{config};
+    blocksci::ChainAccess chain{config.dataConfig};
+    blocksci::ScriptAccess scripts{config.dataConfig};
     
     blocksci::State updateState{chain, scripts};
-    HashIndexCreator db(config, config.hashIndexFilePath().native());
+    HashIndexCreator db(config, config.dataConfig.hashIndexFilePath().native());
     
     std::cout << "Updating hash index\n";
     
@@ -287,11 +276,11 @@ void updateHashDB(const ParserConfigurationBase &config) {
 }
 
 void updateAddressDB(const ParserConfigurationBase &config) {
-    blocksci::ChainAccess chain{config};
-    blocksci::ScriptAccess scripts{config};
+    blocksci::ChainAccess chain{config.dataConfig};
+    blocksci::ScriptAccess scripts{config.dataConfig};
     
     blocksci::State updateState{chain, scripts};
-    AddressDB db(config, config.addressDBFilePath().native());
+    AddressDB db(config, config.dataConfig.addressDBFilePath().native());
     
     std::cout << "Updating address index\n";
     
@@ -429,11 +418,11 @@ int main(int argc, char * argv[]) {
         case mode::compactIndexes: {
             ParserConfigurationBase config{dataDirectory};
             {
-                AddressDB db(config, config.addressDBFilePath().native());
+                AddressDB db(config, config.dataConfig.addressDBFilePath().native());
                 db.compact();
             }
             {
-                HashIndexCreator db(config, config.hashIndexFilePath().native());
+                HashIndexCreator db(config, config.dataConfig.hashIndexFilePath().native());
                 db.compact();
             }
             break;

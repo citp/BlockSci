@@ -36,31 +36,26 @@ namespace blocksci {
         columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions{});
         columnDescriptors.emplace_back("T", rocksdb::ColumnFamilyOptions{});
         
+        rocksdb::DB *dbPtr;
+        std::vector<rocksdb::ColumnFamilyHandle *> columnHandlePtrs;
         if (readonly) {
-            rocksdb::Status s = rocksdb::DB::OpenForReadOnly(options, path.c_str(), columnDescriptors, &columnHandles, &db);
+            rocksdb::Status s = rocksdb::DB::OpenForReadOnly(options, path.c_str(), columnDescriptors, &columnHandlePtrs, &dbPtr);
             assert(s.ok());
         } else {
-            rocksdb::Status s = rocksdb::DB::Open(options, path.c_str(), columnDescriptors, &columnHandles, &db);
+            rocksdb::Status s = rocksdb::DB::Open(options, path.c_str(), columnDescriptors, &columnHandlePtrs, &dbPtr);
+        }
+        db = std::unique_ptr<rocksdb::DB>(dbPtr);
+        for (auto handle : columnHandlePtrs) {
+            columnHandles.emplace_back(std::unique_ptr<rocksdb::ColumnFamilyHandle>(handle));
         }
     }
     
-    HashIndex::~HashIndex() {
-        for (auto handle : columnHandles) {
-            delete handle;
-        }
-        delete db;
-    }
-    
-    rocksdb::ColumnFamilyHandle *HashIndex::getColumn(AddressType::Enum type) {
+    std::unique_ptr<rocksdb::ColumnFamilyHandle> &HashIndex::getColumn(AddressType::Enum type) {
         auto index = static_cast<size_t>(type);
-        if (index > AddressType::size) {
-            assert("Tried to get column for unindexed script type");
-            return nullptr;
-        }
-        return columnHandles[index];
+        return columnHandles.at(index);
     }
     
-    rocksdb::ColumnFamilyHandle *HashIndex::getColumn(DedupAddressType::Enum type) {
+    std::unique_ptr<rocksdb::ColumnFamilyHandle> &HashIndex::getColumn(DedupAddressType::Enum type) {
         switch (type) {
             case DedupAddressType::PUBKEY:
                 return getColumn(AddressType::PUBKEYHASH);
@@ -74,28 +69,28 @@ namespace blocksci {
                 return getColumn(AddressType::NONSTANDARD);
         }
         assert(false);
-        return nullptr;
+        return getColumn(AddressType::NONSTANDARD);
     }
     
     void HashIndex::addTx(const uint256 &hash, uint32_t txNum) {
         rocksdb::Slice keySlice(reinterpret_cast<const char *>(&hash), sizeof(hash));
         rocksdb::Slice valueSlice(reinterpret_cast<const char *>(&txNum), sizeof(txNum));
-        db->Put(rocksdb::WriteOptions(), columnHandles.back(), keySlice, valueSlice);
+        db->Put(rocksdb::WriteOptions(), columnHandles.back().get(), keySlice, valueSlice);
     }
     
     uint32_t HashIndex::getTxIndex(const uint256 &txHash) {
-        return getMatch(columnHandles.back(), txHash);
+        return getMatch(columnHandles.back().get(), txHash);
     }
     
     uint32_t HashIndex::getPubkeyHashIndex(const uint160 &pubkeyhash) {
-        return getMatch(getColumn(AddressType::PUBKEYHASH), pubkeyhash);
+        return getMatch(getColumn(AddressType::PUBKEYHASH).get(), pubkeyhash);
     }
     
     uint32_t HashIndex::getScriptHashIndex(const uint160 &scripthash) {
-        return getMatch(getColumn(AddressType::SCRIPTHASH), scripthash);
+        return getMatch(getColumn(AddressType::SCRIPTHASH).get(), scripthash);
     }
     
     uint32_t HashIndex::getScriptHashIndex(const uint256 &scripthash) {
-        return getMatch(getColumn(AddressType::WITNESS_SCRIPTHASH), scripthash);
+        return getMatch(getColumn(AddressType::WITNESS_SCRIPTHASH).get(), scripthash);
     }
 }

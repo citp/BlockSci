@@ -20,7 +20,7 @@
 
 namespace blocksci {
     
-    DataAccess::DataAccess(const DataConfiguration &config_) : config(config_), chain{std::make_unique<ChainAccess>(config)}, scripts{std::make_unique<ScriptAccess>(config)}, addressIndex{std::make_unique<AddressIndex>(config.addressDBFilePath().native(), true)}, hashIndex{std::make_unique<HashIndex>(config.hashIndexFilePath().native(), true)} {}
+    DataAccess::DataAccess(DataConfiguration config_) : config(std::move(config_)), chain{std::make_unique<ChainAccess>(config)}, scripts{std::make_unique<ScriptAccess>(config)}, addressIndex{std::make_unique<AddressIndex>(config.addressDBFilePath().native(), true)}, hashIndex{std::make_unique<HashIndex>(config.hashIndexFilePath().native(), true)} {}
 }
 
 

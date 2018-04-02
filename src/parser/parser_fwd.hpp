@@ -8,11 +8,17 @@
 #ifndef parser_fwd_hpp
 #define parser_fwd_hpp
 
+#include "config.hpp"
+
 #include <blocksci/address/address_types.hpp>
 
-
+#ifdef BLOCKSCI_FILE_PARSER
 struct FileTag{};
+#endif
+
+#ifdef BLOCKSCI_RPC_PARSER
 struct RPCTag{};
+#endif
 
 template <typename ParseType>
 struct BlockInfo;

@@ -31,7 +31,7 @@ namespace blocksci {
         
         RawAddress() {}
         RawAddress(uint32_t addressNum_, AddressType::Enum type_) : scriptNum(addressNum_), type(type_) {}
-        RawAddress(const Address &address);
+        explicit RawAddress(const Address &address);
     };
     
     class Address {

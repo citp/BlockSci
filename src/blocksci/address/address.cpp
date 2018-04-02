@@ -109,7 +109,7 @@ namespace blocksci {
         for (uint32_t scriptNum = 1; scriptNum <= count; scriptNum++) {
             ScriptAddress<type> script(scriptNum, access);
             if (script.addressString().compare(0, prefix.length(), prefix) == 0) {
-                addresses.push_back(Address(scriptNum, type, access));
+                addresses.emplace_back(scriptNum, type, access);
             }
         }
         return addresses;

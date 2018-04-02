@@ -23,8 +23,8 @@ struct SpendData {
     static constexpr auto address_v = type;
     
     SpendData() = default;
-    SpendData(const ScriptOutput<type> &) {}
-    SpendData(const blocksci::ScriptAddress<type> &) {}
+    explicit SpendData(const ScriptOutput<type> &) {}
+    explicit SpendData(const blocksci::ScriptAddress<type> &) {}
 };
 
 template<>
@@ -35,8 +35,8 @@ struct SpendData<blocksci::AddressType::Enum::MULTISIG> {
     std::array<blocksci::CPubKey, 16> addresses;
     
     SpendData() = default;
-    SpendData(const ScriptOutput<blocksci::AddressType::Enum::MULTISIG> &output);
-    SpendData(const blocksci::ScriptAddress<blocksci::AddressType::Enum::MULTISIG> &output);
+    explicit SpendData(const ScriptOutput<blocksci::AddressType::Enum::MULTISIG> &output);
+    explicit SpendData(const blocksci::ScriptAddress<blocksci::AddressType::Enum::MULTISIG> &output);
 };
 
 using SpendDataType = blocksci::to_variadic_t<blocksci::to_address_tuple_t<SpendData>, mpark::variant>;
@@ -45,10 +45,10 @@ class AnySpendData {
 public:
     SpendDataType wrapped;
     
-    AnySpendData(const SpendDataType &var) : wrapped(var) {}
+    explicit AnySpendData(const SpendDataType &var) : wrapped(var) {}
     
-    AnySpendData(const AnyScriptOutput &scriptOutput);
-    AnySpendData(const blocksci::AnyScript &scriptData);
+    explicit AnySpendData(const AnyScriptOutput &scriptOutput);
+    explicit AnySpendData(const blocksci::AnyScript &scriptData);
 };
 
 
