@@ -8,7 +8,10 @@
 
 #include "optional_py.hpp"
 #include "variant_py.hpp"
+#include "block_py.hpp"
 #include "input_py.hpp"
+#include "output_py.hpp"
+#include "tx_py.hpp"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -17,10 +20,7 @@
 namespace py = pybind11;
 
 void init_address(py::module &m);
-void init_tx(py::module &m);
 void init_tx_summary(py::module &m);
-void init_output(py::module &m);
-void init_block(py::module &m);
 void init_blockchain(py::module &m);
 void init_ranges(py::module &m);
 void init_heuristics(py::module &m);

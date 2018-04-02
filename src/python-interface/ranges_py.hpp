@@ -9,10 +9,14 @@
 #define ranges_py_hpp
 
 #include <blocksci/chain/block.hpp>
+#include <blocksci/scripts/script_variant.hpp>
 
 #include <range/v3/view/any_view.hpp>
 #include <range/v3/view/stride.hpp>
 #include <range/v3/view/slice.hpp>
+#include <range/v3/view/zip.hpp>
+#include <range/v3/view/transform.hpp>
+#include <range/v3/view/filter.hpp>
 #include <range/v3/range_for.hpp>
 
 #include <pybind11/pybind11.h>
@@ -22,6 +26,23 @@
 
 #include <iostream>
 
+
+//template <typename T>
+//struct NativeBlockSciListType : std::false_type;
+//struct NativeBlockSciListType<blocksci::Block> : std::true_type {};
+//struct NativeBlockSciListType<blocksci::Transaction> : std::true_type {};
+//
+//struct LazyRange {};
+//struct NumpyRange {};
+//struct PythonList {};
+//
+//template <typename T>
+//struct BlockSciPythonRangeType;
+//
+//template <typename Duration>
+//struct BlockSciPythonRangeType<std::chrono::time_point<std::chrono::system_clock, Duration>> {
+//    using type = py::array
+//}
 
 template <typename T, CONCEPT_REQUIRES_(!ranges::Range<T>())>
 auto pythonAllType(T && t) {
@@ -35,25 +56,6 @@ auto pythonAllType(T && t) {
         list.append(pythonAllType(std::forward<decltype(a)>(a)));
     }
     return list;
-}
-
-template<typename Class>
-void addNestedRangeMethodsImpl(Class &, std::false_type) {}
-
-template<typename Class>
-void addNestedRangeMethodsImpl(Class &cl, std::true_type) {
-    using Range = typename Class::type;
-    cl
-    .def_property_readonly("flatten", [](Range &view) -> ranges::any_view<ranges::range_value_type_t<ranges::range_value_type_t<Range>>>{
-        return view | ranges::view::join;
-    })
-    ;
-}
-
-template<typename Class>
-void addNestedRangeMethods(Class &cl) {
-    using Range = typename Class::type;
-    return addNestedRangeMethodsImpl(cl, ranges::Range<ranges::range_value_type_t<Range>>{});
 }
 
 template<typename Range, typename... Extra, CONCEPT_REQUIRES_(ranges::RandomAccessRange<Range>() && ranges::SizedRange<Range>())>
@@ -89,7 +91,6 @@ auto addRangeClass(pybind11::module &m, const std::string &name, const Extra &..
         return pythonAllType(range);
     }, "Returns a list of all of the objects in the range")
     ;
-    addNestedRangeMethods(cl);
     return cl;
 }
 
@@ -125,7 +126,6 @@ auto addRangeClass(pybind11::module &m, const std::string &name, const Extra &..
         return pythonAllType(range);
     }, "Returns a list of all of the objects in the range")
     ;
-    addNestedRangeMethods(cl);
     return cl;
 }
 
@@ -160,7 +160,6 @@ auto addRangeClass(pybind11::module &m, const std::string &name, const Extra &..
         return pythonAllType(range);
     }, "Returns a list of all of the objects in the range")
     ;
-    addNestedRangeMethods(cl);
     return cl;
 }
 
@@ -168,13 +167,12 @@ template<typename Range, typename... Extra, CONCEPT_REQUIRES_(ranges::InputRange
 auto addRangeClass(pybind11::module &m, const std::string &name, const Extra &... extra) {
     pybind11::class_<Range> cl(m, name.c_str(), extra...);
     cl
-    .def("__len__", [](Range &range) { return ranges::distance(range); })
-    .def("__bool__", [](Range &range) { return ranges::distance(range) > 0; })
+    .def("__iter__", [](Range &range) { return pybind11::make_iterator(range.begin(), range.end()); },
+         pybind11::keep_alive<0, 1>())
     .def_property_readonly("all", [](Range & range) { 
         return pythonAllType(range);
     }, "Returns a list of all of the objects in the range")
     ;
-    addNestedRangeMethods(cl);
     return cl;
 }
 
@@ -210,32 +208,122 @@ using is_numeric = pybind11::detail::satisfies_any_of<T, std::is_arithmetic, pyb
 template <typename T>
 using numpy_transformable = and_<is_numeric<T>, forms_normal_vector<T>>;
 
-template <typename Ty, class F, std::size_t ... Is, class T>
-auto applyMethodsToRangeImpl(F f, std::index_sequence<Is...>, T, std::true_type) {
-    return [&f](Ty &view, const std::tuple_element_t<Is, typename T::arg_tuple> &... args) {
-        std::vector<typename T::result_type> ret;
-        RANGES_FOR(auto && tx, view) {
-            ret.push_back(f(std::forward<decltype(tx)>(tx), args...));
-        }
-        return pybind11::array_t<typename T::result_type>(ret.size(), ret.data());
+struct ForcedBool {
+    bool val;
+};
+
+template <typename T>
+struct numpy_dtype {
+    static pybind11::dtype value() {
+        return pybind11::dtype::of<T>();
     };
+};
+
+template <>
+struct numpy_dtype<std::chrono::system_clock::duration> {
+    static pybind11::dtype value() {
+        return pybind11::dtype{"datetime64[ns]"};
+    }
+};
+
+template <>
+struct numpy_dtype<std::array<char, 64>> {
+    static pybind11::dtype value() {
+        return pybind11::dtype{"S64"};
+    }
+};
+
+template <>
+struct numpy_dtype<pybind11::bytes> {
+    static pybind11::dtype value() {
+        return pybind11::dtype{"bytes"};
+    }
+};
+
+template <>
+struct numpy_dtype<ForcedBool> {
+    static pybind11::dtype value() {
+        return pybind11::dtype{"bool"};
+    }
+};
+
+
+template <typename T>
+inline auto toNumpy(T && val) {
+    return std::forward<T>(val);
 }
+
+inline auto toNumpy(std::chrono::system_clock::time_point && time) {
+    return time.time_since_epoch();
+}
+
+inline std::array<char, 64> toNumpy(blocksci::uint256 && s) {
+    auto hexStr = s.GetHex();
+    std::array<char, 64> ret;
+    std::copy_n(hexStr.begin(), 64, ret.begin());
+    return ret;
+}
+
+inline ForcedBool toNumpy(bool && s) {
+    return {s};
+}
+
+template <typename T>
+struct is_blocksci_type : std::false_type {};
+
+template <>
+struct is_blocksci_type<blocksci::Blockchain> : std::true_type {};
+
+template <>
+struct is_blocksci_type<blocksci::Block> : std::true_type {};
+
+template <>
+struct is_blocksci_type<blocksci::Transaction> : std::true_type {};
+
+template <>
+struct is_blocksci_type<ranges::optional<blocksci::Transaction>> : std::true_type {};
+
+template <>
+struct is_blocksci_type<blocksci::Input> : std::true_type {};
+
+template <>
+struct is_blocksci_type<ranges::optional<blocksci::Input>> : std::true_type {};
+
+template <>
+struct is_blocksci_type<blocksci::Output> : std::true_type {};
+
+template <>
+struct is_blocksci_type<ranges::optional<blocksci::Output>> : std::true_type {};
+
+template <>
+struct is_blocksci_type<blocksci::AnyScript::ScriptVariant> : std::true_type {};
 
 template <typename Ty, class F, std::size_t ... Is, class T>
 auto applyMethodsToRangeImpl(F f, std::index_sequence<Is...>, T, std::false_type) {
     return [&f](Ty &view, const std::tuple_element_t<Is, typename T::arg_tuple> &... args) {
-        pybind11::list list;
+        using result_type = typename T::result_type;
+        using vector_value_type = decltype(toNumpy(std::declval<result_type>()));
+        std::vector<vector_value_type> ret;
         RANGES_FOR(auto && tx, view) {
-            list.append(f(std::forward<decltype(tx)>(tx), args...));
+            ret.push_back(toNumpy(f(std::forward<decltype(tx)>(tx), args...)));
         }
-        return list;
+        return pybind11::array{numpy_dtype<vector_value_type>::value(), ret.size(), ret.data()};
     };
 }
 
+template <typename Ty, class F, std::size_t ... Is, class T>
+auto applyMethodsToRangeImpl(F f, std::index_sequence<Is...>, T, std::true_type) {
+    return [&f](Ty &view, const std::tuple_element_t<Is, typename T::arg_tuple> &... args) -> ranges::any_view<typename T::result_type, ranges::get_categories<Ty>()> {
+        return view | ranges::view::transform(f);
+    };
+    
+}
+
+//forms_normal_vector<typename traits::result_type>{}
 template <typename T, typename F>
 auto applyMethodsToRange(F f) {
     using traits = function_traits<F>;
-    return applyMethodsToRangeImpl<T>(f, std::make_index_sequence<traits::arity>{}, traits{}, numpy_transformable<typename traits::result_type>{});
+    return applyMethodsToRangeImpl<T>(f, std::make_index_sequence<traits::arity>{}, traits{}, std::integral_constant<bool, is_blocksci_type<typename traits::result_type>::value>{});
 }
 
 

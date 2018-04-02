@@ -21,6 +21,8 @@
 
 #include <pybind11/pybind11.h>
 
+void init_input(pybind11::module &m);
+
 template <typename Class, typename FuncApplication, typename FuncDoc>
 void addInputMethods(Class &cl, FuncApplication func, FuncDoc func2) {
 	using namespace blocksci;
@@ -93,7 +95,5 @@ void addInputRangeMethods(Class &cl, FuncApplication func) {
     }, "Return a range including only inputs sent to the given address type")
     ;
 }
-
-void init_input(pybind11::module &m);
 
 #endif /* input_py_hpp */
