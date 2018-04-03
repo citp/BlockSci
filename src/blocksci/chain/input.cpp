@@ -13,9 +13,9 @@
 #include "transaction.hpp"
 #include "inout_pointer.hpp"
 #include "chain_access.hpp"
-#include "address/address.hpp"
-#include "util/hash.hpp"
-#include "scripts/script_variant.hpp"
+#include <blocksci/address/address.hpp>
+#include <blocksci/util/hash.hpp>
+#include <blocksci/scripts/script_variant.hpp>
 
 #include <sstream>
 

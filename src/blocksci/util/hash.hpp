@@ -9,7 +9,7 @@
 #ifndef hash_hpp
 #define hash_hpp
 
-#include "util/bitcoin_uint256.hpp"
+#include <blocksci/util/bitcoin_uint256.hpp>
 
 template <class T>
 inline void hash_combine(std::size_t& seed, const T& v) {

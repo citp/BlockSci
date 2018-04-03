@@ -7,11 +7,11 @@
 //
 
 #include "hash_index.hpp"
-#include "util/bitcoin_uint256.hpp"
-#include "scripts/bitcoin_base58.hpp"
-#include "scripts/script_info.hpp"
-#include "address/address.hpp"
-#include "util/util.hpp"
+#include <blocksci/util/bitcoin_uint256.hpp>
+#include <blocksci/scripts/bitcoin_base58.hpp>
+#include <blocksci/scripts/script_info.hpp>
+#include <blocksci/address/address.hpp>
+#include <blocksci/util/util.hpp>
 
 #include <array>
 

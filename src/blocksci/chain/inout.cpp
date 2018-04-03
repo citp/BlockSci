@@ -7,9 +7,8 @@
 //
 
 #include "inout.hpp"
-#include "address/address.hpp"
-
-#include "util/hash.hpp"
+#include <blocksci/address/address.hpp>
+#include <blocksci/util/hash.hpp>
 
 #include <sstream>
 

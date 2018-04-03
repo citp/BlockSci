@@ -12,9 +12,9 @@
 #include "block.hpp"
 #include "inout_pointer.hpp"
 #include "transaction.hpp"
-#include "address/address.hpp"
-#include "scripts/script_variant.hpp"
-#include "util/hash.hpp"
+#include <blocksci/address/address.hpp>
+#include <blocksci/scripts/script_variant.hpp>
+#include <blocksci/util/hash.hpp>
 
 #include <sstream>
 

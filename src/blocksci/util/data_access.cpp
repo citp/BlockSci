@@ -6,8 +6,8 @@
 //  Copyright © 2017 Harry Kalodner. All rights reserved.
 //
 
-#include "util/data_access.hpp"
-#include "util/data_configuration.hpp"
+#include "data_access.hpp"
+#include "data_configuration.hpp"
 
 #include <blocksci/scripts/script_access.hpp>
 #include <blocksci/chain/chain_access.hpp>

@@ -10,14 +10,12 @@
 #include "block.hpp"
 #include "transaction.hpp"
 #include "output.hpp"
-#include "heuristics/tx_identification.hpp"
-
-#include "chain/chain_access.hpp"
-#include "index/address_index.hpp"
-#include "index/address_output_range.hpp"
-#include "index/hash_index.hpp"
-
-#include "util/data_configuration.hpp"
+#include <blocksci/heuristics/tx_identification.hpp>
+#include <blocksci/chain/chain_access.hpp>
+#include <blocksci/index/address_index.hpp>
+#include <blocksci/index/address_output_range.hpp>
+#include <blocksci/index/hash_index.hpp>
+#include <blocksci/util/data_configuration.hpp>
 
 #include <range/v3/view/drop.hpp>
 #include <range/v3/view/group_by.hpp>

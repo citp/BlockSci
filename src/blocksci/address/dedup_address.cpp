@@ -11,14 +11,14 @@
 #include "dedup_address.hpp"
 #include "address.hpp"
 #include "address_info.hpp"
-#include "scripts/bitcoin_base58.hpp"
-#include "scripts/script_access.hpp"
-#include "scripts/scripts_fwd.hpp"
-#include "scripts/script_variant.hpp"
-#include "chain/transaction.hpp"
-#include "chain/output.hpp"
-#include "index/address_index.hpp"
-#include "index/hash_index.hpp"
+#include <blocksci/scripts/bitcoin_base58.hpp>
+#include <blocksci/scripts/script_access.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
+#include <blocksci/scripts/script_variant.hpp>
+#include <blocksci/chain/transaction.hpp>
+#include <blocksci/chain/output.hpp>
+#include <blocksci/index/address_index.hpp>
+#include <blocksci/index/hash_index.hpp>
 
 #include <unordered_set>
 

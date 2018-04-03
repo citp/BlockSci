@@ -7,11 +7,11 @@
 //
 
 #include "inout_pointer.hpp"
-#include "util/hash.hpp"
 #include "chain_access.hpp"
 #include "output.hpp"
 #include "input.hpp"
 #include "transaction.hpp"
+#include <blocksci/util/hash.hpp>
 
 #include <range/v3/view/transform.hpp>
 #include <range/v3/view/filter.hpp>

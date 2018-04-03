@@ -6,7 +6,7 @@
 //
 
 #include "script_variant.hpp"
-#include "chain/transaction.hpp"
+#include <blocksci/chain/transaction.hpp>
 #include <blocksci/address/address_info.hpp>
 
 namespace blocksci {

@@ -6,10 +6,10 @@
 //
 
 #include "state.hpp"
-#include "chain/chain_access.hpp"
-#include "chain/block.hpp"
-#include "scripts/script_access.hpp"
-#include "util/util.hpp"
+#include "util.hpp"
+#include <blocksci/chain/chain_access.hpp>
+#include <blocksci/chain/block.hpp>
+#include <blocksci/scripts/script_access.hpp>
 
 namespace blocksci {
     

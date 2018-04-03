@@ -6,7 +6,7 @@
 //  Copyright © 2017 Harry Kalodner. All rights reserved.
 //
 
-#include "util/hash.hpp"
+#include "hash.hpp"
 
 #include <openssl/sha.h>
 #include <openssl/ripemd.h>

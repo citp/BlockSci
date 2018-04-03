@@ -9,12 +9,11 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "chain_access.hpp"
-#include "util/data_configuration.hpp"
 #include "block.hpp"
 #include "transaction.hpp"
 #include "output.hpp"
 #include "input.hpp"
-
+#include <blocksci/util/data_configuration.hpp>
 #include <blocksci/util/file_mapper.hpp>
 
 #include <range/v3/iterator_range.hpp>

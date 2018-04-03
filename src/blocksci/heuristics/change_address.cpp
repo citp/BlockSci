@@ -9,8 +9,8 @@
 
 #include "change_address.hpp"
 #include "tx_identification.hpp"
-#include "chain/output.hpp"
-#include "chain/transaction.hpp"
+#include <blocksci/chain/output.hpp>
+#include <blocksci/chain/transaction.hpp>
 #include <blocksci/scripts/script_variant.hpp>
 
 #include <unordered_set>

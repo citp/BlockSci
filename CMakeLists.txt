@@ -50,7 +50,6 @@ target_include_directories(blocksci_mpark_variant INTERFACE
 )
 INSTALL(TARGETS blocksci_mpark_variant EXPORT blocksci-targets)
 
-
 install(DIRECTORY libs/range-v3/include/ DESTINATION include/blocksci/libs FILES_MATCHING PATTERN "*.hpp")
 install(DIRECTORY libs/variant/include/ DESTINATION include/blocksci/libs FILES_MATCHING PATTERN "*.hpp")
 install(DIRECTORY libs/pybind11 DESTINATION ${CMAKE_SOURCE_DIR}/Notebooks/blocksci)
@@ -58,10 +57,33 @@ install(DIRECTORY libs/pybind11 DESTINATION ${CMAKE_SOURCE_DIR}/Notebooks/blocks
 add_library(clipp INTERFACE)
 target_include_directories(clipp INTERFACE SYSTEM libs/clipp/include)
 
-link_directories(/usr/local/lib)
-include_directories("src")
+include(ExternalProject)
+ExternalProject_Add(project_secp256k1
+  GIT_REPOSITORY "https://github.com/bitcoin-core/secp256k1.git"
+  GIT_TAG "master"
+  PREFIX "${CMAKE_CURRENT_BINARY_DIR}/secp256k1"
+  CONFIGURE_COMMAND <SOURCE_DIR>/configure --enable-module-recovery --prefix <INSTALL_DIR>
+  UPDATE_COMMAND "" 
+)
+
+ExternalProject_Add_Step(project_secp256k1 autogen
+   COMMAND              <SOURCE_DIR>/autogen.sh
+   WORKING_DIRECTORY    <SOURCE_DIR>
+   DEPENDEES            update
+   DEPENDERS            configure
+)
+
+ExternalProject_Get_Property(project_secp256k1 install_dir)
+add_library(secp256k1 INTERFACE)
+add_dependencies(secp256k1 project_secp256k1)
+target_include_directories(secp256k1 INTERFACE ${install_dir}/include)
+target_link_libraries(secp256k1 INTERFACE ${install_dir}/lib/libsecp256k1.a)
+target_link_libraries(secp256k1 INTERFACE gmp)
+
+include(cppcheck.cmake)
 
 add_subdirectory(libs/pybind11)
+add_subdirectory(libs/bitcoin-api-cpp)
 
 add_subdirectory(src/blocksci)
 add_subdirectory(src/parser)

@@ -15,12 +15,11 @@
 #include "chain_access.hpp"
 #include "inout_pointer.hpp"
 #include "algorithms.hpp"
-#include "address/address.hpp"
-#include "scripts/script_variant.hpp"
-#include "index/hash_index.hpp"
-#include "heuristics/change_address.hpp"
-
-#include "util/hash.hpp"
+#include <blocksci/address/address.hpp>
+#include <blocksci/scripts/script_variant.hpp>
+#include <blocksci/index/hash_index.hpp>
+#include <blocksci/heuristics/change_address.hpp>
+#include <blocksci/util/hash.hpp>
 
 #include <unordered_map>
 #include <unordered_set>

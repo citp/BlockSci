@@ -6,9 +6,9 @@
 //
 
 #include "tx_identification.hpp"
-#include "chain/transaction.hpp"
-#include "util/hash.hpp"
-#include "scripts/script_variant.hpp"
+#include <blocksci/chain/transaction.hpp>
+#include <blocksci/util/hash.hpp>
+#include <blocksci/scripts/script_variant.hpp>
 
 #include <unordered_set>
 #include <unordered_map>

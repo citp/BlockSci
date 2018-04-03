@@ -13,8 +13,8 @@
 #include "output.hpp"
 #include "input.hpp"
 #include "transaction_summary.hpp"
-#include "address/address.hpp"
-#include "scripts/nulldata_script.hpp"
+#include <blocksci/address/address.hpp>
+#include <blocksci/scripts/nulldata_script.hpp>
 
 #include <range/v3/to_container.hpp>
 #include <range/v3/range_for.hpp>

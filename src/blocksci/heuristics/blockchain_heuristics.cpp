@@ -7,7 +7,7 @@
 
 #include "blockchain_heuristics.hpp"
 #include "tx_identification.hpp"
-#include "chain/blockchain.hpp"
+#include <blocksci/chain/blockchain.hpp>
 
 namespace blocksci { namespace heuristics {
     std::vector<Transaction> getDeanonTxes(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock) {

@@ -150,13 +150,6 @@ Note that BlockSci only actively supports python 3.
 	liblz4-dev libzstd-dev
 	sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7
 
-	git clone https://github.com/bitcoin-core/secp256k1
-	cd secp256k1
-	./autogen.sh
-	./configure --enable-module-recovery
-	make
-	sudo make install
-	
 	cd ~
 	wget https://cmake.org/files/v3.10/cmake-3.10.0.tar.gz
 	tar xzf cmake-3.10.0.tar.gz
@@ -178,17 +171,7 @@ Note that BlockSci only actively supports python 3.
 	cd BlockSci
 	git submodule init
 	git submodule update --recursive
-	sudo cp -r libs/range-v3/include/meta /usr/local/include
-	sudo cp -r libs/range-v3/include/range /usr/local/include
 
-	cd libs/bitcoin-api-cpp
-	mkdir release
-	cd release
-	cmake -DCMAKE_BUILD_TYPE=Release ..
-	make
-	sudo make install
-
-	cd ../../..
 	mkdir release
 	cd release
 	cmake -DCMAKE_BUILD_TYPE=Release ..

@@ -45,31 +45,29 @@ source_group(blocksci FILES ${BLOCKSCI_HEADERS} ${BLOCKSCI_SOURCES})
 
 
 
-target_link_libraries( blocksci Threads::Threads)
-target_link_libraries( blocksci Boost::system Boost::filesystem Boost::thread Boost::iostreams Boost::serialization)
-target_link_libraries( blocksci secp256k1)
-target_link_libraries( blocksci OpenSSL::Crypto )
-target_link_libraries( blocksci rocksdb )
-target_link_libraries( blocksci blocksci_mpark_variant blocksci_ranges)
+target_link_libraries( blocksci PUBLIC Threads::Threads)
+target_link_libraries( blocksci PUBLIC Boost::system Boost::filesystem Boost::thread Boost::iostreams Boost::serialization)
+target_link_libraries( blocksci PUBLIC OpenSSL::Crypto )
+target_link_libraries( blocksci PUBLIC rocksdb )
+target_link_libraries( blocksci PRIVATE secp256k1)
+target_link_libraries( blocksci PUBLIC blocksci_mpark_variant blocksci_ranges)
 
 SET_TARGET_PROPERTIES(blocksci_static PROPERTIES OUTPUT_NAME blocksci)
 
-TARGET_LINK_LIBRARIES(blocksci_static
-                        Threads::Threads
-                        Boost::system Boost::filesystem Boost::thread Boost::iostreams Boost::serialization
-                        secp256k1
-                        OpenSSL::Crypto
-                        rocksdb
-                        blocksci_mpark_variant blocksci_ranges
-                        )
+target_link_libraries( blocksci_static PUBLIC Threads::Threads)
+target_link_libraries( blocksci_static PUBLIC Boost::system Boost::filesystem Boost::thread Boost::iostreams Boost::serialization)
+target_link_libraries( blocksci_static PUBLIC OpenSSL::Crypto )
+target_link_libraries( blocksci_static PUBLIC rocksdb )
+target_link_libraries( blocksci_static PRIVATE secp256k1)
+target_link_libraries( blocksci_static PUBLIC blocksci_mpark_variant blocksci_ranges)
 
 target_include_directories(blocksci PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
   $<INSTALL_INTERFACE:include/blocksci>
 )
 
 target_include_directories(blocksci_static PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
   $<INSTALL_INTERFACE:include/blocksci>
 )
 
@@ -99,7 +97,6 @@ configure_package_config_file(blocksci-config.cmake
   INSTALL_DESTINATION "${ConfigPackageLocation}"
   PATH_VARS INCLUDE_INSTALL_DIR SYSCONFIG_INSTALL_DIR)
 
-#install (EXPORT  DESTINATION ${CMAKE_CONFIG_DEST}/blocksci-config.cmake)
 install (EXPORT blocksci-targets FILE blocksci-targets.cmake DESTINATION ${ConfigPackageLocation} )
 
 install(

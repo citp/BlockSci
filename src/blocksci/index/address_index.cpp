@@ -9,17 +9,17 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "address_index.hpp"
-#include "address/equiv_address.hpp"
-#include "chain/transaction.hpp"
-#include "chain/inout_pointer.hpp"
-#include "chain/output.hpp"
-#include "chain/input.hpp"
-#include "address/address.hpp"
-#include "address/dedup_address.hpp"
-#include "address/address_info.hpp"
-#include "scripts/script_info.hpp"
-#include "scripts/script.hpp"
-#include "scripts/script_variant.hpp"
+#include <blocksci/address/equiv_address.hpp>
+#include <blocksci/chain/transaction.hpp>
+#include <blocksci/chain/inout_pointer.hpp>
+#include <blocksci/chain/output.hpp>
+#include <blocksci/chain/input.hpp>
+#include <blocksci/address/address.hpp>
+#include <blocksci/address/dedup_address.hpp>
+#include <blocksci/address/address_info.hpp>
+#include <blocksci/scripts/script_info.hpp>
+#include <blocksci/scripts/script.hpp>
+#include <blocksci/scripts/script_variant.hpp>
 
 #include <range/v3/utility/optional.hpp>
 #include <range/v3/view/filter.hpp>
