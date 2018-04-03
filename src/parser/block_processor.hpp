@@ -47,14 +47,14 @@ struct OutputLinkData {
 };
 
 std::vector<unsigned char> readNewBlock(uint32_t firstTxNum, const BlockInfoBase &block, BlockFileReaderBase &fileReader, NewBlocksFiles &files, const std::function<bool(RawTransaction *&tx)> &loadFunc, const std::function<void(RawTransaction *tx)> &outFunc);
-void calculateHash(RawTransaction *tx, FixedSizeFileWriter<blocksci::uint256> &hashFile);
-void generateScriptOutputs(RawTransaction *tx);
-void connectUTXOs(RawTransaction *tx, UTXOState &utxoState);
-void serializeTransaction(RawTransaction *tx, IndexedFileWriter<1> &txFile, FixedSizeFileWriter<OutputLinkData> &linkDataFile);
-void generateScriptInput(RawTransaction *tx, UTXOAddressState &utxoAddressState);
-void processAddresses(RawTransaction *tx, AddressState &addressState);
-void recordAddresses(RawTransaction *tx, UTXOScriptState &state);
-void serializeAddressess(RawTransaction *tx, AddressWriter &addressWriter);
+void calculateHash(RawTransaction &tx, FixedSizeFileWriter<blocksci::uint256> &hashFile);
+void generateScriptOutputs(RawTransaction &tx);
+void connectUTXOs(RawTransaction &tx, UTXOState &utxoState);
+void serializeTransaction(RawTransaction &tx, IndexedFileWriter<1> &txFile, FixedSizeFileWriter<OutputLinkData> &linkDataFile);
+void generateScriptInput(RawTransaction &tx, UTXOAddressState &utxoAddressState);
+void processAddresses(RawTransaction &tx, AddressState &addressState);
+void recordAddresses(RawTransaction &tx, UTXOScriptState &state);
+void serializeAddressess(RawTransaction &tx, AddressWriter &addressWriter);
 void backUpdateTxes(const ParserConfigurationBase &config);
 
 

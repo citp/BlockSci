@@ -285,109 +285,109 @@ std::vector<unsigned char> readNewBlock(uint32_t firstTxNum, const BlockInfoBase
     return coinbase;
 }
 
-void calculateHash(RawTransaction *tx, FixedSizeFileWriter<blocksci::uint256> &hashFile) {
-    tx->calculateHash();
-    hashFile.write(tx->hash);
+void calculateHash(RawTransaction &tx, FixedSizeFileWriter<blocksci::uint256> &hashFile) {
+    tx.calculateHash();
+    hashFile.write(tx.hash);
 }
 
-void generateScriptOutputs(RawTransaction *tx) {
-    tx->scriptOutputs.clear();
-    for (auto &output : tx->outputs) {
-        tx->scriptOutputs.emplace_back(output.getScriptView(), tx->isSegwit);
+void generateScriptOutputs(RawTransaction &tx) {
+    tx.scriptOutputs.clear();
+    for (auto &output : tx.outputs) {
+        tx.scriptOutputs.emplace_back(output.getScriptView(), tx.isSegwit);
     }
 }
 
-void connectUTXOs(RawTransaction *tx, UTXOState &utxoState) {
-    for (auto &input : tx->inputs) {
+void connectUTXOs(RawTransaction &tx, UTXOState &utxoState) {
+    for (auto &input : tx.inputs) {
         input.utxo = utxoState.erase(input.rawOutputPointer);
     }
     
-    for (uint16_t i = 0; i < tx->outputs.size(); i++) {
-        auto &output = tx->outputs[i];
-        auto &scriptOutput = tx->scriptOutputs[i];
+    for (uint16_t i = 0; i < tx.outputs.size(); i++) {
+        auto &output = tx.outputs[i];
+        auto &scriptOutput = tx.scriptOutputs[i];
         auto type = scriptOutput.type();
         if (isSpendable(type)) {
-            UTXO utxo{output.value, tx->txNum, type};
-            RawOutputPointer pointer{tx->hash, i};
+            UTXO utxo{output.value, tx.txNum, type};
+            RawOutputPointer pointer{tx.hash, i};
             utxoState.add(pointer, utxo);
         }
     }
 }
 
-void generateScriptInput(RawTransaction *tx, UTXOAddressState &utxoAddressState) {
-    tx->scriptInputs.clear();
+void generateScriptInput(RawTransaction &tx, UTXOAddressState &utxoAddressState) {
+    tx.scriptInputs.clear();
     uint16_t i = 0;
-    for (auto &input : tx->inputs) {
-        InputView inputView(i, tx->txNum, input.witnessStack, tx->isSegwit);
+    for (auto &input : tx.inputs) {
+        InputView inputView(i, tx.txNum, input.witnessStack, tx.isSegwit);
         auto spendData = utxoAddressState.spendOutput(input.getOutputPointer(), input.utxo.type);
-        tx->scriptInputs.emplace_back(inputView, input.getScriptView(), *tx, spendData);
+        tx.scriptInputs.emplace_back(inputView, input.getScriptView(), tx, spendData);
         i++;
     }
     
     i = 0;
-    for (auto &scriptOutput : tx->scriptOutputs) {
-        utxoAddressState.addOutput(AnySpendData{scriptOutput}, {tx->txNum, i});
+    for (auto &scriptOutput : tx.scriptOutputs) {
+        utxoAddressState.addOutput(AnySpendData{scriptOutput}, {tx.txNum, i});
         i++;
     }
 }
 
-void processAddresses(RawTransaction *tx, AddressState &addressState) {
-    for (auto &scriptInput : tx->scriptInputs) {
+void processAddresses(RawTransaction &tx, AddressState &addressState) {
+    for (auto &scriptInput : tx.scriptInputs) {
         scriptInput.process(addressState);
     }
     
-    for (auto &scriptOutput : tx->scriptOutputs) {
+    for (auto &scriptOutput : tx.scriptOutputs) {
         scriptOutput.resolve(addressState);
     }
 }
 
-void recordAddresses(RawTransaction *tx, UTXOScriptState &state) {
-    for (size_t i = 0; i < tx->inputs.size(); i++) {
-        auto &input = tx->inputs[i];
-        auto &scriptInput = tx->scriptInputs[i];
+void recordAddresses(RawTransaction &tx, UTXOScriptState &state) {
+    for (size_t i = 0; i < tx.inputs.size(); i++) {
+        auto &input = tx.inputs[i];
+        auto &scriptInput = tx.scriptInputs[i];
         auto scriptNum = state.erase(input.getOutputPointer());
         assert(scriptNum > 0);
         scriptInput.setScriptNum(scriptNum);
     }
     
     uint16_t i = 0;
-    for (auto &scriptOutput : tx->scriptOutputs) {
+    for (auto &scriptOutput : tx.scriptOutputs) {
         auto scriptNum = scriptOutput.address().scriptNum;
         assert(scriptNum > 0);
-        state.add({tx->txNum, i}, scriptNum);
+        state.add({tx.txNum, i}, scriptNum);
         i++;
     }
 }
 
-void serializeTransaction(RawTransaction *tx, IndexedFileWriter<1> &txFile, FixedSizeFileWriter<OutputLinkData> &linkDataFile) {
+void serializeTransaction(RawTransaction &tx, IndexedFileWriter<1> &txFile, FixedSizeFileWriter<OutputLinkData> &linkDataFile) {
     txFile.writeIndexGroup();
-    txFile.write(tx->getRawTransaction());
+    txFile.write(tx.getRawTransaction());
     
-    for (size_t i = 0; i < tx->inputs.size(); i++) {
-        auto &input = tx->inputs[i];
-        auto &scriptInput = tx->scriptInputs[i];
-        linkDataFile.write({input.getOutputPointer(), tx->txNum});
+    for (size_t i = 0; i < tx.inputs.size(); i++) {
+        auto &input = tx.inputs[i];
+        auto &scriptInput = tx.scriptInputs[i];
+        linkDataFile.write({input.getOutputPointer(), tx.txNum});
         blocksci::Inout blocksciInput{input.utxo.txNum, scriptInput.address(), input.utxo.value};
         txFile.write(blocksciInput);
     }
     
-    for (size_t i = 0; i < tx->outputs.size(); i++) {
-        auto &output = tx->outputs[i];
-        auto &scriptOutput = tx->scriptOutputs[i];
+    for (size_t i = 0; i < tx.outputs.size(); i++) {
+        auto &output = tx.outputs[i];
+        auto &scriptOutput = tx.scriptOutputs[i];
         blocksci::Inout blocksciOutput{0, scriptOutput.address(), output.value};
         txFile.write(blocksciOutput);
     }
 }
 
-void serializeAddressess(RawTransaction *tx, AddressWriter &addressWriter) {
-    for (size_t i = 0; i < tx->inputs.size(); i++) {
-        auto &input = tx->inputs[i];
-        auto &scriptInput = tx->scriptInputs[i];
-        addressWriter.serialize(scriptInput, tx->txNum, input.utxo.txNum);
+void serializeAddressess(RawTransaction &tx, AddressWriter &addressWriter) {
+    for (size_t i = 0; i < tx.inputs.size(); i++) {
+        auto &input = tx.inputs[i];
+        auto &scriptInput = tx.scriptInputs[i];
+        addressWriter.serialize(scriptInput, tx.txNum, input.utxo.txNum);
     }
     
-    for (auto &scriptOutput : tx->scriptOutputs) {
-        addressWriter.serialize(scriptOutput, tx->txNum);
+    for (auto &scriptOutput : tx.scriptOutputs) {
+        addressWriter.serialize(scriptOutput, tx.txNum);
     }
 }
 
@@ -528,38 +528,38 @@ void BlockProcessor::addNewBlocks(const ParserConfiguration<ParseTag> &config, s
     auto advanceFunc = [](RawTransaction *) { return true; };
     
     auto calculateHashesFunc = [&](RawTransaction *tx) {
-        calculateHash(tx, hashFile);
+        calculateHash(*tx, hashFile);
     };
     
     auto generateScriptOutputsFunc = [](RawTransaction *tx) {
-        generateScriptOutputs(tx);
+        generateScriptOutputs(*tx);
     };
     
     auto connectUTXOsFunc = [&](RawTransaction *tx) {
-        connectUTXOs(tx, utxoState);
+        connectUTXOs(*tx, utxoState);
     };
     
     auto generateScriptInputFunc = [&](RawTransaction *tx) {
-        generateScriptInput(tx, utxoAddressState);
+        generateScriptInput(*tx, utxoAddressState);
     };
     
     auto processAddressFunc = [&](RawTransaction *tx) {
-        processAddresses(tx, addressState);
+        processAddresses(*tx, addressState);
     };
     
     auto recordAddressesFunc = [&](RawTransaction *tx) {
-        recordAddresses(tx, utxoScriptState);
+        recordAddresses(*tx, utxoScriptState);
     };
     
     IndexedFileWriter<1> txFile(config.dataConfig.txFilePath());
     FixedSizeFileWriter<OutputLinkData> linkDataFile(config.txUpdatesFilePath());
     
     auto serializeTransactionFunc = [&](RawTransaction *tx) {
-        serializeTransaction(tx, txFile, linkDataFile);
+        serializeTransaction(*tx, txFile, linkDataFile);
     };
     
     auto serializeAddressFunc = [&](RawTransaction *tx) {
-        serializeAddressess(tx, addressWriter);
+        serializeAddressess(*tx, addressWriter);
         progressBar.update(tx->txNum - startingTxCount, tx);
     };
     
@@ -693,13 +693,13 @@ void BlockProcessor::addNewBlocksSingle(const ParserConfiguration<ParseTag> &con
     IndexedFileWriter<1> txFile(config.dataConfig.txFilePath());
 
     auto outFunc = [&](RawTransaction *tx) {
-        calculateHash(tx, hashFile);
-        connectUTXOs(tx, utxoState);
-        generateScriptInput(tx, utxoAddressState);
-        processAddresses(tx, addressState);
-        recordAddresses(tx, utxoScriptState);
-        serializeTransaction(tx, txFile, linkDataFile);
-        serializeAddressess(tx, addressWriter);
+        calculateHash(*tx, hashFile);
+        connectUTXOs(*tx, utxoState);
+        generateScriptInput(*tx, utxoAddressState);
+        processAddresses(*tx, addressState);
+        recordAddresses(*tx, utxoScriptState);
+        serializeTransaction(*tx, txFile, linkDataFile);
+        serializeAddressess(*tx, addressWriter);
         progressBar.update(tx->txNum - startingTxCount, tx);
     };
         
