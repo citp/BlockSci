@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.9)
 project(blocksci)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
+
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_MACOSX_RPATH 1)
 
@@ -36,6 +38,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
+
+
 add_library(blocksci_ranges INTERFACE)
 target_include_directories(blocksci_ranges INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libs/range-v3/include>
@@ -62,7 +66,7 @@ ExternalProject_Add(project_secp256k1
   GIT_REPOSITORY "https://github.com/bitcoin-core/secp256k1.git"
   GIT_TAG "master"
   PREFIX "${CMAKE_CURRENT_BINARY_DIR}/secp256k1"
-  CONFIGURE_COMMAND <SOURCE_DIR>/configure --enable-module-recovery --prefix <INSTALL_DIR>
+  CONFIGURE_COMMAND CFLAGS=-fPIC CPPFLAGS=-fPIC <SOURCE_DIR>/configure --disable-shared --disable-benchmark --disable-tests --disable-exhaustive-test --enable-module-recovery --with-bignum=no --prefix <INSTALL_DIR>
   UPDATE_COMMAND "" 
 )
 
@@ -77,8 +81,7 @@ ExternalProject_Get_Property(project_secp256k1 install_dir)
 add_library(secp256k1 INTERFACE)
 add_dependencies(secp256k1 project_secp256k1)
 target_include_directories(secp256k1 INTERFACE ${install_dir}/include)
-target_link_libraries(secp256k1 INTERFACE ${install_dir}/lib/libsecp256k1.so)
-target_link_libraries(secp256k1 INTERFACE gmp)
+target_link_libraries(secp256k1 INTERFACE ${install_dir}/lib/libsecp256k1.a)
 
 include(cppcheck.cmake)
 

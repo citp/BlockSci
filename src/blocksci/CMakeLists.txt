@@ -2,6 +2,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native")
 
 find_package( Boost 1.58 COMPONENTS system filesystem thread iostreams serialization REQUIRED )
 find_package(OpenSSL REQUIRED)
+find_package(RocksDB REQUIRED)
 
 
 set(BLOCKSCI_HEADERS
@@ -247,6 +248,7 @@ configure_package_config_file(blocksci-config.cmake
   INSTALL_DESTINATION "${ConfigPackageLocation}"
   PATH_VARS INCLUDE_INSTALL_DIR SYSCONFIG_INSTALL_DIR)
 
+install( TARGETS rocksdb EXPORT blocksci-targets)
 install (EXPORT blocksci-targets FILE blocksci-targets.cmake DESTINATION ${ConfigPackageLocation} )
 
 install(
