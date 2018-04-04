@@ -81,9 +81,6 @@ void addTransactionMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     .def_property_readonly("output_value", func([](const Transaction &tx) {
         return totalOutputValue(tx);
     }), func2("The sum of the value of all of the outputs"))
-    .def_property_readonly("output_value", func([](const Transaction &tx) {
-        return totalOutputValue(tx);
-    }), func2("The sum of the value of all of the outputs"))
     .def_property_readonly("fee", func([](const Transaction &tx) {
         return fee(tx);
     }), func2("The fee paid by this transaction"))
