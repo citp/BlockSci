@@ -89,6 +89,7 @@ add_subdirectory(src/blocksci)
 add_subdirectory(src/parser)
 add_subdirectory(src/mempool_recorder)
 add_subdirectory(src/python-interface)
+add_subdirectory(src/benchmark)
 add_subdirectory(src/example)
 
 include( CMakePackageConfigHelpers )

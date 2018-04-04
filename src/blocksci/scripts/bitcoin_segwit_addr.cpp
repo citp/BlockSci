@@ -26,11 +26,11 @@
 namespace
 {
 
-typedef std::vector<uint8_t> data;
+typedef std::vector<uint8_t> segwit_data;
 
 /** Convert from one power-of-2 number base to another. */
 template<int frombits, int tobits, bool pad>
-bool convertbits(data& out, const data& in) {
+bool convertbits(segwit_data& out, const segwit_data& in) {
     int acc = 0;
     int bits = 0;
     const int maxv = (1 << tobits) - 1;
@@ -58,21 +58,21 @@ namespace segwit_addr
 {
 
 /** Decode a SegWit address. */
-std::pair<int, data> decode(const std::string& hrp, const std::string& addr) {
-    std::pair<std::string, data> dec = bech32::decode(addr);
-    if (dec.first != hrp || dec.second.size() < 1) return std::make_pair(-1, data());
-    data conv;
-    if (!convertbits<5, 8, false>(conv, data(dec.second.begin() + 1, dec.second.end())) ||
+std::pair<int, segwit_data> decode(const std::string& hrp, const std::string& addr) {
+    std::pair<std::string, segwit_data> dec = bech32::decode(addr);
+    if (dec.first != hrp || dec.second.size() < 1) return std::make_pair(-1, segwit_data());
+    segwit_data conv;
+    if (!convertbits<5, 8, false>(conv, segwit_data(dec.second.begin() + 1, dec.second.end())) ||
         conv.size() < 2 || conv.size() > 40 || dec.second[0] > 16 || (dec.second[0] == 0 &&
         conv.size() != 20 && conv.size() != 32)) {
-        return std::make_pair(-1, data());
+        return std::make_pair(-1, segwit_data());
     }
     return std::make_pair(dec.second[0], conv);
 }
 
 /** Encode a SegWit address. */
-std::string encode(const std::string& hrp, int witver, const data& witprog) {
-    data enc;
+std::string encode(const std::string& hrp, int witver, const segwit_data& witprog) {
+    segwit_data enc;
     enc.push_back(witver);
     convertbits<8, 5, true>(enc, witprog);
     std::string ret = bech32::encode(hrp, enc);
@@ -80,8 +80,8 @@ std::string encode(const std::string& hrp, int witver, const data& witprog) {
     return ret;
 }
     
-std::string encode(const blocksci::DataConfiguration &config, int witver, const data& witprog) {
-    data enc;
+std::string encode(const blocksci::DataConfiguration &config, int witver, const segwit_data& witprog) {
+    segwit_data enc;
     enc.push_back(witver);
     convertbits<8, 5, true>(enc, witprog);
     std::string ret = bech32::encode(config.segwitPrefix, enc);

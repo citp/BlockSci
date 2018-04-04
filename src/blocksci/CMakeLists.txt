@@ -3,25 +3,163 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native")
 find_package( Boost 1.58 COMPONENTS system filesystem thread iostreams serialization REQUIRED )
 find_package(OpenSSL REQUIRED)
 
-file(GLOB BLOCKSCI_HEADERS "*.hpp")
-file(GLOB BLOCKSCI_SOURCES "*.cpp")
-file(GLOB ADDRESS_HEADERS "address/*.hpp")
-file(GLOB ADDRESS_SOURCES "address/*.cpp")
-file(GLOB SCRIPT_HEADERS "scripts/*.hpp")
-file(GLOB SCRIPT_SOURCES "scripts/*.cpp")
-file(GLOB CHAIN_HEADERS "chain/*.hpp")
-file(GLOB CHAIN_SOURCES "chain/*.cpp")
-file(GLOB INDEX_HEADERS "index/*.hpp")
-file(GLOB INDEX_SOURCES "index/*.cpp")
-file(GLOB UTIL_HEADERS "util/*.hpp")
-file(GLOB UTIL_SOURCES "util/*.cpp")
-file(GLOB HEURISTICS_HEADERS "heuristics/*.hpp")
-file(GLOB HEURISTICS_SOURCES "heuristics/*.cpp")
 
-set(ALL_SOURCES ${BLOCKSCI_HEADERS} ${BLOCKSCI_SOURCES} ${ADDRESS_HEADERS} ${ADDRESS_SOURCES}  ${SCRIPT_HEADERS} ${SCRIPT_SOURCES} ${CHAIN_HEADERS} ${CHAIN_SOURCES} ${INDEX_HEADERS} ${INDEX_SOURCES} ${UTIL_HEADERS} ${UTIL_SOURCES} ${HEURISTICS_HEADERS} ${HEURISTICS_SOURCES})
+set(BLOCKSCI_HEADERS
+  address.hpp
+  blocksci_fwd.hpp
+  blocksci.hpp
+  chain.hpp
+  heuristics.hpp
+  script.hpp
+)
+
+set(ADDRESS_HEADERS
+  address/address_fwd.hpp
+  address/address_info.hpp
+  address/address_types.hpp
+  address/address.hpp
+  address/dedup_address_info.hpp
+  address/dedup_address_type.hpp
+  address/dedup_address.hpp
+  address/equiv_address_type.hpp
+  address/equiv_address.hpp
+)
+
+set(ADDRESS_SOURCES
+  address/address_info.cpp
+  address/address_types.cpp
+  address/address.cpp
+  address/dedup_address_info.cpp
+  address/dedup_address_type.cpp
+  address/dedup_address.cpp
+  address/equiv_address.cpp
+)
+
+set(CHAIN_HEADERS
+  chain/algorithms.hpp
+  chain/block.hpp
+  chain/blockchain.hpp
+  chain/chain_access.hpp
+  chain/chain_fwd.hpp
+  chain/inout_pointer.hpp
+  chain/inout.hpp
+  chain/input.hpp
+  chain/output.hpp
+  chain/raw_block.hpp
+  chain/raw_transaction.hpp
+  chain/transaction_range.hpp
+  chain/transaction_summary.hpp
+  chain/transaction.hpp
+)
+
+set(CHAIN_SOURCES
+  chain/algorithms.cpp
+  chain/block.cpp
+  chain/blockchain.cpp
+  chain/chain_access.cpp
+  chain/inout_pointer.cpp
+  chain/inout.cpp
+  chain/input.cpp
+  chain/output.cpp
+  chain/raw_block.cpp
+  chain/raw_transaction.cpp
+  chain/transaction_range.cpp
+  chain/transaction_summary.cpp
+  chain/transaction.cpp
+)
+
+set(HEURISTICS_HEADERS
+  heuristics/blockchain_heuristics.hpp
+  heuristics/change_address.hpp
+  heuristics/taint.hpp
+  heuristics/tx_identification.hpp
+)
+
+set(HEURISTICS_SOURCES
+  heuristics/blockchain_heuristics.cpp
+  heuristics/change_address.cpp
+  heuristics/taint.cpp
+  heuristics/tx_identification.cpp
+)
+
+set(INDEX_HEADERS
+  index/address_index.hpp
+  index/address_output_range.hpp
+  index/hash_index.hpp
+)
+
+set(INDEX_SOURCES
+  index/address_index.cpp
+  index/address_output_range.cpp
+  index/hash_index.cpp
+)
+
+set(SCRIPT_HEADERS
+  scripts/bitcoin_base58.hpp
+  scripts/bitcoin_bech32.hpp
+  scripts/bitcoin_pubkey.hpp
+  scripts/bitcoin_script.hpp
+  scripts/bitcoin_segwit_addr.hpp
+  scripts/multisig_script.hpp
+  scripts/nonstandard_script.hpp
+  scripts/nulldata_script.hpp
+  scripts/pubkey_script.hpp
+  scripts/script_access.hpp
+  scripts/script_data.hpp
+  scripts/script_info.hpp
+  scripts/script_variant.hpp
+  scripts/script_view.hpp
+  scripts/script.hpp
+  scripts/scripthash_script.hpp
+  scripts/scripts_fwd.hpp
+)
+
+set(SCRIPT_SOURCES
+  scripts/bitcoin_base58.cpp
+  scripts/bitcoin_bech32.cpp
+  scripts/bitcoin_pubkey.cpp
+  scripts/bitcoin_script.cpp
+  scripts/bitcoin_segwit_addr.cpp
+  scripts/multisig_script.cpp
+  scripts/nonstandard_script.cpp
+  scripts/nulldata_script.cpp
+  scripts/pubkey_script.cpp
+  scripts/script_access.cpp
+  scripts/script_data.cpp
+  scripts/script_info.cpp
+  scripts/script_variant.cpp
+  scripts/script_view.cpp
+  scripts/script.cpp
+  scripts/scripthash_script.cpp
+)
+
+set(UTIL_HEADERS
+  util/bitcoin_uint256.hpp
+  util/data_access.hpp
+  util/data_configuration.hpp
+  util/file_mapper_fwd.hpp
+  util/file_mapper.hpp
+  util/hash.hpp
+  util/parallel.hpp
+  util/state.hpp
+  util/util.hpp
+)
+
+set(UTIL_SOURCES
+  util/bitcoin_uint256.cpp
+  util/data_access.cpp
+  util/data_configuration.cpp
+  util/file_mapper.cpp
+  util/hash.cpp
+  util/parallel.cpp
+  util/state.cpp
+)
+
+set(ALL_SOURCES ${BLOCKSCI_HEADERS} ${ADDRESS_HEADERS} ${ADDRESS_SOURCES}  ${SCRIPT_HEADERS} ${SCRIPT_SOURCES} ${CHAIN_HEADERS} ${CHAIN_SOURCES} ${INDEX_HEADERS} ${INDEX_SOURCES} ${UTIL_HEADERS} ${UTIL_SOURCES} ${HEURISTICS_HEADERS} ${HEURISTICS_SOURCES})
 
 add_library(blocksci SHARED ${ALL_SOURCES})
 add_library(blocksci_static STATIC ${ALL_SOURCES})
+add_library(blocksci_static_unity STATIC blocksci_unity.cpp)
 
 set_property(TARGET blocksci PROPERTY VERSION ${Upstream_VERSION})
 set_property(TARGET blocksci_static PROPERTY VERSION ${Upstream_VERSION})
@@ -61,12 +199,24 @@ target_link_libraries( blocksci_static PUBLIC rocksdb )
 target_link_libraries( blocksci_static PRIVATE secp256k1)
 target_link_libraries( blocksci_static PUBLIC blocksci_mpark_variant blocksci_ranges)
 
+target_link_libraries( blocksci_static_unity PUBLIC Threads::Threads)
+target_link_libraries( blocksci_static_unity PUBLIC Boost::system Boost::filesystem Boost::thread Boost::iostreams Boost::serialization)
+target_link_libraries( blocksci_static_unity PUBLIC OpenSSL::Crypto )
+target_link_libraries( blocksci_static_unity PUBLIC rocksdb )
+target_link_libraries( blocksci_static_unity PRIVATE secp256k1)
+target_link_libraries( blocksci_static_unity PUBLIC blocksci_mpark_variant blocksci_ranges)
+
 target_include_directories(blocksci PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
   $<INSTALL_INTERFACE:include/blocksci>
 )
 
 target_include_directories(blocksci_static PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+  $<INSTALL_INTERFACE:include/blocksci>
+)
+
+target_include_directories(blocksci_static_unity PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
   $<INSTALL_INTERFACE:include/blocksci>
 )

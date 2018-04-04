@@ -24,7 +24,7 @@
 namespace
 {
 
-typedef std::vector<uint8_t> data;
+typedef std::vector<uint8_t> bech32_data;
 
 /** The Bech32 character set for encoding. */
 const char* charset = "qpzry9x8gf2tvdw0s3jn54khce6mua7l";
@@ -42,13 +42,13 @@ const int8_t charset_rev[128] = {
 };
 
 /** Concatenate two byte arrays. */
-data cat(data x, const data& y) {
+bech32_data cat(bech32_data x, const bech32_data& y) {
     x.insert(x.end(), y.begin(), y.end());
     return x;
 }
 
 /** Find the polynomial with value coefficients mod the generator as 30-bit. */
-uint32_t polymod(const data& values) {
+uint32_t polymod(const bech32_data& values) {
     uint32_t chk = 1;
     for (size_t i = 0; i < values.size(); ++i) {
         uint8_t top = chk >> 25;
@@ -68,8 +68,8 @@ unsigned char lc(unsigned char c) {
 }
 
 /** Expand a HRP for use in checksum computation. */
-data expand_hrp(const std::string& hrp) {
-    data ret;
+bech32_data expand_hrp(const std::string& hrp) {
+    bech32_data ret;
     ret.resize(hrp.size() * 2 + 1);
     for (size_t i = 0; i < hrp.size(); ++i) {
         unsigned char c = hrp[i];
@@ -81,16 +81,16 @@ data expand_hrp(const std::string& hrp) {
 }
 
 /** Verify a checksum. */
-bool verify_checksum(const std::string& hrp, const data& values) {
+bool verify_checksum(const std::string& hrp, const bech32_data& values) {
     return polymod(cat(expand_hrp(hrp), values)) == 1;
 }
 
 /** Create a checksum. */
-data create_checksum(const std::string& hrp, const data& values) {
-    data enc = cat(expand_hrp(hrp), values);
+bech32_data create_checksum(const std::string& hrp, const bech32_data& values) {
+    bech32_data enc = cat(expand_hrp(hrp), values);
     enc.resize(enc.size() + 6);
     uint32_t mod = polymod(enc) ^ 1;
-    data ret;
+    bech32_data ret;
     ret.resize(6);
     for (size_t i = 0; i < 6; ++i) {
         ret[i] = (mod >> (5 * (5 - i))) & 31;
@@ -104,9 +104,9 @@ namespace bech32
 {
 
 /** Encode a Bech32 string. */
-std::string encode(const std::string& hrp, const data& values) {
-    data checksum = create_checksum(hrp, values);
-    data combined = cat(values, checksum);
+std::string encode(const std::string& hrp, const bech32_data& values) {
+    bech32_data checksum = create_checksum(hrp, values);
+    bech32_data combined = cat(values, checksum);
     std::string ret = hrp + '1';
     ret.reserve(ret.size() + combined.size());
     for (size_t i = 0; i < combined.size(); ++i) {
@@ -116,7 +116,7 @@ std::string encode(const std::string& hrp, const data& values) {
 }
 
 /** Decode a Bech32 string. */
-std::pair<std::string, data> decode(const std::string& str) {
+std::pair<std::string, bech32_data> decode(const std::string& str) {
     bool lower = false, upper = false;
     bool ok = true;
     for (size_t i = 0; ok && i < str.size(); ++i) {
@@ -128,7 +128,7 @@ std::pair<std::string, data> decode(const std::string& str) {
     if (lower && upper) ok = false;
     size_t pos = str.rfind('1');
     if (ok && str.size() <= 90 && pos != str.npos && pos >= 1 && pos + 7 <= str.size()) {
-        data values;
+        bech32_data values;
         values.resize(str.size() - 1 - pos);
         for (size_t i = 0; i < str.size() - 1 - pos; ++i) {
             unsigned char c = str[i + pos + 1];
@@ -141,11 +141,11 @@ std::pair<std::string, data> decode(const std::string& str) {
                 hrp += lc(str[i]);
             }
             if (verify_checksum(hrp, values)) {
-                return std::make_pair(hrp, data(values.begin(), values.end() - 6));
+                return std::make_pair(hrp, bech32_data(values.begin(), values.end() - 6));
             }
         }
     }
-    return std::make_pair(std::string(), data());
+    return std::make_pair(std::string(), bech32_data());
 }
 
 }
