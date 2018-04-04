@@ -52,6 +52,6 @@ namespace blocksci {
         using OpReturn = ScriptAddress<AddressType::NULL_DATA>;
         using Nonstandard = ScriptAddress<AddressType::NONSTANDARD>;
     }
-}
+} // namespace blocksci
 
 #endif /* scriptsfwd_h */

@@ -9,23 +9,23 @@
 #ifndef output_hpp
 #define output_hpp
 
-#include <blocksci/chain/inout.hpp>
-#include <blocksci/chain/inout_pointer.hpp>
-#include <blocksci/chain/chain_access.hpp>
-#include <blocksci/util/data_access.hpp>
+#include "chain_access.hpp"
+#include "inout.hpp"
+#include "inout_pointer.hpp"
+
 #include <blocksci/address/address_fwd.hpp>
 #include <blocksci/address/address_types.hpp>
+#include <blocksci/util/data_access.hpp>
 
 #include <range/v3/utility/optional.hpp>
 
 namespace std {
     template<> struct hash<blocksci::Output> {
-        size_t operator()(const blocksci::Output &input) const;
+        size_t operator()(const blocksci::Output &output) const;
     };
-}
+} // namespace std
 
 namespace blocksci {
-    
     class Output {
         const DataAccess *access;
         const Inout *inout;
@@ -100,6 +100,6 @@ namespace blocksci {
     inline std::ostream &operator<<(std::ostream &os, const Output &output) { 
         return os << output.toString();
     }
-}
+} // namespace blocksci
 
 #endif /* output_hpp */

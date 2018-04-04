@@ -21,4 +21,4 @@ namespace blocksci {
         && nonce == other.nonce
         && coinbaseOffset == other.coinbaseOffset;
     }
-}
+} // namespace blocksci

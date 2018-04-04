@@ -6,12 +6,12 @@
 //
 //
 
-#ifndef address_group_header
-#define address_group_header
+#ifndef blocksci_address_group_header
+#define blocksci_address_group_header
 
 #include <blocksci/address/address.hpp>
 #include <blocksci/address/dedup_address.hpp>
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/address/address_types.hpp>
 
-#endif /* address_group_header */
+#endif /* blocksci_address_group_header */

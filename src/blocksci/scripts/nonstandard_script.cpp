@@ -9,16 +9,18 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "nonstandard_script.hpp"
-#include "script_data.hpp"
+
 #include "script_access.hpp"
+#include "script_data.hpp"
+
 #include <blocksci/util/data_access.hpp>
 
 namespace blocksci {
     using script::Nonstandard;
     
-    Nonstandard::ScriptAddress(uint32_t scriptNum_, std::tuple<const NonstandardScriptData *, const NonstandardSpendScriptData *> &&rawData, const DataAccess &access) : ScriptBase(scriptNum_, addressType, access), rawData(std::get<0>(rawData)), rawInputData(std::get<1>(rawData)) {}
+    Nonstandard::ScriptAddress(uint32_t scriptNum_, std::tuple<const NonstandardScriptData *, const NonstandardSpendScriptData *> &&rawData_, const DataAccess &access_) : ScriptBase(scriptNum_, addressType, access_), rawData(std::get<0>(rawData_)), rawInputData(std::get<1>(rawData_)) {}
     
-    Nonstandard::ScriptAddress(uint32_t addressNum, const DataAccess &access) : Nonstandard(addressNum, access.scripts->getScriptData<addressType>(addressNum), access) {}
+    Nonstandard::ScriptAddress(uint32_t addressNum_, const DataAccess &access_) : Nonstandard(addressNum_, access_.scripts->getScriptData<addressType>(addressNum_), access_) {}
     
     CScriptView Nonstandard::getOutputScript() const {
         return rawData->getScript();
@@ -56,4 +58,4 @@ namespace blocksci {
         ss << "NonStandardScript(" << inputString() << ", " << outputString() << ")";
         return ss.str();
     }
-}
+} // namespace blocksci

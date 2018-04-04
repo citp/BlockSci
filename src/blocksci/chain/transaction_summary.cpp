@@ -7,13 +7,13 @@
 //
 
 #include "transaction_summary.hpp"
-#include "transaction.hpp"
+
 #include "output.hpp"
+#include "transaction.hpp"
 
 #include <range/v3/iterator_range.hpp>
 
 namespace blocksci {
-    
     TransactionSummary::TransactionSummary(uint64_t totalInputs_, uint64_t totalOutputs_, uint64_t totalSize_, uint64_t totalCount_, uint64_t totalOutputValue_) : totalInputs(totalInputs_), totalOutputs(totalOutputs_), totalSize(totalSize_), totalCount(totalCount_), totalOutputValue(totalOutputValue_) {}
     
     TransactionSummary::TransactionSummary() : TransactionSummary{0,0,0,0,0} {}
@@ -63,4 +63,4 @@ namespace blocksci {
     double TransactionSummary::averageOutputValue() const {
         return static_cast<double>(totalOutputValue) / static_cast<double>(totalCount);
     }
-}
+} // namespace blocksci

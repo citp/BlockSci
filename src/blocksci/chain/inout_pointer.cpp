@@ -7,19 +7,21 @@
 //
 
 #include "inout_pointer.hpp"
+
 #include "chain_access.hpp"
-#include "output.hpp"
 #include "input.hpp"
+#include "output.hpp"
 #include "transaction.hpp"
+
 #include <blocksci/util/hash.hpp>
 
-#include <range/v3/view/transform.hpp>
-#include <range/v3/view/filter.hpp>
-#include <range/v3/action/unique.hpp>
 #include <range/v3/action/sort.hpp>
+#include <range/v3/action/unique.hpp>
+#include <range/v3/view/filter.hpp>
+#include <range/v3/view/transform.hpp>
 
-#include <unordered_set>
 #include <sstream>
+#include <unordered_set>
 
 namespace blocksci {
     std::string InputPointer::toString() const {
@@ -112,7 +114,7 @@ namespace blocksci {
         txes |= ranges::action::sort | ranges::action::unique;
         return txes;
     }
-}
+} // namespace blocksci
 
 std::ostream &operator<<(std::ostream &os, const blocksci::InputPointer &pointer) {
     os << pointer.toString();
@@ -139,4 +141,4 @@ namespace std
         hash_combine(seed, pointer.inoutNum);
         return seed;
     }
-}
+} // namespace std

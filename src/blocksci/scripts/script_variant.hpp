@@ -8,13 +8,13 @@
 #ifndef script_variant_hpp
 #define script_variant_hpp
 
-#include "script_info.hpp"
-#include "scripts_fwd.hpp"
+#include "multisig_script.hpp"
+#include "nonstandard_script.hpp"
+#include "nulldata_script.hpp"
 #include "pubkey_script.hpp"
 #include "scripthash_script.hpp"
-#include "multisig_script.hpp"
-#include "nulldata_script.hpp"
-#include "nonstandard_script.hpp"
+#include "script_info.hpp"
+#include "scripts_fwd.hpp"
 
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/address/address_fwd.hpp>
@@ -48,6 +48,6 @@ namespace blocksci {
         
         ScriptVariant wrapped;
     };
-}
+} // namespace blocksci
 
 #endif /* script_variant_hpp */

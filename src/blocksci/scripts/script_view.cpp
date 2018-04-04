@@ -168,5 +168,5 @@ namespace blocksci {
         }
         return ss.str();
     }
-}
+} // namespace blocksci
 

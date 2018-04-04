@@ -9,15 +9,17 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "multisig_script.hpp"
-#include "script_data.hpp"
-#include "script_access.hpp"
+
 #include "pubkey_script.hpp"
+#include "script_access.hpp"
+#include "script_data.hpp"
+
 #include <blocksci/util/data_access.hpp>
 
 namespace blocksci {
     using script::Multisig;
     
-    Multisig::ScriptAddress(uint32_t addressNum_, const DataAccess &access) : ScriptBase(addressNum_, addressType, access), rawData(access.scripts->getScriptData<addressType>(addressNum_)) {}
+    Multisig::ScriptAddress(uint32_t addressNum_, const DataAccess &access_) : ScriptBase(addressNum_, addressType, access_), rawData(access_.scripts->getScriptData<addressType>(addressNum_)) {}
     
     uint8_t Multisig::getRequired() const {
         return rawData->m;
@@ -66,4 +68,4 @@ namespace blocksci {
         }
         return ret;
     }
-}
+} // namespace blocksci

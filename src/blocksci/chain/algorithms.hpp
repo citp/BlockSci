@@ -8,16 +8,17 @@
 #ifndef chain_algorithms_hpp
 #define chain_algorithms_hpp
 
-#include <blocksci/chain/chain_fwd.hpp>
-#include <blocksci/chain/transaction.hpp>
+#include "chain_fwd.hpp"
+#include "transaction.hpp"
+
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/scripts/script_info.hpp>
 
-#include <range/v3/view/transform.hpp>
+#include <range/v3/numeric/accumulate.hpp>
+#include <range/v3/view/filter.hpp>
 #include <range/v3/view/join.hpp>
 #include <range/v3/view/remove_if.hpp>
-#include <range/v3/view/filter.hpp>
-#include <range/v3/numeric/accumulate.hpp>
+#include <range/v3/view/transform.hpp>
 
 namespace blocksci {
     
@@ -235,6 +236,6 @@ namespace blocksci {
     inline uint64_t totalFee(T &t) {
         return ranges::accumulate(fees(t), uint64_t{0});
     }
-}
+} // namespace blocksci
 
 #endif /* chain_algorithms_hpp */

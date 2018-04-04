@@ -12,20 +12,19 @@
 #include "scripts_fwd.hpp"
 #include "script_data.hpp"
 
-#include <blocksci/chain/chain_fwd.hpp>
-#include <blocksci/chain/transaction.hpp>
 #include <blocksci/address/address_fwd.hpp>
 #include <blocksci/address/address.hpp>
+#include <blocksci/chain/chain_fwd.hpp>
+#include <blocksci/chain/transaction.hpp>
 
 #include <range/v3/utility/optional.hpp>
 
 #include <functional>
-#include <vector>
-#include <memory>
 #include <limits>
+#include <memory>
+#include <vector>
 
 namespace blocksci {
-    
     struct DataConfiguration;
     class DataAccess;
     
@@ -59,18 +58,6 @@ namespace blocksci {
             return getTxRevealedIndex() != std::numeric_limits<uint32_t>::max();
         }
     };
-}
-
-//namespace std {
-//    template<typename T>
-//    struct hash<blocksci::ScriptBase<T>> {
-//        typedef blocksci::ScriptBase<T> argument_type;
-//        typedef size_t  result_type;
-//        result_type operator()(const argument_type &b) const {
-//            return (static_cast<size_t>(b.scriptNum) << 32) + static_cast<size_t>(b.type);
-//        }
-//    };
-//}
-
+} // namespace blocksci
 
 #endif /* script_hpp */

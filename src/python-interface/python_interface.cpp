@@ -12,6 +12,7 @@
 #include "input_py.hpp"
 #include "output_py.hpp"
 #include "tx_py.hpp"
+#include "cluster_py.hpp"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -35,4 +36,5 @@ PYBIND11_MODULE(blocksci_interface, m) {
     init_output(m);
     init_ranges(m);
     init_heuristics(m);
+    init_cluster(m);
 }

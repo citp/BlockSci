@@ -9,18 +9,19 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "input.hpp"
+
 #include "block.hpp"
-#include "transaction.hpp"
-#include "inout_pointer.hpp"
 #include "chain_access.hpp"
+#include "inout_pointer.hpp"
+#include "transaction.hpp"
+
 #include <blocksci/address/address.hpp>
-#include <blocksci/util/hash.hpp>
 #include <blocksci/scripts/script_variant.hpp>
+#include <blocksci/util/hash.hpp>
 
 #include <sstream>
 
 namespace blocksci {
-    
     Transaction Input::transaction() const {
         return {pointer.txNum, blockHeight, *access};
     }
@@ -46,7 +47,7 @@ namespace blocksci {
     uint32_t Input::age() const {
         return blockHeight - getSpentTx().blockHeight;
     }
-}
+} // namespace blocksci
 
 namespace std {
     size_t hash<blocksci::Input>::operator()(const blocksci::Input &input) const {
@@ -54,4 +55,4 @@ namespace std {
         hash_combine(seed, *input.inout);
         return seed;
     }
-}
+} // namespace std

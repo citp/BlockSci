@@ -10,8 +10,10 @@
 
 #include "chain_fwd.hpp"
 #include "transaction.hpp"
+#include "chain_access.hpp"
+
 #include <blocksci/util/data_access.hpp>
-#include <blocksci/chain/chain_access.hpp>
+
 #include <range/v3/view_facade.hpp>
 
 namespace blocksci {
@@ -60,7 +62,7 @@ namespace blocksci {
         
     public:
         TransactionRange() = default;
-        TransactionRange(const DataAccess &access, uint32_t begin, uint32_t end);
+        TransactionRange(const DataAccess &access_, uint32_t begin, uint32_t end);
     };
     
     class RawTransactionRange : public ranges::view_facade<RawTransactionRange> {
@@ -84,10 +86,8 @@ namespace blocksci {
         
     public:
         RawTransactionRange() = default;
-        RawTransactionRange(const DataAccess &access, uint32_t begin, uint32_t end);
+        RawTransactionRange(const DataAccess &access_, uint32_t begin, uint32_t end);
     };
-}
-
-
+} // namespace blocksci
 
 #endif /* transaction_range_hpp */

@@ -170,6 +170,6 @@ namespace blocksci {
         ECCVerifyHandle();
         ~ECCVerifyHandle();
     };
-}
+} // namespace blocksci
 
 #endif // BLOCKSCI_BITCOIN_PUBKEY_H

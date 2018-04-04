@@ -11,9 +11,9 @@
 
 #include "chain_fwd.hpp"
 
-#include <vector>
 #include <cstdint>
 #include <string>
+#include <vector>
 
 namespace blocksci {
     class DataAccess;
@@ -72,7 +72,7 @@ namespace blocksci {
     std::vector<Transaction> getTransactions(const std::vector<OutputPointer> &pointers, const DataAccess &access);
     std::vector<Transaction> getOutputTransactions(const std::vector<OutputPointer> &pointers, const DataAccess &access);
     std::vector<Transaction> getInputTransactions(const std::vector<OutputPointer> &pointers, const DataAccess &access);
-}
+} // namespace blocksci
 
 std::ostream &operator<<(std::ostream &os, const blocksci::InputPointer &pointer);
 std::ostream &operator<<(std::ostream &os, const blocksci::OutputPointer &pointer);
@@ -84,6 +84,6 @@ namespace std {
     template<> struct hash<blocksci::OutputPointer> {
         size_t operator()(const blocksci::OutputPointer &pointer) const;
     };
-}
+} // namespace std
 
 #endif /* inout_pointer_hpp */

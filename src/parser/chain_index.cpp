@@ -112,9 +112,11 @@ void ChainIndex<FileTag>::update(const ConfigType &config) {
                         uint32_t inputCount = 0;
                         uint32_t outputCount = 0;
                         for (size_t i = 0; i < numTxes; i++) {
-                            TransactionHeader h(reader);
-                            inputCount += h.inputCount;
-                            outputCount += h.outputCount;
+                            RawTransaction h;
+                            h.load(reader, 0, 0, true);
+//                            TransactionHeader h(reader);
+//                            inputCount += h.inputCount;
+//                            outputCount += h.outputCount;
                         }
                         // The next two lines bring the reader to the end of this block
                         reader.reset(blockStartOffset);

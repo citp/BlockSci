@@ -6,7 +6,6 @@
 //
 //
 
-#include "algorithms.cpp"
 #include "block.cpp"
 #include "blockchain.cpp"
 #include "chain_access.cpp"

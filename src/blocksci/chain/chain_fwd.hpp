@@ -30,6 +30,6 @@ namespace blocksci {
     struct InoutPointer;
     struct OutputPointer;
     struct InputPointer;
-}
+} // namespace blocksci
 
 #endif /* chain_fwd_h */

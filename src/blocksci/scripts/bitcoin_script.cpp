@@ -4,6 +4,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "bitcoin_script.hpp"
+
 #include <blocksci/util/bitcoin_uint256.hpp>
 
 #include <sstream>
@@ -298,4 +299,4 @@ namespace blocksci {
     }
     
     void CReserveScript::KeepScript() {}
-}
+} // namespace blocksci

@@ -14,7 +14,6 @@
 #include <string>
 
 namespace blocksci {
- 
     template <>
     class ScriptAddress<AddressType::NULL_DATA> : public ScriptBase<ScriptAddress<AddressType::NULL_DATA>> {
         friend class ScriptBase<ScriptAddress<AddressType::NULL_DATA>>;
@@ -22,13 +21,13 @@ namespace blocksci {
     public:
         constexpr static AddressType::Enum addressType = AddressType::NULL_DATA;
         
-        ScriptAddress(uint32_t addressNum, const DataAccess &access);
+        ScriptAddress(uint32_t addressNum_, const DataAccess &access_);
         
         std::string toString() const;
         std::string toPrettyString() const;
         
         std::string getData() const;
     };
-}
+} // namespace blocksci
 
 #endif /* nulldata_script_hpp */

@@ -5,13 +5,12 @@
 #include "bitcoin_base58.hpp"
 
 #include <blocksci/util/bitcoin_uint256.hpp>
-#include <blocksci/util/hash.hpp>
 #include <blocksci/util/data_configuration.hpp>
+#include <blocksci/util/hash.hpp>
 
 #include <cassert>
 #include <string>
 #include <vector>
-#include <string>
 
 namespace blocksci {
 
@@ -229,4 +228,4 @@ namespace blocksci {
         else
             return std::make_pair(id, AddressType::Enum::NONSTANDARD);
     }
-}
+} // namespace blocksci

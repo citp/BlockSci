@@ -9,10 +9,12 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "chain_access.hpp"
+
 #include "block.hpp"
-#include "transaction.hpp"
-#include "output.hpp"
 #include "input.hpp"
+#include "output.hpp"
+#include "transaction.hpp"
+
 #include <blocksci/util/data_configuration.hpp>
 #include <blocksci/util/file_mapper.hpp>
 
@@ -80,5 +82,4 @@ namespace blocksci {
         auto range = boost::make_iterator_range_n(reinterpret_cast<const unsigned char *>(pos), length);
         return std::vector<unsigned char>(range.begin(), range.end());
     }
-    
-}
+} // namespace blocksci

@@ -6,8 +6,12 @@
 //  Copyright © 2017 Harry Kalodner. All rights reserved.
 //
 
-#include <libcluster/cluster.hpp>
-#include <libcluster/cluster_manager.hpp>
+#include "cluster_py.hpp"
+#include "variant_py.hpp"
+#include "ranges_py.hpp"
+
+#include <blocksci/cluster/cluster.hpp>
+#include <blocksci/cluster/cluster_manager.hpp>
 
 #include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/block.hpp>
@@ -15,30 +19,11 @@
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>
 
-#include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-
-#include <mpark/variant.hpp>
 
 namespace py = pybind11;
 
-using namespace blocksci;
-
-namespace pybind11 { namespace detail {
-    template <typename... Ts>
-    struct type_caster<mpark::variant<Ts...>> : variant_caster<mpark::variant<Ts...>> {};
-    
-    // Specifies the function used to visit the variant -- `apply_visitor` instead of `visit`
-    template <>
-    struct visit_helper<mpark::variant> {
-        template <typename... Args>
-        static auto call(Args &&...args) -> decltype(mpark::visit(args...)) {
-            return mpark::visit(args...);
-        }
-    };
-}}
-
-uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
+uint64_t totalOutWithoutSelfChurn(const blocksci::Block &block, blocksci::ClusterManager &manager) {
     uint64_t total = 0;
     RANGES_FOR(auto tx, block) {
         std::set<uint32_t> inputClusters;
@@ -58,10 +43,18 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
 }
 
 
- PYBIND11_MODULE(cluster_python, m) {
-    m.def("total_without_self_churn", totalOutWithoutSelfChurn);
+void init_cluster(pybind11::module &m) {
+    using blocksci::ClusterManager;
+    using blocksci::Cluster;
+    using blocksci::TaggedAddress;
+    using blocksci::TaggedCluster;
+    using blocksci::cluster_range;
+    using blocksci::Address;
+
+    auto s = m.def_submodule("cluster");
+    s.def("total_without_self_churn", totalOutWithoutSelfChurn);
     
-    py::class_<ClusterManager>(m, "ClusterManager", "Class managing the cluster dat")
+    py::class_<ClusterManager>(s, "ClusterManager", "Class managing the cluster dat")
     .def(py::init([](std::string arg, const blocksci::Blockchain &chain) {
        return ClusterManager(arg, chain.getAccess());
     }))
@@ -76,7 +69,7 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
        , "Given a dictionary of tags, return a list of TaggedCluster objects for any clusters containing tagged scripts")
     ;
     
-    py::class_<Cluster>(m, "Cluster", "Class representing a cluster")
+    py::class_<Cluster>(s, "Cluster", "Class representing a cluster")
     .def_readonly("cluster_num", &Cluster::clusterNum)
     .def("__len__", &Cluster::getSize)
     .def("__eq__", &Cluster::operator==)
@@ -107,46 +100,20 @@ uint64_t totalOutWithoutSelfChurn(const Block &block, ClusterManager &manager) {
     ;
     ;
     
-    py::class_<TaggedAddress>(m, "TaggedAddress")
+    py::class_<TaggedAddress>(s, "TaggedAddress")
     .def_property_readonly("address", [](const TaggedAddress &tagged) {
         return tagged.address.getScript().wrapped;
     }, "Return the address object which has been tagged")
     .def_readonly("tag", &TaggedAddress::tag, "Return the tag associated with the contained address")
     ;
     
-    py::class_<TaggedCluster>(m, "TaggedCluster")
+    py::class_<TaggedCluster>(s, "TaggedCluster")
     .def_property_readonly("cluster", [](const TaggedCluster &tc) {
         return tc.cluster;
     }, "Return the cluster object which has been tagged")
     .def_readonly("tagged_addresses", &TaggedCluster::taggedAddresses, "Return the list of addresses inside the cluster which have been tagged")
     ;
     
-    py::class_<cluster_range>(m, "ClusterRange")
-    .def("__len__", [](const cluster_range &range) {
-       return range.size();
-    })
-    /// Optional sequence protocol operations
-    .def("__iter__", [](const cluster_range &range) { return py::make_iterator(range.begin(), range.end()); },
-         py::keep_alive<0, 1>() /* Essential: keep object alive while iterator exists */)
-    .def("__getitem__", [](const cluster_range &range, int64_t i) {
-        while (i < 0) {
-            i = range.size() - i;
-        }
-        uint64_t posIndex = static_cast<uint64_t>(i);
-        if (posIndex >= range.size())
-            throw py::index_error();
-        return range[i];
-    })
-    .def("__getitem__", [](const cluster_range &range, py::slice slice) -> py::list {
-        size_t start, stop, step, slicelength;
-        if (!slice.compute(range.size(), &start, &stop, &step, &slicelength))
-            throw py::error_already_set();
-        py::list txList;
-        for (size_t i=0; i<slicelength; ++i) {
-            txList.append(range[start]);
-            start += step;
-        }
-        return txList;
-    })
-    ;
- }
+
+    addRangeClass<cluster_range>(s, "ClusterRange");
+}

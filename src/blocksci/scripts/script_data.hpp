@@ -11,15 +11,14 @@
 
 #include "bitcoin_pubkey.hpp"
 
-#include <blocksci/util/util.hpp>
-#include <blocksci/blocksci_fwd.hpp>
 #include <blocksci/address/address.hpp>
+#include <blocksci/blocksci_fwd.hpp>
 #include <blocksci/util/bitcoin_uint256.hpp>
+#include <blocksci/util/util.hpp>
 
 #include <limits>
 
 namespace blocksci {
-    
     struct ScriptDataBase {
         uint32_t txFirstSeen;
         uint32_t txFirstSpent;
@@ -111,9 +110,6 @@ namespace blocksci {
         
         RawData(uint32_t txNum, const std::vector<unsigned char> &fullData) : ScriptDataBase(txNum), rawData(static_cast<uint32_t>(fullData.size())) {}
     };
-    
-    
-}
-
+} // namespace blocksci
 
 #endif /* script_data_hpp */

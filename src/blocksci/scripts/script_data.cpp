@@ -9,6 +9,7 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "script_data.hpp"
+
 #include "script_view.hpp"
 #include <blocksci/util/hash.hpp>
 
@@ -28,5 +29,4 @@ namespace blocksci {
     CScriptView NonstandardSpendScriptData::getScript() const {
         return {scriptData.begin(), scriptData.end()};
     }
-
-}
+} // namespace blocksci

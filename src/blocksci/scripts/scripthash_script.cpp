@@ -21,7 +21,7 @@ namespace blocksci {
     using script::ScriptHash;
     using script::WitnessScriptHash;
     
-    ScriptHashBase::ScriptHashBase(uint32_t scriptNum_, AddressType::Enum type_, const ScriptHashData *rawData_, const DataAccess &access) : ScriptBase(scriptNum_, type_, access), rawData(rawData_) {}
+    ScriptHashBase::ScriptHashBase(uint32_t scriptNum_, AddressType::Enum type_, const ScriptHashData *rawData_, const DataAccess &access_) : ScriptBase(scriptNum_, type_, access_), rawData(rawData_) {}
     
     ranges::optional<Address> ScriptHashBase::getWrappedAddress() const {
         auto wrapped = rawData->wrappedAddress;
@@ -48,7 +48,7 @@ namespace blocksci {
         return rawData->hash256;
     }
     
-    ScriptHash::ScriptAddress(uint32_t addressNum, const DataAccess &access) : ScriptHashBase(addressNum, addressType, access.scripts->getScriptData<addressType>(addressNum), access) {}
+    ScriptHash::ScriptAddress(uint32_t addressNum_, const DataAccess &access_) : ScriptHashBase(addressNum_, addressType, access_.scripts->getScriptData<addressType>(addressNum_), access_) {}
     
     std::string ScriptHash::addressString() const {
         return CBitcoinAddress(getAddressHash(), AddressType::Enum::SCRIPTHASH, getAccess().config).ToString();
@@ -75,7 +75,7 @@ namespace blocksci {
         return ss.str();
     }
     
-    WitnessScriptHash::ScriptAddress(uint32_t addressNum_, const DataAccess &access) : ScriptHashBase(addressNum_, addressType, access.scripts->getScriptData<addressType>(addressNum_), access) {}
+    WitnessScriptHash::ScriptAddress(uint32_t addressNum_, const DataAccess &access_) : ScriptHashBase(addressNum_, addressType, access_.scripts->getScriptData<addressType>(addressNum_), access_) {}
     
     std::string WitnessScriptHash::addressString() const {
         std::vector<uint8_t> witprog;
@@ -104,4 +104,4 @@ namespace blocksci {
         ss << ")";
         return ss.str();
     }
-}
+} // namespace blocksci

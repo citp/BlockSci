@@ -12,14 +12,13 @@
 #include "script.hpp"
 
 namespace blocksci {
-    
     template <>
     class ScriptAddress<AddressType::MULTISIG> : public ScriptBase<ScriptAddress<AddressType::MULTISIG>> {
         friend class ScriptBase<ScriptAddress<AddressType::MULTISIG>>;
         const MultisigData *rawData;
     public:
         constexpr static AddressType::Enum addressType = AddressType::MULTISIG;
-        ScriptAddress(uint32_t addressNum, const DataAccess &access);
+        ScriptAddress(uint32_t addressNum_, const DataAccess &access_);
         
         std::string toString() const;
         std::string toPrettyString() const;
@@ -36,7 +35,6 @@ namespace blocksci {
         
         std::vector<script::MultisigPubkey> pubkeyScripts() const;
     };
-}
-
+} // namespace blocksci
 
 #endif /* multisig_script_hpp */

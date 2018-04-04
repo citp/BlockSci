@@ -12,3 +12,4 @@
 #include <blocksci/index/index_unity.cpp>
 #include <blocksci/util/util_unity.cpp>
 #include <blocksci/heuristics/heuristics_unity.cpp>
+#include <blocksci/cluster/cluster_unity.cpp>

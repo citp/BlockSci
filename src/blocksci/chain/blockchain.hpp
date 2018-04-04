@@ -249,7 +249,7 @@ namespace blocksci {
     std::vector<Transaction> getTransactionIncludingOutput(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, AddressType::Enum type);
     
     std::map<uint64_t, Address> mostValuableAddresses(const Blockchain &chain);
-}
+} // namespace blocksci
 
 
 #endif /* blockchain_hpp */

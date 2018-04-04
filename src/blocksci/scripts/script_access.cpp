@@ -42,5 +42,4 @@ namespace blocksci {
         for_each(scriptFiles, [&count](auto& obj) -> decltype(auto) {count += obj->size();});
         return count;
     }
-}
-
+} // namespace blocksci

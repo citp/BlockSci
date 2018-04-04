@@ -38,7 +38,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-
+add_library(dset INTERFACE)
+target_include_directories(dset INTERFACE libs)
 
 add_library(blocksci_ranges INTERFACE)
 target_include_directories(blocksci_ranges INTERFACE
@@ -92,6 +93,7 @@ add_subdirectory(src/blocksci)
 add_subdirectory(src/parser)
 add_subdirectory(src/mempool_recorder)
 add_subdirectory(src/python-interface)
+add_subdirectory(src/clusterer)
 add_subdirectory(src/benchmark)
 add_subdirectory(src/example)
 

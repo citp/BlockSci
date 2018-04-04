@@ -11,8 +11,9 @@
 
 #include "chain_fwd.hpp"
 
-#include <blocksci/chain/raw_transaction.hpp>
-#include <blocksci/chain/raw_block.hpp>
+#include "raw_block.hpp"
+#include "raw_transaction.hpp"
+
 #include <blocksci/util/file_mapper.hpp>
 #include <blocksci/util/bitcoin_uint256.hpp>
 
@@ -91,6 +92,6 @@ namespace blocksci {
         
         void reload();
     };
-}
+} // namespace blocksci
 
 #endif /* chain_access_hpp */

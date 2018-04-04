@@ -5,11 +5,11 @@
 #include "bitcoin_pubkey.hpp"
 
 #include <blocksci/util/hash.hpp>
-#include <secp256k1.h>
-#include <secp256k1_recovery.h>
 
-namespace
-{
+#include <secp256k1_recovery.h>
+#include <secp256k1.h>
+
+namespace {
 /* Global secp256k1_context object used for verification. */
 secp256k1_context* secp256k1_context_verify = nullptr;
 } // namespace
@@ -262,6 +262,4 @@ namespace blocksci {
             secp256k1_context_verify = nullptr;
         }
     }
-}
-
-
+} // namespace blocksci

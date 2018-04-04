@@ -9,19 +9,20 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "block.hpp"
-#include "transaction.hpp"
-#include "output.hpp"
 #include "input.hpp"
+#include "output.hpp"
+#include "transaction.hpp"
 #include "transaction_summary.hpp"
+
 #include <blocksci/address/address.hpp>
 #include <blocksci/scripts/nulldata_script.hpp>
 
-#include <range/v3/to_container.hpp>
 #include <range/v3/range_for.hpp>
+#include <range/v3/to_container.hpp>
 #include <range/v3/view/remove_if.hpp>
 
-#include <numeric>
 #include <fstream>
+#include <numeric>
 #include <sstream>
 
 namespace blocksci {
@@ -117,10 +118,9 @@ namespace blocksci {
         }
         return totals;
     }
-}
+} // namespace blocksci
 
-std::ostream &operator<<(std::ostream &os, blocksci::Block const &block) {
+std::ostream &operator<<(std::ostream &os, const blocksci::Block &block) {
     os << block.getString();
     return os;
 }
-

@@ -8,8 +8,9 @@
 #ifndef raw_transaction_hpp
 #define raw_transaction_hpp
 
-#include <blocksci/chain/chain_fwd.hpp>
-#include <blocksci/chain/inout.hpp>
+#include "chain_fwd.hpp"
+#include "inout.hpp"
+
 #include <blocksci/util/util.hpp>
 
 namespace blocksci {
@@ -20,7 +21,7 @@ namespace blocksci {
         uint16_t inputCount;
         uint16_t outputCount;
         
-        RawTransaction(uint32_t realSize, uint32_t baseSize, uint32_t locktime, uint16_t inputCount, uint16_t outputCount);
+        RawTransaction(uint32_t realSize_, uint32_t baseSize_, uint32_t locktime_, uint16_t inputCount_, uint16_t outputCount_);
         
         RawTransaction(const RawTransaction &) = delete;
         RawTransaction(RawTransaction &&) = delete;
@@ -56,6 +57,6 @@ namespace blocksci {
             return reinterpret_cast<Inout *>(this + 1);
         }
     };
-}
+} // namespace blocksci
 
 #endif /* raw_transaction_hpp */

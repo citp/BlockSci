@@ -21,8 +21,7 @@
 
 #include "bitcoin_bech32.hpp"
 
-namespace
-{
+namespace {
 
 typedef std::vector<uint8_t> bech32_data;
 
@@ -98,10 +97,9 @@ bech32_data create_checksum(const std::string& hrp, const bech32_data& values) {
     return ret;
 }
 
-}
+} // namespace
 
-namespace bech32
-{
+namespace bech32 {
 
 /** Encode a Bech32 string. */
 std::string encode(const std::string& hrp, const bech32_data& values) {
@@ -148,4 +146,4 @@ std::pair<std::string, bech32_data> decode(const std::string& str) {
     return std::make_pair(std::string(), bech32_data());
 }
 
-}
+} // namespace bech32

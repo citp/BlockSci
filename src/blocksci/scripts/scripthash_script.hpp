@@ -10,7 +10,9 @@
 #define scripthash_script_hpp
 
 #include "script.hpp"
+
 #include "scripts_fwd.hpp"
+
 #include <blocksci/address/address.hpp>
 #include <blocksci/util/bitcoin_uint256.hpp>
 
@@ -21,7 +23,7 @@ namespace blocksci {
         friend class ScriptBase<ScriptHashBase>;
         const ScriptHashData *rawData;
     protected:
-        ScriptHashBase(uint32_t scriptNum, AddressType::Enum type, const ScriptHashData *rawData, const DataAccess &access);
+        ScriptHashBase(uint32_t scriptNum_, AddressType::Enum type_, const ScriptHashData *rawData_, const DataAccess &access_);
         
     public:
         void visitPointers(const std::function<void(const Address &)> &visitFunc) const {
@@ -43,7 +45,7 @@ namespace blocksci {
     public:
         constexpr static AddressType::Enum addressType = AddressType::SCRIPTHASH;
         
-        ScriptAddress(uint32_t addressNum, const DataAccess &access);
+        ScriptAddress(uint32_t addressNum_, const DataAccess &access_);
         
         uint160 getAddressHash() const {
             return getUint160Address();
@@ -60,7 +62,7 @@ namespace blocksci {
     public:
         constexpr static AddressType::Enum addressType = AddressType::WITNESS_SCRIPTHASH;
         
-        ScriptAddress(uint32_t addressNum, const DataAccess &access);
+        ScriptAddress(uint32_t addressNum_, const DataAccess &access_);
         
         uint256 getAddressHash() const {
             return getUint256Address();
@@ -71,6 +73,6 @@ namespace blocksci {
         std::string toString() const;
         std::string toPrettyString() const;
     };
-}
+} // namespace blocksci
 
 #endif /* scripthash_script_hpp */

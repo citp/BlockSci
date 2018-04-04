@@ -7,10 +7,10 @@
 #define BLOCKSCI_BITCOIN_SCRIPT_SCRIPT_H
 
 #include <cassert>
+#include <cstring>
 #include <limits>
 #include <stdexcept>
 #include <string>
-#include <cstring>
 #include <vector>
 
 namespace blocksci {
@@ -691,6 +691,6 @@ namespace blocksci {
         CReserveScript() {}
         virtual ~CReserveScript() = default;
     };
-}
+} // namespace blocksci
 
 #endif // BLOCKSCI_BITCOIN_SCRIPT_SCRIPT_H

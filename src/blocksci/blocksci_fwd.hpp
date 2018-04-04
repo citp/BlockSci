@@ -11,6 +11,7 @@
 #include <blocksci/chain/chain_fwd.hpp>
 #include <blocksci/address/address_fwd.hpp>
 #include <blocksci/scripts/scripts_fwd.hpp>
+#include <blocksci/cluster/cluster_fwd.hpp>
 
 namespace blocksci {
     using TxIndex = uint32_t;

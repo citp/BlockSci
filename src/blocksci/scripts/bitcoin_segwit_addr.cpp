@@ -20,11 +20,12 @@
  */
 
 #include "bitcoin_segwit_addr.hpp"
+
 #include "bitcoin_bech32.hpp"
+
 #include <blocksci/util/data_configuration.hpp>
 
-namespace
-{
+namespace {
 
 typedef std::vector<uint8_t> segwit_data;
 
@@ -52,10 +53,9 @@ bool convertbits(segwit_data& out, const segwit_data& in) {
     return true;
 }
 
-}
+} // namespace
 
-namespace segwit_addr
-{
+namespace segwit_addr {
 
 /** Decode a SegWit address. */
 std::pair<int, segwit_data> decode(const std::string& hrp, const std::string& addr) {
@@ -89,4 +89,4 @@ std::string encode(const blocksci::DataConfiguration &config, int witver, const 
     return ret;
 }
 
-}
+} // namespace segwit_addr

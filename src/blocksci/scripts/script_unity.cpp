@@ -17,8 +17,6 @@
 #include "pubkey_script.cpp"
 #include "script_access.cpp"
 #include "script_data.cpp"
-#include "script_info.cpp"
 #include "script_variant.cpp"
 #include "script_view.cpp"
-#include "script.cpp"
 #include "scripthash_script.cpp"

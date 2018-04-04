@@ -13,9 +13,9 @@
 #include "transaction.hpp"
 #include "raw_block.hpp"
 
-#include <blocksci/util/data_access.hpp>
-#include <blocksci/scripts/scripts_fwd.hpp>
 #include <blocksci/address/address_types.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
+#include <blocksci/util/data_access.hpp>
 
 #include <range/v3/view_facade.hpp>
 #include <range/v3/view/transform.hpp>
@@ -202,9 +202,9 @@ namespace blocksci {
     std::vector<uint64_t> getTotalSpentOfAges(const Block &block, BlockHeight maxAge);
     std::unordered_map<AddressType::Enum, int64_t> netAddressTypeValue(const Block &block);
     std::unordered_map<std::string, int64_t> netFullTypeValue(const Block &block);
-}
+} // namespace blocksci
 
-std::ostream &operator<<(std::ostream &os, blocksci::Block const &output);
+std::ostream &operator<<(std::ostream &os, const blocksci::Block &block);
 
 namespace std {
     template <>
@@ -215,6 +215,6 @@ namespace std {
             return static_cast<size_t>(b.height());
         }
     };
-}
+} // namespace std
 
 #endif /* block_hpp */

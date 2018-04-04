@@ -6,8 +6,9 @@
 //
 
 #include "script_variant.hpp"
-#include <blocksci/chain/transaction.hpp>
+
 #include <blocksci/address/address_info.hpp>
+#include <blocksci/chain/transaction.hpp>
 
 namespace blocksci {
     
@@ -55,4 +56,4 @@ namespace blocksci {
     std::string AnyScript::toPrettyString() const {
         return mpark::visit([&](auto &scriptAddress) { return scriptAddress.toPrettyString(); }, wrapped);
     }
-}
+} // namespace blocksci

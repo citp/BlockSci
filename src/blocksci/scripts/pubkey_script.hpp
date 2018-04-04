@@ -9,19 +9,18 @@
 #ifndef pubkey_script_hpp
 #define pubkey_script_hpp
 
-#include "script.hpp"
 #include "bitcoin_pubkey.hpp"
+#include "script.hpp"
 
 #include <range/v3/utility/optional.hpp>
 
 namespace blocksci {
-
     class PubkeyAddressBase : public ScriptBase<PubkeyAddressBase> {
         friend class ScriptBase<PubkeyAddressBase>;
         const PubkeyData *rawData;
         
     protected:
-        PubkeyAddressBase(uint32_t scriptNum, AddressType::Enum type, const PubkeyData *rawData, const DataAccess &access);
+        PubkeyAddressBase(uint32_t scriptNum_, AddressType::Enum type_, const PubkeyData *rawData_, const DataAccess &access_);
         
     public:
         std::string addressString() const;
@@ -42,7 +41,7 @@ namespace blocksci {
         
         constexpr static AddressType::Enum addressType = AddressType::PUBKEY;
         
-        ScriptAddress(uint32_t addressNum, const DataAccess &access);
+        ScriptAddress(uint32_t addressNum_, const DataAccess &access_);
         
         std::string addressString() const;
         
@@ -57,7 +56,7 @@ namespace blocksci {
         
         constexpr static AddressType::Enum addressType = AddressType::PUBKEYHASH;
         
-        ScriptAddress(uint32_t addressNum, const DataAccess &access);
+        ScriptAddress(uint32_t addressNum_, const DataAccess &access_);
         
         std::string addressString() const;
         
@@ -72,7 +71,7 @@ namespace blocksci {
         
         constexpr static AddressType::Enum addressType = AddressType::MULTISIG_PUBKEY;
         
-        ScriptAddress(uint32_t addressNum, const DataAccess &access);
+        ScriptAddress(uint32_t addressNum_, const DataAccess &access_);
         
         std::string addressString() const;
         
@@ -87,16 +86,13 @@ namespace blocksci {
         
         constexpr static AddressType::Enum addressType = AddressType::WITNESS_PUBKEYHASH;
         
-        ScriptAddress(uint32_t addressNum, const DataAccess &access);
+        ScriptAddress(uint32_t addressNum_, const DataAccess &access_);
         
         std::string addressString() const;
         
         std::string toString() const;
         std::string toPrettyString() const;
     };
-}
-
-
-
+} // namespace blocksci
 
 #endif /* pubkey_script_hpp */

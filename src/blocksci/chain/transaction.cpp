@@ -9,25 +9,26 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "transaction.hpp"
-#include "output.hpp"
-#include "input.hpp"
+
+#include "algorithms.hpp"
 #include "block.hpp"
 #include "chain_access.hpp"
 #include "inout_pointer.hpp"
-#include "algorithms.hpp"
+#include "input.hpp"
+#include "output.hpp"
+
 #include <blocksci/address/address.hpp>
-#include <blocksci/scripts/script_variant.hpp>
-#include <blocksci/index/hash_index.hpp>
 #include <blocksci/heuristics/change_address.hpp>
+#include <blocksci/index/hash_index.hpp>
+#include <blocksci/scripts/script_variant.hpp>
 #include <blocksci/util/hash.hpp>
 
-#include <unordered_map>
-#include <unordered_set>
 #include <iostream>
 #include <sstream>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace blocksci {
-    
     uint256 Transaction::getHash() const {
         return *access->chain->getTxHash(txNum);
     }
@@ -95,4 +96,4 @@ namespace blocksci {
     bool hasFeeGreaterThan(Transaction &tx, uint64_t txFee) {
         return fee(tx) > txFee;
     }
-}
+} // namespace blocksci

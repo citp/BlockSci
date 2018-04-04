@@ -16,6 +16,7 @@
 #include <blocksci/address.hpp>
 #include <blocksci/heuristics.hpp>
 #include <blocksci/index.hpp>
+#include <blocksci/cluster.hpp>
 
 #pragma GCC visibility pop
 

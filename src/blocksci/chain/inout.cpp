@@ -22,7 +22,7 @@ namespace blocksci {
     bool Inout::operator==(const Inout& otherInout) const {
         return linkedTxNum == otherInout.linkedTxNum && toAddressNum == otherInout.toAddressNum && other == otherInout.other;
     }
-}
+} // namespace blocksci
 
 namespace std
 {
@@ -33,4 +33,4 @@ namespace std
         hash_combine(seed, inout.other);
         return seed;
     }
-}
+} // namespace std

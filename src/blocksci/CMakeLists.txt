@@ -1,9 +1,12 @@
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native")
 
-find_package( Boost 1.58 COMPONENTS system filesystem thread iostreams serialization REQUIRED )
+find_package( Boost 1.58 COMPONENTS filesystem iostreams serialization REQUIRED )
 find_package(OpenSSL REQUIRED)
 find_package(RocksDB REQUIRED)
 
+set(INCLUDE_INSTALL_DIR include/blocksci )
+set(LIB_INSTALL_DIR lib/ )
+set(SYSCONFIG_INSTALL_DIR etc/blocksci/ . )
 
 set(BLOCKSCI_HEADERS
   address.hpp
@@ -12,6 +15,7 @@ set(BLOCKSCI_HEADERS
   chain.hpp
   heuristics.hpp
   script.hpp
+  cluster.hpp
 )
 
 set(ADDRESS_HEADERS
@@ -37,11 +41,11 @@ set(ADDRESS_SOURCES
 )
 
 set(CHAIN_HEADERS
+  chain/chain_fwd.hpp
   chain/algorithms.hpp
   chain/block.hpp
   chain/blockchain.hpp
   chain/chain_access.hpp
-  chain/chain_fwd.hpp
   chain/inout_pointer.hpp
   chain/inout.hpp
   chain/input.hpp
@@ -54,7 +58,6 @@ set(CHAIN_HEADERS
 )
 
 set(CHAIN_SOURCES
-  chain/algorithms.cpp
   chain/block.cpp
   chain/blockchain.cpp
   chain/chain_access.cpp
@@ -96,6 +99,7 @@ set(INDEX_SOURCES
 )
 
 set(SCRIPT_HEADERS
+  scripts/scripts_fwd.hpp
   scripts/bitcoin_base58.hpp
   scripts/bitcoin_bech32.hpp
   scripts/bitcoin_pubkey.hpp
@@ -112,7 +116,6 @@ set(SCRIPT_HEADERS
   scripts/script_view.hpp
   scripts/script.hpp
   scripts/scripthash_script.hpp
-  scripts/scripts_fwd.hpp
 )
 
 set(SCRIPT_SOURCES
@@ -127,18 +130,16 @@ set(SCRIPT_SOURCES
   scripts/pubkey_script.cpp
   scripts/script_access.cpp
   scripts/script_data.cpp
-  scripts/script_info.cpp
   scripts/script_variant.cpp
   scripts/script_view.cpp
-  scripts/script.cpp
   scripts/scripthash_script.cpp
 )
 
 set(UTIL_HEADERS
+  util/file_mapper_fwd.hpp
   util/bitcoin_uint256.hpp
   util/data_access.hpp
   util/data_configuration.hpp
-  util/file_mapper_fwd.hpp
   util/file_mapper.hpp
   util/hash.hpp
   util/parallel.hpp
@@ -156,7 +157,18 @@ set(UTIL_SOURCES
   util/state.cpp
 )
 
-set(ALL_SOURCES ${BLOCKSCI_HEADERS} ${ADDRESS_HEADERS} ${ADDRESS_SOURCES}  ${SCRIPT_HEADERS} ${SCRIPT_SOURCES} ${CHAIN_HEADERS} ${CHAIN_SOURCES} ${INDEX_HEADERS} ${INDEX_SOURCES} ${UTIL_HEADERS} ${UTIL_SOURCES} ${HEURISTICS_HEADERS} ${HEURISTICS_SOURCES})
+set(CLUSTER_HEADERS
+  cluster/cluster_fwd.hpp
+  cluster/cluster_manager.hpp
+  cluster/cluster.hpp
+)
+
+set(CLUSTER_SOURCES
+  cluster/cluster_manager.cpp
+  cluster/cluster.cpp
+)
+
+set(ALL_SOURCES ${BLOCKSCI_HEADERS} ${ADDRESS_HEADERS} ${ADDRESS_SOURCES}  ${SCRIPT_HEADERS} ${SCRIPT_SOURCES} ${CHAIN_HEADERS} ${CHAIN_SOURCES} ${INDEX_HEADERS} ${INDEX_SOURCES} ${UTIL_HEADERS} ${UTIL_SOURCES} ${HEURISTICS_HEADERS} ${HEURISTICS_SOURCES} ${CLUSTER_HEADERS} ${CLUSTER_SOURCES})
 
 add_library(blocksci SHARED ${ALL_SOURCES})
 add_library(blocksci_static STATIC ${ALL_SOURCES})
@@ -164,7 +176,6 @@ add_library(blocksci_static_unity STATIC blocksci_unity.cpp)
 
 set_property(TARGET blocksci PROPERTY VERSION ${Upstream_VERSION})
 set_property(TARGET blocksci_static PROPERTY VERSION ${Upstream_VERSION})
-
 set_property(TARGET blocksci_static PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 if( supported )
@@ -180,12 +191,11 @@ source_group(blocksci\\scripts FILES ${SCRIPT_HEADERS} ${SCRIPT_SOURCES})
 source_group(blocksci\\index FILES ${INDEX_HEADERS} ${INDEX_SOURCES})
 source_group(blocksci\\util FILES ${UTIL_HEADERS} ${UTIL_SOURCES})
 source_group(blocksci\\heuristics FILES ${HEURISTICS_HEADERS} ${HEURISTICS_SOURCES})
+source_group(blocksci\\cluster FILES ${CLUSTER_HEADERS} ${CLUSTER_SOURCES})
 source_group(blocksci FILES ${BLOCKSCI_HEADERS} ${BLOCKSCI_SOURCES})
 
-
-
 target_link_libraries( blocksci PUBLIC Threads::Threads)
-target_link_libraries( blocksci PUBLIC Boost::system Boost::filesystem Boost::thread Boost::iostreams Boost::serialization)
+target_link_libraries( blocksci PUBLIC Boost::filesystem Boost::iostreams Boost::serialization)
 target_link_libraries( blocksci PUBLIC OpenSSL::Crypto )
 target_link_libraries( blocksci PUBLIC rocksdb )
 target_link_libraries( blocksci PRIVATE secp256k1)
@@ -194,14 +204,14 @@ target_link_libraries( blocksci PUBLIC blocksci_mpark_variant blocksci_ranges)
 SET_TARGET_PROPERTIES(blocksci_static PROPERTIES OUTPUT_NAME blocksci)
 
 target_link_libraries( blocksci_static PUBLIC Threads::Threads)
-target_link_libraries( blocksci_static PUBLIC Boost::system Boost::filesystem Boost::thread Boost::iostreams Boost::serialization)
+target_link_libraries( blocksci_static PUBLIC Boost::filesystem Boost::iostreams Boost::serialization)
 target_link_libraries( blocksci_static PUBLIC OpenSSL::Crypto )
 target_link_libraries( blocksci_static PUBLIC rocksdb )
 target_link_libraries( blocksci_static PRIVATE secp256k1)
 target_link_libraries( blocksci_static PUBLIC blocksci_mpark_variant blocksci_ranges)
 
 target_link_libraries( blocksci_static_unity PUBLIC Threads::Threads)
-target_link_libraries( blocksci_static_unity PUBLIC Boost::system Boost::filesystem Boost::thread Boost::iostreams Boost::serialization)
+target_link_libraries( blocksci_static_unity PUBLIC Boost::filesystem Boost::iostreams Boost::serialization)
 target_link_libraries( blocksci_static_unity PUBLIC OpenSSL::Crypto )
 target_link_libraries( blocksci_static_unity PUBLIC rocksdb )
 target_link_libraries( blocksci_static_unity PRIVATE secp256k1)
@@ -209,17 +219,17 @@ target_link_libraries( blocksci_static_unity PUBLIC blocksci_mpark_variant block
 
 target_include_directories(blocksci PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-  $<INSTALL_INTERFACE:include/blocksci>
+  $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>
 )
 
 target_include_directories(blocksci_static PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-  $<INSTALL_INTERFACE:include/blocksci>
+  $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>
 )
 
 target_include_directories(blocksci_static_unity PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-  $<INSTALL_INTERFACE:include/blocksci>
+  $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>
 )
 
 SET(VERSION_STRING ${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION})
@@ -228,14 +238,10 @@ SET_TARGET_PROPERTIES(blocksci blocksci_static PROPERTIES
     VERSION "${VERSION_STRING}"
     SOVERSION "${SO_VERSION}")
 
-set(INCLUDE_INSTALL_DIR include/blocksci )
-set(LIB_INSTALL_DIR lib/ )
-set(SYSCONFIG_INSTALL_DIR etc/blocksci/ . )
-
 include(CMakePackageConfigHelpers)
 
-INSTALL(TARGETS blocksci EXPORT blocksci-targets LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
-INSTALL(TARGETS blocksci_static EXPORT blocksci_static LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+INSTALL(TARGETS blocksci EXPORT blocksci-targets LIBRARY DESTINATION ${LIB_INSTALL_DIR} ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
+INSTALL(TARGETS blocksci_static EXPORT blocksci_static LIBRARY DESTINATION ${LIB_INSTALL_DIR} ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
 
 export(EXPORT blocksci-targets
   FILE "${CMAKE_CURRENT_BINARY_DIR}/blocksci-targets.cmake"
@@ -260,10 +266,11 @@ install(
     Devel
 )
 
-install(FILES ${BLOCKSCI_HEADERS} DESTINATION include/blocksci)
-install(FILES ${ADDRESS_HEADERS} DESTINATION include/blocksci/address)
-install(FILES ${SCRIPT_HEADERS} DESTINATION include/blocksci/scripts)
-install(FILES ${UTIL_HEADERS} DESTINATION include/blocksci/util)
-install(FILES ${INDEX_HEADERS} DESTINATION include/blocksci/index)
-install(FILES ${CHAIN_HEADERS} DESTINATION include/blocksci/chain)
-install(FILES ${HEURISTICS_HEADERS} DESTINATION include/blocksci/heuristics)
+install(FILES ${BLOCKSCI_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR})
+install(FILES ${ADDRESS_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/address)
+install(FILES ${SCRIPT_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/scripts)
+install(FILES ${UTIL_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/util)
+install(FILES ${INDEX_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/index)
+install(FILES ${CHAIN_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/chain)
+install(FILES ${HEURISTICS_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/heuristics)
+install(FILES ${CLUSTER_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/cluster)

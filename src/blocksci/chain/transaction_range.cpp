@@ -6,13 +6,13 @@
 //
 
 #include "transaction_range.hpp"
+
 #include "block.hpp"
 #include "chain_access.hpp"
 #include "input.hpp"
 #include "output.hpp"
 
 namespace blocksci {
-    
     TransactionRange::TransactionRange(const DataAccess &access_, uint32_t begin, uint32_t end) : access(&access_), currentTxPos(reinterpret_cast<const char *>(access->chain->getTx(begin))), currentTxIndex(begin), endTxIndex(end), blockNum(access->chain->getBlockHeight(begin)) {
         updateNextBlock();
     }
@@ -57,4 +57,4 @@ namespace blocksci {
     const RawTransaction *RawTransactionRange::read() const {
         return reinterpret_cast<const RawTransaction *>(currentTxPos);
     }
-}
+} // namespace blocksci

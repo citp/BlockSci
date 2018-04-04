@@ -18,7 +18,7 @@ namespace std
     template<> struct hash<blocksci::Inout> {
         size_t operator()(const blocksci::Inout &inout) const;
     };
-}
+} // namespace std
 
 namespace blocksci {
     struct Inout {
@@ -38,7 +38,7 @@ namespace blocksci {
             other |= (intType & uint64_t(0b1111)) << 60;
         }
         
-        Inout(uint32_t linkedTxNum, const RawAddress &address, uint64_t value);
+        Inout(uint32_t linkedTxNum_, const RawAddress &address, uint64_t value);
         Inout() : linkedTxNum(0), toAddressNum(0), other(0) {}
         
         uint64_t getValue() const {
@@ -56,6 +56,6 @@ namespace blocksci {
             return ! operator==(otherInout);
         }
     };
-}
+} // namespace blocksci
 
 #endif /* inout_hpp */

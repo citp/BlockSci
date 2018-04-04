@@ -10,6 +10,7 @@
 #define transaction_summary_hpp
 
 #include "chain_fwd.hpp"
+
 #include <cstdint>
 
 namespace blocksci {
@@ -20,7 +21,7 @@ namespace blocksci {
         uint64_t totalCount;
         uint64_t totalOutputValue;
         
-        TransactionSummary(uint64_t totalInputs, uint64_t totalOutputs, uint64_t totalSize, uint64_t totalCount, uint64_t totalOutputValue);
+        TransactionSummary(uint64_t totalInputs_, uint64_t totalOutputs_, uint64_t totalSize_, uint64_t totalCount_, uint64_t totalOutputValue_);
         TransactionSummary();
         
         TransactionSummary operator+(const TransactionSummary &other) const;
@@ -32,6 +33,6 @@ namespace blocksci {
         double averageSize() const;
         double averageOutputValue() const;
     };
-}
+} // namespace blocksci
 
 #endif /* transaction_summary_hpp */

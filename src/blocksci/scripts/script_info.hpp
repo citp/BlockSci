@@ -10,6 +10,7 @@
 #define script_info_hpp
 
 #include "scripts_fwd.hpp"
+
 #include <blocksci/address/address_types.hpp>
 #include <blocksci/address/dedup_address_type.hpp>
 #include <blocksci/util/util.hpp>
@@ -53,6 +54,6 @@ namespace blocksci {
         using outputType = RawData;
         using storage = Indexed<RawData>;
     };
-}
+} // namespace blocksci
 
 #endif /* script_info_hpp */

@@ -9,11 +9,12 @@
 #ifndef raw_input_hpp
 #define raw_input_hpp
 
-#include <blocksci/chain/inout.hpp>
-#include <blocksci/chain/inout_pointer.hpp>
-#include <blocksci/util/data_access.hpp>
-#include <blocksci/chain/chain_access.hpp>
+#include "inout.hpp"
+#include "inout_pointer.hpp"
+#include "chain_access.hpp"
+
 #include <blocksci/address/address_types.hpp>
+#include <blocksci/util/data_access.hpp>
 
 #include <cstdint>
 #include <string>
@@ -22,7 +23,7 @@ namespace std {
     template<> struct hash<blocksci::Input> {
         size_t operator()(const blocksci::Input &input) const;
     };
-}
+} // namespace std
 
 namespace blocksci {
     
@@ -98,6 +99,6 @@ namespace blocksci {
     inline std::ostream &operator<<(std::ostream &os, const Input &input) { 
         return os << input.toString();
     }
-}
+} // namespace blocksci
 
 #endif /* raw_input_hpp */

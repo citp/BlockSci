@@ -10,18 +10,19 @@
 #define transaction_hpp
 
 #include "raw_transaction.hpp"
+
 #include "output.hpp"
 #include "input.hpp"
 
-#include <blocksci/util/data_access.hpp>
-#include <blocksci/scripts/scripts_fwd.hpp>
 #include <blocksci/address/address_fwd.hpp>
 #include <blocksci/address/address_info.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
+#include <blocksci/util/data_access.hpp>
 
 #include <range/v3/iterator_range.hpp>
-#include <range/v3/view/zip_with.hpp>
-#include <range/v3/view/iota.hpp>
 #include <range/v3/utility/optional.hpp>
+#include <range/v3/view/iota.hpp>
+#include <range/v3/view/zip_with.hpp>
 
 #include <vector>
 
@@ -160,14 +161,14 @@ namespace blocksci {
     using input_range = decltype(std::declval<Transaction>().inputs());
     using output_range = decltype(std::declval<Transaction>().outputs());
     
-    bool hasFeeGreaterThan(Transaction &tx, uint64_t fee);
+    bool hasFeeGreaterThan(Transaction &tx, uint64_t txFee);
     
     ranges::optional<Output> getOpReturn(const Transaction &tx);
 
     inline std::ostream &operator<<(std::ostream &os, const Transaction &tx) { 
         return os << tx.toString();
     }
-}
+} // namespace blocksci
 
 
 namespace std {
@@ -179,7 +180,7 @@ namespace std {
             return static_cast<size_t>(b.txNum);
         }
     };
-}
+} // namespace std
 
 
 #endif /* transaction_hpp */

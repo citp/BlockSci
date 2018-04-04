@@ -9,9 +9,11 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "output.hpp"
+
 #include "block.hpp"
 #include "inout_pointer.hpp"
 #include "transaction.hpp"
+
 #include <blocksci/address/address.hpp>
 #include <blocksci/scripts/script_variant.hpp>
 #include <blocksci/util/hash.hpp>
@@ -19,7 +21,6 @@
 #include <sstream>
 
 namespace blocksci {
-    
     Transaction Output::transaction() const {
         return {pointer.txNum, blockHeight, *access};
     }
@@ -39,19 +40,14 @@ namespace blocksci {
     }
     
     ranges::optional<Transaction> Output::getSpendingTx() const {
-        if (isSpent()) {
-            return Transaction(getSpendingTxIndex(), *access);
-        } else {
-            return ranges::nullopt;
-        }
+        return isSpent() ? ranges::optional<Transaction>{Transaction(getSpendingTxIndex(), *access)} : ranges::nullopt;
     }
-}
+} // namespace blocksci
 
-namespace std
-{
+namespace std {
     size_t hash<blocksci::Output>::operator()(const blocksci::Output &output) const {
         std::size_t seed = 819543;
         hash_combine(seed, *output.inout);
         return seed;
     }
-}
+} // namespace std

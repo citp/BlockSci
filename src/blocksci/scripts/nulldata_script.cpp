@@ -9,14 +9,16 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "nulldata_script.hpp"
-#include "script_data.hpp"
+
 #include "script_access.hpp"
+#include "script_data.hpp"
+
 #include <blocksci/util/data_access.hpp>
 
 namespace blocksci {
     using script::OpReturn;
     
-    OpReturn::ScriptAddress(uint32_t scriptNum_, const DataAccess &access) : ScriptBase(scriptNum_, addressType, access), rawData(access.scripts->getScriptData<addressType>(scriptNum_)) {}
+    OpReturn::ScriptAddress(uint32_t scriptNum_, const DataAccess &access_) : ScriptBase(scriptNum_, addressType, access_), rawData(access_.scripts->getScriptData<addressType>(scriptNum_)) {}
     
     std::string OpReturn::getData() const {
         return rawData->getData();
@@ -33,4 +35,4 @@ namespace blocksci {
         ss << "NulldataAddressData(" << getData() << ")";
         return ss.str();
     }
-}
+} // namespace blocksci

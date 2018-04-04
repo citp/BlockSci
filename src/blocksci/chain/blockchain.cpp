@@ -8,21 +8,22 @@
 
 #include "blockchain.hpp"
 #include "block.hpp"
-#include "transaction.hpp"
+#include "chain_access.hpp"
 #include "output.hpp"
+#include "transaction.hpp"
+
 #include <blocksci/heuristics/tx_identification.hpp>
-#include <blocksci/chain/chain_access.hpp>
 #include <blocksci/index/address_index.hpp>
 #include <blocksci/index/address_output_range.hpp>
 #include <blocksci/index/hash_index.hpp>
 #include <blocksci/util/data_configuration.hpp>
 
-#include <range/v3/view/drop.hpp>
-#include <range/v3/view/group_by.hpp>
-#include <range/v3/view/filter.hpp>
-#include <range/v3/front.hpp>
 #include <range/v3/action/push_back.hpp>
 #include <range/v3/algorithm/any_of.hpp>
+#include <range/v3/front.hpp>
+#include <range/v3/view/drop.hpp>
+#include <range/v3/view/filter.hpp>
+#include <range/v3/view/group_by.hpp>
 
 #include <fstream>
 #include <iostream>
@@ -159,11 +160,7 @@ namespace blocksci {
             auto address = ranges::front(outputGroup).first;
             auto balancesIfUnspent = outputGroup | ranges::view::transform([&](auto pair) -> uint64_t {
                 Output out{pair.second, chain.getAccess()};
-                if (!out.isSpent()) {
-                    return out.getValue();
-                } else {
-                    return 0;
-                }
+                return out.isSpent() ? 0 : out.getValue();
             });
             
             uint64_t balance = ranges::accumulate(balancesIfUnspent, uint64_t{0});
@@ -179,4 +176,4 @@ namespace blocksci {
         }
         return topAddresses;
     }
-}
+} // namespace blocksci

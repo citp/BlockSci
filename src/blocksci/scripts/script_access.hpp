@@ -12,9 +12,9 @@
 #include "script_info.hpp"
 #include "script_data.hpp"
 
+#include <blocksci/address/address_info.hpp>
 #include <blocksci/util/data_configuration.hpp>
 #include <blocksci/util/file_mapper.hpp>
-#include <blocksci/address/address_info.hpp>
 
 #include <mpark/variant.hpp>
 
@@ -49,7 +49,7 @@ namespace blocksci {
         
         
     public:
-        explicit ScriptAccess(const DataConfiguration &config);
+        explicit ScriptAccess(const DataConfiguration &config_);
         
         DataConfiguration config;
         
@@ -85,7 +85,6 @@ namespace blocksci {
         
         void reload();
     };
-
-}
+} // namespace blocksci
 
 #endif /* script_access_hpp */

@@ -14,7 +14,6 @@
 #ifndef BLOCKSCI_BITCOIN_BASE58_H
 #define BLOCKSCI_BITCOIN_BASE58_H
 
-
 #include <blocksci/address/address_types.hpp>
 
 #include <string>
@@ -119,7 +118,6 @@ namespace blocksci {
         
         std::pair<uint160, AddressType::Enum> Get(const DataConfiguration &config) const;
     };
-}
-
+} // namespace blocksci
 
 #endif // BLOCKSCI_BITCOIN_BASE58_H

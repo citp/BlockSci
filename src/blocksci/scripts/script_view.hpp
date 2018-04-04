@@ -137,6 +137,6 @@ namespace blocksci {
     };
     
     std::string ScriptToAsmStr(const CScriptView& script, const bool fAttemptSighashDecode = false);
-}
+} // namespace blocksci
 
 #endif /* script_view_hpp */
