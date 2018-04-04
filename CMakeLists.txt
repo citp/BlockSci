@@ -77,7 +77,7 @@ ExternalProject_Get_Property(project_secp256k1 install_dir)
 add_library(secp256k1 INTERFACE)
 add_dependencies(secp256k1 project_secp256k1)
 target_include_directories(secp256k1 INTERFACE ${install_dir}/include)
-target_link_libraries(secp256k1 INTERFACE ${install_dir}/lib/libsecp256k1.a)
+target_link_libraries(secp256k1 INTERFACE ${install_dir}/lib/libsecp256k1.so)
 target_link_libraries(secp256k1 INTERFACE gmp)
 
 include(cppcheck.cmake)
