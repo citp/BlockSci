@@ -22,37 +22,6 @@
 
 using namespace blocksci;
 
-
-
-struct TxProcessor {
-    bool joint_input = true;
-    
-    
-    
-    std::vector<std::pair<Address, Address>> operator()(const Transaction &tx) {
-        std::vector<std::pair<Address, Address>> pairsToUnion;
-        
-        if (!heuristics::isCoinjoin(tx) && !tx.isCoinbase()) {
-            if (joint_input_heuristic) {
-                auto inputs = tx.inputs();
-                auto firstAddress = inputs[0].getAddress();
-                for (uint16_t i = 1; i < inputs.size(); i++) {
-                    pairsToUnion.emplace_back(firstAddress, inputs[i].getAddress());
-                }
-            }
-            
-            if (unique_change_legacy && auto change = heuristics::uniqueChangeByLegacyHeuristic(tx)) {
-                pairsToUnion.emplace_back(change->getAddress(), firstAddress);
-            }
-            
-            if (unique_change_legacy && auto change = heuristics::uniqueChangeByPeelingChain(tx)) {
-                pairsToUnion.emplace_back(change->getAddress(), firstAddress);
-            }
-        }
-        return pairsToUnion;
-    }
-}
-
 std::vector<std::pair<Address, Address>> process_transaction(const Transaction &tx) {
     std::vector<std::pair<Address, Address>> pairsToUnion;
     
@@ -227,7 +196,7 @@ void recordOrderedAddresses(const std::vector<uint32_t> &parent, std::vector<uin
 int main(int argc, char * argv[]) {
     std::string dataLocation;
     auto cli = clipp::group(
-                clipp::value("data location", dataLocation),
+                clipp::value("data location", dataLocation)
     );
     auto res = parse(argc, argv, cli);
     if (res.any_error()) {
