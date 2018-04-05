@@ -68,12 +68,12 @@ namespace blocksci {
     class RawTransactionRange : public ranges::view_facade<RawTransactionRange> {
         friend ranges::range_access;
         
-        const DataAccess *access;
+        const ChainAccess *access;
         mutable const char *currentTxPos;
         uint32_t currentTxIndex;
         uint32_t endTxIndex;
         
-        const RawTransaction *read() const;
+        std::pair<const RawTransaction *, uint32_t> read() const;
         bool equal(ranges::default_sentinel) const { return currentTxIndex == endTxIndex; }
         
         void next();
@@ -86,7 +86,7 @@ namespace blocksci {
         
     public:
         RawTransactionRange() = default;
-        RawTransactionRange(const DataAccess &access_, uint32_t begin, uint32_t end);
+        RawTransactionRange(const ChainAccess &access_, uint32_t begin, uint32_t end);
     };
 } // namespace blocksci
 

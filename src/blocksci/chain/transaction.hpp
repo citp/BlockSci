@@ -19,7 +19,6 @@
 #include <blocksci/scripts/scripts_fwd.hpp>
 #include <blocksci/util/data_access.hpp>
 
-#include <range/v3/iterator_range.hpp>
 #include <range/v3/utility/optional.hpp>
 #include <range/v3/view/iota.hpp>
 #include <range/v3/view/zip_with.hpp>
@@ -99,13 +98,11 @@ namespace blocksci {
         }
         
         ranges::iterator_range<const Inout *> rawOutputs() const {
-            auto &firstOut = data->getOutput(0);
-            return ranges::make_iterator_range(&firstOut, &firstOut + outputCount());
+            return data->outputs();
         }
         
         ranges::iterator_range<const Inout *> rawInputs() const {
-            auto &firstIn = data->getInput(0);
-            return ranges::make_iterator_range(&firstIn, &firstIn + inputCount());
+            return data->inputs();
         }
         
         auto outputs() const {

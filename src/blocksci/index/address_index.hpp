@@ -39,8 +39,8 @@ namespace blocksci {
         std::vector<Address> getPossibleNestedEquivalent(const Address &address) const;
         std::vector<Address> getIncludingMultisigs(const Address &searchAddress) const;
         
-        void addAddressNested(const blocksci::Address &childAddress, const blocksci::DedupAddress &parentAddress);
-        void addAddressOutput(const blocksci::Address &address, const blocksci::OutputPointer &pointer);
+        void addAddressNested(const blocksci::RawAddress &childAddress, const blocksci::DedupAddress &parentAddress);
+        void addAddressOutput(const blocksci::RawAddress &address, const blocksci::OutputPointer &pointer);
         
         const std::unique_ptr<rocksdb::ColumnFamilyHandle> &getOutputColumn(AddressType::Enum type) const;
         const std::unique_ptr<rocksdb::ColumnFamilyHandle> &getNestedColumn(AddressType::Enum type) const;

@@ -79,6 +79,7 @@ namespace blocksci {
     };
     
     void visit(const Address &address, const std::function<bool(const Address &)> &visitFunc);
+    void visit(const RawAddress &address, const std::function<bool(const RawAddress &)> &visitFunc, const ScriptAccess &scripts);
     
     ranges::optional<Address> getAddressFromString(const std::string &addressString, const DataAccess &access);
     

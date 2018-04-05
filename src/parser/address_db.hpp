@@ -35,10 +35,10 @@ public:
     
     AddressDB(const ParserConfigurationBase &config, const std::string &path);
     
-    void processTx(const blocksci::Transaction &tx);
+    void processTx(const blocksci::RawTransaction *tx, uint32_t txNum, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts);
     
     template<blocksci::DedupAddressType::Enum type>
-    void processScript(uint32_t, const blocksci::DataAccess &);
+    void processScript(uint32_t, const blocksci::ScriptAccess &);
     
     void rollback(const blocksci::State &state);
     void tearDown() override;
@@ -49,10 +49,10 @@ public:
 };
 
 template<>
-inline void AddressDB::processScript<blocksci::DedupAddressType::MULTISIG>(uint32_t equivNum, const blocksci::DataAccess &access) {
-    blocksci::script::Multisig multisig(equivNum, access);
-    for (const auto &address : multisig.getAddresses()) {
-        db.addAddressNested(address, blocksci::DedupAddress{equivNum, blocksci::DedupAddressType::MULTISIG});
+inline void AddressDB::processScript<blocksci::DedupAddressType::MULTISIG>(uint32_t equivNum, const blocksci::ScriptAccess &scripts) {
+    auto multisig = scripts.getScriptData<blocksci::DedupAddressType::MULTISIG>(equivNum);
+    for (const auto &addressNum : multisig->addresses) {
+        db.addAddressNested(blocksci::RawAddress{addressNum, blocksci::AddressType::MULTISIG_PUBKEY}, blocksci::DedupAddress{equivNum, blocksci::DedupAddressType::MULTISIG});
     }
 }
 

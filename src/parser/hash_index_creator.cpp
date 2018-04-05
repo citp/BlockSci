@@ -23,33 +23,31 @@
 
 HashIndexCreator::HashIndexCreator(const ParserConfigurationBase &config_, const std::string &path) : ParserIndex(config_, "hashIndex"), db(path, false) {}
 
-void HashIndexCreator::processTx(const blocksci::Transaction &tx) {
-    auto hash = tx.getHash();
-    db.addTx(hash, tx.txNum);
+void HashIndexCreator::processTx(const blocksci::RawTransaction *tx, uint32_t txNum, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) {
+    db.addTx(*chain.getTxHash(txNum), txNum);
     
     bool insideP2SH;
-    std::function<bool(const blocksci::Address &)> inputVisitFunc = [&](const blocksci::Address &a) {
+    std::function<bool(const blocksci::RawAddress &)> inputVisitFunc = [&](const blocksci::RawAddress &a) {
         if (a.type == blocksci::AddressType::SCRIPTHASH) {
             insideP2SH = true;
             return true;
         } else if (a.type == blocksci::AddressType::WITNESS_SCRIPTHASH && insideP2SH) {
-            auto script = blocksci::script::WitnessScriptHash(a.scriptNum, a.getAccess());
-            db.addAddress<blocksci::AddressType::WITNESS_SCRIPTHASH>(script.getAddressHash(), a.scriptNum);
+            auto script = scripts.getScriptData<blocksci::AddressType::WITNESS_SCRIPTHASH>(a.scriptNum);
+            db.addAddress<blocksci::AddressType::WITNESS_SCRIPTHASH>(script->hash256, a.scriptNum);
             return false;
         } else {
             return false;
         }
     };
-    for (auto input : tx.inputs()) {
+    for (auto input : tx->inputs()) {
         insideP2SH = false;
-        visit(input.getAddress(), inputVisitFunc);
+        visit(blocksci::RawAddress{input.toAddressNum, input.getType()}, inputVisitFunc, scripts);
     }
     
-    for (auto txout : tx.outputs()) {
+    for (auto &txout : tx->outputs()) {
         if (txout.getType() == blocksci::AddressType::WITNESS_SCRIPTHASH) {
-            auto scriptNum = txout.getAddress().scriptNum;
-            auto script = blocksci::script::WitnessScriptHash(scriptNum, tx.getAccess());
-            db.addAddress<blocksci::AddressType::WITNESS_SCRIPTHASH>(script.getAddressHash(), scriptNum);
+            auto script = scripts.getScriptData<blocksci::AddressType::WITNESS_SCRIPTHASH>(txout.toAddressNum);
+            db.addAddress<blocksci::AddressType::WITNESS_SCRIPTHASH>(script->hash256, txout.toAddressNum);
         }
     }
 }

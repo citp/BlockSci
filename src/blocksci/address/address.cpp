@@ -51,10 +51,20 @@ namespace blocksci {
     
     void visit(const Address &address, const std::function<bool(const Address &)> &visitFunc) {
         if (visitFunc(address)) {
-            std::function<void(const blocksci::Address &)> nestedVisitor = [&](const blocksci::Address &nestedAddress) {
+            std::function<void(const Address &)> nestedVisitor = [&](const Address &nestedAddress) {
                 visit(nestedAddress, visitFunc);
             };
             auto script = address.getScript();
+            script.visitPointers(nestedVisitor);
+        }
+    }
+    
+    void visit(const RawAddress &address, const std::function<bool(const RawAddress &)> &visitFunc, const ScriptAccess &scripts) {
+        if (visitFunc(address)) {
+            std::function<void(const RawAddress &)> nestedVisitor = [&](const RawAddress &nestedAddress) {
+                visit(nestedAddress, visitFunc, scripts);
+            };
+            AnyScriptData script{address, scripts};
             script.visitPointers(nestedVisitor);
         }
     }

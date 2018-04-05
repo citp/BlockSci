@@ -7,6 +7,8 @@
 
 #include "script_variant.hpp"
 
+#include "script_access.hpp"
+
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/chain/transaction.hpp>
 
@@ -56,4 +58,21 @@ namespace blocksci {
     std::string AnyScript::toPrettyString() const {
         return mpark::visit([&](auto &scriptAddress) { return scriptAddress.toPrettyString(); }, wrapped);
     }
+    
+    template<AddressType::Enum type>
+    struct ScriptDataCreateFunctor {
+        static AnyScriptData::ScriptVariant f(uint32_t scriptNum, const ScriptAccess &access) {
+            auto &file = access.getFile<dedupType(type)>();
+            return ScriptWrapper<type>{file.getDataAtIndex(scriptNum)};
+        }
+    };
+    
+    static constexpr auto scriptDataCreator = make_dynamic_table<AddressType, ScriptDataCreateFunctor>();
+    
+    AnyScriptData::AnyScriptData(const RawAddress &address, const ScriptAccess &access) : wrapped(scriptDataCreator.at(static_cast<size_t>(address.type))(address.scriptNum, access)) {}
+    
+    void AnyScriptData::visitPointers(const std::function<void(const RawAddress &)> &func) {
+        mpark::visit([&](auto &scriptAddress) { scriptAddress.data->visitPointers(func); }, wrapped);
+    }
+    
 } // namespace blocksci

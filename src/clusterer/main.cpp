@@ -6,21 +6,52 @@
 //  Copyright © 2017 Harry Kalodner. All rights reserved.
 //
 
-#include "dset/dset.h"
-
-#include <blocksci/blocksci.hpp>
 #include <blocksci/address/dedup_address.hpp>
-#include <blocksci/util/data_access.hpp>
+#include <blocksci/blocksci.hpp>
 #include <blocksci/script.hpp>
+#include <blocksci/util/data_access.hpp>
 
+#include "dset/dset.h"
+#include <clipp.h>
+
+#include <future>
+#include <fstream>
+#include <map>
 #include <unordered_map>
 #include <unordered_set>
-#include <map>
-#include <future>
-
-#include <fstream>
 
 using namespace blocksci;
+
+
+
+struct TxProcessor {
+    bool joint_input = true;
+    
+    
+    
+    std::vector<std::pair<Address, Address>> operator()(const Transaction &tx) {
+        std::vector<std::pair<Address, Address>> pairsToUnion;
+        
+        if (!heuristics::isCoinjoin(tx) && !tx.isCoinbase()) {
+            if (joint_input_heuristic) {
+                auto inputs = tx.inputs();
+                auto firstAddress = inputs[0].getAddress();
+                for (uint16_t i = 1; i < inputs.size(); i++) {
+                    pairsToUnion.emplace_back(firstAddress, inputs[i].getAddress());
+                }
+            }
+            
+            if (unique_change_legacy && auto change = heuristics::uniqueChangeByLegacyHeuristic(tx)) {
+                pairsToUnion.emplace_back(change->getAddress(), firstAddress);
+            }
+            
+            if (unique_change_legacy && auto change = heuristics::uniqueChangeByPeelingChain(tx)) {
+                pairsToUnion.emplace_back(change->getAddress(), firstAddress);
+            }
+        }
+        return pairsToUnion;
+    }
+}
 
 std::vector<std::pair<Address, Address>> process_transaction(const Transaction &tx) {
     std::vector<std::pair<Address, Address>> pairsToUnion;
@@ -193,13 +224,20 @@ void recordOrderedAddresses(const std::vector<uint32_t> &parent, std::vector<uin
     clusterAddressesFile.write(reinterpret_cast<char *>(orderedScripts.data()), sizeof(DedupAddress) * orderedScripts.size());
 }
 
-int main(int argc, const char * argv[]) {
-    assert(argc == 2);
+int main(int argc, char * argv[]) {
+    std::string dataLocation;
+    auto cli = clipp::group(
+                clipp::value("data location", dataLocation),
+    );
+    auto res = parse(argc, argv, cli);
+    if (res.any_error()) {
+        std::cout << "Invalid command line parameter\n" << clipp::make_man_page(cli, argv[0]);
+        return 0;
+    }
+    
+    Blockchain chain(dataLocation);
     
     auto progStart = std::chrono::steady_clock::now();
-    
-    Blockchain chain(argv[1]);
-    
     auto &scripts = *chain.getAccess().scripts;
     size_t totalScriptCount = scripts.totalAddressCount();;
     

@@ -13,6 +13,8 @@
 
 #include <blocksci/util/util.hpp>
 
+#include <range/v3/iterator_range.hpp>
+
 namespace blocksci {
     struct RawTransaction {
         uint32_t realSize;
@@ -42,6 +44,16 @@ namespace blocksci {
         
         const Inout &getInput(uint16_t inputNum) const {
             return getInouts()[inputNum];
+        }
+        
+        ranges::iterator_range<const Inout *> outputs() const {
+            auto &firstOut = getOutput(0);
+            return ranges::make_iterator_range(&firstOut, &firstOut + outputCount);
+        }
+        
+        ranges::iterator_range<const Inout *> inputs() const {
+            auto &firstIn = getInput(0);
+            return ranges::make_iterator_range(&firstIn, &firstIn + inputCount);
         }
         
         size_t serializedSize() const {

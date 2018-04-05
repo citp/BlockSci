@@ -48,6 +48,22 @@ namespace blocksci {
         
         ScriptVariant wrapped;
     };
+    
+    template <AddressType::Enum type>
+    struct ScriptWrapper {
+        ScriptDataPointer<type> data;
+    };
+    
+    class AnyScriptData {
+    public:
+        using ScriptVariant = to_variadic_t<to_address_tuple_t<ScriptWrapper>, mpark::variant>;
+        
+        AnyScriptData(const RawAddress &address, const ScriptAccess &access);
+        
+        void visitPointers(const std::function<void(const RawAddress &)> &func);
+
+        ScriptVariant wrapped;
+    };
 } // namespace blocksci
 
 #endif /* script_variant_hpp */

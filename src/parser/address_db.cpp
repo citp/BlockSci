@@ -29,6 +29,7 @@
 #include <iostream>
 
 using blocksci::Address;
+using blocksci::RawAddress;
 using blocksci::DedupAddress;
 using blocksci::AddressInfoList;
 using blocksci::Transaction;
@@ -41,14 +42,13 @@ AddressDB::AddressDB(const ParserConfigurationBase &config_, const std::string &
 
 void AddressDB::tearDown() {}
 
-void AddressDB::processTx(const Transaction &tx) {
+void AddressDB::processTx(const blocksci::RawTransaction *tx, uint32_t txNum, const blocksci::ChainAccess &, const blocksci::ScriptAccess &scripts) {
     std::unordered_set<Address> addresses;
-    std::function<bool(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
+    std::function<bool(const RawAddress &)> visitFunc = [&](const RawAddress &a) {
         if (dedupType(a.type) == DedupAddressType::SCRIPTHASH) {
-            ScriptHash scriptHash(a.scriptNum, tx.getAccess());
-            if (scriptHash.getTxRevealedIndex() == tx.txNum) {
-                auto wrapped = *scriptHash.getWrappedAddress();
-                db.addAddressNested(wrapped, DedupAddress{a.scriptNum, DedupAddressType::SCRIPTHASH});
+            auto scriptHash = scripts.getScriptData<DedupAddressType::SCRIPTHASH>(a.scriptNum);
+            if (scriptHash->txFirstSeen == txNum) {
+                db.addAddressNested(scriptHash->wrappedAddress, DedupAddress{a.scriptNum, DedupAddressType::SCRIPTHASH});
                 return true;
             } else {
                 return false;
@@ -56,12 +56,14 @@ void AddressDB::processTx(const Transaction &tx) {
         }
         return false;
     };
-    for (auto input : tx.inputs()) {
-        visit(input.getAddress(), visitFunc);
+    for (auto &input : tx->inputs()) {
+        visit(RawAddress{input.toAddressNum, input.getType()}, visitFunc, scripts);
     }
     
-    for (auto output : tx.outputs()) {
-        db.addAddressOutput(output.getAddress(), output.pointer);
+    for (uint16_t i = 0; i < tx->outputCount; i++) {
+        auto &output = tx->getOutput(i);
+        auto pointer = OutputPointer{txNum, i};
+        db.addAddressOutput(RawAddress{output.toAddressNum, output.getType()}, pointer);
     }
 }
 

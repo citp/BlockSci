@@ -198,7 +198,7 @@ namespace blocksci {
         return std::vector<Address>{upAddresses.begin(), upAddresses.end()};
     }
     
-    void AddressIndex::addAddressNested(const Address &childAddress, const DedupAddress &parentAddress) {
+    void AddressIndex::addAddressNested(const RawAddress &childAddress, const DedupAddress &parentAddress) {
         std::array<rocksdb::Slice, 2> keyParts = {{
             rocksdb::Slice(reinterpret_cast<const char *>(&childAddress.scriptNum), sizeof(childAddress.scriptNum)),
             rocksdb::Slice(reinterpret_cast<const char *>(&parentAddress), sizeof(parentAddress))
@@ -209,7 +209,7 @@ namespace blocksci {
         db->Put(rocksdb::WriteOptions{}, nestedColumn.get(), key, rocksdb::Slice{});
     }
     
-    void AddressIndex::addAddressOutput(const Address &address, const blocksci::OutputPointer &pointer) {
+    void AddressIndex::addAddressOutput(const RawAddress &address, const blocksci::OutputPointer &pointer) {
         std::array<rocksdb::Slice, 2> keyParts = {{
             rocksdb::Slice(reinterpret_cast<const char *>(&address.scriptNum), sizeof(address.scriptNum)),
             rocksdb::Slice(reinterpret_cast<const char *>(&pointer), sizeof(pointer))

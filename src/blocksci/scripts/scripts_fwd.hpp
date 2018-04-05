@@ -13,9 +13,6 @@
 #include <blocksci/address/address_types.hpp>
 
 namespace blocksci {
-    template <DedupAddressType::Enum>
-    struct ScriptData;
-    
     class CBitcoinAddress;
     class CKeyID;
     class CPubKey;
@@ -28,6 +25,12 @@ namespace blocksci {
     struct NonstandardSpendScriptData;
     class ScriptAccess;
     struct DataConfiguration;
+    
+    template <AddressType::Enum>
+    struct ScriptData;
+    
+    template <AddressType::Enum addressType>
+    using ScriptDataPointer = const typename ScriptData<addressType>::type*;
     
     template<typename T>
     class ScriptBase;
