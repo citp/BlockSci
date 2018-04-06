@@ -16,6 +16,8 @@
 
 #include <unordered_set>
 
+#define CHANGE_ADDRESS_TYPE_LIST VAL(PeelingChain), VAL(PowerOfTen), VAL(OptimalChange), VAL(AddressType), VAL(Locktime), VAL(AddressReuse), VAL(ClientChangeAddressBehavior), VAL(Legacy)
+#define CHANGE_ADDRESS_TYPE_SET VAL(PeelingChain) VAL(PowerOfTen) VAL(OptimalChange) VAL(AddressType) VAL(Locktime), VAL(AddressReuse), VAL(ClientChangeAddressBehavior) VAL(Legacy)
 namespace blocksci {
 namespace heuristics {
     
@@ -25,14 +27,16 @@ namespace heuristics {
     
     bool isPeelingChain(const Transaction &tx);
     
-    enum kind {
-        PeelingChain,
-        PowerOfTen,
-        OptimalChange,
-        AddressType,
-        Locktime,
-        AddressReuse,
-        ClientChangeAddressBehavior
+    struct ChangeType {
+        enum Enum {
+        #define VAL(x) x
+            CHANGE_ADDRESS_TYPE_LIST
+        #undef VAL
+        };
+        #define VAL(x) Enum::x
+        static constexpr std::array<Enum, 8> all = {{CHANGE_ADDRESS_TYPE_LIST}};
+        #undef VAL
+        static constexpr size_t size = all.size();
     };
     
     template <typename T>
@@ -42,27 +46,48 @@ namespace heuristics {
         }
     };
     
-    template <kind heuristic>
+    template <ChangeType::Enum heuristic>
     struct ChangeHeuristicImpl : ChangeHeuristicImplParent<ChangeHeuristicImpl<heuristic>> {
         std::unordered_set<Output> operator()(const Transaction &tx) const;
     };
     
     template<>
-    struct ChangeHeuristicImpl<PowerOfTen> : ChangeHeuristicImplParent<ChangeHeuristicImpl<PowerOfTen>> {
+    struct ChangeHeuristicImpl<ChangeType::PowerOfTen> : ChangeHeuristicImplParent<ChangeHeuristicImpl<ChangeType::PowerOfTen>> {
         int digits;
-        ChangeHeuristicImpl(int digits_) : ChangeHeuristicImplParent{}, digits(digits_) {}
+        ChangeHeuristicImpl(int digits_ = 5) : ChangeHeuristicImplParent{}, digits(digits_) {}
         std::unordered_set<Output> operator()(const Transaction &tx) const;
     };
     
+    using PeelingChainChange = ChangeHeuristicImpl<ChangeType::PeelingChain>;
+    using PowerOfTenChange = ChangeHeuristicImpl<ChangeType::PowerOfTen>;
+    using OptimalChangeChange = ChangeHeuristicImpl<ChangeType::OptimalChange>;
+    using AddressTypeChange = ChangeHeuristicImpl<ChangeType::AddressType>;
+    using LocktimeChange = ChangeHeuristicImpl<ChangeType::Locktime>;
+    using AddressReuseChange = ChangeHeuristicImpl<ChangeType::AddressReuse>;
+    using ClientChangeAddressBehaviorChange = ChangeHeuristicImpl<ChangeType::ClientChangeAddressBehavior>;
+    using LegacyChange = ChangeHeuristicImpl<ChangeType::Legacy>;
+        
     struct ChangeHeuristic {
-        std::function<std::unordered_set<Output>(const Transaction &tx)> impl;
+        
+        using HeuristicFunc = std::function<std::unordered_set<Output>(const Transaction &tx)>;
+        
+        HeuristicFunc impl;
+        
+        ChangeHeuristic(HeuristicFunc func) : impl(std::move(func)) {}
+        
+        template<typename T>
+        ChangeHeuristic(T func) : impl(std::move(func)) {}
         
         std::unordered_set<Output> operator()(const Transaction &tx) {
             return impl(tx);
         }
         
+        ranges::optional<Output> uniqueChange(const Transaction &tx) const {
+            return internal::singleOrNullptr(impl(tx));
+        }
+        
         static ChangeHeuristic heuristicIntersection(ChangeHeuristic a, ChangeHeuristic b) {
-            return {[&](const Transaction &tx) {
+            return ChangeHeuristic{HeuristicFunc{[&](const Transaction &tx) {
                 auto first = a(tx);
                 auto second = b(tx);
                 for(auto it = begin(first); it != end(first);) {
@@ -73,22 +98,22 @@ namespace heuristics {
                     }
                 }
                 return first;
-            }};
+            }}};
         }
         
         static ChangeHeuristic heuristicUnion(ChangeHeuristic a, ChangeHeuristic b) {
-            return {[&](const Transaction &tx) {
+            return ChangeHeuristic{HeuristicFunc{[&](const Transaction &tx) {
                 auto first = a(tx);
                 auto second = b(tx);
                 for (auto &item : second) {
                     first.insert(item);
                 }
                 return first;
-            }};
+            }}};
         }
         
         static ChangeHeuristic heuristicDifference(ChangeHeuristic a, ChangeHeuristic b) {
-            return {[&](const Transaction &tx) {
+            return ChangeHeuristic{HeuristicFunc{[&](const Transaction &tx) {
                 auto first = a(tx);
                 auto second = b(tx);
                 for(auto it = begin(first); it != end(first);) {
@@ -99,7 +124,7 @@ namespace heuristics {
                     }
                 }
                 return first;
-            }};
+            }}};
         }
     };
     
@@ -126,32 +151,8 @@ namespace heuristics {
     std::unordered_set<Output> changeByClientChangeAddressBehavior(const Transaction &tx);
     ranges::optional<Output> uniqueChangeByClientChangeAddressBehavior(const Transaction &tx);
     
+    std::unordered_set<Output> changeByLegacyHeuristic(const Transaction &tx);
     ranges::optional<Output> uniqueChangeByLegacyHeuristic(const Transaction &tx);
-    
-    
-//    struct ChangeHeuristic {
-//        bool peelingChain;
-//        bool powerOfTenValue;
-//        bool optimalChange;
-//        bool addressType;
-//        bool locktime;
-//        bool addressReuse;
-//        bool clientChangeAddressBehavior;
-//        
-//        bool isValid() const {
-//            return
-//            peelingChain ||
-//            powerOfTenValue ||
-//            optimalChange ||
-//            addressType ||
-//            locktime ||
-//            addressReuse ||
-//            clientChangeAddressBehavior;
-//        }
-//        
-//        std::unordered_set<Output> change(const Transaction &tx) const;
-//        ranges::optional<Output> uniqueChange(const Transaction &tx) const;
-//    };
 }}
 
 #endif /* change_address_hpp */

@@ -27,7 +27,7 @@ namespace blocksci {
         
         explicit ScriptDataBase(uint32_t txNum) : txFirstSeen(txNum), txFirstSpent(std::numeric_limits<uint32_t>::max()) {}
         
-        void visitPointers(const std::function<void(const RawAddress &)> &visitFunc) const {}
+        void visitPointers(const std::function<void(const RawAddress &)> &) const {}
     };
     
     struct PubkeyData : public ScriptDataBase {

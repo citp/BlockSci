@@ -21,15 +21,15 @@
 #include "utxo_address_state.hpp"
 #include "output_spend_data.hpp"
 #include "serializable_map.hpp"
-#include "progress_bar.hpp"
 
-#include <blocksci/util/hash.hpp>
-#include <blocksci/util/bitcoin_uint256.hpp>
 #include <blocksci/chain/block.hpp>
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/scripts/bitcoin_pubkey.hpp>
+#include <blocksci/util/bitcoin_uint256.hpp>
+#include <blocksci/util/hash.hpp>
+#include <blocksci/util/progress_bar.hpp>
 
 #ifdef BLOCKSCI_RPC_PARSER
 #include <bitcoinapi/bitcoinapi.h>
@@ -411,7 +411,7 @@ void backUpdateTxes(const ParserConfigurationBase &config) {
             return a.pointer < b.pointer;
         });
         
-        auto progressBar = makeProgressBar(updates.size(), [=]() {});
+        auto progressBar = blocksci::makeProgressBar(updates.size(), [=]() {});
         
         uint32_t count = 0;
         for (auto &update : updates) {
@@ -520,7 +520,7 @@ void BlockProcessor::addNewBlocks(const ParserConfiguration<ParseTag> &config, s
     FixedSizeFileWriter<blocksci::uint256> hashFile{config.dataConfig.txHashesFilePath()};
     AddressWriter addressWriter{config};
     
-    auto progressBar = makeProgressBar(totalTxCount, [=](RawTransaction *tx) {
+    auto progressBar = blocksci::makeProgressBar(totalTxCount, [=](RawTransaction *tx) {
         auto blockHeight = tx->blockHeight;
         std::cout << ", Block " << blockHeight << "/" << maxBlockHeight;
     });
@@ -684,7 +684,7 @@ void BlockProcessor::addNewBlocksSingle(const ParserConfiguration<ParseTag> &con
     AddressWriter addressWriter{config};
     blocksci::ECCVerifyHandle handle;
     
-    auto progressBar = makeProgressBar(totalTxCount, [=](RawTransaction *tx) {
+    auto progressBar = blocksci::makeProgressBar(totalTxCount, [=](RawTransaction *tx) {
         auto blockHeight = tx->blockHeight;
         std::cout << ", Block " << blockHeight << "/" << maxBlockHeight;
     });

@@ -16,6 +16,7 @@
 #include <blocksci/scripts/script_info.hpp>
 #include <blocksci/script.hpp>
 #include <blocksci/util/file_mapper.hpp>
+#include <blocksci/heuristics/change_address.hpp>
 
 #include <range/v3/view/iota.hpp>
 #include <range/v3/view/transform.hpp>
@@ -63,6 +64,8 @@ namespace blocksci {
         
     public:
         ClusterManager(const boost::filesystem::path &baseDirectory, const blocksci::DataAccess &access);
+        
+        static ClusterManager createClustering(const Blockchain &chain, const heuristics::ChangeHeuristic &heuristic, const std::string &outputPath, bool overwrite = false);
         
         Cluster getCluster(const blocksci::Address &address) const;
         

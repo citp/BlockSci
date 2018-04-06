@@ -143,6 +143,7 @@ set(UTIL_HEADERS
   util/file_mapper.hpp
   util/hash.hpp
   util/parallel.hpp
+  util/progress_bar.hpp
   util/state.hpp
   util/util.hpp
 )
@@ -199,6 +200,7 @@ target_link_libraries( blocksci PUBLIC Boost::filesystem Boost::iostreams Boost:
 target_link_libraries( blocksci PUBLIC OpenSSL::Crypto )
 target_link_libraries( blocksci PUBLIC rocksdb )
 target_link_libraries( blocksci PRIVATE secp256k1)
+target_link_libraries( blocksci PRIVATE dset)
 target_link_libraries( blocksci PUBLIC blocksci_mpark_variant blocksci_ranges)
 
 SET_TARGET_PROPERTIES(blocksci_static PROPERTIES OUTPUT_NAME blocksci)
@@ -208,6 +210,7 @@ target_link_libraries( blocksci_static PUBLIC Boost::filesystem Boost::iostreams
 target_link_libraries( blocksci_static PUBLIC OpenSSL::Crypto )
 target_link_libraries( blocksci_static PUBLIC rocksdb )
 target_link_libraries( blocksci_static PRIVATE secp256k1)
+target_link_libraries( blocksci_static PRIVATE dset)
 target_link_libraries( blocksci_static PUBLIC blocksci_mpark_variant blocksci_ranges)
 
 target_link_libraries( blocksci_static_unity PUBLIC Threads::Threads)
@@ -215,6 +218,7 @@ target_link_libraries( blocksci_static_unity PUBLIC Boost::filesystem Boost::ios
 target_link_libraries( blocksci_static_unity PUBLIC OpenSSL::Crypto )
 target_link_libraries( blocksci_static_unity PUBLIC rocksdb )
 target_link_libraries( blocksci_static_unity PRIVATE secp256k1)
+target_link_libraries( blocksci_static_unity PRIVATE dset)
 target_link_libraries( blocksci_static_unity PUBLIC blocksci_mpark_variant blocksci_ranges)
 
 target_include_directories(blocksci PUBLIC

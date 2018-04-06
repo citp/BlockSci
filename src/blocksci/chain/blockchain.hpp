@@ -39,19 +39,19 @@ namespace blocksci {
     };
     
     template <typename ResultType, typename It, typename MapFunc, typename ReduceFunc>
-    ResultType mapReduceBlocksImp(It begin, It end, MapFunc mapFunc, ReduceFunc reduceFunc) {
+    ResultType mapReduceBlocksImp(It begin, It end, MapFunc mapFunc, ReduceFunc reduceFunc, int segmentBeginNum) {
         auto segmentCount = std::distance(begin, end);
         if(segmentCount == 1) {
             ResultType res{};
-            auto ret = mapFunc(*begin);
+            auto ret = mapFunc(*begin, segmentBeginNum);
             res = reduceFunc(res, ret);
             return res;
         } else {
             auto mid = begin;
             std::advance(mid, segmentCount / 2);
-            auto handle = std::async(std::launch::async, mapReduceBlocksImp<ResultType, It, MapFunc, ReduceFunc>, begin, mid, mapFunc, reduceFunc);
+            auto handle = std::async(std::launch::async, mapReduceBlocksImp<ResultType, It, MapFunc, ReduceFunc>, begin, mid, mapFunc, reduceFunc, segmentBeginNum);
             ResultType res{};
-            auto ret2 = mapReduceBlocksImp<ResultType>(mid, end, mapFunc, reduceFunc);
+            auto ret2 = mapReduceBlocksImp<ResultType>(mid, end, mapFunc, reduceFunc, segmentBeginNum + segmentCount / 2);
             auto ret1 = handle.get();
             res = reduceFunc(res, ret1);
             res = reduceFunc(res, ret2);
@@ -180,10 +180,17 @@ namespace blocksci {
         ScriptRangeVariant scripts(AddressType::Enum type) const;
         
         template <typename ResultType, typename MapFunc, typename ReduceFunc>
+        std::enable_if_t<is_callable<MapFunc, std::vector<Block>, int>::value, ResultType>
+        mapReduce(BlockHeight start, BlockHeight stop, MapFunc mapFunc, ReduceFunc reduceFunc) const {
+            auto segments = segmentChain(*this, start, stop, std::thread::hardware_concurrency());
+            return mapReduceBlocksImp<ResultType>(segments.begin(), segments.end(), mapFunc, reduceFunc, 0);
+        }
+        
+        template <typename ResultType, typename MapFunc, typename ReduceFunc>
         std::enable_if_t<is_callable<MapFunc, std::vector<Block>>::value, ResultType>
         mapReduce(BlockHeight start, BlockHeight stop, MapFunc mapFunc, ReduceFunc reduceFunc) const {
             auto segments = segmentChain(*this, start, stop, std::thread::hardware_concurrency());
-            return mapReduceBlocksImp<ResultType>(segments.begin(), segments.end(), mapFunc, reduceFunc);
+            return mapReduceBlocksImp<ResultType>(segments.begin(), segments.end(), [&](const std::vector<Block> &blocks, int) { return mapFunc(blocks); }, reduceFunc, 0);
         }
 
         template <typename ResultType, typename MapFunc, typename ReduceFunc>

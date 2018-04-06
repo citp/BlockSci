@@ -11,15 +11,14 @@
 
 #include "parser_configuration.hpp"
 #include "block_processor.hpp"
-#include "progress_bar.hpp"
-
-#include <blocksci/blocksci_fwd.hpp>
-#include <blocksci/util/state.hpp>
 
 #include <blocksci/address/dedup_address.hpp>
+#include <blocksci/blocksci_fwd.hpp>
 #include <blocksci/chain/chain_access.hpp>
 #include <blocksci/chain/transaction_range.hpp>
 #include <blocksci/scripts/script_access.hpp>
+#include <blocksci/util/progress_bar.hpp>
+#include <blocksci/util/state.hpp>
 
 #include <range/v3/range_for.hpp>
 
@@ -57,7 +56,7 @@ public:
     template<typename EquivType>
     void updateScript(std::true_type, EquivType type, const blocksci::State &state, const blocksci::ScriptAccess &scripts) {
         auto typeIndex = static_cast<size_t>(type);
-        auto progress = makeProgressBar(state.scriptCounts[typeIndex] - latestState.scriptCounts[typeIndex], [=]() {});
+        auto progress = blocksci::makeProgressBar(state.scriptCounts[typeIndex] - latestState.scriptCounts[typeIndex], [=]() {});
         uint32_t num = 0;
         std::cout << "Updating index with scripts of type " << dedupAddressName(type) << "\n";
         for (uint32_t i = latestState.scriptCounts[typeIndex]; i < state.scriptCounts[typeIndex]; i++) {
@@ -100,7 +99,7 @@ void ParserIndex<T>::runUpdate(const blocksci::State &state) {
         auto newTransactions = blocksci::RawTransactionRange(chain, latestState.txCount, state.txCount);
         auto newCount = ranges::distance(newTransactions);
         std::cout << "Updating index with " << newCount << " txes\n";
-        auto progress = makeProgressBar(newCount, [=]() {});
+        auto progress = blocksci::makeProgressBar(newCount, [=]() {});
         uint32_t num = 0;
         RANGES_FOR(auto tx, newTransactions) {
             static_cast<T*>(this)->processTx(tx.first, tx.second, chain, scripts);
