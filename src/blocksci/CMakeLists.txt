@@ -173,7 +173,7 @@ set(ALL_SOURCES ${BLOCKSCI_HEADERS} ${ADDRESS_HEADERS} ${ADDRESS_SOURCES}  ${SCR
 
 add_library(blocksci SHARED ${ALL_SOURCES})
 add_library(blocksci_static STATIC ${ALL_SOURCES})
-add_library(blocksci_static_unity STATIC blocksci_unity.cpp)
+add_library(blocksci_static_unity EXCLUDE_FROM_ALL STATIC blocksci_unity.cpp)
 
 set_property(TARGET blocksci PROPERTY VERSION ${Upstream_VERSION})
 set_property(TARGET blocksci_static PROPERTY VERSION ${Upstream_VERSION})

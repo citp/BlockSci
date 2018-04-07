@@ -87,7 +87,7 @@ target_link_libraries(secp256k1 INTERFACE ${install_dir}/lib/libsecp256k1.a)
 include(cppcheck.cmake)
 
 add_subdirectory(libs/pybind11)
-add_subdirectory(libs/bitcoin-api-cpp)
+add_subdirectory(libs/bitcoin-api-cpp EXCLUDE_FROM_ALL)
 
 add_subdirectory(src/blocksci)
 add_subdirectory(src/parser)
