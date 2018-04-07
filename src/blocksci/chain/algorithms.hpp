@@ -40,9 +40,24 @@ namespace blocksci {
     template <typename B>
     constexpr bool isBlockchain = std::is_same<B, Blockchain>::value;
     
+    template <typename B>
+    constexpr bool isOptionalInputRange = std::is_same<ranges::range_value_type_t<B>, ranges::optional<Input>>::value;
+    
+    template <typename B>
+    constexpr bool isOptionalOutputRange = std::is_same<ranges::range_value_type_t<B>, ranges::optional<Output>>::value;
+    
+    template <typename B>
+    constexpr bool isOptionalTxRange = std::is_same<ranges::range_value_type_t<B>, ranges::optional<Transaction>>::value;
+    
+    template <typename B>
+    constexpr bool isOptionalBlockRange = std::is_same<ranges::range_value_type_t<B>, ranges::optional<Block>>::value;
+    
     template<typename T>
     struct fail_helper : std::false_type
     { };
+    
+    auto flatMapOptionals = ranges::view::filter([](const auto &optional) { return static_cast<bool>(optional); })
+    | ranges::view::transform([](const auto &optional) { return *optional; });
     
     template <typename B, CONCEPT_REQUIRES_(ranges::Range<B>()), std::enable_if_t<isTxRange<B>, int> = 0>
     inline auto txes(B && b) {

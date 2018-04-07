@@ -22,6 +22,38 @@ namespace py = pybind11;
 
 using namespace blocksci;
 
+template <typename T>
+auto addTxRange(py::module &m, const std::string &name) {
+    auto cl = addRangeClass<T>(m, name);
+    addTransactionMethods(cl, [](auto func) {
+        return applyMethodsToRange<T>(func);
+    }, [](std::string docstring) {
+        std::stringstream ss;
+        ss << "For each transaction: " << docstring;
+        return strdup(ss.str().c_str());
+    });
+    addTransactionRangeMethods(cl, [](auto &range, auto func) {
+        return func(range);
+    });
+    return cl;
+}
+
+template <typename T>
+auto addOptionalTxRange(py::module &m, const std::string &name) {
+    auto cl = addRangeClass<T>(m, name);
+    addTransactionMethods(cl, [](auto func) {
+        return applyMethodsToRange<T>(func);
+    }, [](std::string docstring) {
+        std::stringstream ss;
+        ss << "For each transaction: " << docstring;
+        return strdup(ss.str().c_str());
+    });
+    addTransactionRangeMethods(cl, [](auto &range, auto func) {
+        return func(range | flatMapOptionals);
+    });
+    return cl;
+}
+
 void init_tx(py::module &m) {
     
     py::class_<Transaction> txClass(m, "Tx", "Class representing a transaction in a block");
@@ -67,27 +99,8 @@ void init_tx(py::module &m) {
     }, "A list of the outputs of the transaction") // same as above
     ;
     
-    auto txRangeClass = addRangeClass<ranges::any_view<Transaction>>(m, "AnyTxRange");
-    addTransactionMethods(txRangeClass, [](auto func) {
-        return applyMethodsToRange<ranges::any_view<Transaction>>(func);
-    }, [](std::string docstring) {
-        std::stringstream ss;
-        ss << "For each transaction: " << docstring;
-        return strdup(ss.str().c_str());
-    });
-    addTransactionRangeMethods(txRangeClass, [](ranges::any_view<Transaction> &view, auto func) {
-        return func(view);
-    });
-    
-    auto txRangeClass2 = addRangeClass<ranges::any_view<Transaction, ranges::category::random_access>>(m, "TxRange");
-    addTransactionMethods(txRangeClass2, [](auto func) {
-        return applyMethodsToRange<ranges::any_view<Transaction, ranges::category::random_access>>(func);
-    }, [](std::string docstring) {
-        std::stringstream ss;
-        ss << "For each transaction: " << docstring;
-        return strdup(ss.str().c_str());
-    });
-    addTransactionRangeMethods(txRangeClass2, [](ranges::any_view<Transaction, ranges::category::random_access> &view, auto func) {
-        return func(view);
-    });
+    addTxRange<ranges::any_view<Transaction>>(m, "AnyTxRange");
+    addTxRange<ranges::any_view<Transaction, ranges::category::random_access>>(m, "TxRange");
+    addOptionalTxRange<ranges::any_view<ranges::optional<Transaction>>>(m, "AnyOptionaTxRange");
+    addOptionalTxRange<ranges::any_view<ranges::optional<Transaction>, ranges::category::random_access>>(m, "OptionaTxRange");
 }

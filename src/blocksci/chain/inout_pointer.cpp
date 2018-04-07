@@ -12,6 +12,7 @@
 #include "input.hpp"
 #include "output.hpp"
 #include "transaction.hpp"
+#include "algorithms.hpp"
 
 #include <blocksci/util/hash.hpp>
 
@@ -104,13 +105,8 @@ namespace blocksci {
         return txNums | ranges::view::transform([&access](uint32_t txNum) { return Transaction(txNum, access); }) | ranges::to_vector;
     }
     
-    auto flatMap() {
-        return ranges::view::filter([](const auto &optional) { return static_cast<bool>(optional); })
-        | ranges::view::transform([](const auto &optional) { return *optional; });
-    }
-    
     std::vector<Transaction> getInputTransactions(const std::vector<OutputPointer> &pointers, const DataAccess &access) {
-        auto txes = pointers | ranges::view::transform([&access](const OutputPointer &pointer) { return Output(pointer, access).getSpendingTx(); }) | flatMap() | ranges::to_vector;
+        auto txes = pointers | ranges::view::transform([&access](const OutputPointer &pointer) { return Output(pointer, access).getSpendingTx(); }) | flatMapOptionals | ranges::to_vector;
         txes |= ranges::action::sort | ranges::action::unique;
         return txes;
     }

@@ -298,8 +298,14 @@ struct is_blocksci_type<ranges::optional<blocksci::Output>> : std::true_type {};
 template <>
 struct is_blocksci_type<blocksci::AnyScript::ScriptVariant> : std::true_type {};
 
+template <typename T>
+struct is_optional : std::false_type {};
+
+template <typename T>
+struct is_optional<ranges::optional<T>> : std::true_type {};
+
 template <typename Ty, class F, std::size_t ... Is, class T>
-auto applyMethodsToRangeImpl(F f, std::index_sequence<Is...>, T, std::false_type) {
+auto applyMethodsToRangeImpl(F f, std::index_sequence<Is...>, T, std::false_type, std::false_type) {
     return [&f](Ty &view, const std::tuple_element_t<Is, typename T::arg_tuple> &... args) {
         using result_type = typename T::result_type;
         using vector_value_type = decltype(toNumpy(std::declval<result_type>()));
@@ -312,20 +318,32 @@ auto applyMethodsToRangeImpl(F f, std::index_sequence<Is...>, T, std::false_type
 }
 
 template <typename Ty, class F, std::size_t ... Is, class T>
-auto applyMethodsToRangeImpl(F f, std::index_sequence<Is...>, T, std::true_type) {
+auto applyMethodsToRangeImpl(F f, std::index_sequence<Is...>, T, std::true_type, std::false_type) {
     return [&f](Ty &view, const std::tuple_element_t<Is, typename T::arg_tuple> &... args) -> ranges::any_view<typename T::result_type, ranges::get_categories<Ty>()> {
         return view | ranges::view::transform([=](auto && item) {
             return f(item, args...);
         });
     };
-    
+}
+
+template <typename Range, class F, std::size_t ... Is, class T, typename O>
+auto applyMethodsToRangeImpl(F f, std::index_sequence<Is...>, T, O, std::true_type) {
+    return [&f](Range &view, const std::tuple_element_t<Is, typename T::arg_tuple> &... args) -> ranges::any_view<ranges::optional<typename T::result_type>, ranges::get_categories<Range>()> {
+        return view | ranges::view::transform([=](auto && item) -> ranges::optional<typename T::result_type> {
+            if (item) {
+                return f(*item, args...);
+            } else {
+                return ranges::nullopt;
+            }
+        });
+    };
 }
 
 //forms_normal_vector<typename traits::result_type>{}
 template <typename T, typename F>
 auto applyMethodsToRange(F f) {
     using traits = function_traits<F>;
-    return applyMethodsToRangeImpl<T>(f, std::make_index_sequence<traits::arity>{}, traits{}, std::integral_constant<bool, is_blocksci_type<typename traits::result_type>::value>{});
+    return applyMethodsToRangeImpl<T>(f, std::make_index_sequence<traits::arity>{}, traits{}, std::integral_constant<bool, is_blocksci_type<typename traits::result_type>::value>{}, is_optional<ranges::range_value_type_t<T>>{});
 }
 
 

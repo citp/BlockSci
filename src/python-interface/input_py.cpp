@@ -29,6 +29,25 @@ auto addInputRange(py::module &m, const std::string &name) {
         ss << "For each input: " << docstring;
         return strdup(ss.str().c_str());
     });
+    addInputRangeMethods(cl, [](auto &range, auto func) {
+        return func(range);
+    });
+    return cl;
+}
+
+template <typename T>
+auto addOptionalInputRange(py::module &m, const std::string &name) {
+    auto cl = addRangeClass<T>(m, name);
+    addInputMethods(cl, [](auto func) {
+        return applyMethodsToRange<T>(func);
+    }, [](std::string docstring) {
+        std::stringstream ss;
+        ss << "For each input: " << docstring;
+        return strdup(ss.str().c_str());
+    });
+    addInputRangeMethods(cl, [](auto &range, auto func) {
+        return func(range | flatMapOptionals);
+    });
     return cl;
 }
 
@@ -48,16 +67,8 @@ void init_input(py::module &m) {
     });
     
     
-    auto inputRangeClass = addInputRange<ranges::any_view<Input>>(m, "AnyInputRange");
-    addInputRangeMethods(inputRangeClass, [](ranges::any_view<Input> &range, auto func) {
-        return func(range);
-    });
-    
-    auto inputRangeClass2 = addInputRange<ranges::any_view<Input, ranges::category::random_access>>(m, "InputRange");
-    addInputRangeMethods(inputRangeClass2, [](ranges::any_view<Input, ranges::category::random_access> &view, auto func) {
-        return func(view);
-    });
-    
-    auto optionalInputRangeClass1 = addInputRange<ranges::any_view<Input>>(m, "AnyOptionalInputRange");
-    auto optionalInputRangeClass2 = addInputRange<ranges::any_view<Input, ranges::category::random_access>>(m, "OptionalInputRange");
+    addInputRange<ranges::any_view<Input>>(m, "AnyInputRange");
+    addInputRange<ranges::any_view<Input, ranges::category::random_access>>(m, "InputRange");
+    addOptionalInputRange<ranges::any_view<ranges::optional<Input>>>(m, "AnyOptionalInputRange");
+    addOptionalInputRange<ranges::any_view<ranges::optional<Input>, ranges::category::random_access>>(m, "OptionalInputRange");
 }

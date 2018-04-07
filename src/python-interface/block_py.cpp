@@ -23,6 +23,38 @@ namespace py = pybind11;
 
 using namespace blocksci;
 
+template <typename T>
+auto addBlockRange(py::module &m, const std::string &name) {
+    auto cl = addRangeClass<T>(m, name);
+    addBlockMethods(cl, [](auto func) {
+        return applyMethodsToRange<T>(func);
+    }, [](std::string docstring) {
+        std::stringstream ss;
+        ss << "For each block: " << docstring;
+        return strdup(ss.str().c_str());
+    });
+    addBlockRangeMethods(cl, [](auto &range, auto func) {
+        return func(range);
+    });
+    return cl;
+}
+
+template <typename T>
+auto addOptionalBlockRange(py::module &m, const std::string &name) {
+    auto cl = addRangeClass<T>(m, name);
+    addBlockMethods(cl, [](auto func) {
+        return applyMethodsToRange<T>(func);
+    }, [](std::string docstring) {
+        std::stringstream ss;
+        ss << "For each block: " << docstring;
+        return strdup(ss.str().c_str());
+    });
+    addBlockRangeMethods(cl, [](auto &range, auto func) {
+        return func(range | flatMapOptionals);
+    });
+    return cl;
+}
+
 void init_block(py::module &m) {
     py::class_<uint256>(m, "uint256")
     .def("__repr__", &uint256::GetHex)
@@ -93,21 +125,12 @@ void init_block(py::module &m) {
         return [=](Block &block) {
             return func(block);
         };
+    }, [](auto && docstring) {
+        return std::forward<decltype(docstring)>(docstring);
     });
     
-    auto anyBlockRangeClass = addRangeClass<ranges::any_view<Block>>(m, "AnyBlockRange");
-    addBlockMethods(anyBlockRangeClass, [](auto func) {
-        return applyMethodsToRange<ranges::any_view<Block>>(func);
-    });
-    addBlockRangeMethods(anyBlockRangeClass, [](ranges::any_view<Block> &view, auto func) {
-        return func(view);
-    });
-    
-    auto blockRangeCl = addRangeClass<ranges::any_view<Block, ranges::category::random_access>>(m, "BlockRange");
-    addBlockMethods(blockRangeCl, [](auto func) {
-        return applyMethodsToRange<ranges::any_view<Block, ranges::category::random_access>>(func);
-    });
-    addBlockRangeMethods(blockRangeCl, [](ranges::any_view<Block, ranges::category::random_access> &view, auto func) {
-        return func(view);
-    });
+    addBlockRange<ranges::any_view<Block>>(m, "AnyBlockRange");
+    addBlockRange<ranges::any_view<Block, ranges::category::random_access>>(m, "BlockRange");
+    addOptionalBlockRange<ranges::any_view<ranges::optional<Block>>>(m, "AnyOptionaBlockRange");
+    addOptionalBlockRange<ranges::any_view<ranges::optional<Block>, ranges::category::random_access>>(m, "OptionaBlockRange");
 }
