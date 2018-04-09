@@ -77,8 +77,10 @@ namespace blocksci {
     
     std::vector<unsigned char> ChainAccess::getCoinbase(uint64_t offset) const {
         auto pos = blockCoinbaseFile.getDataAtOffset(offset);
-        uint64_t length = *reinterpret_cast<const uint32_t *>(pos);
-        pos += sizeof(uint32_t);
+        uint32_t coinbaseLength;
+        std::memcpy(&coinbaseLength, pos, sizeof(coinbaseLength));
+        uint64_t length = coinbaseLength;
+        pos += sizeof(coinbaseLength);
         auto range = boost::make_iterator_range_n(reinterpret_cast<const unsigned char *>(pos), length);
         return std::vector<unsigned char>(range.begin(), range.end());
     }

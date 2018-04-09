@@ -67,14 +67,18 @@ namespace blocksci {
                 {
                     if (end() - pc < 2)
                         return false;
-                    nSize = *reinterpret_cast<const uint16_t *>(&pc[0]);
+                    uint16_t sizeVal;
+                    std::memcpy(&sizeVal, &pc[0], sizeof(sizeVal));
+                    nSize = sizeVal;
                     pc += 2;
                 }
                 else if (opcode == OP_PUSHDATA4)
                 {
                     if (end() - pc < 4)
                         return false;
-                    nSize = *reinterpret_cast<const uint32_t *>(&pc[0]);
+                    uint32_t sizeVal;
+                    std::memcpy(&sizeVal, &pc[0], sizeof(sizeVal));
+                    nSize = sizeVal;
                     pc += 4;
                 }
                 if (end() - pc < 0 || static_cast<unsigned int>(end() - pc) < nSize)

@@ -64,7 +64,8 @@ namespace blocksci {
             if (output.getType() == AddressType::Enum::NULL_DATA) {
                 auto nulldata = script::OpReturn(output.getAddress().scriptNum, block.getAccess());
                 auto data = nulldata.getData();
-                uint32_t startVal = *reinterpret_cast<const uint32_t *>(data.c_str());
+                uint32_t startVal;
+                std::memcpy(&startVal, data.c_str(), sizeof(startVal));
                 if (startVal == 0xaa21a9ed) {
                     return true;
                 }
