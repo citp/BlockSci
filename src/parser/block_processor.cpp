@@ -74,7 +74,8 @@ std::vector<unsigned char> ParseHex(const char* psz) {
 
 struct SegwitChecker {
     bool operator()(const ScriptOutput<blocksci::AddressType::Enum::NULL_DATA> &output) const {
-        uint32_t segwitMarker = *reinterpret_cast<const uint32_t *>(output.data.fullData.data());
+        uint32_t segwitMarker;
+        std::memcpy(&segwitMarker, output.data.fullData.data(), sizeof(segwitMarker));
         return segwitMarker == 0xeda921aa;
     }
     
