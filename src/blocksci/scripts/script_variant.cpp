@@ -63,7 +63,7 @@ namespace blocksci {
     struct ScriptDataCreateFunctor {
         static AnyScriptData::ScriptVariant f(uint32_t scriptNum, const ScriptAccess &access) {
             auto &file = access.getFile<dedupType(type)>();
-            return ScriptWrapper<type>{file.getDataAtIndex(scriptNum)};
+            return ScriptWrapper<type>{file.getDataAtIndex(scriptNum - 1)};
         }
     };
     
