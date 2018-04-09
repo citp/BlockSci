@@ -30,12 +30,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 find_package( Boost COMPONENTS program_options system filesystem thread iostreams REQUIRED )
 
 include_directories( ${Boost_INCLUDE_DIR} )
-include_directories ("/home/ubuntu/BlockSci/libs/range-v3/include")
+include_directories ("$ENV{HOME}/BlockSci/libs/range-v3/include")
 
 link_directories(${Boost_LIBRARY_DIR})
 link_directories(/usr/local/lib)
 
-add_subdirectory(/home/ubuntu/BlockSci/libs/pybind11 ${CMAKE_CURRENT_BINARY_DIR}/pybind11)
+add_subdirectory($ENV{HOME}/BlockSci/libs/pybind11 ${CMAKE_CURRENT_BINARY_DIR}/pybind11)
 
 file(GLOB PYTHON_CLUSTER_SOURCES "*.cpp")
 
