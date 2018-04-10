@@ -67,7 +67,7 @@ auto addRangeClass(pybind11::module &m, const std::string &name, const Extra &..
     .def("__iter__", [](Range &chain) { return pybind11::make_iterator(chain.begin(), chain.end()); },
          pybind11::keep_alive<0, 1>())
     .def("__getitem__", [](Range &chain, int64_t posIndex) {
-        auto chainSize = chain.size();
+        auto chainSize = static_cast<int64_t>(chain.size());
         if (posIndex < 0) {
             posIndex += chainSize;
         }
