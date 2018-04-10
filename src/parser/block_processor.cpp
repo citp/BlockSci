@@ -293,6 +293,7 @@ void calculateHash(RawTransaction &tx, FixedSizeFileWriter<blocksci::uint256> &h
 
 void generateScriptOutputs(RawTransaction &tx) {
     tx.scriptOutputs.clear();
+    tx.scriptOutputs.reserve(tx.outputs.size());
     for (auto &output : tx.outputs) {
         tx.scriptOutputs.emplace_back(output.getScriptView(), tx.isSegwit);
     }
@@ -317,6 +318,7 @@ void connectUTXOs(RawTransaction &tx, UTXOState &utxoState) {
 
 void generateScriptInput(RawTransaction &tx, UTXOAddressState &utxoAddressState) {
     tx.scriptInputs.clear();
+    tx.scriptInputs.reserve(tx.inputs.size());
     uint16_t i = 0;
     for (auto &input : tx.inputs) {
         InputView inputView(i, tx.txNum, input.witnessStack, tx.isSegwit);

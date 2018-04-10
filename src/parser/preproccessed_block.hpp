@@ -16,6 +16,8 @@
 
 #include <blocksci/util/bitcoin_uint256.hpp>
 
+#include <boost/container/small_vector.hpp>
+
 struct getrawtransaction_t;
 struct vout_t;
 struct vin_t;
@@ -123,10 +125,10 @@ struct RawTransaction {
     const char *txHashStart;
     uint32_t txHashLength;
     
-    std::vector<RawInput> inputs;
-    std::vector<RawOutput> outputs;
-    std::vector<AnyScriptInput> scriptInputs;
-    std::vector<AnyScriptOutput> scriptOutputs;
+    boost::container::small_vector<RawInput, 4> inputs;
+    boost::container::small_vector<RawOutput, 4> outputs;
+    boost::container::small_vector<AnyScriptInput, 4> scriptInputs;
+    boost::container::small_vector<AnyScriptOutput, 4> scriptOutputs;
     
     
     RawTransaction() :
