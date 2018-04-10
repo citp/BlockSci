@@ -21,23 +21,23 @@
 namespace blocksci {
     class AddressOutputRange : public ranges::view_facade<AddressOutputRange> {
         friend ranges::range_access;
-        const DataAccess *access;
+        DataAccess *access;
         
         struct cursor {
         private:
-            const DataAccess *access;
+            DataAccess *access;
             int rowNum = 0;
             int currentTypeIndex = -1;
             std::unique_ptr<rocksdb::Iterator> it;
         public:
             cursor() : access(nullptr), it(nullptr) {}
-            explicit cursor(const DataAccess &access_) : access(&access_), it(nullptr) {
+            explicit cursor(DataAccess &access_) : access(&access_), it(nullptr) {
                 advanceToNext();
             }
             
             cursor(const cursor &other) : access(other.access), rowNum(other.rowNum), currentTypeIndex(other.currentTypeIndex) {
                 if (static_cast<size_t>(currentTypeIndex) < AddressType::size) {
-                    it = access->addressIndex->getOutputIterator(static_cast<AddressType::Enum>(currentTypeIndex));
+                    it = access->addressIndex.getOutputIterator(static_cast<AddressType::Enum>(currentTypeIndex));
                     it->SeekToFirst();
                 } else {
                     it.reset(nullptr);
@@ -49,7 +49,7 @@ namespace blocksci {
                 rowNum = other.rowNum;
                 currentTypeIndex = other.currentTypeIndex;
                 if (static_cast<size_t>(currentTypeIndex) < AddressType::size) {
-                    it = access->addressIndex->getOutputIterator(static_cast<AddressType::Enum>(currentTypeIndex));
+                    it = access->addressIndex.getOutputIterator(static_cast<AddressType::Enum>(currentTypeIndex));
                     it->SeekToFirst();
                 } else {
                     it.reset(nullptr);
@@ -86,7 +86,7 @@ namespace blocksci {
                 while (it == nullptr || !it->Valid()) {
                     currentTypeIndex++;
                     if (static_cast<size_t>(currentTypeIndex) < AddressType::size) {
-                        it = access->addressIndex->getOutputIterator(static_cast<AddressType::Enum>(currentTypeIndex));
+                        it = access->addressIndex.getOutputIterator(static_cast<AddressType::Enum>(currentTypeIndex));
                         it->SeekToFirst();
                     } else {
                         it.reset(nullptr);
@@ -101,7 +101,7 @@ namespace blocksci {
                 if (!it->Valid()) {
                     if (currentTypeIndex > 0) {
                         currentTypeIndex--;
-                        it = access->addressIndex->getOutputIterator(static_cast<AddressType::Enum>(currentTypeIndex));
+                        it = access->addressIndex.getOutputIterator(static_cast<AddressType::Enum>(currentTypeIndex));
                         it->SeekToLast();
                     } else {
                         it.reset(nullptr);
@@ -120,7 +120,7 @@ namespace blocksci {
         
     public:
         AddressOutputRange() = default;
-        AddressOutputRange(const DataAccess &access_) : access(&access_) {}
+        AddressOutputRange(DataAccess &access_) : access(&access_) {}
     };
 }
 

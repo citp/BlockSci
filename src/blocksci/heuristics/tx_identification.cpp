@@ -340,8 +340,8 @@ namespace heuristics {
     }
     
     namespace {
-        ranges::optional<Address> getInsidePointer(const ranges::optional<Address> &address, const DataAccess &access);
-        ranges::optional<Address> getInsidePointer(const Address &pointer, const DataAccess &access) {
+        ranges::optional<Address> getInsidePointer(const ranges::optional<Address> &address, DataAccess &access);
+        ranges::optional<Address> getInsidePointer(const Address &pointer, DataAccess &access) {
             if (pointer.type == AddressType::Enum::SCRIPTHASH) {
                 script::ScriptHash scriptHashAddress(pointer.scriptNum, access);
                 return getInsidePointer(scriptHashAddress.getWrappedAddress(), access);
@@ -350,7 +350,7 @@ namespace heuristics {
             }
         }
         
-        ranges::optional<Address> getInsidePointer(const ranges::optional<Address> &address, const DataAccess &access) {
+        ranges::optional<Address> getInsidePointer(const ranges::optional<Address> &address, DataAccess &access) {
             if (address) {
                 return getInsidePointer(*address, access);
             } else {
@@ -367,7 +367,7 @@ namespace heuristics {
         int i;
         int j;
         
-        DetailedType(const Address &pointer, const DataAccess &access) : mainType(pointer.type), hasSubtype(false), subType(AddressType::Enum::NONSTANDARD), i(0), j(0) {
+        DetailedType(const Address &pointer, DataAccess &access) : mainType(pointer.type), hasSubtype(false), subType(AddressType::Enum::NONSTANDARD), i(0), j(0) {
             auto insidePointer = getInsidePointer(pointer, access);
             if (insidePointer) {
                 subType = insidePointer->type;

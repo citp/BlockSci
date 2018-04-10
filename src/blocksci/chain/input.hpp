@@ -13,7 +13,6 @@
 #include "inout_pointer.hpp"
 #include "chain_access.hpp"
 
-#include <blocksci/address/address_types.hpp>
 #include <blocksci/util/data_access.hpp>
 
 #include <cstdint>
@@ -28,7 +27,7 @@ namespace std {
 namespace blocksci {
     
     class Input {
-        const DataAccess *access;
+        DataAccess *access;
         const Inout *inout;
         const uint32_t *sequenceNum;
         InputPointer pointer;
@@ -38,14 +37,14 @@ namespace blocksci {
         
         BlockHeight blockHeight;
 
-        Input(const InputPointer &pointer_, BlockHeight blockHeight_, const Inout &inout_, const uint32_t *sequenceNum_, const DataAccess &access_) :
+        Input(const InputPointer &pointer_, BlockHeight blockHeight_, const Inout &inout_, const uint32_t *sequenceNum_, DataAccess &access_) :
         access(&access_), inout(&inout_), sequenceNum(sequenceNum_), pointer(pointer_), blockHeight(blockHeight_) {
-            assert(pointer.isValid(*access_.chain));
+            assert(pointer.isValid(access_.chain));
         }
-        Input(const InputPointer &pointer_, const DataAccess &access_) :
-        Input(pointer_, access_.chain->getBlockHeight(pointer_.txNum), access_.chain->getTx(pointer_.txNum)->getInput(pointer_.inoutNum), &access_.chain->getSequenceNumbers(pointer_.txNum)[pointer_.inoutNum], access_) {}
+        Input(const InputPointer &pointer_, DataAccess &access_) :
+        Input(pointer_, access_.chain.getBlockHeight(pointer_.txNum), access_.chain.getTx(pointer_.txNum)->getInput(pointer_.inoutNum), &access_.chain.getSequenceNumbers(pointer_.txNum)[pointer_.inoutNum], access_) {}
         
-        const DataAccess &getAccess() const {
+        DataAccess &getAccess() const {
             return *access;
         }
         
@@ -89,10 +88,11 @@ namespace blocksci {
         Address getAddress() const;
         
         uint32_t spentTxIndex() const {
-            return inout->linkedTxNum;
+            return inout->getLinkedTxNum();
         }
         
         std::string toString() const;
+        
         Transaction getSpentTx() const;
     };
 
@@ -100,5 +100,13 @@ namespace blocksci {
         return os << input.toString();
     }
 } // namespace blocksci
+
+namespace std {
+    inline size_t hash<blocksci::Input>::operator()(const blocksci::Input &input) const {
+        std::size_t seed = 235896754;
+        hash_combine(seed, input.pointer);
+        return seed;
+    }
+} // namespace std
 
 #endif /* raw_input_hpp */

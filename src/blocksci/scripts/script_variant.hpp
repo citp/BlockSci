@@ -12,6 +12,7 @@
 #include "nonstandard_script.hpp"
 #include "nulldata_script.hpp"
 #include "pubkey_script.hpp"
+#include "multisig_pubkey_script.hpp"
 #include "scripthash_script.hpp"
 #include "script_info.hpp"
 #include "scripts_fwd.hpp"
@@ -30,8 +31,8 @@ namespace blocksci {
     public:
         using ScriptVariant = to_variadic_t<to_address_tuple_t<ScriptAddress>, mpark::variant>;
         
-        AnyScript(const Address &address, const DataAccess &access);
-        AnyScript(uint32_t addressNum, AddressType::Enum type, const DataAccess &access);
+        AnyScript(const Address &address, DataAccess &access);
+        AnyScript(uint32_t addressNum, AddressType::Enum type, DataAccess &access);
         
         AddressType::Enum type() const;
         

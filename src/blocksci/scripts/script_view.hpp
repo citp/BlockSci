@@ -125,10 +125,7 @@ namespace blocksci {
         /** Called by IsStandardTx and P2SH/BIP62 VerifyScript (which makes it consensus-critical). */
         bool IsPushOnly(const_iterator pc) const;
         bool IsPushOnly() const;
-        
-        /** Check if the script contains valid OP_CODES */
-        bool HasValidOps() const;
-        
+
         /**
          * Returns whether the script is guaranteed to fail at execution,
          * regardless of the initial stack. This allows outputs to be pruned

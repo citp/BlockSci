@@ -7,10 +7,6 @@
 //
 
 #include "blockchain.hpp"
-#include "block.hpp"
-#include "chain_access.hpp"
-#include "output.hpp"
-#include "transaction.hpp"
 
 #include <blocksci/heuristics/tx_identification.hpp>
 #include <blocksci/index/address_index.hpp>
@@ -30,7 +26,7 @@
 
 namespace blocksci {
     // [start, end)
-    std::vector<std::vector<Block>> segmentChain(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, unsigned int segmentCount) {
+    std::vector<std::vector<Block>> segmentChain(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, unsigned int segmentCount) {
         auto lastTx = chain[endBlock - BlockHeight{1}].endTxIndex();
         auto firstTx = chain[startBlock].firstTxIndex();
         auto totalTxCount = lastTx - firstTx;
@@ -56,7 +52,7 @@ namespace blocksci {
         return segments;
     }
     
-     std::vector<std::pair<int, int>> segmentChainIndexes(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, unsigned int segmentCount) {
+     std::vector<std::pair<int, int>> segmentChainIndexes(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, unsigned int segmentCount) {
         auto lastTx = chain[endBlock - BlockHeight{1}].endTxIndex();
         auto firstTx = chain[startBlock].firstTxIndex();
         auto totalTxCount = lastTx - firstTx;
@@ -88,30 +84,30 @@ namespace blocksci {
     Blockchain::Blockchain(const std::string &dataDirectory) : Blockchain(DataConfiguration{dataDirectory, true, BlockHeight{0}}) {}
     
     Blockchain::Blockchain(const DataConfiguration &config) : access(config) {
-        lastBlockHeight = access.chain->blockCount();
+        lastBlockHeight = access.chain.blockCount();
     }
     
     Blockchain::~Blockchain() = default;
     
     template<AddressType::Enum type>
     struct ScriptRangeFunctor {
-        static ScriptRangeVariant f(const Blockchain &chain) {
+        static ScriptRangeVariant f(Blockchain &chain) {
             return chain.scripts<type>();
         }
     };
     
-    ScriptRangeVariant Blockchain::scripts(AddressType::Enum type) const {
+    ScriptRangeVariant Blockchain::scripts(AddressType::Enum type) {
         static auto table = make_static_table<AddressType, ScriptRangeFunctor>(*this);
         auto index = static_cast<size_t>(type);
         return table.at(index);
     }
     
-    uint32_t txCount(const Blockchain &chain) {
+    uint32_t txCount(Blockchain &chain) {
         auto lastBlock = chain[chain.size() - BlockHeight{1}];
         return lastBlock.endTxIndex();
     }
     
-    std::vector<Block> filter(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, std::function<bool(const Block &tx)> testFunc)  {
+    std::vector<Block> filter(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, std::function<bool(const Block &tx)> testFunc)  {
         auto mapFunc = [&testFunc](const std::vector<Block> &segment) -> std::vector<Block> {
             return segment | ranges::view::filter(testFunc) | ranges::to_vector;
         };
@@ -125,7 +121,7 @@ namespace blocksci {
         return chain.mapReduce<std::vector<Block>>(startBlock, endBlock, mapFunc, reduceFunc);
     }
     
-    std::vector<Transaction> filter(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, std::function<bool(const Transaction &tx)> testFunc)  {
+    std::vector<Transaction> filter(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, std::function<bool(const Transaction &tx)> testFunc)  {
         auto mapFunc = [&testFunc](const std::vector<Block> &segment) -> std::vector<Transaction> {
             std::vector<Transaction> txes;
             for (auto &block : segment) {
@@ -143,7 +139,7 @@ namespace blocksci {
         return chain.mapReduce<std::vector<Transaction>>(startBlock, endBlock, mapFunc, reduceFunc);
     }
     
-    std::vector<Transaction> getTransactionIncludingOutput(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, AddressType::Enum type) {
+    std::vector<Transaction> getTransactionIncludingOutput(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, AddressType::Enum type) {
         return filter(chain, startBlock, endBlock, [type](const Transaction &tx) {
             return ranges::any_of(tx.outputs(), [=](const Output &output) {
                 return output.getType() == type;
@@ -151,7 +147,7 @@ namespace blocksci {
         });
     }
     
-    std::map<uint64_t, Address> mostValuableAddresses(const Blockchain &chain) {
+    std::map<uint64_t, Address> mostValuableAddresses(Blockchain &chain) {
         AddressOutputRange range{chain.getAccess()};
         auto grouped = range | ranges::view::group_by([](auto pair1, auto pair2) { return pair1.first == pair2.first; });
         std::map<uint64_t, Address> topAddresses;

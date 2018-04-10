@@ -41,7 +41,7 @@ AddressState::AddressState(boost::filesystem::path path_, HashIndexCreator &hash
             scriptIndexes.push_back(value);
         }
     } else {
-        for (size_t i = 0; i < blocksci::DedupAddressType::all.size(); i++) {
+        for (size_t i = 0; i < blocksci::DedupAddressType::size; i++) {
             scriptIndexes.push_back(1);
         }
     }

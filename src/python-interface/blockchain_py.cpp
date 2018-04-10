@@ -48,7 +48,7 @@ void init_blockchain(py::module &m) {
     ;
 
     py::class_<DataAccess> (m, "_DataAccess", "Private class for accessing blockchain data")
-    .def("tx_with_index", [](const DataAccess &access, uint32_t index) {
+    .def("tx_with_index", [](DataAccess &access, uint32_t index) {
         return Transaction{index, access};
     }, R"docstring(
          This functions gets the transaction with given index.
@@ -56,7 +56,7 @@ void init_blockchain(py::module &m) {
          :param int index: The index of the transation.
          :returns: Tx
          )docstring")
-    .def("tx_with_hash", [](const DataAccess &access, const std::string &hash) {
+    .def("tx_with_hash", [](DataAccess &access, const std::string &hash) {
         return Transaction{hash, access};
     }, R"docstring(
          This functions gets the transaction with given hash.
@@ -64,10 +64,10 @@ void init_blockchain(py::module &m) {
          :param string index: The hash of the transation.
          :returns: Tx
          )docstring")
-    .def("address_from_index", [](const DataAccess &access, uint32_t index, AddressType::Enum type) -> AnyScript::ScriptVariant {
+    .def("address_from_index", [](DataAccess &access, uint32_t index, AddressType::Enum type) -> AnyScript::ScriptVariant {
         return Address{index, type, access}.getScript().wrapped;
     }, "Construct an address object from an address num and type")
-    .def("address_from_string", [](const DataAccess &access, const std::string &addressString) -> ranges::optional<AnyScript::ScriptVariant> {
+    .def("address_from_string", [](DataAccess &access, const std::string &addressString) -> ranges::optional<AnyScript::ScriptVariant> {
         auto address = getAddressFromString(addressString, access);
         if (address) {
             return address->getScript().wrapped;
@@ -75,7 +75,7 @@ void init_blockchain(py::module &m) {
             return ranges::nullopt;
         }
     }, "Construct an address object from an address string")
-    .def("addresses_with_prefix", [](const DataAccess &access, const std::string &addressPrefix) {
+    .def("addresses_with_prefix", [](DataAccess &access, const std::string &addressPrefix) {
         py::list pyAddresses;
         auto addresses = getAddressesWithPrefix(addressPrefix, access);
         for (auto &address : addresses) {

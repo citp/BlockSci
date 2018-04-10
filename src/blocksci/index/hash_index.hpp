@@ -9,7 +9,6 @@
 #ifndef hash_index_hpp
 #define hash_index_hpp
 
-#include <blocksci/blocksci_fwd.hpp>
 #include <blocksci/address/address_info.hpp>
 
 #include <rocksdb/db.h>
@@ -24,14 +23,24 @@ namespace blocksci {
     public:
         HashIndex(const std::string &path, bool readonly);
         
-        uint32_t getPubkeyHashIndex(const uint160 &pubkeyhash);
-        uint32_t getScriptHashIndex(const uint160 &scripthash);
-        uint32_t getScriptHashIndex(const uint256 &scripthash);
-        uint32_t getTxIndex(const uint256 &txHash);
-        
         template<AddressType::Enum type>
         uint32_t lookupAddress(const typename AddressInfo<type>::IDType &hash) {
             return getMatch(getColumn(type).get(), hash);
+        }
+        
+        uint32_t getPubkeyHashIndex(const uint160 &pubkeyhash) {
+            return lookupAddress<AddressType::PUBKEYHASH>(pubkeyhash);
+        }
+        
+        uint32_t getScriptHashIndex(const uint160 &scripthash) {
+            return lookupAddress<AddressType::SCRIPTHASH>(scripthash);
+        }
+        
+        uint32_t getScriptHashIndex(const uint256 &scripthash) {
+            return lookupAddress<AddressType::WITNESS_SCRIPTHASH>(scripthash);
+        }
+        uint32_t getTxIndex(const uint256 &txHash) {
+            return getMatch(columnHandles.back().get(), txHash);
         }
         
         uint32_t countColumn(AddressType::Enum type) {

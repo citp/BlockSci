@@ -32,11 +32,8 @@ set(ADDRESS_HEADERS
 
 set(ADDRESS_SOURCES
   address/address_info.cpp
-  address/address_types.cpp
   address/address.cpp
   address/dedup_address_info.cpp
-  address/dedup_address_type.cpp
-  address/dedup_address.cpp
   address/equiv_address.cpp
 )
 
@@ -60,14 +57,9 @@ set(CHAIN_HEADERS
 set(CHAIN_SOURCES
   chain/block.cpp
   chain/blockchain.cpp
-  chain/chain_access.cpp
   chain/inout_pointer.cpp
-  chain/inout.cpp
   chain/input.cpp
   chain/output.cpp
-  chain/raw_block.cpp
-  chain/raw_transaction.cpp
-  chain/transaction_range.cpp
   chain/transaction_summary.cpp
   chain/transaction.cpp
 )
@@ -106,6 +98,7 @@ set(SCRIPT_HEADERS
   scripts/bitcoin_script.hpp
   scripts/bitcoin_segwit_addr.hpp
   scripts/multisig_script.hpp
+  scripts/multisig_pubkey_script.hpp
   scripts/nonstandard_script.hpp
   scripts/nulldata_script.hpp
   scripts/pubkey_script.hpp
@@ -124,12 +117,8 @@ set(SCRIPT_SOURCES
   scripts/bitcoin_pubkey.cpp
   scripts/bitcoin_script.cpp
   scripts/bitcoin_segwit_addr.cpp
-  scripts/multisig_script.cpp
-  scripts/nonstandard_script.cpp
-  scripts/nulldata_script.cpp
+  scripts/multisig_pubkey_script.cpp
   scripts/pubkey_script.cpp
-  scripts/script_access.cpp
-  scripts/script_data.cpp
   scripts/script_variant.cpp
   scripts/script_view.cpp
   scripts/scripthash_script.cpp
@@ -150,12 +139,9 @@ set(UTIL_HEADERS
 
 set(UTIL_SOURCES
   util/bitcoin_uint256.cpp
-  util/data_access.cpp
   util/data_configuration.cpp
   util/file_mapper.cpp
   util/hash.cpp
-  util/parallel.cpp
-  util/state.cpp
 )
 
 set(CLUSTER_HEADERS

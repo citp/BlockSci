@@ -12,54 +12,22 @@
 
 #include "algorithms.hpp"
 #include "block.hpp"
-#include "chain_access.hpp"
 #include "inout_pointer.hpp"
-#include "input.hpp"
-#include "output.hpp"
 
 #include <blocksci/address/address.hpp>
 #include <blocksci/heuristics/change_address.hpp>
-#include <blocksci/index/hash_index.hpp>
 #include <blocksci/scripts/script_variant.hpp>
-#include <blocksci/util/hash.hpp>
-
-#include <iostream>
-#include <sstream>
-#include <unordered_map>
-#include <unordered_set>
 
 namespace blocksci {
-    uint256 Transaction::getHash() const {
-        return *access->chain->getTxHash(txNum);
-    }
-    
     Block Transaction::block() const {
         return {blockHeight, *access};
     }
     
-    std::string Transaction::toString() const {
-        std::stringstream ss;
-        ss << "Tx(len(txins)=" << inputCount() <<", len(txouts)=" << outputCount() <<", size_bytes=" << sizeBytes() << ", block_height=" << blockHeight <<", tx_index=" << txNum << ")";
-        return ss.str();
-    }
-    
-    
-    uint32_t getTxIndex(const uint256 &hash, HashIndex &index) {
-        auto txIndex = index.getTxIndex(hash);
-        if (txIndex == 0) {
-            throw InvalidHashException();
-        }
-        return txIndex;
-    }
-    
-    Transaction::Transaction(const uint256 &hash, const DataAccess &access) : Transaction(getTxIndex(hash, *access.hashIndex), access) {}
-    
-    Transaction::Transaction(const std::string &hash, const DataAccess &access) : Transaction(uint256S(hash), access) {}
-    
     std::vector<OutputPointer> Transaction::getOutputPointers(const InputPointer &pointer) const {
         std::vector<OutputPointer> pointers;
         auto input = Input(pointer, *access);
-        auto search = Inout{pointer.txNum, RawAddress{input.getAddress()}, input.getValue()};
+        auto address = input.getAddress();
+        auto search = Inout{pointer.txNum, address.scriptNum, address.type, input.getValue()};
         uint16_t i = 0;
         for (auto output : outputs()) {
             if (output == search) {
@@ -73,7 +41,8 @@ namespace blocksci {
     std::vector<InputPointer> Transaction::getInputPointers(const OutputPointer &pointer) const {
         std::vector<InputPointer> pointers;
         auto output = Output(pointer, *access);
-        auto search = Inout{pointer.txNum, RawAddress{output.getAddress()}, output.getValue()};
+        auto address = output.getAddress();
+        auto search = Inout{pointer.txNum, address.scriptNum, address.type, output.getValue()};
         uint16_t i = 0;
         for (auto input : inputs()) {
             if (input == search) {

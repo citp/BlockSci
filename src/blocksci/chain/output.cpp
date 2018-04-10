@@ -6,17 +6,13 @@
 //  Copyright © 2017 Harry Kalodner. All rights reserved.
 //
 
-#define BLOCKSCI_WITHOUT_SINGLETON
-
 #include "output.hpp"
 
 #include "block.hpp"
-#include "inout_pointer.hpp"
 #include "transaction.hpp"
 
 #include <blocksci/address/address.hpp>
 #include <blocksci/scripts/script_variant.hpp>
-#include <blocksci/util/hash.hpp>
 
 #include <sstream>
 
@@ -26,7 +22,7 @@ namespace blocksci {
     }
     
     Address Output::getAddress() const {
-        return {inout->toAddressNum, inout->getType(), *access};
+        return {inout->getAddressNum(), inout->getType(), *access};
     }
     
     Block Output::block() const {
@@ -35,7 +31,7 @@ namespace blocksci {
     
     std::string Output::toString() const {
         std::stringstream ss;
-        ss << "TxOut(spending_tx_index=" << inout->linkedTxNum << ", address=" << getAddress().getScript().toString() << ", value=" << inout->getValue() << ")";
+        ss << "TxOut(spending_tx_index=" << inout->getLinkedTxNum() << ", address=" << getAddress().getScript().toString() << ", value=" << inout->getValue() << ")";
         return ss.str();
     }
     
@@ -48,11 +44,3 @@ namespace blocksci {
         }
     }
 } // namespace blocksci
-
-namespace std {
-    size_t hash<blocksci::Output>::operator()(const blocksci::Output &output) const {
-        std::size_t seed = 819543;
-        hash_combine(seed, *output.inout);
-        return seed;
-    }
-} // namespace std

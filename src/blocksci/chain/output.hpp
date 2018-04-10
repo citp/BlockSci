@@ -14,7 +14,6 @@
 #include "inout_pointer.hpp"
 
 #include <blocksci/address/address_fwd.hpp>
-#include <blocksci/address/address_types.hpp>
 #include <blocksci/util/data_access.hpp>
 
 #include <range/v3/utility/optional.hpp>
@@ -27,7 +26,7 @@ namespace std {
 
 namespace blocksci {
     class Output {
-        const DataAccess *access;
+        DataAccess *access;
         const Inout *inout;
         uint32_t spendingTxIndex;
         
@@ -35,20 +34,20 @@ namespace blocksci {
     public:
         OutputPointer pointer;
         BlockHeight blockHeight;
-        Output(const OutputPointer &pointer_, BlockHeight blockHeight_, const Inout &inout_, const DataAccess &access_) :
+        Output(const OutputPointer &pointer_, BlockHeight blockHeight_, const Inout &inout_, DataAccess &access_) :
         access(&access_), inout(&inout_), pointer(pointer_), blockHeight(blockHeight_) {
-            assert(pointer.isValid(*access_.chain));
-            if (inout->linkedTxNum < access->chain->maxLoadedTx()) {
-                spendingTxIndex = inout->linkedTxNum;
+            assert(pointer.isValid(access_.chain));
+            if (inout->getLinkedTxNum() < access->chain.maxLoadedTx()) {
+                spendingTxIndex = inout->getLinkedTxNum();
             } else {
                 spendingTxIndex = 0;
             }
         }
         
-        Output(const OutputPointer &pointer_, const DataAccess &access_) :
-        Output(pointer_, access_.chain->getBlockHeight(pointer_.txNum), access_.chain->getTx(pointer_.txNum)->getOutput(pointer_.inoutNum), access_) {}
+        Output(const OutputPointer &pointer_, DataAccess &access_) :
+        Output(pointer_, access_.chain.getBlockHeight(pointer_.txNum), access_.chain.getTx(pointer_.txNum)->getOutput(pointer_.inoutNum), access_) {}
         
-        const DataAccess &getAccess() const {
+        DataAccess &getAccess() const {
             return *access;
         }
         
@@ -101,5 +100,13 @@ namespace blocksci {
         return os << output.toString();
     }
 } // namespace blocksci
+
+namespace std {
+    inline size_t hash<blocksci::Output>::operator()(const blocksci::Output &output) const {
+        std::size_t seed = 819543;
+        hash_combine(seed, output.pointer);
+        return seed;
+    }
+} // namespace std
 
 #endif /* output_hpp */

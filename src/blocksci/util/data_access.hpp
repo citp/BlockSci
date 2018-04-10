@@ -9,24 +9,29 @@
 #ifndef data_access_hpp
 #define data_access_hpp
 
-#include <blocksci/blocksci_fwd.hpp>
-#include <blocksci/scripts/scripts_fwd.hpp>
-#include <blocksci/chain/chain_fwd.hpp>
-#include <blocksci/util/data_configuration.hpp>
+#include "data_configuration.hpp"
+
+#include <blocksci/chain/chain_access.hpp>
+#include <blocksci/index/address_index.hpp>
+#include <blocksci/index/hash_index.hpp>
+#include <blocksci/scripts/script_access.hpp>
 
 namespace blocksci {
+    class ChainAccess;
     class AddressIndex;
+    class ScriptAccess;
+    class HashIndex;
 
     class DataAccess {
     public:
         DataConfiguration config;
-        std::unique_ptr<ChainAccess> chain;
-        std::unique_ptr<ScriptAccess> scripts;
-        std::unique_ptr<AddressIndex> addressIndex;
-        std::unique_ptr<HashIndex> hashIndex;
+        ChainAccess chain;
+        ScriptAccess scripts;
+        AddressIndex addressIndex;
+        HashIndex hashIndex;
         
         DataAccess() = default;
-        explicit DataAccess(DataConfiguration config);
+        explicit DataAccess(DataConfiguration config_) : config(std::move(config_)), chain{config}, scripts{config}, addressIndex{config.addressDBFilePath().native(), true}, hashIndex{config.hashIndexFilePath().native(), true} {}
         
         operator DataConfiguration() const { return config; }
     };

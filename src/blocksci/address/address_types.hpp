@@ -62,6 +62,4 @@ namespace std {
     };
 }
 
-std::ostream &operator<<(std::ostream &os, blocksci::AddressType::Enum const &type);
-
 #endif /* script_types_hpp */

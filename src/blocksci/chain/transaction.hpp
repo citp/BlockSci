@@ -16,6 +16,7 @@
 
 #include <blocksci/address/address_fwd.hpp>
 #include <blocksci/address/address_info.hpp>
+#include <blocksci/index/hash_index.hpp>
 #include <blocksci/scripts/scripts_fwd.hpp>
 #include <blocksci/util/data_access.hpp>
 
@@ -33,9 +34,19 @@ namespace blocksci {
         InvalidHashException() : std::runtime_error("No Match for hash") {}
     };
     
+    namespace internal {
+        inline uint32_t getTxIndex(const uint256 &hash, HashIndex &index) {
+            auto txIndex = index.getTxIndex(hash);
+            if (txIndex == 0) {
+                throw InvalidHashException();
+            }
+            return txIndex;
+        }
+    }
+    
     class Transaction {
     private:
-        const DataAccess *access;
+        DataAccess *access;
         const RawTransaction *data;
         const uint32_t *sequenceNumbers;
         friend TransactionSummary;
@@ -45,22 +56,28 @@ namespace blocksci {
         
         Transaction() = default;
         
-        Transaction(const RawTransaction *data_, uint32_t txNum_, BlockHeight blockHeight_, const DataAccess &access_) : access(&access_), data(data_), sequenceNumbers(access_.chain->getSequenceNumbers(txNum_)), txNum(txNum_), blockHeight(blockHeight_) {}
+        Transaction(const RawTransaction *data_, uint32_t txNum_, BlockHeight blockHeight_, DataAccess &access_) : access(&access_), data(data_), sequenceNumbers(access_.chain.getSequenceNumbers(txNum_)), txNum(txNum_), blockHeight(blockHeight_) {}
         
-        Transaction(uint32_t index, const DataAccess &access_) : Transaction(index, access_.chain->getBlockHeight(index), access_) {}
+        Transaction(uint32_t index, DataAccess &access_) : Transaction(index, access_.chain.getBlockHeight(index), access_) {}
         
-        Transaction(uint32_t index, BlockHeight height, const DataAccess &access_) : Transaction(access_.chain->getTx(index), index, height, access_) {}
+        Transaction(uint32_t index, BlockHeight height, DataAccess &access_) : Transaction(access_.chain.getTx(index), index, height, access_) {}
         
-        Transaction(const uint256 &hash, const DataAccess &access);
-        Transaction(const std::string &hash, const DataAccess &access);
+        Transaction(const uint256 &hash, DataAccess &access) : Transaction(internal::getTxIndex(hash, access.hashIndex), access) {}
+        Transaction(const std::string &hash, DataAccess &access) : Transaction(uint256S(hash), access) {}
         
-        const DataAccess &getAccess() const {
+        DataAccess &getAccess() const {
             return *access;
         }
 
+        uint256 getHash() const {
+            return *access->chain.getTxHash(txNum);
+        }
         
-        uint256 getHash() const;
-        std::string toString() const;
+        std::string toString() const {
+            std::stringstream ss;
+            ss << "Tx(len(txins)=" << inputCount() <<", len(txouts)=" << outputCount() <<", size_bytes=" << sizeBytes() << ", block_height=" << blockHeight <<", tx_index=" << txNum << ")";
+            return ss.str();
+        }
         
         std::vector<OutputPointer> getOutputPointers(const InputPointer &pointer) const;
         std::vector<InputPointer> getInputPointers(const OutputPointer &pointer) const;

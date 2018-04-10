@@ -10,21 +10,25 @@
 
 #include <blocksci/blocksci_fwd.hpp>
 #include <blocksci/address/address.hpp>
+#include <blocksci/address/address_info.hpp>
+#include <blocksci/address/dedup_address.hpp>
 
+#include <sstream>
 #include <unordered_set>
 
 namespace blocksci {
     class EquivAddress {
         std::unordered_set<Address> addresses;
         bool scriptEquivalent;
-        const DataAccess &access;
+        DataAccess &access;
         
         friend struct std::hash<EquivAddress>;
         
-        EquivAddress(uint32_t scriptNum, EquivAddressType::Enum type, bool scriptEquivalent_, const DataAccess &access_);
+        EquivAddress(uint32_t scriptNum, EquivAddressType::Enum type, bool scriptEquivalent_, DataAccess &access_);
     public:
-        EquivAddress(const Address &address, bool scriptEquivalent);
-        EquivAddress(const DedupAddress &address, bool scriptEquivalent, const DataAccess &access);
+        EquivAddress(const Address &address, bool scriptEquivalent_) : EquivAddress(address.scriptNum, equivType(address.type), scriptEquivalent_, address.getAccess()) {}
+        EquivAddress(const DedupAddress &address, bool scriptEquivalent_, DataAccess &access_) :
+        EquivAddress(address.scriptNum, equivType(address.type), scriptEquivalent_, access_) {}
         
         bool operator==(const EquivAddress &other) const {
             if (scriptEquivalent != other.scriptEquivalent) {
@@ -67,9 +71,14 @@ namespace std {
     struct hash<blocksci::EquivAddress> {
         typedef blocksci::EquivAddress argument_type;
         typedef size_t  result_type;
-        result_type operator()(const argument_type &b) const;
+        result_type operator()(const argument_type &equiv) const {
+            std::size_t seed = 123954;
+            for (const auto &address : equiv.addresses) {
+                seed ^= address.scriptNum + address.type;
+            }
+            return seed;
+        }
     };
 }
-
 
 #endif /* equiv_address_hpp */

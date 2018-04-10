@@ -370,14 +370,16 @@ void serializeTransaction(RawTransaction &tx, IndexedFileWriter<1> &txFile, Fixe
         auto &input = tx.inputs[i];
         auto &scriptInput = tx.scriptInputs[i];
         linkDataFile.write({input.getOutputPointer(), tx.txNum});
-        blocksci::Inout blocksciInput{input.utxo.txNum, scriptInput.address(), input.utxo.value};
+        auto address = scriptInput.address();
+        blocksci::Inout blocksciInput{input.utxo.txNum, address.scriptNum, address.type, input.utxo.value};
         txFile.write(blocksciInput);
     }
     
     for (size_t i = 0; i < tx.outputs.size(); i++) {
         auto &output = tx.outputs[i];
         auto &scriptOutput = tx.scriptOutputs[i];
-        blocksci::Inout blocksciOutput{0, scriptOutput.address(), output.value};
+        auto address = scriptOutput.address();
+        blocksci::Inout blocksciOutput{0, address.scriptNum, address.type, output.value};
         txFile.write(blocksciOutput);
     }
 }
@@ -420,7 +422,7 @@ void backUpdateTxes(const ParserConfigurationBase &config) {
         for (auto &update : updates) {
             auto tx = txFile.getData(update.pointer.txNum);
             auto &output = tx->getOutput(update.pointer.inoutNum);
-            output.linkedTxNum = update.txNum;
+            output.setLinkedTxNum(update.txNum);
             count++;
             progressBar.update(count);
         }

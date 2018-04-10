@@ -12,6 +12,7 @@
 #include "dedup_address.hpp"
 #include "equiv_address.hpp"
 #include "address_info.hpp"
+
 #include <blocksci/scripts/bitcoin_base58.hpp>
 #include <blocksci/scripts/bitcoin_segwit_addr.hpp>
 #include <blocksci/scripts/script_access.hpp>
@@ -27,10 +28,6 @@
 #include <iostream>
 
 namespace blocksci {
-    
-    Address::Address() : access(nullptr), scriptNum(0), type(AddressType::Enum::NONSTANDARD) {}
-    
-    Address::Address(uint32_t addressNum_, AddressType::Enum type_, const DataAccess &access_) : access(&access_), scriptNum(addressNum_), type(type_) {}
     
     bool Address::isSpendable() const {
         return blocksci::isSpendable(dedupType(type));
@@ -73,19 +70,19 @@ namespace blocksci {
         return AnyScript{*this, *access};
     }
     
-    ranges::optional<Address> getAddressFromString(const std::string &addressString, const DataAccess &access) {
+    ranges::optional<Address> getAddressFromString(const std::string &addressString, DataAccess &access) {
         if (addressString.compare(0, access.config.segwitPrefix.size(), access.config.segwitPrefix) == 0) {
             std::pair<int, std::vector<uint8_t> > decoded = segwit_addr::decode(access.config.segwitPrefix, addressString);
             if (decoded.first == 0) {
                 if (decoded.second.size() == 20) {
                     uint160 pubkeyHash(decoded.second.begin(), decoded.second.end());
-                    uint32_t addressNum = access.hashIndex->getPubkeyHashIndex(pubkeyHash);
+                    uint32_t addressNum = access.hashIndex.getPubkeyHashIndex(pubkeyHash);
                     if (addressNum > 0) {
                         return Address{addressNum, AddressType::WITNESS_PUBKEYHASH, access};
                     }
                 } else if (decoded.second.size() == 32) {
                     uint256 scriptHash(decoded.second.begin(), decoded.second.end());
-                    uint32_t addressNum = access.hashIndex->getScriptHashIndex(scriptHash);
+                    uint32_t addressNum = access.hashIndex.getScriptHashIndex(scriptHash);
                     if (addressNum > 0) {
                         return Address{addressNum, AddressType::WITNESS_SCRIPTHASH, access};
                     }
@@ -102,9 +99,9 @@ namespace blocksci {
         }
         uint32_t addressNum = 0;
         if (type == AddressType::Enum::PUBKEYHASH) {
-            addressNum = access.hashIndex->getPubkeyHashIndex(hash);
+            addressNum = access.hashIndex.getPubkeyHashIndex(hash);
         } else if (type == AddressType::Enum::SCRIPTHASH) {
-            addressNum = access.hashIndex->getScriptHashIndex(hash);
+            addressNum = access.hashIndex.getScriptHashIndex(hash);
         }
         if (addressNum > 0) {
             return Address{addressNum, type, access};
@@ -113,9 +110,9 @@ namespace blocksci {
     }
     
     template<AddressType::Enum type>
-    std::vector<Address> getAddressesWithPrefixImp(const std::string &prefix, const DataAccess &access) {
+    std::vector<Address> getAddressesWithPrefixImp(const std::string &prefix, DataAccess &access) {
         std::vector<Address> addresses;
-        auto count = access.scripts->scriptCount(dedupType(type));
+        auto count = access.scripts.scriptCount(dedupType(type));
         for (uint32_t scriptNum = 1; scriptNum <= count; scriptNum++) {
             ScriptAddress<type> script(scriptNum, access);
             if (script.addressString().compare(0, prefix.length(), prefix) == 0) {
@@ -125,7 +122,7 @@ namespace blocksci {
         return addresses;
     }
     
-    std::vector<Address> getAddressesWithPrefix(const std::string &prefix, const DataAccess &access) {
+    std::vector<Address> getAddressesWithPrefix(const std::string &prefix, DataAccess &access) {
         if (prefix.compare(0, 1, "1") == 0) {
             return getAddressesWithPrefixImp<AddressType::Enum::PUBKEYHASH>(prefix, access);
         } else if (prefix.compare(0, 1, "3") == 0) {
@@ -135,7 +132,7 @@ namespace blocksci {
         }
     }
     
-    std::string fullTypeImp(const Address &address, const DataAccess &access) {
+    std::string fullTypeImp(const Address &address, DataAccess &access) {
         std::stringstream ss;
         ss << addressName(address.type);
         switch (dedupType(address.type)) {
@@ -172,7 +169,7 @@ namespace blocksci {
     }
     
     std::vector<OutputPointer> Address::getOutputPointers() const {
-        return access->addressIndex->getOutputPointers(*this);
+        return access->addressIndex.getOutputPointers(*this);
     }
     
     std::vector<Output> Address::getOutputs() const {

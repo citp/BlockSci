@@ -11,8 +11,11 @@
 
 #include "chain_fwd.hpp"
 
+#include <blocksci/util/hash.hpp>
+
 #include <cstdint>
 #include <string>
+#include <sstream>
 #include <vector>
 
 namespace blocksci {
@@ -47,7 +50,11 @@ namespace blocksci {
         
         bool isValid(const ChainAccess &access) const;
         
-        std::string toString() const;
+        std::string toString() const {
+            std::stringstream ss;
+            ss << "InputPointer(tx_index=" << txNum << ", input_index=" << inoutNum << ")";
+            return ss.str();
+        }
     };
     
     struct OutputPointer : public InoutPointer {
@@ -63,26 +70,47 @@ namespace blocksci {
         
         bool isValid(const ChainAccess &access) const;
         
-        std::string toString() const;
+        std::string toString() const {
+            std::stringstream ss;
+            ss << "OutputPointer(tx_index_from=" << txNum << ", output_index_from=" << inoutNum << ")";
+            return ss.str();
+        }
     };
     
-    uint64_t calculateBalance(const std::vector<OutputPointer> &pointers, BlockHeight height, const DataAccess &access);
-    std::vector<Output> getOutputs(const std::vector<OutputPointer> &pointers, const DataAccess &access);
-    std::vector<Input> getInputs(const std::vector<OutputPointer> &pointers, const DataAccess &access);
-    std::vector<Transaction> getTransactions(const std::vector<OutputPointer> &pointers, const DataAccess &access);
-    std::vector<Transaction> getOutputTransactions(const std::vector<OutputPointer> &pointers, const DataAccess &access);
-    std::vector<Transaction> getInputTransactions(const std::vector<OutputPointer> &pointers, const DataAccess &access);
+    uint64_t calculateBalance(const std::vector<OutputPointer> &pointers, BlockHeight height, DataAccess &access);
+    std::vector<Output> getOutputs(const std::vector<OutputPointer> &pointers, DataAccess &access);
+    std::vector<Input> getInputs(const std::vector<OutputPointer> &pointers, DataAccess &access);
+    std::vector<Transaction> getTransactions(const std::vector<OutputPointer> &pointers, DataAccess &access);
+    std::vector<Transaction> getOutputTransactions(const std::vector<OutputPointer> &pointers, DataAccess &access);
+    std::vector<Transaction> getInputTransactions(const std::vector<OutputPointer> &pointers, DataAccess &access);
 } // namespace blocksci
 
-std::ostream &operator<<(std::ostream &os, const blocksci::InputPointer &pointer);
-std::ostream &operator<<(std::ostream &os, const blocksci::OutputPointer &pointer);
+inline std::ostream &operator<<(std::ostream &os, const blocksci::InputPointer &pointer) {
+    os << pointer.toString();
+    return os;
+}
+
+inline std::ostream &operator<<(std::ostream &os, const blocksci::OutputPointer &pointer) {
+    os << pointer.toString();
+    return os;
+}
 
 namespace std {
     template<> struct hash<blocksci::InputPointer> {
-        size_t operator()(const blocksci::InputPointer &pointer) const;
+        size_t operator()(const blocksci::InputPointer &pointer) const {
+            std::size_t seed = 41352363;
+            hash_combine(seed, pointer.txNum);
+            hash_combine(seed, pointer.inoutNum);
+            return seed;
+        }
     };
     template<> struct hash<blocksci::OutputPointer> {
-        size_t operator()(const blocksci::OutputPointer &pointer) const;
+        size_t operator()(const blocksci::OutputPointer &pointer) const {
+            std::size_t seed = 41352363;
+            hash_combine(seed, pointer.txNum);
+            hash_combine(seed, pointer.inoutNum);
+            return seed;
+        }
     };
 } // namespace std
 

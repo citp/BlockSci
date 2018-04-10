@@ -15,6 +15,7 @@
 #include <blocksci/address/address.hpp>
 #include <blocksci/blocksci_fwd.hpp>
 #include <blocksci/util/bitcoin_uint256.hpp>
+#include <blocksci/util/hash.hpp>
 #include <blocksci/util/util.hpp>
 
 #include <limits>
@@ -73,7 +74,13 @@ namespace blocksci {
         }
         
         
-        uint160 getHash160() const;
+        uint160 getHash160() const {
+            if (isSegwit) {
+                return ripemd160(reinterpret_cast<const char *>(&hash256), sizeof(hash256));
+            } else {
+                return hash160;
+            }
+        }
     };
     
     struct MultisigData : public ScriptDataBase {
@@ -102,8 +109,6 @@ namespace blocksci {
     struct NonstandardScriptData : public ScriptDataBase {
         InPlaceArray<unsigned char> scriptData;
         
-        CScriptView getScript() const;
-        
         size_t realSize() const {
             return sizeof(NonstandardScriptData) + scriptData.extraSize();
         }
@@ -113,8 +118,6 @@ namespace blocksci {
     
     struct NonstandardSpendScriptData {
         InPlaceArray<unsigned char> scriptData;
-        
-        CScriptView getScript() const;
         
         size_t realSize() const {
             return sizeof(NonstandardScriptData) + scriptData.extraSize();

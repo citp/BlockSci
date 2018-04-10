@@ -14,8 +14,6 @@
 #include "transaction.hpp"
 #include "algorithms.hpp"
 
-#include <blocksci/util/hash.hpp>
-
 #include <range/v3/action/sort.hpp>
 #include <range/v3/action/unique.hpp>
 #include <range/v3/view/filter.hpp>
@@ -25,17 +23,6 @@
 #include <unordered_set>
 
 namespace blocksci {
-    std::string InputPointer::toString() const {
-        std::stringstream ss;
-        ss << "InputPointer(tx_index=" << txNum << ", input_index=" << inoutNum << ")";
-        return ss.str();
-    }
-    
-    std::string OutputPointer::toString() const {
-        std::stringstream ss;
-        ss << "OutputPointer(tx_index_from=" << txNum << ", output_index_from=" << inoutNum << ")";
-        return ss.str();
-    }
     
     bool InputPointer::isValid(const ChainAccess &access) const {
         return inoutNum < access.getTx(txNum)->inputCount;
@@ -45,7 +32,7 @@ namespace blocksci {
         return inoutNum < access.getTx(txNum)->outputCount;
     }
     
-    uint64_t calculateBalance(const std::vector<OutputPointer> &pointers, BlockHeight height, const DataAccess &access) {
+    uint64_t calculateBalance(const std::vector<OutputPointer> &pointers, BlockHeight height, DataAccess &access) {
         uint64_t value = 0;
         if (height == -1) {
             for (auto &output : getOutputs(pointers, access)) {
@@ -63,13 +50,13 @@ namespace blocksci {
         return value;
     }
     
-    std::vector<Output> getOutputs(const std::vector<OutputPointer> &pointers, const DataAccess &access) {
+    std::vector<Output> getOutputs(const std::vector<OutputPointer> &pointers, DataAccess &access) {
         return pointers
         | ranges::view::transform([&access](const OutputPointer &pointer) { return Output(pointer, access); })
         | ranges::to_vector;
     }
     
-    std::vector<Input> getInputs(const std::vector<OutputPointer> &pointers, const DataAccess &access) {
+    std::vector<Input> getInputs(const std::vector<OutputPointer> &pointers, DataAccess &access) {
         std::unordered_set<InputPointer> allPointers;
         allPointers.reserve(pointers.size());
         for (auto &pointer : pointers) {
@@ -86,7 +73,7 @@ namespace blocksci {
         | ranges::to_vector;
     }
     
-    std::vector<Transaction> getTransactions(const std::vector<OutputPointer> &pointers, const DataAccess &access) {
+    std::vector<Transaction> getTransactions(const std::vector<OutputPointer> &pointers, DataAccess &access) {
         std::unordered_set<blocksci::Transaction> txes;
         txes.reserve(pointers.size() * 2);
         for (auto &pointer : pointers) {
@@ -99,42 +86,15 @@ namespace blocksci {
         return {txes.begin(), txes.end()};
     }
     
-    std::vector<Transaction> getOutputTransactions(const std::vector<OutputPointer> &pointers, const DataAccess &access) {
+    std::vector<Transaction> getOutputTransactions(const std::vector<OutputPointer> &pointers, DataAccess &access) {
         auto txNums = pointers | ranges::view::transform([](const OutputPointer &pointer) { return pointer.txNum; }) | ranges::to_vector;
         txNums |= ranges::action::sort | ranges::action::unique;
         return txNums | ranges::view::transform([&access](uint32_t txNum) { return Transaction(txNum, access); }) | ranges::to_vector;
     }
     
-    std::vector<Transaction> getInputTransactions(const std::vector<OutputPointer> &pointers, const DataAccess &access) {
+    std::vector<Transaction> getInputTransactions(const std::vector<OutputPointer> &pointers, DataAccess &access) {
         auto txes = pointers | ranges::view::transform([&access](const OutputPointer &pointer) { return Output(pointer, access).getSpendingTx(); }) | flatMapOptionals | ranges::to_vector;
         txes |= ranges::action::sort | ranges::action::unique;
         return txes;
     }
 } // namespace blocksci
-
-std::ostream &operator<<(std::ostream &os, const blocksci::InputPointer &pointer) {
-    os << pointer.toString();
-    return os;
-}
-
-std::ostream &operator<<(std::ostream &os, const blocksci::OutputPointer &pointer) {
-    os << pointer.toString();
-    return os;
-}
-
-namespace std
-{
-    size_t hash<blocksci::InputPointer>::operator()(const blocksci::InputPointer &pointer) const {
-        std::size_t seed = 41352363;
-        hash_combine(seed, pointer.txNum);
-        hash_combine(seed, pointer.inoutNum);
-        return seed;
-    }
-    
-    size_t hash<blocksci::OutputPointer>::operator()(const blocksci::OutputPointer &pointer) const {
-        std::size_t seed = 41352363;
-        hash_combine(seed, pointer.txNum);
-        hash_combine(seed, pointer.inoutNum);
-        return seed;
-    }
-} // namespace std

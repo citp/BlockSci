@@ -89,21 +89,4 @@ namespace blocksci {
         assert(false);
         return getColumn(AddressType::NONSTANDARD);
     }
-    
-    
-    uint32_t HashIndex::getTxIndex(const uint256 &txHash) {
-        return getMatch(columnHandles.back().get(), txHash);
-    }
-    
-    uint32_t HashIndex::getPubkeyHashIndex(const uint160 &pubkeyhash) {
-        return lookupAddress<AddressType::PUBKEYHASH>(pubkeyhash);
-    }
-    
-    uint32_t HashIndex::getScriptHashIndex(const uint160 &scripthash) {
-        return lookupAddress<AddressType::SCRIPTHASH>(scripthash);
-    }
-    
-    uint32_t HashIndex::getScriptHashIndex(const uint256 &scripthash) {
-        return lookupAddress<AddressType::WITNESS_SCRIPTHASH>(scripthash);
-    }
 }

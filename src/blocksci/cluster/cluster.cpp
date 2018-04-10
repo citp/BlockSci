@@ -52,7 +52,7 @@ namespace blocksci {
         for (auto &address : manager.getClusterScripts(clusterNum)) {
             if (address.type == dedupSearchType) {
                 auto searchAddress = blocksci::Address{address.scriptNum, type, manager.access};
-                if (manager.access.addressIndex->checkIfExists(searchAddress)) {
+                if (manager.access.addressIndex.checkIfExists(searchAddress)) {
                     ++count;
                 }
             }

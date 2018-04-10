@@ -9,10 +9,14 @@
 #define dedup_address_hpp
 
 #include "address_fwd.hpp"
+#include "dedup_address_info.hpp"
+
 #include <blocksci/chain/chain_fwd.hpp>
 
 #include <range/v3/utility/optional.hpp>
+
 #include <functional>
+#include <sstream>
 #include <vector>
 
 namespace blocksci {
@@ -24,8 +28,8 @@ namespace blocksci {
         uint32_t scriptNum;
         DedupAddressType::Enum type;
         
-        DedupAddress();
-        DedupAddress(uint32_t addressNum, DedupAddressType::Enum type);
+        DedupAddress() : scriptNum(0), type(DedupAddressType::NONSTANDARD) {}
+        DedupAddress(uint32_t addressNum_, DedupAddressType::Enum type_) : scriptNum(addressNum_), type(type_) {}
         
         bool operator==(const DedupAddress& other) const {
             return type == other.type && scriptNum == other.scriptNum;
@@ -35,13 +39,26 @@ namespace blocksci {
             return !operator==(other);
         }
         
-        std::string toString() const;
+        std::string toString() const {
+            if (scriptNum == 0) {
+                return "InvalidDedupAddress()";
+            } else {
+                std::stringstream ss;
+                ss << "DedupAddress(";
+                ss << "scriptNum=" << scriptNum;
+                ss << ", type=" << dedupAddressName(type);
+                ss << ")";
+                return ss.str();
+            }
+        }
     };
-    
-    inline std::ostream &operator<<(std::ostream &os, const DedupAddress &address) {
-        return os << address.toString();
-    }
 }
+
+inline std::ostream &operator<<(std::ostream &os, const blocksci::DedupAddress &address) {
+    os << address.toString();
+    return os;
+}
+
 
 namespace std {
     template <>

@@ -16,16 +16,16 @@ namespace blocksci {
     
     template<AddressType::Enum type>
     struct ScriptCreateFunctor {
-        static AnyScript::ScriptVariant f(uint32_t scriptNum, const DataAccess &access) {
+        static AnyScript::ScriptVariant f(uint32_t scriptNum, DataAccess &access) {
             return ScriptAddress<type>(scriptNum, access);
         }
     };
     
     static constexpr auto scriptCreator = make_dynamic_table<AddressType, ScriptCreateFunctor>();
     
-    AnyScript::AnyScript(const Address &address, const DataAccess &access) : wrapped(scriptCreator.at(static_cast<size_t>(address.type))(address.scriptNum, access)) {}
+    AnyScript::AnyScript(const Address &address, DataAccess &access) : wrapped(scriptCreator.at(static_cast<size_t>(address.type))(address.scriptNum, access)) {}
     
-    AnyScript::AnyScript(uint32_t addressNum, AddressType::Enum type, const DataAccess &access) : wrapped(scriptCreator.at(static_cast<size_t>(type))(addressNum, access)) {}
+    AnyScript::AnyScript(uint32_t addressNum, AddressType::Enum type, DataAccess &access) : wrapped(scriptCreator.at(static_cast<size_t>(type))(addressNum, access)) {}
     
     AddressType::Enum AnyScript::type() const {
         return mpark::visit([&](auto &scriptAddress) { return scriptAddress.addressType; }, wrapped);

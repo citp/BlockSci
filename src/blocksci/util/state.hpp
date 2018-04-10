@@ -9,8 +9,11 @@
 #define state_hpp
 
 #include <blocksci/address/dedup_address_type.hpp>
-#include <blocksci/scripts/scripts_fwd.hpp>
 #include <blocksci/chain/chain_fwd.hpp>
+#include <blocksci/chain/chain_access.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
+#include <blocksci/scripts/script_access.hpp>
+
 
 namespace blocksci {
     struct State {
@@ -18,12 +21,31 @@ namespace blocksci {
         uint32_t txCount;
         std::array<uint32_t, DedupAddressType::size> scriptCounts;
         
-        State(const ChainAccess &chain, const ScriptAccess &scripts);
-        State();
+        State(const ChainAccess &chain, const ScriptAccess &scripts) : blockCount{static_cast<uint32_t>(static_cast<int>(chain.blockCount()))}, txCount{static_cast<uint32_t>(chain.txCount())}, scriptCounts{scripts.scriptCounts()} {}
+        State() : blockCount(0), txCount(0), scriptCounts{} {
+            scriptCounts.fill(0);
+        }
     };
     
-    std::ostream& operator<<(std::ostream& s, const State &data);
-    std::istream& operator>>(std::istream& s, State &data);
+    inline std::ostream& operator<<(std::ostream& s, const State &data) {
+        s << std::hex << data.blockCount << " " << data.txCount << " ";
+        for (auto count : data.scriptCounts) {
+            s << count << " ";
+        }
+        s << std::dec;
+        return s;
+    }
+    
+    inline std::istream& operator>>(std::istream& s, State &data) {
+        // Something like this
+        // Be careful with strings.
+        s >> std::hex >> data.blockCount >> data.txCount;
+        for (auto &count : data.scriptCounts) {
+            s >> count;
+        }
+        s >> std::dec;
+        return s;
+    }
 }
 
 #endif /* state_hpp */

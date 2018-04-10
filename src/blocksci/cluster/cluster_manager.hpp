@@ -25,12 +25,12 @@
 
 
 namespace blocksci {
-    template<blocksci::DedupAddressType::Enum type>
-    struct ScriptClusterIndexFile : public blocksci::FixedSizeFileMapper<uint32_t> {
-        using blocksci::FixedSizeFileMapper<uint32_t>::FixedSizeFileMapper;
+    template<DedupAddressType::Enum type>
+    struct ScriptClusterIndexFile : public FixedSizeFileMapper<uint32_t> {
+        using FixedSizeFileMapper<uint32_t>::FixedSizeFileMapper;
     };
     
-    template<blocksci::DedupAddressType::Enum type>
+    template<DedupAddressType::Enum type>
     struct ClusterNumFunctor;
     
     struct TaggedCluster {
@@ -41,35 +41,35 @@ namespace blocksci {
     };
     
     class ClusterManager {
-        blocksci::FixedSizeFileMapper<uint32_t> clusterOffsetFile;
-        blocksci::FixedSizeFileMapper<blocksci::DedupAddress> clusterScriptsFile;
+        FixedSizeFileMapper<uint32_t> clusterOffsetFile;
+        FixedSizeFileMapper<DedupAddress> clusterScriptsFile;
         
-        using ScriptClusterIndexTuple = blocksci::to_dedup_address_tuple_t<ScriptClusterIndexFile>;
+        using ScriptClusterIndexTuple = to_dedup_address_tuple_t<ScriptClusterIndexFile>;
         
         ScriptClusterIndexTuple scriptClusterIndexFiles;
-        const blocksci::DataAccess &access;
+        DataAccess &access;
         
         friend class Cluster;
         
-        template<blocksci::DedupAddressType::Enum type>
+        template<DedupAddressType::Enum type>
         friend struct ClusterNumFunctor;
         
-        ranges::iterator_range<const blocksci::DedupAddress *> getClusterScripts(uint32_t clusterNum) const;
+        ranges::iterator_range<const DedupAddress *> getClusterScripts(uint32_t clusterNum) const;
         
-        template<blocksci::DedupAddressType::Enum type>
+        template<DedupAddressType::Enum type>
         uint32_t getClusterNumImpl(uint32_t scriptNum) const {
             auto &file = std::get<ScriptClusterIndexFile<type>>(scriptClusterIndexFiles);
             return *file.getData(scriptNum - 1);
         }
         
     public:
-        ClusterManager(const boost::filesystem::path &baseDirectory, const blocksci::DataAccess &access);
+        ClusterManager(const boost::filesystem::path &baseDirectory, DataAccess &access);
         
-        static ClusterManager createClustering(const Blockchain &chain, const heuristics::ChangeHeuristic &heuristic, const std::string &outputPath, bool overwrite = false);
+        static ClusterManager createClustering(Blockchain &chain, const heuristics::ChangeHeuristic &heuristic, const std::string &outputPath, bool overwrite = false);
         
-        Cluster getCluster(const blocksci::Address &address) const;
+        Cluster getCluster(const Address &address) const;
         
-        uint32_t getClusterNum(const blocksci::Address &address) const;
+        uint32_t getClusterNum(const Address &address) const;
         uint32_t getClusterSize(uint32_t clusterNum) const;
         uint32_t clusterCount() const;
         
@@ -80,7 +80,7 @@ namespace blocksci {
         
         std::vector<uint32_t> getClusterSizes() const;
         
-        std::vector<TaggedCluster> taggedClusters(const std::unordered_map<blocksci::Address, std::string> &tags);
+        std::vector<TaggedCluster> taggedClusters(const std::unordered_map<Address, std::string> &tags);
     };
     
     using cluster_range = decltype(std::declval<ClusterManager>().getClusters());

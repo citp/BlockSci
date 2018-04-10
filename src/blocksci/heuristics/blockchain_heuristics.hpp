@@ -13,11 +13,11 @@
 #include <vector>
 
 namespace blocksci { namespace heuristics {
-    std::vector<Transaction> getDeanonTxes(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock);
-    std::vector<Transaction> getChangeOverTxes(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock);
-    std::vector<Transaction> getKeysetChangeTxes(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock);
+    std::vector<Transaction> getDeanonTxes(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock);
+    std::vector<Transaction> getChangeOverTxes(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock);
+    std::vector<Transaction> getKeysetChangeTxes(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock);
     
-    std::vector<Transaction> getCoinjoinTransactions(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock);
+    std::vector<Transaction> getCoinjoinTransactions(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock);
     std::pair<std::vector<Transaction>, std::vector<Transaction>> getPossibleCoinjoinTransactions(const Blockchain &chain, uint64_t minBaseFee, double percentageFee, std::size_t maxDepth);
 }}
 

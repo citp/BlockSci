@@ -31,7 +31,7 @@ namespace blocksci {
     template<typename T>
     class ScriptBase : public Address  {
     public:
-        ScriptBase(uint32_t scriptNum_, AddressType::Enum type_, const DataAccess &access_) : Address(scriptNum_, type_, access_) {}
+        ScriptBase(uint32_t scriptNum_, AddressType::Enum type_, DataAccess &access_) : Address(scriptNum_, type_, access_) {}
         
         void visitPointers(const std::function<void(const Address &)> &) const {}
 

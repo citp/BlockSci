@@ -17,43 +17,25 @@
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/scripts/script_variant.hpp>
 
-
-namespace std
-{
-    size_t hash<blocksci::EquivAddress>::operator()(const blocksci::EquivAddress &equiv) const {
-        std::size_t seed = 123954;
-        for (const auto &address : equiv.addresses) {
-            seed ^= address.scriptNum + address.type;
-        }
-        return seed;
-    }
-}
-
 namespace blocksci {
-    EquivAddress::EquivAddress(uint32_t scriptNum, EquivAddressType::Enum type, bool scriptEquivalent_, const DataAccess &access_) : scriptEquivalent(scriptEquivalent_), access(access_) {
+    EquivAddress::EquivAddress(uint32_t scriptNum, EquivAddressType::Enum type, bool scriptEquivalent_, DataAccess &access_) : scriptEquivalent(scriptEquivalent_), access(access_) {
         for (auto type : equivAddressTypes(type)) {
             Address address(scriptNum, type, access);
             if (scriptEquivalent) {
-                auto nested = access.addressIndex->getPossibleNestedEquivalent(address);
+                auto nested = access.addressIndex.getPossibleNestedEquivalent(address);
                 for (auto &nestedAddress : nested) {
-                    if (access.addressIndex->checkIfExists(nestedAddress)) {
+                    if (access.addressIndex.checkIfExists(nestedAddress)) {
                         addresses.insert(nestedAddress);
                     }
                 }
             } else {
-                if (access.addressIndex->checkIfExists(address)) {
+                if (access.addressIndex.checkIfExists(address)) {
                     addresses.insert(address);
                 }
             }
             
         }
     }
-    
-    EquivAddress::EquivAddress(const Address &searchAddress, bool scriptEquivalent_) :
-    EquivAddress(searchAddress.scriptNum, equivType(searchAddress.type), scriptEquivalent_, searchAddress.getAccess()) {}
-    
-    EquivAddress::EquivAddress(const DedupAddress &searchAddress, bool scriptEquivalent_, const DataAccess &access_) :
-    EquivAddress(searchAddress.scriptNum, equivType(searchAddress.type), scriptEquivalent_, access_) {}
     
     std::string EquivAddress::toString() const {
         std::stringstream ss;
@@ -73,7 +55,7 @@ namespace blocksci {
     std::vector<OutputPointer> EquivAddress::getOutputPointers() const {
         std::vector<OutputPointer> outputs;
         for (const auto &address : addresses) {
-            auto addrOuts = access.addressIndex->getOutputPointers(address);
+            auto addrOuts = access.addressIndex.getOutputPointers(address);
             outputs.insert(outputs.end(), addrOuts.begin(), addrOuts.end());
         }
         return outputs;

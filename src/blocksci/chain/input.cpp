@@ -11,13 +11,10 @@
 #include "input.hpp"
 
 #include "block.hpp"
-#include "chain_access.hpp"
-#include "inout_pointer.hpp"
 #include "transaction.hpp"
 
 #include <blocksci/address/address.hpp>
 #include <blocksci/scripts/script_variant.hpp>
-#include <blocksci/util/hash.hpp>
 
 #include <sstream>
 
@@ -27,32 +24,24 @@ namespace blocksci {
     }
     
     Address Input::getAddress() const {
-        return {inout->toAddressNum, inout->getType(), *access};
+        return {inout->getAddressNum(), inout->getType(), *access};
     }
     
     Block Input::block() const {
         return {blockHeight, *access};
     }
     
-    Transaction Input::getSpentTx() const {
-        return {inout->linkedTxNum, *access};
-    }
-    
     std::string Input::toString() const {
         std::stringstream ss;
-        ss << "TxIn(spent_tx_index=" << inout->linkedTxNum << ", address=" << getAddress().getScript().toString() <<", value=" << inout->getValue() << ")";
+        ss << "TxIn(spent_tx_index=" << inout->getLinkedTxNum() << ", address=" << getAddress().getScript().toString() <<", value=" << inout->getValue() << ")";
         return ss.str();
+    }
+    
+    Transaction Input::getSpentTx() const {
+        return {inout->getLinkedTxNum(), *access};
     }
 
     uint32_t Input::age() const {
         return blockHeight - getSpentTx().blockHeight;
     }
 } // namespace blocksci
-
-namespace std {
-    size_t hash<blocksci::Input>::operator()(const blocksci::Input &input) const {
-        std::size_t seed = 3458697;
-        hash_combine(seed, *input.inout);
-        return seed;
-    }
-} // namespace std

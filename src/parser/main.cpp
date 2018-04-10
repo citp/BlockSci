@@ -75,11 +75,11 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::B
         auto hash = txHashesFile.getData(txNum);
         for (uint16_t i = 0; i < tx->outputCount; i++) {
             auto &output = tx->getOutput(i);
-            blocksci::AnyScript script(output.toAddressNum, output.getType(), access);
+            blocksci::AnyScript script(output.getAddressNum(), output.getType(), access);
             if (script.firstTxIndex() == txNum) {
                 auto &prevValue = state.scriptCounts.at(static_cast<size_t>(dedupType(output.getType())));
-                if (output.toAddressNum < prevValue) {
-                    prevValue = output.toAddressNum;
+                if (output.getAddressNum() < prevValue) {
+                    prevValue = output.getAddressNum();
                 }
             }
             if (isSpendable(output.getType())) {
@@ -92,18 +92,18 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::B
         uint32_t inputsAdded = 0;
         for (uint16_t i = 0; i < tx->inputCount; i++) {
             auto &input = tx->getInput(i);
-            auto spentTxNum = input.linkedTxNum;
+            auto spentTxNum = input.getLinkedTxNum();
             auto spentTx = txFile.getData(spentTxNum);
             auto spentHash = txHashesFile.getData(spentTxNum);
             for (uint16_t j = 0; j < spentTx->outputCount; j++) {
                 auto &output = spentTx->getOutput(j);
-                if (output.linkedTxNum == txNum) {
-                    output.linkedTxNum = 0;
+                if (output.getLinkedTxNum() == txNum) {
+                    output.setLinkedTxNum(0);
                     UTXO utxo(output.getValue(), spentTxNum, output.getType());
                     utxoState.add({*spentHash, j}, utxo);
-                    blocksci::AnyScript script(output.toAddressNum, output.getType(), access);
+                    blocksci::AnyScript script(output.getAddressNum(), output.getType(), access);
                     utxoAddressState.addOutput(AnySpendData{script}, {spentTxNum, j});
-                    utxoScriptState.add({spentTxNum, j}, output.toAddressNum);
+                    utxoScriptState.add({spentTxNum, j}, output.getAddressNum());
                     inputsAdded++;
                 }
             }

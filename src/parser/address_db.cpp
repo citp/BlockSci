@@ -65,13 +65,13 @@ void AddressDB::processTx(const blocksci::RawTransaction *tx, uint32_t txNum, co
         return false;
     };
     for (auto &input : tx->inputs()) {
-        visit(RawAddress{input.toAddressNum, input.getType()}, visitFunc, scripts);
+        visit(RawAddress{input.getAddressNum(), input.getType()}, visitFunc, scripts);
     }
     
     for (uint16_t i = 0; i < tx->outputCount; i++) {
         auto &output = tx->getOutput(i);
         auto pointer = OutputPointer{txNum, i};
-        addAddressOutput(blocksci::RawAddress{output.toAddressNum, output.getType()}, pointer);
+        addAddressOutput(blocksci::RawAddress{output.getAddressNum(), output.getType()}, pointer);
     }
 }
 

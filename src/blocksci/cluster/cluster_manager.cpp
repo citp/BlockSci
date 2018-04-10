@@ -73,7 +73,7 @@ namespace {
 }
 
 namespace blocksci {
-    ClusterManager::ClusterManager(const boost::filesystem::path &baseDirectory, const blocksci::DataAccess &access_) :
+    ClusterManager::ClusterManager(const boost::filesystem::path &baseDirectory, blocksci::DataAccess &access_) :
     clusterOffsetFile(baseDirectory/"clusterOffsets"),
     clusterScriptsFile(baseDirectory/"clusterAddresses"),
     scriptClusterIndexFiles(blocksci::apply(blocksci::DedupAddressInfoList(), [&] (auto tag) {
@@ -201,7 +201,7 @@ namespace blocksci {
         }
     };
     
-    std::vector<uint32_t> createClusters(const Blockchain &chain, std::unordered_map<DedupAddressType::Enum, uint32_t> addressStarts, uint32_t totalScriptCount, const heuristics::ChangeHeuristic &changeHeuristic) {
+    std::vector<uint32_t> createClusters(Blockchain &chain, std::unordered_map<DedupAddressType::Enum, uint32_t> addressStarts, uint32_t totalScriptCount, const heuristics::ChangeHeuristic &changeHeuristic) {
         
         AddressDisjointSets ds(totalScriptCount, std::move(addressStarts));
         
@@ -297,7 +297,7 @@ namespace blocksci {
     }
     
     
-    ClusterManager ClusterManager::createClustering(const Blockchain &chain, const heuristics::ChangeHeuristic &changeHeuristic, const std::string &outputPath, bool overwrite) {
+    ClusterManager ClusterManager::createClustering(Blockchain &chain, const heuristics::ChangeHeuristic &changeHeuristic, const std::string &outputPath, bool overwrite) {
         
         auto outputLocation = boost::filesystem::path{outputPath};
         boost::filesystem::path offsetFile = outputLocation/"clusterOffsets.dat";
@@ -341,7 +341,7 @@ namespace blocksci {
         boost::filesystem::ofstream clusterOffsetFile(offsetFile, std::ios::binary);
         // Perform clustering
         
-        auto &scripts = *chain.getAccess().scripts;
+        auto &scripts = chain.getAccess().scripts;
         size_t totalScriptCount = scripts.totalAddressCount();
         
         std::unordered_map<DedupAddressType::Enum, uint32_t> scriptStarts;

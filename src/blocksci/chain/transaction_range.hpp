@@ -20,7 +20,7 @@ namespace blocksci {
     class TransactionRange : public ranges::view_facade<TransactionRange> {
         friend ranges::range_access;
         
-        const DataAccess *access;
+        DataAccess *access;
         const char *currentTxPos = nullptr;
         uint32_t currentTxIndex = 0;
         uint32_t endTxIndex = 0;
@@ -47,22 +47,37 @@ namespace blocksci {
             return {rawTx, currentTxIndex, blockNum, *access};
         }
         
-        void prev();
-        void advance(int amount);
+        void prev() {
+            --currentTxIndex;
+            if (currentTxIndex == prevBlockLast) {
+                --blockNum;
+                updateNextBlock();
+            }
+            currentTxPos = reinterpret_cast<const char *>(access->chain.getTx(currentTxIndex));
+        }
+        
+        void advance(int amount) {
+            currentTxIndex += static_cast<uint32_t>(amount);
+            blockNum = access->chain.getBlockHeight(currentTxIndex);
+            updateNextBlock();
+            currentTxPos = reinterpret_cast<const char *>(access->chain.getTx(currentTxIndex));
+        }
         
         size_t distance_to(const TransactionRange &other) const {
             return static_cast<size_t>(other.currentTxIndex) - static_cast<size_t>(currentTxIndex);
         }
         
         void updateNextBlock() {
-            auto block = access->chain->getBlock(blockNum);
+            auto block = access->chain.getBlock(blockNum);
             prevBlockLast = block->firstTxIndex - 1;
-            nextBlockFirst = blockNum < access->chain->blockCount() - BlockHeight{1} ? block->firstTxIndex + static_cast<uint32_t>(block->numTxes) : std::numeric_limits<decltype(nextBlockFirst)>::max();
+            nextBlockFirst = blockNum < access->chain.blockCount() - BlockHeight{1} ? block->firstTxIndex + static_cast<uint32_t>(block->numTxes) : std::numeric_limits<decltype(nextBlockFirst)>::max();
         }
         
     public:
         TransactionRange() = default;
-        TransactionRange(const DataAccess &access_, uint32_t begin, uint32_t end);
+        TransactionRange(DataAccess &access_, uint32_t begin, uint32_t end) : access(&access_), currentTxPos(reinterpret_cast<const char *>(access->chain.getTx(begin))), currentTxIndex(begin), endTxIndex(end), blockNum(access->chain.getBlockHeight(begin)) {
+            updateNextBlock();
+        }
     };
     
     class RawTransactionRange : public ranges::view_facade<RawTransactionRange> {
@@ -73,12 +88,29 @@ namespace blocksci {
         uint32_t currentTxIndex;
         uint32_t endTxIndex;
         
-        std::pair<const RawTransaction *, uint32_t> read() const;
+        std::pair<const RawTransaction *, uint32_t> read() const {
+            return std::make_pair(reinterpret_cast<const RawTransaction *>(currentTxPos), currentTxIndex);
+        }
+        
         bool equal(ranges::default_sentinel) const { return currentTxIndex == endTxIndex; }
         
-        void next();
-        void prev();
-        void advance(int amount);
+        void next() {
+            auto tx = reinterpret_cast<const RawTransaction *>(currentTxPos);
+            currentTxPos += sizeof(RawTransaction) +
+            static_cast<size_t>(tx->inputCount) * sizeof(Inout) +
+            static_cast<size_t>(tx->outputCount) * sizeof(Inout);
+            ++currentTxIndex;
+        }
+        
+        void prev() {
+            --currentTxIndex;
+            currentTxPos = reinterpret_cast<const char *>(access->getTx(currentTxIndex));
+        }
+        
+        void advance(int amount) {
+            currentTxIndex = static_cast<uint32_t>(static_cast<int>(currentTxIndex) + amount);
+            currentTxPos = reinterpret_cast<const char *>(access->getTx(currentTxIndex));
+        }
         
         size_t distance_to(const RawTransactionRange &other) const {
             return static_cast<size_t>(other.currentTxIndex) - static_cast<size_t>(currentTxIndex);
@@ -86,7 +118,8 @@ namespace blocksci {
         
     public:
         RawTransactionRange() = default;
-        RawTransactionRange(const ChainAccess &access_, uint32_t begin, uint32_t end);
+        RawTransactionRange(const ChainAccess &access_, uint32_t begin, uint32_t end) : access(&access_), currentTxPos(reinterpret_cast<const char *>(access->getTx(begin))), currentTxIndex(begin), endTxIndex(end) {
+        }
     };
 } // namespace blocksci
 

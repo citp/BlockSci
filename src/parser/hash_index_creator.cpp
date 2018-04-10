@@ -47,13 +47,13 @@ void HashIndexCreator::processTx(const blocksci::RawTransaction *tx, uint32_t tx
     };
     for (auto input : tx->inputs()) {
         insideP2SH = false;
-        visit(blocksci::RawAddress{input.toAddressNum, input.getType()}, inputVisitFunc, scripts);
+        visit(blocksci::RawAddress{input.getAddressNum(), input.getType()}, inputVisitFunc, scripts);
     }
     
     for (auto &txout : tx->outputs()) {
         if (txout.getType() == blocksci::AddressType::WITNESS_SCRIPTHASH) {
-            auto script = scripts.getScriptData<blocksci::AddressType::WITNESS_SCRIPTHASH>(txout.toAddressNum);
-            addAddress<blocksci::AddressType::WITNESS_SCRIPTHASH>(script->hash256, txout.toAddressNum);
+            auto script = scripts.getScriptData<blocksci::AddressType::WITNESS_SCRIPTHASH>(txout.getAddressNum());
+            addAddress<blocksci::AddressType::WITNESS_SCRIPTHASH>(script->hash256, txout.getAddressNum());
         }
     }
 }

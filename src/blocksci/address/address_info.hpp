@@ -196,4 +196,9 @@ namespace blocksci {
     }
 }
 
+inline std::ostream &operator<<(std::ostream &os, blocksci::AddressType::Enum const &type) {
+    os << addressName(type);
+    return os;
+}
+
 #endif /* address_info_hpp */

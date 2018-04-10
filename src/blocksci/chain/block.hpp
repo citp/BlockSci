@@ -14,12 +14,16 @@
 #include "raw_block.hpp"
 
 #include <blocksci/address/address_types.hpp>
+#include <blocksci/address/address.hpp>
 #include <blocksci/scripts/scripts_fwd.hpp>
 #include <blocksci/util/data_access.hpp>
 
+#include <range/v3/range_for.hpp>
 #include <range/v3/view_facade.hpp>
 #include <range/v3/view/transform.hpp>
 #include <range/v3/view/join.hpp>
+#include <range/v3/view/remove_if.hpp>
+
 
 #include <unordered_map>
 #include <chrono>
@@ -30,7 +34,7 @@ namespace blocksci {
     class Block : public ranges::view_facade<Block> {
         friend ranges::range_access;
         
-        const DataAccess *access;
+        DataAccess *access;
         const RawBlock *rawBlock;
         BlockHeight blockNum;
         
@@ -42,8 +46,8 @@ namespace blocksci {
         public:
             cursor() = default;
             cursor(const Block &block_, uint32_t txNum) : block(&block_), currentTxIndex(txNum) {
-                if (currentTxIndex < block->access->chain->txCount()) {
-                    currentTxPos = reinterpret_cast<const char *>(block->access->chain->getTx(currentTxIndex));
+                if (currentTxIndex < block->access->chain.txCount()) {
+                    currentTxPos = reinterpret_cast<const char *>(block->access->chain.getTx(currentTxIndex));
                 } else {
                     currentTxPos = nullptr;
                 }
@@ -80,13 +84,13 @@ namespace blocksci {
             
             void prev() {
                 currentTxIndex--;
-                currentTxPos = reinterpret_cast<const char *>(block->access->chain->getTx(currentTxIndex));
+                currentTxPos = reinterpret_cast<const char *>(block->access->chain.getTx(currentTxIndex));
             }
             
             void advance(int amount) {
                 currentTxIndex += static_cast<uint32_t>(amount);
-                if (currentTxIndex < block->access->chain->txCount()) {
-                    currentTxPos = reinterpret_cast<const char *>(block->access->chain->getTx(currentTxIndex));
+                if (currentTxIndex < block->access->chain.txCount()) {
+                    currentTxPos = reinterpret_cast<const char *>(block->access->chain.getTx(currentTxIndex));
                 } else {
                     currentTxPos = nullptr;
                 }
@@ -103,10 +107,10 @@ namespace blocksci {
         
     public:
         Block() = default;
-        Block(BlockHeight blockNum_, const DataAccess &access_) : access(&access_), rawBlock(access->chain->getBlock(blockNum_)), blockNum(blockNum_) {
+        Block(BlockHeight blockNum_, DataAccess &access_) : access(&access_), rawBlock(access->chain.getBlock(blockNum_)), blockNum(blockNum_) {
         }
         
-        const DataAccess &getAccess() const {
+        DataAccess &getAccess() const {
             return *access;
         }
         
@@ -178,33 +182,94 @@ namespace blocksci {
             return virtualSize();
         }
 
-        Block nextBlock() const;
-        Block prevBlock() const;
+        Block nextBlock() const {
+            return {blockNum + BlockHeight(1), *access};
+        }
         
-        const std::string getHeaderHash() const;
+        Block prevBlock() const {
+            return {blockNum - BlockHeight(1), *access};
+        }
         
-        std::chrono::system_clock::time_point getTime() const;
+        const std::string getHeaderHash() const {
+            return rawBlock->hash.GetHex();
+        }
         
-        std::string getString() const;
+        std::chrono::system_clock::time_point getTime() const {
+            return std::chrono::system_clock::from_time_t(static_cast<time_t>(rawBlock->timestamp));
+        }
+        
+        std::string toString() const {
+            std::stringstream ss;
+            ss << "Block(numTxes=" << rawBlock->numTxes <<", height=" << blockNum <<", header_hash=" << rawBlock->hash.GetHex() << ", version=" << rawBlock->version <<", timestamp=" << rawBlock->timestamp << ", bits=" << rawBlock->bits << ", nonce=" << rawBlock->nonce << ")";
+            return ss.str();
+        }
         
         const std::string coinbaseParam() const {
             auto coinbase = getCoinbase();
             return std::string(coinbase.begin(), coinbase.end());
         }
         
-        std::vector<unsigned char> getCoinbase() const;
-        Transaction coinbaseTx() const;
+        std::vector<unsigned char> getCoinbase() const {
+            return access->chain.getCoinbase(rawBlock->coinbaseOffset);
+        }
+        
+        Transaction coinbaseTx() const {
+            return (*this)[0];
+        }
     };
 
     bool isSegwit(const Block &block);
     
     TransactionSummary transactionStatistics(const Block &block, const ChainAccess &access);
-    std::vector<uint64_t> getTotalSpentOfAges(const Block &block, BlockHeight maxAge);
-    std::unordered_map<AddressType::Enum, int64_t> netAddressTypeValue(const Block &block);
-    std::unordered_map<std::string, int64_t> netFullTypeValue(const Block &block);
+    
+    inline std::unordered_map<AddressType::Enum, int64_t> netAddressTypeValue(const Block &block) {
+        std::unordered_map<AddressType::Enum, int64_t> net;
+        RANGES_FOR(auto tx, block) {
+            RANGES_FOR(auto output, tx.outputs()) {
+                net[output.getType()] += output.getValue();
+            }
+            RANGES_FOR(auto input, tx.inputs()) {
+                net[input.getType()] -= input.getValue();
+            }
+        }
+        return net;
+    }
+    
+    inline std::unordered_map<std::string, int64_t> netFullTypeValue(const Block &block) {
+        std::unordered_map<std::string, int64_t> net;
+        RANGES_FOR(auto tx, block) {
+            RANGES_FOR(auto output, tx.outputs()) {
+                net[output.getAddress().fullType()] += output.getValue();
+            }
+            RANGES_FOR(auto input, tx.inputs()) {
+                net[input.getAddress().fullType()] -= input.getValue();
+            }
+        }
+        return net;
+    }
+    
+    inline std::vector<uint64_t> getTotalSpentOfAges(const Block &block, BlockHeight maxAge) {
+        std::vector<uint64_t> totals(static_cast<size_t>(static_cast<int>(maxAge)));
+        uint32_t newestTxNum = block.prevBlock().endTxIndex() - 1;
+        auto inputs = block.allInputs()
+        | ranges::view::remove_if([=](const Input &input) { return input.spentTxIndex() > newestTxNum; });
+        RANGES_FOR(auto input, inputs) {
+            BlockHeight age = std::min(maxAge, block.height() - input.getSpentTx().block().height()) - BlockHeight{1};
+            totals[static_cast<size_t>(static_cast<int>(age))] += input.getValue();
+        }
+        for (BlockHeight i{1}; i < maxAge; --i) {
+            auto age = static_cast<size_t>(static_cast<int>(maxAge - i));
+            totals[age - 1] += totals[age];
+        }
+        return totals;
+    }
+    
 } // namespace blocksci
 
-std::ostream &operator<<(std::ostream &os, const blocksci::Block &block);
+inline std::ostream &operator<<(std::ostream &os, const blocksci::Block &block) {
+    os << block.toString();
+    return os;
+}
 
 namespace std {
     template <>

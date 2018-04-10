@@ -125,18 +125,6 @@ namespace blocksci {
         return this->IsPushOnly(begin());
     }
     
-    bool CScriptView::HasValidOps() const {
-        const_iterator it = begin();
-        while (it < end()) {
-            opcodetype opcode;
-            ranges::iterator_range<const unsigned char *> item;
-            if (!GetOp(it, opcode, item) || opcode > MAX_OPCODE || item.size() > MAX_SCRIPT_ELEMENT_SIZE) {
-                return false;
-            }
-        }
-        return true;
-    }
-    
     std::string ScriptToAsmStr(const CScriptView& script, const bool fAttemptSighashDecode) {
         std::stringstream ss;
         opcodetype opcode;

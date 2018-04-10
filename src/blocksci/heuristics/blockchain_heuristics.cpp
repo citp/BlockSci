@@ -10,31 +10,31 @@
 #include <blocksci/chain/blockchain.hpp>
 
 namespace blocksci { namespace heuristics {
-    std::vector<Transaction> getDeanonTxes(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock) {
+    std::vector<Transaction> getDeanonTxes(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock) {
         return filter(chain, startBlock, endBlock, [](const Transaction &tx) {
             return isDeanonTx(tx);
         });
     }
     
-    std::vector<Transaction> getChangeOverTxes(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock) {
+    std::vector<Transaction> getChangeOverTxes(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock) {
         return filter(chain, startBlock, endBlock, [](const Transaction &tx) {
             return isChangeOverTx(tx);
         });
     }
     
-    std::vector<Transaction> getKeysetChangeTxes(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock) {
+    std::vector<Transaction> getKeysetChangeTxes(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock) {
         return filter(chain, startBlock, endBlock, [](const Transaction &tx) {
             return containsKeysetChange(tx);
         });
     }
     
-    std::vector<Transaction> getCoinjoinTransactions(const Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock)  {
+    std::vector<Transaction> getCoinjoinTransactions(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock)  {
         return filter(chain, startBlock, endBlock, [](const Transaction &tx) {
             return heuristics::isCoinjoin(tx);
         });
     }
     
-    std::pair<std::vector<Transaction>, std::vector<Transaction>> getPossibleCoinjoinTransactions(const Blockchain &chain, uint64_t minBaseFee, double percentageFee, size_t maxDepth)  {
+    std::pair<std::vector<Transaction>, std::vector<Transaction>> getPossibleCoinjoinTransactions(Blockchain &chain, uint64_t minBaseFee, double percentageFee, size_t maxDepth)  {
         
         auto mapFunc = [&](const std::vector<Block> &segment) {
             std::vector<Transaction> skipped;

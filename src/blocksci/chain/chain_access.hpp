@@ -15,6 +15,7 @@
 #include "raw_transaction.hpp"
 
 #include <blocksci/util/file_mapper.hpp>
+#include <blocksci/util/data_configuration.hpp>
 #include <blocksci/util/bitcoin_uint256.hpp>
 
 #include <memory>
@@ -23,10 +24,7 @@ namespace blocksci {
     
     class ReorgException : public std::runtime_error {
     public:
-        ReorgException();
-        ReorgException(const ReorgException &) = default;
-        ReorgException(ReorgException &&) = default;
-        virtual ~ReorgException();
+        ReorgException() : std::runtime_error("Blockchain has experienced reorg") {}
     };
     
     struct DataConfiguration;
@@ -53,16 +51,47 @@ namespace blocksci {
             }
         }
         
-        void setup();
+        void setup() {
+            maxHeight = static_cast<BlockHeight>(blockFile.size()) - blocksIgnored;
+            if (maxHeight > BlockHeight(0)) {
+                const auto &blockFile_ = blockFile;
+                auto maxLoadedBlock = blockFile_.getData(static_cast<size_t>(static_cast<int>(maxHeight) - 1));
+                lastBlockHash = maxLoadedBlock->hash;
+                _maxLoadedTx = maxLoadedBlock->firstTxIndex + maxLoadedBlock->numTxes;
+                lastBlockHashDisk = &maxLoadedBlock->hash;
+            } else {
+                _maxLoadedTx = 0;
+            }
+        }
         
     public:
-        explicit ChainAccess(const DataConfiguration &config);
+        explicit ChainAccess(const DataConfiguration &config) :
+        blockFile(config.blockFilePath()),
+        blockCoinbaseFile(config.blockCoinbaseFilePath()),
+        txFile(config.txFilePath()),
+        sequenceFile(config.sequenceFilePath()),
+        txHashesFile(config.txHashesFilePath()),
+        blocksIgnored(config.blocksIgnored),
+        errorOnReorg(config.errorOnReorg) {
+            setup();
+        }
         
         uint32_t maxLoadedTx() const {
             return _maxLoadedTx;
         }
         
-        BlockHeight getBlockHeight(uint32_t txIndex) const;
+        BlockHeight getBlockHeight(uint32_t txIndex) const {
+            reorgCheck();
+            if (errorOnReorg && txIndex >= _maxLoadedTx) {
+                throw std::out_of_range("Transaction index out of range");
+            }
+            auto blockRange = ranges::make_iterator_range(blockFile.getData(0), blockFile.getData(static_cast<size_t>(static_cast<int>(maxHeight) - 1)) + 1);
+            auto it = std::upper_bound(blockRange.begin(), blockRange.end(), txIndex, [](uint32_t index, const RawBlock &b) {
+                return index < b.firstTxIndex;
+            });
+            it--;
+            return static_cast<BlockHeight>(std::distance(blockRange.begin(), it));
+        }
         
         const RawBlock *getBlock(BlockHeight blockHeight) const {
             reorgCheck();
@@ -82,15 +111,31 @@ namespace blocksci {
             return sequenceFile.getData(index);
         }
         
-        size_t txCount() const;
+        size_t txCount() const {
+            return _maxLoadedTx;
+        }
         
         BlockHeight blockCount() const {
             return maxHeight;
         }
         
-        std::vector<unsigned char> getCoinbase(uint64_t offset) const;
+        std::vector<unsigned char> getCoinbase(uint64_t offset) const {
+            auto pos = blockCoinbaseFile.getDataAtOffset(offset);
+            uint32_t coinbaseLength;
+            std::memcpy(&coinbaseLength, pos, sizeof(coinbaseLength));
+            uint64_t length = coinbaseLength;
+            pos += sizeof(coinbaseLength);
+            auto range = boost::make_iterator_range_n(reinterpret_cast<const unsigned char *>(pos), length);
+            return std::vector<unsigned char>(range.begin(), range.end());
+        }
         
-        void reload();
+        void reload() {
+            blockFile.reload();
+            blockCoinbaseFile.reload();
+            txFile.reload();
+            txHashesFile.reload();
+            setup();
+        }
     };
 } // namespace blocksci
 
