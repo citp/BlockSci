@@ -97,7 +97,7 @@ namespace blocksci {
     
     uint32_t ClusterManager::getClusterNum(const blocksci::Address &address) const {
         static auto table = blocksci::make_dynamic_table<blocksci::DedupAddressType, ClusterNumFunctor>();
-        static constexpr std::size_t size = blocksci::DedupAddressType::all.size();
+        static constexpr std::size_t size = DedupAddressType::size;
         
         auto index = static_cast<size_t>(dedupType(address.type));
         if (index >= size)
@@ -303,11 +303,11 @@ namespace blocksci {
         boost::filesystem::path offsetFile = outputLocation/"clusterOffsets.dat";
         boost::filesystem::path addressesFile = outputLocation/"clusterAddresses.dat";
         std::vector<boost::filesystem::path> clusterIndexPaths;
-        for (auto &dedupType : DedupAddressType::all) {
+        for_each(DedupAddressType::all(), [&](auto dedupType) {
             std::stringstream ss;
             ss << dedupAddressName(dedupType) << "_cluster_index.dat";
             clusterIndexPaths.push_back(outputLocation/ss.str());
-        }
+        });
         
         std::vector<boost::filesystem::path> allPaths = clusterIndexPaths;
         allPaths.push_back(offsetFile);
@@ -345,12 +345,12 @@ namespace blocksci {
         size_t totalScriptCount = scripts.totalAddressCount();
         
         std::unordered_map<DedupAddressType::Enum, uint32_t> scriptStarts;
-        for (size_t i = 0; i < DedupAddressType::size; i++) {
-            scriptStarts[DedupAddressType::all[i]] = 0;
-            for (size_t j = 0; j < i; j++) {
-                scriptStarts[DedupAddressType::all[i]] += scripts.scriptCount(DedupAddressType::all[j]);
+        for_each(DedupAddressType::all(), [&](auto type) {
+            scriptStarts[type] = 0;
+            for (size_t j = 0; j < static_cast<size_t>(type); j++) {
+                scriptStarts[type] += scripts.scriptCount(static_cast<DedupAddressType::Enum>(j));
             }
-        }
+        });
         
         auto parent = createClusters(chain, scriptStarts, static_cast<uint32_t>(totalScriptCount), changeHeuristic);
         uint32_t clusterCount = remapClusterIds(parent);
@@ -367,7 +367,7 @@ namespace blocksci {
         auto recordOrdered = std::async(std::launch::async, recordOrderedAddresses, parent, std::ref(clusterPositions), scriptStarts, std::ref(clusterAddressesFile));
         
         segmentWork(0, DedupAddressType::size, DedupAddressType::size, [&](uint32_t index) {
-            auto type = DedupAddressType::all[index];
+            auto type = static_cast<DedupAddressType::Enum>(index);
             uint32_t startIndex = scriptStarts[type];
             uint32_t totalCount = scripts.scriptCount(type);
             boost::filesystem::ofstream file = {clusterIndexPaths[index], std::ios::binary};

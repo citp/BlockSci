@@ -25,7 +25,7 @@ HashIndexCreator::HashIndexCreator(const ParserConfigurationBase &config_, const
 
 HashIndexCreator::~HashIndexCreator() {
     clearTxCache();
-    for_each(blocksci::AddressInfoList{}, [&](auto tag) {
+    for_each(blocksci::AddressType::all{}, [&](auto tag) {
         clearAddressCache<tag>();
     });
 }

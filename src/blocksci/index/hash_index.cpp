@@ -45,7 +45,7 @@ namespace blocksci {
         
         auto cache = rocksdb::NewLRUCache(static_cast<size_t>(1024 * 1024 * 1024));
         std::vector<rocksdb::ColumnFamilyDescriptor> columnDescriptors;
-        blocksci::for_each(blocksci::AddressInfoList(), [&](auto tag) {
+        blocksci::for_each(AddressType::all(), [&](auto tag) {
             auto options = rocksdb::ColumnFamilyOptions{};
             auto descriptor = rocksdb::ColumnFamilyDescriptor{addressName(tag), options};
             columnDescriptors.push_back(descriptor);

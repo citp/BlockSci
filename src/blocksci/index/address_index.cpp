@@ -43,12 +43,12 @@ namespace blocksci {
         
         
         std::vector<rocksdb::ColumnFamilyDescriptor> columnDescriptors;
-        blocksci::for_each(blocksci::AddressInfoList(), [&](auto tag) {
+        blocksci::for_each(AddressType::all(), [&](auto tag) {
             std::stringstream ss;
             ss << addressName(tag) << "_output";
             columnDescriptors.emplace_back(ss.str(), rocksdb::ColumnFamilyOptions{});
         });
-        blocksci::for_each(blocksci::AddressInfoList(), [&](auto tag) {
+        blocksci::for_each(AddressType::all(), [&](auto tag) {
             std::stringstream ss;
             ss << addressName(tag) << "_nested";
             columnDescriptors.emplace_back(ss.str(), rocksdb::ColumnFamilyOptions{});

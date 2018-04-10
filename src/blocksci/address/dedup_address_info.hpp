@@ -62,7 +62,9 @@ namespace blocksci {
         static constexpr EquivAddressType::Enum equivType = EquivAddressType::NULL_DATA;
     };
     
-    using DedupAddressInfoList = array_to_tuple_t<DedupAddressType::Enum, DedupAddressType::size, DedupAddressType::all>;
+    #define VAL(x) std::integral_constant<DedupAddressType::Enum, DedupAddressType::x>
+    using DedupAddressInfoList = std::tuple<DEDUP_ADDRESS_TYPE_LIST>;
+    #undef VAL
     
     template <template<DedupAddressType::Enum> class K>
     using to_dedup_address_tuple_t = apply_template_t<DedupAddressType::Enum, K, DedupAddressInfoList>;

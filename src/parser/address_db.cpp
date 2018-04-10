@@ -31,7 +31,6 @@
 using blocksci::Address;
 using blocksci::RawAddress;
 using blocksci::DedupAddress;
-using blocksci::AddressInfoList;
 using blocksci::Transaction;
 using blocksci::OutputPointer;
 using blocksci::State;
@@ -124,7 +123,7 @@ void AddressDB::clearOutputCache() {
 }
 
 void AddressDB::rollback(const State &state) {
-    for_each(AddressInfoList(), [&](auto type) {
+    for_each(blocksci::AddressType::all(), [&](auto type) {
         auto &column = db.getOutputColumn(type);
         auto it = db.getOutputIterator(type);
         rocksdb::WriteBatch batch;

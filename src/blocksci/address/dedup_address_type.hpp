@@ -22,11 +22,12 @@ namespace blocksci {
             DEDUP_ADDRESS_TYPE_LIST
 #undef VAL
         };
-#define VAL(x) Enum::x
-        static constexpr std::array<Enum, 5> all = {{DEDUP_ADDRESS_TYPE_LIST}};
-#undef VAL
+        static constexpr size_t size = 5;
         
-        static constexpr size_t size = all.size();
+        #define VAL(x) std::integral_constant<Enum, x>
+        using all = std::tuple<DEDUP_ADDRESS_TYPE_LIST>;
+        #undef VAL
+        static constexpr Enum example = PUBKEY;
     };
 }
 

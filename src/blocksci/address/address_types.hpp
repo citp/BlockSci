@@ -26,11 +26,12 @@ namespace blocksci {
             ADDRESS_TYPE_LIST
             #undef VAL
         };
-        #define VAL(x) Enum::x
-        static constexpr std::array<Enum, 9> all = {{ADDRESS_TYPE_LIST}};
+        static constexpr size_t size = 9;
+        #define VAL(x) std::integral_constant<Enum, x>
+        using all = std::tuple<ADDRESS_TYPE_LIST>;
         #undef VAL
         
-        static constexpr size_t size = all.size();
+        static constexpr Enum example = PUBKEY;
     };
     
     struct EquivAddressType {
@@ -40,11 +41,12 @@ namespace blocksci {
             EQUIV_ADDRESS_TYPE_LIST
             #undef VAL
         };
-        #define VAL(x) Enum::x
-        static constexpr std::array<Enum, 5> all = {{EQUIV_ADDRESS_TYPE_LIST}};
-        #undef VAL
         
-        static constexpr size_t size = all.size();
+        static constexpr size_t size = 5;
+        #define VAL(x) std::integral_constant<Enum, x>
+        using all = std::tuple<EQUIV_ADDRESS_TYPE_LIST>;
+        #undef VAL
+        static constexpr Enum example = PUBKEY;
     };
 }
 

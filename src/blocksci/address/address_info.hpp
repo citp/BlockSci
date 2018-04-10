@@ -133,11 +133,8 @@ namespace blocksci {
         static constexpr DedupAddressType::Enum dedupType = DedupAddressType::NULL_DATA;
     };
     
-    
-    using AddressInfoList = array_to_tuple_t<AddressType::Enum, AddressType::size, AddressType::all>;
-    
     template <template<AddressType::Enum> class K>
-    using to_address_tuple_t = apply_template_t<AddressType::Enum, K, AddressInfoList>;
+    using to_address_tuple_t = apply_template_t<AddressType::Enum, K, AddressType::all>;
     
     template<AddressType::Enum type>
     struct DedupAddressTypeFunctor {

@@ -40,8 +40,8 @@ namespace blocksci {
         template <typename EnumStruct>
         struct MakeDynamicTableImpl {
             template<template<typename EnumStruct::Enum> class Functor, std::size_t... Is>
-            constexpr auto makeTable(std::index_sequence<Is...>) -> std::array<decltype(&Functor<EnumStruct::all[0]>::f), sizeof...(Is)> {
-                return {{Functor<EnumStruct::all[Is]>::f...}};
+            constexpr auto makeTable(std::index_sequence<Is...>) -> std::array<decltype(&Functor<EnumStruct::example>::f), sizeof...(Is)> {
+                return {{Functor<std::tuple_element_t<Is, typename EnumStruct::all>::value>::f...}};
             }
         };
         
@@ -49,8 +49,8 @@ namespace blocksci {
         template <typename EnumStruct, class ...Args>
         struct MakeStaticTableImpl {
             template<template<typename EnumStruct::Enum> class Functor, std::size_t... Is>
-            constexpr auto makeTable(std::index_sequence<Is...>, Args&&... args) -> std::array<decltype(Functor<EnumStruct::all[0]>::f(std::forward<Args>(args)...)), sizeof...(Is)> {
-                return {{Functor<EnumStruct::all[Is]>::f(std::forward<Args>(args)...)...}};
+            constexpr auto makeTable(std::index_sequence<Is...>, Args&&... args) -> std::array<decltype(Functor< EnumStruct::example>::f(std::forward<Args>(args)...)), sizeof...(Is)> {
+                return {{Functor<std::tuple_element_t<Is, typename EnumStruct::all>::value>::f(std::forward<Args>(args)...)...}};
             }
         };
         
@@ -101,13 +101,13 @@ namespace blocksci {
     template <typename EnumStruct, template<typename EnumStruct::Enum> class Functor, class ...Args>
     constexpr auto make_static_table(Args&&... args) noexcept {
         internal::MakeStaticTableImpl<EnumStruct, Args...> tableMaker{};
-        return tableMaker.template makeTable<Functor>(std::make_index_sequence<EnumStruct::all.size()>{}, std::forward<Args>(args)...);
+        return tableMaker.template makeTable<Functor>(std::make_index_sequence<EnumStruct::size>{}, std::forward<Args>(args)...);
     }
     
     template <typename EnumStruct, template<typename EnumStruct::Enum> class Functor>
     constexpr auto make_dynamic_table() noexcept {
         internal::MakeDynamicTableImpl<EnumStruct> tableMaker{};
-        return tableMaker.template makeTable<Functor>(std::make_index_sequence<EnumStruct::all.size()>{});
+        return tableMaker.template makeTable<Functor>(std::make_index_sequence<EnumStruct::size>{});
     }
     
     template<class Tuple, typename F>
