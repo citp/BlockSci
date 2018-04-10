@@ -23,9 +23,15 @@
 
 HashIndexCreator::HashIndexCreator(const ParserConfigurationBase &config_, const std::string &path) : ParserIndex(config_, "hashIndex"), db(path, false) {}
 
+HashIndexCreator::~HashIndexCreator() {
+    clearTxCache();
+    for_each(blocksci::AddressInfoList{}, [&](auto tag) {
+        clearAddressCache<tag>();
+    });
+}
+
 void HashIndexCreator::processTx(const blocksci::RawTransaction *tx, uint32_t txNum, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts) {
-    db.addTx(*chain.getTxHash(txNum), txNum);
-    
+    addTx(*chain.getTxHash(txNum), txNum);
     bool insideP2SH;
     std::function<bool(const blocksci::RawAddress &)> inputVisitFunc = [&](const blocksci::RawAddress &a) {
         if (a.type == blocksci::AddressType::SCRIPTHASH) {
@@ -33,7 +39,7 @@ void HashIndexCreator::processTx(const blocksci::RawTransaction *tx, uint32_t tx
             return true;
         } else if (a.type == blocksci::AddressType::WITNESS_SCRIPTHASH && insideP2SH) {
             auto script = scripts.getScriptData<blocksci::AddressType::WITNESS_SCRIPTHASH>(a.scriptNum);
-            db.addAddress<blocksci::AddressType::WITNESS_SCRIPTHASH>(script->hash256, a.scriptNum);
+            addAddress<blocksci::AddressType::WITNESS_SCRIPTHASH>(script->hash256, a.scriptNum);
             return false;
         } else {
             return false;
@@ -47,9 +53,36 @@ void HashIndexCreator::processTx(const blocksci::RawTransaction *tx, uint32_t tx
     for (auto &txout : tx->outputs()) {
         if (txout.getType() == blocksci::AddressType::WITNESS_SCRIPTHASH) {
             auto script = scripts.getScriptData<blocksci::AddressType::WITNESS_SCRIPTHASH>(txout.toAddressNum);
-            db.addAddress<blocksci::AddressType::WITNESS_SCRIPTHASH>(script->hash256, txout.toAddressNum);
+            addAddress<blocksci::AddressType::WITNESS_SCRIPTHASH>(script->hash256, txout.toAddressNum);
         }
     }
+}
+
+void HashIndexCreator::addTx(const blocksci::uint256 &hash, uint32_t txNum) {
+    txCache.insert(hash, txNum);
+    if (txCache.isFull()) {
+        clearTxCache();
+    }
+}
+
+uint32_t HashIndexCreator::getTxIndex(const blocksci::uint256 &txHash) {
+    auto it = txCache.find(txHash);
+    if (it != txCache.end()) {
+        return it->second;
+    } else {
+        return db.getTxIndex(txHash);
+    }
+}
+
+void HashIndexCreator::clearTxCache() {
+    rocksdb::WriteBatch batch;
+    for (const auto &pair : txCache) {
+        rocksdb::Slice keySlice(reinterpret_cast<const char *>(&pair.first), sizeof(pair.first));
+        rocksdb::Slice valueSlice(reinterpret_cast<const char *>(&pair.second), sizeof(pair.second));
+        batch.Put(db.getTxColumn().get(), keySlice, valueSlice);
+    }
+    db.writeBatch(batch);
+    txCache.clear();
 }
 
 void HashIndexCreator::rollback(const blocksci::State &state) {
@@ -71,13 +104,15 @@ void HashIndexCreator::rollback(const blocksci::State &state) {
     
     {
         auto it = db.getTxIterator();
+        rocksdb::WriteBatch batch;
         for (it->SeekToFirst(); it->Valid(); it->Next()) {
             uint32_t value;
             memcpy(&value, it->value().data(), sizeof(value));
             if (value >= state.txCount) {
-                db.deleteTx(it->key());
+                batch.Delete(db.getTxColumn().get(), it->key());
             }
         }
+        db.writeBatch(batch);
         assert(it->status().ok()); // Check for any errors found during the scan
     }
 }

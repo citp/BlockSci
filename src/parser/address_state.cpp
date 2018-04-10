@@ -24,7 +24,7 @@ namespace {
     static constexpr auto scriptCountsFileName = "scriptCounts.txt";
 }
 
-AddressState::AddressState(boost::filesystem::path path_, const boost::filesystem::path &hashIndexPath) : path(std::move(path_)), db(hashIndexPath.native(), false), addressBloomFilters(blocksci::apply(blocksci::DedupAddressInfoList(), [&] (auto tag) {
+AddressState::AddressState(boost::filesystem::path path_, HashIndexCreator &hashDb) : path(std::move(path_)), db(hashDb), addressBloomFilters(blocksci::apply(blocksci::DedupAddressInfoList(), [&] (auto tag) {
     return AddressBloomFilter<tag>{path/std::string(bloomFileName)};
 }))  {
     blocksci::for_each(multiAddressMaps, [&](auto &multiAddressMap) {

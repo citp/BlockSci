@@ -31,14 +31,25 @@ struct ParserIndexScriptInfo<AddressDB, blocksci::DedupAddressType::MULTISIG> : 
 class AddressDB : public ParserIndex<AddressDB> {
     blocksci::AddressIndex db;
     
+    static constexpr int cacheSize = 1000;
+    
+    std::vector<std::pair<blocksci::RawAddress, blocksci::OutputPointer>> outputCache;
+    std::vector<std::pair<blocksci::RawAddress, blocksci::DedupAddress>> nestedCache;
+    
+    void clearNestedCache();
+    void clearOutputCache();
 public:
     
     AddressDB(const ParserConfigurationBase &config, const std::string &path);
+    ~AddressDB();
     
     void processTx(const blocksci::RawTransaction *tx, uint32_t txNum, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts);
     
     template<blocksci::DedupAddressType::Enum type>
     void processScript(uint32_t, const blocksci::ScriptAccess &);
+    
+    void addAddressNested(const blocksci::RawAddress &childAddress, const blocksci::DedupAddress &parentAddress);
+    void addAddressOutput(const blocksci::RawAddress &address, const blocksci::OutputPointer &pointer);
     
     void rollback(const blocksci::State &state);
     void tearDown() override;
@@ -52,7 +63,7 @@ template<>
 inline void AddressDB::processScript<blocksci::DedupAddressType::MULTISIG>(uint32_t equivNum, const blocksci::ScriptAccess &scripts) {
     auto multisig = scripts.getScriptData<blocksci::DedupAddressType::MULTISIG>(equivNum);
     for (const auto &addressNum : multisig->addresses) {
-        db.addAddressNested(blocksci::RawAddress{addressNum, blocksci::AddressType::MULTISIG_PUBKEY}, blocksci::DedupAddress{equivNum, blocksci::DedupAddressType::MULTISIG});
+        addAddressNested(blocksci::RawAddress{addressNum, blocksci::AddressType::MULTISIG_PUBKEY}, blocksci::DedupAddress{equivNum, blocksci::DedupAddressType::MULTISIG});
     }
 }
 

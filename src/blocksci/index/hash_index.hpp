@@ -34,13 +34,6 @@ namespace blocksci {
             return getMatch(getColumn(type).get(), hash);
         }
         
-        template<AddressType::Enum type>
-        void addAddress(const typename AddressInfo<type>::IDType &hash, uint32_t scriptNum) {
-            rocksdb::Slice key(reinterpret_cast<const char *>(&hash), sizeof(hash));
-            rocksdb::Slice value(reinterpret_cast<const char *>(&scriptNum), sizeof(scriptNum));
-            db->Put(rocksdb::WriteOptions{}, getColumn(type).get(), key, value);
-        }
-        
         uint32_t countColumn(AddressType::Enum type) {
             uint32_t keyCount = 0;
             auto it = getIterator(type);
@@ -49,8 +42,6 @@ namespace blocksci {
             }
             return keyCount;
         }
-        
-        void addTx(const uint256 &hash, uint32_t txID);
         
         std::unique_ptr<rocksdb::Iterator> getIterator(AddressType::Enum type) {
             return std::unique_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), getColumn(type).get())};
@@ -71,11 +62,9 @@ namespace blocksci {
         }
         
         void writeBatch(rocksdb::WriteBatch &batch) {
-            db->Write(rocksdb::WriteOptions(), &batch);
-        }
-        
-        void deleteTx(const rocksdb::Slice &slice) {
-            db->Delete(rocksdb::WriteOptions(), getTxColumn().get(), slice);
+            rocksdb::WriteOptions options;
+            options.disableWAL = true;
+            db->Write(options, &batch);
         }
         
         void compactDB() {
@@ -90,7 +79,7 @@ namespace blocksci {
         
         template <typename T>
         uint32_t getMatch(rocksdb::ColumnFamilyHandle *handle, const T &t) {
-            std::string val;
+            rocksdb::PinnableSlice val;
             rocksdb::Slice key{reinterpret_cast<const char *>(&t), sizeof(t)};
             auto getStatus = db->Get(rocksdb::ReadOptions{}, handle, key, &val);
             if (getStatus.ok()) {

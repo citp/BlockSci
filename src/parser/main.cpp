@@ -143,10 +143,14 @@ void rollbackTransactions(blocksci::BlockHeight blockKeepCount, const ParserConf
         SimpleFileMapper<readwrite>(config.dataConfig.blockCoinbaseFilePath()).truncate(firstDeletedBlock->coinbaseOffset);
         blockFile.truncate(blockKeepSize);
         
-        AddressState{config.addressPath(), config.dataConfig.hashIndexFilePath()}.rollback(blocksciState);
+        {
+            HashIndexCreator hashDb(config, config.dataConfig.hashIndexFilePath().native());
+            AddressState{config.addressPath(), hashDb}.rollback(blocksciState);
+            hashDb.rollback(blocksciState);
+        }
         AddressWriter(config).rollback(blocksciState);
         AddressDB(config, config.dataConfig.addressDBFilePath().native()).rollback(blocksciState);
-        HashIndexCreator(config, config.dataConfig.hashIndexFilePath().native()).rollback(blocksciState);
+        
     }
 }
 
@@ -167,7 +171,7 @@ uint32_t getStartingTxCount(const blocksci::DataConfiguration &config) {
 }
 
 template <typename ParserTag>
-void updateChain(const ParserConfiguration<ParserTag> &config, blocksci::BlockHeight maxBlockNum) {
+void updateChain(const ParserConfiguration<ParserTag> &config, blocksci::BlockHeight maxBlockNum, HashIndexCreator &hashDb) {
     using namespace std::chrono_literals;
     
     auto chainBlocks = [&]() {
@@ -231,7 +235,7 @@ void updateChain(const ParserConfiguration<ParserTag> &config, blocksci::BlockHe
         BlockProcessor processor{startingTxCount, totalTxCount, maxBlockHeight};
         UTXOState utxoState;
         UTXOAddressState utxoAddressState;
-        AddressState addressState{config.addressPath(), config.dataConfig.hashIndexFilePath()};
+        AddressState addressState{config.addressPath(), hashDb};
         UTXOScriptState utxoScriptState;
         
         utxoAddressState.unserialize(config.utxoAddressStatePath());
@@ -261,13 +265,11 @@ void updateChain(const ParserConfiguration<ParserTag> &config, blocksci::BlockHe
     }
 }
 
-void updateHashDB(const ParserConfigurationBase &config) {
+void updateHashDB(const ParserConfigurationBase &config, HashIndexCreator &db) {
     blocksci::ChainAccess chain{config.dataConfig};
     blocksci::ScriptAccess scripts{config.dataConfig};
     
     blocksci::State updateState{chain, scripts};
-    HashIndexCreator db(config, config.dataConfig.hashIndexFilePath().native());
-    
     std::cout << "Updating hash index\n";
     
     db.prepareUpdate();
@@ -369,27 +371,27 @@ int main(int argc, char * argv[]) {
     switch (selected) {
         case mode::update:
         case mode::updateCore: {
+            ParserConfigurationBase config{dataDirectory};
+            HashIndexCreator hashDb(config, config.dataConfig.hashIndexFilePath().native());
             switch (selectedUpdateMode) {
                 case updateMode::disk: {
                     boost::filesystem::path bitcoinDirectory = {bitcoinDirectoryString};
                     bitcoinDirectory = boost::filesystem::absolute(bitcoinDirectory);
                     ParserConfiguration<FileTag> config{bitcoinDirectory, dataDirectory};
-                    updateChain(config, blocksci::BlockHeight{maxBlockNum});
+                    updateChain(config, blocksci::BlockHeight{maxBlockNum}, hashDb);
                     break;
                 }
 
                 case updateMode::rpc: {
                     ParserConfiguration<RPCTag> config(username, password, address, port, dataDirectory);
-                    updateChain(config, blocksci::BlockHeight{maxBlockNum});
-                    
+                    updateChain(config, blocksci::BlockHeight{maxBlockNum}, hashDb);
                     break;
                 }
             }
             updateConfig(dataDirectory);
             
             if (selected == mode::update) {
-                ParserConfigurationBase config{dataDirectory};
-                updateHashDB(config);
+                updateHashDB(config, hashDb);
                 updateAddressDB(config);
             }
             
@@ -399,13 +401,17 @@ int main(int argc, char * argv[]) {
         case mode::updateIndexes: {
             ParserConfigurationBase config{dataDirectory};
             updateAddressDB(config);
-            updateHashDB(config);
+            {
+                HashIndexCreator db(config, config.dataConfig.hashIndexFilePath().native());
+                updateHashDB(config, db);
+            }
             break;
         }
 
         case mode::updateHashIndex: {
             ParserConfigurationBase config{dataDirectory};
-            updateHashDB(config);
+            HashIndexCreator db(config, config.dataConfig.hashIndexFilePath().native());
+            updateHashDB(config, db);
             break;
         }
 

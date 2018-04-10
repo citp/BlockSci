@@ -12,6 +12,7 @@
 #include "bloom_filter.hpp"
 #include "parser_fwd.hpp"
 #include "serializable_map.hpp"
+#include "hash_index_creator.hpp"
 
 #include <blocksci/index/hash_index.hpp>
 #include <blocksci/util/state.hpp>
@@ -71,7 +72,7 @@ class AddressState {
     
     boost::filesystem::path path;
     
-    blocksci::HashIndex db;
+    HashIndexCreator &db;
     
     using AddressMapTuple = blocksci::to_dedup_address_tuple_t<AddressMap>;
     using AddressBloomFilterTuple = blocksci::to_dedup_address_tuple_t<AddressBloomFilter>;
@@ -118,7 +119,7 @@ class AddressState {
     }
     
 public:
-    AddressState(boost::filesystem::path path, const boost::filesystem::path &hashIndexPath);
+    AddressState(boost::filesystem::path path, HashIndexCreator &hashDb);
     AddressState(const AddressState &) = delete;
     AddressState &operator=(const AddressState &) = delete;
     AddressState(AddressState &&) = delete;

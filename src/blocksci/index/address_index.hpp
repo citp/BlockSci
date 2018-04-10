@@ -12,6 +12,7 @@
 #include <blocksci/address/address_fwd.hpp>
 #include <blocksci/chain/chain_fwd.hpp>
 #include <blocksci/address/address_info.hpp>
+#include <blocksci/address/dedup_address.hpp>
 
 #include <rocksdb/db.h>
 
@@ -39,9 +40,6 @@ namespace blocksci {
         std::vector<Address> getPossibleNestedEquivalent(const Address &address) const;
         std::vector<Address> getIncludingMultisigs(const Address &searchAddress) const;
         
-        void addAddressNested(const blocksci::RawAddress &childAddress, const blocksci::DedupAddress &parentAddress);
-        void addAddressOutput(const blocksci::RawAddress &address, const blocksci::OutputPointer &pointer);
-        
         const std::unique_ptr<rocksdb::ColumnFamilyHandle> &getOutputColumn(AddressType::Enum type) const;
         const std::unique_ptr<rocksdb::ColumnFamilyHandle> &getNestedColumn(AddressType::Enum type) const;
         
@@ -54,7 +52,9 @@ namespace blocksci {
         }
         
         void writeBatch(rocksdb::WriteBatch &batch) {
-            db->Write(rocksdb::WriteOptions(), &batch);
+            rocksdb::WriteOptions options;
+            options.disableWAL = true;
+            db->Write(options, &batch);
         }
         
         void compactDB() {
