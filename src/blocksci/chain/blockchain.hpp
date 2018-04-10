@@ -92,7 +92,7 @@ namespace blocksci {
     uint32_t txCount(const Blockchain &chain);
     
     template <AddressType::Enum type>
-    using ScriptRange = ranges::any_view<ScriptAddress<type>>;
+    using ScriptRange = ranges::any_view<ScriptAddress<type>, ranges::category::random_access>;
     using ScriptRangeVariant = to_variadic_t<to_address_tuple_t<ScriptRange>, mpark::variant>;
     
     class Blockchain : public ranges::view_facade<Blockchain> {
