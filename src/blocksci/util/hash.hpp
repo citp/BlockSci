@@ -9,10 +9,16 @@
 #ifndef hash_hpp
 #define hash_hpp
 
-#include <blocksci/util/bitcoin_uint256.hpp>
+#include <cstdint>
+#include <functional>
+
+namespace blocksci {
+    class uint256;
+    class uint160;
+}
 
 template <class T>
-inline void hash_combine(std::size_t& seed, const T& v) {
+inline void hash_combine(std::size_t &seed, const T& v) {
     std::hash<T> hasher;
     seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
 }

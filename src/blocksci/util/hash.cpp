@@ -8,6 +8,8 @@
 
 #include "hash.hpp"
 
+#include <blocksci/util/bitcoin_uint256.hpp>
+
 #include <openssl/sha.h>
 #include <openssl/ripemd.h>
 
