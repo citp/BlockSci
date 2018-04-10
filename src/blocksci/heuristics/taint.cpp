@@ -19,8 +19,9 @@ namespace blocksci { namespace heuristics {
         std::vector<std::pair<Output, uint64_t>> taintedOutputs;
         auto processOutput = [&](const Output &spendingOut, uint64_t newTaintedValue) {
             if (newTaintedValue > 0) {
-                if (spendingOut.isSpent()) {
-                    auto &txData = taintedTxesToCheck[spendingOut.getSpendingTxIndex()];
+                auto index = spendingOut.getSpendingTxIndex();
+                if (index) {
+                    auto &txData = taintedTxesToCheck[*index];
                     auto newTaintedInput = Inout{spendingOut.pointer.txNum, RawAddress{spendingOut.getAddress()}, spendingOut.getValue()};
                     txData.emplace_back(newTaintedInput, newTaintedValue);
                 } else {

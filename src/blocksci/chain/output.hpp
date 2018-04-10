@@ -52,8 +52,8 @@ namespace blocksci {
             return *access;
         }
         
-        uint32_t getSpendingTxIndex() const {
-            return spendingTxIndex;
+        ranges::optional<uint32_t> getSpendingTxIndex() const {
+            return isSpent() ? ranges::optional<uint32_t>{spendingTxIndex} : ranges::nullopt;
         }
         
         uint32_t txIndex() const {
@@ -68,7 +68,7 @@ namespace blocksci {
         Block block() const;
         
         bool isSpent() const {
-            return getSpendingTxIndex() != 0;
+            return getSpendingTxIndex() != 0u;
         }
         
         bool operator==(const Output &other) const {

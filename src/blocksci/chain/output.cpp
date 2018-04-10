@@ -40,7 +40,12 @@ namespace blocksci {
     }
     
     ranges::optional<Transaction> Output::getSpendingTx() const {
-        return isSpent() ? ranges::optional<Transaction>{Transaction(getSpendingTxIndex(), *access)} : ranges::nullopt;
+        auto index = getSpendingTxIndex();
+        if (index) {
+            return ranges::optional<Transaction>{Transaction(*index, *access)};
+        } else {
+            return ranges::nullopt;
+        }
     }
 } // namespace blocksci
 
