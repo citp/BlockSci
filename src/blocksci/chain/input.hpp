@@ -11,12 +11,10 @@
 
 #include "inout.hpp"
 #include "inout_pointer.hpp"
-#include "chain_access.hpp"
 
+#include <blocksci/address/address.hpp>
 #include <blocksci/util/data_access.hpp>
 
-#include <cstdint>
-#include <string>
 
 namespace std {
     template<> struct hash<blocksci::Input> {
@@ -85,7 +83,9 @@ namespace blocksci {
             return inout->getValue();
         }
         
-        Address getAddress() const;
+        Address getAddress() const {
+            return {inout->getAddressNum(), inout->getType(), *access};
+        }
         
         uint32_t spentTxIndex() const {
             return inout->getLinkedTxNum();

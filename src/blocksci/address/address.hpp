@@ -25,15 +25,6 @@ namespace blocksci {
     struct DataConfiguration;
     class EquivAddress;
     
-    struct RawAddress {
-        uint32_t scriptNum;
-        AddressType::Enum type;
-        
-        RawAddress() {}
-        RawAddress(uint32_t addressNum_, AddressType::Enum type_) : scriptNum(addressNum_), type(type_) {}
-        explicit RawAddress(const Address &address);
-    };
-    
     class Address {
         DataAccess *access;
         
@@ -43,7 +34,6 @@ namespace blocksci {
         
         Address() : access(nullptr), scriptNum(0), type(AddressType::Enum::NONSTANDARD) {}
         Address(uint32_t addressNum_, AddressType::Enum type_, DataAccess &access_) : access(&access_), scriptNum(addressNum_), type(type_) {}
-        Address(const RawAddress &raw, DataAccess &access_) : access(&access_), scriptNum(raw.scriptNum), type(raw.type) {}
         
         DataAccess &getAccess() const {
             return *access;
@@ -79,13 +69,10 @@ namespace blocksci {
     };
     
     void visit(const Address &address, const std::function<bool(const Address &)> &visitFunc);
-    void visit(const RawAddress &address, const std::function<bool(const RawAddress &)> &visitFunc, const ScriptAccess &scripts);
     
     ranges::optional<Address> getAddressFromString(const std::string &addressString, DataAccess &access);
     
     std::vector<Address> getAddressesWithPrefix(const std::string &prefix, DataAccess &access);
-
-    inline RawAddress::RawAddress(const Address &address) : scriptNum(address.scriptNum), type(address.type) {}
 }
 
 namespace std {

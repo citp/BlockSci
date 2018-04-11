@@ -11,6 +11,12 @@
 
 #include <blocksci/address/dedup_address_type.hpp>
 #include <blocksci/address/address_types.hpp>
+#include <blocksci/util/util.hpp>
+
+namespace mpark {
+    template <typename... Types>
+    class variant;
+} // namespace mpark
 
 namespace blocksci {
     class CBitcoinAddress;
@@ -32,7 +38,13 @@ namespace blocksci {
     template <AddressType::Enum addressType>
     using ScriptDataPointer = const typename ScriptData<addressType>::type*;
     
-    template<typename T>
+    namespace internal {
+        template <AddressType::Enum type>
+        struct ScriptWrapper {
+            ScriptDataPointer<type> data;
+        };
+    }
+    
     class ScriptBase;
     
     class AnyScript;
@@ -43,6 +55,9 @@ namespace blocksci {
     
     template <DedupAddressType::Enum>
     struct ScriptInfo;
+    
+    using ScriptVariant = to_variadic_t<to_address_tuple_t<ScriptAddress>, mpark::variant>;
+    using ScriptDataVariant = to_variadic_t<to_address_tuple_t<internal::ScriptWrapper>, mpark::variant>;
     
     namespace script {
         using Pubkey = ScriptAddress<AddressType::PUBKEY>;

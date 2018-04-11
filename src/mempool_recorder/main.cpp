@@ -85,7 +85,7 @@ public:
     
     void recordMempool() {
         blocksci::DataAccess access(config);
-        auto blockCount = access.chain->blockCount();
+        auto blockCount = access.chain.blockCount();
         for (blocksci::BlockHeight i = lastHeight; i < blockCount; i++) {
             auto block = Block(i, access);
             RANGES_FOR(auto tx, block) {

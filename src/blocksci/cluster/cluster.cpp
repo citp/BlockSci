@@ -12,6 +12,7 @@
 #include <blocksci/address/dedup_address.hpp>
 #include <blocksci/address/equiv_address.hpp>
 #include <blocksci/chain/inout_pointer.hpp>
+#include <blocksci/chain/transaction.hpp>
 #include <blocksci/index/address_index.hpp>
 
 namespace blocksci {

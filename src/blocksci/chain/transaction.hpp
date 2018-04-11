@@ -14,17 +14,8 @@
 #include "output.hpp"
 #include "input.hpp"
 
-#include <blocksci/address/address_fwd.hpp>
-#include <blocksci/address/address_info.hpp>
-#include <blocksci/index/hash_index.hpp>
-#include <blocksci/scripts/scripts_fwd.hpp>
-#include <blocksci/util/data_access.hpp>
-
-#include <range/v3/utility/optional.hpp>
 #include <range/v3/view/iota.hpp>
 #include <range/v3/view/zip_with.hpp>
-
-#include <vector>
 
 namespace blocksci {
     class uint256;

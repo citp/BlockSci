@@ -14,7 +14,7 @@ using blocksci::AddressType;
 using blocksci::DedupAddressType;
 
 AddressWriter::AddressWriter(const ParserConfigurationBase &config) :
-scriptFiles(blocksci::apply(blocksci::DedupAddressInfoList(), [&] (auto tag) {
+scriptFiles(blocksci::apply(blocksci::DedupAddressType::all(), [&] (auto tag) {
     return ScriptFile<tag>(config.dataConfig.scriptsDirectory()/ std::string{dedupAddressName(tag)});
 })) {
 }
@@ -76,7 +76,7 @@ void AddressWriter::serializeImp(const ScriptInput<AddressType::NONSTANDARD> &in
 }
 
 void AddressWriter::rollback(const blocksci::State &state) {
-    blocksci::for_each(blocksci::DedupAddressInfoList(), [&](auto tag) {
+    blocksci::for_each(blocksci::DedupAddressType::all(), [&](auto tag) {
         auto &file = std::get<ScriptFile<tag()>>(scriptFiles);
         file.truncate(state.scriptCounts[static_cast<size_t>(tag)]);
     });

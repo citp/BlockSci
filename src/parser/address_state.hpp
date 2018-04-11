@@ -104,7 +104,7 @@ class AddressState {
     
     // Duplicated to prevent triggering gcc
     void reloadBloomFilters() {
-        blocksci::for_each(blocksci::DedupAddressInfoList(), [&](auto tag) {
+        blocksci::for_each(blocksci::DedupAddressType::all(), [&](auto tag) {
             auto &addressBloomFilter = std::get<AddressBloomFilter<tag>>(addressBloomFilters);
             addressBloomFilter.reset(addressBloomFilter.getMaxItems(), addressBloomFilter.getFPRate());
             auto it = db.getIterator(tag);

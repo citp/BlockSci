@@ -25,7 +25,7 @@ void addOutputMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     using namespace blocksci;
     
     cl
-    .def_property_readonly("address", func([](const Output &output) -> AnyScript::ScriptVariant {
+    .def_property_readonly("address", func([](const Output &output) -> ScriptVariant {
         return output.getAddress().getScript().wrapped;
     }), func2("This address linked to this output"))
     .def_property_readonly("value", func([](const Output &output) -> int64_t {

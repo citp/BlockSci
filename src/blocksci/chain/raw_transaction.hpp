@@ -11,8 +11,6 @@
 #include "chain_fwd.hpp"
 #include "inout.hpp"
 
-#include <blocksci/util/util.hpp>
-
 #include <range/v3/iterator_range.hpp>
 
 namespace blocksci {

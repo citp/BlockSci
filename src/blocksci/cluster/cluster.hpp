@@ -13,8 +13,7 @@
 
 #include <blocksci/address/address.hpp>
 
-#include <cstdio>
-#include <cstdint>
+#include <string>
 #include <unordered_map>
 #include <vector>
 

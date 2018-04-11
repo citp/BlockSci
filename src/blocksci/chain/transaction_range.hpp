@@ -8,13 +8,7 @@
 #ifndef transaction_range_hpp
 #define transaction_range_hpp
 
-#include "chain_fwd.hpp"
 #include "transaction.hpp"
-#include "chain_access.hpp"
-
-#include <blocksci/util/data_access.hpp>
-
-#include <range/v3/view_facade.hpp>
 
 namespace blocksci {
     class TransactionRange : public ranges::view_facade<TransactionRange> {

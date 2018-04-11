@@ -9,14 +9,14 @@
 #ifndef script_data_hpp
 #define script_data_hpp
 
-#include "scripts_fwd.hpp"
 #include "bitcoin_pubkey.hpp"
 
-#include <blocksci/address/address.hpp>
-#include <blocksci/blocksci_fwd.hpp>
+#include <blocksci/address/raw_address.hpp>
 #include <blocksci/util/bitcoin_uint256.hpp>
 #include <blocksci/util/hash.hpp>
-#include <blocksci/util/util.hpp>
+#include <blocksci/util/in_place_array.hpp>
+
+#include <range/v3/utility/optional.hpp>
 
 #include <limits>
 
@@ -29,6 +29,22 @@ namespace blocksci {
         explicit ScriptDataBase(uint32_t txNum) : txFirstSeen(txNum), txFirstSpent(std::numeric_limits<uint32_t>::max()) {}
         
         void visitPointers(const std::function<void(const RawAddress &)> &) const {}
+        
+        uint32_t getFirstTxIndex() const {
+            return txFirstSeen;
+        }
+        
+        ranges::optional<uint32_t> getTxRevealedIndex() const {
+            if (txFirstSpent != std::numeric_limits<uint32_t>::max()) {
+                return txFirstSpent;
+            } else {
+                return ranges::nullopt;
+            }
+        }
+        
+        bool hasBeenSpent() const {
+            return getTxRevealedIndex().has_value();
+        }
     };
     
     struct PubkeyData : public ScriptDataBase {
@@ -50,9 +66,9 @@ namespace blocksci {
         RawAddress wrappedAddress;
         bool isSegwit;
         
-        ScriptHashData(uint32_t txNum, uint160 hash160_, Address wrappedAddress_) : ScriptDataBase(txNum), hash160(hash160_), wrappedAddress(wrappedAddress_), isSegwit(false) {}
+        ScriptHashData(uint32_t txNum, uint160 hash160_, const RawAddress &wrappedAddress_) : ScriptDataBase(txNum), hash160(hash160_), wrappedAddress(wrappedAddress_), isSegwit(false) {}
         
-        ScriptHashData(uint32_t txNum, uint256 hash256_, Address wrappedAddress_) : ScriptDataBase(txNum), hash256(hash256_), wrappedAddress(wrappedAddress_), isSegwit(true) {}
+        ScriptHashData(uint32_t txNum, uint256 hash256_, const RawAddress &wrappedAddress_) : ScriptDataBase(txNum), hash256(hash256_), wrappedAddress(wrappedAddress_), isSegwit(true) {}
         
         size_t size() {
             return sizeof(ScriptHashData);

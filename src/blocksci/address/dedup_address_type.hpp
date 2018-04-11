@@ -8,7 +8,7 @@
 #ifndef dedup_address_type_hpp
 #define dedup_address_type_hpp
 
-#include <array>
+#include <blocksci/util/apply_template.hpp>
 
 #define DEDUP_ADDRESS_TYPE_LIST VAL(NONSTANDARD), VAL(PUBKEY), VAL(SCRIPTHASH), VAL(MULTISIG), VAL(NULL_DATA)
 #define DEDUP_ADDRESS_TYPE_SET VAL(NONSTANDARD) VAL(PUBKEY) VAL(SCRIPTHASH) VAL(MULTISIG) VAL(NULL_DATA)
@@ -29,6 +29,9 @@ namespace blocksci {
         #undef VAL
         static constexpr Enum example = PUBKEY;
     };
+    
+    template <template<DedupAddressType::Enum> class K>
+    using to_dedup_address_tuple_t = apply_template_t<DedupAddressType::Enum, K, DedupAddressType::all>;
 }
 
 namespace std {

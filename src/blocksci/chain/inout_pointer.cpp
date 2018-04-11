@@ -8,9 +8,6 @@
 
 #include "inout_pointer.hpp"
 
-#include "chain_access.hpp"
-#include "input.hpp"
-#include "output.hpp"
 #include "transaction.hpp"
 #include "algorithms.hpp"
 
@@ -19,7 +16,6 @@
 #include <range/v3/view/filter.hpp>
 #include <range/v3/view/transform.hpp>
 
-#include <sstream>
 #include <unordered_set>
 
 namespace blocksci {

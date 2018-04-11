@@ -15,6 +15,7 @@
 #include <blocksci/scripts/script_info.hpp>
 #include <blocksci/scripts/bitcoin_pubkey.hpp>
 #include <blocksci/scripts/scripts_fwd.hpp>
+#include <blocksci/util/util.hpp>
 
 #include <mpark/variant.hpp>
 

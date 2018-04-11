@@ -9,28 +9,28 @@
 #define pubkey_base_script_h
 
 #include "script.hpp"
-#include "script_access.hpp"
+#include "script_data.hpp"
 
-#include <blocksci/index/address_index.hpp>
-
-#include <range/v3/utility/optional.hpp>
+#include <blocksci/util/bitcoin_uint256.hpp>
+#include <blocksci/util/data_access.hpp>
 
 namespace blocksci {
-    class PubkeyAddressBase : public ScriptBase<PubkeyAddressBase> {
-        friend class ScriptBase<PubkeyAddressBase>;
-        const PubkeyData *rawData;
-        
+    class PubkeyAddressBase : public ScriptBase {
     protected:
-        PubkeyAddressBase(uint32_t scriptNum_, AddressType::Enum type_, const PubkeyData *rawData_, DataAccess &access_) : ScriptBase(scriptNum_, type_, access_), rawData(rawData_) {}
+        PubkeyAddressBase(uint32_t scriptNum_, AddressType::Enum type_, const PubkeyData *rawData_, DataAccess &access_) : ScriptBase(scriptNum_, type_, access_, rawData_) {}
+        
+        const PubkeyData *getData() const {
+            return reinterpret_cast<const PubkeyData *>(ScriptBase::getData());
+        }
         
     public:
         uint160 getPubkeyHash() const {
-            return rawData->address;
+            return getData()->address;
         }
         
         ranges::optional<CPubKey> getPubkey() const {
-            if (rawData->pubkey.IsValid()) {
-                return rawData->pubkey;
+            if (getData()->pubkey.IsValid()) {
+                return getData()->pubkey;
             } else {
                 return ranges::nullopt;
             }

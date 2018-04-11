@@ -9,14 +9,11 @@
 #ifndef output_hpp
 #define output_hpp
 
-#include "chain_access.hpp"
 #include "inout.hpp"
 #include "inout_pointer.hpp"
 
-#include <blocksci/address/address_fwd.hpp>
+#include <blocksci/address/address.hpp>
 #include <blocksci/util/data_access.hpp>
-
-#include <range/v3/utility/optional.hpp>
 
 namespace std {
     template<> struct hash<blocksci::Output> {
@@ -86,7 +83,9 @@ namespace blocksci {
             return inout->getType();
         }
         
-        Address getAddress() const;
+        Address getAddress() const {
+            return {inout->getAddressNum(), inout->getType(), *access};
+        }
         
         uint64_t getValue() const {
             return inout->getValue();

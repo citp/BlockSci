@@ -10,19 +10,20 @@
 #define nulldata_script_hpp
 
 #include "script.hpp"
-#include "script_access.hpp"
 
 #include <string>
 
 namespace blocksci {
     template <>
-    class ScriptAddress<AddressType::NULL_DATA> : public ScriptBase<ScriptAddress<AddressType::NULL_DATA>> {
-        friend class ScriptBase<ScriptAddress<AddressType::NULL_DATA>>;
-        const RawData *rawData;
+    class ScriptAddress<AddressType::NULL_DATA> : public ScriptBase {
+        
+        const RawData *getBackingData() const {
+            return reinterpret_cast<const RawData *>(ScriptBase::getData());
+        }
     public:
         constexpr static AddressType::Enum addressType = AddressType::NULL_DATA;
         
-        ScriptAddress(uint32_t addressNum_, DataAccess &access_) : ScriptBase(addressNum_, addressType, access_), rawData(access_.scripts.getScriptData<addressType>(addressNum_)) {}
+        ScriptAddress(uint32_t addressNum_, DataAccess &access_) : ScriptBase(addressNum_, addressType, access_, access_.scripts.getScriptData<dedupType(addressType)>(addressNum_)) {}
         
         std::string toString() const {
             std::stringstream ss;
@@ -37,7 +38,7 @@ namespace blocksci {
         }
         
         std::string getData() const {
-            return rawData->getData();
+            return getBackingData()->getData();
         }
     };
 } // namespace blocksci

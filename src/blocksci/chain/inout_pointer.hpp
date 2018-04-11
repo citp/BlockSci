@@ -13,10 +13,8 @@
 
 #include <blocksci/util/hash.hpp>
 
-#include <cstdint>
 #include <string>
 #include <sstream>
-#include <vector>
 
 namespace blocksci {
     class DataAccess;

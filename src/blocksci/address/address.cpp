@@ -9,20 +9,13 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "address.hpp"
-#include "dedup_address.hpp"
 #include "equiv_address.hpp"
 #include "address_info.hpp"
 
+#include <blocksci/chain/transaction.hpp>
 #include <blocksci/scripts/bitcoin_base58.hpp>
 #include <blocksci/scripts/bitcoin_segwit_addr.hpp>
-#include <blocksci/scripts/script_access.hpp>
-#include <blocksci/scripts/scripts_fwd.hpp>
 #include <blocksci/scripts/script_variant.hpp>
-#include <blocksci/chain/transaction.hpp>
-#include <blocksci/chain/output.hpp>
-#include <blocksci/chain/inout_pointer.hpp>
-#include <blocksci/index/address_index.hpp>
-#include <blocksci/index/hash_index.hpp>
 
 #include <unordered_set>
 #include <iostream>
@@ -55,19 +48,9 @@ namespace blocksci {
             script.visitPointers(nestedVisitor);
         }
     }
-    
-    void visit(const RawAddress &address, const std::function<bool(const RawAddress &)> &visitFunc, const ScriptAccess &scripts) {
-        if (visitFunc(address)) {
-            std::function<void(const RawAddress &)> nestedVisitor = [&](const RawAddress &nestedAddress) {
-                visit(nestedAddress, visitFunc, scripts);
-            };
-            AnyScriptData script{address, scripts};
-            script.visitPointers(nestedVisitor);
-        }
-    }
 
     AnyScript Address::getScript() const {
-        return AnyScript{*this, *access};
+        return AnyScript{*this};
     }
     
     ranges::optional<Address> getAddressFromString(const std::string &addressString, DataAccess &access) {

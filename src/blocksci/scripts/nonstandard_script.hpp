@@ -9,20 +9,22 @@
 #ifndef nonstandard_script_hpp
 #define nonstandard_script_hpp
 
-#include "script_view.hpp"
 #include "script.hpp"
-#include "script_access.hpp"
+#include "script_view.hpp"
 
+#include <blocksci/util/data_access.hpp>
 #include <range/v3/utility/optional.hpp>
 
 namespace blocksci {
     template <>
-    class ScriptAddress<AddressType::NONSTANDARD> : public ScriptBase<ScriptAddress<AddressType::NONSTANDARD>> {
-        friend class ScriptBase<ScriptAddress<AddressType::NONSTANDARD>>;
-        const NonstandardScriptData *rawData;
+    class ScriptAddress<AddressType::NONSTANDARD> : public ScriptBase {
         const NonstandardSpendScriptData *rawInputData;
         
-        ScriptAddress(uint32_t scriptNum_, std::tuple<const NonstandardScriptData *, const NonstandardSpendScriptData *> &&rawData_, DataAccess &access_) : ScriptBase(scriptNum_, addressType, access_), rawData(std::get<0>(rawData_)), rawInputData(std::get<1>(rawData_)) {}
+        ScriptAddress(uint32_t scriptNum_, std::tuple<const NonstandardScriptData *, const NonstandardSpendScriptData *> &&rawData_, DataAccess &access_) : ScriptBase(scriptNum_, addressType, access_, std::get<0>(rawData_)), rawInputData(std::get<1>(rawData_)) {}
+        
+        const NonstandardScriptData *getData() const {
+            return reinterpret_cast<const NonstandardScriptData *>(ScriptBase::getData());
+        }
         
         ranges::optional<CScriptView> getInputScript() const {
             if (rawInputData != nullptr) {
@@ -33,13 +35,13 @@ namespace blocksci {
         }
         
         CScriptView getOutputScript() const {
-            return {rawData->scriptData.begin(), rawData->scriptData.end()};
+            return {getData()->scriptData.begin(), getData()->scriptData.end()};
         }
         
     public:
         constexpr static AddressType::Enum addressType = AddressType::NONSTANDARD;
         
-        ScriptAddress(uint32_t addressNum_, DataAccess &access_) : ScriptAddress(addressNum_, access_.scripts.getScriptData<addressType>(addressNum_), access_) {}
+        ScriptAddress(uint32_t addressNum_, DataAccess &access_) : ScriptAddress(addressNum_, access_.scripts.getScriptData<dedupType(addressType)>(addressNum_), access_) {}
         
         std::string inputString() const {
             auto inputScript = getInputScript();

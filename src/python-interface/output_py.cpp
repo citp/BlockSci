@@ -10,10 +10,6 @@
 #include "ranges_py.hpp"
 #include "variant_py.hpp"
 
-#include <blocksci/index/address_index.hpp>
-#include <blocksci/index/hash_index.hpp>
-#include <blocksci/scripts/script_access.hpp>
-
 #include <pybind11/operators.h>
 
 namespace py = pybind11;

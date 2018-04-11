@@ -55,7 +55,7 @@ void init_cluster(pybind11::module &m) {
     s.def("total_without_self_churn", totalOutWithoutSelfChurn);
     
     py::class_<ClusterManager>(s, "ClusterManager", "Class managing the cluster dat")
-    .def(py::init([](std::string arg, const blocksci::Blockchain &chain) {
+    .def(py::init([](std::string arg, blocksci::Blockchain &chain) {
        return ClusterManager(arg, chain.getAccess());
     }))
     .def("cluster_with_address", [](const ClusterManager &cm, const Address &address) {

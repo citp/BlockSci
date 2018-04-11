@@ -76,7 +76,7 @@ namespace blocksci {
     ClusterManager::ClusterManager(const boost::filesystem::path &baseDirectory, blocksci::DataAccess &access_) :
     clusterOffsetFile(baseDirectory/"clusterOffsets"),
     clusterScriptsFile(baseDirectory/"clusterAddresses"),
-    scriptClusterIndexFiles(blocksci::apply(blocksci::DedupAddressInfoList(), [&] (auto tag) {
+    scriptClusterIndexFiles(blocksci::apply(blocksci::DedupAddressType::all(), [&] (auto tag) {
         std::stringstream ss;
         ss << blocksci::dedupAddressName(tag) << "_cluster_index";
         return baseDirectory/ss.str();

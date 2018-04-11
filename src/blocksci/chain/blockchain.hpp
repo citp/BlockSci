@@ -10,7 +10,6 @@
 #define blockchain_hpp
 
 #include "block.hpp"
-#include <blocksci/scripts/script_access.hpp>
 #include <blocksci/scripts/script_variant.hpp>
 #include <blocksci/util/data_access.hpp>
 
@@ -152,7 +151,6 @@ namespace blocksci {
         Blockchain() = default;
         explicit Blockchain(const DataConfiguration &config);
         explicit Blockchain(const std::string &dataDirectory);
-        ~Blockchain();
         
         DataAccess &getAccess() { return access; }
         

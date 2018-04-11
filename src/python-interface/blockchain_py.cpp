@@ -11,21 +11,11 @@
 #include "ranges_py.hpp"
 #include "block_py.hpp"
 
-#include <blocksci/chain/algorithms.hpp>
 #include <blocksci/chain/blockchain.hpp>
-#include <blocksci/chain/transaction.hpp>
-#include <blocksci/index/address_index.hpp>
-#include <blocksci/index/hash_index.hpp>
-#include <blocksci/scripts/script_variant.hpp>
-#include <blocksci/heuristics/blockchain_heuristics.hpp>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
-
-#include <range/v3/view/any_view.hpp>
-#include <range/v3/view/slice.hpp>
-#include <range/v3/view/stride.hpp>
 
 namespace py = pybind11;
 
@@ -64,10 +54,10 @@ void init_blockchain(py::module &m) {
          :param string index: The hash of the transation.
          :returns: Tx
          )docstring")
-    .def("address_from_index", [](DataAccess &access, uint32_t index, AddressType::Enum type) -> AnyScript::ScriptVariant {
+    .def("address_from_index", [](DataAccess &access, uint32_t index, AddressType::Enum type) -> ScriptVariant {
         return Address{index, type, access}.getScript().wrapped;
     }, "Construct an address object from an address num and type")
-    .def("address_from_string", [](DataAccess &access, const std::string &addressString) -> ranges::optional<AnyScript::ScriptVariant> {
+    .def("address_from_string", [](DataAccess &access, const std::string &addressString) -> ranges::optional<ScriptVariant> {
         auto address = getAddressFromString(addressString, access);
         if (address) {
             return address->getScript().wrapped;
@@ -92,16 +82,16 @@ void init_blockchain(py::module &m) {
     blockchainCl
     .def(py::init<std::string>())
     .def(py::init<DataConfiguration>())
-    .def_property_readonly("config", [](const Blockchain &chain) -> DataConfiguration { return chain.getAccess().config; }, "Returns the configuration settings for this blockchain")
+    .def_property_readonly("config", [](Blockchain &chain) -> DataConfiguration { return chain.getAccess().config; }, "Returns the configuration settings for this blockchain")
     .def("segment", segmentChain, "Divide the blockchain into the given number of chunks with roughly the same number of transactions in each")
     .def("segment_indexes", segmentChainIndexes, "Return a list of [start, end] block height pairs representing chunks with roughly the same number of transactions in each")
     .def("address_count", &Blockchain::addressCount, "Get an upper bound of the number of address of a given type (This reflects the number of type equivlant addresses of that type).")
     .def("address_type_txes", getTransactionIncludingOutput, "Returns a list of all transactions that include outputs of the given address type")
-    .def("addresses", [](const Blockchain &chain, AddressType::Enum type) {
+    .def("addresses", [](Blockchain &chain, AddressType::Enum type) {
         return chain.scripts(type);
     })
-    .def_property_readonly("outputs_unspent", [](const Blockchain &chain) -> ranges::any_view<Output> { return outputsUnspent(chain); }, "Returns a list of all of the outputs that are unspent")
-    .def("tx_with_index", [](const Blockchain &chain, uint32_t index) {
+    .def_property_readonly("outputs_unspent", [](Blockchain &chain) -> ranges::any_view<Output> { return outputsUnspent(chain); }, "Returns a list of all of the outputs that are unspent")
+    .def("tx_with_index", [](Blockchain &chain, uint32_t index) {
         return Transaction{index, chain.getAccess()};
     }, R"docstring(
          This functions gets the transaction with given index.
@@ -109,7 +99,7 @@ void init_blockchain(py::module &m) {
          :param int index: The index of the transation.
          :returns: Tx
          )docstring")
-    .def("tx_with_hash", [](const Blockchain &chain, const std::string &hash) {
+    .def("tx_with_hash", [](Blockchain &chain, const std::string &hash) {
         return Transaction{hash, chain.getAccess()};
     }, R"docstring(
          This functions gets the transaction with given hash.
@@ -117,10 +107,10 @@ void init_blockchain(py::module &m) {
          :param string index: The hash of the transation.
          :returns: Tx
          )docstring")
-    .def("address_from_index", [](const Blockchain &chain, uint32_t index, AddressType::Enum type) -> AnyScript::ScriptVariant {
+    .def("address_from_index", [](Blockchain &chain, uint32_t index, AddressType::Enum type) -> ScriptVariant {
         return Address{index, type, chain.getAccess()}.getScript().wrapped;
     }, "Construct an address object from an address num and type")
-    .def("address_from_string", [](const Blockchain &chain, const std::string &addressString) -> ranges::optional<AnyScript::ScriptVariant> {
+    .def("address_from_string", [](Blockchain &chain, const std::string &addressString) -> ranges::optional<ScriptVariant> {
         auto address = getAddressFromString(addressString, chain.getAccess());
         if (address) {
             return address->getScript().wrapped;
@@ -128,7 +118,7 @@ void init_blockchain(py::module &m) {
             return ranges::nullopt;
         }
     }, "Construct an address object from an address string")
-    .def("addresses_with_prefix", [](const Blockchain &chain, const std::string &addressPrefix) {
+    .def("addresses_with_prefix", [](Blockchain &chain, const std::string &addressPrefix) {
         py::list pyAddresses;
         auto addresses = getAddressesWithPrefix(addressPrefix, chain.getAccess());
         for (auto &address : addresses) {

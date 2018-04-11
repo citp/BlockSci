@@ -9,14 +9,10 @@
 #ifndef address_info_hpp
 #define address_info_hpp
 
-#include "address_types.hpp"
 #include "dedup_address_info.hpp"
 
-#include <blocksci/util/util.hpp>
-
-#include <tuple>
+#include <string>
 #include <vector>
-#include <sstream>
 
 namespace blocksci {
     class uint160;
@@ -132,9 +128,6 @@ namespace blocksci {
         static constexpr std::array<AddressType::Enum, 1> equivTypes = {{AddressType::NULL_DATA}};
         static constexpr DedupAddressType::Enum dedupType = DedupAddressType::NULL_DATA;
     };
-    
-    template <template<AddressType::Enum> class K>
-    using to_address_tuple_t = apply_template_t<AddressType::Enum, K, AddressType::all>;
     
     template<AddressType::Enum type>
     struct DedupAddressTypeFunctor {

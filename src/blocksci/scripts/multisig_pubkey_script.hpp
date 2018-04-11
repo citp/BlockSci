@@ -9,6 +9,7 @@
 #define multisig_pubkey_script_hpp
 
 #include "pubkey_base_script.hpp"
+#include "bitcoin_base58.hpp"
 
 namespace blocksci {
     template <>
@@ -16,9 +17,11 @@ namespace blocksci {
     public:
         constexpr static AddressType::Enum addressType = AddressType::MULTISIG_PUBKEY;
         
-        ScriptAddress(uint32_t addressNum_, DataAccess &access_) : PubkeyAddressBase(addressNum_, addressType, access_.scripts.getScriptData<addressType>(addressNum_), access_) {}
+        ScriptAddress(uint32_t addressNum_, DataAccess &access_) : PubkeyAddressBase(addressNum_, addressType, access_.scripts.getScriptData<dedupType(addressType)>(addressNum_), access_) {}
         
-        std::string addressString() const;
+        std::string addressString() const {
+            return CBitcoinAddress(getPubkeyHash(), AddressType::Enum::MULTISIG_PUBKEY, getAccess().config).ToString();
+        }
         
         std::string toString() const {
             std::stringstream ss;

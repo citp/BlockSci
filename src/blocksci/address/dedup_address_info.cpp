@@ -7,6 +7,8 @@
 
 #include "dedup_address_info.hpp"
 
+#include <string>
+
 namespace blocksci {
     constexpr char DedupAddressInfo<DedupAddressType::PUBKEY>::name[];
     constexpr char DedupAddressInfo<DedupAddressType::SCRIPTHASH>::name[];

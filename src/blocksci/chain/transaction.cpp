@@ -12,9 +12,7 @@
 
 #include "algorithms.hpp"
 #include "block.hpp"
-#include "inout_pointer.hpp"
 
-#include <blocksci/address/address.hpp>
 #include <blocksci/heuristics/change_address.hpp>
 #include <blocksci/scripts/script_variant.hpp>
 

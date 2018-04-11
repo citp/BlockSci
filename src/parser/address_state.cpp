@@ -24,7 +24,7 @@ namespace {
     static constexpr auto scriptCountsFileName = "scriptCounts.txt";
 }
 
-AddressState::AddressState(boost::filesystem::path path_, HashIndexCreator &hashDb) : path(std::move(path_)), db(hashDb), addressBloomFilters(blocksci::apply(blocksci::DedupAddressInfoList(), [&] (auto tag) {
+AddressState::AddressState(boost::filesystem::path path_, HashIndexCreator &hashDb) : path(std::move(path_)), db(hashDb), addressBloomFilters(blocksci::apply(blocksci::DedupAddressType::all(), [&] (auto tag) {
     return AddressBloomFilter<tag>{path/std::string(bloomFileName)};
 }))  {
     blocksci::for_each(multiAddressMaps, [&](auto &multiAddressMap) {
@@ -83,7 +83,7 @@ void AddressState::rollback(const blocksci::State &state) {
         }
     });
     
-    blocksci::for_each(blocksci::DedupAddressInfoList(), [&](auto tag) {
+    blocksci::for_each(blocksci::DedupAddressType::all(), [&](auto tag) {
         auto &column = db.getColumn(tag);
         rocksdb::WriteBatch batch;
         auto it = db.getIterator(tag);

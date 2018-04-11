@@ -9,9 +9,7 @@
 #include "output.hpp"
 
 #include "block.hpp"
-#include "transaction.hpp"
 
-#include <blocksci/address/address.hpp>
 #include <blocksci/scripts/script_variant.hpp>
 
 #include <sstream>
@@ -19,10 +17,6 @@
 namespace blocksci {
     Transaction Output::transaction() const {
         return {pointer.txNum, blockHeight, *access};
-    }
-    
-    Address Output::getAddress() const {
-        return {inout->getAddressNum(), inout->getType(), *access};
     }
     
     Block Output::block() const {

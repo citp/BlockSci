@@ -109,7 +109,7 @@ void ParserIndex<T>::runUpdate(const blocksci::State &state) {
     }
         
     ParserScriptUpdater<T> updater(*this, state, scripts);
-    blocksci::for_each(blocksci::DedupAddressInfoList(), updater);
+    blocksci::for_each(blocksci::DedupAddressType::all(), updater);
     latestState = state;
 }
 

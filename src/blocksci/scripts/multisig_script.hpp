@@ -10,17 +10,18 @@
 #define multisig_script_hpp
 
 #include "script.hpp"
-#include "script_access.hpp"
 #include "multisig_pubkey_script.hpp"
 
 namespace blocksci {
     template <>
-    class ScriptAddress<AddressType::MULTISIG> : public ScriptBase<ScriptAddress<AddressType::MULTISIG>> {
-        friend class ScriptBase<ScriptAddress<AddressType::MULTISIG>>;
-        const MultisigData *rawData;
+    class ScriptAddress<AddressType::MULTISIG> : public ScriptBase {
+    private:
+        const MultisigData *getData() const {
+            return reinterpret_cast<const MultisigData *>(ScriptBase::getData());
+        }
     public:
         constexpr static AddressType::Enum addressType = AddressType::MULTISIG;
-        ScriptAddress(uint32_t addressNum_, DataAccess &access_) : ScriptBase(addressNum_, addressType, access_), rawData(access_.scripts.getScriptData<addressType>(addressNum_)) {}
+        ScriptAddress(uint32_t addressNum_, DataAccess &access_) : ScriptBase(addressNum_, addressType, access_, access_.scripts.getScriptData<dedupType(addressType)>(addressNum_)) {}
         
         std::string toString() const {
             std::stringstream ss;
@@ -51,17 +52,17 @@ namespace blocksci {
         }
         
         uint8_t getRequired() const {
-            return rawData->m;
+            return getData()->m;
         }
         
         uint8_t getTotal() const {
-            return rawData->n;
+            return getData()->n;
         }
         
         std::vector<Address> getAddresses() const {
             std::vector<Address> addresses;
-            addresses.reserve(rawData->addresses.size());
-            for (auto scriptNum : rawData->addresses) {
+            addresses.reserve(getData()->addresses.size());
+            for (auto scriptNum : getData()->addresses) {
                 addresses.emplace_back(scriptNum, AddressType::Enum::MULTISIG_PUBKEY, getAccess());
             }
             return addresses;

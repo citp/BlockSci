@@ -69,7 +69,7 @@ void init_tx(py::module &m) {
     .def(py::self == py::self)
     .def(hash(py::self))
     .def_property_readonly("_access", &Transaction::getAccess, py::return_value_policy::reference)
-    .def(py::init([](uint32_t index, const blocksci::Blockchain &chain) {
+    .def(py::init([](uint32_t index, blocksci::Blockchain &chain) {
         return Transaction{index, chain.getAccess()};
     }), R"docstring(
          This functions gets the transaction with given index.
@@ -77,7 +77,7 @@ void init_tx(py::module &m) {
          :param int index: The index of the transation.
          :returns: Tx
          )docstring")
-    .def(py::init([](const std::string hash, const blocksci::Blockchain &chain) {
+    .def(py::init([](const std::string hash, blocksci::Blockchain &chain) {
         return Transaction{hash, chain.getAccess()};
     }), R"docstring(
          This functions gets the transaction with given hash.

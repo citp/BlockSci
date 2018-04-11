@@ -27,7 +27,7 @@ template <typename Class, typename FuncApplication, typename FuncDoc>
 void addInputMethods(Class &cl, FuncApplication func, FuncDoc func2) {
 	using namespace blocksci;
     cl
-    .def_property_readonly("address", func([](const Input &input) -> AnyScript::ScriptVariant {
+    .def_property_readonly("address", func([](const Input &input) -> ScriptVariant {
         return input.getAddress().getScript().wrapped;
     }), func2("The address linked to this input"))
     .def_property_readonly("value", func([](const Input &input) -> int64_t {

@@ -23,6 +23,7 @@ set(ADDRESS_HEADERS
   address/address_info.hpp
   address/address_types.hpp
   address/address.hpp
+  address/raw_address.hpp
   address/dedup_address_info.hpp
   address/dedup_address_type.hpp
   address/dedup_address.hpp
@@ -33,6 +34,7 @@ set(ADDRESS_HEADERS
 set(ADDRESS_SOURCES
   address/address_info.cpp
   address/address.cpp
+  address/raw_address.cpp
   address/dedup_address_info.cpp
   address/equiv_address.cpp
 )
@@ -60,7 +62,6 @@ set(CHAIN_SOURCES
   chain/inout_pointer.cpp
   chain/input.cpp
   chain/output.cpp
-  chain/transaction_summary.cpp
   chain/transaction.cpp
 )
 
@@ -86,7 +87,6 @@ set(INDEX_HEADERS
 
 set(INDEX_SOURCES
   index/address_index.cpp
-  index/address_output_range.cpp
   index/hash_index.cpp
 )
 
@@ -102,6 +102,7 @@ set(SCRIPT_HEADERS
   scripts/nonstandard_script.hpp
   scripts/nulldata_script.hpp
   scripts/pubkey_script.hpp
+  scripts/pubkey_base_script.hpp
   scripts/script_access.hpp
   scripts/script_data.hpp
   scripts/script_info.hpp
@@ -117,10 +118,8 @@ set(SCRIPT_SOURCES
   scripts/bitcoin_pubkey.cpp
   scripts/bitcoin_script.cpp
   scripts/bitcoin_segwit_addr.cpp
-  scripts/multisig_pubkey_script.cpp
-  scripts/pubkey_script.cpp
-  scripts/script_variant.cpp
   scripts/script_view.cpp
+  scripts/script.cpp
   scripts/scripthash_script.cpp
 )
 
@@ -135,12 +134,15 @@ set(UTIL_HEADERS
   util/progress_bar.hpp
   util/state.hpp
   util/util.hpp
+  util/in_place_array.hpp
+  util/apply_template.hpp
+  util/dynamic_table.hpp
+  util/static_table.hpp
 )
 
 set(UTIL_SOURCES
   util/bitcoin_uint256.cpp
   util/data_configuration.cpp
-  util/file_mapper.cpp
   util/hash.cpp
 )
 

@@ -13,7 +13,6 @@
 
 #include <blocksci/address/address_types.hpp>
 #include <blocksci/address/dedup_address_type.hpp>
-#include <blocksci/util/util.hpp>
 
 #include <string>
 

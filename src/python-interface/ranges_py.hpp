@@ -8,8 +8,9 @@
 #ifndef ranges_py_hpp
 #define ranges_py_hpp
 
-#include <blocksci/chain/block.hpp>
-#include <blocksci/scripts/script_variant.hpp>
+#include <blocksci/chain/chain_fwd.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
+#include <blocksci/util/bitcoin_uint256.hpp>
 
 #include <range/v3/view/any_view.hpp>
 #include <range/v3/view/stride.hpp>
@@ -296,7 +297,7 @@ template <>
 struct is_blocksci_type<ranges::optional<blocksci::Output>> : std::true_type {};
 
 template <>
-struct is_blocksci_type<blocksci::AnyScript::ScriptVariant> : std::true_type {};
+struct is_blocksci_type<blocksci::ScriptVariant> : std::true_type {};
 
 template <typename T>
 struct is_optional : std::false_type {};

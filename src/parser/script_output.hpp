@@ -18,6 +18,7 @@
 #include <blocksci/address/address.hpp>
 #include <blocksci/scripts/script_info.hpp>
 #include <blocksci/scripts/script_view.hpp>
+#include <blocksci/util/util.hpp>
 
 #include <mpark/variant.hpp>
 

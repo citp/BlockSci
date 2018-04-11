@@ -9,10 +9,6 @@
 #include "block_py.hpp"
 #include "ranges_py.hpp"
 
-#include <blocksci/scripts/script_access.hpp>
-#include <blocksci/index/address_index.hpp>
-#include <blocksci/index/hash_index.hpp>
-
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
 #include <pybind11/chrono.h>
@@ -88,7 +84,7 @@ void init_block(py::module &m) {
     
     auto blockCl = addRangeClass<Block>(m, "Block", "Class representing a block in the blockchain");
     blockCl
-    .def("__repr__", &Block::getString)
+    .def("__repr__", &Block::toString)
     .def(py::self == py::self)
     .def(hash(py::self))
     .def_property_readonly("_access", &Block::getAccess, py::return_value_policy::reference)

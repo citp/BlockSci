@@ -9,11 +9,8 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "input.hpp"
-
 #include "block.hpp"
-#include "transaction.hpp"
 
-#include <blocksci/address/address.hpp>
 #include <blocksci/scripts/script_variant.hpp>
 
 #include <sstream>
@@ -21,10 +18,6 @@
 namespace blocksci {
     Transaction Input::transaction() const {
         return {pointer.txNum, blockHeight, *access};
-    }
-    
-    Address Input::getAddress() const {
-        return {inout->getAddressNum(), inout->getType(), *access};
     }
     
     Block Input::block() const {

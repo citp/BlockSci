@@ -1,16 +1,15 @@
 //
-//  script_types.hpp
+//  address_types.hpp
 //  blocksci_devel
 //
 //  Created by Harry Kalodner on 2/3/17.
 //  Copyright © 2017 Harry Kalodner. All rights reserved.
 //
 
-#ifndef script_types_hpp
-#define script_types_hpp
+#ifndef blocksci_address_address_types_hpp
+#define blocksci_address_address_types_hpp
 
-#include <array>
-#include <string>
+#include <blocksci/util/apply_template.hpp>
 
 #define ADDRESS_TYPE_LIST VAL(NONSTANDARD), VAL(PUBKEY), VAL(PUBKEYHASH), VAL(MULTISIG_PUBKEY), VAL(SCRIPTHASH), VAL(MULTISIG), VAL(NULL_DATA), VAL(WITNESS_PUBKEYHASH), VAL(WITNESS_SCRIPTHASH)
 #define ADDRESS_TYPE_SET VAL(NONSTANDARD) VAL(PUBKEY) VAL(PUBKEYHASH) VAL(MULTISIG_PUBKEY) VAL(SCRIPTHASH) VAL(MULTISIG) VAL(NULL_DATA) VAL(WITNESS_PUBKEYHASH) VAL(WITNESS_SCRIPTHASH)
@@ -33,6 +32,9 @@ namespace blocksci {
         
         static constexpr Enum example = PUBKEY;
     };
+    
+    template <template<AddressType::Enum> class K>
+    using to_address_tuple_t = apply_template_t<AddressType::Enum, K, AddressType::all>;
     
     struct EquivAddressType {
         
@@ -64,4 +66,4 @@ namespace std {
     };
 }
 
-#endif /* script_types_hpp */
+#endif /* blocksci_address_address_types_hpp */

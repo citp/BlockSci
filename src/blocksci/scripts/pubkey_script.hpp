@@ -10,6 +10,8 @@
 #define pubkey_script_hpp
 
 #include "pubkey_base_script.hpp"
+#include "bitcoin_base58.hpp"
+#include "bitcoin_segwit_addr.hpp"
 
 namespace blocksci {
     template <>
@@ -19,12 +21,21 @@ namespace blocksci {
         
         constexpr static AddressType::Enum addressType = AddressType::PUBKEY;
         
-        ScriptAddress(uint32_t addressNum_, DataAccess &access_);
+        ScriptAddress(uint32_t addressNum_, DataAccess &access_) : PubkeyAddressBase(addressNum_, addressType, access_.scripts.getScriptData<dedupType(addressType)>(addressNum_), access_) {}
         
-        std::string addressString() const;
+        std::string addressString() const {
+            return CBitcoinAddress(getPubkeyHash(), AddressType::Enum::PUBKEYHASH, getAccess().config).ToString();
+        }
         
-        std::string toString() const;
-        std::string toPrettyString() const;
+        std::string toString() const {
+            std::stringstream ss;
+            ss << "PubkeyAddress(" << addressString() << ")";
+            return ss.str();
+        }
+        
+        std::string toPrettyString() const {
+            return toString();
+        }
     };
     
     template <>
@@ -34,12 +45,21 @@ namespace blocksci {
         
         constexpr static AddressType::Enum addressType = AddressType::PUBKEYHASH;
         
-        ScriptAddress(uint32_t addressNum_, DataAccess &access_);
+        ScriptAddress(uint32_t addressNum_, DataAccess &access_) : PubkeyAddressBase(addressNum_, addressType, access_.scripts.getScriptData<dedupType(addressType)>(addressNum_), access_) {}
         
-        std::string addressString() const;
+        std::string addressString() const {
+            return CBitcoinAddress(getPubkeyHash(), AddressType::Enum::PUBKEYHASH, getAccess().config).ToString();
+        }
         
-        std::string toString() const;
-        std::string toPrettyString() const;
+        std::string toString() const {
+            std::stringstream ss;
+            ss << "PubkeyHashAddress(" << addressString() << ")";
+            return ss.str();
+        }
+        
+        std::string toPrettyString() const {
+            return toString();
+        }
     };
     
     template <>
@@ -49,12 +69,24 @@ namespace blocksci {
         
         constexpr static AddressType::Enum addressType = AddressType::WITNESS_PUBKEYHASH;
         
-        ScriptAddress(uint32_t addressNum_, DataAccess &access_);
+        ScriptAddress(uint32_t addressNum_, DataAccess &access_) : PubkeyAddressBase(addressNum_, addressType, access_.scripts.getScriptData<dedupType(addressType)>(addressNum_), access_) {}
         
-        std::string addressString() const;
+        std::string addressString() const {
+            std::vector<uint8_t> witprog;
+            auto pubkeyhash = getPubkeyHash();
+            witprog.insert(witprog.end(), reinterpret_cast<const uint8_t *>(&pubkeyhash), reinterpret_cast<const uint8_t *>(&pubkeyhash) + sizeof(pubkeyhash));
+            return segwit_addr::encode(getAccess().config, 0, witprog);
+        }
         
-        std::string toString() const;
-        std::string toPrettyString() const;
+        std::string toString() const {
+            std::stringstream ss;
+            ss << "WitnessPubkeyAddress(" << addressString() << ")";
+            return ss.str();
+        }
+        
+        std::string toPrettyString() const {
+            return addressString();
+        }
     };
 } // namespace blocksci
 

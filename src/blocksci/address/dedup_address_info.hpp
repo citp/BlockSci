@@ -9,7 +9,7 @@
 #define dedup_address_info_hpp
 
 #include "address_fwd.hpp"
-#include <blocksci/util/util.hpp>
+#include <blocksci/util/static_table.hpp>
 
 namespace blocksci {
     template <>
@@ -61,13 +61,6 @@ namespace blocksci {
         static constexpr std::array<AddressType::Enum, 1> addressTypes = {{AddressType::NULL_DATA}};
         static constexpr EquivAddressType::Enum equivType = EquivAddressType::NULL_DATA;
     };
-    
-    #define VAL(x) std::integral_constant<DedupAddressType::Enum, DedupAddressType::x>
-    using DedupAddressInfoList = std::tuple<DEDUP_ADDRESS_TYPE_LIST>;
-    #undef VAL
-    
-    template <template<DedupAddressType::Enum> class K>
-    using to_dedup_address_tuple_t = apply_template_t<DedupAddressType::Enum, K, DedupAddressInfoList>;
     
     template<DedupAddressType::Enum type>
     struct SpendableFunctor {
