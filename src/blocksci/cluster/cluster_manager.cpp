@@ -222,7 +222,7 @@ namespace blocksci {
         
         auto extract = [&](const std::vector<Block> &blocks, int threadNum) {
             uint32_t totalTxCount = 0;
-            auto progressThread = static_cast<int>(std::thread::hardware_concurrency());
+            auto progressThread = static_cast<int>(std::thread::hardware_concurrency()) - 1;
             if (threadNum == progressThread) {
                 for (auto &block : blocks) {
                     totalTxCount += block.size();
