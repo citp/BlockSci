@@ -18,10 +18,20 @@
 
 namespace py = pybind11;
 using namespace blocksci;
+using namespace blocksci::heuristics;
 
 void init_heuristics(py::module &m) {
     auto s = m.def_submodule("heuristics");
-    
+
+    py::class_<ChangeHeuristic>(m, "ChangeHeuristic", "Class representing a change heuristic")
+    .def("set_intersection", &ChangeHeuristic::setIntersection)
+    .def("set_union", &ChangeHeuristic::setUnion)
+    .def("set_difference", &ChangeHeuristic::setDifference)
+    .def("__call__", &ChangeHeuristic::operator())
+    .def("change", &ChangeHeuristic::operator())
+    .def("unique_change", &ChangeHeuristic::uniqueChange)
+    ;
+
     s.def("change_by_peeling_chain", heuristics::changeByPeelingChain, "If tx is a peeling chain, returns the smaller output.");
     s.def("unique_change_by_peeling_chain", heuristics::uniqueChangeByPeelingChain, "If tx is a peeling chain, returns the smaller output.");
     
@@ -46,6 +56,18 @@ void init_heuristics(py::module &m) {
     s.def("change_by_client_change_address_behavior", py::overload_cast<const Transaction &>(heuristics::changeByClientChangeAddressBehavior), "Most clients will generate a fresh address for the change. If an output is the first to send value to an address, it is potentially the change.");
     s.def("unique_change_by_client_change_address_behavior", py::overload_cast<const Transaction &>(heuristics::uniqueChangeByClientChangeAddressBehavior), "Returns a unique output from change_by_client_change_address_behavior or None");
     
+    auto s2 = s.def_submodule("change");
+    s2
+    .def("peeling_chain", []() { return ChangeHeuristic{PeelingChainChange{}}; })
+    .def("power_of_ten_value", [](int digits) { return ChangeHeuristic{PowerOfTenChange{digits}}; }, py::arg("digits") = 6)
+    .def("optimal_change", []() { return ChangeHeuristic{OptimalChangeChange{}}; })
+    .def("address_type", []() { return ChangeHeuristic{AddressTypeChange{}}; })
+    .def("locktime", []() { return ChangeHeuristic{LocktimeChange{}}; })
+    .def("address_reuse", []() { return ChangeHeuristic{AddressReuseChange{}}; })
+    .def("client_change_address_behavior", []() { return ChangeHeuristic{ClientChangeAddressBehaviorChange{}}; })
+    .def("legacy", []() { return ChangeHeuristic{LegacyChange{}}; })
+    ;
+
     s.def("is_coinjoin", py::overload_cast<const Transaction &>(heuristics::isCoinjoin), "Uses basic structural features to quickly decide whether this transaction might be a JoinMarket coinjoin transaction")
     .def("is_address_deanon", py::overload_cast<const Transaction &>(heuristics::isDeanonTx), "Returns true if this transaction's change address is deanonymized by the address types involved")
     .def("is_change_over", py::overload_cast<const Transaction &>(heuristics::isChangeOverTx), "Returns true if this transaction contained all inputs of one address type and all outputs of a different type")

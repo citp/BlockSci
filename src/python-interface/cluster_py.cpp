@@ -20,6 +20,7 @@
 #include <blocksci/chain/output.hpp>
 
 #include <pybind11/stl.h>
+#include <pybind11/iostream.h>
 
 namespace py = pybind11;
 
@@ -43,16 +44,22 @@ uint64_t totalOutWithoutSelfChurn(const blocksci::Block &block, blocksci::Cluste
 }
 
 
+
 void init_cluster(pybind11::module &m) {
-    using blocksci::ClusterManager;
-    using blocksci::Cluster;
-    using blocksci::TaggedAddress;
-    using blocksci::TaggedCluster;
-    using blocksci::cluster_range;
-    using blocksci::Address;
+    using namespace blocksci;
 
     auto s = m.def_submodule("cluster");
-    s.def("total_without_self_churn", totalOutWithoutSelfChurn);
+    s
+    .def("total_without_self_churn", totalOutWithoutSelfChurn)
+    .def("create_clustering", [](Blockchain &chain, const heuristics::ChangeHeuristic &heuristic, const std::string &location, bool shouldOverwrite) {
+        py::scoped_ostream_redirect stream(
+            std::cout,
+            py::module::import("sys").attr("stdout")
+        );
+        return ClusterManager::createClustering(chain, heuristic, location, shouldOverwrite);
+    }, py::arg("chain"), py::arg("heuristic"), py::arg("location"), py::arg("should_overwrite") = false)
+    ;
+
     
     py::class_<ClusterManager>(s, "ClusterManager", "Class managing the cluster dat")
     .def(py::init([](std::string arg, blocksci::Blockchain &chain) {
