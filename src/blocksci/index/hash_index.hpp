@@ -53,14 +53,13 @@ namespace blocksci {
             return keyCount;
         }
         
-        std::unique_ptr<rocksdb::Iterator> getIterator(AddressType::Enum type) {
-            return std::unique_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), getColumn(type).get())};
-        }
-        std::unique_ptr<rocksdb::Iterator> getIterator(DedupAddressType::Enum type) {
-            return std::unique_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), getColumn(type).get())};
-        }
-        std::unique_ptr<rocksdb::Iterator> getTxIterator() {
-            return std::unique_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), columnHandles.back().get())};
+        uint32_t countTxes() {
+            uint32_t keyCount = 0;
+            auto it = getTxIterator();
+            for (it->SeekToFirst(); it->Valid(); it->Next()) {
+                keyCount++;
+            }
+            return keyCount;
         }
         
         std::unique_ptr<rocksdb::ColumnFamilyHandle> &getColumn(AddressType::Enum type);
@@ -69,6 +68,16 @@ namespace blocksci {
         
         std::unique_ptr<rocksdb::ColumnFamilyHandle> &getTxColumn() {
             return columnHandles.back();
+        }
+        
+        std::unique_ptr<rocksdb::Iterator> getIterator(AddressType::Enum type) {
+            return std::unique_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), getColumn(type).get())};
+        }
+        std::unique_ptr<rocksdb::Iterator> getIterator(DedupAddressType::Enum type) {
+            return std::unique_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), getColumn(type).get())};
+        }
+        std::unique_ptr<rocksdb::Iterator> getTxIterator() {
+            return std::unique_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), getTxColumn().get())};
         }
         
         void writeBatch(rocksdb::WriteBatch &batch) {

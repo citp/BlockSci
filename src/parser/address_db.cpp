@@ -95,6 +95,7 @@ void AddressDB::clearNestedCache() {
         auto &nestedColumn = db.getNestedColumn(childAddress.type);
         batch.Put(nestedColumn.get(), key, rocksdb::Slice{});
     }
+    db.writeBatch(batch);
     nestedCache.clear();
 }
 
@@ -119,6 +120,7 @@ void AddressDB::clearOutputCache() {
         auto &outputColumn = db.getOutputColumn(address.type);
         batch.Put(outputColumn.get(), key, rocksdb::Slice{});
     }
+    db.writeBatch(batch);
     outputCache.clear();
 }
 

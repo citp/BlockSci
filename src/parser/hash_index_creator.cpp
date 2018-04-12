@@ -29,7 +29,7 @@ HashIndexCreator::~HashIndexCreator() {
         auto &cache = std::get<HashIndexAddressCache<tag>>(addressCache);
         rocksdb::WriteBatch batch;
         for (const auto &pair : cache) {
-            rocksdb::Slice keySlice(reinterpret_cast<const char *>(&pair.first), sizeof(pair.first));
+            rocksdb::Slice keySlice(reinterpret_cast<const char *>(&pair.first.key), sizeof(pair.first.key));
             rocksdb::Slice valueSlice(reinterpret_cast<const char *>(&pair.second), sizeof(pair.second));
             batch.Put(db.getColumn(tag).get(), keySlice, valueSlice);
         }
@@ -85,7 +85,7 @@ uint32_t HashIndexCreator::getTxIndex(const blocksci::uint256 &txHash) {
 void HashIndexCreator::clearTxCache() {
     rocksdb::WriteBatch batch;
     for (const auto &pair : txCache) {
-        rocksdb::Slice keySlice(reinterpret_cast<const char *>(&pair.first), sizeof(pair.first));
+        rocksdb::Slice keySlice(reinterpret_cast<const char *>(&pair.first.key), sizeof(pair.first.key));
         rocksdb::Slice valueSlice(reinterpret_cast<const char *>(&pair.second), sizeof(pair.second));
         batch.Put(db.getTxColumn().get(), keySlice, valueSlice);
     }

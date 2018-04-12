@@ -104,11 +104,11 @@ template <blocksci::AddressType::Enum type>
 struct HashIndexAddressCacheImpl<std::false_type, type> {
     void clear() {}
     
-    std::pair<int, int> *begin() {
+    std::pair<DenseHashMapWrappedKey<int>, int> *begin() {
         return nullptr;
     }
     
-    std::pair<int, int> *end() {
+    std::pair<DenseHashMapWrappedKey<int>, int> *end() {
         return nullptr;
     }
 };
@@ -131,7 +131,7 @@ class HashIndexCreator : public ParserIndex<HashIndexCreator> {
         auto &cache = std::get<HashIndexAddressCache<type>>(addressCache);
         rocksdb::WriteBatch batch;
         for (const auto &pair : cache) {
-            rocksdb::Slice keySlice(reinterpret_cast<const char *>(&pair.first), sizeof(pair.first));
+            rocksdb::Slice keySlice(reinterpret_cast<const char *>(&pair.first.key), sizeof(pair.first.key));
             rocksdb::Slice valueSlice(reinterpret_cast<const char *>(&pair.second), sizeof(pair.second));
             batch.Put(db.getColumn(type).get(), keySlice, valueSlice);
         }

@@ -51,8 +51,8 @@ namespace blocksci {
             columnDescriptors.push_back(descriptor);
         });
         auto txOptions = rocksdb::ColumnFamilyOptions{};
-        columnDescriptors.emplace_back("T", txOptions);
         columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions{});
+        columnDescriptors.emplace_back("T", txOptions);
         
         rocksdb::DB *dbPtr;
         std::vector<rocksdb::ColumnFamilyHandle *> columnHandlePtrs;
