@@ -6,35 +6,22 @@
 //
 
 #include "ranges_py.hpp"
-
-#include <blocksci/scripts/script_variant.hpp>
-
 #include <pybind11/pybind11.h>
 
 namespace py = pybind11;
 using namespace blocksci;
 
-void init_ranges(py::module &m) {
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::PUBKEY>>>(m, "AnyPubkeyAddressRange");
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::PUBKEYHASH>>>(m, "AnyPubkeyHashAddressRange");
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::MULTISIG_PUBKEY>>>(m, "AnyMultisigPubkeyAddressRange");
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::WITNESS_PUBKEYHASH>>>(m, "AnyWitnessPubkeyHashAddressRange");
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::SCRIPTHASH>>>(m, "AnyScriptHashAddressRange");
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::WITNESS_SCRIPTHASH>>>(m, "AnyWitnessScriptHashAddressRange");
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::MULTISIG>>>(m, "AnyMultisigAddressRange");
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::NONSTANDARD>>>(m, "AnyNonStandardAddressRange");
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::NULL_DATA>>>(m, "AnyOpReturnAddressRange");
-    
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::PUBKEY>, ranges::category::random_access>>(m, "PubkeyAddressRange");
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::PUBKEYHASH>, ranges::category::random_access>>(m, "PubkeyHashAddressRange");
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::MULTISIG_PUBKEY>, ranges::category::random_access>>(m, "MultisigPubkeyAddressRange");
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::WITNESS_PUBKEYHASH>, ranges::category::random_access>>(m, "WitnessPubkeyHashAddressRange");
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::SCRIPTHASH>, ranges::category::random_access>>(m, "ScriptHashAddressRange");
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::WITNESS_SCRIPTHASH>, ranges::category::random_access>>(m, "WitnessScriptHashAddressRange");
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::MULTISIG>, ranges::category::random_access>>(m, "MultisigAddressRange");
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::NONSTANDARD>, ranges::category::random_access>>(m, "NonStandardAddressRange");
-    addRangeClass<ranges::any_view<ScriptAddress<AddressType::NULL_DATA>, ranges::category::random_access>>(m, "OpReturnAddressRange");
-    
-    
-    
+void init_ranges(py::module &m) {    
+    addOptionalRangeClass<ranges::any_view<ranges::optional<int64_t>>>(m, "AnyOptionalIntRange");
+    addOptionalRangeClass<ranges::any_view<ranges::optional<int64_t>, ranges::category::random_access>>(m, "OptionalIntRange");
+    addOptionalRangeClass<ranges::any_view<ranges::optional<std::chrono::system_clock::time_point>>>(m, "AnyOptionalDateRange");
+    addOptionalRangeClass<ranges::any_view<ranges::optional<std::chrono::system_clock::time_point>, ranges::category::random_access>>(m, "OptionalDateRange");
+    addOptionalRangeClass<ranges::any_view<ranges::optional<uint256>>>(m, "AnyOptionalHash256Range");
+    addOptionalRangeClass<ranges::any_view<ranges::optional<uint256>, ranges::category::random_access>>(m, "OptionalHash256Range");
+    addOptionalRangeClass<ranges::any_view<ranges::optional<bool>>>(m, "AnyOptionalBoolRange");
+    addOptionalRangeClass<ranges::any_view<ranges::optional<bool>, ranges::category::random_access>>(m, "OptionalBoolRange");
+    addOptionalRangeClass<ranges::any_view<ranges::optional<AddressType::Enum>>>(m, "AnyOptionalAddressTypeRange");
+    addOptionalRangeClass<ranges::any_view<ranges::optional<AddressType::Enum>, ranges::category::random_access>>(m, "OptionalAddressTypeRange");
+    addOptionalRangeClass<ranges::any_view<ranges::optional<py::bytes>>>(m, "AnyOptionalBytesRange");
+    addOptionalRangeClass<ranges::any_view<ranges::optional<py::bytes>, ranges::category::random_access>>(m, "OptionalBytesRange");
 }

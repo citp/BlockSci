@@ -19,9 +19,10 @@ namespace blocksci {
         uint64_t total;
         uint64_t percentageMarker;
         UpdateFunc updateFunc;
+        bool silence;
         
     public:
-        ProgressBar(uint64_t total_, UpdateFunc updateFunc_) : total(total_), updateFunc(updateFunc_) {
+        ProgressBar(uint64_t total_, UpdateFunc updateFunc_) : total(total_), updateFunc(updateFunc_), silence(false) {
             auto percentage = static_cast<double>(total) / 1000.0;
             percentageMarker = static_cast<uint64_t>(std::ceil(percentage));
             std::cout.setf(std::ios::fixed,std::ios::floatfield);
@@ -32,12 +33,18 @@ namespace blocksci {
         ProgressBar(ProgressBar &&) = default;
         
         ~ProgressBar() {
-            std::cout << "\n";
+            if (!silence) {
+                std::cout << "\n";
+            }
+        }
+
+        void setSilent() {
+            silence = true;
         }
         
         template <typename... Args>
         void update(uint64_t currentCount, Args... args) {
-            if (currentCount % 10000 == 0) {
+            if (!silence && currentCount % 10000 == 0) {
                 auto percentDone = (static_cast<double>(currentCount) / static_cast<double>(total)) * 100;
                 std::cout << "\r" << percentDone << "% done";
                 updateFunc(args...);

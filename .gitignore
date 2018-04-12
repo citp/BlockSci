@@ -1,5 +1,6 @@
 release
 xcode
+debug
 *.DS_Store
 Notebooks/blocksci/pybind11
 *.so

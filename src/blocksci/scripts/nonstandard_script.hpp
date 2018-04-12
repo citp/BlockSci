@@ -41,6 +41,7 @@ namespace blocksci {
     public:
         constexpr static AddressType::Enum addressType = AddressType::NONSTANDARD;
         
+        ScriptAddress() = default;
         ScriptAddress(uint32_t addressNum_, DataAccess &access_) : ScriptAddress(addressNum_, access_.scripts.getScriptData<dedupType(addressType)>(addressNum_), access_) {}
         
         std::string inputString() const {

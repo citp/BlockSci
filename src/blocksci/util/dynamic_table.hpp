@@ -12,18 +12,18 @@
 
 namespace blocksci {
     namespace internal {
-        template <typename EnumStruct>
+        template <typename EnumStruct, typename... Args>
         struct MakeDynamicTableImpl {
-            template<template<typename EnumStruct::Enum> class Functor, std::size_t... Is>
-            constexpr auto makeTable(std::index_sequence<Is...>) -> std::array<decltype(&Functor<EnumStruct::example>::f), sizeof...(Is)> {
-                return {{Functor<std::tuple_element_t<Is, typename EnumStruct::all>::value>::f...}};
+            template<template<typename EnumStruct::Enum, typename...> class Functor, std::size_t... Is>
+            constexpr auto makeTable(std::index_sequence<Is...>) -> std::array<decltype(&Functor<EnumStruct::example, Args...>::f), sizeof...(Is)> {
+                return {{Functor<std::tuple_element_t<Is, typename EnumStruct::all>::value, Args...>::f...}};
             }
         };
     } // namespace internal
     
-    template <typename EnumStruct, template<typename EnumStruct::Enum> class Functor>
+    template <typename EnumStruct, template<typename EnumStruct::Enum, typename...> class Functor, typename... Args>
     constexpr auto make_dynamic_table() noexcept {
-        internal::MakeDynamicTableImpl<EnumStruct> tableMaker{};
+        internal::MakeDynamicTableImpl<EnumStruct, Args...> tableMaker{};
         return tableMaker.template makeTable<Functor>(std::make_index_sequence<EnumStruct::size>{});
     }
 } // namespace blocksci

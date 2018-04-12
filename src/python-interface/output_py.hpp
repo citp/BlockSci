@@ -8,6 +8,8 @@
 #ifndef output_py_h
 #define output_py_h
 
+#include "any_script_caster.hpp"
+
 #include <pybind11/pybind11.h>
 
 #include <blocksci/chain/algorithms.hpp>
@@ -23,10 +25,9 @@ void init_output(pybind11::module &m);
 template <typename Class, typename FuncApplication, typename FuncDoc>
 void addOutputMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     using namespace blocksci;
-    
     cl
-    .def_property_readonly("address", func([](const Output &output) -> ScriptVariant {
-        return output.getAddress().getScript().wrapped;
+    .def_property_readonly("address", func([](const Output &output) -> AnyScript {
+        return output.getAddress().getScript();
     }), func2("This address linked to this output"))
     .def_property_readonly("value", func([](const Output &output) -> int64_t {
         return output.getValue();

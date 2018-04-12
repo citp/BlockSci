@@ -33,7 +33,7 @@ auto addInputRange(py::module &m, const std::string &name) {
 
 template <typename T>
 auto addOptionalInputRange(py::module &m, const std::string &name) {
-    auto cl = addRangeClass<T>(m, name);
+    auto cl = addOptionalRangeClass<T>(m, name);
     addInputMethods(cl, [](auto func) {
         return applyMethodsToRange<T>(func);
     }, [](std::string docstring) {

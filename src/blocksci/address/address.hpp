@@ -51,6 +51,14 @@ namespace blocksci {
         
         std::string toString() const;
         
+        uint32_t getScriptNum() const {
+            return scriptNum;
+        }
+
+        AddressType::Enum getType() const {
+            return type;
+        }
+
         AnyScript getScript() const;
         
         uint64_t calculateBalance(BlockHeight height) const;

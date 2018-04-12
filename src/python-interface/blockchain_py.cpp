@@ -10,6 +10,8 @@
 #include "optional_py.hpp"
 #include "ranges_py.hpp"
 #include "block_py.hpp"
+#include "address_py.hpp"
+#include "any_script_caster.hpp"
 
 #include <blocksci/chain/blockchain.hpp>
 
@@ -54,10 +56,10 @@ void init_blockchain(py::module &m) {
          :param string index: The hash of the transation.
          :returns: Tx
          )docstring")
-    .def("address_from_index", [](DataAccess &access, uint32_t index, AddressType::Enum type) -> ScriptVariant {
+    .def("address_from_index", [](DataAccess &access, uint32_t index, AddressType::Enum type) -> AnyScript {
         return Address{index, type, access}.getScript().wrapped;
     }, "Construct an address object from an address num and type")
-    .def("address_from_string", [](DataAccess &access, const std::string &addressString) -> ranges::optional<ScriptVariant> {
+    .def("address_from_string", [](DataAccess &access, const std::string &addressString) -> ranges::optional<AnyScript> {
         auto address = getAddressFromString(addressString, access);
         if (address) {
             return address->getScript().wrapped;
@@ -107,10 +109,10 @@ void init_blockchain(py::module &m) {
          :param string index: The hash of the transation.
          :returns: Tx
          )docstring")
-    .def("address_from_index", [](Blockchain &chain, uint32_t index, AddressType::Enum type) -> ScriptVariant {
+    .def("address_from_index", [](Blockchain &chain, uint32_t index, AddressType::Enum type) -> AnyScript {
         return Address{index, type, chain.getAccess()}.getScript().wrapped;
     }, "Construct an address object from an address num and type")
-    .def("address_from_string", [](Blockchain &chain, const std::string &addressString) -> ranges::optional<ScriptVariant> {
+    .def("address_from_string", [](Blockchain &chain, const std::string &addressString) -> ranges::optional<AnyScript> {
         auto address = getAddressFromString(addressString, chain.getAccess());
         if (address) {
             return address->getScript().wrapped;

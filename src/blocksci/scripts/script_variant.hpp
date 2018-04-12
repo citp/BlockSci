@@ -8,6 +8,7 @@
 #ifndef script_variant_hpp
 #define script_variant_hpp
 
+#include <blocksci/blocksci_export.h>
 #include "multisig_script.hpp"
 #include "nonstandard_script.hpp"
 #include "nulldata_script.hpp"
@@ -33,13 +34,19 @@ namespace blocksci {
         static constexpr auto scriptDataCreator = make_dynamic_table<AddressType, ScriptDataCreateFunctor>();
     }
     
-    class AnyScript {
+    class BLOCKSCI_EXPORT AnyScript {
     public:
+        AnyScript() = default;
         AnyScript(const Address &address) : wrapped(internal::scriptCreator.at(static_cast<size_t>(address.type))(address.scriptNum, address.getAccess())) {}
         AnyScript(uint32_t addressNum, AddressType::Enum type, DataAccess &access) : wrapped(internal::scriptCreator.at(static_cast<size_t>(type))(addressNum, access)) {}
-        
-        AddressType::Enum type() const {
-            return mpark::visit([&](auto &scriptAddress) { return scriptAddress.addressType; }, wrapped);
+        AnyScript(const ScriptVariant &var) : wrapped(var) {}
+
+        uint32_t getScriptNum() const {
+            return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getScriptNum(); }, wrapped);
+        }
+
+        AddressType::Enum getType() const {
+            return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getType(); }, wrapped);
         }
         
         std::string toString() const {
@@ -61,11 +68,30 @@ namespace blocksci {
         ranges::optional<uint32_t> txRevealedIndex() {
             return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getTxRevealedIndex(); }, wrapped);
         }
+
+        Transaction getFirstTransaction() const;
+        ranges::optional<Transaction> getTransactionRevealed() const;
+
+        bool hasBeenSpent() const {
+            return mpark::visit([&](auto &scriptAddress) { return scriptAddress.hasBeenSpent(); }, wrapped);
+        }
+
+        uint64_t calculateBalance(BlockHeight height) const;
+    
+        EquivAddress getEquivAddresses(bool nestedEquivalent) const;
+        
+        std::vector<OutputPointer> getOutputPointers() const;
+        
+        std::vector<Output> getOutputs() const;
+        std::vector<Input> getInputs() const;
+        std::vector<Transaction> getTransactions() const;
+        std::vector<Transaction> getOutputTransactions() const;
+        std::vector<Transaction> getInputTransactions() const;
         
         ScriptVariant wrapped;
     };
     
-    class AnyScriptData {
+    class BLOCKSCI_EXPORT AnyScriptData {
     public:
         AnyScriptData(const RawAddress &address, const ScriptAccess &access) : wrapped(internal::scriptDataCreator.at(static_cast<size_t>(address.type))(address.scriptNum, access)) {}
         

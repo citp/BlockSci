@@ -10,6 +10,7 @@
 #define input_py_hpp
 
 #include "variant_py.hpp"
+#include "any_script_caster.hpp"
 
 #include <blocksci/chain/algorithms.hpp>
 #include <blocksci/chain/input.hpp>
@@ -27,8 +28,8 @@ template <typename Class, typename FuncApplication, typename FuncDoc>
 void addInputMethods(Class &cl, FuncApplication func, FuncDoc func2) {
 	using namespace blocksci;
     cl
-    .def_property_readonly("address", func([](const Input &input) -> ScriptVariant {
-        return input.getAddress().getScript().wrapped;
+    .def_property_readonly("address", func([](const Input &input) -> AnyScript {
+        return input.getAddress().getScript();
     }), func2("The address linked to this input"))
     .def_property_readonly("value", func([](const Input &input) -> int64_t {
         return input.getValue();

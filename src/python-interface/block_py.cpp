@@ -37,7 +37,7 @@ auto addBlockRange(py::module &m, const std::string &name) {
 
 template <typename T>
 auto addOptionalBlockRange(py::module &m, const std::string &name) {
-    auto cl = addRangeClass<T>(m, name);
+    auto cl = addOptionalRangeClass<T>(m, name);
     addBlockMethods(cl, [](auto func) {
         return applyMethodsToRange<T>(func);
     }, [](std::string docstring) {

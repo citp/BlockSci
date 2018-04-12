@@ -18,8 +18,8 @@
 #include <blocksci/util/file_mapper.hpp>
 #include <blocksci/heuristics/change_address.hpp>
 
-#include <range/v3/view/iota.hpp>
 #include <range/v3/view/transform.hpp>
+#include <range/v3/view/iota.hpp>
 
 #include <boost/filesystem/path.hpp>
 

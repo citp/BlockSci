@@ -11,7 +11,10 @@
 
 #include "script.hpp"
 
+#include <blocksci/util/data_access.hpp>
+
 #include <string>
+#include <sstream>
 
 namespace blocksci {
     template <>

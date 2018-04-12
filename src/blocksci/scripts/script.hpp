@@ -24,6 +24,7 @@ namespace blocksci {
             return rawData;
         }
     public:
+        ScriptBase() = default;
         ScriptBase(uint32_t scriptNum_, AddressType::Enum type_, DataAccess &access_, const ScriptDataBase *rawData_) : Address(scriptNum_, type_, access_), rawData(rawData_) {}
         
         void visitPointers(const std::function<void(const Address &)> &) const {}

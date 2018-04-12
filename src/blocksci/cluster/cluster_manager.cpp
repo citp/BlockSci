@@ -229,6 +229,9 @@ namespace blocksci {
                 }
             }
             auto progressBar = makeProgressBar(totalTxCount, [=]() {});
+            if (threadNum != progressThread) {
+                progressBar.setSilent();
+            }
             uint32_t txNum = 0;
             for (auto &block : blocks) {
                 RANGES_FOR(auto tx, block) {
@@ -236,9 +239,7 @@ namespace blocksci {
                     for (auto &pair : pairs) {
                         ds.link_addresses(pair.first, pair.second);
                     }
-                    if (threadNum == progressThread) {
-                        progressBar.update(txNum);
-                    }
+                    progressBar.update(txNum);
                     txNum++;
                 }
             }
