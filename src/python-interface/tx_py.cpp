@@ -101,6 +101,6 @@ void init_tx(py::module &m) {
     
     addTxRange<ranges::any_view<Transaction>>(m, "AnyTxRange");
     addTxRange<ranges::any_view<Transaction, ranges::category::random_access>>(m, "TxRange");
-    addOptionalTxRange<ranges::any_view<ranges::optional<Transaction>>>(m, "AnyOptionaTxRange");
-    addOptionalTxRange<ranges::any_view<ranges::optional<Transaction>, ranges::category::random_access>>(m, "OptionaTxRange");
+    addOptionalTxRange<ranges::any_view<ranges::optional<Transaction>>>(m, "AnyOptionalTxRange");
+    addOptionalTxRange<ranges::any_view<ranges::optional<Transaction>, ranges::category::random_access>>(m, "OptionalTxRange");
 }
