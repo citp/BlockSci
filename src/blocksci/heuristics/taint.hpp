@@ -8,14 +8,15 @@
 #ifndef taint_hpp
 #define taint_hpp
 
+#include <blocksci/blocksci_export.h>
 #include <blocksci/chain/output.hpp>
 #include <stdio.h>
 #include <vector>
 
 namespace blocksci { namespace heuristics {
-    std::vector<std::pair<Output, uint64_t>> getPoisonTainted(const Output &output, uint64_t taintedValue);
-    std::vector<std::pair<Output, uint64_t>> getHaircutTainted(const Output &output, uint64_t taintedValue);
-    std::vector<std::pair<Output, uint64_t>> getFifoTainted(const Output &output, uint64_t taintedValue);
+    std::vector<std::pair<Output, uint64_t>> BLOCKSCI_EXPORT getPoisonTainted(const Output &output, uint64_t taintedValue);
+    std::vector<std::pair<Output, uint64_t>> BLOCKSCI_EXPORT getHaircutTainted(const Output &output, uint64_t taintedValue);
+    std::vector<std::pair<Output, uint64_t>> BLOCKSCI_EXPORT getFifoTainted(const Output &output, uint64_t taintedValue);
 }}
 
 #endif /* taint_hpp */

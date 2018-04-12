@@ -9,6 +9,7 @@
 #ifndef data_configuration_h
 #define data_configuration_h
 
+#include <blocksci/blocksci_export.h>
 #include <blocksci/blocksci_fwd.hpp>
 #include <boost/filesystem/path.hpp>
 
@@ -19,7 +20,7 @@ namespace blocksci {
     
     static constexpr int dataVersion = 4;
     
-    struct DataConfiguration {
+    struct BLOCKSCI_EXPORT DataConfiguration {
         DataConfiguration() {}
         // May create data directory (Used by parser)
         explicit DataConfiguration(boost::filesystem::path dataDirectory);

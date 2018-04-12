@@ -9,6 +9,7 @@
 #ifndef script_access_hpp
 #define script_access_hpp
 
+#include <blocksci/blocksci_export.h>
 #include "script_info.hpp"
 #include "script_data.hpp"
 
@@ -53,7 +54,7 @@ namespace blocksci {
     template<DedupAddressType::Enum type>
     using ScriptFilePtr = std::unique_ptr<ScriptFile<type>>;
     
-    class ScriptAccess {
+    class BLOCKSCI_EXPORT ScriptAccess {
     private:
         using ScriptFilesTuple = to_dedup_address_tuple_t<ScriptFilePtr>;
         ScriptFilesTuple scriptFiles;
@@ -83,8 +84,8 @@ namespace blocksci {
         }
         
         template<DedupAddressType::Enum type>
-        size_t scriptCount() const {
-            return getFile<type>().size();
+        uint32_t scriptCount() const {
+            return static_cast<uint32_t>(getFile<type>().size());
         }
         
         std::array<uint32_t, DedupAddressType::size> scriptCounts() const {
@@ -111,7 +112,7 @@ namespace blocksci {
     namespace internal {
         template<DedupAddressType::Enum type>
         uint32_t ScriptCountFunctor<type>::f(const ScriptAccess &access) {
-            return static_cast<uint32_t>(access.scriptCount<type>());
+            return access.scriptCount<type>();
         }
     } // namespace internal
 } // namespace blocksci

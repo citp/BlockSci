@@ -9,6 +9,8 @@
 #ifndef blockchain_hpp
 #define blockchain_hpp
 
+#include <blocksci/blocksci_export.h>
+
 #include "block.hpp"
 #include <blocksci/scripts/script_variant.hpp>
 #include <blocksci/util/data_access.hpp>
@@ -25,45 +27,54 @@ namespace blocksci {
     struct DataConfiguration;
     class DataAccess;
     
-    template <typename F, typename... Args>
-    struct is_callable {
-        template <typename U>
-        static auto test(U* p) -> decltype((*p)(std::declval<Args>()...), void(), std::true_type());
-        
-        template <typename U>
-        static auto test(...) -> decltype(std::false_type());
-        
-        static constexpr bool value = decltype(test<F>(nullptr))::value;
-    };
+    template <AddressType::Enum type>
+    using ScriptRange = ranges::any_view<ScriptAddress<type>, ranges::category::random_access>;
+    using ScriptRangeVariant = to_variadic_t<to_address_tuple_t<ScriptRange>, mpark::variant>;
     
-    template <typename ResultType, typename It, typename MapFunc, typename ReduceFunc>
-    ResultType mapReduceBlocksImp(It begin, It end, MapFunc mapFunc, ReduceFunc reduceFunc, int segmentBeginNum) {
-        auto segmentCount = std::distance(begin, end);
-        if(segmentCount == 1) {
-            ResultType res{};
-            auto ret = mapFunc(*begin, segmentBeginNum);
-            res = reduceFunc(res, ret);
-            return res;
-        } else {
-            auto mid = begin;
-            std::advance(mid, segmentCount / 2);
-            auto handle = std::async(std::launch::async, mapReduceBlocksImp<ResultType, It, MapFunc, ReduceFunc>, begin, mid, mapFunc, reduceFunc, segmentBeginNum);
-            ResultType res{};
-            auto ret2 = mapReduceBlocksImp<ResultType>(mid, end, mapFunc, reduceFunc, segmentBeginNum + segmentCount / 2);
-            auto ret1 = handle.get();
-            res = reduceFunc(res, ret1);
-            res = reduceFunc(res, ret2);
-            return res;
+    namespace internal {
+        template<AddressType::Enum type>
+        struct ScriptRangeFunctor {
+            static ScriptRangeVariant f(Blockchain &chain);
+        };
+        
+        template <typename F, typename... Args>
+        struct is_callable {
+            template <typename U>
+            static auto test(U* p) -> decltype((*p)(std::declval<Args>()...), void(), std::true_type());
+            
+            template <typename U>
+            static auto test(...) -> decltype(std::false_type());
+            
+            static constexpr bool value = decltype(test<F>(nullptr))::value;
+        };
+        
+        template <typename ResultType, typename It, typename MapFunc, typename ReduceFunc>
+        ResultType mapReduceBlocksImp(It begin, It end, MapFunc mapFunc, ReduceFunc reduceFunc, int segmentBeginNum) {
+            auto segmentCount = std::distance(begin, end);
+            if(segmentCount == 1) {
+                ResultType res{};
+                auto ret = mapFunc(*begin, segmentBeginNum);
+                res = reduceFunc(res, ret);
+                return res;
+            } else {
+                auto mid = begin;
+                std::advance(mid, segmentCount / 2);
+                auto handle = std::async(std::launch::async, mapReduceBlocksImp<ResultType, It, MapFunc, ReduceFunc>, begin, mid, mapFunc, reduceFunc, segmentBeginNum);
+                ResultType res{};
+                auto ret2 = mapReduceBlocksImp<ResultType>(mid, end, mapFunc, reduceFunc, segmentBeginNum + segmentCount / 2);
+                auto ret1 = handle.get();
+                res = reduceFunc(res, ret1);
+                res = reduceFunc(res, ret2);
+                return res;
+            }
         }
     }
     
-    class Blockchain;
-    
-    std::vector<std::vector<Block>> segmentChain(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, unsigned int segmentCount);
-    std::vector<std::pair<int, int>> segmentChainIndexes(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, unsigned int segmentCount);
+    std::vector<std::vector<Block>> BLOCKSCI_EXPORT segmentChain(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, unsigned int segmentCount);
+    std::vector<std::pair<int, int>> BLOCKSCI_EXPORT segmentChainIndexes(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, unsigned int segmentCount);
     
     template<typename T>
-    std::vector<std::vector<Block>> segmentBlocks(T && chain, int segmentCount) {
+    std::vector<std::vector<Block>> BLOCKSCI_EXPORT segmentBlocks(T && chain, int segmentCount) {
         auto lastTx = chain.back().endTxIndex();
         auto firstTx = chain.front().firstTxIndex();
         uint32_t segmentSize = (lastTx - firstTx) / segmentCount;
@@ -87,11 +98,7 @@ namespace blocksci {
         return segments;
     }
     
-    template <AddressType::Enum type>
-    using ScriptRange = ranges::any_view<ScriptAddress<type>, ranges::category::random_access>;
-    using ScriptRangeVariant = to_variadic_t<to_address_tuple_t<ScriptRange>, mpark::variant>;
-    
-    class Blockchain : public ranges::view_facade<Blockchain> {
+    class BLOCKSCI_EXPORT Blockchain : public ranges::view_facade<Blockchain> {
         friend ranges::range_access;
         
         struct cursor {
@@ -149,16 +156,18 @@ namespace blocksci {
         
     public:
         Blockchain() = default;
-        explicit Blockchain(const DataConfiguration &config);
-        explicit Blockchain(const std::string &dataDirectory);
+        explicit Blockchain(const DataConfiguration &config) : access(config) {
+            lastBlockHeight = access.chain.blockCount();
+        }
+        explicit Blockchain(const std::string &dataDirectory) : Blockchain(DataConfiguration{dataDirectory, true, BlockHeight{0}}) {}
         
         DataAccess &getAccess() { return access; }
         
         uint32_t firstTxIndex() const;
         uint32_t endTxIndex() const;
         
-        BlockHeight size() const {
-            return lastBlockHeight;
+        uint32_t size() const {
+            return static_cast<uint32_t>(lastBlockHeight);
         }
         
         uint32_t addressCount(AddressType::Enum type) const {
@@ -167,29 +176,33 @@ namespace blocksci {
         
         template <AddressType::Enum type>
         auto scripts() {
-            return ranges::view::iota(uint32_t{1}, access.scripts.scriptCount<dedupType(type)>() + 1) | ranges::view::transform([&](uint32_t scriptNum) {
+            return ranges::view::ints(uint32_t{1}, access.scripts.scriptCount<dedupType(type)>() + 1) | ranges::view::transform([&](uint32_t scriptNum) {
                 return ScriptAddress<type>(scriptNum, access);
             });
         }
         
-        ScriptRangeVariant scripts(AddressType::Enum type);
-        
-        template <typename ResultType, typename MapFunc, typename ReduceFunc>
-        std::enable_if_t<is_callable<MapFunc, std::vector<Block>, int>::value, ResultType>
-        mapReduce(BlockHeight start, BlockHeight stop, MapFunc mapFunc, ReduceFunc reduceFunc) {
-            auto segments = segmentChain(*this, start, stop, std::thread::hardware_concurrency());
-            return mapReduceBlocksImp<ResultType>(segments.begin(), segments.end(), mapFunc, reduceFunc, 0);
+        ScriptRangeVariant scripts(AddressType::Enum type) {
+            static auto table = make_static_table<AddressType, internal::ScriptRangeFunctor>(*this);
+            auto index = static_cast<size_t>(type);
+            return table.at(index);
         }
         
         template <typename ResultType, typename MapFunc, typename ReduceFunc>
-        std::enable_if_t<is_callable<MapFunc, std::vector<Block>>::value, ResultType>
+        std::enable_if_t<internal::is_callable<MapFunc, std::vector<Block>, int>::value, ResultType>
         mapReduce(BlockHeight start, BlockHeight stop, MapFunc mapFunc, ReduceFunc reduceFunc) {
             auto segments = segmentChain(*this, start, stop, std::thread::hardware_concurrency());
-            return mapReduceBlocksImp<ResultType>(segments.begin(), segments.end(), [&](const std::vector<Block> &blocks, int) { return mapFunc(blocks); }, reduceFunc, 0);
+            return internal::mapReduceBlocksImp<ResultType>(segments.begin(), segments.end(), mapFunc, reduceFunc, 0);
+        }
+        
+        template <typename ResultType, typename MapFunc, typename ReduceFunc>
+        std::enable_if_t<internal::is_callable<MapFunc, std::vector<Block>>::value, ResultType>
+        mapReduce(BlockHeight start, BlockHeight stop, MapFunc mapFunc, ReduceFunc reduceFunc) {
+            auto segments = segmentChain(*this, start, stop, std::thread::hardware_concurrency());
+            return internal::mapReduceBlocksImp<ResultType>(segments.begin(), segments.end(), [&](const std::vector<Block> &blocks, int) { return mapFunc(blocks); }, reduceFunc, 0);
         }
 
         template <typename ResultType, typename MapFunc, typename ReduceFunc>
-        std::enable_if_t<is_callable<MapFunc, Block>::value, ResultType>
+        std::enable_if_t<internal::is_callable<MapFunc, Block>::value, ResultType>
         mapReduce(BlockHeight start, BlockHeight stop, MapFunc mapFunc, ReduceFunc reduceFunc) {
             auto mapF = [&](const std::vector<Block> &segment) {
                 ResultType res{};
@@ -203,7 +216,7 @@ namespace blocksci {
         }
 
         template <typename ResultType, typename MapFunc, typename ReduceFunc>
-        std::enable_if_t<is_callable<MapFunc, Transaction>::value, ResultType>
+        std::enable_if_t<internal::is_callable<MapFunc, Transaction>::value, ResultType>
         mapReduce(BlockHeight start, BlockHeight stop, MapFunc mapFunc, ReduceFunc reduceFunc) {
             auto mapF = [&](const Block &block) {
                 ResultType res{};
@@ -238,15 +251,22 @@ namespace blocksci {
         }
     };
     
-    uint32_t txCount(Blockchain &chain);
+    uint32_t BLOCKSCI_EXPORT txCount(Blockchain &chain);
     
     // filter - Blocks and Txes
-    std::vector<Block> filter(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, std::function<bool(const Block &block)> testFunc);
-    std::vector<Transaction> filter(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, std::function<bool(const Transaction &tx)> testFunc);
+    std::vector<Block> BLOCKSCI_EXPORT filter(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, std::function<bool(const Block &block)> testFunc);
+    std::vector<Transaction> BLOCKSCI_EXPORT filter(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, std::function<bool(const Transaction &tx)> testFunc);
     
-    std::vector<Transaction> getTransactionIncludingOutput(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, AddressType::Enum type);
+    std::vector<Transaction> BLOCKSCI_EXPORT getTransactionIncludingOutput(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, AddressType::Enum type);
     
-    std::map<uint64_t, Address> mostValuableAddresses(Blockchain &chain);
+    std::map<uint64_t, Address> BLOCKSCI_EXPORT mostValuableAddresses(Blockchain &chain);
+    
+    namespace internal {
+        template<AddressType::Enum type>
+        ScriptRangeVariant ScriptRangeFunctor<type>::f(Blockchain &chain) {
+            return chain.scripts<type>();
+        }
+    }
 } // namespace blocksci
 
 

@@ -8,6 +8,7 @@
 #ifndef change_address_hpp
 #define change_address_hpp
 
+#include <blocksci/blocksci_export.h>
 #include <blocksci/chain/chain_fwd.hpp>
 #include <blocksci/chain/output.hpp>
 #include <blocksci/scripts/scripts_fwd.hpp>
@@ -27,7 +28,7 @@ namespace heuristics {
     
     bool isPeelingChain(const Transaction &tx);
     
-    struct ChangeType {
+    struct BLOCKSCI_EXPORT ChangeType {
         enum Enum {
         #define VAL(x) x
             CHANGE_ADDRESS_TYPE_LIST
@@ -47,12 +48,12 @@ namespace heuristics {
     };
     
     template <ChangeType::Enum heuristic>
-    struct ChangeHeuristicImpl : ChangeHeuristicImplParent<ChangeHeuristicImpl<heuristic>> {
+    struct BLOCKSCI_EXPORT ChangeHeuristicImpl : ChangeHeuristicImplParent<ChangeHeuristicImpl<heuristic>> {
         std::unordered_set<Output> operator()(const Transaction &tx) const;
     };
     
     template<>
-    struct ChangeHeuristicImpl<ChangeType::PowerOfTen> : ChangeHeuristicImplParent<ChangeHeuristicImpl<ChangeType::PowerOfTen>> {
+    struct BLOCKSCI_EXPORT ChangeHeuristicImpl<ChangeType::PowerOfTen> : ChangeHeuristicImplParent<ChangeHeuristicImpl<ChangeType::PowerOfTen>> {
         int digits;
         ChangeHeuristicImpl(int digits_ = 5) : ChangeHeuristicImplParent{}, digits(digits_) {}
         std::unordered_set<Output> operator()(const Transaction &tx) const;
@@ -67,7 +68,7 @@ namespace heuristics {
     using ClientChangeAddressBehaviorChange = ChangeHeuristicImpl<ChangeType::ClientChangeAddressBehavior>;
     using LegacyChange = ChangeHeuristicImpl<ChangeType::Legacy>;
         
-    struct ChangeHeuristic {
+    struct BLOCKSCI_EXPORT ChangeHeuristic {
         
         using HeuristicFunc = std::function<std::unordered_set<Output>(const Transaction &tx)>;
         
@@ -78,7 +79,7 @@ namespace heuristics {
         template<typename T>
         ChangeHeuristic(T func) : impl(std::move(func)) {}
         
-        std::unordered_set<Output> operator()(const Transaction &tx) {
+        std::unordered_set<Output> operator()(const Transaction &tx) const {
             return impl(tx);
         }
         
@@ -86,8 +87,8 @@ namespace heuristics {
             return internal::singleOrNullptr(impl(tx));
         }
         
-        static ChangeHeuristic heuristicIntersection(ChangeHeuristic a, ChangeHeuristic b) {
-            return ChangeHeuristic{HeuristicFunc{[&](const Transaction &tx) {
+        static ChangeHeuristic setIntersection(ChangeHeuristic a, ChangeHeuristic b) {
+            return ChangeHeuristic{HeuristicFunc{[=](const Transaction &tx) {
                 auto first = a(tx);
                 auto second = b(tx);
                 for(auto it = begin(first); it != end(first);) {
@@ -101,8 +102,8 @@ namespace heuristics {
             }}};
         }
         
-        static ChangeHeuristic heuristicUnion(ChangeHeuristic a, ChangeHeuristic b) {
-            return ChangeHeuristic{HeuristicFunc{[&](const Transaction &tx) {
+        static ChangeHeuristic setUnion(ChangeHeuristic a, ChangeHeuristic b) {
+            return ChangeHeuristic{HeuristicFunc{[=](const Transaction &tx) {
                 auto first = a(tx);
                 auto second = b(tx);
                 for (auto &item : second) {
@@ -112,8 +113,8 @@ namespace heuristics {
             }}};
         }
         
-        static ChangeHeuristic heuristicDifference(ChangeHeuristic a, ChangeHeuristic b) {
-            return ChangeHeuristic{HeuristicFunc{[&](const Transaction &tx) {
+        static ChangeHeuristic setDifference(ChangeHeuristic a, ChangeHeuristic b) {
+            return ChangeHeuristic{HeuristicFunc{[=](const Transaction &tx) {
                 auto first = a(tx);
                 auto second = b(tx);
                 for(auto it = begin(first); it != end(first);) {
@@ -129,30 +130,30 @@ namespace heuristics {
     };
     
     // If tx is a peeling chain, returns the smaller output.
-    std::unordered_set<Output> changeByPeelingChain(const Transaction &tx);
-    ranges::optional<Output> uniqueChangeByPeelingChain(const Transaction &tx);
+    std::unordered_set<Output> BLOCKSCI_EXPORT changeByPeelingChain(const Transaction &tx);
+    ranges::optional<Output> BLOCKSCI_EXPORT uniqueChangeByPeelingChain(const Transaction &tx);
     
     // Detects a change output by checking for output values that are multiples of 10^digits.
-    std::unordered_set<Output> changeByPowerOfTenValue(const Transaction &tx, int digits = 6);
-    ranges::optional<Output> uniqueChangeByPowerOfTenValue(const Transaction &tx, int digits=6);
+    std::unordered_set<Output> BLOCKSCI_EXPORT changeByPowerOfTenValue(const Transaction &tx, int digits = 6);
+    ranges::optional<Output> BLOCKSCI_EXPORT uniqueChangeByPowerOfTenValue(const Transaction &tx, int digits=6);
     
-    std::unordered_set<Output> changeByOptimalChange(const Transaction &tx);
-    ranges::optional<Output> uniqueChangeByOptimalChange(const Transaction &tx);
+    std::unordered_set<Output> BLOCKSCI_EXPORT changeByOptimalChange(const Transaction &tx);
+    ranges::optional<Output> BLOCKSCI_EXPORT uniqueChangeByOptimalChange(const Transaction &tx);
     
-    std::unordered_set<Output> changeByAddressType(const Transaction &tx);
-    ranges::optional<Output> uniqueChangeByAddressType(const Transaction &tx);
+    std::unordered_set<Output> BLOCKSCI_EXPORT changeByAddressType(const Transaction &tx);
+    ranges::optional<Output> BLOCKSCI_EXPORT uniqueChangeByAddressType(const Transaction &tx);
     
-    std::unordered_set<Output> changeByLocktime(const Transaction &tx);
-    ranges::optional<Output> uniqueChangeByLocktime(const Transaction &tx);
+    std::unordered_set<Output> BLOCKSCI_EXPORT changeByLocktime(const Transaction &tx);
+    ranges::optional<Output> BLOCKSCI_EXPORT uniqueChangeByLocktime(const Transaction &tx);
     
-    std::unordered_set<Output> changeByAddressReuse(const Transaction &tx);
-    ranges::optional<Output> uniqueChangeByAddressReuse(const Transaction &tx);
+    std::unordered_set<Output> BLOCKSCI_EXPORT changeByAddressReuse(const Transaction &tx);
+    ranges::optional<Output> BLOCKSCI_EXPORT uniqueChangeByAddressReuse(const Transaction &tx);
     
-    std::unordered_set<Output> changeByClientChangeAddressBehavior(const Transaction &tx);
-    ranges::optional<Output> uniqueChangeByClientChangeAddressBehavior(const Transaction &tx);
+    std::unordered_set<Output> BLOCKSCI_EXPORT changeByClientChangeAddressBehavior(const Transaction &tx);
+    ranges::optional<Output> BLOCKSCI_EXPORT uniqueChangeByClientChangeAddressBehavior(const Transaction &tx);
     
-    std::unordered_set<Output> changeByLegacyHeuristic(const Transaction &tx);
-    ranges::optional<Output> uniqueChangeByLegacyHeuristic(const Transaction &tx);
+    std::unordered_set<Output> BLOCKSCI_EXPORT changeByLegacyHeuristic(const Transaction &tx);
+    ranges::optional<Output> BLOCKSCI_EXPORT uniqueChangeByLegacyHeuristic(const Transaction &tx);
 }}
 
 #endif /* change_address_hpp */

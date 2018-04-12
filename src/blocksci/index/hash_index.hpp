@@ -9,6 +9,7 @@
 #ifndef hash_index_hpp
 #define hash_index_hpp
 
+#include <blocksci/blocksci_export.h>
 #include <blocksci/address/address_info.hpp>
 
 #include <rocksdb/db.h>
@@ -19,7 +20,7 @@
 
 
 namespace blocksci {
-    class HashIndex {
+    class BLOCKSCI_EXPORT HashIndex {
     public:
         HashIndex(const std::string &path, bool readonly);
         

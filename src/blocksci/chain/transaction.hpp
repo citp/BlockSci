@@ -119,7 +119,7 @@ namespace blocksci {
             BlockHeight height = blockHeight;
             return ranges::view::zip_with([dataAccess, txIndex, height](uint16_t outputNum, const Inout &inout) {
                 return Output({txIndex, outputNum}, height, inout, *dataAccess);
-            }, ranges::view::iota(uint16_t{0}, outputCount()), rawOutputs());
+            }, ranges::view::ints(uint16_t{0}, outputCount()), rawOutputs());
         }
         
         auto inputs() const {
@@ -129,7 +129,7 @@ namespace blocksci {
             auto seq = sequenceNumbers;
             return ranges::view::zip_with([dataAccess, txIndex, height, seq](uint16_t inputNum, const Inout &inout) {
                 return Input({txIndex, inputNum}, height, inout, &seq[inputNum], *dataAccess);
-            }, ranges::view::iota(uint16_t{0}, inputCount()), rawInputs());
+            }, ranges::view::ints(uint16_t{0}, inputCount()), rawInputs());
         }
         
         bool isCoinbase() const {

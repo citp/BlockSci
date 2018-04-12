@@ -8,12 +8,13 @@
 #ifndef dedup_address_info_hpp
 #define dedup_address_info_hpp
 
+#include <blocksci/blocksci_export.h>
 #include "address_fwd.hpp"
 #include <blocksci/util/static_table.hpp>
 
 namespace blocksci {
     template <>
-    struct DedupAddressInfo<DedupAddressType::PUBKEY> {
+    struct BLOCKSCI_EXPORT DedupAddressInfo<DedupAddressType::PUBKEY> {
         static constexpr char name[] = "pubkey_script";
         static constexpr bool equived = true;
         static constexpr bool spendable = true;
@@ -23,7 +24,7 @@ namespace blocksci {
     };
     
     template <>
-    struct DedupAddressInfo<DedupAddressType::SCRIPTHASH> {
+    struct BLOCKSCI_EXPORT DedupAddressInfo<DedupAddressType::SCRIPTHASH> {
         static constexpr char name[] = "scripthash_script";
         static constexpr bool equived = true;
         static constexpr bool spendable = true;
@@ -33,7 +34,7 @@ namespace blocksci {
     };
     
     template <>
-    struct DedupAddressInfo<DedupAddressType::MULTISIG> {
+    struct BLOCKSCI_EXPORT DedupAddressInfo<DedupAddressType::MULTISIG> {
         static constexpr char name[] = "multisig_script";
         static constexpr bool equived = true;
         static constexpr bool spendable = true;
@@ -43,7 +44,7 @@ namespace blocksci {
     };
     
     template <>
-    struct DedupAddressInfo<DedupAddressType::NONSTANDARD> {
+    struct BLOCKSCI_EXPORT DedupAddressInfo<DedupAddressType::NONSTANDARD> {
         static constexpr char name[] = "nonstandard_script";
         static constexpr bool equived = false;
         static constexpr bool spendable = true;
@@ -53,7 +54,7 @@ namespace blocksci {
     };
     
     template <>
-    struct DedupAddressInfo<DedupAddressType::NULL_DATA> {
+    struct BLOCKSCI_EXPORT DedupAddressInfo<DedupAddressType::NULL_DATA> {
         static constexpr char name[] = "null_data_script";
         static constexpr bool equived = false;
         static constexpr bool spendable = false;
@@ -75,7 +76,7 @@ namespace blocksci {
     
     static constexpr auto spendableTable = blocksci::make_static_table<DedupAddressType, SpendableFunctor>();
     
-    constexpr bool isSpendable(DedupAddressType::Enum t) {
+    constexpr bool BLOCKSCI_EXPORT isSpendable(DedupAddressType::Enum t) {
         auto index = static_cast<size_t>(t);
         scriptTypeCheckThrow(index);
         return spendableTable[index];
@@ -90,7 +91,7 @@ namespace blocksci {
     
     static constexpr auto equivedTable = blocksci::make_static_table<DedupAddressType, EquivedFunctor>();
     
-    constexpr bool isEquived(DedupAddressType::Enum t) {
+    constexpr bool BLOCKSCI_EXPORT isEquived(DedupAddressType::Enum t) {
         auto index = static_cast<size_t>(t);
         scriptTypeCheckThrow(index);
         return equivedTable[index];
@@ -105,13 +106,13 @@ namespace blocksci {
     
     static constexpr auto dedupEquivTable = blocksci::make_static_table<DedupAddressType, DedupEquivTypeFunctor>();
     
-    constexpr EquivAddressType::Enum equivType(DedupAddressType::Enum t) {
+    constexpr EquivAddressType::Enum BLOCKSCI_EXPORT equivType(DedupAddressType::Enum t) {
         auto index = static_cast<size_t>(t);
         scriptTypeCheckThrow(index);
         return dedupEquivTable[index];
     }
     
-    std::string dedupAddressName(DedupAddressType::Enum type);
+    std::string BLOCKSCI_EXPORT dedupAddressName(DedupAddressType::Enum type);
 }
 
 #endif /* dedup_address_info_hpp */

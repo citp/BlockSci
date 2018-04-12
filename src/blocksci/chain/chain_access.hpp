@@ -9,6 +9,7 @@
 #ifndef chain_access_hpp
 #define chain_access_hpp
 
+#include <blocksci/blocksci_export.h>
 #include "chain_fwd.hpp"
 
 #include "raw_block.hpp"
@@ -22,7 +23,7 @@
 
 namespace blocksci {
     
-    class ReorgException : public std::runtime_error {
+    class BLOCKSCI_EXPORT ReorgException : public std::runtime_error {
     public:
         ReorgException() : std::runtime_error("Blockchain has experienced reorg") {}
     };

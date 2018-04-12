@@ -78,25 +78,6 @@ namespace blocksci {
         return segments;
     }
     
-    Blockchain::Blockchain(const std::string &dataDirectory) : Blockchain(DataConfiguration{dataDirectory, true, BlockHeight{0}}) {}
-    
-    Blockchain::Blockchain(const DataConfiguration &config) : access(config) {
-        lastBlockHeight = access.chain.blockCount();
-    }
-    
-    template<AddressType::Enum type>
-    struct ScriptRangeFunctor {
-        static ScriptRangeVariant f(Blockchain &chain) {
-            return chain.scripts<type>();
-        }
-    };
-    
-    ScriptRangeVariant Blockchain::scripts(AddressType::Enum type) {
-        static auto table = make_static_table<AddressType, ScriptRangeFunctor>(*this);
-        auto index = static_cast<size_t>(type);
-        return table.at(index);
-    }
-    
     uint32_t txCount(Blockchain &chain) {
         auto lastBlock = chain[chain.size() - BlockHeight{1}];
         return lastBlock.endTxIndex();

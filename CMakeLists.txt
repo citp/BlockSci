@@ -8,6 +8,9 @@ set(CMAKE_MACOSX_RPATH 1)
 
 set(Upstream_VERSION 0.5.0)
 
+
+set(CXX_VISIBILITY_PRESET hidden)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
 
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-old-style-cast -Wno-documentation-unknown-command -Wno-documentation -Wno-shadow -Wno-switch-enum -Wno-missing-prototypes -Wno-weak-vtables -Wno-exit-time-destructors -Wno-unused-macros -Wno-padded -Wno-undefined-func-template")

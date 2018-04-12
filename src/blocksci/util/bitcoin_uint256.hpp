@@ -6,6 +6,7 @@
 #ifndef BLOCKSCI_BITCOIN_UINT256_H
 #define BLOCKSCI_BITCOIN_UINT256_H
 
+#include <blocksci/blocksci_export.h>
 #include <boost/serialization/access.hpp>
 
 #include <cassert>
@@ -149,7 +150,7 @@ namespace blocksci {
      * @note This type is called uint160 for historical reasons only. It is an opaque
      * blob of 160 bits and has no integer operations.
      */
-    class uint160 : public base_blob<160> {
+    class BLOCKSCI_EXPORT uint160 : public base_blob<160> {
     public:
         uint160() {}
         explicit uint160(const base_blob<160>& b) : base_blob<160>(b) {}
@@ -172,7 +173,7 @@ namespace blocksci {
      * opaque blob of 256 bits and has no integer operations. Use arith_uint256 if
      * those are required.
      */
-    class uint256 : public base_blob<256> {
+    class BLOCKSCI_EXPORT uint256 : public base_blob<256> {
     public:
         uint256() {}
         explicit uint256(const base_blob<256>& b) : base_blob<256>(b) {}

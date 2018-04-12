@@ -8,6 +8,7 @@
 #ifndef address_output_range_hpp
 #define address_output_range_hpp
 
+#include <blocksci/blocksci_export.h>
 #include <blocksci/util/data_access.hpp>
 #include <blocksci/chain/inout_pointer.hpp>
 #include <blocksci/address/address.hpp>
@@ -19,7 +20,7 @@
 #include <iostream>
 
 namespace blocksci {
-    class AddressOutputRange : public ranges::view_facade<AddressOutputRange> {
+    class BLOCKSCI_EXPORT AddressOutputRange : public ranges::view_facade<AddressOutputRange> {
         friend ranges::range_access;
         DataAccess *access;
         

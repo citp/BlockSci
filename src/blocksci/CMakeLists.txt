@@ -120,6 +120,7 @@ set(SCRIPT_SOURCES
   scripts/bitcoin_segwit_addr.cpp
   scripts/script_view.cpp
   scripts/script.cpp
+  scripts/script_variant.cpp
   scripts/scripthash_script.cpp
 )
 
@@ -161,7 +162,10 @@ set(ALL_SOURCES ${BLOCKSCI_HEADERS} ${ADDRESS_HEADERS} ${ADDRESS_SOURCES}  ${SCR
 
 add_library(blocksci SHARED ${ALL_SOURCES})
 add_library(blocksci_static STATIC ${ALL_SOURCES})
-add_library(blocksci_static_unity EXCLUDE_FROM_ALL STATIC blocksci_unity.cpp)
+
+include(GenerateExportHeader)
+generate_export_header(blocksci)
+set_target_properties(blocksci_static PROPERTIES COMPILE_FLAGS -DBLOCKSCI_STATIC_DEFINE)
 
 set_property(TARGET blocksci PROPERTY VERSION ${Upstream_VERSION})
 set_property(TARGET blocksci_static PROPERTY VERSION ${Upstream_VERSION})
@@ -201,26 +205,15 @@ target_link_libraries( blocksci_static PRIVATE secp256k1)
 target_link_libraries( blocksci_static PRIVATE dset)
 target_link_libraries( blocksci_static PUBLIC blocksci_mpark_variant blocksci_ranges)
 
-target_link_libraries( blocksci_static_unity PUBLIC Threads::Threads)
-target_link_libraries( blocksci_static_unity PUBLIC Boost::filesystem Boost::iostreams Boost::serialization)
-target_link_libraries( blocksci_static_unity PUBLIC OpenSSL::Crypto )
-target_link_libraries( blocksci_static_unity PUBLIC rocksdb )
-target_link_libraries( blocksci_static_unity PRIVATE secp256k1)
-target_link_libraries( blocksci_static_unity PRIVATE dset)
-target_link_libraries( blocksci_static_unity PUBLIC blocksci_mpark_variant blocksci_ranges)
-
 target_include_directories(blocksci PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
   $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>
 )
 
 target_include_directories(blocksci_static PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-  $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>
-)
-
-target_include_directories(blocksci_static_unity PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
   $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>
 )
 

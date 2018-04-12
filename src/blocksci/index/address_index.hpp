@@ -9,6 +9,7 @@
 #ifndef address_index_hpp
 #define address_index_hpp
 
+#include <blocksci/blocksci_export.h>
 #include <blocksci/address/address_fwd.hpp>
 #include <blocksci/chain/chain_fwd.hpp>
 #include <blocksci/address/address_info.hpp>
@@ -23,7 +24,7 @@ namespace blocksci {
     class DataAccess;
     class EquivAddress;
     
-    class AddressIndex {
+    class BLOCKSCI_EXPORT AddressIndex {
         std::unique_ptr<rocksdb::DB> db;
         std::vector<std::unique_ptr<rocksdb::ColumnFamilyHandle>> columnHandles;
         

@@ -15,6 +15,7 @@
 
 #include <string>
 #include <sstream>
+#include <vector>
 
 namespace blocksci {
     class DataAccess;
