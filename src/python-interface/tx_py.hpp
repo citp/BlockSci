@@ -14,6 +14,7 @@
 #include <blocksci/heuristics/change_address.hpp>
 
 #include <pybind11/pybind11.h>
+#include <pybind11/chrono.h>
 
 #include <range/v3/view/any_view.hpp>
 
@@ -53,6 +54,9 @@ void addTransactionMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     .def_property_readonly("block_time", func([](const Transaction &tx) -> std::chrono::system_clock::time_point {
         return tx.block().getTime();
     }), func2("The time that the block containing this transaction arrived"))
+    .def_property_readonly("time_seen", func([](const Transaction &tx) -> ranges::optional<std::chrono::system_clock::time_point> {
+        return tx.getTimeSeen();
+    }), func2("If recorded by the mempool recorder, the time that this transaction was first seen by your node"))
     .def_property_readonly("block", func([](const Transaction &tx) -> Block {
         return tx.block();
     }), func2("The block that this transaction was in"))
