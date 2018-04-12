@@ -14,6 +14,8 @@
 
 #include <bitcoinapi/bitcoinapi.h>
 
+#include <clipp.h>
+
 #include <range/v3/range_for.hpp>
 
 #include <chrono>
@@ -121,22 +123,35 @@ public:
 };
 
 
-int main(int argc, const char * argv[]) {
-    assert(argc == 2);
-    
+int main(int argc, char * argv[]) {
     struct sigaction action;
     memset(&action, 0, sizeof(struct sigaction));
     action.sa_handler = term;
     sigaction(SIGTERM, &action, NULL);
     
-    std::string user = "blocksci";
-    std::string password = "blocksci";
-    std::string host = "localhost";
-    int port = 8331;
-
-    BitcoinAPI bitcoinAPI{user, password, host, port};
     
-    DataConfiguration config(argv[1], false, 0);
+    std::string username;
+    std::string password;
+    std::string address = "127.0.0.1";
+    int port = 9998;
+    auto rpcOptions = (
+        (clipp::required("--username") & clipp::value("username", username)) % "RPC username",
+        (clipp::required("--password") & clipp::value("password", password)) % "RPC password",
+        (clipp::option("--address") & clipp::value("address", address)) % "RPC address",
+        (clipp::option("--port") & clipp::value("port", port)) % "RPC port"
+    ).doc("RPC options");
+
+    std::string dataLocation;
+    auto cli = (clipp::value("data location", dataLocation), rpcOptions);
+    auto res = parse(argc, argv, cli);
+    if (res.any_error()) {
+        std::cout << "Invalid command line parameter\n" << clipp::make_man_page(cli, argv[0]);
+        return 0;
+    }
+
+    BitcoinAPI bitcoinAPI{username, password, address, port};
+    
+    DataConfiguration config(dataLocation, false, 0);
     
     MempoolRecorder recorder{config, bitcoinAPI};
     
