@@ -1,10 +1,6 @@
-file(GLOB MEMPOOL_RECORDER_HEADERS "*.hpp")
-file(GLOB MEMPOOL_RECORDER_SOURCES "*.cpp")
+add_executable(mempool_recorder main.cpp)
 
-add_executable(mempool_recorder ${MEMPOOL_RECORDER_SOURCES} ${MEMPOOL_RECORDER_HEADERS})
-
-target_link_libraries( mempool_recorder blocksci)
-target_link_libraries( mempool_recorder bitcoinapi)
-target_link_libraries( mempool_recorder ${Boost_LIBRARIES})
+target_link_libraries( mempool_recorder blocksci_static)
+target_link_libraries( mempool_recorder bitcoinapi_static)
 
 install(TARGETS mempool_recorder DESTINATION bin)

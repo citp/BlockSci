@@ -123,6 +123,10 @@ namespace blocksci {
         size_t size() const {
             return dataFile.size() / sizeof(T);
         }
+        
+        void flush() {
+            dataFile.flush();
+        }
     };
     
     template <size_t indexCount>

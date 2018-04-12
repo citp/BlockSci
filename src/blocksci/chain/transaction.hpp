@@ -64,6 +64,10 @@ namespace blocksci {
             return *access->chain.getTxHash(txNum);
         }
         
+        ranges::optional<std::chrono::system_clock::time_point> getTimeSeen() const {
+            return access->mempoolIndex.getTimestamp(txNum);
+        }
+        
         std::string toString() const {
             std::stringstream ss;
             ss << "Tx(len(txins)=" << inputCount() <<", len(txouts)=" << outputCount() <<", size_bytes=" << sizeBytes() << ", block_height=" << blockHeight <<", tx_index=" << txNum << ")";

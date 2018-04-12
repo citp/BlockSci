@@ -8,41 +8,41 @@
 
 #define BLOCKSCI_WITHOUT_SINGLETON
 
-#include <blocksci/blocksci.hpp>
-#include <blocksci/util/data_configuration.hpp>
 #include <blocksci/util/data_access.hpp>
-#include <blocksci/util/file_mapper.hpp>
-#include <blocksci/index/address_index.hpp>
-#include <blocksci/index/hash_index.hpp>
-#include <blocksci/chain/chain_access.hpp>
+#include <blocksci/util/file_writer.hpp>
+#include <blocksci/chain/block.hpp>
 
 #include <bitcoinapi/bitcoinapi.h>
 
-#include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time.hpp>
-
 #include <range/v3/range_for.hpp>
 
-#include <unordered_map>
-#include <unordered_set>
-#include <map>
+#include <chrono>
+#include <iostream>
 #include <future>
+#include <unordered_map>
 
-#include <fstream>
+#include <csignal>
+
+static volatile sig_atomic_t done = 0;
+
+void term(int)
+{
+    done = 1;
+}
 
 using namespace blocksci;
-// boost::posix_time::hours(24 * 5)
 class MempoolRecorder {
     blocksci::BlockHeight lastHeight;
     std::unordered_map<uint256, time_t, std::hash<blocksci::uint256>> mempool;
     const DataConfiguration &config;
     BitcoinAPI &bitcoinAPI;
-    blocksci::FixedSizeFileMapper<time_t, blocksci::AccessMode::readwrite> txTimeFile;
+    blocksci::FixedSizeFileWriter<time_t> txTimeFile;
 public:
     MempoolRecorder(const DataConfiguration &config_, BitcoinAPI &bitcoinAPI_) : config(config_), bitcoinAPI(bitcoinAPI_), txTimeFile(config.dataDirectory/"mempool") {
         blocksci::ChainAccess chain(config);
         lastHeight = chain.blockCount();
         
+       
         auto mostRecentBlock = chain.getBlock(lastHeight - 1);
         auto lastTxIndex = mostRecentBlock->firstTxIndex + mostRecentBlock->numTxes - 1;
         if (txTimeFile.size() == 0) {
@@ -50,7 +50,7 @@ public:
             txTimeFile.write(lastTxIndex + 1);
         } else {
             // Fill in 0 timestamp where data is missing
-            auto firstNum = *txTimeFile.getData(0);
+            auto firstNum = txTimeFile.read(0);
             auto txesSinceStart = static_cast<size_t>(lastTxIndex - firstNum);
             auto currentTxCount = txTimeFile.size() - 1;
             if (currentTxCount < txesSinceStart) {
@@ -68,17 +68,19 @@ public:
                 mempool[txHash] = 0;
             }
         }
+        txTimeFile.flush();
     }
     
     void updateMempool() {
-        time_t curTime;
-        time(&curTime);
+        using namespace std::chrono;
+        system_clock::time_point tp = system_clock::now();
+        auto time = system_clock::to_time_t(tp);
         auto rawMempool = bitcoinAPI.getrawmempool();
         for (auto &txHashString : rawMempool) {
             auto txHash = uint256S(txHashString);
             auto it = mempool.find(txHash);
             if (it == mempool.end()) {
-                mempool[txHash] = curTime;
+                mempool[txHash] = time;
             }
         }
     }
@@ -86,8 +88,8 @@ public:
     void recordMempool() {
         blocksci::DataAccess access(config);
         auto blockCount = access.chain.blockCount();
-        for (blocksci::BlockHeight i = lastHeight; i < blockCount; i++) {
-            auto block = Block(i, access);
+        for (; lastHeight < blockCount; lastHeight++) {
+            auto block = Block(lastHeight, access);
             RANGES_FOR(auto tx, block) {
                 auto it = mempool.find(tx.getHash());
                 if (it != mempool.end()) {
@@ -95,19 +97,18 @@ public:
                     txTimeFile.write(txData);
                     mempool.erase(it);
                 } else {
-                    txTimeFile.write(boost::posix_time::not_a_date_time);
+                    txTimeFile.write(0);
                 }
             }
         }
+        txTimeFile.flush();
     }
     
     void clearOldMempool() {
-        time_t clearTime;
-        time(&clearTime);
-        struct tm * ptm;
-        ptm = gmtime(&clearTime);
-        ptm->tm_mday -= 5;
-        clearTime = mktime(ptm);
+        using namespace std::chrono;
+        system_clock::time_point tp = system_clock::now();
+        tp -= std::chrono::hours(5 * 24);
+        auto clearTime = system_clock::to_time_t(tp);
         auto it = mempool.begin();
         while (it != mempool.end()) {
             if (it->second < clearTime) {
@@ -123,10 +124,15 @@ public:
 int main(int argc, const char * argv[]) {
     assert(argc == 2);
     
-    std::string user = "dash";
-    std::string password = "dashpass123";
+    struct sigaction action;
+    memset(&action, 0, sizeof(struct sigaction));
+    action.sa_handler = term;
+    sigaction(SIGTERM, &action, NULL);
+    
+    std::string user = "blocksci";
+    std::string password = "blocksci";
     std::string host = "localhost";
-    int port = 9998;
+    int port = 8331;
 
     BitcoinAPI bitcoinAPI{user, password, host, port};
     
@@ -135,7 +141,7 @@ int main(int argc, const char * argv[]) {
     MempoolRecorder recorder{config, bitcoinAPI};
     
     int updateCount = 0;
-    while(true) {
+    while(!done) {
         std::this_thread::sleep_for(std::chrono::milliseconds(250));
         recorder.updateMempool();
         updateCount++;
@@ -147,4 +153,6 @@ int main(int argc, const char * argv[]) {
             updateCount = 0;
         }
     }
+    
+    std::cout << "Shut down mempool recorder\n";
 }

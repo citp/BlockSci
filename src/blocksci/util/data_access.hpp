@@ -14,14 +14,10 @@
 #include <blocksci/chain/chain_access.hpp>
 #include <blocksci/index/address_index.hpp>
 #include <blocksci/index/hash_index.hpp>
+#include <blocksci/index/mempool_index.hpp>
 #include <blocksci/scripts/script_access.hpp>
 
 namespace blocksci {
-    class ChainAccess;
-    class AddressIndex;
-    class ScriptAccess;
-    class HashIndex;
-
     class DataAccess {
     public:
         DataConfiguration config;
@@ -29,9 +25,10 @@ namespace blocksci {
         ScriptAccess scripts;
         AddressIndex addressIndex;
         HashIndex hashIndex;
+        MempoolIndex mempoolIndex;
         
         DataAccess() = default;
-        explicit DataAccess(DataConfiguration config_) : config(std::move(config_)), chain{config}, scripts{config}, addressIndex{config.addressDBFilePath().native(), true}, hashIndex{config.hashIndexFilePath().native(), true} {}
+        explicit DataAccess(DataConfiguration config_) : config(std::move(config_)), chain{config}, scripts{config}, addressIndex{config.addressDBFilePath().native(), true}, hashIndex{config.hashIndexFilePath().native(), true}, mempoolIndex{config} {}
         
         operator DataConfiguration() const { return config; }
     };

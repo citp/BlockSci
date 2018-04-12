@@ -83,6 +83,7 @@ set(INDEX_HEADERS
   index/address_index.hpp
   index/address_output_range.hpp
   index/hash_index.hpp
+  index/mempool_index.hpp
 )
 
 set(INDEX_SOURCES

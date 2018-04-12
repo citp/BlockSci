@@ -30,6 +30,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <iomanip>
 
 using namespace blocksci;
 
@@ -38,34 +39,6 @@ void maxOutput(Blockchain &chain);
 google::dense_hash_map<uint32_t, uint32_t> getAddressDistribution(Blockchain &chain, int start, int stop);
 google::dense_hash_map<uint32_t, uint32_t> getMultisigAddressDistribution(Blockchain &chain, int start, int stop);
 
-
-// std::cout << "Time in secs for " << name << ": " << timeSecs << std::endl;
-template <typename Func, typename... Args>
-auto timeFunc(const std::string &name, Func func, Args&& ...args) -> decltype(func(args...)) {
-    auto begin = std::chrono::steady_clock::now();
-    auto ret = func(std::forward<Args>(args)...);
-    auto endTime = std::chrono::steady_clock::now();
-    
-    double timeSecs = std::chrono::duration_cast<std::chrono::microseconds>(endTime - begin).count() / 1000000.0;
-    
-    
-    return ret;
-}
-    
-template <typename Funcs, typename... Args>
-void compareFuncs(Funcs funcs, Args... args) {
-    for (int j = 0; j < 2; j++) {
-        int i = 0;
-        for (auto &func : funcs) {
-            auto begin = std::chrono::steady_clock::now();
-            auto ret = func(args...);
-            auto endTime = std::chrono::steady_clock::now();
-            
-            std::cout << "Time in secs for " << i << ": " << std::chrono::duration_cast<std::chrono::microseconds>(endTime - begin).count() / 1000000.0  << std::endl;
-            i++;
-        }
-    }
-}
 
 template <class R, class F, class T>
 std::vector<R> mapParallel(const std::vector<T> &input, F fn) {
@@ -99,8 +72,7 @@ int main(int argc, const char * argv[]) {
 //    assert(argc == 2);
     
     Blockchain chain(argv[1]);
-    auto test = mostValuableAddresses(chain);
-    Address multi(509, AddressType::NONSTANDARD, chain.getAccess());
+    
 //    auto outs = multi.getEquivAddresses(true);
     std::cout << "test" << std::endl;
 //    chain.access->addressIndex->checkDb();
@@ -118,16 +90,21 @@ int main(int argc, const char * argv[]) {
 //        std::cout << out << std::endl;
 //    }
 
-//    RANGES_FOR(auto block, chain) {
-//        RANGES_FOR(auto tx, block) {
-//            if (tx.totalSize() != tx.baseSize()) {
-//                std::cout << tx << std::endl;
+    RANGES_FOR(auto block, chain) {
+        RANGES_FOR(auto tx, block) {
+            std::cout << tx << std::endl;
+            auto timestamp = tx.getTimeSeen();
+            if (timestamp) {
+                std::time_t time = std::chrono::system_clock::to_time_t(*timestamp);
+                std::tm timetm = *std::localtime(&time);
+                std::cout << "output : " << std::put_time(&timetm, "%c %Z") << "+"
+                << std::chrono::duration_cast<std::chrono::milliseconds>(timestamp->time_since_epoch()).count() % 1000 << std::endl;
+            }
+//            RANGES_FOR(auto output, tx.outputs()) {
+//                std::cout << output << std::endl;
 //            }
-////            RANGES_FOR(auto output, tx.outputs()) {
-////                std::cout << output << std::endl;
-////            }
-//        }
-//    }
+        }
+    }
 //
     return 0;
 //    uint64_t count = 0;
@@ -500,33 +477,33 @@ void maxOutput(Blockchain &chain) {
     std::cout << "Tx has hash " << Transaction(txNum, chain.getAccess()).getHash().GetHex() << std::endl;
 }
 
-google::dense_hash_map<uint32_t, uint32_t> getAddressDistribution(Blockchain &chain, int start, int stop) {
-    auto mapFunc = [](const std::vector<Block> &segment) {
-        google::dense_hash_map<uint32_t, uint32_t> distribution;
-        distribution.set_empty_key(std::numeric_limits<uint32_t>::max() - 5);
-        for (auto &block : segment) {
-            RANGES_FOR(auto tx, block) {
-                RANGES_FOR(auto output, tx.outputs()) {
-                    auto it = distribution.insert(std::make_pair(output.getSpendingTxIndex(), 0));
-                    it.first->second++;
-                }
-            }
-        }
-        return distribution;
-    };
-    
-    auto reduceFunc = [] (google::dense_hash_map<uint32_t, uint32_t> &map1, google::dense_hash_map<uint32_t, uint32_t> &map2) -> google::dense_hash_map<uint32_t, uint32_t> & {
-        for (auto &pair : map2) {
-            auto res = map1.insert(pair);
-            if (!res.second) {
-                res.first->second += pair.second;
-            }
-        }
-        return map1;
-    };
-    
-    return chain.mapReduce<google::dense_hash_map<uint32_t, uint32_t>>(start, stop, mapFunc, reduceFunc);
-}
+//google::dense_hash_map<uint32_t, uint32_t> getAddressDistribution(Blockchain &chain, int start, int stop) {
+//    auto mapFunc = [](const std::vector<Block> &segment) {
+//        google::dense_hash_map<uint32_t, uint32_t> distribution;
+//        distribution.set_empty_key(std::numeric_limits<uint32_t>::max() - 5);
+//        for (auto &block : segment) {
+//            RANGES_FOR(auto tx, block) {
+//                RANGES_FOR(auto output, tx.outputs()) {
+//                    auto it = distribution.insert(std::make_pair(output.getSpendingTxIndex(), 0));
+//                    it.first->second++;
+//                }
+//            }
+//        }
+//        return distribution;
+//    };
+//
+//    auto reduceFunc = [] (google::dense_hash_map<uint32_t, uint32_t> &map1, google::dense_hash_map<uint32_t, uint32_t> &map2) -> google::dense_hash_map<uint32_t, uint32_t> & {
+//        for (auto &pair : map2) {
+//            auto res = map1.insert(pair);
+//            if (!res.second) {
+//                res.first->second += pair.second;
+//            }
+//        }
+//        return map1;
+//    };
+//
+//    return chain.mapReduce<google::dense_hash_map<uint32_t, uint32_t>>(start, stop, mapFunc, reduceFunc);
+//}
 
 /*
 google::dense_hash_map<uint32_t, uint32_t> getMultisigAddressDistribution(Blockchain &chain, int start, int stop) {
