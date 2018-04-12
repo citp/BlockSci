@@ -10,7 +10,6 @@
 
 #include "block_processor.hpp"
 #include "script_input.hpp"
-#include "file_writer.hpp"
 #include "address_writer.hpp"
 #include "safe_mem_reader.hpp"
 #include "chain_index.hpp"
@@ -27,6 +26,7 @@
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/scripts/bitcoin_pubkey.hpp>
+#include <blocksci/util/file_writer.hpp>
 #include <blocksci/util/bitcoin_uint256.hpp>
 #include <blocksci/util/hash.hpp>
 #include <blocksci/util/progress_bar.hpp>
@@ -43,6 +43,9 @@
 #include <thread>
 #include <fstream>
 #include <iostream>
+
+using blocksci::FixedSizeFileWriter;
+using blocksci::IndexedFileWriter;
 
 std::vector<unsigned char> ParseHex(const char* psz);
 

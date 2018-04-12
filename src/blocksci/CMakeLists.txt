@@ -130,6 +130,7 @@ set(UTIL_HEADERS
   util/data_access.hpp
   util/data_configuration.hpp
   util/file_mapper.hpp
+  util/file_writer.hpp
   util/hash.hpp
   util/parallel.hpp
   util/progress_bar.hpp
