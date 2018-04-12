@@ -27,6 +27,7 @@
 #include <pybind11/numpy.h>
 #include <pybind11/stl_bind.h>
 
+#include <chrono>
 #include <iostream>
 
 struct ForcedBool {

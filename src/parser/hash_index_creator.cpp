@@ -25,7 +25,15 @@ HashIndexCreator::HashIndexCreator(const ParserConfigurationBase &config_, const
 HashIndexCreator::~HashIndexCreator() {
     clearTxCache();
     for_each(blocksci::AddressType::all{}, [&](auto tag) {
-        clearAddressCache<tag>();
+        auto &cache = std::get<HashIndexAddressCache<atg>>(addressCache);
+        rocksdb::WriteBatch batch;
+        for (const auto &pair : cache) {
+            rocksdb::Slice keySlice(reinterpret_cast<const char *>(&pair.first), sizeof(pair.first));
+            rocksdb::Slice valueSlice(reinterpret_cast<const char *>(&pair.second), sizeof(pair.second));
+            batch.Put(db.getColumn(tag).get(), keySlice, valueSlice);
+        }
+        db.writeBatch(batch);
+        cache.clear();
     });
 }
 

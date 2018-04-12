@@ -9,6 +9,7 @@
 #ifndef blocksci_any_script_caster_h
 #define blocksci_any_script_caster_h
 
+#include "variant_py.hpp"
 #include <blocksci/scripts/script_variant.hpp>
 #include <pybind11/pybind11.h>
 
