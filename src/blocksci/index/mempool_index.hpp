@@ -8,12 +8,12 @@
 #ifndef mempool_index_hpp
 #define mempool_index_hpp
 
-#include <stdio.h>
-
 #include <blocksci/blocksci_export.h>
 
 #include <blocksci/util/file_mapper.hpp>
 #include <blocksci/util/data_configuration.hpp>
+
+#include <chrono>
 
 namespace blocksci {
     
