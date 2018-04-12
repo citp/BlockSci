@@ -135,6 +135,7 @@ namespace blocksci {
             blockCoinbaseFile.reload();
             txFile.reload();
             txHashesFile.reload();
+            sequenceFile.reload();
             setup();
         }
     };

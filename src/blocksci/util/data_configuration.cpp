@@ -26,6 +26,7 @@ namespace blocksci {
         createDirectory(dataDirectory);
         createDirectory(scriptsDirectory());
         createDirectory(chainDirectory());
+        createDirectory(mempoolDirectory());
         
         boost::property_tree::ptree root;
         auto configFile = dataDirectory/"config.ini";

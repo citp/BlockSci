@@ -31,6 +31,12 @@ namespace blocksci {
         explicit DataAccess(DataConfiguration config_) : config(std::move(config_)), chain{config}, scripts{config}, addressIndex{config.addressDBFilePath().native(), true}, hashIndex{config.hashIndexFilePath().native(), true}, mempoolIndex{config} {}
         
         operator DataConfiguration() const { return config; }
+        
+        void reload() {
+            chain.reload();
+            scripts.reload();
+            mempoolIndex.reload();
+        }
     };
 }
 

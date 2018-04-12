@@ -161,6 +161,11 @@ namespace blocksci {
         }
         explicit Blockchain(const std::string &dataDirectory) : Blockchain(DataConfiguration{dataDirectory, true, BlockHeight{0}}) {}
         
+        void reload() {
+            access.reload();
+            lastBlockHeight = access.chain.blockCount();
+        }
+        
         DataAccess &getAccess() { return access; }
         
         uint32_t firstTxIndex() const;

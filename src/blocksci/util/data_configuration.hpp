@@ -49,6 +49,10 @@ namespace blocksci {
             return dataDirectory/"chain";
         }
         
+        boost::filesystem::path mempoolDirectory() const {
+            return dataDirectory/"mempool";
+        }
+        
         boost::filesystem::path txFilePath() const {
             return chainDirectory()/"tx";
         }
