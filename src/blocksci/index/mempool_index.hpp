@@ -32,10 +32,19 @@ namespace blocksci {
         
         ranges::optional<std::chrono::system_clock::time_point> getTimestamp(uint32_t index) const {
             auto record = timestampFile.getData(index - firstTxIndex);
-            if (record->time != 0) {
+            if (record->time > 1) {
                 return std::chrono::system_clock::from_time_t(record->time);
             } else {
                 return ranges::nullopt;
+            }
+        }
+        
+        bool observed(uint32_t index) const {
+            auto record = timestampFile.getData(index - firstTxIndex);
+            if (record->time > 0) {
+                return true;
+            } else {
+                return false;
             }
         }
         
@@ -84,6 +93,15 @@ namespace blocksci {
                 return (*possibleFile).get().getTimestamp(index);
             } else {
                 return ranges::nullopt;
+            }
+        }
+        
+        bool observed(uint32_t index) const {
+            auto possibleFile = selectPossibleRecording(index);
+            if (possibleFile) {
+                return (*possibleFile).get().observed(index);
+            } else {
+                return false;
             }
         }
         

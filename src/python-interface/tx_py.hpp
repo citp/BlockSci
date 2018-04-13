@@ -54,6 +54,9 @@ void addTransactionMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     .def_property_readonly("block_time", func([](const Transaction &tx) -> std::chrono::system_clock::time_point {
         return tx.block().getTime();
     }), func2("The time that the block containing this transaction arrived"))
+    .def_property_readonly("observed_in_mempool", func([](const Transaction &tx) -> bool {
+        return tx.observedInMempool();
+    }), func2("Returns whether this transaction was seen in the mempool by the recorder"))
     .def_property_readonly("time_seen", func([](const Transaction &tx) -> ranges::optional<std::chrono::system_clock::time_point> {
         return tx.getTimeSeen();
     }), func2("If recorded by the mempool recorder, the time that this transaction was first seen by your node"))

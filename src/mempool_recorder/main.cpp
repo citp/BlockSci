@@ -64,23 +64,28 @@ public:
             auto txHash = uint256S(txHashString);
             auto it = mempool.find(txHash);
             if (it == mempool.end()) {
-                mempool[txHash] = {0};
+                mempool[txHash] = {1};
             }
         }
     }
     
     void updateMempool() {
-        using namespace std::chrono;
-        system_clock::time_point tp = system_clock::now();
-        auto time = system_clock::to_time_t(tp);
-        auto rawMempool = bitcoinAPI.getrawmempool();
-        for (auto &txHashString : rawMempool) {
-            auto txHash = uint256S(txHashString);
-            auto it = mempool.find(txHash);
-            if (it == mempool.end()) {
-                mempool[txHash] = {time};
+        try {
+            using namespace std::chrono;
+            system_clock::time_point tp = system_clock::now();
+            auto time = system_clock::to_time_t(tp);
+            auto rawMempool = bitcoinAPI.getrawmempool();
+            for (auto &txHashString : rawMempool) {
+                auto txHash = uint256S(txHashString);
+                auto it = mempool.find(txHash);
+                if (it == mempool.end()) {
+                    mempool[txHash] = {time};
+                }
             }
+        } catch (BitcoinException& e){
+            std::cout << "Failed to update mempool with error: " << e.what() << std::endl;
         }
+        
     }
     
     void recordMempool() {

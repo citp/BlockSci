@@ -68,6 +68,10 @@ namespace blocksci {
             return access->mempoolIndex.getTimestamp(txNum);
         }
         
+        bool observedInMempool() const {
+            return access->mempoolIndex.observed(txNum);
+        }
+        
         std::string toString() const {
             std::stringstream ss;
             ss << "Tx(len(txins)=" << inputCount() <<", len(txouts)=" << outputCount() <<", size_bytes=" << sizeBytes() << ", block_height=" << blockHeight <<", tx_index=" << txNum << ")";
