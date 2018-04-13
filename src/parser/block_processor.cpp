@@ -242,7 +242,7 @@ public:
 
 #endif
 
-std::vector<unsigned char> readNewBlock(uint32_t firstTxNum, const BlockInfoBase &block, BlockFileReaderBase &fileReader, NewBlocksFiles &files, const std::function<bool(RawTransaction *&tx)> &loadFunc, const std::function<void(RawTransaction *tx)> &outFunc) {
+blocksci::RawBlock readNewBlock(uint32_t firstTxNum, const BlockInfoBase &block, BlockFileReaderBase &fileReader, NewBlocksFiles &files, const std::function<bool(RawTransaction *&tx)> &loadFunc, const std::function<void(RawTransaction *tx)> &outFunc) {
     std::vector<unsigned char> coinbase;
     bool isSegwit = false;
     blocksci::uint256 nullHash;
@@ -283,10 +283,8 @@ std::vector<unsigned char> readNewBlock(uint32_t firstTxNum, const BlockInfoBase
         outFunc(tx);
     }
     blocksci::RawBlock blocksciBlock{firstTxNum, block.nTx, static_cast<uint32_t>(static_cast<int>(block.height)), block.hash, block.header.nVersion, block.header.nTime, block.header.nBits, block.header.nNonce, realSize, baseSize, files.blockCoinbaseFile.size()};
-    files.blockFile.write(blocksciBlock);
     files.blockCoinbaseFile.write(coinbase.begin(), coinbase.end());
-    
-    return coinbase;
+    return blocksciBlock;
 }
 
 void calculateHash(RawTransaction &tx, FixedSizeFileWriter<blocksci::uint256> &hashFile) {
@@ -517,10 +515,10 @@ ProcessStep<ProcessFunc, AdvanceFunc> makeProcessStep(std::atomic<bool> &prevDon
     return ProcessStep<ProcessFunc, AdvanceFunc>(prevDone, func, advanceFunc);
 }
 
-NewBlocksFiles::NewBlocksFiles(const ParserConfigurationBase &config) : blockCoinbaseFile(config.dataConfig.blockCoinbaseFilePath()), blockFile(config.dataConfig.blockFilePath()), sequenceFile(config.dataConfig.sequenceFilePath()) {}
+NewBlocksFiles::NewBlocksFiles(const ParserConfigurationBase &config) : blockCoinbaseFile(config.dataConfig.blockCoinbaseFilePath()), sequenceFile(config.dataConfig.sequenceFilePath()) {}
 
 template <typename ParseTag>
-void BlockProcessor::addNewBlocks(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> blocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState) {
+std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> blocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState) {
     
     std::atomic<bool> rawDone{false};
     boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<10000>> finished_transaction_queue;
@@ -591,6 +589,8 @@ void BlockProcessor::addNewBlocks(const ParserConfiguration<ParseTag> &config, s
     
     int64_t nextWaitCount = 0;
     
+    std::vector<blocksci::RawBlock> blocksAdded;
+    
     auto importer = std::async(std::launch::async, [&] {
         CompletionGuard guard(rawDone);
         auto loadFinishedTx = [&](RawTransaction *&tx) {
@@ -613,7 +613,7 @@ void BlockProcessor::addNewBlocks(const ParserConfiguration<ParseTag> &config, s
         
         for (auto &block : blocks) {
             fileReader.nextBlock(block, currentTxNum);
-            readNewBlock(currentTxNum, block, fileReader, files, loadFinishedTx, outFunc);
+            blocksAdded.push_back(readNewBlock(currentTxNum, block, fileReader, files, loadFinishedTx, outFunc));
             currentTxNum += block.nTx;
         }
         
@@ -676,11 +676,12 @@ void BlockProcessor::addNewBlocks(const ParserConfiguration<ParseTag> &config, s
     finished_transaction_queue.consume_all([](RawTransaction *tx) {
         delete tx;
     });
+    return blocksAdded;
 }
 
 
 template <typename ParseTag>
-void BlockProcessor::addNewBlocksSingle(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> blocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState) {
+std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocksSingle(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> blocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState) {
     
     RawTransaction realTx;
     auto loadFinishedTx = [&](RawTransaction *&tx) {
@@ -714,18 +715,21 @@ void BlockProcessor::addNewBlocksSingle(const ParserConfiguration<ParseTag> &con
     BlockFileReader<ParseTag> fileReader(config, blocks, currentTxNum);
     NewBlocksFiles files(config);
     
+    std::vector<blocksci::RawBlock> blocksAdded;
     for (auto &block : blocks) {
         fileReader.nextBlock(block, currentTxNum);
-        readNewBlock(currentTxNum, block, fileReader, files, loadFinishedTx, outFunc);
+        blocksAdded.push_back(readNewBlock(currentTxNum, block, fileReader, files, loadFinishedTx, outFunc));
         currentTxNum += block.nTx;
     }
+    
+    return blocksAdded;
 }
 
 #ifdef BLOCKSCI_FILE_PARSER
-template void BlockProcessor::addNewBlocks(const ParserConfiguration<FileTag> &config, std::vector<BlockInfo<FileTag>> nextBlocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState);
-template void BlockProcessor::addNewBlocksSingle(const ParserConfiguration<FileTag> &config, std::vector<BlockInfo<FileTag>> nextBlocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState);
+template std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfiguration<FileTag> &config, std::vector<BlockInfo<FileTag>> nextBlocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState);
+template std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocksSingle(const ParserConfiguration<FileTag> &config, std::vector<BlockInfo<FileTag>> nextBlocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState);
 #endif
 #ifdef BLOCKSCI_RPC_PARSER
-template void BlockProcessor::addNewBlocks(const ParserConfiguration<RPCTag> &config, std::vector<BlockInfo<RPCTag>> nextBlocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState);
-template void BlockProcessor::addNewBlocksSingle(const ParserConfiguration<RPCTag> &config, std::vector<BlockInfo<RPCTag>> nextBlocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState);
+template std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfiguration<RPCTag> &config, std::vector<BlockInfo<RPCTag>> nextBlocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState);
+template std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocksSingle(const ParserConfiguration<RPCTag> &config, std::vector<BlockInfo<RPCTag>> nextBlocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState);
 #endif

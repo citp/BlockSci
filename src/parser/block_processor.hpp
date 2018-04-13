@@ -34,7 +34,6 @@ public:
 
 struct NewBlocksFiles {
     blocksci::ArbitraryFileWriter blockCoinbaseFile;
-    blocksci::FixedSizeFileWriter<blocksci::RawBlock> blockFile;
     blocksci::IndexedFileWriter<1> sequenceFile;
     
     NewBlocksFiles(const ParserConfigurationBase &config);
@@ -45,7 +44,7 @@ struct OutputLinkData {
     uint32_t txNum;
 };
 
-std::vector<unsigned char> readNewBlock(uint32_t firstTxNum, const BlockInfoBase &block, BlockFileReaderBase &fileReader, NewBlocksFiles &files, const std::function<bool(RawTransaction *&tx)> &loadFunc, const std::function<void(RawTransaction *tx)> &outFunc);
+blocksci::RawBlock readNewBlock(uint32_t firstTxNum, const BlockInfoBase &block, BlockFileReaderBase &fileReader, NewBlocksFiles &files, const std::function<bool(RawTransaction *&tx)> &loadFunc, const std::function<void(RawTransaction *tx)> &outFunc);
 void calculateHash(RawTransaction &tx, blocksci::FixedSizeFileWriter<blocksci::uint256> &hashFile);
 void generateScriptOutputs(RawTransaction &tx);
 void connectUTXOs(RawTransaction &tx, UTXOState &utxoState);
@@ -68,10 +67,10 @@ public:
     BlockProcessor(uint32_t startingTxCount, uint32_t totalTxCount, blocksci::BlockHeight maxBlockHeight);
     
     template <typename ParseTag>
-    void addNewBlocks(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> nextBlocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState);
+    std::vector<blocksci::RawBlock> addNewBlocks(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> nextBlocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState);
 
     template <typename ParseTag>
-    void addNewBlocksSingle(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> nextBlocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState);
+    std::vector<blocksci::RawBlock> addNewBlocksSingle(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> nextBlocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState);
 };
 
 

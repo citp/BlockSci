@@ -171,7 +171,7 @@ uint32_t getStartingTxCount(const blocksci::DataConfiguration &config) {
 }
 
 template <typename ParserTag>
-void updateChain(const ParserConfiguration<ParserTag> &config, blocksci::BlockHeight maxBlockNum, HashIndexCreator &hashDb) {
+std::vector<blocksci::RawBlock> updateChain(const ParserConfiguration<ParserTag> &config, blocksci::BlockHeight maxBlockNum, HashIndexCreator &hashDb) {
     using namespace std::chrono_literals;
     
     auto chainBlocks = [&]() {
@@ -216,7 +216,7 @@ void updateChain(const ParserConfiguration<ParserTag> &config, blocksci::BlockHe
     rollbackTransactions(splitPoint, config);
     
     if (blocksToAdd.size() == 0) {
-        return;
+        return {};
     }
     
     uint32_t startingTxCount = getStartingTxCount(config.dataConfig);
@@ -230,39 +230,40 @@ void updateChain(const ParserConfiguration<ParserTag> &config, blocksci::BlockHe
         totalInputCount += block.inputCount;
         totalOutputCount += block.outputCount;
     }
+
+    BlockProcessor processor{startingTxCount, totalTxCount, maxBlockHeight};
+    UTXOState utxoState;
+    UTXOAddressState utxoAddressState;
+    AddressState addressState{config.addressPath(), hashDb};
+    UTXOScriptState utxoScriptState;
     
-    {
-        BlockProcessor processor{startingTxCount, totalTxCount, maxBlockHeight};
-        UTXOState utxoState;
-        UTXOAddressState utxoAddressState;
-        AddressState addressState{config.addressPath(), hashDb};
-        UTXOScriptState utxoScriptState;
-        
-        utxoAddressState.unserialize(config.utxoAddressStatePath());
-        utxoState.unserialize(config.utxoCacheFile().native());
-        utxoScriptState.unserialize(config.utxoScriptStatePath().native());
-        
-        auto it = blocksToAdd.begin();
-        auto end = blocksToAdd.end();
-        while (it != end) {
-            auto prev = it;
-            uint32_t newTxCount = 0;
-            while (newTxCount < 10000000 && it != end) {
-                newTxCount += it->nTx;
-                ++it;
-            }
-            
-            decltype(blocksToAdd) nextBlocks{prev, it};
-            
-            processor.addNewBlocks(config, nextBlocks, utxoState, utxoAddressState, addressState, utxoScriptState);
-            
-            backUpdateTxes(config);
+    utxoAddressState.unserialize(config.utxoAddressStatePath());
+    utxoState.unserialize(config.utxoCacheFile().native());
+    utxoScriptState.unserialize(config.utxoScriptStatePath().native());
+    
+    std::vector<blocksci::RawBlock> newBlocks;
+    auto it = blocksToAdd.begin();
+    auto end = blocksToAdd.end();
+    while (it != end) {
+        auto prev = it;
+        uint32_t newTxCount = 0;
+        while (newTxCount < 10000000 && it != end) {
+            newTxCount += it->nTx;
+            ++it;
         }
         
-        utxoAddressState.serialize(config.utxoAddressStatePath());
-        utxoState.serialize(config.utxoCacheFile().native());
-        utxoScriptState.serialize(config.utxoScriptStatePath().native());
+        decltype(blocksToAdd) nextBlocks{prev, it};
+        
+        auto blocks = processor.addNewBlocks(config, nextBlocks, utxoState, utxoAddressState, addressState, utxoScriptState);
+        newBlocks.insert(newBlocks.end(), blocks.begin(), blocks.end());
+        
+        backUpdateTxes(config);
     }
+    
+    utxoAddressState.serialize(config.utxoAddressStatePath());
+    utxoState.serialize(config.utxoCacheFile().native());
+    utxoScriptState.serialize(config.utxoScriptStatePath().native());
+    return newBlocks;
 }
 
 void updateHashDB(const ParserConfigurationBase &config, HashIndexCreator &db) {
@@ -373,18 +374,19 @@ int main(int argc, char * argv[]) {
         case mode::updateCore: {
             ParserConfigurationBase config{dataDirectory};
             HashIndexCreator hashDb(config, config.dataConfig.hashIndexFilePath().native());
+            std::vector<blocksci::RawBlock> newBlocks;
             switch (selectedUpdateMode) {
                 case updateMode::disk: {
                     boost::filesystem::path bitcoinDirectory = {bitcoinDirectoryString};
                     bitcoinDirectory = boost::filesystem::absolute(bitcoinDirectory);
                     ParserConfiguration<FileTag> config{bitcoinDirectory, dataDirectory};
-                    updateChain(config, blocksci::BlockHeight{maxBlockNum}, hashDb);
+                    newBlocks = updateChain(config, blocksci::BlockHeight{maxBlockNum}, hashDb);
                     break;
                 }
 
                 case updateMode::rpc: {
                     ParserConfiguration<RPCTag> config(username, password, address, port, dataDirectory);
-                    updateChain(config, blocksci::BlockHeight{maxBlockNum}, hashDb);
+                    newBlocks = updateChain(config, blocksci::BlockHeight{maxBlockNum}, hashDb);
                     break;
                 }
             }
@@ -393,6 +395,11 @@ int main(int argc, char * argv[]) {
             if (selected == mode::update) {
                 updateHashDB(config, hashDb);
                 updateAddressDB(config);
+            }
+            
+            blocksci::FixedSizeFileWriter<blocksci::RawBlock> blockFile{config.dataConfig.blockFilePath()};
+            for (auto &block : newBlocks) {
+                blockFile.write(block);
             }
             
             break;
