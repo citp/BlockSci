@@ -392,14 +392,16 @@ int main(int argc, char * argv[]) {
             }
             updateConfig(dataDirectory);
             
-            if (selected == mode::update) {
-                updateHashDB(config, hashDb);
-                updateAddressDB(config);
-            }
-            
+
+            // It'd be nice to do this after the indexes are updated, but they currently depend on the chain being fully updated
             blocksci::FixedSizeFileWriter<blocksci::RawBlock> blockFile{config.dataConfig.blockFilePath()};
             for (auto &block : newBlocks) {
                 blockFile.write(block);
+            }
+
+            if (selected == mode::update) {
+                updateHashDB(config, hashDb);
+                updateAddressDB(config);
             }
             
             break;
