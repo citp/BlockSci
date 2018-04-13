@@ -76,7 +76,7 @@ void AddressDB::processTx(const blocksci::RawTransaction *tx, uint32_t txNum, co
 
 void AddressDB::addAddressNested(const blocksci::RawAddress &childAddress, const blocksci::DedupAddress &parentAddress) {
     nestedCache.emplace_back(childAddress, parentAddress);
-    if (nestedCache.size() == cacheSize) {
+    if (nestedCache.size() >= cacheSize) {
         clearNestedCache();
     }
 }
@@ -101,8 +101,8 @@ void AddressDB::clearNestedCache() {
 
 void AddressDB::addAddressOutput(const blocksci::RawAddress &address, const blocksci::OutputPointer &pointer) {
     outputCache.emplace_back(address, pointer);
-    if (outputCache.size() == cacheSize) {
-        clearNestedCache();
+    if (outputCache.size() >= cacheSize) {
+        clearOutputCache();
     }
 }
 
