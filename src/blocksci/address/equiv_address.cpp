@@ -19,8 +19,8 @@
 
 namespace blocksci {
     EquivAddress::EquivAddress(uint32_t scriptNum, EquivAddressType::Enum type, bool scriptEquivalent_, DataAccess &access_) : scriptEquivalent(scriptEquivalent_), access(access_) {
-        for (auto type : equivAddressTypes(type)) {
-            Address address(scriptNum, type, access);
+        for (auto equivType : equivAddressTypes(type)) {
+            Address address(scriptNum, equivType, access);
             if (scriptEquivalent) {
                 auto nested = access.addressIndex.getPossibleNestedEquivalent(address);
                 for (auto &nestedAddress : nested) {
