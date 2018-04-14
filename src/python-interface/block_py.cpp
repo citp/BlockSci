@@ -8,6 +8,7 @@
 
 #include "block_py.hpp"
 #include "ranges_py.hpp"
+#include "optional_py.hpp"
 
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>

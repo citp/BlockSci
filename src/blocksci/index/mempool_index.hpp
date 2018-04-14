@@ -24,6 +24,10 @@ namespace blocksci {
         time_t time;
     };
     
+    struct BlockRecord {
+        time_t observationTime;
+    };
+    
     struct TimestampIndex {
         FixedSizeFileMapper<MempoolRecord> timestampFile;
         uint32_t firstTxIndex;
@@ -57,25 +61,55 @@ namespace blocksci {
         }
     };
     
+    struct BlocktimeIndex {
+        FixedSizeFileMapper<BlockRecord> timestampFile;
+        int firstBlockNum;
+        
+        explicit BlocktimeIndex(const boost::filesystem::path &path, uint32_t firstBlockNum_) : timestampFile(path), firstBlockNum(firstBlockNum_) {}
+        
+        ranges::optional<std::chrono::system_clock::time_point> getTimestamp(int index) const {
+            auto record = timestampFile.getData(index - firstBlockNum);
+            if (record->observationTime > 0) {
+                return std::chrono::system_clock::from_time_t(record->observationTime);
+            } else {
+                return ranges::nullopt;
+            }
+        }
+        
+        bool contains(int index) const {
+            return index >= firstBlockNum && (index - firstBlockNum) < static_cast<int>(timestampFile.size());
+        }
+        
+        void reload() {
+            timestampFile.reload();
+        }
+    };
+    
     class MempoolIndex {
         DataConfiguration config;
-        FixedSizeFileMapper<uint32_t> recordingPositions;
         std::vector<TimestampIndex> timestampFiles;
+        std::vector<BlocktimeIndex> blockTimeFiles;
         
         void setup() {
             timestampFiles.clear();
-            for (size_t i = 0; i < recordingPositions.size(); i++) {
-                timestampFiles.emplace_back(config.mempoolDirectory()/std::to_string(i), *recordingPositions[i]);
+            FixedSizeFileMapper<uint32_t> txRecordingPositions{config.mempoolDirectory()/"tx_index"};
+            for (size_t i = 0; i < txRecordingPositions.size(); i++) {
+                timestampFiles.emplace_back((config.mempoolDirectory()/std::to_string(i)).concat("_tx"), *txRecordingPositions[i]);
+            }
+            blockTimeFiles.clear();
+            FixedSizeFileMapper<int> blockRecordingPositions{config.mempoolDirectory()/"block_index"};
+            for (size_t i = 0; i < blockRecordingPositions.size(); i++) {
+                blockTimeFiles.emplace_back((config.mempoolDirectory()/std::to_string(i)).concat("_block"), *blockRecordingPositions[i]);
             }
         }
         
     public:
-        explicit MempoolIndex(const DataConfiguration &config_) :  config(config_), recordingPositions(config.mempoolDirectory()/"index") {
+        explicit MempoolIndex(const DataConfiguration &config_) :  config(config_) {
             setup();
         }
         
-        ranges::optional<std::reference_wrapper<const TimestampIndex>> selectPossibleRecording(uint32_t txIndex) const {
-            if (recordingPositions.size() > 0) {
+        ranges::optional<std::reference_wrapper<const TimestampIndex>> selectPossibleTxRecording(uint32_t txIndex) const {
+            if (timestampFiles.size() > 0) {
                 auto it = ranges::upper_bound(timestampFiles, txIndex, ranges::ordered_less(), &TimestampIndex::firstTxIndex);
                 if (it != timestampFiles.begin()) {
                     --it;
@@ -86,9 +120,22 @@ namespace blocksci {
             }
             return ranges::nullopt;
         }
+        
+        ranges::optional<std::reference_wrapper<const BlocktimeIndex>> selectPossibleBlockRecording(int height) const {
+            if (blockTimeFiles.size() > 0) {
+                auto it = ranges::upper_bound(blockTimeFiles, height, ranges::ordered_less(), &BlocktimeIndex::firstBlockNum);
+                if (it != blockTimeFiles.begin()) {
+                    --it;
+                }
+                if (it->contains(height)) {
+                    return std::ref(*it);
+                }
+            }
+            return ranges::nullopt;
+        }
 
-        ranges::optional<std::chrono::system_clock::time_point> getTimestamp(uint32_t index) const {
-            auto possibleFile = selectPossibleRecording(index);
+        ranges::optional<std::chrono::system_clock::time_point> getTxTimestamp(uint32_t index) const {
+            auto possibleFile = selectPossibleTxRecording(index);
             if (possibleFile) {
                 return (*possibleFile).get().getTimestamp(index);
             } else {
@@ -97,11 +144,20 @@ namespace blocksci {
         }
         
         bool observed(uint32_t index) const {
-            auto possibleFile = selectPossibleRecording(index);
+            auto possibleFile = selectPossibleTxRecording(index);
             if (possibleFile) {
                 return (*possibleFile).get().observed(index);
             } else {
                 return false;
+            }
+        }
+        
+        ranges::optional<std::chrono::system_clock::time_point> getBlockTimestamp(uint32_t index) const {
+            auto possibleFile = selectPossibleBlockRecording(index);
+            if (possibleFile) {
+                return (*possibleFile).get().getTimestamp(index);
+            } else {
+                return ranges::nullopt;
             }
         }
         

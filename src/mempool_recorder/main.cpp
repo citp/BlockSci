@@ -27,6 +27,7 @@
 #include <csignal>
 
 using namespace blocksci;
+using namespace std::chrono;
 
 static volatile sig_atomic_t done = 0;
 
@@ -35,88 +36,138 @@ void term(int)
     done = 1;
 }
 
-using MempoolMap = std::unordered_map<blocksci::uint256, MempoolRecord, std::hash<blocksci::uint256>>;
-
-boost::filesystem::path initializeRecordingFile(Blockchain &chain) {
+int initializeRecordingFile(Blockchain &chain) {
+    auto mempoolDir = chain.getAccess().config.mempoolDirectory();
+    if(!(boost::filesystem::exists(mempoolDir))){
+        boost::filesystem::create_directory(mempoolDir);
+    }
     auto mostRecentBlock = chain[chain.size() - 1];
-    auto &config = chain.getAccess().config;
-    blocksci::FixedSizeFileWriter<uint32_t> indexFile(chain.getAccess().config.mempoolDirectory()/"index");
-    auto fileNum = indexFile.size();
-    indexFile.write(mostRecentBlock.endTxIndex());
-    return config.mempoolDirectory()/std::to_string(fileNum);
+    blocksci::FixedSizeFileWriter<uint32_t> txIndexFile(chain.getAccess().config.mempoolDirectory()/"tx_index");
+    auto fileNum = txIndexFile.size();
+    txIndexFile.write(mostRecentBlock.endTxIndex());
+    blocksci::FixedSizeFileWriter<int32_t> blockIndexFile(chain.getAccess().config.mempoolDirectory()/"block_index");
+    assert(blockIndexFile.size() == fileNum);
+    blockIndexFile.write(mostRecentBlock.height() + 1);
+    return fileNum;
 }
+
+struct MempoolFiles {
+    blocksci::FixedSizeFileWriter<MempoolRecord> txTimeFile;
+    blocksci::FixedSizeFileWriter<BlockRecord> blockTimeFile;
+    
+    MempoolFiles(const boost::filesystem::path &mempoolPath, int fileNum) :
+    txTimeFile(boost::filesystem::path{mempoolPath/std::to_string(fileNum)}.concat("_tx")),
+    blockTimeFile(boost::filesystem::path{mempoolPath/std::to_string(fileNum)}.concat("_block"))
+    {}
+};
 
 class MempoolRecorder {
     blocksci::Blockchain chain;
     blocksci::BlockHeight lastHeight;
-    MempoolMap mempool;
+    std::unordered_map<blocksci::uint256, MempoolRecord, std::hash<blocksci::uint256>> mempool;
     BitcoinAPI &bitcoinAPI;
-    blocksci::FixedSizeFileWriter<MempoolRecord> txTimeFile;
     
+    MempoolFiles files;
+    std::unordered_map<std::string, std::pair<BlockRecord, int>> blocksSeen;
+    
+    static constexpr int heightCutoff = 100;
 public:
     MempoolRecorder(const std::string &dataLocation, BitcoinAPI &bitcoinAPI_) :
     chain(dataLocation),
     lastHeight(chain.size()),
     bitcoinAPI(bitcoinAPI_),
-    txTimeFile(initializeRecordingFile(chain)) {
+    files(chain.getAccess().config.mempoolDirectory(), initializeRecordingFile(chain)) {
+        updateBlockTimes(0);
+        updateTxTimes(1);
+    }
+    
+    void updateBlockTimes(time_t time) {
+        auto tips = bitcoinAPI.getchaintips();
+        auto currentHeight = bitcoinAPI.getblockcount();
+        for(auto &tip : tips) {
+            std::string searchBlock = std::move(tip.hash);
+            int height = tip.height;
+            while (height >= std::max(currentHeight - heightCutoff, 0) &&
+                   blocksSeen.insert(std::pair<std::string, std::pair<BlockRecord, int>>(searchBlock, {BlockRecord{time}, height})).second) {
+                searchBlock = bitcoinAPI.getpreviousblockhash(searchBlock);
+                height--;
+            }
+        }
+    }
+    
+    void updateTxTimes(time_t time) {
         auto rawMempool = bitcoinAPI.getrawmempool();
         for (auto &txHashString : rawMempool) {
             auto txHash = uint256S(txHashString);
             auto it = mempool.find(txHash);
             if (it == mempool.end()) {
-                mempool[txHash] = {1};
+                mempool[txHash] = {time};
             }
         }
     }
     
     void updateMempool() {
         try {
-            using namespace std::chrono;
-            system_clock::time_point tp = system_clock::now();
-            auto time = system_clock::to_time_t(tp);
-            auto rawMempool = bitcoinAPI.getrawmempool();
-            for (auto &txHashString : rawMempool) {
-                auto txHash = uint256S(txHashString);
-                auto it = mempool.find(txHash);
-                if (it == mempool.end()) {
-                    mempool[txHash] = {time};
-                }
-            }
+            updateTxTimes(system_clock::to_time_t(system_clock::now()));
+            updateBlockTimes(system_clock::to_time_t(system_clock::now()));
         } catch (BitcoinException& e){
             std::cout << "Failed to update mempool with error: " << e.what() << std::endl;
         }
-        
     }
     
     void recordMempool() {
         chain.reload();
         auto blockCount = static_cast<BlockHeight>(chain.size());
         for (; lastHeight < blockCount; lastHeight++) {
+            auto block = chain[lastHeight];
+            time_t time;
+            auto blockIt = blocksSeen.find(block.getHash().GetHex());
+            if (blockIt == blocksSeen.end()) {
+                system_clock::time_point tp = system_clock::now();
+                time = system_clock::to_time_t(tp);
+            } else {
+                time = blockIt->second.first.observationTime;
+            }
+            files.blockTimeFile.write({time});
             RANGES_FOR(auto tx, chain[lastHeight]) {
                 auto it = mempool.find(tx.getHash());
                 if (it != mempool.end()) {
                     auto &txData = it->second;
-                    txTimeFile.write(txData);
+                    files.txTimeFile.write(txData);
                     mempool.erase(it);
                 } else {
-                    txTimeFile.write({0});
+                    files.txTimeFile.write({0});
                 }
             }
         }
-        txTimeFile.flush();
+        files.txTimeFile.flush();
+        files.blockTimeFile.flush();
     }
     
     void clearOldMempool() {
-        using namespace std::chrono;
-        system_clock::time_point tp = system_clock::now();
-        tp -= std::chrono::hours(5 * 24);
-        auto clearTime = system_clock::to_time_t(tp);
-        auto it = mempool.begin();
-        while (it != mempool.end()) {
-            if (it->second.time < clearTime) {
-                it = mempool.erase(it);
-            } else {
-                ++it;
+        {
+            system_clock::time_point tp = system_clock::now();
+            tp -= std::chrono::hours(5 * 24);
+            auto clearTime = system_clock::to_time_t(tp);
+            auto it = mempool.begin();
+            while (it != mempool.end()) {
+                if (it->second.time < clearTime) {
+                    it = mempool.erase(it);
+                } else {
+                    ++it;
+                }
+            }
+        }
+        
+        {
+            auto currentHeight = bitcoinAPI.getblockcount();
+            auto it = blocksSeen.begin();
+            while (it != blocksSeen.end()) {
+                if (it->second.second < currentHeight - heightCutoff) {
+                    it = blocksSeen.erase(it);
+                } else {
+                    ++it;
+                }
             }
         }
     }

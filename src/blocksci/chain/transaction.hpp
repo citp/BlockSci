@@ -65,7 +65,7 @@ namespace blocksci {
         }
         
         ranges::optional<std::chrono::system_clock::time_point> getTimeSeen() const {
-            return access->mempoolIndex.getTimestamp(txNum);
+            return access->mempoolIndex.getTxTimestamp(txNum);
         }
         
         bool observedInMempool() const {

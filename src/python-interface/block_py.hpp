@@ -34,6 +34,9 @@ void addBlockMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     .def_property_readonly("time", func([](const Block &block) -> std::chrono::system_clock::time_point {
         return block.getTime();
     }), func2("Datetime object created from creation timestamp"))
+    .def_property_readonly("time_seen", func([](const Block &block) -> ranges::optional<std::chrono::system_clock::time_point> {
+        return block.getTimeSeen();
+    }), func2("If recorded by the mempool recorder, the time that this block was first seen by your node"))
     .def_property_readonly("bits", func([](const Block &block) -> int64_t {
         return block.bits();
     }), func2("Difficulty threshold specified in block header"))

@@ -146,6 +146,10 @@ namespace blocksci {
             return rawBlock->timestamp;
         }
         
+        ranges::optional<std::chrono::system_clock::time_point> getTimeSeen() const {
+            return access->mempoolIndex.getBlockTimestamp(blockNum);
+        }
+        
         uint32_t bits() const {
             return rawBlock->bits;
         }
