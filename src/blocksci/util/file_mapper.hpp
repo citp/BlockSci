@@ -179,6 +179,11 @@ namespace blocksci {
         
         explicit SimpleFileMapper(boost::filesystem::path path) : SimpleFileMapperBase(std::move(path), AccessMode::readwrite), writePos(size()) {}
         
+        SimpleFileMapper(const SimpleFileMapper &) = delete;
+        SimpleFileMapper(SimpleFileMapper &&) = default;
+        SimpleFileMapper &operator=(const SimpleFileMapper &) = delete;
+        SimpleFileMapper &operator=(SimpleFileMapper &&) = default;
+
         ~SimpleFileMapper() {
             clearBuffer();
         }

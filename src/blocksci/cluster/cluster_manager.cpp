@@ -246,7 +246,7 @@ namespace blocksci {
             return 0;
         };
         
-        chain.mapReduce<int>(0, chain.size(), extract, [](int &a,int &) -> int & {return a;});
+        chain.mapReduce<int>(0, static_cast<int>(chain.size()), extract, [](int &a,int &) -> int & {return a;});
         
         ds.resolveAll();
         
@@ -294,7 +294,7 @@ namespace blocksci {
             j++;
         }
         
-        clusterAddressesFile.write(reinterpret_cast<char *>(orderedScripts.data()), sizeof(DedupAddress) * orderedScripts.size());
+        clusterAddressesFile.write(reinterpret_cast<char *>(orderedScripts.data()), static_cast<long>(sizeof(DedupAddress) * orderedScripts.size()));
     }
     
     
@@ -377,7 +377,7 @@ namespace blocksci {
         
         recordOrdered.get();
         
-        clusterOffsetFile.write(reinterpret_cast<char *>(clusterPositions.data()), sizeof(uint32_t) * clusterPositions.size());
+        clusterOffsetFile.write(reinterpret_cast<char *>(clusterPositions.data()), static_cast<long>(sizeof(uint32_t) * clusterPositions.size()));
         return ClusterManager{outputLocation, chain.getAccess()};
     }
 } // namespace blocksci

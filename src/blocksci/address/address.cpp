@@ -132,6 +132,15 @@ namespace blocksci {
                 ss << int(script.getRequired()) << "Of" << int(script.getTotal());
                 break;
             }
+            case DedupAddressType::PUBKEY: {
+                break;
+            }
+            case DedupAddressType::NONSTANDARD: {
+                break;
+            }
+            case DedupAddressType::NULL_DATA: {
+                break;
+            }
             default: {
                 break;
             }

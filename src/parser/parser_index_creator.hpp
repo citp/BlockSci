@@ -59,7 +59,6 @@ public:
         if (updateFuture.wait_for(0ms) == std::future_status::ready) {
             updateFuture.get();
             launchingUpdate = true;
-            index.prepareUpdate();
             updateFuture = std::async(std::launch::async, [this, state] {
                 index.runUpdate(state);
                 launchingUpdate = false;
@@ -79,7 +78,6 @@ public:
                 updateFuture.get();
             }
             index.runUpdate(state);
-            index.tearDown();
         });
     }
 };

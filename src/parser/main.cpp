@@ -273,9 +273,7 @@ void updateHashDB(const ParserConfigurationBase &config, HashIndexCreator &db) {
     blocksci::State updateState{chain, scripts};
     std::cout << "Updating hash index\n";
     
-    db.prepareUpdate();
     db.runUpdate(updateState);
-    db.tearDown();
 }
 
 void updateAddressDB(const ParserConfigurationBase &config) {
@@ -287,9 +285,7 @@ void updateAddressDB(const ParserConfigurationBase &config) {
     
     std::cout << "Updating address index\n";
     
-    db.prepareUpdate();
     db.runUpdate(updateState);
-    db.tearDown();
 }
 
 void updateConfig(boost::filesystem::path &dataDirectory) {

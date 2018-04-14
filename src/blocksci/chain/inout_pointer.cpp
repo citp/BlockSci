@@ -89,7 +89,7 @@ namespace blocksci {
     }
     
     std::vector<Transaction> getInputTransactions(const std::vector<OutputPointer> &pointers, DataAccess &access) {
-        auto txes = pointers | ranges::view::transform([&access](const OutputPointer &pointer) { return Output(pointer, access).getSpendingTx(); }) | flatMapOptionals | ranges::to_vector;
+        auto txes = pointers | ranges::view::transform([&access](const OutputPointer &pointer) { return Output(pointer, access).getSpendingTx(); }) | flatMapOptionals() | ranges::to_vector;
         txes |= ranges::action::sort | ranges::action::unique;
         return txes;
     }

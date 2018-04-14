@@ -238,7 +238,7 @@ namespace blocksci {
         if (!ecdsa_signature_parse_der_lax(secp256k1_context_verify, &sig, vchSig.data(), vchSig.size())) {
             return false;
         }
-        return (!secp256k1_ecdsa_signature_normalize(secp256k1_context_verify, NULL, &sig));
+        return (!secp256k1_ecdsa_signature_normalize(secp256k1_context_verify, nullptr, &sig));
     }
     
     /* static */ int ECCVerifyHandle::refcount = 0;

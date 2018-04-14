@@ -50,7 +50,7 @@ namespace blocksci {
         
         template <typename ResultType, typename It, typename MapFunc, typename ReduceFunc>
         ResultType mapReduceBlocksImp(It begin, It end, MapFunc mapFunc, ReduceFunc reduceFunc, int segmentBeginNum) {
-            auto segmentCount = std::distance(begin, end);
+            auto segmentCount = static_cast<int>(std::distance(begin, end));
             if(segmentCount == 1) {
                 ResultType res{};
                 auto ret = mapFunc(*begin, segmentBeginNum);
@@ -187,9 +187,9 @@ namespace blocksci {
         }
         
         ScriptRangeVariant scripts(AddressType::Enum type) {
-            static auto table = make_static_table<AddressType, internal::ScriptRangeFunctor>(*this);
+            static constexpr auto table = make_dynamic_table<AddressType, internal::ScriptRangeFunctor>();
             auto index = static_cast<size_t>(type);
-            return table.at(index);
+            return table.at(index)(*this);
         }
         
         template <typename ResultType, typename MapFunc, typename ReduceFunc>

@@ -13,7 +13,7 @@ set(CXX_VISIBILITY_PRESET hidden)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-old-style-cast -Wno-documentation-unknown-command -Wno-documentation -Wno-shadow -Wno-switch-enum -Wno-missing-prototypes -Wno-weak-vtables -Wno-exit-time-destructors -Wno-unused-macros -Wno-padded -Wno-undefined-func-template")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-old-style-cast -Wno-documentation-unknown-command -Wno-documentation -Wno-shadow -Wno-covered-switch-default -Wno-missing-prototypes -Wno-weak-vtables -Wno-unused-macros -Wno-padded")
 
 #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG")
 
@@ -70,7 +70,7 @@ ExternalProject_Add(project_secp256k1
   GIT_REPOSITORY "https://github.com/bitcoin-core/secp256k1.git"
   GIT_TAG "master"
   PREFIX "${CMAKE_CURRENT_BINARY_DIR}/secp256k1"
-  CONFIGURE_COMMAND CFLAGS=-fPIC CPPFLAGS=-fPIC <SOURCE_DIR>/configure --disable-shared --disable-benchmark --disable-tests --disable-exhaustive-test --enable-module-recovery --with-bignum=no --prefix <INSTALL_DIR>
+  CONFIGURE_COMMAND CFLAGS=-fPIC CPPFLAGS=-fPIC <SOURCE_DIR>/configure --disable-shared --disable-benchmark --disable-tests --disable-exhaustive-tests --enable-module-recovery --with-bignum=no --prefix <INSTALL_DIR>
   UPDATE_COMMAND "" 
 )
 

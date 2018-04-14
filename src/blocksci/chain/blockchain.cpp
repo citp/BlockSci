@@ -79,7 +79,7 @@ namespace blocksci {
     }
     
     uint32_t txCount(Blockchain &chain) {
-        auto lastBlock = chain[chain.size() - BlockHeight{1}];
+        auto lastBlock = chain[static_cast<int>(chain.size()) - BlockHeight{1}];
         return lastBlock.endTxIndex();
     }
     

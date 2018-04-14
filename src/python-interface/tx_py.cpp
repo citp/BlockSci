@@ -14,10 +14,6 @@
 #include <blocksci/index/address_index.hpp>
 #include <blocksci/index/hash_index.hpp>
 
-#include <pybind11/stl.h>
-#include <pybind11/stl_bind.h>
-#include <pybind11/chrono.h>
-
 namespace py = pybind11;
 
 using namespace blocksci;
@@ -49,7 +45,7 @@ auto addOptionalTxRange(py::module &m, const std::string &name) {
         return strdup(ss.str().c_str());
     });
     addTransactionRangeMethods(cl, [](auto &range, auto func) {
-        return func(range | flatMapOptionals);
+        return func(range | flatMapOptionals());
     });
     return cl;
 }

@@ -19,7 +19,6 @@
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>
 
-#include <pybind11/stl.h>
 #include <pybind11/iostream.h>
 
 namespace py = pybind11;

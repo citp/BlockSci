@@ -69,11 +69,7 @@ public:
     template<typename EquivType>
     void updateScript(std::false_type, EquivType, const blocksci::State &, const blocksci::ScriptAccess &) {}
     
-    virtual void prepareUpdate() {}
-    
     void runUpdate(const blocksci::State &state);
-    
-    virtual void tearDown() {}
 };
 
 template <typename T>

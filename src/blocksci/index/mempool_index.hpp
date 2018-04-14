@@ -65,10 +65,11 @@ namespace blocksci {
         FixedSizeFileMapper<BlockRecord> timestampFile;
         int firstBlockNum;
         
-        explicit BlocktimeIndex(const boost::filesystem::path &path, uint32_t firstBlockNum_) : timestampFile(path), firstBlockNum(firstBlockNum_) {}
+        explicit BlocktimeIndex(const boost::filesystem::path &path, int firstBlockNum_) : timestampFile(path), firstBlockNum(firstBlockNum_) {}
         
         ranges::optional<std::chrono::system_clock::time_point> getTimestamp(int index) const {
-            auto record = timestampFile.getData(index - firstBlockNum);
+            assert(index - firstBlockNum >= 0);
+            auto record = timestampFile.getData(static_cast<size_t>(index - firstBlockNum));
             if (record->observationTime > 0) {
                 return std::chrono::system_clock::from_time_t(record->observationTime);
             } else {
@@ -93,12 +94,12 @@ namespace blocksci {
         void setup() {
             timestampFiles.clear();
             FixedSizeFileMapper<uint32_t> txRecordingPositions{config.mempoolDirectory()/"tx_index"};
-            for (size_t i = 0; i < txRecordingPositions.size(); i++) {
+            for (int i = 0; i < static_cast<int>(txRecordingPositions.size()); i++) {
                 timestampFiles.emplace_back((config.mempoolDirectory()/std::to_string(i)).concat("_tx"), *txRecordingPositions[i]);
             }
             blockTimeFiles.clear();
             FixedSizeFileMapper<int> blockRecordingPositions{config.mempoolDirectory()/"block_index"};
-            for (size_t i = 0; i < blockRecordingPositions.size(); i++) {
+            for (int i = 0; i < static_cast<int>(blockRecordingPositions.size()); i++) {
                 blockTimeFiles.emplace_back((config.mempoolDirectory()/std::to_string(i)).concat("_block"), *blockRecordingPositions[i]);
             }
         }
@@ -152,10 +153,10 @@ namespace blocksci {
             }
         }
         
-        ranges::optional<std::chrono::system_clock::time_point> getBlockTimestamp(uint32_t index) const {
-            auto possibleFile = selectPossibleBlockRecording(index);
+        ranges::optional<std::chrono::system_clock::time_point> getBlockTimestamp(int height) const {
+            auto possibleFile = selectPossibleBlockRecording(height);
             if (possibleFile) {
-                return (*possibleFile).get().getTimestamp(index);
+                return (*possibleFile).get().getTimestamp(height);
             } else {
                 return ranges::nullopt;
             }

@@ -60,6 +60,6 @@ namespace blocksci { namespace heuristics {
             return a;
         };
         
-        return chain.mapReduce<RetType>(BlockHeight{0}, chain.size(), mapFunc, reduceFunc);
+        return chain.mapReduce<RetType>(BlockHeight{0}, static_cast<BlockHeight>(chain.size()), mapFunc, reduceFunc);
     }
 }}

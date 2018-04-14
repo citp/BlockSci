@@ -69,13 +69,16 @@ class AddressState {
         static constexpr auto type = scriptType;
         AddressBloomFilter(const boost::filesystem::path &path) : BloomFilter(boost::filesystem::path(path).concat(dedupAddressName(type)), startingCount<scriptType>, AddressFalsePositiveRate)  {}
     };
+
+    template<blocksci::DedupAddressType::Enum scriptType>
+    using AddressBloomFilterPointer = std::unique_ptr<AddressBloomFilter<scriptType>>;
     
     boost::filesystem::path path;
     
     HashIndexCreator &db;
     
     using AddressMapTuple = blocksci::to_dedup_address_tuple_t<AddressMap>;
-    using AddressBloomFilterTuple = blocksci::to_dedup_address_tuple_t<AddressBloomFilter>;
+    using AddressBloomFilterTuple = blocksci::to_dedup_address_tuple_t<AddressBloomFilterPointer>;
     
     AddressMapTuple multiAddressMaps;
     AddressBloomFilterTuple addressBloomFilters;
@@ -90,30 +93,30 @@ class AddressState {
     
     template<blocksci::DedupAddressType::Enum type>
     void reloadBloomFilter() {
-        auto &addressBloomFilter = std::get<AddressBloomFilter<type>>(addressBloomFilters);
-        addressBloomFilter.reset(addressBloomFilter.getMaxItems(), addressBloomFilter.getFPRate());
+        auto &addressBloomFilter = std::get<AddressBloomFilterPointer<type>>(addressBloomFilters);
+        addressBloomFilter->reset(addressBloomFilter->getMaxItems(), addressBloomFilter->getFPRate());
         auto it = db.getIterator(type);
         for (it->SeekToFirst(); it->Valid(); it->Next()) {
             uint32_t scriptNum;
             memcpy(&scriptNum, it->value().data(), sizeof(scriptNum));
             blocksci::uint160 addressHash;
             memcpy(&addressHash, it->key().data(), sizeof(addressHash));
-            addressBloomFilter.add(addressHash);
+            addressBloomFilter->add(addressHash);
         }
     }
     
     // Duplicated to prevent triggering gcc
     void reloadBloomFilters() {
         blocksci::for_each(blocksci::DedupAddressType::all(), [&](auto tag) {
-            auto &addressBloomFilter = std::get<AddressBloomFilter<tag>>(addressBloomFilters);
-            addressBloomFilter.reset(addressBloomFilter.getMaxItems(), addressBloomFilter.getFPRate());
+            auto &addressBloomFilter = std::get<AddressBloomFilterPointer<tag>>(addressBloomFilters);
+            addressBloomFilter->reset(addressBloomFilter->getMaxItems(), addressBloomFilter->getFPRate());
             auto it = db.getIterator(tag);
             for (it->SeekToFirst(); it->Valid(); it->Next()) {
                 uint32_t scriptNum;
                 memcpy(&scriptNum, it->value().data(), sizeof(scriptNum));
                 blocksci::uint160 addressHash;
                 memcpy(&addressHash, it->key().data(), sizeof(addressHash));
-                addressBloomFilter.add(addressHash);
+                addressBloomFilter->add(addressHash);
             }
         });
     }
@@ -140,8 +143,8 @@ public:
     template<blocksci::AddressType::Enum type, std::enable_if_t<blocksci::DedupAddressInfo<dedupType(type)>::equived, int> = 0>
     RawAddressInfo<type> findAddress(const ScriptOutputData<type> &data) {
         auto hash = data.getHash();
-        auto &addressBloomFilter = std::get<AddressBloomFilter<dedupType(type)>>(addressBloomFilters);
-        if (!addressBloomFilter.possiblyContains(hash)) {
+        auto &addressBloomFilter = std::get<AddressBloomFilterPointer<dedupType(type)>>(addressBloomFilters);
+        if (!addressBloomFilter->possiblyContains(hash)) {
             // Address has definitely never been seen
             bloomNegativeCount++;
             return {hash, AddressLocation::NotFound, 0};
@@ -191,10 +194,10 @@ public:
         uint32_t addressNum = addressInfo.addressNum;
         if (!existingAddress) {
             addressNum = getNewAddressIndex(dedupType(type));
-            auto &addressBloomFilter = std::get<AddressBloomFilter<dedupType(type)>>(addressBloomFilters);
-            addressBloomFilter.add(addressInfo.hash);
+            auto &addressBloomFilter = std::get<AddressBloomFilterPointer<dedupType(type)>>(addressBloomFilters);
+            addressBloomFilter->add(addressInfo.hash);
             db.addAddress<blocksci::AddressInfo<type>::exampleType>(addressInfo.hash, addressNum);
-            if (addressBloomFilter.isFull()) {
+            if (addressBloomFilter->isFull()) {
                 reloadBloomFilter<dedupType(type)>();
             }
         }

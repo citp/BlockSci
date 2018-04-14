@@ -1,6 +1,8 @@
 file(GLOB PARSER_HEADERS "*.hpp")
 file(GLOB PARSER_SOURCES "*.cpp")
 
+set_source_files_properties(main.cpp PROPERTIES COMPILE_FLAGS "-Wno-reserved-id-macro -Wno-sign-conversion -Wno-extra-semi -Wno-undefined-func-template")
+
 add_executable(blocksci_parser ${PARSER_SOURCES} ${PARSER_HEADERS})
 
 source_group(blocksci_parser FILES ${PARSER_SOURCES} ${PARSER_HEADERS})

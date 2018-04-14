@@ -172,17 +172,13 @@ namespace blocksci {
                 foundKey.remove_prefix(sizeof(uint32_t));
                 DedupAddress rawParent;
                 memcpy(&rawParent, foundKey.data(), sizeof(rawParent));
-                switch (rawParent.type) {
-                    case DedupAddressType::SCRIPTHASH:
-                        for (auto type : equivAddressTypes(equivType(AddressType::SCRIPTHASH))) {
-                            Address newAddress(rawParent.scriptNum, type, searchAddress.getAccess());
-                            if (searchedAddresses.find(newAddress) == searchedAddresses.end()) {
-                                addressesToSearch.insert(newAddress);
-                            }
+                if (rawParent.type == DedupAddressType::SCRIPTHASH) {
+                    for (auto type : equivAddressTypes(equivType(AddressType::SCRIPTHASH))) {
+                        Address newAddress(rawParent.scriptNum, type, searchAddress.getAccess());
+                        if (searchedAddresses.find(newAddress) == searchedAddresses.end()) {
+                            addressesToSearch.insert(newAddress);
                         }
-                        break;
-                    default:
-                        break;
+                    }
                 }
             }
             searchedAddresses.insert(address);

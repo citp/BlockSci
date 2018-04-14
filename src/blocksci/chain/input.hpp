@@ -61,7 +61,7 @@ namespace blocksci {
         Transaction transaction() const;
         Block block() const;
         
-        uint32_t age() const;
+        BlockHeight age() const;
 
         bool operator==(const Inout &other) const {
             return *inout == other;

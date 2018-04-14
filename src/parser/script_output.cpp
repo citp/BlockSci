@@ -38,21 +38,21 @@ ScriptOutputDataType extractScriptData(const blocksci::CScriptView &scriptPubKey
     using blocksci::uint256;
     
     // Templates
-    static std::vector<std::pair<AddressType::Enum, CScript>> mTemplates;
-    if (mTemplates.empty())
-    {
+    static std::vector<std::pair<AddressType::Enum, CScript>> &mTemplates = *[]() {
+        auto templates = new std::vector<std::pair<AddressType::Enum, CScript>>{};
         // Standard tx, sender provides pubkey, receiver adds signature
         auto pubkey = std::make_pair(AddressType::Enum::PUBKEY, CScript() << blocksci::OP_PUBKEY << blocksci::OP_CHECKSIG);
-        mTemplates.push_back(pubkey);
+        templates->push_back(pubkey);
         
         // Bitcoin address tx, sender provides hash of pubkey, receiver provides signature and pubkey
         auto pubkeyHash = std::make_pair(AddressType::Enum::PUBKEYHASH, CScript() << blocksci::OP_DUP << blocksci::OP_HASH160 << blocksci::OP_PUBKEYHASH << blocksci::OP_EQUALVERIFY << blocksci::OP_CHECKSIG);
-        mTemplates.push_back(pubkeyHash);
+        templates->push_back(pubkeyHash);
         
         // Sender provides N pubkeys, receivers provides M signatures
         auto multisig = std::make_pair(AddressType::Enum::MULTISIG, CScript() << blocksci::OP_SMALLINTEGER << blocksci::OP_PUBKEYS << blocksci::OP_SMALLINTEGER << blocksci::OP_CHECKMULTISIG);
-        mTemplates.push_back(multisig);
-    }
+        templates->push_back(multisig);
+        return templates;
+    }();
     
     // Shortcut for pay-to-script-hash, which are more constrained than the other types:
     // it is always OP_HASH160 20 [20 byte hash] OP_EQUAL

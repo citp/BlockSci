@@ -13,6 +13,7 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
 
 namespace blocksci {
     class uint160;
@@ -136,13 +137,12 @@ namespace blocksci {
         }
     };
     
-    static constexpr auto dedupTypeTable = blocksci::make_static_table<AddressType, DedupAddressTypeFunctor>();
-    
     constexpr void addressTypeCheckThrow(size_t index) {  
         index >= AddressType::size ? throw std::invalid_argument("combination of enum values is not valid") : 0;
     }
 
     constexpr DedupAddressType::Enum dedupType(AddressType::Enum t) {
+        constexpr auto dedupTypeTable = blocksci::make_static_table<AddressType, DedupAddressTypeFunctor>();
         auto index = static_cast<size_t>(t);
         addressTypeCheckThrow(index);
         return dedupTypeTable[index];
@@ -156,14 +156,13 @@ namespace blocksci {
     
     template<AddressType::Enum type>
     struct AddressTypeEquivTypeFunctor {
-        static EquivAddressType::Enum f() {
+        static constexpr EquivAddressType::Enum f() {
             return AddressInfo<type>::equivType;
         }
     };
     
-    static auto addressTypeequivTypeTable = blocksci::make_static_table<AddressType, AddressTypeEquivTypeFunctor>();
-    
-    inline EquivAddressType::Enum equivType(AddressType::Enum t) {
+    constexpr EquivAddressType::Enum equivType(AddressType::Enum t) {
+        constexpr auto addressTypeequivTypeTable = blocksci::make_static_table<AddressType, AddressTypeEquivTypeFunctor>();
         auto index = static_cast<size_t>(t);
         addressTypeCheckThrow(index);
         return addressTypeequivTypeTable[index];
@@ -177,9 +176,11 @@ namespace blocksci {
         }
     };
     
-    static auto equivAddressTypesTable = blocksci::make_static_table<EquivAddressType, EquivAddressTypesFunctor>();
-    
     inline std::vector<AddressType::Enum> equivAddressTypes(EquivAddressType::Enum t) {
+        static auto &equivAddressTypesTable = *[]() {
+            auto nameTable = make_static_table<EquivAddressType, EquivAddressTypesFunctor>();
+            return new decltype(nameTable){nameTable};
+        }();
         auto index = static_cast<size_t>(t);
         addressTypeCheckThrow(index);
         return equivAddressTypesTable[index];

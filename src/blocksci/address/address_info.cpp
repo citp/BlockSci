@@ -35,7 +35,10 @@ namespace blocksci {
     };
     
     std::string addressName(AddressType::Enum type) {
-        static auto table = make_static_table<AddressType, AddressNameFunctor>();
+        static auto &table = *[]() {
+            auto nameTable = make_static_table<AddressType, AddressNameFunctor>();
+            return new decltype(nameTable){nameTable};
+        }();
         auto index = static_cast<size_t>(type);
         return table.at(index);
     }

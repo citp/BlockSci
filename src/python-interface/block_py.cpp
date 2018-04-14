@@ -10,10 +10,6 @@
 #include "ranges_py.hpp"
 #include "optional_py.hpp"
 
-#include <pybind11/stl.h>
-#include <pybind11/stl_bind.h>
-#include <pybind11/chrono.h>
-
 #include <range/v3/view/any_view.hpp>
 
 namespace py = pybind11;
@@ -47,7 +43,7 @@ auto addOptionalBlockRange(py::module &m, const std::string &name) {
         return strdup(ss.str().c_str());
     });
     addBlockRangeMethods(cl, [](auto &range, auto func) {
-        return func(range | flatMapOptionals);
+        return func(range | flatMapOptionals());
     });
     return cl;
 }

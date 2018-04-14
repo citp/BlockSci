@@ -47,8 +47,6 @@ AddressDB::~AddressDB() {
     clearOutputCache();
 }
 
-void AddressDB::tearDown() {}
-
 void AddressDB::processTx(const blocksci::RawTransaction *tx, uint32_t txNum, const blocksci::ChainAccess &, const blocksci::ScriptAccess &scripts) {
     std::unordered_set<Address> addresses;
     std::function<bool(const RawAddress &)> visitFunc = [&](const RawAddress &a) {

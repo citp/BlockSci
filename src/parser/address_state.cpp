@@ -25,7 +25,7 @@ namespace {
 }
 
 AddressState::AddressState(boost::filesystem::path path_, HashIndexCreator &hashDb) : path(std::move(path_)), db(hashDb), addressBloomFilters(blocksci::apply(blocksci::DedupAddressType::all(), [&] (auto tag) {
-    return AddressBloomFilter<tag>{path/std::string(bloomFileName)};
+    return std::make_unique<AddressBloomFilter<tag>>(path/std::string(bloomFileName));
 }))  {
     blocksci::for_each(multiAddressMaps, [&](auto &multiAddressMap) {
         std::stringstream ss;

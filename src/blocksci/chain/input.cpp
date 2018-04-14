@@ -34,7 +34,7 @@ namespace blocksci {
         return {inout->getLinkedTxNum(), *access};
     }
 
-    uint32_t Input::age() const {
+    BlockHeight Input::age() const {
         return blockHeight - getSpentTx().blockHeight;
     }
 } // namespace blocksci

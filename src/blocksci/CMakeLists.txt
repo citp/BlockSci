@@ -125,6 +125,8 @@ set(SCRIPT_SOURCES
   scripts/scripthash_script.cpp
 )
 
+set_source_files_properties(scripts/bitcoin_bech32.cpp PROPERTIES COMPILE_FLAGS -Wno-everything)
+
 set(UTIL_HEADERS
   util/file_mapper_fwd.hpp
   util/bitcoin_uint256.hpp
@@ -154,6 +156,8 @@ set(CLUSTER_HEADERS
   cluster/cluster_manager.hpp
   cluster/cluster.hpp
 )
+
+set_source_files_properties(cluster/cluster_manager.cpp PROPERTIES COMPILE_FLAGS "-Wno-reserved-id-macro -Wno-shorten-64-to-32")
 
 set(CLUSTER_SOURCES
   cluster/cluster_manager.cpp

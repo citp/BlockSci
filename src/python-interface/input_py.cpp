@@ -42,7 +42,7 @@ auto addOptionalInputRange(py::module &m, const std::string &name) {
         return strdup(ss.str().c_str());
     });
     addInputRangeMethods(cl, [](auto &range, auto func) {
-        return func(range | flatMapOptionals);
+        return func(range | flatMapOptionals());
     });
     return cl;
 }

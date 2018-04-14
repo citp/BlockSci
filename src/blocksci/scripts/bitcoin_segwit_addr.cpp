@@ -73,7 +73,7 @@ std::pair<int, segwit_data> decode(const std::string& hrp, const std::string& ad
 /** Encode a SegWit address. */
 std::string encode(const std::string& hrp, int witver, const segwit_data& witprog) {
     segwit_data enc;
-    enc.push_back(witver);
+    enc.push_back(static_cast<unsigned char>(witver));
     convertbits<8, 5, true>(enc, witprog);
     std::string ret = bech32::encode(hrp, enc);
     if (decode(hrp, ret).first == -1) return "";
@@ -82,7 +82,7 @@ std::string encode(const std::string& hrp, int witver, const segwit_data& witpro
     
 std::string encode(const blocksci::DataConfiguration &config, int witver, const segwit_data& witprog) {
     segwit_data enc;
-    enc.push_back(witver);
+    enc.push_back(static_cast<unsigned char>(witver));
     convertbits<8, 5, true>(enc, witprog);
     std::string ret = bech32::encode(config.segwitPrefix, enc);
     if (decode(config.segwitPrefix, ret).first == -1) return "";

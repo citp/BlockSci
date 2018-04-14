@@ -42,7 +42,7 @@ auto addOptionalOutputRange(py::module &m, const std::string &name) {
         return strdup(ss.str().c_str());
     });
     addOutputRangeMethods(cl, [](auto &range, auto func) {
-        return func(range | flatMapOptionals);
+        return func(range | flatMapOptionals());
     });
     return cl;
 }
