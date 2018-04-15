@@ -92,6 +92,14 @@ include(cppcheck.cmake)
 
 set(saved_flags "${CMAKE_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+set(WITH_GFLAGS OFF)
+set(WITH_JEMALLOC ON)
+set(WITH_SNAPPY ON)
+set(WITH_LZ4 ON)
+set(WITH_ZLIB ON)
+set(WITH_BZ2 ON)
+set(WITH_ZSTD ON)
+
 add_subdirectory(libs/rocksdb EXCLUDE_FROM_ALL)
 
 add_library(rocksdb_headers INTERFACE)
