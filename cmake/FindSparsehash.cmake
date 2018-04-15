@@ -27,10 +27,12 @@ find_path(SPARSEHASH_INCLUDE_DIRS
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(sparsehash DEFAULT_MSG
-    SPARSEHASH_INCLUDE_DIRS
+    REQUIRED_VARS SPARSEHASH_INCLUDE_DIRS
 )
 
 IF (SPARSEHASH_FOUND)
     add_library(sparsehash INTERFACE)
     target_include_directories(sparsehash INTERFACE ${SPARSEHASH_INCLUDE_DIRS})
 ENDIF (SPARSEHASH_FOUND)
+
+mark_as_advanced(SPARSEHASH_INCLUDE_DIRS)
