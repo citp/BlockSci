@@ -4,6 +4,7 @@ project(blocksci)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
 set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_MACOSX_RPATH 1)
 
 set(Upstream_VERSION 0.5.0)
@@ -90,12 +91,11 @@ target_link_libraries(secp256k1 INTERFACE ${install_dir}/lib/libsecp256k1.a)
 include(cppcheck.cmake)
 
 
-set(old_flags "${CMAKE_CXX_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-gnu-redeclared-enum -Wno-gnu-zero-variadic-macro-arguments -Wno-extra-semi")
+set(CMAKE_CXX_EXTENSIONS ON)
 
 add_subdirectory(libs/rocksdb EXCLUDE_FROM_ALL)
 
-set(CMAKE_CXX_FLAGS "${old_flags}")
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
