@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.5)
 project(blocksci)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
@@ -8,9 +8,6 @@ set(CMAKE_MACOSX_RPATH 1)
 
 set(Upstream_VERSION 0.5.0)
 
-
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
 
@@ -92,8 +89,20 @@ target_link_libraries(secp256k1 INTERFACE ${install_dir}/lib/libsecp256k1.a)
 
 include(cppcheck.cmake)
 
+
+set(old_flags "${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-gnu-redeclared-enum -Wno-gnu-zero-variadic-macro-arguments -Wno-extra-semi")
+
+add_subdirectory(libs/rocksdb EXCLUDE_FROM_ALL)
+
+set(CMAKE_CXX_FLAGS "${old_flags}")
+
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+
 add_subdirectory(libs/pybind11)
 add_subdirectory(libs/bitcoin-api-cpp EXCLUDE_FROM_ALL)
+
 
 add_subdirectory(src/blocksci)
 add_subdirectory(src/parser)

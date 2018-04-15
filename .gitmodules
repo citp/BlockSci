@@ -19,3 +19,6 @@
 [submodule "libs/clipp"]
 	path = libs/clipp
 	url = https://github.com/muellan/clipp
+[submodule "libs/rocksdb"]
+	path = libs/rocksdb
+	url = https://github.com/facebook/rocksdb
