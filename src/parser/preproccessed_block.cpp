@@ -74,8 +74,8 @@ void RawTransaction::load(SafeMemReader &reader, uint32_t txNum_, blocksci::Bloc
     auto inputCount = reader.readVariableLengthInteger();
     bool containsSegwit = false;
     if (inputCount == 0) {
-        auto flag = reader.readNext<uint8_t>();
-        assert(flag == 1);
+        reader.readNext<uint8_t>(); // flag
+        //assert(flag == 1);
         containsSegwit = true;
         txHashStart = reader.unsafePos();
         curOffset = reader.offset();
@@ -121,8 +121,8 @@ TransactionHeader::TransactionHeader(SafeMemReader &reader) {
     auto inputCount = reader.readVariableLengthInteger();
     bool containsSegwit = false;
     if (inputCount == 0) {
-        auto flag = reader.readNext<uint8_t>();
-        assert(flag == 1);
+        reader.readNext<uint8_t>(); // flag
+        //assert(flag == 1);
         containsSegwit = true;
         curOffset = reader.offset();
         inputCount = reader.readVariableLengthInteger();

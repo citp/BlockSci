@@ -9,7 +9,6 @@
 #include "blockchain.hpp"
 
 #include <blocksci/heuristics/tx_identification.hpp>
-#include <blocksci/index/address_output_range.hpp>
 
 #include <range/v3/action/push_back.hpp>
 #include <range/v3/algorithm/any_of.hpp>

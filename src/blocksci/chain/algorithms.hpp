@@ -59,7 +59,7 @@ namespace blocksci {
     inline auto flatMapOptionals() {
         return ranges::view::filter([](const auto &optional) { return static_cast<bool>(optional); })
     | ranges::view::transform([](const auto &optional) { return *optional; });
-    };
+    }
     
     template <typename B, CONCEPT_REQUIRES_(ranges::Range<B>()), std::enable_if_t<isTxRange<B>, int> = 0>
     inline auto txes(B && b) {
