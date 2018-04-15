@@ -1,7 +1,10 @@
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native")
 
 find_package( Boost 1.58 COMPONENTS filesystem iostreams serialization REQUIRED )
-find_package(OpenSSL REQUIRED)
+find_package( OpenSSL REQUIRED)
+
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
 
 set(INCLUDE_INSTALL_DIR include/blocksci )
 set(LIB_INSTALL_DIR lib/ )

@@ -28,10 +28,7 @@ ENDIF("${isSystemDir}" STREQUAL "-1")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
-
- execute_process(COMMAND git submodule update --init)
+execute_process(COMMAND git submodule update --init)
 
 add_library(dset INTERFACE)
 target_include_directories(dset INTERFACE libs)

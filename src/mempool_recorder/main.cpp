@@ -41,9 +41,9 @@ int initializeRecordingFile(Blockchain &chain) {
     if(!(boost::filesystem::exists(mempoolDir))){
         boost::filesystem::create_directory(mempoolDir);
     }
-    auto mostRecentBlock = chain[chain.size() - 1];
+    auto mostRecentBlock = chain[static_cast<int>(chain.size()) - 1];
     blocksci::FixedSizeFileWriter<uint32_t> txIndexFile(chain.getAccess().config.mempoolDirectory()/"tx_index");
-    auto fileNum = txIndexFile.size();
+    auto fileNum = static_cast<int>(txIndexFile.size());
     txIndexFile.write(mostRecentBlock.endTxIndex());
     blocksci::FixedSizeFileWriter<int32_t> blockIndexFile(chain.getAccess().config.mempoolDirectory()/"block_index");
     assert(blockIndexFile.size() == fileNum);
@@ -74,7 +74,7 @@ class MempoolRecorder {
 public:
     MempoolRecorder(const std::string &dataLocation, BitcoinAPI &bitcoinAPI_) :
     chain(dataLocation),
-    lastHeight(chain.size()),
+    lastHeight(static_cast<int>(chain.size())),
     bitcoinAPI(bitcoinAPI_),
     files(chain.getAccess().config.mempoolDirectory(), initializeRecordingFile(chain)) {
         updateBlockTimes(0);
@@ -178,7 +178,7 @@ int main(int argc, char * argv[]) {
     struct sigaction action;
     memset(&action, 0, sizeof(struct sigaction));
     action.sa_handler = term;
-    sigaction(SIGTERM, &action, NULL);
+    sigaction(SIGTERM, &action, nullptr);
     
     
     std::string username;

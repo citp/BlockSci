@@ -40,6 +40,8 @@ file(GLOB PYTHON_CLUSTER_SOURCES "*.cpp")
 
 pybind11_add_module(${module_name} ${PYTHON_CLUSTER_SOURCES})
 
+target_compile_options(${module_name} PRIVATE -Wall -Wextra -Wpedantic)
+
 target_link_libraries( ${module_name} PUBLIC blocksci)
 
 install(TARGETS ${module_name} DESTINATION ${install_location})
