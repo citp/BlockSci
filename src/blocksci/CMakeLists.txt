@@ -183,6 +183,21 @@ set(ALL_SOURCES ${BLOCKSCI_HEADERS} ${BLOCKSCI_SOURCES} ${ADDRESS_HEADERS} ${ADD
 add_library(blocksci SHARED ${ALL_SOURCES})
 add_library(blocksci_static STATIC ${ALL_SOURCES})
 
+
+target_compile_features(blocksci_static PUBLIC cxx_std_14)
+target_compile_options(blocksci_static PRIVATE -Wall -Wextra -Wpedantic)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+target_compile_options(blocksci_static PRIVATE -Werror -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-old-style-cast -Wno-documentation-unknown-command -Wno-documentation -Wno-shadow -Wno-covered-switch-default -Wno-missing-prototypes -Wno-weak-vtables -Wno-unused-macros -Wno-padded)
+endif()
+
+target_compile_features(blocksci PUBLIC cxx_std_14)
+target_compile_options(blocksci PRIVATE -Wall -Wextra -Wpedantic)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+target_compile_options(blocksci PRIVATE -Werror -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-old-style-cast -Wno-documentation-unknown-command -Wno-documentation -Wno-shadow -Wno-covered-switch-default -Wno-missing-prototypes -Wno-weak-vtables -Wno-unused-macros -Wno-padded)
+endif()
+
 include(GenerateExportHeader)
 generate_export_header(blocksci)
 set_target_properties(blocksci_static PROPERTIES COMPILE_FLAGS -DBLOCKSCI_STATIC_DEFINE)

@@ -27,7 +27,7 @@ find_path(SPARSEHASH_INCLUDE_DIRS
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(sparsehash DEFAULT_MSG
-    REQUIRED_VARS SPARSEHASH_INCLUDE_DIRS
+    SPARSEHASH_INCLUDE_DIRS
 )
 
 IF (SPARSEHASH_FOUND)
