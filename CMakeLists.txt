@@ -10,7 +10,7 @@ set(CMAKE_MACOSX_RPATH 1)
 set(Upstream_VERSION 0.5.0)
 
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-old-style-cast -Wno-documentation-unknown-command -Wno-documentation -Wno-shadow -Wno-covered-switch-default -Wno-missing-prototypes -Wno-weak-vtables -Wno-unused-macros -Wno-padded")
 
@@ -91,12 +91,9 @@ target_link_libraries(secp256k1 INTERFACE ${install_dir}/lib/libsecp256k1.a)
 include(cppcheck.cmake)
 
 
-set(CMAKE_CXX_EXTENSIONS ON)
-
 add_subdirectory(libs/rocksdb EXCLUDE_FROM_ALL)
 
-set(CMAKE_CXX_EXTENSIONS OFF)
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wpedantic")
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
