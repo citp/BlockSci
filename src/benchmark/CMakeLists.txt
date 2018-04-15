@@ -1,5 +1,3 @@
 add_executable(blocksci_benchmark main.cpp)
 target_link_libraries(blocksci_benchmark blocksci_static)
 target_link_libraries(blocksci_benchmark clipp)
-
-install(TARGETS blocksci_benchmark DESTINATION bin)
