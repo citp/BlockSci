@@ -15,6 +15,7 @@
 #include "raw_block.hpp"
 #include "raw_transaction.hpp"
 
+#include <blocksci/exception.hpp>
 #include <blocksci/util/file_mapper.hpp>
 #include <blocksci/util/data_configuration.hpp>
 #include <blocksci/util/bitcoin_uint256.hpp>
@@ -23,14 +24,9 @@
 
 namespace blocksci {
     
-    class BLOCKSCI_EXPORT ReorgException : public std::runtime_error {
-    public:
-        ReorgException() : std::runtime_error("Blockchain has experienced reorg") {}
-    };
-    
     struct DataConfiguration;
     
-    class ChainAccess {
+    class BLOCKSCI_EXPORT ChainAccess {
         FixedSizeFileMapper<RawBlock> blockFile;
         SimpleFileMapper<> blockCoinbaseFile;
         

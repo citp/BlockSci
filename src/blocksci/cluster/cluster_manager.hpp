@@ -9,6 +9,8 @@
 #ifndef cluster_manager_hpp
 #define cluster_manager_hpp
 
+#include <blocksci/blocksci_export.h>
+
 #include "cluster_fwd.hpp"
 #include "cluster.hpp"
 
@@ -33,14 +35,14 @@ namespace blocksci {
     template<DedupAddressType::Enum type>
     struct ClusterNumFunctor;
     
-    struct TaggedCluster {
+    struct BLOCKSCI_EXPORT TaggedCluster {
         Cluster cluster;
         std::vector<TaggedAddress> taggedAddresses;
         
         TaggedCluster(const Cluster &cluster_, std::vector<TaggedAddress> &&taggedAddresses_) : cluster(cluster_), taggedAddresses(taggedAddresses_) {}
     };
     
-    class ClusterManager {
+    class BLOCKSCI_EXPORT ClusterManager {
         FixedSizeFileMapper<uint32_t> clusterOffsetFile;
         FixedSizeFileMapper<DedupAddress> clusterScriptsFile;
         

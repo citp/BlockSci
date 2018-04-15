@@ -17,6 +17,11 @@ set(BLOCKSCI_HEADERS
   script.hpp
   cluster.hpp
   index.hpp
+  exception.hpp
+)
+
+set(BLOCKSCI_SOURCES
+  exception.cpp
 )
 
 set(ADDRESS_HEADERS
@@ -174,7 +179,7 @@ set(CLUSTER_SOURCES
   cluster/cluster.cpp
 )
 
-set(ALL_SOURCES ${BLOCKSCI_HEADERS} ${ADDRESS_HEADERS} ${ADDRESS_SOURCES}  ${SCRIPT_HEADERS} ${SCRIPT_SOURCES} ${CHAIN_HEADERS} ${CHAIN_SOURCES} ${INDEX_HEADERS} ${INDEX_PRIVATE_HEADERS} ${INDEX_SOURCES} ${UTIL_HEADERS} ${UTIL_SOURCES} ${HEURISTICS_HEADERS} ${HEURISTICS_SOURCES} ${CLUSTER_HEADERS} ${CLUSTER_SOURCES})
+set(ALL_SOURCES ${BLOCKSCI_HEADERS} ${BLOCKSCI_SOURCES} ${ADDRESS_HEADERS} ${ADDRESS_SOURCES}  ${SCRIPT_HEADERS} ${SCRIPT_SOURCES} ${CHAIN_HEADERS} ${CHAIN_SOURCES} ${INDEX_HEADERS} ${INDEX_PRIVATE_HEADERS} ${INDEX_SOURCES} ${UTIL_HEADERS} ${UTIL_SOURCES} ${HEURISTICS_HEADERS} ${HEURISTICS_SOURCES} ${CLUSTER_HEADERS} ${CLUSTER_SOURCES})
 
 add_library(blocksci SHARED ${ALL_SOURCES})
 add_library(blocksci_static STATIC ${ALL_SOURCES})
@@ -205,7 +210,7 @@ source_group(blocksci FILES ${BLOCKSCI_HEADERS} ${BLOCKSCI_SOURCES})
 
 target_link_libraries( blocksci PUBLIC Threads::Threads)
 target_link_libraries( blocksci PUBLIC Boost::filesystem Boost::iostreams Boost::serialization)
-target_link_libraries( blocksci PUBLIC OpenSSL::Crypto )
+target_link_libraries( blocksci PRIVATE OpenSSL::Crypto )
 target_link_libraries( blocksci PRIVATE rocksdb )
 target_link_libraries( blocksci PRIVATE secp256k1)
 target_link_libraries( blocksci PRIVATE dset)
@@ -215,7 +220,7 @@ SET_TARGET_PROPERTIES(blocksci_static PROPERTIES OUTPUT_NAME blocksci)
 
 target_link_libraries( blocksci_static PUBLIC Threads::Threads)
 target_link_libraries( blocksci_static PUBLIC Boost::filesystem Boost::iostreams Boost::serialization)
-target_link_libraries( blocksci_static PUBLIC OpenSSL::Crypto )
+target_link_libraries( blocksci_static PRIVATE OpenSSL::Crypto )
 target_link_libraries( blocksci_static PRIVATE rocksdb )
 target_link_libraries( blocksci_static PRIVATE secp256k1)
 target_link_libraries( blocksci_static PRIVATE dset)

@@ -9,6 +9,8 @@
 #ifndef blocksci_cluster_cluster_hpp
 #define blocksci_cluster_cluster_hpp
 
+#include <blocksci/blocksci_export.h>
+
 #include "cluster_fwd.hpp"
 
 #include <blocksci/address/address.hpp>
@@ -18,14 +20,14 @@
 #include <vector>
 
 namespace blocksci {
-    struct TaggedAddress {
+    struct BLOCKSCI_EXPORT TaggedAddress {
         blocksci::Address address;
         std::string tag;
         
         TaggedAddress(const blocksci::Address &address_, const std::string &tag_) : address(address_), tag(tag_) {}
     };
     
-    class Cluster {
+    class BLOCKSCI_EXPORT Cluster {
         const ClusterManager &manager;
         
     public:
