@@ -10,6 +10,5 @@
 
 #include <blocksci/index/address_index.hpp>
 #include <blocksci/index/hash_index.hpp>
-#include <blocksci/index/address_output_range.hpp>
 
 #endif /* blocksci_index_h */

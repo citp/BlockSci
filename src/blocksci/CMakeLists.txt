@@ -16,6 +16,7 @@ set(BLOCKSCI_HEADERS
   heuristics.hpp
   script.hpp
   cluster.hpp
+  index.hpp
 )
 
 set(ADDRESS_HEADERS
@@ -83,9 +84,12 @@ set(INDEX_HEADERS
   index/address_index.hpp
   index/hash_index.hpp
   index/mempool_index.hpp
+  index/column_iterator.hpp
+)
+
+set(INDEX_PRIVATE_HEADERS
   index/address_index_priv.hpp
   index/hash_index_priv.hpp
-  index/column_iterator.hpp
 )
 
 set(INDEX_SOURCES
@@ -170,7 +174,7 @@ set(CLUSTER_SOURCES
   cluster/cluster.cpp
 )
 
-set(ALL_SOURCES ${BLOCKSCI_HEADERS} ${ADDRESS_HEADERS} ${ADDRESS_SOURCES}  ${SCRIPT_HEADERS} ${SCRIPT_SOURCES} ${CHAIN_HEADERS} ${CHAIN_SOURCES} ${INDEX_HEADERS} ${INDEX_SOURCES} ${UTIL_HEADERS} ${UTIL_SOURCES} ${HEURISTICS_HEADERS} ${HEURISTICS_SOURCES} ${CLUSTER_HEADERS} ${CLUSTER_SOURCES})
+set(ALL_SOURCES ${BLOCKSCI_HEADERS} ${ADDRESS_HEADERS} ${ADDRESS_SOURCES}  ${SCRIPT_HEADERS} ${SCRIPT_SOURCES} ${CHAIN_HEADERS} ${CHAIN_SOURCES} ${INDEX_HEADERS} ${INDEX_PRIVATE_HEADERS} ${INDEX_SOURCES} ${UTIL_HEADERS} ${UTIL_SOURCES} ${HEURISTICS_HEADERS} ${HEURISTICS_SOURCES} ${CLUSTER_HEADERS} ${CLUSTER_SOURCES})
 
 add_library(blocksci SHARED ${ALL_SOURCES})
 add_library(blocksci_static STATIC ${ALL_SOURCES})
