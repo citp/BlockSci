@@ -22,6 +22,3 @@
 [submodule "libs/rocksdb"]
 	path = libs/rocksdb
 	url = https://github.com/facebook/rocksdb
-[submodule "libs/sparsehash"]
-	path = libs/sparsehash
-	url = https://github.com/sparsehash/sparsehash

@@ -1,4 +1,5 @@
 find_package(OpenSSL REQUIRED)
+find_package(Sparsehash REQUIRED)
 
 file(GLOB PARSER_HEADERS "*.hpp")
 file(GLOB PARSER_SOURCES "*.cpp")
