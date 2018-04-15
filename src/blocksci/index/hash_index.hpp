@@ -21,6 +21,7 @@
 #include <array>
 #include <vector>
 #include <cstdint>
+#include <cstring>
 
 namespace blocksci {
     struct State;
