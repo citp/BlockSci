@@ -22,19 +22,41 @@
 
 HashIndexCreator::HashIndexCreator(const ParserConfigurationBase &config_, const std::string &path) : ParserIndex(config_, "hashIndex"), db(path, false) {}
 
+template <bool, blocksci::AddressType::Enum type>
+struct ClearerFunctor;
+
+template <blocksci::AddressType::Enum type>
+struct ClearerFunctor<true, type> {
+    HashIndexAddressCache<type> &cache;
+    blocksci::HashIndex &db;
+    
+    ClearerFunctor(HashIndexAddressCache<type> &cache_, blocksci::HashIndex &db_) : cache(cache_), db(db_) {}
+    
+    void operator()() {
+        std::vector<std::pair<typename blocksci::AddressInfo<type>::IDType, uint32_t>> rows;
+        rows.reserve(cache.size());
+        for (const auto &pair : cache) {
+            rows.emplace_back(pair.first.key, pair.second);
+        }
+        cache.clear();
+        db.addAddresses<type>(std::move(rows));
+    }
+};
+
+template <blocksci::AddressType::Enum type>
+struct ClearerFunctor<false, type> {
+    ClearerFunctor(HashIndexAddressCache<type> &, blocksci::HashIndex &) {}
+    void operator()() {
+        
+    }
+};
+
 HashIndexCreator::~HashIndexCreator() {
     clearTxCache();
     // Duplicated to avoid crash in GCC 7.2
     for_each(blocksci::AddressType::all{}, [&](auto tag) {
-        auto &cache = std::get<HashIndexAddressCache<tag>>(addressCache);
-        rocksdb::WriteBatch batch;
-        for (const auto &pair : cache) {
-            rocksdb::Slice keySlice(reinterpret_cast<const char *>(&pair.first.key), sizeof(pair.first.key));
-            rocksdb::Slice valueSlice(reinterpret_cast<const char *>(&pair.second), sizeof(pair.second));
-            batch.Put(db.getColumn(tag).get(), keySlice, valueSlice);
-        }
-        db.writeBatch(batch);
-        cache.clear();
+        ClearerFunctor<!std::is_same<typename blocksci::AddressInfo<tag.value>::IDType, void>::value, tag.value>{std::get<HashIndexAddressCache<tag.value>>(addressCache), db}();
+        
     });
 }
 
@@ -83,44 +105,11 @@ uint32_t HashIndexCreator::getTxIndex(const blocksci::uint256 &txHash) {
 }
 
 void HashIndexCreator::clearTxCache() {
-    rocksdb::WriteBatch batch;
+    std::vector<std::pair<blocksci::uint256, uint32_t>> rows;
+    rows.reserve(txCache.size());
     for (const auto &pair : txCache) {
-        rocksdb::Slice keySlice(reinterpret_cast<const char *>(&pair.first.key), sizeof(pair.first.key));
-        rocksdb::Slice valueSlice(reinterpret_cast<const char *>(&pair.second), sizeof(pair.second));
-        batch.Put(db.getTxColumn().get(), keySlice, valueSlice);
+        rows.emplace_back(pair.first.key, pair.second);
     }
-    db.writeBatch(batch);
     txCache.clear();
-}
-
-void HashIndexCreator::rollback(const blocksci::State &state) {
-    {
-        auto &column = db.getColumn(blocksci::AddressType::WITNESS_SCRIPTHASH);
-        rocksdb::WriteBatch batch;
-        auto it = db.getIterator(blocksci::AddressType::WITNESS_SCRIPTHASH);
-        for (it->SeekToFirst(); it->Valid(); it->Next()) {
-            uint32_t destNum;
-            memcpy(&destNum, it->value().data(), sizeof(destNum));
-            auto count = state.scriptCounts[static_cast<size_t>(blocksci::DedupAddressType::SCRIPTHASH)];
-            if (destNum >= count) {
-                batch.Delete(column.get(), it->key());
-            }
-        }
-        assert(it->status().ok());
-        db.writeBatch(batch);
-    }
-    
-    {
-        auto it = db.getTxIterator();
-        rocksdb::WriteBatch batch;
-        for (it->SeekToFirst(); it->Valid(); it->Next()) {
-            uint32_t value;
-            memcpy(&value, it->value().data(), sizeof(value));
-            if (value >= state.txCount) {
-                batch.Delete(db.getTxColumn().get(), it->key());
-            }
-        }
-        db.writeBatch(batch);
-        assert(it->status().ok()); // Check for any errors found during the scan
-    }
+    db.addTxes(std::move(rows));
 }

@@ -142,15 +142,15 @@ void rollbackTransactions(blocksci::BlockHeight blockKeepCount, const ParserConf
         IndexedFileMapper<readwrite, uint32_t>(config.dataConfig.sequenceFilePath()).truncate(firstDeletedTxNum);
         SimpleFileMapper<readwrite>(config.dataConfig.blockCoinbaseFilePath()).truncate(firstDeletedBlock->coinbaseOffset);
         blockFile.truncate(blockKeepSize);
-        
-        {
-            HashIndexCreator hashDb(config, config.dataConfig.hashIndexFilePath().native());
-            AddressState{config.addressPath(), hashDb}.rollback(blocksciState);
-            hashDb.rollback(blocksciState);
-        }
         AddressWriter(config).rollback(blocksciState);
-        AddressDB(config, config.dataConfig.addressDBFilePath().native()).rollback(blocksciState);
         
+        HashIndexCreator hashDb(config, config.dataConfig.hashIndexFilePath().native());
+        {
+            AddressState addressState{config.addressPath(), hashDb};
+            hashDb.db.rollback(blocksciState);
+            addressState.reset(blocksciState);
+        }
+        blocksci::HashIndex(config.dataConfig.hashIndexFilePath().native(), false).rollback(blocksciState);
     }
 }
 

@@ -51,8 +51,6 @@ public:
     void addAddressNested(const blocksci::RawAddress &childAddress, const blocksci::DedupAddress &parentAddress);
     void addAddressOutput(const blocksci::RawAddress &address, const blocksci::OutputPointer &pointer);
     
-    void rollback(const blocksci::State &state);
-    
     void compact() {
         db.compactDB();
     }

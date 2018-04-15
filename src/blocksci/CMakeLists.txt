@@ -81,14 +81,19 @@ set(HEURISTICS_SOURCES
 
 set(INDEX_HEADERS
   index/address_index.hpp
-  index/address_output_range.hpp
   index/hash_index.hpp
   index/mempool_index.hpp
+  index/address_index_priv.hpp
+  index/hash_index_priv.hpp
+  index/column_iterator.hpp
 )
 
 set(INDEX_SOURCES
   index/address_index.cpp
+  index/address_index_priv.cpp
   index/hash_index.cpp
+  index/hash_index_priv.cpp
+  index/column_iterator.cpp
 )
 
 set(SCRIPT_HEADERS
@@ -143,6 +148,7 @@ set(UTIL_HEADERS
   util/apply_template.hpp
   util/dynamic_table.hpp
   util/static_table.hpp
+  util/memory_view.hpp
 )
 
 set(UTIL_SOURCES
@@ -196,7 +202,7 @@ source_group(blocksci FILES ${BLOCKSCI_HEADERS} ${BLOCKSCI_SOURCES})
 target_link_libraries( blocksci PUBLIC Threads::Threads)
 target_link_libraries( blocksci PUBLIC Boost::filesystem Boost::iostreams Boost::serialization)
 target_link_libraries( blocksci PUBLIC OpenSSL::Crypto )
-target_link_libraries( blocksci PUBLIC rocksdb )
+target_link_libraries( blocksci PRIVATE rocksdb )
 target_link_libraries( blocksci PRIVATE secp256k1)
 target_link_libraries( blocksci PRIVATE dset)
 target_link_libraries( blocksci PUBLIC blocksci_mpark_variant blocksci_ranges)
@@ -206,7 +212,7 @@ SET_TARGET_PROPERTIES(blocksci_static PROPERTIES OUTPUT_NAME blocksci)
 target_link_libraries( blocksci_static PUBLIC Threads::Threads)
 target_link_libraries( blocksci_static PUBLIC Boost::filesystem Boost::iostreams Boost::serialization)
 target_link_libraries( blocksci_static PUBLIC OpenSSL::Crypto )
-target_link_libraries( blocksci_static PUBLIC rocksdb )
+target_link_libraries( blocksci_static PRIVATE rocksdb )
 target_link_libraries( blocksci_static PRIVATE secp256k1)
 target_link_libraries( blocksci_static PRIVATE dset)
 target_link_libraries( blocksci_static PUBLIC blocksci_mpark_variant blocksci_ranges)
@@ -245,7 +251,6 @@ configure_package_config_file(blocksci-config.cmake
   INSTALL_DESTINATION "${ConfigPackageLocation}"
   PATH_VARS INCLUDE_INSTALL_DIR SYSCONFIG_INSTALL_DIR)
 
-install( TARGETS rocksdb EXPORT blocksci-targets)
 install (EXPORT blocksci-targets FILE blocksci-targets.cmake DESTINATION ${ConfigPackageLocation} )
 
 install(

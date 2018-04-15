@@ -82,23 +82,9 @@ void AddressState::rollback(const blocksci::State &state) {
             }
         }
     });
-    
-    blocksci::for_each(blocksci::DedupAddressType::all(), [&](auto tag) {
-        auto &column = db.getColumn(tag);
-        rocksdb::WriteBatch batch;
-        auto it = db.getIterator(tag);
-        for (it->SeekToFirst(); it->Valid(); it->Next()) {
-            uint32_t destNum;
-            memcpy(&destNum, it->value().data(), sizeof(destNum));
-            auto count = state.scriptCounts[static_cast<size_t>(tag)];
-            if (destNum >= count) {
-                batch.Delete(column.get(), it->key());
-            }
-        }
-        assert(it->status().ok());
-        db.writeBatch(batch);
-    });
-    
+}
+
+void AddressState::reset(const blocksci::State &state) {
     reloadBloomFilters();
     scriptIndexes.clear();
     for (auto size : state.scriptCounts) {

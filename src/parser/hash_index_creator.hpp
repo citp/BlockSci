@@ -57,7 +57,7 @@ template <typename Key>
 struct DenseHashMapCache {
     using Cache = SerializableMap<DenseHashMapWrappedKey<Key>, uint32_t>;
     static constexpr int cacheSize = 20000;
-    int cacheItems = 0;
+    size_t cacheItems = 0;
     
     DenseHashMapCache() : cache({Key{}, 1}, {Key{}, 2}) {
         cache.resize(cacheSize);
@@ -66,6 +66,10 @@ struct DenseHashMapCache {
     void clear() {
         cache.clear_no_resize();
         cacheItems = 0;
+    }
+    
+    size_t size() const {
+        return cacheItems;
     }
     
     bool isFull() const {
@@ -111,14 +115,16 @@ struct HashIndexAddressCacheImpl<std::false_type, type> {
     std::pair<DenseHashMapWrappedKey<int>, int> *end() {
         return nullptr;
     }
+    
+    size_t size() const {
+        return 0;
+    }
 };
 
 template <blocksci::AddressType::Enum type>
 struct HashIndexAddressCache : public HashIndexAddressCacheImpl<std::integral_constant<bool, !std::is_same<typename blocksci::AddressInfo<type>::IDType, void>::value>, type> {};
 
 class HashIndexCreator : public ParserIndex<HashIndexCreator> {
-    blocksci::HashIndex db;
-    
     using AddressCacheTuple = blocksci::to_address_tuple_t<HashIndexAddressCache>;
     
     DenseHashMapCache<blocksci::uint256> txCache;
@@ -129,17 +135,18 @@ class HashIndexCreator : public ParserIndex<HashIndexCreator> {
     template<blocksci::AddressType::Enum type>
     void clearAddressCache() {
         auto &cache = std::get<HashIndexAddressCache<type>>(addressCache);
-        rocksdb::WriteBatch batch;
+        std::vector<std::pair<typename blocksci::AddressInfo<type>::IDType, uint32_t>> rows;
+        rows.reserve(cache.size());
         for (const auto &pair : cache) {
-            rocksdb::Slice keySlice(reinterpret_cast<const char *>(&pair.first.key), sizeof(pair.first.key));
-            rocksdb::Slice valueSlice(reinterpret_cast<const char *>(&pair.second), sizeof(pair.second));
-            batch.Put(db.getColumn(type).get(), keySlice, valueSlice);
+            rows.emplace_back(pair.first.key, pair.second);
         }
-        db.writeBatch(batch);
         cache.clear();
+        db.addAddresses<type>(std::move(rows));
     }
     
 public:
+    
+    blocksci::HashIndex db;
     
     HashIndexCreator(const ParserConfigurationBase &config, const std::string &path);
     ~HashIndexCreator();
@@ -173,31 +180,6 @@ public:
             return db.lookupAddress<type>(hash);
         }
     }
-    
-    std::unique_ptr<rocksdb::Iterator> getIterator(blocksci::AddressType::Enum type) {
-        return db.getIterator(type);
-    }
-    std::unique_ptr<rocksdb::Iterator> getIterator(blocksci::DedupAddressType::Enum type) {
-        return db.getIterator(type);
-    }
-    std::unique_ptr<rocksdb::Iterator> getTxIterator() {
-        return db.getTxIterator();
-    }
-    std::unique_ptr<rocksdb::ColumnFamilyHandle> &getColumn(blocksci::AddressType::Enum type) {
-        return db.getColumn(type);
-    }
-    std::unique_ptr<rocksdb::ColumnFamilyHandle> &getColumn(blocksci::DedupAddressType::Enum type) {
-        return db.getColumn(type);
-    }
-    std::unique_ptr<rocksdb::ColumnFamilyHandle> &getTxColumn() {
-        return db.getTxColumn();
-    }
-    
-    void writeBatch(rocksdb::WriteBatch &batch) {
-        db.writeBatch(batch);
-    }
-    
-    void rollback(const blocksci::State &state);
     
     void compact() {
         db.compactDB();

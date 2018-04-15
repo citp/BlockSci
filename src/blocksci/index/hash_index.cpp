@@ -7,11 +7,14 @@
 //
 
 #include "hash_index.hpp"
+#include "hash_index_priv.hpp"
+
 #include <blocksci/util/bitcoin_uint256.hpp>
 #include <blocksci/scripts/bitcoin_base58.hpp>
 #include <blocksci/scripts/script_info.hpp>
 #include <blocksci/address/address.hpp>
 #include <blocksci/util/for_each.hpp>
+#include <blocksci/util/state.hpp>
 
 #include <rocksdb/table.h>
 #include <rocksdb/filter_policy.h>
@@ -34,59 +37,98 @@
 
 namespace blocksci {
     
-    HashIndex::HashIndex(const std::string &path, bool readonly) {
-        rocksdb::Options options;
-        // Optimize RocksDB. This is the easiest way to get RocksDB to perform well
-        options.IncreaseParallelism();
-        options.OptimizeLevelStyleCompaction();
-        // create the DB if it's not already present
-        options.create_if_missing = true;
-        options.create_missing_column_families = true;
-        
-        auto cache = rocksdb::NewLRUCache(static_cast<size_t>(1024 * 1024 * 1024));
-        std::vector<rocksdb::ColumnFamilyDescriptor> columnDescriptors;
+    HashIndex::HashIndex(const std::string &path, bool readonly) : impl(std::make_unique<HashIndexPriv>(path, readonly)) {}
+    
+    HashIndex::~HashIndex() = default;
+    
+    void HashIndex::addTxes(std::vector<std::pair<uint256, uint32_t>> rows) {
+        rocksdb::WriteBatch batch;
+        for (const auto &pair : rows) {
+            rocksdb::Slice keySlice(reinterpret_cast<const char *>(&pair.first), sizeof(pair.first));
+            rocksdb::Slice valueSlice(reinterpret_cast<const char *>(&pair.second), sizeof(pair.second));
+            batch.Put(impl->getTxColumn().get(), keySlice, valueSlice);
+        }
+        impl->writeBatch(batch);
+    }
+    
+    uint32_t HashIndex::countColumn(AddressType::Enum type) {
+        uint32_t keyCount = 0;
+        auto it = impl->getIterator(type);
+        for (it->SeekToFirst(); it->Valid(); it->Next()) {
+            keyCount++;
+        }
+        return keyCount;
+    }
+    
+    uint32_t HashIndex::countTxes() {
+        uint32_t keyCount = 0;
+        auto it = impl->getTxIterator();
+        for (it->SeekToFirst(); it->Valid(); it->Next()) {
+            keyCount++;
+        }
+        return keyCount;
+    }
+    
+    ColumnIterator HashIndex::getRawAddressRange(AddressType::Enum type) {
+        return ColumnIterator(impl->db.get(), impl->getColumn(type).get());
+    }
+    
+    uint32_t HashIndex::getPubkeyHashIndex(const uint160 &pubkeyhash) {
+        return lookupAddress<AddressType::PUBKEYHASH>(pubkeyhash);
+    }
+    
+    uint32_t HashIndex::getScriptHashIndex(const uint160 &scripthash) {
+        return lookupAddress<AddressType::SCRIPTHASH>(scripthash);
+    }
+    
+    uint32_t HashIndex::getScriptHashIndex(const uint256 &scripthash) {
+        return lookupAddress<AddressType::WITNESS_SCRIPTHASH>(scripthash);
+    }
+    
+    uint32_t HashIndex::getTxIndex(const uint256 &txHash) {
+        return impl->getMatch(impl->getTxColumn().get(), txHash);
+    }
+    
+    void HashIndex::addAddressesImpl(AddressType::Enum type, std::vector<std::pair<MemoryView, MemoryView>> dataViews) {
+        impl->addAddresses(type, dataViews);
+    }
+    
+    uint32_t HashIndex::lookupAddressImpl(blocksci::AddressType::Enum type, const char *data, size_t size) {
+        return impl->getAddressMatch(type, data, size);
+    }
+    
+    void HashIndex::compactDB() {
+        impl->compactDB();
+    }
+    
+    void HashIndex::rollback(const State &state) {
         blocksci::for_each(AddressType::all(), [&](auto tag) {
-            auto options = rocksdb::ColumnFamilyOptions{};
-            auto descriptor = rocksdb::ColumnFamilyDescriptor{addressName(tag), options};
-            columnDescriptors.push_back(descriptor);
+            auto &column = impl->getColumn(tag);
+            rocksdb::WriteBatch batch;
+            auto it = impl->getIterator(tag);
+            for (it->SeekToFirst(); it->Valid(); it->Next()) {
+                uint32_t destNum;
+                memcpy(&destNum, it->value().data(), sizeof(destNum));
+                auto count = state.scriptCounts[static_cast<size_t>(tag)];
+                if (destNum >= count) {
+                    batch.Delete(column.get(), it->key());
+                }
+            }
+            assert(it->status().ok());
+            impl->writeBatch(batch);
         });
-        auto txOptions = rocksdb::ColumnFamilyOptions{};
-        columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions{});
-        columnDescriptors.emplace_back("T", txOptions);
-        
-        rocksdb::DB *dbPtr;
-        std::vector<rocksdb::ColumnFamilyHandle *> columnHandlePtrs;
-        if (readonly) {
-            rocksdb::Status s = rocksdb::DB::OpenForReadOnly(options, path.c_str(), columnDescriptors, &columnHandlePtrs, &dbPtr);
-            assert(s.ok());
-        } else {
-            rocksdb::Status s = rocksdb::DB::Open(options, path.c_str(), columnDescriptors, &columnHandlePtrs, &dbPtr);
+        {
+            auto it = impl->getTxIterator();
+            rocksdb::WriteBatch batch;
+            for (it->SeekToFirst(); it->Valid(); it->Next()) {
+                uint32_t value;
+                memcpy(&value, it->value().data(), sizeof(value));
+                if (value >= state.txCount) {
+                    batch.Delete(impl->getTxColumn().get(), it->key());
+                }
+            }
+            impl->writeBatch(batch);
+            assert(it->status().ok()); // Check for any errors found during the scan
         }
-        db = std::unique_ptr<rocksdb::DB>(dbPtr);
-        for (auto handle : columnHandlePtrs) {
-            columnHandles.emplace_back(std::unique_ptr<rocksdb::ColumnFamilyHandle>(handle));
-        }
-    }
-    
-    std::unique_ptr<rocksdb::ColumnFamilyHandle> &HashIndex::getColumn(AddressType::Enum type) {
-        auto index = static_cast<size_t>(type);
-        return columnHandles.at(index);
-    }
-    
-    std::unique_ptr<rocksdb::ColumnFamilyHandle> &HashIndex::getColumn(DedupAddressType::Enum type) {
-        switch (type) {
-            case DedupAddressType::PUBKEY:
-                return getColumn(AddressType::PUBKEYHASH);
-            case DedupAddressType::SCRIPTHASH:
-                return getColumn(AddressType::SCRIPTHASH);
-            case DedupAddressType::MULTISIG:
-                return getColumn(AddressType::MULTISIG);
-            case DedupAddressType::NULL_DATA:
-                return getColumn(AddressType::NULL_DATA);
-            case DedupAddressType::NONSTANDARD:
-                return getColumn(AddressType::NONSTANDARD);
-        }
-        assert(false);
-        return getColumn(AddressType::NONSTANDARD);
     }
 }

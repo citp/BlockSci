@@ -18,6 +18,7 @@
 #include <range/v3/view/remove_if.hpp>
 #include <range/v3/numeric/accumulate.hpp>
 
+#include <unordered_map>
 #include <chrono>
 
 namespace blocksci {

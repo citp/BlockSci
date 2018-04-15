@@ -80,20 +80,7 @@ void AddressDB::addAddressNested(const blocksci::RawAddress &childAddress, const
 }
 
 void AddressDB::clearNestedCache() {
-    rocksdb::WriteBatch batch;
-    for (auto &pair : nestedCache) {
-        const RawAddress &childAddress = pair.first;
-        const DedupAddress &parentAddress = pair.second;
-        std::array<rocksdb::Slice, 2> keyParts = {{
-            rocksdb::Slice(reinterpret_cast<const char *>(&childAddress.scriptNum), sizeof(childAddress.scriptNum)),
-            rocksdb::Slice(reinterpret_cast<const char *>(&parentAddress), sizeof(parentAddress))
-        }};
-        std::string sliceStr;
-        rocksdb::Slice key{rocksdb::SliceParts{keyParts.data(), keyParts.size()}, &sliceStr};
-        auto &nestedColumn = db.getNestedColumn(childAddress.type);
-        batch.Put(nestedColumn.get(), key, rocksdb::Slice{});
-    }
-    db.writeBatch(batch);
+    db.addNestedAddresses(std::move(nestedCache));
     nestedCache.clear();
 }
 
@@ -105,37 +92,6 @@ void AddressDB::addAddressOutput(const blocksci::RawAddress &address, const bloc
 }
 
 void AddressDB::clearOutputCache() {
-    rocksdb::WriteBatch batch;
-    for (auto &pair : outputCache) {
-        const RawAddress &address = pair.first;
-        const blocksci::OutputPointer &pointer = pair.second;
-        std::array<rocksdb::Slice, 2> keyParts = {{
-            rocksdb::Slice(reinterpret_cast<const char *>(&address.scriptNum), sizeof(address.scriptNum)),
-            rocksdb::Slice(reinterpret_cast<const char *>(&pointer), sizeof(pointer))
-        }};
-        std::string sliceStr;
-        rocksdb::Slice key{rocksdb::SliceParts{keyParts.data(), keyParts.size()}, &sliceStr};
-        auto &outputColumn = db.getOutputColumn(address.type);
-        batch.Put(outputColumn.get(), key, rocksdb::Slice{});
-    }
-    db.writeBatch(batch);
+    db.addOutputAddresses(std::move(outputCache));
     outputCache.clear();
-}
-
-void AddressDB::rollback(const State &state) {
-    for_each(blocksci::AddressType::all(), [&](auto type) {
-        auto &column = db.getOutputColumn(type);
-        auto it = db.getOutputIterator(type);
-        rocksdb::WriteBatch batch;
-        for (it->SeekToFirst(); it->Valid(); it->Next()) {
-            auto key = it->key();
-            key.remove_prefix(sizeof(uint32_t));
-            OutputPointer outPoint;
-            memcpy(&outPoint, key.data(), sizeof(outPoint));
-            if (outPoint.txNum >= state.scriptCounts[static_cast<size_t>(blocksci::DedupAddressType::SCRIPTHASH)]) {
-                batch.Delete(column.get(), it->key());
-            }
-        }
-        assert(it->status().ok()); // Check for any errors found during the scan
-    });
 }

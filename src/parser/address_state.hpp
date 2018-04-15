@@ -91,34 +91,19 @@ class AddressState {
     
     std::vector<uint32_t> scriptIndexes;
     
-    template<blocksci::DedupAddressType::Enum type>
+    template<blocksci::AddressType::Enum type>
     void reloadBloomFilter() {
-        auto &addressBloomFilter = std::get<AddressBloomFilterPointer<type>>(addressBloomFilters);
+        auto &addressBloomFilter = std::get<AddressBloomFilterPointer<dedupType(type)>>(addressBloomFilters);
         addressBloomFilter->reset(addressBloomFilter->getMaxItems(), addressBloomFilter->getFPRate());
-        auto it = db.getIterator(type);
-        for (it->SeekToFirst(); it->Valid(); it->Next()) {
-            uint32_t scriptNum;
-            memcpy(&scriptNum, it->value().data(), sizeof(scriptNum));
-            blocksci::uint160 addressHash;
-            memcpy(&addressHash, it->key().data(), sizeof(addressHash));
-            addressBloomFilter->add(addressHash);
+        RANGES_FOR(auto item, db.db.getAddressRange<type>()) {
+            addressBloomFilter->add(item.second);
         }
     }
     
-    // Duplicated to prevent triggering gcc
     void reloadBloomFilters() {
-        blocksci::for_each(blocksci::DedupAddressType::all(), [&](auto tag) {
-            auto &addressBloomFilter = std::get<AddressBloomFilterPointer<tag>>(addressBloomFilters);
-            addressBloomFilter->reset(addressBloomFilter->getMaxItems(), addressBloomFilter->getFPRate());
-            auto it = db.getIterator(tag);
-            for (it->SeekToFirst(); it->Valid(); it->Next()) {
-                uint32_t scriptNum;
-                memcpy(&scriptNum, it->value().data(), sizeof(scriptNum));
-                blocksci::uint160 addressHash;
-                memcpy(&addressHash, it->key().data(), sizeof(addressHash));
-                addressBloomFilter->add(addressHash);
-            }
-        });
+        reloadBloomFilter<blocksci::AddressType::PUBKEY>();
+        reloadBloomFilter<blocksci::AddressType::SCRIPTHASH>();
+        reloadBloomFilter<blocksci::AddressType::MULTISIG>();
     }
     
 public:
@@ -159,7 +144,7 @@ public:
             }
         }
         
-        uint32_t destNum = db.lookupAddress<blocksci::AddressInfo<type>::exampleType>(hash);
+        uint32_t destNum = db.lookupAddress<blocksci::DedupAddressInfo<dedupType(type)>::reprType>(hash);
         if (destNum != 0) {
             dbCount++;
             return {hash, AddressLocation::LevelDb, destNum};
@@ -196,9 +181,9 @@ public:
             addressNum = getNewAddressIndex(dedupType(type));
             auto &addressBloomFilter = std::get<AddressBloomFilterPointer<dedupType(type)>>(addressBloomFilters);
             addressBloomFilter->add(addressInfo.hash);
-            db.addAddress<blocksci::AddressInfo<type>::exampleType>(addressInfo.hash, addressNum);
+            db.addAddress<blocksci::DedupAddressInfo<dedupType(type)>::reprType>(addressInfo.hash, addressNum);
             if (addressBloomFilter->isFull()) {
-                reloadBloomFilter<dedupType(type)>();
+                reloadBloomFilter<type>();
             }
         }
         return std::make_pair(addressNum, !existingAddress);
@@ -206,7 +191,11 @@ public:
     
     uint32_t getNewAddressIndex(blocksci::DedupAddressType::Enum type);
     
+    // Called before reseting index
     void rollback(const blocksci::State &state);
+    
+    // Called after resetting index
+    void reset(const blocksci::State &state);
 };
 
 

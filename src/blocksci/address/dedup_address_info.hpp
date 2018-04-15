@@ -21,6 +21,7 @@ namespace blocksci {
         static constexpr bool indexed = false;
         static constexpr std::array<AddressType::Enum, 4> addressTypes = {{AddressType::PUBKEY, AddressType::PUBKEYHASH, AddressType::MULTISIG_PUBKEY, AddressType::WITNESS_PUBKEYHASH}};
         static constexpr EquivAddressType::Enum equivType = EquivAddressType::PUBKEY;
+        static constexpr AddressType::Enum reprType = AddressType::PUBKEYHASH;
     };
     
     template <>
@@ -31,6 +32,7 @@ namespace blocksci {
         static constexpr bool indexed = false;
         static constexpr std::array<AddressType::Enum, 2> addressTypes = {{AddressType::SCRIPTHASH, AddressType::WITNESS_SCRIPTHASH}};
         static constexpr EquivAddressType::Enum equivType = EquivAddressType::SCRIPTHASH;
+        static constexpr AddressType::Enum reprType = AddressType::SCRIPTHASH;
     };
     
     template <>
@@ -41,6 +43,7 @@ namespace blocksci {
         static constexpr bool indexed = true;
         static constexpr std::array<AddressType::Enum, 1> addressTypes = {{AddressType::MULTISIG}};
         static constexpr EquivAddressType::Enum equivType = EquivAddressType::MULTISIG;
+        static constexpr AddressType::Enum reprType = AddressType::MULTISIG;
     };
     
     template <>
@@ -51,6 +54,7 @@ namespace blocksci {
         static constexpr bool indexed = true;
         static constexpr std::array<AddressType::Enum, 1> addressTypes = {{AddressType::NONSTANDARD}};
         static constexpr EquivAddressType::Enum equivType = EquivAddressType::NONSTANDARD;
+        static constexpr AddressType::Enum reprType = AddressType::NONSTANDARD;
     };
     
     template <>
@@ -61,6 +65,7 @@ namespace blocksci {
         static constexpr bool indexed = true;
         static constexpr std::array<AddressType::Enum, 1> addressTypes = {{AddressType::NULL_DATA}};
         static constexpr EquivAddressType::Enum equivType = EquivAddressType::NULL_DATA;
+        static constexpr AddressType::Enum reprType = AddressType::NULL_DATA;
     };
     
     template<DedupAddressType::Enum type>
