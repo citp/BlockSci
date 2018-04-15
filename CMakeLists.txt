@@ -9,7 +9,8 @@ set(CMAKE_MACOSX_RPATH 1)
 set(Upstream_VERSION 0.5.0)
 
 
-set(CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
 
@@ -40,6 +41,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
+
+ execute_process(COMMAND git submodule update --init)
 
 add_library(dset INTERFACE)
 target_include_directories(dset INTERFACE libs)
