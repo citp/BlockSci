@@ -14,5 +14,6 @@ target_link_libraries( blocksci_parser bitcoinapi_static)
 target_link_libraries( blocksci_parser clipp)
 target_link_libraries( blocksci_parser blocksci_static)
 target_link_libraries( blocksci_parser secp256k1)
+target_link_libraries( blocksci_parser sparsehash)
 
 install(TARGETS blocksci_parser DESTINATION bin)

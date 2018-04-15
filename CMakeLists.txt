@@ -45,6 +45,9 @@ find_package(Threads REQUIRED)
 add_library(dset INTERFACE)
 target_include_directories(dset INTERFACE libs)
 
+add_library(sparsehash INTERFACE)
+target_include_directories(sparsehash INTERFACE libs/sparsehash/src)
+
 add_library(blocksci_ranges INTERFACE)
 target_include_directories(blocksci_ranges INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libs/range-v3/include>
