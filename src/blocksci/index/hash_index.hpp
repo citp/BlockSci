@@ -42,7 +42,7 @@ namespace blocksci {
             return lookupAddressImpl(type, reinterpret_cast<const char *>(&hash), sizeof(hash));
         }
         
-        uint32_t getPubkeyHashIndex(const uint160 &pubkeåyhash);
+        uint32_t getPubkeyHashIndex(const uint160 &pubkeyhash);
         uint32_t getScriptHashIndex(const uint160 &scripthash);
         uint32_t getScriptHashIndex(const uint256 &scripthash);
         uint32_t getTxIndex(const uint256 &txHash);
