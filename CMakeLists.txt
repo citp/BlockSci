@@ -3,18 +3,9 @@ project(blocksci)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_MACOSX_RPATH 1)
 
 set(Upstream_VERSION 0.5.0)
-
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
-
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-old-style-cast -Wno-documentation-unknown-command -Wno-documentation -Wno-shadow -Wno-covered-switch-default -Wno-missing-prototypes -Wno-weak-vtables -Wno-unused-macros -Wno-padded")
-
-#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG")
 
 # use, i.e. don't skip the full RPATH for the build tree
 SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
@@ -93,7 +84,12 @@ include(cppcheck.cmake)
 set(saved_flags "${CMAKE_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 set(WITH_GFLAGS OFF)
-set(WITH_JEMALLOC ON)
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  set(WITH_JEMALLOC OFF)
+else()
+  set(WITH_JEMALLOC ON)
+endif()
+
 set(WITH_SNAPPY ON)
 set(WITH_LZ4 ON)
 set(WITH_ZLIB ON)
@@ -105,7 +101,7 @@ add_subdirectory(libs/rocksdb EXCLUDE_FROM_ALL)
 add_library(rocksdb_headers INTERFACE)
 target_include_directories(rocksdb_headers SYSTEM INTERFACE libs/rocksdb/include)
 
-set(CMAKE_CXX_FLAGS "${saved_flags} -Wpedantic")
+set(CMAKE_CXX_FLAGS "${saved_flags}")
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 

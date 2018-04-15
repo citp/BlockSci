@@ -184,14 +184,70 @@ add_library(blocksci SHARED ${ALL_SOURCES})
 add_library(blocksci_static STATIC ${ALL_SOURCES})
 
 
-target_compile_features(blocksci_static PUBLIC cxx_std_14)
+target_compile_features(blocksci_static PUBLIC 
+  cxx_aggregate_default_initializers
+  cxx_auto_type
+  cxx_decltype
+  cxx_default_function_template_args
+  cxx_defaulted_functions
+  cxx_defaulted_move_initializers
+  cxx_delegating_constructors
+  cxx_deleted_functions
+  cxx_explicit_conversions
+  cxx_extern_templates
+  cxx_generalized_initializers
+  cxx_generic_lambdas
+  cxx_inheriting_constructors
+  cxx_lambdas
+  cxx_long_long_type
+  cxx_nullptr
+  cxx_override
+  cxx_range_for
+  cxx_return_type_deduction
+  cxx_right_angle_brackets
+  cxx_rvalue_references
+  cxx_static_assert
+  cxx_trailing_return_types
+  cxx_uniform_initialization
+  cxx_variable_templates
+  cxx_variadic_templates
+  cxx_template_template_parameters
+)
 target_compile_options(blocksci_static PRIVATE -Wall -Wextra -Wpedantic)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 target_compile_options(blocksci_static PRIVATE -Werror -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-old-style-cast -Wno-documentation-unknown-command -Wno-documentation -Wno-shadow -Wno-covered-switch-default -Wno-missing-prototypes -Wno-weak-vtables -Wno-unused-macros -Wno-padded)
 endif()
 
-target_compile_features(blocksci PUBLIC cxx_std_14)
+target_compile_features(blocksci PUBLIC 
+  cxx_aggregate_default_initializers
+  cxx_auto_type
+  cxx_decltype
+  cxx_default_function_template_args
+  cxx_defaulted_functions
+  cxx_defaulted_move_initializers
+  cxx_delegating_constructors
+  cxx_deleted_functions
+  cxx_explicit_conversions
+  cxx_extern_templates
+  cxx_generalized_initializers
+  cxx_generic_lambdas
+  cxx_inheriting_constructors
+  cxx_lambdas
+  cxx_long_long_type
+  cxx_nullptr
+  cxx_override
+  cxx_range_for
+  cxx_return_type_deduction
+  cxx_right_angle_brackets
+  cxx_rvalue_references
+  cxx_static_assert
+  cxx_trailing_return_types
+  cxx_uniform_initialization
+  cxx_variable_templates
+  cxx_variadic_templates
+  cxx_template_template_parameters
+)
 target_compile_options(blocksci PRIVATE -Wall -Wextra -Wpedantic)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
