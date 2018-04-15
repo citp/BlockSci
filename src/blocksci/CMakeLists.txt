@@ -157,6 +157,8 @@ set(UTIL_HEADERS
   util/util.hpp
   util/in_place_array.hpp
   util/apply_template.hpp
+  util/apply.hpp
+  util/for_each.hpp
   util/dynamic_table.hpp
   util/static_table.hpp
   util/memory_view.hpp
@@ -344,7 +346,7 @@ install(
     Devel
 )
 
-install(FILES ${BLOCKSCI_HEADERS} blocksci_export.hpp DESTINATION ${INCLUDE_INSTALL_DIR})
+install(FILES ${BLOCKSCI_HEADERS} ${CMAKE_CURRENT_BINARY_DIR}/blocksci_export.h DESTINATION ${INCLUDE_INSTALL_DIR})
 install(FILES ${ADDRESS_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/address)
 install(FILES ${SCRIPT_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/scripts)
 install(FILES ${UTIL_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/util)
