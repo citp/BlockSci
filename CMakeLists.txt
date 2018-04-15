@@ -64,7 +64,7 @@ install(DIRECTORY libs/variant/include/ DESTINATION include/blocksci/libs FILES_
 install(DIRECTORY libs/pybind11 DESTINATION ${CMAKE_SOURCE_DIR}/Notebooks/blocksci)
 
 add_library(clipp INTERFACE)
-target_include_directories(clipp INTERFACE SYSTEM libs/clipp/include)
+target_include_directories(clipp SYSTEM INTERFACE libs/clipp/include)
 
 include(ExternalProject)
 ExternalProject_Add(project_secp256k1
@@ -90,8 +90,10 @@ target_link_libraries(secp256k1 INTERFACE ${install_dir}/lib/libsecp256k1.a)
 
 include(cppcheck.cmake)
 
-
 add_subdirectory(libs/rocksdb EXCLUDE_FROM_ALL)
+
+add_library(rocksdb_headers INTERFACE)
+target_include_directories(rocksdb_headers SYSTEM INTERFACE libs/rocksdb/include)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wpedantic")
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
