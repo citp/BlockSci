@@ -15,15 +15,26 @@ namespace blocksci {
     
     ColumnIterator::cursor::~cursor() = default;
     
-    ColumnIterator::cursor::cursor(rocksdb::DB *db_, rocksdb::ColumnFamilyHandle *column_) : db(db_), column(column_), it(std::unique_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), column)}){
-        it->SeekToFirst();
+    ColumnIterator::cursor::cursor(rocksdb::DB *db_, rocksdb::ColumnFamilyHandle *column_, std::vector<char> prefix) : db(db_), column(column_), it(std::unique_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), column)}), prefixBytes(std::move(prefix)) {
+        if (prefixBytes.size() > 0) {
+            rocksdb::Slice key(prefixBytes.data(), prefixBytes.size());
+            it->Seek(key);
+        } else {
+            it->SeekToFirst();
+        }
+        
     }
     
-    ColumnIterator::cursor::cursor(const cursor &other) : db(other.db), column(other.column), it(std::unique_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), column)}) {
+    ColumnIterator::cursor::cursor(rocksdb::DB *db_, rocksdb::ColumnFamilyHandle *column_) : cursor(db_, column_, std::vector<char>{}) {}
+    
+    ColumnIterator::cursor::cursor(const cursor &other) : db(other.db), column(other.column), it(std::unique_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), column)}), prefixBytes(other.prefixBytes) {
         it->Seek(other.it->key());
     }
     
     ColumnIterator::cursor &ColumnIterator::cursor::operator=(const cursor &other) {
+        db = other.db;
+        column = other.column;
+        prefixBytes = other.prefixBytes;
         it->Seek(other.it->key());
         return *this;
     }
@@ -34,7 +45,10 @@ namespace blocksci {
         return {{key.data(), key.size()}, {value.data(), value.size()}};
     }
     
-    bool ColumnIterator::cursor::equal(ranges::default_sentinel) const { return !it->Valid(); }
+    bool ColumnIterator::cursor::equal(ranges::default_sentinel) const {
+        rocksdb::Slice key(prefixBytes.data(), prefixBytes.size());
+        return !it->Valid() || !it->key().starts_with(key);
+    }
     
     void ColumnIterator::cursor::next() { it->Next(); }
     void ColumnIterator::cursor::prev() { it->Prev(); }

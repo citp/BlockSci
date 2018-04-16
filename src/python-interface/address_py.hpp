@@ -49,6 +49,9 @@ void addAddressMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     .def_property_readonly("has_been_spent", func([](const T &address) -> bool {
     	return address.hasBeenSpent();
     }), func2("Check if a type equivalent address has ever been spent"))
+    .def_property_readonly("outs", func([](const T &address) -> bool {
+        return address.getOutputs();
+    }), func2("Returns a list of all outputs sent to this address"))
     ;
 }
 

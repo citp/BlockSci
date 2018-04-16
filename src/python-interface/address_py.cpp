@@ -59,7 +59,6 @@ py::class_<ScriptBase> init_address(py::module &m) {
     .def(py::self == py::self)
     .def(hash(py::self))
     .def_property_readonly("_access", &ScriptBase::getAccess, py::return_value_policy::reference)
-    .def("outs", &ScriptBase::getOutputs, "Returns a list of all outputs sent to this address")
     .def("ins", &ScriptBase::getInputs, "Returns a list of all inputs spent from this address")
     .def("txes", &ScriptBase::getTransactions, "Returns a list of all transactions involving this address")
     .def("in_txes",&ScriptBase::getInputTransactions, "Returns a list of all transaction where this address was an input")

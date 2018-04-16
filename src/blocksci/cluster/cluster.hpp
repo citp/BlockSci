@@ -11,11 +11,14 @@
 
 #include <blocksci/blocksci_export.h>
 
-#include "cluster_fwd.hpp"
+#include "cluster_access.hpp"
 
 #include <blocksci/address/address.hpp>
+#include <blocksci/address/dedup_address.hpp>
+#include <blocksci/chain/output.hpp>
 
-#include <string>
+#include <range/v3/view/join.hpp>
+
 #include <unordered_map>
 #include <vector>
 
@@ -28,12 +31,13 @@ namespace blocksci {
     };
     
     class BLOCKSCI_EXPORT Cluster {
-        const ClusterManager &manager;
+        const ClusterAccess &clusterAccess;
         
     public:
         uint32_t clusterNum;
         
-        Cluster(uint32_t clusterNum_, const ClusterManager &manager_) : manager(manager_), clusterNum(clusterNum_) {}
+        Cluster(uint32_t clusterNum_, const ClusterAccess &access_) : clusterAccess(access_), clusterNum(clusterNum_) {}
+        
         std::vector<blocksci::Address> getAddresses() const;
         
         std::vector<TaggedAddress> taggedAddresses(const std::unordered_map<blocksci::Address, std::string> &tags) const;
@@ -42,13 +46,31 @@ namespace blocksci {
         
         uint32_t getSize() const;
         
-        std::vector<blocksci::OutputPointer> getOutputPointers() const;
-        uint64_t calculateBalance(blocksci::BlockHeight height) const;
-        std::vector<blocksci::Output> getOutputs() const;
-        std::vector<blocksci::Input> getInputs() const;
-        std::vector<blocksci::Transaction> getTransactions() const;
-        std::vector<blocksci::Transaction> getOutputTransactions() const;
-        std::vector<blocksci::Transaction> getInputTransactions() const;
+        auto getOutputPointers() const {
+            auto &access_ = clusterAccess.access;
+            auto scripts = clusterAccess.getClusterScripts(clusterNum);
+            return scripts | ranges::view::transform([&access_](const DedupAddress &dedupAddress) {
+                uint32_t scriptNum = dedupAddress.scriptNum;
+                auto types = addressTypes(dedupAddress.type);
+                auto outputsNested = types | ranges::view::transform([&access_, scriptNum](AddressType::Enum addressType) {
+                    return Address(scriptNum, addressType, access_).getOutputPointers();
+                });
+                return outputsNested | ranges::view::join;
+            }) | ranges::view::join;
+        }
+        
+        auto getOutputs() const {
+            auto &access_ = clusterAccess.access;
+            return getOutputPointers()
+            | ranges::view::transform([&access_](const OutputPointer &pointer) { return Output(pointer, access_); });
+        }
+        
+        uint64_t calculateBalance(BlockHeight height) const;
+        
+        std::vector<Input> getInputs() const;
+        std::vector<Transaction> getTransactions() const;
+        std::vector<Transaction> getOutputTransactions() const;
+        std::vector<Transaction> getInputTransactions() const;
         
         bool operator==(const Cluster &other) {
             return clusterNum == other.clusterNum;

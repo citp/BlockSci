@@ -14,8 +14,10 @@
 
 #include <blocksci/chain/chain_fwd.hpp>
 #include <blocksci/scripts/scripts_fwd.hpp>
+#include <blocksci/util/data_access.hpp>
 
 #include <range/v3/utility/optional.hpp>
+#include <range/v3/view/any_view.hpp>
 
 #include <functional>
 #include <vector>
@@ -65,13 +67,15 @@ namespace blocksci {
         
         EquivAddress getEquivAddresses(bool nestedEquivalent) const;
         
-        std::vector<OutputPointer> getOutputPointers() const;
+        auto getOutputPointers() const {
+            return access->addressIndex.getOutputPointers(*this);
+        }
         
-        std::vector<Output> getOutputs() const;
-        std::vector<Input> getInputs() const;
-        std::vector<Transaction> getTransactions() const;
-        std::vector<Transaction> getOutputTransactions() const;
-        std::vector<Transaction> getInputTransactions() const;
+        ranges::any_view<Output> getOutputs();
+        std::vector<Input> getInputs();
+        std::vector<Transaction> getTransactions();
+        std::vector<Transaction> getOutputTransactions();
+        std::vector<Transaction> getInputTransactions();
         
         std::string fullType() const;
     };

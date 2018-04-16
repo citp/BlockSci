@@ -16,9 +16,10 @@
 
 namespace blocksci {
     class AddressIndexPriv {
+    public:
         std::unique_ptr<rocksdb::DB> db;
         std::vector<std::unique_ptr<rocksdb::ColumnFamilyHandle>> columnHandles;
-    public:
+        
         AddressIndexPriv(const std::string &path, bool readonly);
         
         const std::unique_ptr<rocksdb::ColumnFamilyHandle> &getOutputColumn(AddressType::Enum type) const;

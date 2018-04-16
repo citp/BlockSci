@@ -27,13 +27,6 @@
 
 
 namespace blocksci {
-    template<DedupAddressType::Enum type>
-    struct ScriptClusterIndexFile : public FixedSizeFileMapper<uint32_t> {
-        using FixedSizeFileMapper<uint32_t>::FixedSizeFileMapper;
-    };
-    
-    template<DedupAddressType::Enum type>
-    struct ClusterNumFunctor;
     
     struct BLOCKSCI_EXPORT TaggedCluster {
         Cluster cluster;
@@ -43,26 +36,9 @@ namespace blocksci {
     };
     
     class BLOCKSCI_EXPORT ClusterManager {
-        FixedSizeFileMapper<uint32_t> clusterOffsetFile;
-        FixedSizeFileMapper<DedupAddress> clusterScriptsFile;
-        
-        using ScriptClusterIndexTuple = to_dedup_address_tuple_t<ScriptClusterIndexFile>;
-        
-        ScriptClusterIndexTuple scriptClusterIndexFiles;
-        DataAccess &access;
+        ClusterAccess access;
         
         friend class Cluster;
-        
-        template<DedupAddressType::Enum type>
-        friend struct ClusterNumFunctor;
-        
-        ranges::iterator_range<const DedupAddress *> getClusterScripts(uint32_t clusterNum) const;
-        
-        template<DedupAddressType::Enum type>
-        uint32_t getClusterNumImpl(uint32_t scriptNum) const {
-            auto &file = std::get<ScriptClusterIndexFile<type>>(scriptClusterIndexFiles);
-            return *file.getData(scriptNum - 1);
-        }
         
     public:
         ClusterManager(const boost::filesystem::path &baseDirectory, DataAccess &access);
@@ -71,16 +47,10 @@ namespace blocksci {
         
         Cluster getCluster(const Address &address) const;
         
-        uint32_t getClusterNum(const Address &address) const;
-        uint32_t getClusterSize(uint32_t clusterNum) const;
-        uint32_t clusterCount() const;
-        
         auto getClusters() const {
-            return ranges::view::ints(0u,clusterCount())
-            | ranges::view::transform([&](uint32_t clusterNum) { return Cluster(clusterNum, *this); });
+            return ranges::view::ints(0u, access.clusterCount())
+            | ranges::view::transform([&](uint32_t clusterNum) { return Cluster(clusterNum, access); });
         }
-        
-        std::vector<uint32_t> getClusterSizes() const;
         
         std::vector<TaggedCluster> taggedClusters(const std::unordered_map<Address, std::string> &tags);
     };

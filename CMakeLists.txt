@@ -80,6 +80,8 @@ include(cppcheck.cmake)
 
 set(saved_flags "${CMAKE_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+set(WITH_TESTS OFF)
+set(WITH_TOOLS OFF)
 set(WITH_GFLAGS OFF)
 # Turn jemalloc off to fix undefined reference to `malloc_stats_print'
 set(WITH_JEMALLOC OFF)

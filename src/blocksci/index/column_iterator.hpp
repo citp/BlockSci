@@ -14,6 +14,8 @@
 
 #include <range/v3/view_facade.hpp>
 
+#include <vector>
+
 namespace rocksdb {
     class DB;
     class ColumnFamilyHandle;
@@ -25,15 +27,18 @@ namespace blocksci {
         friend ranges::range_access;
         rocksdb::DB *db;
         rocksdb::ColumnFamilyHandle *column;
+        std::vector<char> prefixBytes;
         
         struct cursor {
         private:
             rocksdb::DB *db;
             rocksdb::ColumnFamilyHandle *column;
             std::unique_ptr<rocksdb::Iterator> it;
+            std::vector<char> prefixBytes;
         public:
             cursor();
-            explicit cursor(rocksdb::DB *db_, rocksdb::ColumnFamilyHandle *column_);
+            cursor(rocksdb::DB *db_, rocksdb::ColumnFamilyHandle *column_);
+            cursor(rocksdb::DB *db_, rocksdb::ColumnFamilyHandle *column_, std::vector<char> prefix);
             cursor(const cursor &other);
             cursor &operator=(const cursor &other);
             ~cursor();
@@ -57,6 +62,8 @@ namespace blocksci {
     public:
         ColumnIterator() = default;
         ColumnIterator(rocksdb::DB *db_, rocksdb::ColumnFamilyHandle *column_) : db(db_), column(column_) {}
+        ColumnIterator(rocksdb::DB *db_, rocksdb::ColumnFamilyHandle *column_, std::vector<char> prefix) : db(db_), column(column_), prefixBytes(std::move(prefix)) {}
+        
     };
 }
 

@@ -28,28 +28,24 @@ namespace blocksci {
 	uint64_t AnyScript::calculateBalance(BlockHeight height) const {
 		return mpark::visit([&](auto &scriptAddress) { return scriptAddress.calculateBalance(height); }, wrapped);
 	}
-
-    std::vector<OutputPointer> AnyScript::getOutputPointers() const {
-    	return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getOutputPointers(); }, wrapped);
-    }
     
-    std::vector<Output> AnyScript::getOutputs() const {
+    std::vector<Output> AnyScript::getOutputs() {
     	return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getOutputs(); }, wrapped);
     }
 
-    std::vector<Input> AnyScript::getInputs() const {
+    std::vector<Input> AnyScript::getInputs() {
     	return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getInputs(); }, wrapped);
     }
 
-    std::vector<Transaction> AnyScript::getTransactions() const {
+    std::vector<Transaction> AnyScript::getTransactions() {
     	return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getTransactions(); }, wrapped);
     }
 
-    std::vector<Transaction> AnyScript::getOutputTransactions() const {
+    std::vector<Transaction> AnyScript::getOutputTransactions() {
     	return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getOutputTransactions(); }, wrapped);
     }
 
-    std::vector<Transaction> AnyScript::getInputTransactions() const {
+    std::vector<Transaction> AnyScript::getInputTransactions() {
     	return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getInputTransactions(); }, wrapped);
     }
 }

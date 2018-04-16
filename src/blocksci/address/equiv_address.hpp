@@ -12,6 +12,9 @@
 #include <blocksci/address/address.hpp>
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/address/dedup_address.hpp>
+#include <blocksci/util/data_access.hpp>
+
+#include <range/v3/view/join.hpp>
 
 #include <sstream>
 #include <unordered_set>
@@ -55,7 +58,13 @@ namespace blocksci {
             return scriptEquivalent;
         }
         
-        std::vector<OutputPointer> getOutputPointers() const;
+        auto getOutputPointers() const {
+            const auto &access_ = access;
+            return addresses
+            | ranges::view::transform([&access_](const Address &address) { return access_.addressIndex.getOutputPointers(address); })
+            | ranges::view::join
+            ;
+        }
         
         uint64_t calculateBalance(BlockHeight height) const;
         std::vector<Output> getOutputs() const;

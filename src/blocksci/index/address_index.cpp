@@ -109,18 +109,10 @@ namespace blocksci {
         return false;
     }
     
-    std::vector<OutputPointer> AddressIndex::getOutputPointers(const Address &address) const {
-        rocksdb::Slice key{reinterpret_cast<const char *>(&address.scriptNum), sizeof(address.scriptNum)};
-        std::vector<OutputPointer> pointers;
-        auto it = impl->getOutputIterator(address.type);
-        for (it->Seek(key); it->Valid() && it->key().starts_with(key); it->Next()) {
-            auto foundKey = it->key();
-            foundKey.remove_prefix(sizeof(uint32_t));
-            OutputPointer outPoint;
-            memcpy(&outPoint, foundKey.data(), sizeof(outPoint));
-            pointers.push_back(outPoint);
-        }
-        return pointers;
+    ColumnIterator AddressIndex::getRawOutputPointerRange(const Address &address) const {
+        auto prefixData = reinterpret_cast<const char *>(&address.scriptNum);
+        std::vector<char> prefix(prefixData, prefixData + sizeof(address.scriptNum));
+        return ColumnIterator(impl->db.get(), impl->getOutputColumn(address.type).get(), prefix);
     }
     
     std::vector<Address> AddressIndex::getIncludingMultisigs(const Address &searchAddress) const {

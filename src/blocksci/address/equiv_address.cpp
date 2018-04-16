@@ -52,15 +52,6 @@ namespace blocksci {
         return ss.str();
     }
     
-    std::vector<OutputPointer> EquivAddress::getOutputPointers() const {
-        std::vector<OutputPointer> outputs;
-        for (const auto &address : addresses) {
-            auto addrOuts = access.addressIndex.getOutputPointers(address);
-            outputs.insert(outputs.end(), addrOuts.begin(), addrOuts.end());
-        }
-        return outputs;
-    }
-    
     uint64_t EquivAddress::calculateBalance(BlockHeight height) const {
         return blocksci::calculateBalance(getOutputPointers(), height, access);
     }

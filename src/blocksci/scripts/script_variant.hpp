@@ -80,13 +80,15 @@ namespace blocksci {
     
         EquivAddress getEquivAddresses(bool nestedEquivalent) const;
         
-        std::vector<OutputPointer> getOutputPointers() const;
+        auto getOutputPointers() {
+            return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getOutputPointers(); }, wrapped);
+        }
         
-        std::vector<Output> getOutputs() const;
-        std::vector<Input> getInputs() const;
-        std::vector<Transaction> getTransactions() const;
-        std::vector<Transaction> getOutputTransactions() const;
-        std::vector<Transaction> getInputTransactions() const;
+        std::vector<Output> getOutputs();
+        std::vector<Input> getInputs();
+        std::vector<Transaction> getTransactions();
+        std::vector<Transaction> getOutputTransactions();
+        std::vector<Transaction> getInputTransactions();
         
         ScriptVariant wrapped;
     };

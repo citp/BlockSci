@@ -160,27 +160,25 @@ namespace blocksci {
         return blocksci::calculateBalance(getOutputPointers(), height, *access);
     }
     
-    std::vector<OutputPointer> Address::getOutputPointers() const {
-        return access->addressIndex.getOutputPointers(*this);
+    ranges::any_view<Output> Address::getOutputs() {
+        auto access_ = access;
+        return getOutputPointers()
+        | ranges::view::transform([&access_](const OutputPointer &pointer) { return Output(pointer, *access_); });
     }
     
-    std::vector<Output> Address::getOutputs() const {
-        return blocksci::getOutputs(getOutputPointers(), *access);
-    }
-    
-    std::vector<Input> Address::getInputs() const {
+    std::vector<Input> Address::getInputs() {
         return blocksci::getInputs(getOutputPointers(), *access);
     }
     
-    std::vector<Transaction> Address::getTransactions() const {
+    std::vector<Transaction> Address::getTransactions() {
         return blocksci::getTransactions(getOutputPointers(), *access);
     }
     
-    std::vector<Transaction> Address::getOutputTransactions() const {
+    std::vector<Transaction> Address::getOutputTransactions() {
         return blocksci::getOutputTransactions(getOutputPointers(), *access);
     }
     
-    std::vector<Transaction> Address::getInputTransactions() const {
+    std::vector<Transaction> Address::getInputTransactions() {
         return blocksci::getInputTransactions(getOutputPointers(), *access);
     }
 }

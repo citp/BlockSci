@@ -174,6 +174,7 @@ set(CLUSTER_HEADERS
   cluster/cluster_fwd.hpp
   cluster/cluster_manager.hpp
   cluster/cluster.hpp
+  cluster/cluster_access.hpp
 )
 
 set_source_files_properties(cluster/cluster_manager.cpp PROPERTIES COMPILE_FLAGS "-Wno-reserved-id-macro -Wno-shorten-64-to-32")
@@ -279,7 +280,7 @@ endif()
 source_group(blocksci\\chain FILES ${CHAIN_HEADERS} ${CHAIN_SOURCES})
 source_group(blocksci\\address FILES ${ADDRESS_HEADERS} ${ADDRESS_SOURCES})
 source_group(blocksci\\scripts FILES ${SCRIPT_HEADERS} ${SCRIPT_SOURCES})
-source_group(blocksci\\index FILES ${INDEX_HEADERS} ${INDEX_SOURCES})
+source_group(blocksci\\index FILES ${INDEX_HEADERS} ${INDEX_PRIVATE_HEADERS} ${INDEX_SOURCES})
 source_group(blocksci\\util FILES ${UTIL_HEADERS} ${UTIL_SOURCES})
 source_group(blocksci\\heuristics FILES ${HEURISTICS_HEADERS} ${HEURISTICS_SOURCES})
 source_group(blocksci\\cluster FILES ${CLUSTER_HEADERS} ${CLUSTER_SOURCES})

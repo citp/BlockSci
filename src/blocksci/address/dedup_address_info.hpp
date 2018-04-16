@@ -12,6 +12,8 @@
 #include "address_fwd.hpp"
 #include <blocksci/util/static_table.hpp>
 
+#include <vector>
+
 namespace blocksci {
     template <>
     struct BLOCKSCI_EXPORT DedupAddressInfo<DedupAddressType::PUBKEY> {
@@ -75,7 +77,7 @@ namespace blocksci {
         }
     };
     
-    constexpr void scriptTypeCheckThrow(size_t index) {
+    constexpr void dedupTypeCheckThrow(size_t index) {
         index >= DedupAddressType::size ? throw std::invalid_argument("combination of enum values is not valid") : 0;
     }
     
@@ -83,7 +85,7 @@ namespace blocksci {
     
     constexpr bool BLOCKSCI_EXPORT isSpendable(DedupAddressType::Enum t) {
         auto index = static_cast<size_t>(t);
-        scriptTypeCheckThrow(index);
+        dedupTypeCheckThrow(index);
         return spendableTable[index];
     }
     
@@ -98,7 +100,7 @@ namespace blocksci {
     
     constexpr bool BLOCKSCI_EXPORT isEquived(DedupAddressType::Enum t) {
         auto index = static_cast<size_t>(t);
-        scriptTypeCheckThrow(index);
+        dedupTypeCheckThrow(index);
         return equivedTable[index];
     }
     
@@ -113,11 +115,29 @@ namespace blocksci {
     
     constexpr EquivAddressType::Enum BLOCKSCI_EXPORT equivType(DedupAddressType::Enum t) {
         auto index = static_cast<size_t>(t);
-        scriptTypeCheckThrow(index);
+        dedupTypeCheckThrow(index);
         return dedupEquivTable[index];
     }
     
     std::string BLOCKSCI_EXPORT dedupAddressName(DedupAddressType::Enum type);
+    
+    template<DedupAddressType::Enum type>
+    struct DedupAddressTypesFunctor {
+        static std::vector<AddressType::Enum> f() {
+            auto types = DedupAddressInfo<type>::addressTypes;
+            return std::vector<AddressType::Enum>{types.begin(), types.end()};
+        }
+    };
+    
+    inline std::vector<AddressType::Enum> addressTypes(DedupAddressType::Enum t) {
+        static auto &dedupAddressTypesTable = *[]() {
+            auto nameTable = make_static_table<DedupAddressType, DedupAddressTypesFunctor>();
+            return new decltype(nameTable){nameTable};
+        }();
+        auto index = static_cast<size_t>(t);
+        dedupTypeCheckThrow(index);
+        return dedupAddressTypesTable[index];
+    }
 }
 
 #endif /* dedup_address_info_hpp */
