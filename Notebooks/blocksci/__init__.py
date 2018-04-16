@@ -153,7 +153,7 @@ def block_range(self, start, end=None):
         end = pd.to_datetime(end)
 
     oldest = self.block_times[self.block_times.index >= start_date].iloc[0][0]
-    newest = self.block_times[self.block_times.index <= end].iloc[-1][0]
+    newest = self.block_times[self.block_times.index <= end].iloc[-1][0] + 1
 
     return self[oldest:newest]
 
