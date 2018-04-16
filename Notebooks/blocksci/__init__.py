@@ -155,7 +155,7 @@ def block_range(self, start, end=None):
     oldest = self.block_times[self.block_times.index >= start_date].iloc[0][0]
     newest = self.block_times[self.block_times.index <= end].iloc[-1][0]
 
-    return chain[oldest:newest]
+    return self[oldest:newest]
 
 old_init = Blockchain.__init__
 def new_init(self, loc):
