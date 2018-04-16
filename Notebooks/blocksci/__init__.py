@@ -52,18 +52,16 @@ def mapreduce_block_ranges(chain, mapFunc, reduceFunc, init=missing_param,  star
 
     def real_map_func(input):
         local_chain = Blockchain(input[1])
-        block_height_range = range(input[0][0], input[0][1])
         file = io.BytesIO()
         pickler = Pickler(file)
-        mapped = mapFunc((local_chain[i] for i in block_height_range))
+        mapped = mapFunc(local_chain[input[0][0]:input[0][1]])
         pickler.dump(mapped)
         file.seek(0)
         return file
 
     with Pool(cpu_count - 1) as p:
         results_future = p.map_async(real_map_func, segments[1:])
-        block_height_range = range(raw_segments[0][0], raw_segments[0][1])
-        first = mapFunc((chain[i] for i in block_height_range))
+        first = mapFunc(chain[raw_segments[0][0]:raw_segments[0][1]])
         results = results_future.get()
         results = [Unpickler(res, chain).load() for res in results]
     results.insert(0, first)
@@ -154,7 +152,10 @@ def block_range(self, start, end=None):
     else:
         end = pd.to_datetime(end)
 
-    return [self[height] for height in self.block_times[(self.block_times.index >= start_date) & (self.block_times.index < end)].height.tolist()]
+    oldest = self.block_times[self.block_times.index >= start_date].iloc[0][0]
+    newest = self.block_times[self.block_times.index <= end].iloc[-1][0]
+
+    return chain[oldest:newest]
 
 old_init = Blockchain.__init__
 def new_init(self, loc):
