@@ -19,6 +19,7 @@
 #include <range/v3/view_facade.hpp>
 #include <range/v3/view/transform.hpp>
 
+#include <cstring>
 #include <unordered_set>
 #include <string>
 #include <vector>
