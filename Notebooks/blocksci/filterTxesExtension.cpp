@@ -11,7 +11,7 @@ bool testFunc(const Transaction &tx) {
 
 
 PYBIND11_MODULE(${module_name}, m) {
-    m.def("func", [](const Blockchain &chain, uint32_t start, uint32_t stop) {
+    m.def("func", [](Blockchain &chain, int start, int stop) {
     	return filter(chain, start, stop, testFunc);
     });
 }
