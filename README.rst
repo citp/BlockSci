@@ -135,52 +135,48 @@ BlockSci require GCC 6.3 or above or Clang 5 or above.
 BlockSci compilation instructions
 ======================================
 
-Here are the steps for compiling BlockSci on Ubuntu 16.04.
-
 Note that BlockSci only actively supports python 3.
+
+Ubuntu 16.04
+--------------
 
 ..  code-block:: bash
 
 	sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
 	sudo apt-get update
-	sudo apt install build-essential cmake libssl-dev libboost-all-dev libsqlite3-dev autogen \
-	autoconf libcurl4-openssl-dev libjsoncpp-dev libjsonrpccpp-dev libjsonrpccpp-tools \
-	python3-dev python3-pip liblmdb-dev libsparsehash-dev libargtable2-dev libmicrohttpd-dev \
-	libhiredis-dev catch gcc-7 g++-7 libgflags-dev libsnappy-dev zlib1g-dev libbz2-dev \
-	liblz4-dev libzstd-dev
-	sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7
+	sudo apt install cmake libtool autoconf libboost-filesystem-dev libboost-iostreams-dev \
+	libboost-serialization-dev libboost-thread-dev libboost-test-dev  libssl-dev libjsoncpp-dev \
+	libcurl4-openssl-dev libjsoncpp-dev libjsonrpccpp-dev libsnappy-dev zlib1g-dev libbz2-dev 
+	liblz4-dev libzstd-dev libjemalloc-dev libsparsehash-dev python3-dev python3-pip
 
-	cd ~
-	wget https://cmake.org/files/v3.10/cmake-3.10.0.tar.gz
-	tar xzf cmake-3.10.0.tar.gz
-	cd cmake-3.10.0/
-	cmake .
-	make      
-	sudo make install
-	exec bash
-	
-	cd ~
-	git clone https://github.com/facebook/rocksdb --branch v5.10.4
-	cd rocksdb
-	make static_lib
-	make shared_lib
-	sudo make install
-	
-	cd ~
 	git clone https://github.com/citp/BlockSci.git
 	cd BlockSci
-	git submodule init
-	git submodule update --recursive
-
+	pip3 install -r requirements.txt
 	mkdir release
 	cd release
-	cmake -DCMAKE_BUILD_TYPE=Release ..
+	CC=gcc-7 CXX=g++-7 cmake -DCMAKE_BUILD_TYPE=Release ..
 	make
 	sudo make install
-
-	sudo -H pip3 install --upgrade pip
-	sudo -H pip3 install --upgrade multiprocess psutil jupyter pycrypto matplotlib pandas dateparser
 	
+
+Mac OS 10.13
+--------------
+..  code-block:: bash
+
+    brew install cmake jsoncpp libjson-rpc-cpp boost openssl jemalloc zstd \
+    automake libtool google-sparsehash python3
+    sudo xcode-select --reset
+
+    git clone https://github.com/citp/BlockSci.git
+    cd BlockSci
+    pip3 install -r requirements.txt
+    mkdir release
+    cd release
+    cmake -DCMAKE_BUILD_TYPE=Release -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl ..
+    make
+    sudo make install
+
+
 Team & contact info
 ===================
 
