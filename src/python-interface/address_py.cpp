@@ -79,7 +79,7 @@ py::class_<ScriptBase> init_address(py::module &m) {
     .def("__bool__", [](const EquivAddress &address) { return address.size() == 0; })
     .def("__iter__", [](const EquivAddress &address) {
         auto transformed = address | ranges::view::transform([](const Address &address) {
-            return address.getScript().wrapped;
+            return address.getScript();
         });
         return py::make_iterator(transformed.begin(), transformed.end());
     },py::keep_alive<0, 1>())
@@ -89,11 +89,10 @@ py::class_<ScriptBase> init_address(py::module &m) {
     .def("ins", &EquivAddress::getInputs, "Returns a list of all inputs spent from these equivalent addresses")
     .def("txes", &EquivAddress::getTransactions, "Returns a list of all transactions involving these equivalent addresses")
     .def("in_txes",&EquivAddress::getInputTransactions, "Returns a list of all transaction where these equivalent addresses were an input")
-    .def("out_txes", &EquivAddress::getOutputTransactions, "Returns a list of all transaction where these equivalent addresses were an output")
-    .def("out_txes_count", [](const EquivAddress &address) {
+    .def("out_txes_count", [](EquivAddress &address) {
         return address.getOutputTransactions().size();
     }, "Return the number of transactions where these equivalent addresses were an output")
-    .def("in_txes_count", [](const EquivAddress &address) {
+    .def("in_txes_count", [](EquivAddress &address) {
         return address.getInputTransactions().size();
     }, "Return the number of transactions where these equivalent addresses were an input")
     ;

@@ -18,35 +18,20 @@
 #include <blocksci/index/address_index.hpp>
 
 namespace blocksci {
-    std::vector<blocksci::Address> Cluster::getAddresses() const {
-        std::vector<blocksci::Address> addresses;
-        for (auto &dedupAddress : clusterAccess.getClusterScripts(clusterNum)) {
-            for (auto &address : blocksci::EquivAddress(dedupAddress, false, clusterAccess.access)) {
-                addresses.push_back(address);
-            }
-        }
-        return addresses;
-    }
     
-    uint32_t Cluster::getSize() const {
-        return clusterAccess.getClusterSize(clusterNum);
-    }
-    
-    std::vector<TaggedAddress> Cluster::taggedAddresses(const std::unordered_map<blocksci::Address, std::string> &tags) const {
-        if (tags.size() == 0) {
-            return {};
-        }
-        auto &access = tags.begin()->first.getAccess();
-        std::vector<TaggedAddress> tagged;
-        for (auto &dedupAddress : clusterAccess.getClusterScripts(clusterNum)) {
-            for (auto &address : blocksci::EquivAddress(dedupAddress, false, access)) {
-                auto it = tags.find(address);
-                if (it != tags.end()) {
-                    tagged.emplace_back(it->first, it->second);
-                }
+    ranges::optional<TaggedCluster> Cluster::getTagged(const std::unordered_map<blocksci::Address, std::string> &tags) const {
+        bool isEmpty = [&]() {
+            auto addresses = taggedAddresses(tags);
+            RANGES_FOR(auto tagged, addresses) {
+                return true;
             }
+            return false;
+        }();
+        if (isEmpty) {
+            return TaggedCluster{*this, taggedAddresses(tags)};
+        } else {
+            return ranges::nullopt;
         }
-        return tagged;
     }
     
     uint32_t Cluster::countOfType(blocksci::AddressType::Enum type) const {

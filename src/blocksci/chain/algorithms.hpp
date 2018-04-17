@@ -20,6 +20,7 @@
 #include <range/v3/view/join.hpp>
 #include <range/v3/view/remove_if.hpp>
 #include <range/v3/view/transform.hpp>
+#include <range/v3/view/unique.hpp>
 
 namespace blocksci {
     
@@ -74,6 +75,16 @@ namespace blocksci {
     inline auto txes(B && b) {
         return std::forward<B>(b) | ranges::view::join;
     }
+    
+    template <typename B, CONCEPT_REQUIRES_(ranges::Range<B>()), std::enable_if_t<isOutputPointerRange<B>, int> = 0>
+    inline auto txesFromSortedOutputPointers(B && b, DataAccess &access) {
+        return std::forward<B>(b)
+        | ranges::view::transform([](const OutputPointer &pointer) { return pointer.txNum; })
+        | ranges::view::unique
+        | ranges::view::transform([&access](uint32_t txNum) { return Transaction(txNum, access); });
+    }
+    
+    
     
     inline auto inputs(const Transaction &tx) {
         return tx.inputs();

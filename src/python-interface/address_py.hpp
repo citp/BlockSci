@@ -28,16 +28,16 @@ void addAddressMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     .def_property_readonly("type", func([](const T &address) -> AddressType::Enum {
     	return address.getType();
     }), func2("The type of address"))
-    .def("equiv", func([](const T &address, bool equiv_script) -> EquivAddress {
+    .def("equiv", func([](T &address, bool equiv_script) -> EquivAddress {
     	return address.getEquivAddresses(equiv_script);
     }), pybind11::arg("equiv_script") = true, "Returns a list of all addresses equivalent to this address")
-    .def("balance", func([](const T &address, int height) -> int64_t {
+    .def("balance", func([](T &address, int height) -> int64_t {
     	return address.calculateBalance(height);
     }), pybind11::arg("height") = -1, func2("Calculates the balance held by this address at the height (Defaults to the full chain)"))
-    .def("out_txes_count", func([](const T &address) -> int64_t {
+    .def("out_txes_count", func([](T &address) -> int64_t {
         return address.getOutputTransactions().size();
     }), func2("Return the number of transactions where this address was an output"))
-    .def("in_txes_count", func([](const T &address) -> int64_t {
+    .def("in_txes_count", func([](T &address) -> int64_t {
         return address.getInputTransactions().size();
     }), func2("Return the number of transactions where this address was an input"))
     .def_property_readonly("first_tx", func([](const T &address) -> Transaction {
@@ -49,9 +49,12 @@ void addAddressMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     .def_property_readonly("has_been_spent", func([](const T &address) -> bool {
     	return address.hasBeenSpent();
     }), func2("Check if a type equivalent address has ever been spent"))
-    .def_property_readonly("outs", func([](const T &address) -> bool {
+    .def_property_readonly("outs", func([](T &address) -> ranges::any_view<Output> {
         return address.getOutputs();
-    }), func2("Returns a list of all outputs sent to this address"))
+    }), func2("Returns a range of all outputs sent to this address"))
+    .def_property_readonly("out_txes", func([](T &address) -> ranges::any_view<Transaction> {
+        return address.getOutputTransactions();
+    }), func2("Returns a range of all transaction where these equivalent addresses were an output")
     ;
 }
 

@@ -28,13 +28,6 @@
 
 namespace blocksci {
     
-    struct BLOCKSCI_EXPORT TaggedCluster {
-        Cluster cluster;
-        std::vector<TaggedAddress> taggedAddresses;
-        
-        TaggedCluster(const Cluster &cluster_, std::vector<TaggedAddress> &&taggedAddresses_) : cluster(cluster_), taggedAddresses(taggedAddresses_) {}
-    };
-    
     class BLOCKSCI_EXPORT ClusterManager {
         ClusterAccess access;
         
@@ -52,7 +45,11 @@ namespace blocksci {
             | ranges::view::transform([&](uint32_t clusterNum) { return Cluster(clusterNum, access); });
         }
         
-        std::vector<TaggedCluster> taggedClusters(const std::unordered_map<Address, std::string> &tags);
+        auto taggedClusters(const std::unordered_map<blocksci::Address, std::string> &tags) {
+            return getClusters() | ranges::view::transform([tags](Cluster && cluster) -> ranges::optional<TaggedCluster> {
+                return cluster.getTagged(tags);
+            }) | flatMapOptionals();
+        }
     };
     
     using cluster_range = decltype(std::declval<ClusterManager>().getClusters());

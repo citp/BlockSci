@@ -42,7 +42,44 @@ int64_t totalOutWithoutSelfChurn(const blocksci::Block &block, blocksci::Cluster
     return total;
 }
 
+template <typename T>
+auto addClusterRange(py::module &m, const std::string &name) {
+    auto cl = addRangeClass<T>(m, name);
+    addClusterMethods(cl, [](auto func) {
+        return applyMethodsToRange<T>(func);
+    }, [](std::string docstring) {
+        std::stringstream ss;
+        ss << "For each cluster: " << docstring;
+        return strdup(ss.str().c_str());
+    });
+    return cl;
+}
 
+template <typename T>
+auto addTaggedAddressRange(py::module &m, const std::string &name) {
+    auto cl = addRangeClass<T>(m, name);
+    addTaggedAddressMethods(cl, [](auto func) {
+        return applyMethodsToRange<T>(func);
+    }, [](std::string docstring) {
+        std::stringstream ss;
+        ss << "For each tagged address: " << docstring;
+        return strdup(ss.str().c_str());
+    });
+    return cl;
+}
+
+template <typename T>
+auto addTaggedClusterRange(py::module &m, const std::string &name) {
+    auto cl = addRangeClass<T>(m, name);
+    addTaggedClusterMethods(cl, [](auto func) {
+        return applyMethodsToRange<T>(func);
+    }, [](std::string docstring) {
+        std::stringstream ss;
+        ss << "For each tagged cluster: " << docstring;
+        return strdup(ss.str().c_str());
+    });
+    return cl;
+}
 
 void init_cluster(pybind11::module &m) {
     using namespace blocksci;
@@ -64,62 +101,56 @@ void init_cluster(pybind11::module &m) {
     .def(py::init([](std::string arg, blocksci::Blockchain &chain) {
        return ClusterManager(arg, chain.getAccess());
     }))
-    .def("cluster_with_address", [](const ClusterManager &cm, const Address &address) {
+    .def("cluster_with_address", [](const ClusterManager &cm, const Address &address) -> Cluster {
        return cm.getCluster(address);
     }, "Return the cluster containing the given address")
-    .def("cluster_count", &ClusterManager::clusterCount, "Get the total number of clusters")
-    .def("clusters", &ClusterManager::getClusters
-       , "Get a list of all clusters (The list is lazy so there is no cost to calling this method)")
-    .def("cluster_sizes", &ClusterManager::getClusterSizes, "Get a list of all cluster sizes (This is quite slow)")
-    .def("tagged_clusters", &ClusterManager::taggedClusters
-       , "Given a dictionary of tags, return a list of TaggedCluster objects for any clusters containing tagged scripts")
+    .def("clusters", [](ClusterManager &cm) -> ranges::any_view<Cluster, ranges::category::random_access> {
+        return cm.getClusters();
+    }, "Get a list of all clusters (The list is lazy so there is no cost to calling this method)")
+    .def("tagged_clusters", [](ClusterManager &cm, const std::unordered_map<blocksci::Address, std::string> &tags) -> ranges::any_view<TaggedCluster> {
+        return cm.taggedClusters(tags);
+    }, "Given a dictionary of tags, return a list of TaggedCluster objects for any clusters containing tagged scripts")
     ;
     
-    py::class_<Cluster>(s, "Cluster", "Class representing a cluster")
+    py::class_<Cluster> clusterCl(s, "Cluster", "Class representing a cluster");
+    clusterCl
     .def_readonly("cluster_num", &Cluster::clusterNum)
     .def("__len__", &Cluster::getSize)
     .def("__eq__", &Cluster::operator==)
     .def("__hash__", [] (const Cluster &cluster) {
         return cluster.clusterNum;
     })
-    .def_property_readonly("addresses", [](const Cluster &cluster) {
-        py::list ret;
-        for (const auto &address : cluster.getAddresses()) {
-            ret.append(address.getScript().wrapped);
-        }
-        return ret;
-    }, "Get a iterable over all the addresses in the cluster")
-    .def("tagged_addresses", &Cluster::taggedAddresses, "Given a dictionary of tags, return a list of TaggedAddress objects for any tagged addresses in the cluster")
-    .def("count_of_type", &Cluster::countOfType, "Return the number of addresses of the given type in the cluster")
-    .def("balance", &Cluster::calculateBalance, py::arg("height") = -1, "Calculates the balance held by this cluster at the height (Defaults to the full chain)")
-    .def("outs", &Cluster::getOutputs, "Returns a list of all outputs sent to this cluster")
     .def("ins", &Cluster::getInputs, "Returns a list of all inputs spent from this cluster")
     .def("txes", &Cluster::getTransactions, "Returns a list of all transactions involving this cluster")
     .def("in_txes",&Cluster::getInputTransactions, "Returns a list of all transaction where this cluster was an input")
     .def("out_txes", &Cluster::getOutputTransactions, "Returns a list of all transaction where this cluster was an output")
-    .def("out_txes_count", [](const Cluster &address) {
-        return address.getOutputTransactions().size();
-    }, "Return the number of transactions where this cluster was an output")
-    .def("in_txes_count", [](const Cluster &address) {
-        return address.getInputTransactions().size();
-    }, "Return the number of transactions where this cluster was an input")
-    ;
     ;
     
-    py::class_<TaggedAddress>(s, "TaggedAddress")
-    .def_property_readonly("address", [](const TaggedAddress &tagged) {
-        return tagged.address.getScript().wrapped;
-    }, "Return the address object which has been tagged")
-    .def_readonly("tag", &TaggedAddress::tag, "Return the tag associated with the contained address")
-    ;
+    addClusterMethods(clusterCl, [](auto func) {
+        return applyMethodsToSelf<Cluster>(func);
+    }, [](auto && docstring) {
+        return std::forward<decltype(docstring)>(docstring);
+    });
     
-    py::class_<TaggedCluster>(s, "TaggedCluster")
-    .def_property_readonly("cluster", [](const TaggedCluster &tc) {
-        return tc.cluster;
-    }, "Return the cluster object which has been tagged")
-    .def_readonly("tagged_addresses", &TaggedCluster::taggedAddresses, "Return the list of addresses inside the cluster which have been tagged")
-    ;
+    py::class_<TaggedAddress> taggedAddressCl(s, "TaggedAddress");
+    addTaggedAddressMethods(taggedAddressCl, [](auto func) {
+        return applyMethodsToSelf<Cluster>(func);
+    }, [](auto && docstring) {
+        return std::forward<decltype(docstring)>(docstring);
+    });
+    
+    py::class_<TaggedCluster> taggedClusterCl(s, "TaggedCluster");
+    addTaggedAddressMethods(taggedClusterCl, [](auto func) {
+        return applyMethodsToSelf<Cluster>(func);
+    }, [](auto && docstring) {
+        return std::forward<decltype(docstring)>(docstring);
+    });
     
 
-    addRangeClass<cluster_range>(s, "ClusterRange");
+    addClusterRange<ranges::any_view<Cluster, ranges::category::random_access>>(s, "ClusterRange");
+    addClusterRange<ranges::any_view<Cluster>(s, "AnyClusterRange");
+    addTaggedAddressRange<ranges::any_view<TaggedAddress, ranges::category::random_access>(s, "TaggedAddressRange");
+    addTaggedAddressRange<ranges::any_view<TaggedAddress>(s, "AnyTaggedAddressRange");
+    addTaggedClusterRange<ranges::any_view<TaggedCluster, ranges::category::random_access>(s, "TaggedClusterRange");
+    addTaggedClusterRange<ranges::any_view<TaggedCluster>(s, "AnyTaggedClusterRange");
 }

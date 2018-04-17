@@ -73,7 +73,7 @@ namespace blocksci {
         ranges::any_view<Output> getOutputs();
         std::vector<Input> getInputs();
         std::vector<Transaction> getTransactions();
-        std::vector<Transaction> getOutputTransactions();
+        ranges::any_view<Transaction> getOutputTransactions();
         std::vector<Transaction> getInputTransactions();
         
         std::string fullType() const;

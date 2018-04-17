@@ -79,17 +79,6 @@ namespace blocksci {
         return Cluster(access.getClusterNum(address), access);
     }
     
-    std::vector<TaggedCluster> ClusterManager::taggedClusters(const std::unordered_map<blocksci::Address, std::string> &tags) {
-        std::vector<TaggedCluster> taggedClusters;
-        for (auto cluster : getClusters()) {
-            auto taggedAddresses = cluster.taggedAddresses(tags);
-            if (!taggedAddresses.empty()) {
-                taggedClusters.emplace_back(cluster, std::move(taggedAddresses));
-            }
-        }
-        return taggedClusters;
-    }
-    
     std::vector<std::pair<Address, Address>> processTransaction(const Transaction &tx, const heuristics::ChangeHeuristic &changeHeuristic) {
         std::vector<std::pair<Address, Address>> pairsToUnion;
         

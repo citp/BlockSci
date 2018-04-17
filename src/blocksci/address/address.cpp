@@ -173,8 +173,8 @@ namespace blocksci {
         return blocksci::getTransactions(getOutputPointers(), *access);
     }
     
-    std::vector<Transaction> Address::getOutputTransactions() {
-        return blocksci::getOutputTransactions(getOutputPointers(), *access);
+    ranges::any_view<Transaction> Address::getOutputTransactions() {
+        return txesFromSortedOutputPointers(getOutputPointers(), *access);
     }
     
     std::vector<Transaction> Address::getInputTransactions() {

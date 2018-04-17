@@ -50,6 +50,18 @@ namespace blocksci {
         return !it->Valid() || !it->key().starts_with(key);
     }
     
+    bool ColumnIterator::cursor::equal(const cursor &other) const {
+        if (prefixBytes != other.prefixBytes) {
+            return false;
+        }
+        auto firstRead = read();
+        auto secondRead = other.read();
+        if (firstRead.first.size != secondRead.first.size) {
+            return false;
+        }
+        return memcmp(firstRead.first.data, secondRead.first.data, firstRead.first.size);
+    }
+    
     void ColumnIterator::cursor::next() { it->Next(); }
     void ColumnIterator::cursor::prev() { it->Prev(); }
 }

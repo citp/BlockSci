@@ -46,6 +46,7 @@ namespace blocksci {
             std::pair<MemoryView, MemoryView> read() const;
             
             bool equal(ranges::default_sentinel) const;
+            bool equal(const cursor &other) const;
             
             void next();
             void prev();
