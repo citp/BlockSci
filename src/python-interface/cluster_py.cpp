@@ -148,9 +148,9 @@ void init_cluster(pybind11::module &m) {
     
 
     addClusterRange<ranges::any_view<Cluster, ranges::category::random_access>>(s, "ClusterRange");
-    addClusterRange<ranges::any_view<Cluster>(s, "AnyClusterRange");
-    addTaggedAddressRange<ranges::any_view<TaggedAddress, ranges::category::random_access>(s, "TaggedAddressRange");
-    addTaggedAddressRange<ranges::any_view<TaggedAddress>(s, "AnyTaggedAddressRange");
-    addTaggedClusterRange<ranges::any_view<TaggedCluster, ranges::category::random_access>(s, "TaggedClusterRange");
-    addTaggedClusterRange<ranges::any_view<TaggedCluster>(s, "AnyTaggedClusterRange");
+    addClusterRange<ranges::any_view<Cluster>>(s, "AnyClusterRange");
+    addTaggedAddressRange<ranges::any_view<TaggedAddress, ranges::category::random_access>>(s, "TaggedAddressRange");
+    addTaggedAddressRange<ranges::any_view<TaggedAddress>>(s, "AnyTaggedAddressRange");
+    addTaggedClusterRange<ranges::any_view<TaggedCluster, ranges::category::random_access>>(s, "TaggedClusterRange");
+    addTaggedClusterRange<ranges::any_view<TaggedCluster>>(s, "AnyTaggedClusterRange");
 }
