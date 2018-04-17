@@ -9,6 +9,9 @@
 #ifndef cluster_py_hpp
 #define cluster_py_hpp
 
+#include "ranges_py.hpp"
+#include "variant_py.hpp"
+
 #include <blocksci/cluster/cluster.hpp>
 #include <blocksci/scripts/script_variant.hpp>
 
@@ -59,7 +62,7 @@ void addTaggedAddressMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     .def_property_readonly("address", func([](const TaggedAddress &tagged) -> AnyScript {
         return tagged.address.getScript();
     }), func2("Return the address object which has been tagged"))
-    .def_readonly("tag", func([](const TaggedAddress &tagged) -> std::string {
+    .def_property_readonly("tag", func([](const TaggedAddress &tagged) -> std::string {
         return tagged.tag;
     }), func2("Return the tag associated with the contained address"))
     ;
@@ -72,7 +75,7 @@ void addTaggedClusterMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     .def_property_readonly("cluster", func([](TaggedCluster &tc) -> Cluster {
         return tc.cluster;
     }), func2("Return the cluster object which has been tagged"))
-    .def_readonly("tagged_addresses",func([](TaggedCluster &tc) -> ranges::any_view<TaggedAddress> {
+    .def_property_readonly("tagged_addresses",func([](TaggedCluster &tc) -> ranges::any_view<TaggedAddress> {
         return tc.taggedAddresses;
     }), func2("Return the list of addresses inside the cluster which have been tagged"))
     ;
