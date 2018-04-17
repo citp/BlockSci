@@ -29,7 +29,7 @@ namespace blocksci {
 		return mpark::visit([&](auto &scriptAddress) { return scriptAddress.calculateBalance(height); }, wrapped);
 	}
     
-    std::vector<Output> AnyScript::getOutputs() {
+    ranges::any_view<Output> AnyScript::getOutputs() {
     	return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getOutputs(); }, wrapped);
     }
 
@@ -41,7 +41,7 @@ namespace blocksci {
     	return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getTransactions(); }, wrapped);
     }
 
-    std::vector<Transaction> AnyScript::getOutputTransactions() {
+    ranges::any_view<Transaction> AnyScript::getOutputTransactions() {
     	return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getOutputTransactions(); }, wrapped);
     }
 

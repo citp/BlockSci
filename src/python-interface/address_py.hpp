@@ -22,20 +22,20 @@ template <typename T, typename Class, typename FuncApplication, typename FuncDoc
 void addAddressMethods(Class &cl, FuncApplication func, FuncDoc func2) {
 	using namespace blocksci;
     cl
-    .def_property_readonly("address_num", func([](const T &address) -> int64_t {
+    .def_property_readonly("address_num", func([](T &address) -> int64_t {
     	return address.getScriptNum();
     }), func2("The internal identifier of the address"))
     .def_property_readonly("type", func([](const T &address) -> AddressType::Enum {
     	return address.getType();
     }), func2("The type of address"))
-    .def("equiv", func([](T &address, bool equiv_script) -> EquivAddress {
+    .def("equiv", func([](const T &address, bool equiv_script) -> EquivAddress {
     	return address.getEquivAddresses(equiv_script);
     }), pybind11::arg("equiv_script") = true, "Returns a list of all addresses equivalent to this address")
     .def("balance", func([](T &address, int height) -> int64_t {
     	return address.calculateBalance(height);
     }), pybind11::arg("height") = -1, func2("Calculates the balance held by this address at the height (Defaults to the full chain)"))
     .def("out_txes_count", func([](T &address) -> int64_t {
-        return address.getOutputTransactions().size();
+        return ranges::distance(address.getOutputTransactions());
     }), func2("Return the number of transactions where this address was an output"))
     .def("in_txes_count", func([](T &address) -> int64_t {
         return address.getInputTransactions().size();

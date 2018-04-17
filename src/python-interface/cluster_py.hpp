@@ -72,8 +72,8 @@ void addTaggedClusterMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     .def_property_readonly("cluster", func([](TaggedCluster &tc) -> Cluster {
         return tc.cluster;
     }), func("Return the cluster object which has been tagged"))
-    .def_readonly("tagged_addresses",func([](TaggedCluster &tc, const std::unordered_map<blocksci::Address, std::string> &tags) -> ranges::any_view<TaggedAddress> {
-        return tc.taggedAddresses(tags);
+    .def_readonly("tagged_addresses",func([](TaggedCluster &tc) -> ranges::any_view<TaggedAddress> {
+        return tc.taggedAddresses;
     }), func2("Return the list of addresses inside the cluster which have been tagged"))
     ;
 }

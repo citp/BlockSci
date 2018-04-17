@@ -10,7 +10,7 @@
 
 #include <blocksci/blocksci_export.h>
 
-#include <blocksci/address/dedup_address_info.hpp>
+#include <blocksci/address/dedup_address.hpp>
 #include <blocksci/address/address.hpp>
 #include <blocksci/util/data_access.hpp>
 #include <blocksci/util/file_mapper.hpp>
@@ -60,8 +60,6 @@ namespace blocksci {
             return baseDirectory/ss.str();
         })),
         access(access_)  {}
-
-        Cluster getCluster(const Address &address) const;
         
         uint32_t getClusterNum(const Address &address) const {
             static auto table = blocksci::make_dynamic_table<DedupAddressType, ClusterNumFunctor>();
@@ -82,7 +80,18 @@ namespace blocksci {
             return static_cast<uint32_t>(clusterOffsetFile.size());
         }
         
-        ranges::iterator_range<const DedupAddress *> getClusterScripts(uint32_t clusterNum) const;
+        boost::iterator_range<const blocksci::DedupAddress *> getClusterScripts(uint32_t clusterNum) const {
+            auto nextClusterOffset = *clusterOffsetFile.getData(clusterNum);
+            uint32_t clusterOffset = 0;
+            if (clusterNum > 0) {
+                clusterOffset = *clusterOffsetFile.getData(clusterNum - 1);
+            }
+            auto clusterSize = nextClusterOffset - clusterOffset;
+            
+            auto firstAddressOffset = clusterScriptsFile.getData(clusterOffset);
+            
+            return boost::make_iterator_range_n(firstAddressOffset, clusterSize);
+        }
         
         std::vector<uint32_t> getClusterSizes() const {
             auto tot = clusterCount();

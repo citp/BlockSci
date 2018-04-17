@@ -49,7 +49,7 @@ RawInput::RawInput(SafeMemReader &reader) : utxo{} {
 }
 
 RawOutput::RawOutput(SafeMemReader &reader) {
-    value = reader.readNext<Value>();
+    value = static_cast<int64_t>(reader.readNext<Value>());
     scriptLength = reader.readVariableLengthInteger();
     scriptBegin = reinterpret_cast<const unsigned char*>(reader.unsafePos());
     reader.advance(scriptLength);

@@ -20,6 +20,7 @@
 #include <range/v3/view/zip.hpp>
 #include <range/v3/view/transform.hpp>
 #include <range/v3/view/filter.hpp>
+#include <range/v3/view/join.hpp>
 #include <range/v3/range_for.hpp>
 
 #include <pybind11/pybind11.h>
@@ -133,6 +134,7 @@ using is_numeric = pybind11::detail::satisfies_any_of<T, std::is_arithmetic, pyb
 template <typename T>
 using numpy_transformable = and_<is_numeric<T>, forms_normal_vector<T>>;
 
+struct unknown_tag {};
 struct blocksci_tag {};
 struct py_tag {};
 struct numpy_tag {};
@@ -175,6 +177,23 @@ struct is_optional : std::false_type {};
 template <typename T>
 struct is_optional<ranges::optional<T>> : std::true_type {};
 
+template <typename T, typename=void>
+struct is_tagged : std::false_type {};
+
+template <typename T>
+struct is_tagged<T, meta::void_<typename type_tag<T>::type>> : std::true_type {};
+
+template <typename T, typename=void>
+struct is_blocksci : std::false_type {};
+
+template <typename T>
+struct is_blocksci<T, std::enable_if_t<std::is_same<typename type_tag<T>::type, blocksci_tag>::value, void>> : std::true_type {};
+
+template<typename T, CONCEPT_REQUIRES_(ranges::Range<T>())>
+std::true_type is_range() { return {}; }
+
+template<typename T, CONCEPT_REQUIRES_(!ranges::Range<T>())>
+std::false_type is_range() { return {}; }
 
 template <typename T>
 struct make_optional { using type = ranges::optional<T>; };
@@ -210,9 +229,25 @@ auto applyMethodToRange(T && t, F func, const Args &... args) {
 }
 
 template <typename T>
+auto flattenIfNestedRangeImpl(T && t, std::true_type) {
+    return std::forward<T>(t) | ranges::view::join;
+}
+
+template <typename T>
+auto flattenIfNestedRangeImpl(T && t, std::false_type) {
+    return std::forward<T>(t);
+}
+
+template <typename T>
+auto flattenIfNestedRange(T && t) {
+    using nested = ranges::range_value_type_t<T>;
+    return flattenIfNestedRangeImpl<T>(std::forward<T>(t), and_<meta::not_<is_tagged<nested>>, decltype(is_range<nested>())>{});
+}
+
+template <typename T>
 auto flattenIfOptionalRangeImpl(T && t, std::true_type) {
     return std::forward<T>(t) | ranges::view::filter([](const auto &optional) { return static_cast<bool>(optional); })
-        | ranges::view::transform([](const auto &optional) { return *optional; });
+    | ranges::view::transform([](const auto &optional) { return *optional; });
 }
 
 template <typename T>
@@ -221,7 +256,7 @@ auto flattenIfOptionalRangeImpl(T && t, std::false_type) {
 }
 
 template <typename T>
-auto flattenIfOptionalRangeImpl(T && t) {
+auto flattenIfOptionalRange(T && t) {
     return flattenIfOptionalRangeImpl<T>(std::forward<T>(t), is_optional<ranges::range_value_type_t<T>>{});
 }
 
@@ -255,14 +290,14 @@ auto convertRangeToPythonImpl(T && t, py_tag) {
 
 template <typename T, CONCEPT_REQUIRES_(ranges::Range<T>())>
 auto convertRangeToPython(T && t) {
-    return convertRangeToPythonImpl(std::forward<T>(t), typename type_tag<ranges::range_value_type_t<T>>::type{});
+    auto && flattened = flattenIfNestedRange(t);
+    return convertRangeToPythonImpl(std::forward<decltype(flattened)>(flattened), typename type_tag<ranges::range_value_type_t<decltype(flattened)>>::type{});
 }
 
 template <typename T, CONCEPT_REQUIRES_(!ranges::Range<T>())>
 auto convertRangeToPython(T && t) {
     return std::forward<T>(t);
 }
-
 
 template <typename T, typename F, std::size_t ... Is, class Traits>
 auto applyMethodsToRangeImpl(F f, std::index_sequence<Is...>, Traits) {
@@ -279,8 +314,8 @@ auto applyMethodsToRange(F f) {
 
 template <typename Ty, class F, std::size_t ... Is, class T>
 auto applyMethodsToSelfImpl(F f, std::index_sequence<Is...>, T) {
-    return [f](const Ty &tx, const std::tuple_element_t<Is, typename T::arg_tuple> &... args) {
-        return f(std::forward<decltype(tx)>(tx), args...);
+    return [f](Ty &tx, const std::tuple_element_t<Is, typename T::arg_tuple> &... args) {
+        return f(tx, args...);
     };
 }
 
@@ -293,7 +328,7 @@ auto applyMethodsToSelf(F f) {
 template <typename T, typename F, std::size_t ... Is, class Traits>
 auto applyRangeMethodsToRangeImpl(F func, std::index_sequence<Is...>, Traits) {
     return [func](T &view, const std::tuple_element_t<Is, typename Traits::arg_tuple> &... args) {
-        return convertRangeToPython(func(flattenIfOptionalRangeImpl(view), args...));
+        return convertRangeToPython(func(flattenIfOptionalRange(view), args...));
     };
 }
 
@@ -306,7 +341,7 @@ auto applyRangeMethodsToRangeImpl1(F func) {
 template <template <typename, typename, typename> class F, typename Class>
 auto applyRangeMethodsToRange(Class &cl) {
     using Range = typename Class::type;
-    using flattened_type = decltype(flattenIfOptionalRangeImpl(std::declval<Range>()));
+    using flattened_type = decltype(flattenIfOptionalRange(std::declval<Range>()));
     auto handler = [](auto func) {
         return applyRangeMethodsToRangeImpl1<flattened_type>(func);
     };

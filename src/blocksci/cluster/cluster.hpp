@@ -74,7 +74,7 @@ namespace blocksci {
         
         uint32_t countOfType(blocksci::AddressType::Enum type) const;
         
-        int getSize() const {
+        int64_t getSize() const {
             return ranges::distance(getAddresses());
         }
         

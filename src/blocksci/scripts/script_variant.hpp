@@ -83,10 +83,10 @@ namespace blocksci {
         }
         
         int64_t calculateBalance(BlockHeight height);
-        std::vector<Output> getOutputs();
+        ranges::any_view<Output> getOutputs();
         std::vector<Input> getInputs();
         std::vector<Transaction> getTransactions();
-        std::vector<Transaction> getOutputTransactions();
+        ranges::any_view<Transaction> getOutputTransactions();
         std::vector<Transaction> getInputTransactions();
         
         ScriptVariant wrapped;
