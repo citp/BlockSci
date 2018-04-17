@@ -11,6 +11,7 @@
 
 #include "variant_py.hpp"
 #include "any_script_caster.hpp"
+#include "optional_py.hpp"
 
 #include <blocksci/chain/algorithms.hpp>
 #include <blocksci/chain/input.hpp>

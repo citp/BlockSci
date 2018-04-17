@@ -9,6 +9,7 @@
 #define output_py_h
 
 #include "any_script_caster.hpp"
+#include "optional_py.hpp"
 
 #include <pybind11/pybind11.h>
 

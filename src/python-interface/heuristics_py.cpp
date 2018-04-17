@@ -5,12 +5,13 @@
 //  Created by Malte Möser on 10/3/17.
 //
 
+#include "any_script_caster.hpp"
+#include "optional_py.hpp"
+
 #include <blocksci/heuristics.hpp>
 #include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/output.hpp>
-
-#include "optional_py.hpp"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>

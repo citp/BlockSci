@@ -7,7 +7,6 @@
 //
 
 #include "nonstandard_py.hpp"
-#include "optional_py.hpp"
 #include "variant_py.hpp"
 #include "ranges_py.hpp"
 

@@ -9,6 +9,9 @@
 #define ranges_py_hpp
 
 #include "variant_py.hpp"
+#include "any_script_caster.hpp"
+#include "optional_py.hpp"
+
 #include <blocksci/blocksci_fwd.hpp>
 #include <blocksci/util/bitcoin_uint256.hpp>
 #include <blocksci/scripts/script_variant.hpp>

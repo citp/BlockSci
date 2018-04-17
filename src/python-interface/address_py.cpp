@@ -7,8 +7,6 @@
 //
 
 #include "address_py.hpp"
-#include "optional_py.hpp"
-#include "any_script_caster.hpp"
 
 #include <blocksci/address/equiv_address.hpp>
 #include <blocksci/scripts/script_variant.hpp>

@@ -8,7 +8,6 @@
 
 #include "block_py.hpp"
 #include "ranges_py.hpp"
-#include "optional_py.hpp"
 
 #include <range/v3/view/any_view.hpp>
 

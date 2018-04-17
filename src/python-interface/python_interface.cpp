@@ -7,6 +7,7 @@
 //
 
 #include "optional_py.hpp"
+#include "any_script_caster.hpp"
 #include "variant_py.hpp"
 #include "block_py.hpp"
 #include "input_py.hpp"

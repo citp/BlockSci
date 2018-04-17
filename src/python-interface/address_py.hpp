@@ -10,6 +10,8 @@
 
 #include "ranges_py.hpp"
 #include "variant_py.hpp"
+#include "any_script_caster.hpp"
+#include "optional_py.hpp"
 
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/scripts/script.hpp>

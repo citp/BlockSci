@@ -6,7 +6,6 @@
 //
 
 #include "input_py.hpp"
-#include "optional_py.hpp"
 #include "ranges_py.hpp"
 
 #include <pybind11/operators.h>

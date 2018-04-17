@@ -6,6 +6,9 @@
 //
 //
 
+#include "any_script_caster.hpp"
+#include "optional_py.hpp"
+
 #include <blocksci/chain/transaction_summary.hpp>
 #include <blocksci/chain/transaction.hpp>
 

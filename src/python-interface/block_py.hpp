@@ -8,6 +8,9 @@
 #ifndef block_py_h
 #define block_py_h
 
+#include "any_script_caster.hpp"
+#include "optional_py.hpp"
+
 #include <blocksci/chain/block.hpp>
 #include <blocksci/chain/algorithms.hpp>
 

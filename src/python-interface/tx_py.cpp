@@ -7,7 +7,6 @@
 //
 
 #include "tx_py.hpp"
-#include "optional_py.hpp"
 #include "ranges_py.hpp"
 
 #include <blocksci/chain/blockchain.hpp>
@@ -81,18 +80,6 @@ void init_tx(py::module &m) {
          :param string index: The hash of the transation.
          :returns: Tx
          )docstring")
-    .def_property_readonly("ins", [](const Transaction &tx) -> ranges::any_view<Input, ranges::category::random_access>  {
-        return tx.inputs();
-    }, "A list of the inputs of the transaction") // same as below
-    .def_property_readonly("inputs", [](const Transaction &tx) -> ranges::any_view<Input, ranges::category::random_access>  {
-        return tx.inputs();
-    }, "A list of the inputs of the transaction") // same as above
-    .def_property_readonly("outs", [](const Transaction &tx) -> ranges::any_view<Output, ranges::category::random_access>  {
-        return tx.outputs();
-    }, "A list of the outputs of the transaction") // same as below
-    .def_property_readonly("outputs", [](const Transaction &tx) -> ranges::any_view<Output, ranges::category::random_access>  {
-        return tx.outputs();
-    }, "A list of the outputs of the transaction") // same as above
     ;
     
     addTxRange<ranges::any_view<Transaction>>(m, "AnyTxRange");

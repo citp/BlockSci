@@ -8,6 +8,9 @@
 #ifndef tx_py_h
 #define tx_py_h
 
+#include "any_script_caster.hpp"
+#include "optional_py.hpp"
+
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/block.hpp>
 #include <blocksci/chain/algorithms.hpp>
@@ -24,6 +27,18 @@ template <typename Class, typename FuncApplication, typename FuncDoc>
 void addTransactionMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     using namespace blocksci;
     cl
+    .def_property_readonly("ins", func([](const Transaction &tx) -> ranges::any_view<Input, ranges::category::random_access>  {
+        return tx.inputs();
+    }), fund2("A list of the inputs of the transaction")) // same as below
+    .def_property_readonly("inputs", func([](const Transaction &tx) -> ranges::any_view<Input, ranges::category::random_access>  {
+        return tx.inputs();
+    }), func2("A list of the inputs of the transaction")) // same as above
+    .def_property_readonly("outs", func([](const Transaction &tx) -> ranges::any_view<Output, ranges::category::random_access>  {
+        return tx.outputs();
+    }), func2("A list of the outputs of the transaction")) // same as below
+    .def_property_readonly("outputs", func([](const Transaction &tx) -> ranges::any_view<Output, ranges::category::random_access>  {
+        return tx.outputs();
+    }), func2("A list of the outputs of the transaction")) // same as above
     .def_property_readonly("output_count", func([](const Transaction &tx) -> int64_t {
         return tx.outputCount();
     }), func2("The number of outputs this transaction has"))
@@ -108,28 +123,6 @@ template <typename Class, typename FuncApplication>
 void addTransactionRangeMethods(Class &cl, FuncApplication func) {
     using namespace blocksci;
     using Range = typename Class::type;
-    cl
-    .def_property_readonly("ins", [=](Range &range) -> ranges::any_view<Input>  {
-        return func(range, [=](auto && r) -> ranges::any_view<Input> {
-            return inputs(r);
-        });
-    }, "A list of the inputs of the listed transactions") // same as below
-    .def_property_readonly("inputs", [=](Range &range) -> ranges::any_view<Input>  {
-        return func(range, [=](auto && r) -> ranges::any_view<Input> {
-            return inputs(r);
-        });
-    }, "A list of the inputs of the listed transactions") // same as above
-    .def_property_readonly("outs", [=](Range &range) -> ranges::any_view<Output>  {
-        return func(range, [=](auto && r) -> ranges::any_view<Output> {
-            return outputs(r);
-        });
-    }, "A list of the outputs of the listed transactions") // same as below
-    .def_property_readonly("outputs", [=](Range &range) -> ranges::any_view<Output>  {
-        return func(range, [=](auto && r) -> ranges::any_view<Output> {
-            return outputs(r);
-        });
-    }, "A list of the outputs of the listed transactions") // same as above
-    ;
 }
 
 #endif /* tx_py_h */

@@ -10,6 +10,8 @@
 #define blocksci_scripthash_py_h
 
 #include "any_script_caster.hpp"
+#include "optional_py.hpp"
+
 #include <blocksci/scripts/script_variant.hpp>
 #include <pybind11/pybind11.h>
 
