@@ -29,7 +29,7 @@ void addTransactionMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     cl
     .def_property_readonly("ins", func([](const Transaction &tx) -> ranges::any_view<Input, ranges::category::random_access>  {
         return tx.inputs();
-    }), fund2("A list of the inputs of the transaction")) // same as below
+    }), func2("A list of the inputs of the transaction")) // same as below
     .def_property_readonly("inputs", func([](const Transaction &tx) -> ranges::any_view<Input, ranges::category::random_access>  {
         return tx.inputs();
     }), func2("A list of the inputs of the transaction")) // same as above
