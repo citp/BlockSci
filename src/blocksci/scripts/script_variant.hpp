@@ -75,8 +75,6 @@ namespace blocksci {
         bool hasBeenSpent() const {
             return mpark::visit([&](auto &scriptAddress) { return scriptAddress.hasBeenSpent(); }, wrapped);
         }
-
-        uint64_t calculateBalance(BlockHeight height) const;
     
         EquivAddress getEquivAddresses(bool nestedEquivalent) const;
         
@@ -84,6 +82,7 @@ namespace blocksci {
             return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getOutputPointers(); }, wrapped);
         }
         
+        int64_t calculateBalance(BlockHeight height);
         std::vector<Output> getOutputs();
         std::vector<Input> getInputs();
         std::vector<Transaction> getTransactions();

@@ -72,11 +72,11 @@ void init_heuristics(py::module &m) {
     .def("is_address_deanon", py::overload_cast<const Transaction &>(heuristics::isDeanonTx), "Returns true if this transaction's change address is deanonymized by the address types involved")
     .def("is_change_over", py::overload_cast<const Transaction &>(heuristics::isChangeOverTx), "Returns true if this transaction contained all inputs of one address type and all outputs of a different type")
     .def("is_keyset_change", py::overload_cast<const Transaction &>(heuristics::containsKeysetChange), "Returns true if this transaction contains distinct addresses which share some of the same keys, indicating that the access control structure has changed")
-    .def("is_definite_coinjoin", [](const Transaction &tx, uint64_t minBaseFee, double percentageFee, size_t maxDepth) {
+    .def("is_definite_coinjoin", [](const Transaction &tx, int64_t minBaseFee, double percentageFee, size_t maxDepth) {
         py::gil_scoped_release release;
         return heuristics::isCoinjoinExtra(tx, minBaseFee, percentageFee, maxDepth);
     }, "This function uses subset matching in order to determine whether this transaction is a JoinMarket coinjoin. If maxDepth != 0, it limits the total number of possible subsets the algorithm will check.")
-    .def("is_definite_coinjoin", [](const Transaction &tx, uint64_t minBaseFee, double percentageFee) {
+    .def("is_definite_coinjoin", [](const Transaction &tx, int64_t minBaseFee, double percentageFee) {
         py::gil_scoped_release release;
         return heuristics::isCoinjoinExtra(tx, minBaseFee, percentageFee, 0);
     }, "This function uses subset matching in order to determine whether this transaction is a JoinMarket coinjoin.")

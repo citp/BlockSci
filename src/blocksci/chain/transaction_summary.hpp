@@ -17,9 +17,9 @@ namespace blocksci {
         uint64_t totalOutputs;
         uint64_t totalSize;
         uint64_t totalCount;
-        uint64_t totalOutputValue;
+        int64_t totalOutputValue;
         
-        TransactionSummary(uint64_t totalInputs_, uint64_t totalOutputs_, uint64_t totalSize_, uint64_t totalCount_, uint64_t totalOutputValue_) : totalInputs(totalInputs_), totalOutputs(totalOutputs_), totalSize(totalSize_), totalCount(totalCount_), totalOutputValue(totalOutputValue_) {}
+        TransactionSummary(uint64_t totalInputs_, uint64_t totalOutputs_, uint64_t totalSize_, uint64_t totalCount_, int64_t totalOutputValue_) : totalInputs(totalInputs_), totalOutputs(totalOutputs_), totalSize(totalSize_), totalCount(totalCount_), totalOutputValue(totalOutputValue_) {}
         TransactionSummary() : TransactionSummary{0,0,0,0,0} {}
         
         TransactionSummary operator+(const TransactionSummary &other) const {

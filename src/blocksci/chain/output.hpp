@@ -87,7 +87,7 @@ namespace blocksci {
             return {inout->getAddressNum(), inout->getType(), *access};
         }
         
-        uint64_t getValue() const {
+        int64_t getValue() const {
             return inout->getValue();
         }
 
@@ -98,11 +98,6 @@ namespace blocksci {
     inline std::ostream &operator<<(std::ostream &os, const Output &output) { 
         return os << output.toString();
     }
-    
-    auto getOutputs(const std::vector<OutputPointer> &pointers, DataAccess &access) {
-        return pointers | ranges::view::transform([&access](const OutputPointer &pointer) { return Output(pointer, access); });
-    }
-    
 } // namespace blocksci
 
 namespace std {

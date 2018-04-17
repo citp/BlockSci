@@ -179,10 +179,10 @@ RawInput::RawInput(const vin_t &vin) {
     scriptLength = 0;
 }
 
-RawOutput::RawOutput(std::vector<unsigned char> scriptBytes_, uint64_t value_) : scriptBytes(std::move(scriptBytes_)), value(value_)  {
+RawOutput::RawOutput(std::vector<unsigned char> scriptBytes_, int64_t value_) : scriptBytes(std::move(scriptBytes_)), value(value_)  {
 }
 
-RawOutput::RawOutput(const vout_t &vout) : RawOutput(hexStringToVec(vout.scriptPubKey.hex), static_cast<uint64_t>(vout.value * 100000000)) {}
+RawOutput::RawOutput(const vout_t &vout) : RawOutput(hexStringToVec(vout.scriptPubKey.hex), static_cast<int64_t>(vout.value * 100000000)) {}
 
 void RawTransaction::load(const getrawtransaction_t &txinfo, uint32_t txNum_, blocksci::BlockHeight blockHeight_, bool witnessActivated) {
     txNum = txNum_;

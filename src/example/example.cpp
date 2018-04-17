@@ -90,6 +90,8 @@ int main(int argc, const char * argv[]) {
 //        std::cout << out << std::endl;
 //    }
 
+    std::cout << chain.getAccess().hashIndex.countTxes() << std::endl;
+    
     RANGES_FOR(auto block, chain) {
         RANGES_FOR(auto tx, block) {
             std::cout << tx << std::endl;
@@ -101,6 +103,9 @@ int main(int argc, const char * argv[]) {
                 << std::chrono::duration_cast<std::chrono::milliseconds>(timestamp->time_since_epoch()).count() % 1000 << std::endl;
             }
 //            RANGES_FOR(auto output, tx.outputs()) {
+//                auto outputs = output.getAddress().getOutputs();
+//                auto it = std::find(outputs.begin(), outputs.end(), output);
+//                assert(it != outputs.end());
 //                std::cout << output << std::endl;
 //            }
         }
@@ -208,7 +213,7 @@ int main(int argc, const char * argv[]) {
 //    };
 //    
 //    
-//    uint64_t totalVal = chain.mapReduceTransactions(0, chain.size(), extract, [](uint64_t a,uint64_t b) {return a + b;}, uint64_t{0});
+//    int64_t totalVal = chain.mapReduceTransactions(0, chain.size(), extract, [](int64_t a,int64_t b) {return a + b;}, int64_t{0});
 //    
 //    
 //    std::cout << totalVal << "\n";
@@ -313,7 +318,7 @@ int main(int argc, const char * argv[]) {
 //
 //    
 //    auto extract1 = [](const Transaction &tx) {
-//        uint64_t maxValue = 0;
+//        int64_t maxValue = 0;
 //        for (auto &output : tx.outputs()) {
 //            maxValue = std::max(maxValue, output.getValue());
 //        }
@@ -458,7 +463,7 @@ int main(int argc, const char * argv[]) {
 }
     
 void maxOutput(Blockchain &chain) {
-    uint64_t maxValue = 0;
+    int64_t maxValue = 0;
     uint32_t txNum = 0;
     uint32_t curTx = 0;
     RANGES_FOR(auto block, chain) {

@@ -14,6 +14,7 @@
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/scripts/script_info.hpp>
 
+#include <range/v3/range_for.hpp>
 #include <range/v3/numeric/accumulate.hpp>
 #include <range/v3/view/filter.hpp>
 #include <range/v3/view/join.hpp>
@@ -21,6 +22,9 @@
 #include <range/v3/view/transform.hpp>
 
 namespace blocksci {
+    
+    template <typename B>
+    constexpr bool isOutputPointerRange = std::is_same<ranges::range_value_type_t<B>, OutputPointer>::value;
     
     template <typename B>
     constexpr bool isInputRange = std::is_same<ranges::range_value_type_t<B>, Input>::value;
@@ -105,6 +109,11 @@ namespace blocksci {
     template <typename B, CONCEPT_REQUIRES_(ranges::Range<B>()), std::enable_if_t<isTxRange<B> || isBlockRange<B>, int> = 0>
     inline auto outputs(B && b) {
         return txes(std::forward<B>(b)) | ranges::view::transform([](const Transaction &tx) { return tx.outputs(); }) | ranges::view::join;
+    }
+    
+    template <typename B, CONCEPT_REQUIRES_(ranges::Range<B>()), std::enable_if_t<isOutputPointerRange<B>, int> = 0>
+    inline auto outputs(B && b, DataAccess &access) {
+        return std::forward<B>(b) | ranges::view::transform([&access](const OutputPointer &pointer) { return Output(pointer, access); });
     }
     
     template <typename T>
@@ -193,22 +202,22 @@ namespace blocksci {
     }
     
     template <typename T>
-    inline uint64_t totalInputValue(T && t) {
+    inline int64_t totalInputValue(T && t) {
         auto values = inputs(std::forward<T>(t)) | ranges::view::transform([](const Input &a) { return a.getValue(); });
-        return ranges::accumulate(values, uint64_t{0});
+        return ranges::accumulate(values, int64_t{0});
     }
     
     template <typename T>
-    inline uint64_t totalOutputValue(T && t) {
+    inline int64_t totalOutputValue(T && t) {
         auto values = outputs(std::forward<T>(t)) | ranges::view::transform([](const Output &a) { return a.getValue(); });
-        return ranges::accumulate(values, uint64_t{0});
+        return ranges::accumulate(values, int64_t{0});
     }
     
-    inline uint64_t fee(const Transaction &tx) {
+    inline int64_t fee(const Transaction &tx) {
         if (tx.isCoinbase()) {
             return 0;
         } else {
-            uint64_t total = 0;
+            int64_t total = 0;
             for (auto &input : tx.rawInputs()) {
                 total += input.getValue();
             }
@@ -217,6 +226,25 @@ namespace blocksci {
             }
             return total;
         }
+    }
+    
+    template <typename T>
+    inline int64_t balance(BlockHeight height, T && t) {
+        int64_t value = 0;
+        if (height == -1) {
+            RANGES_FOR(auto output, std::forward<T>(t)) {
+                if (!output.isSpent()) {
+                    value += output.getValue();
+                }
+            }
+        } else {
+            RANGES_FOR(auto output, std::forward<T>(t)) {
+                if (output.blockHeight <= height && (!output.isSpent() || output.getSpendingTx()->blockHeight > height)) {
+                    value += output.getValue();
+                }
+            }
+        }
+        return value;
     }
 
     template <typename T>
@@ -250,8 +278,8 @@ namespace blocksci {
     }
     
     template <typename T>
-    inline uint64_t totalFee(T &t) {
-        return ranges::accumulate(fees(t), uint64_t{0});
+    inline int64_t totalFee(T &t) {
+        return ranges::accumulate(fees(t), int64_t{0});
     }
 } // namespace blocksci
 

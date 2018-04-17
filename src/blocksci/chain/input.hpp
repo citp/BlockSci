@@ -79,7 +79,7 @@ namespace blocksci {
             return inout->getType();
         }
         
-        uint64_t getValue() const {
+        int64_t getValue() const {
             return inout->getValue();
         }
         

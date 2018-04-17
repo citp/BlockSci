@@ -101,7 +101,7 @@ namespace blocksci { namespace heuristics {
     // Default for digits is 6 (i.e. 0.01 BTC)
     std::unordered_set<Output> ChangeHeuristicImpl<ChangeType::PowerOfTen>::operator()(const Transaction &tx) const {
         std::unordered_set<Output> candidates;
-        uint64_t value = 1;
+        int64_t value = 1;
         for (int i = 0; i < digits; ++i)
         {
             value *= 10;
@@ -121,7 +121,7 @@ namespace blocksci { namespace heuristics {
     std::unordered_set<Output> ChangeHeuristicImpl<ChangeType::OptimalChange>::operator()(const Transaction &tx) const {
         std::unordered_set<Output> candidates;
         
-        uint64_t smallestInputValue = tx.inputs()[0].getValue();
+        auto smallestInputValue = tx.inputs()[0].getValue();
         for(auto input : tx.inputs()) {
             smallestInputValue = std::min(smallestInputValue, input.getValue());
         }
@@ -222,7 +222,7 @@ namespace blocksci { namespace heuristics {
             return ranges::nullopt;
         }
         
-        uint64_t smallestInput = std::numeric_limits<uint64_t>::max();
+        auto smallestInput = std::numeric_limits<int64_t>::max();
         for (auto input : tx.inputs()) {
             smallestInput = std::min(smallestInput, input.getValue());
         }

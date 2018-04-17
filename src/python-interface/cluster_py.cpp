@@ -23,8 +23,8 @@
 
 namespace py = pybind11;
 
-uint64_t totalOutWithoutSelfChurn(const blocksci::Block &block, blocksci::ClusterManager &manager) {
-    uint64_t total = 0;
+int64_t totalOutWithoutSelfChurn(const blocksci::Block &block, blocksci::ClusterManager &manager) {
+    int64_t total = 0;
     RANGES_FOR(auto tx, block) {
         std::set<uint32_t> inputClusters;
         RANGES_FOR(auto input, tx.inputs()) {

@@ -15,6 +15,7 @@
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/transaction.hpp>
+#include <blocksci/chain/algorithms.hpp>
 #include <blocksci/scripts/script_variant.hpp>
 
 namespace blocksci {
@@ -52,27 +53,27 @@ namespace blocksci {
         return ss.str();
     }
     
-    uint64_t EquivAddress::calculateBalance(BlockHeight height) const {
-        return blocksci::calculateBalance(getOutputPointers(), height, access);
+    int64_t EquivAddress::calculateBalance(BlockHeight height) {
+        return balance(height, getOutputs());
     }
     
-    std::vector<Output> EquivAddress::getOutputs() const {
-        return blocksci::getOutputs(getOutputPointers(), access);
+    ranges::any_view<Output> EquivAddress::getOutputs() {
+        return outputs(getOutputPointers(), access);
     }
     
-    std::vector<Input> EquivAddress::getInputs() const {
+    std::vector<Input> EquivAddress::getInputs() {
         return blocksci::getInputs(getOutputPointers(), access);
     }
     
-    std::vector<Transaction> EquivAddress::getTransactions() const {
+    std::vector<Transaction> EquivAddress::getTransactions() {
         return blocksci::getTransactions(getOutputPointers(), access);
     }
     
-    std::vector<Transaction> EquivAddress::getOutputTransactions() const {
+    std::vector<Transaction> EquivAddress::getOutputTransactions() {
         return blocksci::getOutputTransactions(getOutputPointers(), access);
     }
     
-    std::vector<Transaction> EquivAddress::getInputTransactions() const {
+    std::vector<Transaction> EquivAddress::getInputTransactions() {
         return blocksci::getInputTransactions(getOutputPointers(), access);
     }
 }

@@ -76,7 +76,6 @@ namespace blocksci {
         }
     };
     
-    uint64_t calculateBalance(const std::vector<OutputPointer> &pointers, BlockHeight height, DataAccess &access);
     std::vector<Input> getInputs(const std::vector<OutputPointer> &pointers, DataAccess &access);
     std::vector<Transaction> getTransactions(const std::vector<OutputPointer> &pointers, DataAccess &access);
     std::vector<Transaction> getOutputTransactions(const std::vector<OutputPointer> &pointers, DataAccess &access);

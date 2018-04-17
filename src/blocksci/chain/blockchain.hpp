@@ -264,7 +264,7 @@ namespace blocksci {
     
     std::vector<Transaction> BLOCKSCI_EXPORT getTransactionIncludingOutput(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, AddressType::Enum type);
     
-    std::map<uint64_t, Address> BLOCKSCI_EXPORT mostValuableAddresses(Blockchain &chain);
+    std::map<int64_t, Address> BLOCKSCI_EXPORT mostValuableAddresses(Blockchain &chain);
     
     namespace internal {
         template<AddressType::Enum type>

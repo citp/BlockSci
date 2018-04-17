@@ -16,6 +16,7 @@
 #include <blocksci/address/address.hpp>
 #include <blocksci/address/dedup_address.hpp>
 #include <blocksci/chain/output.hpp>
+#include <blocksci/chain/algorithms.hpp>
 
 #include <range/v3/view/join.hpp>
 
@@ -60,12 +61,12 @@ namespace blocksci {
         }
         
         auto getOutputs() const {
-            auto &access_ = clusterAccess.access;
-            return getOutputPointers()
-            | ranges::view::transform([&access_](const OutputPointer &pointer) { return Output(pointer, access_); });
+            return outputs(getOutputPointers(), clusterAccess.access);
         }
         
-        uint64_t calculateBalance(BlockHeight height) const;
+        int64_t calculateBalance(BlockHeight height) const {
+            return balance(height, getOutputs());
+        }
         
         std::vector<Input> getInputs() const;
         std::vector<Transaction> getTransactions() const;

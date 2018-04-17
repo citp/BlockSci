@@ -63,14 +63,13 @@ namespace blocksci {
 
         AnyScript getScript() const;
         
-        uint64_t calculateBalance(BlockHeight height) const;
-        
         EquivAddress getEquivAddresses(bool nestedEquivalent) const;
         
         auto getOutputPointers() const {
             return access->addressIndex.getOutputPointers(*this);
         }
         
+        int64_t calculateBalance(BlockHeight height);
         ranges::any_view<Output> getOutputs();
         std::vector<Input> getInputs();
         std::vector<Transaction> getTransactions();

@@ -66,12 +66,12 @@ namespace blocksci {
             ;
         }
         
-        uint64_t calculateBalance(BlockHeight height) const;
-        std::vector<Output> getOutputs() const;
-        std::vector<Input> getInputs() const;
-        std::vector<Transaction> getTransactions() const;
-        std::vector<Transaction> getOutputTransactions() const;
-        std::vector<Transaction> getInputTransactions() const;
+        int64_t calculateBalance(BlockHeight height);
+        ranges::any_view<Output> getOutputs();
+        std::vector<Input> getInputs();
+        std::vector<Transaction> getTransactions();
+        std::vector<Transaction> getOutputTransactions();
+        std::vector<Transaction> getInputTransactions();
     };
 }
 

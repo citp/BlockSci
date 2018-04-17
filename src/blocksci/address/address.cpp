@@ -13,6 +13,7 @@
 #include "address_info.hpp"
 
 #include <blocksci/chain/transaction.hpp>
+#include <blocksci/chain/algorithms.hpp>
 #include <blocksci/scripts/bitcoin_base58.hpp>
 #include <blocksci/scripts/bitcoin_segwit_addr.hpp>
 #include <blocksci/scripts/script_variant.hpp>
@@ -156,14 +157,12 @@ namespace blocksci {
         return EquivAddress{*this, nestedEquivalent};
     }
     
-    uint64_t Address::calculateBalance(BlockHeight height) const {
-        return blocksci::calculateBalance(getOutputPointers(), height, *access);
+    int64_t Address::calculateBalance(BlockHeight height) {
+        return balance(height, getOutputs());
     }
     
     ranges::any_view<Output> Address::getOutputs() {
-        auto access_ = access;
-        return getOutputPointers()
-        | ranges::view::transform([&access_](const OutputPointer &pointer) { return Output(pointer, *access_); });
+        return outputs(getOutputPointers(), *access);
     }
     
     std::vector<Input> Address::getInputs() {

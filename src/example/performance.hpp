@@ -13,16 +13,16 @@
 
 #include <unordered_map>
 
-std::vector<uint64_t> unspentSums1(blocksci::Blockchain &chain, uint32_t start, uint32_t stop);
-std::vector<uint64_t> unspentSums2(blocksci::Blockchain &chain, uint32_t start, uint32_t stop);
+std::vector<int64_t> unspentSums1(blocksci::Blockchain &chain, int start, int stop);
+std::vector<int64_t> unspentSums2(blocksci::Blockchain &chain, int start, int stop);
 
-uint32_t maxSizeTx1(blocksci::Blockchain &chain, uint32_t start, uint32_t stop);
-uint32_t maxSizeTx2(blocksci::Blockchain &chain, uint32_t start, uint32_t stop);
+uint32_t maxSizeTx1(blocksci::Blockchain &chain, int start, int stop);
+uint32_t maxSizeTx2(blocksci::Blockchain &chain, int start, int stop);
 
-std::unordered_map<uint64_t, uint64_t> getOutputDistribution1(blocksci::Blockchain &chain, uint32_t start, uint32_t stop);
-std::unordered_map<uint64_t, uint64_t> getOutputDistribution2(blocksci::Blockchain &chain, uint32_t start, uint32_t stop);
+std::unordered_map<int64_t, int64_t> getOutputDistribution1(blocksci::Blockchain &chain, int start, int stop);
+std::unordered_map<int64_t, int64_t> getOutputDistribution2(blocksci::Blockchain &chain, int start, int stop);
 
-uint64_t maxValOutput1(blocksci::Blockchain &chain, uint32_t start, uint32_t stop);
-uint64_t maxValOutput2(blocksci::Blockchain &chain, uint32_t start, uint32_t stop);
+int64_t maxValOutput1(blocksci::Blockchain &chain, int start, int stop);
+int64_t maxValOutput2(blocksci::Blockchain &chain, int start, int stop);
 
 #endif /* performance_hpp */

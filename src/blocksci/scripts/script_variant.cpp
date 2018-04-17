@@ -25,7 +25,7 @@ namespace blocksci {
         return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getEquivAddresses(nestedEquivalent); }, wrapped);
     }
 
-	uint64_t AnyScript::calculateBalance(BlockHeight height) const {
+	int64_t AnyScript::calculateBalance(BlockHeight height) {
 		return mpark::visit([&](auto &scriptAddress) { return scriptAddress.calculateBalance(height); }, wrapped);
 	}
     

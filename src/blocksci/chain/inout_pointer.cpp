@@ -28,24 +28,6 @@ namespace blocksci {
         return inoutNum < access.getTx(txNum)->outputCount;
     }
     
-    uint64_t calculateBalance(const std::vector<OutputPointer> &pointers, BlockHeight height, DataAccess &access) {
-        uint64_t value = 0;
-        if (height == -1) {
-            for (auto output : getOutputs(pointers, access)) {
-                if (!output.isSpent()) {
-                    value += output.getValue();
-                }
-            }
-        } else {
-            for (auto output : getOutputs(pointers, access)) {
-                if (output.blockHeight <= height && (!output.isSpent() || output.getSpendingTx()->blockHeight > height)) {
-                    value += output.getValue();
-                }
-            }
-        }
-        return value;
-    }
-    
     std::vector<Input> getInputs(const std::vector<OutputPointer> &pointers, DataAccess &access) {
         std::unordered_set<InputPointer> allPointers;
         allPointers.reserve(pointers.size());

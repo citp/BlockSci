@@ -21,16 +21,16 @@ namespace std {
 
 namespace blocksci {
     struct Inout {
-        Inout(uint32_t linkedTxNum_, uint32_t addressNum, AddressType::Enum type, uint64_t value)  : linkedTxNum(linkedTxNum_), toAddressNum(addressNum), other(0) {
+        Inout(uint32_t linkedTxNum_, uint32_t addressNum, AddressType::Enum type, int64_t value)  : linkedTxNum(linkedTxNum_), toAddressNum(addressNum), other(0) {
             setValue(value);
             setType(type);
         }
         Inout() : linkedTxNum(0), toAddressNum(0), other(0) {}
         
-        void setValue(uint64_t value) {
+        void setValue(int64_t value) {
             uint64_t valueMask = (uint64_t(1) << 60) - 1;
             other &= ~valueMask;
-            other |= value & valueMask;
+            other |= static_cast<uint64_t>(value) & valueMask;
         }
         
         void setType(AddressType::Enum type) {
@@ -39,9 +39,9 @@ namespace blocksci {
             other |= (intType & uint64_t(0b1111)) << 60;
         }
         
-        uint64_t getValue() const {
+        int64_t getValue() const {
             uint64_t valueMask = (uint64_t(1) << 60) - 1;
-            return other & valueMask;
+            return static_cast<int64_t>(other & valueMask);
         }
         
         AddressType::Enum getType() const {

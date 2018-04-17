@@ -122,19 +122,19 @@ namespace blocksci {
         });
     }
     
-    std::map<uint64_t, Address> mostValuableAddresses(Blockchain &chain) {
+    std::map<int64_t, Address> mostValuableAddresses(Blockchain &chain) {
         AddressOutputRange range{chain.getAccess()};
         auto grouped = range | ranges::view::group_by([](auto pair1, auto pair2) { return pair1.first == pair2.first; });
-        std::map<uint64_t, Address> topAddresses;
+        std::map<int64_t, Address> topAddresses;
         
         RANGES_FOR(auto outputGroup, grouped) {
             auto address = ranges::front(outputGroup).first;
-            auto balancesIfUnspent = outputGroup | ranges::view::transform([&](auto pair) -> uint64_t {
+            auto balancesIfUnspent = outputGroup | ranges::view::transform([&](auto pair) -> int64_t {
                 Output out{pair.second, chain.getAccess()};
                 return out.isSpent() ? 0 : out.getValue();
             });
             
-            uint64_t balance = ranges::accumulate(balancesIfUnspent, uint64_t{0});
+            int64_t balance = ranges::accumulate(balancesIfUnspent, int64_t{0});
             if (topAddresses.size() < 100) {
                 topAddresses.insert(std::make_pair(balance, address));
             } else {

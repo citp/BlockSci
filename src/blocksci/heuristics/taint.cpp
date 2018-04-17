@@ -14,10 +14,10 @@
 
 namespace blocksci { namespace heuristics {
     template <typename Func>
-    std::vector<std::pair<Output, uint64_t>> getTaintedImpl(Func func, const Output &output, uint64_t taintedValue) {
-        std::map<uint32_t, std::vector<std::pair<Inout, uint64_t>>> taintedTxesToCheck;
-        std::vector<std::pair<Output, uint64_t>> taintedOutputs;
-        auto processOutput = [&](const Output &spendingOut, uint64_t newTaintedValue) {
+    std::vector<std::pair<Output, int64_t>> getTaintedImpl(Func func, const Output &output, int64_t taintedValue) {
+        std::map<uint32_t, std::vector<std::pair<Inout, int64_t>>> taintedTxesToCheck;
+        std::vector<std::pair<Output, int64_t>> taintedOutputs;
+        auto processOutput = [&](const Output &spendingOut, int64_t newTaintedValue) {
             if (newTaintedValue > 0) {
                 auto index = spendingOut.getSpendingTxIndex();
                 if (index) {
@@ -45,9 +45,9 @@ namespace blocksci { namespace heuristics {
         return taintedOutputs;
     }
     
-    std::vector<std::pair<Output, uint64_t>> getPoisonTainted(const Output &output, uint64_t taintedValue) {
-        auto poisonTaint = [](const Transaction &tx, std::vector<std::pair<Inout, uint64_t>> &) {
-            std::vector<std::pair<Output, uint64_t>> outs;
+    std::vector<std::pair<Output, int64_t>> getPoisonTainted(const Output &output, int64_t taintedValue) {
+        auto poisonTaint = [](const Transaction &tx, std::vector<std::pair<Inout, int64_t>> &) {
+            std::vector<std::pair<Output, int64_t>> outs;
             for (auto spendingOut : tx.outputs()) {
                 outs.emplace_back(spendingOut, spendingOut.getValue());
             }
@@ -56,17 +56,17 @@ namespace blocksci { namespace heuristics {
         return getTaintedImpl(poisonTaint, output, taintedValue);
     }
     
-    std::vector<std::pair<Output, uint64_t>> getHaircutTainted(const Output &output, uint64_t taintedValue) {
-        auto haircutTaint = [](const Transaction &tx, std::vector<std::pair<Inout, uint64_t>> &taintedInputs) {
-            std::vector<std::pair<Output, uint64_t>> outs;
-            uint64_t taintedValue = 0;
+    std::vector<std::pair<Output, int64_t>> getHaircutTainted(const Output &output, int64_t taintedValue) {
+        auto haircutTaint = [](const Transaction &tx, std::vector<std::pair<Inout, int64_t>> &taintedInputs) {
+            std::vector<std::pair<Output, int64_t>> outs;
+            int64_t taintedValue = 0;
             for (auto &pair : taintedInputs) {
                 taintedValue += pair.second;
             }
             auto totalIn = static_cast<double>(totalInputValue(tx));
             for (auto spendingOut : tx.outputs()) {
                 auto percentage = static_cast<double>(spendingOut.getValue()) / totalIn;
-                auto newTaintedValue = std::min(static_cast<uint64_t>(percentage * static_cast<double>(taintedValue)), spendingOut.getValue());
+                auto newTaintedValue = std::min(static_cast<int64_t>(percentage * static_cast<double>(taintedValue)), spendingOut.getValue());
                 outs.emplace_back(spendingOut, newTaintedValue);
             }
             return outs;
@@ -74,14 +74,14 @@ namespace blocksci { namespace heuristics {
         return getTaintedImpl(haircutTaint, output, taintedValue);
     }
     
-    std::vector<std::pair<Output, uint64_t>> getFifoTainted(const Output &output, uint64_t taintedValue) {
-        auto fifoTaint = [](const Transaction &tx, std::vector<std::pair<Inout, uint64_t>> &taintedInputs) {
-            std::vector<std::pair<Output, uint64_t>> outs;
+    std::vector<std::pair<Output, int64_t>> getFifoTainted(const Output &output, int64_t taintedValue) {
+        auto fifoTaint = [](const Transaction &tx, std::vector<std::pair<Inout, int64_t>> &taintedInputs) {
+            std::vector<std::pair<Output, int64_t>> outs;
             uint16_t currentOutputNum = 0;
-            uint64_t currentOutputTaintValue = 0;
-            uint64_t currentOutputValueLeft = tx.outputs()[currentOutputNum].getValue();
+            int64_t currentOutputTaintValue = 0;
+            int64_t currentOutputValueLeft = tx.outputs()[currentOutputNum].getValue();
             auto addVal = [&](auto &val, bool isTaint) -> bool {
-                uint64_t valToAdd = std::min(val, currentOutputValueLeft);
+                int64_t valToAdd = std::min(val, currentOutputValueLeft);
                 currentOutputValueLeft -= valToAdd;
                 val -= valToAdd;
                 if (isTaint) {
@@ -99,7 +99,7 @@ namespace blocksci { namespace heuristics {
                 }
                 return true;
             };
-            std::unordered_map<Inout, uint64_t> taintedInputsMap;
+            std::unordered_map<Inout, int64_t> taintedInputsMap;
             for (auto &pair : taintedInputs) {
                 auto inserted = taintedInputsMap.insert(pair).second;
                 if (!inserted) {
@@ -109,11 +109,11 @@ namespace blocksci { namespace heuristics {
             for (auto input : tx.inputs()) {
                 auto address = input.getAddress();
                 auto it = taintedInputsMap.find(Inout(input.spentTxIndex(), address.scriptNum, address.type, input.getValue()));
-                uint64_t taintedValue = 0;
+                int64_t taintedValue = 0;
                 if (it != taintedInputsMap.end()) {
                     taintedValue = it->second;
                 }
-                uint64_t untaintedValue = input.getValue() - taintedValue;
+                int64_t untaintedValue = input.getValue() - taintedValue;
                 while (taintedValue > 0 ) {
                     if (!addVal(taintedValue, true)) {
                         return outs;

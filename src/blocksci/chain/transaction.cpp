@@ -59,7 +59,7 @@ namespace blocksci {
         return ranges::nullopt;
     }
     
-    bool hasFeeGreaterThan(Transaction &tx, uint64_t txFee) {
+    bool hasFeeGreaterThan(Transaction &tx, int64_t txFee) {
         return fee(tx) > txFee;
     }
 } // namespace blocksci

@@ -16,17 +16,17 @@
 
 using namespace blocksci;
 
-uint64_t calculateMaxOutputSingleThreaded(Blockchain &chain, int start, int end);
-uint64_t calculateMaxOutputMultithreaded(Blockchain &chain, int start, int stop);
-uint64_t calculateMaxInputSingleThreaded(Blockchain &chain, int start, int end);
-uint64_t calculateMaxInputMultithreaded(Blockchain &chain, int start, int stop);
-uint64_t calculateMaxFeeSingleThreaded(Blockchain &chain, int start, int end);
-uint64_t calculateMaxFeeMultithreaded(Blockchain &chain, int start, int stop);
+int64_t calculateMaxOutputSingleThreaded(Blockchain &chain, int start, int end);
+int64_t calculateMaxOutputMultithreaded(Blockchain &chain, int start, int stop);
+int64_t calculateMaxInputSingleThreaded(Blockchain &chain, int start, int end);
+int64_t calculateMaxInputMultithreaded(Blockchain &chain, int start, int stop);
+int64_t calculateMaxFeeSingleThreaded(Blockchain &chain, int start, int end);
+int64_t calculateMaxFeeMultithreaded(Blockchain &chain, int start, int stop);
 uint32_t calculateNonzeroLocktimeSingleThreaded(Blockchain &chain, int start, int end);
 uint32_t calculateNonzeroLocktimeMultithreaded(Blockchain &chain, int start, int stop);
 
-uint64_t calculateNonzeroLocktimeRandom(Blockchain &chain, const std::vector<uint32_t> &indexes);
-uint64_t calculateMaxFeeRandom(Blockchain &chain, const std::vector<uint32_t> &indexes);
+uint32_t calculateNonzeroLocktimeRandom(Blockchain &chain, const std::vector<uint32_t> &indexes);
+int64_t calculateMaxFeeRandom(Blockchain &chain, const std::vector<uint32_t> &indexes);
 
 template <typename Func, typename... Args>
 auto timeFunc(std::string name, Func func, Args&& ...args) -> decltype(func(args...));
@@ -86,8 +86,8 @@ int main(int argc, char * argv[]) {
     return 0;
 }
 
-uint64_t calculateMaxOutputSingleThreaded(Blockchain &chain, int start, int end) {
-    uint64_t curMax = 0;
+int64_t calculateMaxOutputSingleThreaded(Blockchain &chain, int start, int end) {
+    int64_t curMax = 0;
     for (auto block : chain[{start, end}]) {
         RANGES_FOR(auto tx, block) {
             for (auto output : tx.rawOutputs()) {
@@ -98,22 +98,22 @@ uint64_t calculateMaxOutputSingleThreaded(Blockchain &chain, int start, int end)
     return curMax;
 }
 
-uint64_t calculateMaxOutputMultithreaded(Blockchain &chain, int start, int stop) {
+int64_t calculateMaxOutputMultithreaded(Blockchain &chain, int start, int stop) {
     auto extract = [](const Transaction &tx) {
-        uint64_t maxValue = 0;
+        int64_t maxValue = 0;
         for(auto output : tx.rawOutputs()) {
             maxValue = std::max(output.getValue(), maxValue);
         }
         return maxValue;
     };
     
-    auto combine = [](uint64_t &a, uint64_t &b) -> uint64_t & { a = std::max(a,b); return a; };
+    auto combine = [](int64_t &a, int64_t &b) -> int64_t & { a = std::max(a,b); return a; };
     
-    return chain.mapReduce<uint64_t>(start, stop, extract, combine);
+    return chain.mapReduce<int64_t>(start, stop, extract, combine);
 }
 
-uint64_t calculateMaxInputSingleThreaded(Blockchain &chain, int start, int end) {
-    uint64_t curMax = 0;
+int64_t calculateMaxInputSingleThreaded(Blockchain &chain, int start, int end) {
+    int64_t curMax = 0;
     for (auto block : chain[{start, end}]) {
         RANGES_FOR(auto tx, block) {
             for (auto input : tx.rawInputs()) {
@@ -124,22 +124,22 @@ uint64_t calculateMaxInputSingleThreaded(Blockchain &chain, int start, int end) 
     return curMax;
 }
 
-uint64_t calculateMaxInputMultithreaded(Blockchain &chain, int start, int stop) {
+int64_t calculateMaxInputMultithreaded(Blockchain &chain, int start, int stop) {
     auto extract = [&](const Transaction &tx) {
-        uint64_t maxValue = 0;
+        int64_t maxValue = 0;
         for(auto input : tx.rawInputs()) {
             maxValue = std::max(input.getValue(), maxValue);
         }
         return maxValue;
     };
     
-    auto combine = [](uint64_t &a, uint64_t &b) -> uint64_t & { a = std::max(a,b); return a; };
+    auto combine = [](int64_t &a, int64_t &b) -> int64_t & { a = std::max(a,b); return a; };
     
-    return chain.mapReduce<uint64_t>(start, stop, extract, combine);
+    return chain.mapReduce<int64_t>(start, stop, extract, combine);
 }
 
-uint64_t calculateMaxFeeSingleThreaded(Blockchain &chain, int start, int end) {
-    uint64_t curMax = 0;
+int64_t calculateMaxFeeSingleThreaded(Blockchain &chain, int start, int end) {
+    int64_t curMax = 0;
     for (auto block : chain[{start, end}]) {
         RANGES_FOR(auto tx, block) {
             curMax = std::max(curMax, fee(tx));
@@ -148,18 +148,18 @@ uint64_t calculateMaxFeeSingleThreaded(Blockchain &chain, int start, int end) {
     return curMax;
 }
 
-uint64_t calculateMaxFeeMultithreaded(Blockchain &chain, int start, int stop) {
+int64_t calculateMaxFeeMultithreaded(Blockchain &chain, int start, int stop) {
     auto extract = [](const Transaction &tx) {
         return fee(tx);
     };
     
-    auto combine = [](uint64_t &a, uint64_t &b) -> uint64_t & { a = std::max(a,b); return a; };
+    auto combine = [](int64_t &a, int64_t &b) -> int64_t & { a = std::max(a,b); return a; };
     
-    return chain.mapReduce<uint64_t>(start, stop, extract, combine);
+    return chain.mapReduce<int64_t>(start, stop, extract, combine);
 }
 
-uint64_t calculateMaxFeeRandom(Blockchain &chain, const std::vector<uint32_t> &indexes) {
-    uint64_t maxValue = 0;
+int64_t calculateMaxFeeRandom(Blockchain &chain, const std::vector<uint32_t> &indexes) {
+    int64_t maxValue = 0;
     for (auto index : indexes) {
         auto tx = Transaction(index, chain.getAccess());
         maxValue = std::max(maxValue, fee(tx));
@@ -187,8 +187,8 @@ uint32_t calculateNonzeroLocktimeMultithreaded(Blockchain &chain, int start, int
     return chain.mapReduce<uint32_t>(start, stop, extract, combine);
 }
 
-uint64_t calculateNonzeroLocktimeRandom(Blockchain &chain, const std::vector<uint32_t> &indexes) {
-    uint64_t nonzeroCount = 0;
+uint32_t calculateNonzeroLocktimeRandom(Blockchain &chain, const std::vector<uint32_t> &indexes) {
+    uint32_t nonzeroCount = 0;
     for (auto index : indexes) {
         auto tx = Transaction(index, chain.getAccess());
         nonzeroCount += static_cast<uint32_t>(tx.locktime() > 0);

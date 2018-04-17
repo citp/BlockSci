@@ -19,7 +19,7 @@ namespace blocksci { namespace heuristics {
     std::vector<Transaction> BLOCKSCI_EXPORT getKeysetChangeTxes(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock);
     
     std::vector<Transaction> BLOCKSCI_EXPORT getCoinjoinTransactions(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock);
-    std::pair<std::vector<Transaction>, std::vector<Transaction>> BLOCKSCI_EXPORT getPossibleCoinjoinTransactions(Blockchain &chain, uint64_t minBaseFee, double percentageFee, std::size_t maxDepth);
+    std::pair<std::vector<Transaction>, std::vector<Transaction>> BLOCKSCI_EXPORT getPossibleCoinjoinTransactions(Blockchain &chain, int64_t minBaseFee, double percentageFee, std::size_t maxDepth);
 }}
 
 #endif /* blockchain_heuristics_hpp */

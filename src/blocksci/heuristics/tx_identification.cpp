@@ -35,7 +35,7 @@ namespace heuristics {
             return false;
         }
         
-        std::unordered_map<uint64_t, uint16_t> outputValues;
+        std::unordered_map<int64_t, uint16_t> outputValues;
         for (auto output : tx.outputs()) {
             outputValues[output.getValue()]++;
         }
@@ -59,24 +59,24 @@ namespace heuristics {
     }
     
     struct OutputBucket {
-        uint64_t currentValue;
-        uint64_t goalValue;
+        int64_t currentValue;
+        int64_t goalValue;
         
-        explicit OutputBucket(uint64_t goal) : currentValue(0), goalValue(goal) {}
+        explicit OutputBucket(int64_t goal) : currentValue(0), goalValue(goal) {}
         
         bool isFull() const {
             return currentValue >= goalValue;
         }
         
-        void addInput(uint64_t val) {
+        void addInput(int64_t val) {
             currentValue += val;
         }
         
-        void removeInput(uint64_t val) {
+        void removeInput(int64_t val) {
             currentValue -= val;
         }
         
-        uint64_t remaining() const {
+        int64_t remaining() const {
             if (goalValue > currentValue) {
                 return goalValue - currentValue;
             } else {
@@ -89,11 +89,11 @@ namespace heuristics {
         }
     };
     
-    CoinJoinResult _getSumCount(std::vector<uint64_t> &values, std::vector<OutputBucket> buckets, uint64_t totalRemaining, uint64_t valueLeft, size_t maxDepth, size_t &depth);
-    CoinJoinResult getSumCount(std::vector<uint64_t> &values, std::vector<uint64_t> bucketGoals, size_t maxDepth);
+    CoinJoinResult _getSumCount(std::vector<int64_t> &values, std::vector<OutputBucket> buckets, int64_t totalRemaining, int64_t valueLeft, size_t maxDepth, size_t &depth);
+    CoinJoinResult getSumCount(std::vector<int64_t> &values, std::vector<int64_t> bucketGoals, size_t maxDepth);
     
     
-    CoinJoinResult _getSumCount(std::vector<uint64_t> &values, std::vector<OutputBucket> buckets, uint64_t totalRemaining, uint64_t valueLeft, size_t maxDepth, size_t &depth) {
+    CoinJoinResult _getSumCount(std::vector<int64_t> &values, std::vector<OutputBucket> buckets, int64_t totalRemaining, int64_t valueLeft, size_t maxDepth, size_t &depth) {
         if (totalRemaining > valueLeft) {
             return CoinJoinResult::False;
         }
@@ -115,11 +115,11 @@ namespace heuristics {
         
         std::sort(buckets.rbegin(), buckets.rend());
         
-        uint64_t lastValue = values.back();
+        int64_t lastValue = values.back();
         values.pop_back();
         valueLeft -= lastValue;
         for (auto &bucket : buckets) {
-            uint64_t remaining = totalRemaining - bucket.remaining();
+            int64_t remaining = totalRemaining - bucket.remaining();
             bucket.addInput(lastValue);
             remaining += bucket.remaining();
             auto res = _getSumCount(values, buckets, remaining, valueLeft, maxDepth, depth);
@@ -133,16 +133,16 @@ namespace heuristics {
     }
     
     
-    CoinJoinResult getSumCount(std::vector<uint64_t> &values, std::vector<uint64_t> bucketGoals, size_t maxDepth) {
+    CoinJoinResult getSumCount(std::vector<int64_t> &values, std::vector<int64_t> bucketGoals, size_t maxDepth) {
         std::sort(values.begin(), values.end());
         std::sort(bucketGoals.rbegin(), bucketGoals.rend());
         
-        uint64_t valueLeft = 0;
+        int64_t valueLeft = 0;
         for (auto value : values) {
             valueLeft += value;
         }
         
-        uint64_t totalRemaining = 0;
+        int64_t totalRemaining = 0;
         for (auto goal : bucketGoals) {
             totalRemaining += goal;
         }
@@ -157,7 +157,7 @@ namespace heuristics {
     }
     
     
-    CoinJoinResult isCoinjoinExtra(const Transaction &tx, uint64_t minBaseFee, double percentageFee, size_t maxDepth) {
+    CoinJoinResult isCoinjoinExtra(const Transaction &tx, int64_t minBaseFee, double percentageFee, size_t maxDepth) {
         if (tx.inputCount() < 2 || tx.outputCount() < 3) {
             return CoinJoinResult::False;
         }
@@ -167,7 +167,7 @@ namespace heuristics {
             return CoinJoinResult::False;
         }
         
-        std::unordered_map<Address, uint64_t> inputValues;
+        std::unordered_map<Address, int64_t> inputValues;
         for (auto input : tx.inputs()) {
             inputValues[input.getAddress()] += input.getValue();
         }
@@ -176,7 +176,7 @@ namespace heuristics {
             return CoinJoinResult::False;
         }
         
-        std::unordered_map<uint64_t, std::unordered_set<Address>> outputValues;
+        std::unordered_map<int64_t, std::unordered_set<Address>> outputValues;
         for (auto output : tx.outputs()) {
             outputValues[output.getValue()].insert(output.getAddress());
         }
@@ -198,17 +198,17 @@ namespace heuristics {
         }
         
         
-        std::vector<uint64_t> values;
+        std::vector<int64_t> values;
         values.reserve(inputValues.size());
         for (auto &pair : inputValues) {
             values.push_back(pair.second);
         }
         
-        uint64_t goalValue = pr->first;
+        int64_t goalValue = pr->first;
         
-        uint64_t maxPossibleFee = std::max(minBaseFee, static_cast<uint64_t>(goalValue * percentageFee));
+        int64_t maxPossibleFee = std::max(minBaseFee, static_cast<int64_t>(goalValue * percentageFee));
         
-        std::vector<uint64_t> bucketGoals;
+        std::vector<int64_t> bucketGoals;
         for (uint16_t i = 0; i < participantCount; i++) {
             bucketGoals.push_back(goalValue);
         }
@@ -232,13 +232,13 @@ namespace heuristics {
         return getSumCount(values, bucketGoals, maxDepth);
     }
     
-    CoinJoinResult isPossibleCoinjoin(const Transaction &tx, uint64_t minBaseFee, double percentageFee, size_t maxDepth) {
+    CoinJoinResult isPossibleCoinjoin(const Transaction &tx, int64_t minBaseFee, double percentageFee, size_t maxDepth) {
         
         if (tx.outputCount() == 1 || tx.inputCount() == 1) {
             return CoinJoinResult::False;
         }
         
-        std::unordered_map<uint64_t, uint16_t> outputValues;
+        std::unordered_map<int64_t, uint16_t> outputValues;
         for (auto output : tx.outputs()) {
             outputValues[output.getValue()]++;
         }
@@ -255,7 +255,7 @@ namespace heuristics {
             return CoinJoinResult::False;
         }
         
-        std::unordered_map<Address, uint64_t> inputValues;
+        std::unordered_map<Address, int64_t> inputValues;
         for (auto input : tx.inputs()) {
             inputValues[input.getAddress()] += input.getValue();
         }
@@ -289,19 +289,19 @@ namespace heuristics {
             return CoinJoinResult::False;
         }
         
-        std::vector<uint64_t> values;
+        std::vector<int64_t> values;
         values.reserve(inputValues.size());
         for (auto &pair : inputValues) {
             values.push_back(pair.second);
         }
         
-        uint64_t maxPossibleFee = std::max(minBaseFee, static_cast<uint64_t>(pr->first * percentageFee));
-        uint64_t goalValue = 0;
+        int64_t maxPossibleFee = std::max(minBaseFee, static_cast<int64_t>(pr->first * percentageFee));
+        int64_t goalValue = 0;
         if (pr->first > goalValue) {
             goalValue = pr->first - maxPossibleFee;
         }
         
-        std::vector<uint64_t> bucketGoals = {goalValue, goalValue};
+        std::vector<int64_t> bucketGoals = {goalValue, goalValue};
         
         return getSumCount(values, bucketGoals, maxDepth);
     }

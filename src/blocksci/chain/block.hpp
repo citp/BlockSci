@@ -245,8 +245,8 @@ namespace blocksci {
         return net;
     }
     
-    inline std::vector<uint64_t> getTotalSpentOfAges(const Block &block, BlockHeight maxAge) {
-        std::vector<uint64_t> totals(static_cast<size_t>(static_cast<int>(maxAge)));
+    inline std::vector<int64_t> getTotalSpentOfAges(const Block &block, BlockHeight maxAge) {
+        std::vector<int64_t> totals(static_cast<size_t>(static_cast<int>(maxAge)));
         uint32_t newestTxNum = block.prevBlock().endTxIndex() - 1;
         auto inputs = block.allInputs()
         | ranges::view::remove_if([=](const Input &input) { return input.spentTxIndex() > newestTxNum; });

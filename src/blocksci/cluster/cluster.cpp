@@ -14,6 +14,7 @@
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/chain/inout_pointer.hpp>
 #include <blocksci/chain/transaction.hpp>
+#include <blocksci/chain/algorithms.hpp>
 #include <blocksci/index/address_index.hpp>
 
 namespace blocksci {
@@ -60,11 +61,6 @@ namespace blocksci {
             }
         }
         return count;
-    }
-    
-    uint64_t Cluster::calculateBalance(blocksci::BlockHeight height) const {
-        auto pointers = getOutputPointers() | ranges::to_vector;
-        return blocksci::calculateBalance(pointers, height, clusterAccess.access);
     }
     
     std::vector<blocksci::Input> Cluster::getInputs() const {

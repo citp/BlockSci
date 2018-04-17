@@ -174,7 +174,7 @@ namespace blocksci {
     using input_range = decltype(std::declval<Transaction>().inputs());
     using output_range = decltype(std::declval<Transaction>().outputs());
     
-    bool hasFeeGreaterThan(Transaction &tx, uint64_t txFee);
+    bool hasFeeGreaterThan(Transaction &tx, int64_t txFee);
     
     ranges::optional<Output> getOpReturn(const Transaction &tx);
 

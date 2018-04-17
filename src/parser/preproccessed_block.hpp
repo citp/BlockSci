@@ -83,7 +83,7 @@ private:
     
     std::vector<unsigned char> scriptBytes;
 public:
-    uint64_t value;
+    int64_t value;
 
     #ifdef BLOCKSCI_FILE_PARSER
     RawOutput(SafeMemReader &reader);
@@ -91,7 +91,7 @@ public:
     
     #ifdef BLOCKSCI_RPC_PARSER
     RawOutput(const vout_t &vout);
-    RawOutput(std::vector<unsigned char> scriptBytes_, uint64_t value_);
+    RawOutput(std::vector<unsigned char> scriptBytes_, int64_t value_);
     #endif
     
     blocksci::CScriptView getScriptView() const {

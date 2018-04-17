@@ -34,7 +34,7 @@ namespace blocksci { namespace heuristics {
         });
     }
     
-    std::pair<std::vector<Transaction>, std::vector<Transaction>> getPossibleCoinjoinTransactions(Blockchain &chain, uint64_t minBaseFee, double percentageFee, size_t maxDepth)  {
+    std::pair<std::vector<Transaction>, std::vector<Transaction>> getPossibleCoinjoinTransactions(Blockchain &chain, int64_t minBaseFee, double percentageFee, size_t maxDepth)  {
         
         auto mapFunc = [&](const std::vector<Block> &segment) {
             std::vector<Transaction> skipped;
