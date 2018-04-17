@@ -10,6 +10,7 @@
 #define cluster_py_hpp
 
 #include <blocksci/cluster/cluster.hpp>
+#include <blocksci/scripts/script_variant.hpp>
 
 #include <pybind11/pybind11.h>
 
@@ -24,7 +25,7 @@ void addClusterMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     }), func2("The internal identifier of the cluster"))
     .def("tagged_addresses", func([](const Cluster &cluster, const std::unordered_map<blocksci::Address, std::string> &tags) -> ranges::any_view<TaggedAddress> {
         return cluster.taggedAddresses(tags);
-    }), func2("Given a dictionary of tags, return a range of TaggedAddress objects for any tagged addresses in the cluster")
+    }), func2("Given a dictionary of tags, return a range of TaggedAddress objects for any tagged addresses in the cluster"))
     .def("size", func([](Cluster &cluster) -> int64_t {
         return cluster.getSize();
     }), func2("The number of addresses in the cluster"))
