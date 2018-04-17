@@ -12,6 +12,7 @@ namespace blocksci {
     class Cluster;
     class ClusterManager;
     struct TaggedAddress;
+    struct TaggedCluster;
 } // namespace blocksci
 
 #endif /* cluster_fwd_h */

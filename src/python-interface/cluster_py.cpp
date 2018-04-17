@@ -140,7 +140,7 @@ void init_cluster(pybind11::module &m) {
     });
     
     py::class_<TaggedCluster> taggedClusterCl(s, "TaggedCluster");
-    addTaggedAddressMethods(taggedClusterCl, [](auto func) {
+    addTaggedClusterMethods(taggedClusterCl, [](auto func) {
         return applyMethodsToSelf<Cluster>(func);
     }, [](auto && docstring) {
         return std::forward<decltype(docstring)>(docstring);

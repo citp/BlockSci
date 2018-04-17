@@ -9,8 +9,7 @@
 #define ranges_py_hpp
 
 #include "variant_py.hpp"
-#include <blocksci/chain/chain_fwd.hpp>
-#include <blocksci/scripts/scripts_fwd.hpp>
+#include <blocksci/blocksci_fwd.hpp>
 #include <blocksci/util/bitcoin_uint256.hpp>
 #include <blocksci/scripts/script_variant.hpp>
 
@@ -159,6 +158,10 @@ template <> struct type_tag<blocksci::script::WitnessScriptHash> { using type = 
 template <> struct type_tag<blocksci::script::Multisig> { using type = blocksci_tag; };
 template <> struct type_tag<blocksci::script::OpReturn> { using type = blocksci_tag; };
 template <> struct type_tag<blocksci::script::Nonstandard> { using type = blocksci_tag; };
+template <> struct type_tag<blocksci::ClusterManager> { using type = blocksci_tag; };
+template <> struct type_tag<blocksci::Cluster> { using type = blocksci_tag; };
+template <> struct type_tag<blocksci::TaggedCluster> { using type = blocksci_tag; };
+template <> struct type_tag<blocksci::TaggedAddress> { using type = blocksci_tag; };
 
 template <> struct type_tag<int64_t> { using type = numpy_tag; };
 template <> struct type_tag<bool> { using type = numpy_tag; };
