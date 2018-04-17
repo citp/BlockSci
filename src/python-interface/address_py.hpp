@@ -54,7 +54,7 @@ void addAddressMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     }), func2("Returns a range of all outputs sent to this address"))
     .def_property_readonly("out_txes", func([](T &address) -> ranges::any_view<Transaction> {
         return address.getOutputTransactions();
-    }), func2("Returns a range of all transaction where these equivalent addresses were an output")
+    }), func2("Returns a range of all transaction where these equivalent addresses were an output"))
     ;
 }
 

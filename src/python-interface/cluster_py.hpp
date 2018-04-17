@@ -27,7 +27,7 @@ void addClusterMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     }), func2("Given a dictionary of tags, return a range of TaggedAddress objects for any tagged addresses in the cluster")
     .def("size", func([](Cluster &cluster) -> int64_t {
         return cluster.getSize();
-    }), func2("The number of addresses in the cluster"));
+    }), func2("The number of addresses in the cluster"))
     .def("balance", func([](Cluster &cluster, int height) -> int64_t {
         return cluster.calculateBalance(height);
     }), pybind11::arg("height") = -1, func2("Calculates the balance held by this cluster at the height (Defaults to the full chain)"))
@@ -59,7 +59,7 @@ void addTaggedAddressMethods(Class &cl, FuncApplication func, FuncDoc func2) {
         return tagged.address.getScript();
     }), func2("Return the address object which has been tagged"))
     .def_readonly("tag", func([](const TaggedAddress &tagged) -> std::string {
-        return tagged.address.tag;
+        return tagged.tag;
     }), func2("Return the tag associated with the contained address"))
     ;
 }
