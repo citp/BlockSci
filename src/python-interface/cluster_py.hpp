@@ -71,7 +71,7 @@ void addTaggedClusterMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     cl
     .def_property_readonly("cluster", func([](TaggedCluster &tc) -> Cluster {
         return tc.cluster;
-    }), func("Return the cluster object which has been tagged"))
+    }), func2("Return the cluster object which has been tagged"))
     .def_readonly("tagged_addresses",func([](TaggedCluster &tc) -> ranges::any_view<TaggedAddress> {
         return tc.taggedAddresses;
     }), func2("Return the list of addresses inside the cluster which have been tagged"))
