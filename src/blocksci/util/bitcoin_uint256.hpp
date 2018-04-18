@@ -161,12 +161,12 @@ namespace blocksci {
      * This is a separate function because the constructor uint256(const char*) can result
      * in dangerously catching uint256(0).
      */
-    uint160 uint160S(const char *str);
+    uint160 BLOCKSCI_EXPORT uint160S(const char *str);
     /* uint256 from std::string.
      * This is a separate function because the constructor uint256(const std::string &str) can result
      * in dangerously catching uint256(0) via std::string(const char*).
      */
-    uint160 uint160S(const std::string& str);
+    uint160 BLOCKSCI_EXPORT uint160S(const std::string& str);
     
     /** 256-bit opaque blob.
      * @note This type is called uint256 for historical reasons only. It is an
@@ -184,13 +184,13 @@ namespace blocksci {
      * This is a separate function because the constructor uint256(const char*) can result
      * in dangerously catching uint256(0).
      */
-    uint256 uint256S(const char *str);
+    uint256 BLOCKSCI_EXPORT uint256S(const char *str);
     
     /* uint256 from std::string.
      * This is a separate function because the constructor uint256(const std::string &str) can result
      * in dangerously catching uint256(0) via std::string(const char*).
      */
-    uint256 uint256S(const std::string& str);
+    uint256 BLOCKSCI_EXPORT uint256S(const std::string& str);
 }
 
 namespace std {
