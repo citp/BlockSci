@@ -27,13 +27,13 @@ namespace blocksci {
         DataAccess *access;
         const Inout *inout;
         uint32_t spendingTxIndex;
-        
+        mutable BlockHeight blockHeight = -1;
         friend size_t std::hash<Output>::operator()(const Output &) const;
     public:
         OutputPointer pointer;
-        BlockHeight blockHeight;
+        
         Output(const OutputPointer &pointer_, BlockHeight blockHeight_, const Inout &inout_, DataAccess &access_) :
-        access(&access_), inout(&inout_), pointer(pointer_), blockHeight(blockHeight_) {
+        access(&access_), inout(&inout_), blockHeight(blockHeight_), pointer(pointer_) {
             assert(pointer.isValid(access_.chain));
             if (inout->getLinkedTxNum() < access->chain.maxLoadedTx()) {
                 spendingTxIndex = inout->getLinkedTxNum();
@@ -43,10 +43,17 @@ namespace blocksci {
         }
         
         Output(const OutputPointer &pointer_, DataAccess &access_) :
-        Output(pointer_, access_.chain.getBlockHeight(pointer_.txNum), access_.chain.getTx(pointer_.txNum)->getOutput(pointer_.inoutNum), access_) {}
+        Output(pointer_, -1, access_.chain.getTx(pointer_.txNum)->getOutput(pointer_.inoutNum), access_) {}
         
         DataAccess &getAccess() const {
             return *access;
+        }
+        
+        BlockHeight getBlockHeight() const {
+            if (blockHeight == -1) {
+                blockHeight = access->chain.getBlockHeight(pointer.txNum);
+            }
+            return blockHeight;
         }
         
         ranges::optional<uint32_t> getSpendingTxIndex() const {

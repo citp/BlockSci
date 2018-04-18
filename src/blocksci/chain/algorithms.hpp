@@ -242,7 +242,7 @@ namespace blocksci {
             }
         } else {
             RANGES_FOR(auto output, t) {
-                if (output.blockHeight <= height && (!output.isSpent() || output.getSpendingTx()->blockHeight > height)) {
+                if (output.getBlockHeight() <= height && (!output.isSpent() || output.getSpendingTx()->blockHeight > height)) {
                     value += output.getValue();
                 }
             }

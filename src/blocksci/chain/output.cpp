@@ -20,7 +20,7 @@ namespace blocksci {
     }
     
     Block Output::block() const {
-        return {blockHeight, *access};
+        return {getBlockHeight(), *access};
     }
     
     std::string Output::toString() const {
