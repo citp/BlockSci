@@ -86,6 +86,7 @@ py::class_<ScriptBase> init_address(py::module &m) {
     .def("outs", &EquivAddress::getOutputs, "Returns a list of all outputs sent to these equivalent addresses")
     .def("ins", &EquivAddress::getInputs, "Returns a list of all inputs spent from these equivalent addresses")
     .def("txes", &EquivAddress::getTransactions, "Returns a list of all transactions involving these equivalent addresses")
+    .def("out_txes",&EquivAddress::getOutputTransactions, "Returns a range of all transaction where these equivalent addresses were an output")
     .def("in_txes",&EquivAddress::getInputTransactions, "Returns a list of all transaction where these equivalent addresses were an input")
     .def("out_txes_count", [](EquivAddress &address) {
         return address.getOutputTransactions().size();

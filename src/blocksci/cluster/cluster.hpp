@@ -95,7 +95,8 @@ namespace blocksci {
         }
         
         int64_t calculateBalance(BlockHeight height) const {
-            return balance(height, getOutputs());
+            auto balances = getPossibleAddresses() | ranges::view::transform([height](auto && address) { return address.calculateBalance(height); });
+            return ranges::accumulate(balances, int64_t{0});
         }
         
         std::vector<Input> getInputs() const;

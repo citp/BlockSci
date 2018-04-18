@@ -78,16 +78,6 @@ namespace blocksci {
         return std::forward<B>(b) | ranges::view::join;
     }
     
-    template <typename B, CONCEPT_REQUIRES_(ranges::Range<B>()), std::enable_if_t<isOutputPointerRange<B>, int> = 0>
-    inline auto BLOCKSCI_EXPORT txesFromSortedOutputPointers(B && b, DataAccess &access) {
-        return std::forward<B>(b)
-        | ranges::view::transform([](const OutputPointer &pointer) { return pointer.txNum; })
-        | ranges::view::unique
-        | ranges::view::transform([&access](uint32_t txNum) { return Transaction(txNum, access); });
-    }
-    
-    
-    
     inline auto BLOCKSCI_EXPORT inputs(const Transaction &tx) {
         return tx.inputs();
     }

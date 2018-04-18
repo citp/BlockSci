@@ -15,7 +15,7 @@ namespace blocksci {
     
     ColumnIterator::cursor::~cursor() = default;
     
-    ColumnIterator::cursor::cursor(rocksdb::DB *db_, rocksdb::ColumnFamilyHandle *column_, std::vector<char> prefix) : db(db_), column(column_), it(std::unique_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), column)}), prefixBytes(std::move(prefix)) {
+    ColumnIterator::cursor::cursor(rocksdb::DB *db_, rocksdb::ColumnFamilyHandle *column_, std::vector<char> prefix) : db(db_), column(column_), it(std::shared_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), column)}), prefixBytes(std::move(prefix)) {
         if (prefixBytes.size() > 0) {
             rocksdb::Slice key(prefixBytes.data(), prefixBytes.size());
             it->Seek(key);
@@ -27,20 +27,15 @@ namespace blocksci {
     
     ColumnIterator::cursor::cursor(rocksdb::DB *db_, rocksdb::ColumnFamilyHandle *column_) : cursor(db_, column_, std::vector<char>{}) {}
     
-    ColumnIterator::cursor::cursor(const cursor &other) : db(other.db), column(other.column), it(std::unique_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), column)}), prefixBytes(other.prefixBytes) {
-        it->Seek(other.it->key());
-    }
+    ColumnIterator::cursor::cursor(const cursor &other) : db(other.db), column(other.column), it(other.it), prefixBytes(other.prefixBytes) {}
     
-    ColumnIterator::cursor::cursor(cursor &&other) : db(other.db), column(other.column), it(std::move(other.it)), prefixBytes(std::move(other.prefixBytes)) {
-        
-    }
+    ColumnIterator::cursor::cursor(cursor &&other) : db(other.db), column(other.column), it(std::move(other.it)), prefixBytes(std::move(other.prefixBytes)) {}
     
     ColumnIterator::cursor &ColumnIterator::cursor::operator=(const cursor &other) {
         db = other.db;
         column = other.column;
         prefixBytes = other.prefixBytes;
-        it = std::unique_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), column)};
-        it->Seek(other.it->key());
+        it = other.it;
         return *this;
     }
     
@@ -63,18 +58,12 @@ namespace blocksci {
         return !it->Valid() || !it->key().starts_with(key);
     }
     
-    bool ColumnIterator::cursor::equal(const cursor &other) const {
-        if (prefixBytes != other.prefixBytes) {
-            return false;
+    void ColumnIterator::cursor::next() {
+        if (it.use_count() > 1) {
+            auto newIt = std::shared_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), column)};
+            newIt->Seek(it->key());
+            it = newIt;
         }
-        auto firstRead = read();
-        auto secondRead = other.read();
-        if (firstRead.first.size != secondRead.first.size) {
-            return false;
-        }
-        return memcmp(firstRead.first.data, secondRead.first.data, firstRead.first.size);
+        it->Next();
     }
-    
-    void ColumnIterator::cursor::next() { it->Next(); }
-    void ColumnIterator::cursor::prev() { it->Prev(); }
 }

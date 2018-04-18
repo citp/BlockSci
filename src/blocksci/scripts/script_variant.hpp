@@ -86,7 +86,7 @@ namespace blocksci {
         ranges::any_view<Output> getOutputs();
         std::vector<Input> getInputs();
         std::vector<Transaction> getTransactions();
-        ranges::any_view<Transaction> getOutputTransactions();
+        std::vector<Transaction> getOutputTransactions();
         std::vector<Transaction> getInputTransactions();
         
         ScriptVariant wrapped;

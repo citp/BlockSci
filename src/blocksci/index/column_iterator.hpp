@@ -33,7 +33,7 @@ namespace blocksci {
         private:
             rocksdb::DB *db;
             rocksdb::ColumnFamilyHandle *column;
-            std::unique_ptr<rocksdb::Iterator> it;
+            std::shared_ptr<rocksdb::Iterator> it;
             std::vector<char> prefixBytes;
         public:
             cursor();
@@ -48,10 +48,8 @@ namespace blocksci {
             std::pair<MemoryView, MemoryView> read() const;
             
             bool equal(ranges::default_sentinel) const;
-            bool equal(const cursor &other) const;
             
             void next();
-            void prev();
         };
         
         cursor begin_cursor() const {

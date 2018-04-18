@@ -41,7 +41,7 @@ namespace blocksci {
     	return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getTransactions(); }, wrapped);
     }
 
-    ranges::any_view<Transaction> AnyScript::getOutputTransactions() {
+    std::vector<Transaction> AnyScript::getOutputTransactions() {
     	return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getOutputTransactions(); }, wrapped);
     }
 

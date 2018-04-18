@@ -158,7 +158,7 @@ namespace blocksci {
     }
     
     int64_t Address::calculateBalance(BlockHeight height) {
-        return balance(height, getOutputs());
+        return balance(height, outputs(getOutputPointers(), *access));
     }
     
     ranges::any_view<Output> Address::getOutputs() {
@@ -173,8 +173,8 @@ namespace blocksci {
         return blocksci::getTransactions(getOutputPointers(), *access);
     }
     
-    ranges::any_view<Transaction> Address::getOutputTransactions() {
-        return txesFromSortedOutputPointers(getOutputPointers(), *access);
+    std::vector<Transaction> Address::getOutputTransactions() {
+        return blocksci::getOutputTransactions(getOutputPointers(), *access);
     }
     
     std::vector<Transaction> Address::getInputTransactions() {
