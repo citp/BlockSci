@@ -42,8 +42,7 @@ namespace blocksci {
             auto scripts = clusterAccess.getClusterScripts(clusterNum);
             return scripts | ranges::view::transform([&access_](const DedupAddress &dedupAddress) {
                 uint32_t scriptNum = dedupAddress.scriptNum;
-                auto types = addressTypes(dedupAddress.type);
-                return types | ranges::view::transform([&access_, scriptNum](AddressType::Enum addressType) {
+                return addressTypesRange(dedupAddress.type) | ranges::view::transform([&access_, scriptNum](AddressType::Enum addressType) {
                     return Address(scriptNum, addressType, access_);
                 });
             }) | ranges::view::join;

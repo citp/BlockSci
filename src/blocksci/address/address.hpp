@@ -81,11 +81,11 @@ namespace blocksci {
         std::string fullType() const;
     };
     
-    void visit(const Address &address, const std::function<bool(const Address &)> &visitFunc);
+    void BLOCKSCI_EXPORT visit(const Address &address, const std::function<bool(const Address &)> &visitFunc);
     
-    ranges::optional<Address> getAddressFromString(const std::string &addressString, DataAccess &access);
+    ranges::optional<Address> BLOCKSCI_EXPORT getAddressFromString(const std::string &addressString, DataAccess &access);
     
-    std::vector<Address> getAddressesWithPrefix(const std::string &prefix, DataAccess &access);
+    std::vector<Address> BLOCKSCI_EXPORT getAddressesWithPrefix(const std::string &prefix, DataAccess &access);
 }
 
 namespace std {
