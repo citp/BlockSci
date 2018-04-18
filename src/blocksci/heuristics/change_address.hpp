@@ -23,10 +23,10 @@ namespace blocksci {
 namespace heuristics {
     
     namespace internal {
-        ranges::optional<Output> singleOrNullptr(std::unordered_set<Output> candidates);
+        ranges::optional<Output> BLOCKSCI_EXPORT singleOrNullptr(std::unordered_set<Output> candidates);
     } // namespace internal
     
-    bool isPeelingChain(const Transaction &tx);
+    bool BLOCKSCI_EXPORT isPeelingChain(const Transaction &tx);
     
     struct BLOCKSCI_EXPORT ChangeType {
         enum Enum {
