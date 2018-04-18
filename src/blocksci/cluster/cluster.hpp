@@ -55,7 +55,9 @@ namespace blocksci {
         
         auto getAddresses() const {
             auto &addressIndex = clusterAccess.access.addressIndex;
-            return getPossibleAddresses() | ranges::view::filter([&addressIndex](const Address &address) { return addressIndex.checkIfExists(address); });
+            return getPossibleAddresses() | ranges::view::filter([&addressIndex](const Address &address) {
+                return addressIndex.checkIfExists(address);
+            });
         }
         
         auto taggedAddresses(const std::unordered_map<blocksci::Address, std::string> &tags) const {

@@ -50,6 +50,7 @@ namespace blocksci {
         ~AddressIndex();
 
         bool checkIfExists(const Address &address) const;
+        bool checkIfTopLevel(const Address &address) const;
         
         auto getOutputPointers(const Address &address) const {
             return getRawOutputPointerRange(address) | ranges::view::transform([](std::pair<MemoryView, MemoryView> pair) -> OutputPointer {

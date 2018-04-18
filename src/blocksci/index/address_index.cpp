@@ -109,6 +109,16 @@ namespace blocksci {
         return false;
     }
     
+    bool AddressIndex::checkIfTopLevel(const Address &address) const {
+        rocksdb::Slice key{reinterpret_cast<const char *>(&address.scriptNum), sizeof(address.scriptNum)};
+        auto it = impl->getOutputIterator(address.type);
+        it->Seek(key);
+        if (it->Valid() && it->key().starts_with(key)) {
+            return true;
+        }
+        return false;
+    }
+    
     ColumnIterator AddressIndex::getRawOutputPointerRange(const Address &address) const {
         auto prefixData = reinterpret_cast<const char *>(&address.scriptNum);
         std::vector<char> prefix(prefixData, prefixData + sizeof(address.scriptNum));

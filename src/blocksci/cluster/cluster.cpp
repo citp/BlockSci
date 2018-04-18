@@ -40,7 +40,7 @@ namespace blocksci {
         for (auto &address : clusterAccess.getClusterScripts(clusterNum)) {
             if (address.type == dedupSearchType) {
                 auto searchAddress = blocksci::Address{address.scriptNum, type, clusterAccess.access};
-                if (clusterAccess.access.addressIndex.checkIfExists(searchAddress)) {
+                if (clusterAccess.access.addressIndex.checkIfTopLevel(searchAddress)) {
                     ++count;
                 }
             }
