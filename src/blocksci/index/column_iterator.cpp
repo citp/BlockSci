@@ -31,11 +31,24 @@ namespace blocksci {
         it->Seek(other.it->key());
     }
     
+    ColumnIterator::cursor::cursor(cursor &&other) : db(other.db), column(other.column), it(std::move(other.it)), prefixBytes(std::move(other.prefixBytes)) {
+        
+    }
+    
     ColumnIterator::cursor &ColumnIterator::cursor::operator=(const cursor &other) {
         db = other.db;
         column = other.column;
         prefixBytes = other.prefixBytes;
+        it = std::unique_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), column)};
         it->Seek(other.it->key());
+        return *this;
+    }
+    
+    ColumnIterator::cursor &ColumnIterator::cursor::operator=(cursor && other) {
+        db = other.db;
+        column = other.column;
+        prefixBytes = std::move(other.prefixBytes);
+        it = std::move(other.it);
         return *this;
     }
     

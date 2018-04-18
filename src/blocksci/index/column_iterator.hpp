@@ -40,7 +40,9 @@ namespace blocksci {
             cursor(rocksdb::DB *db_, rocksdb::ColumnFamilyHandle *column_);
             cursor(rocksdb::DB *db_, rocksdb::ColumnFamilyHandle *column_, std::vector<char> prefix);
             cursor(const cursor &other);
+            cursor(cursor && other);
             cursor &operator=(const cursor &other);
+            cursor &operator=(cursor && other);
             ~cursor();
             
             std::pair<MemoryView, MemoryView> read() const;
