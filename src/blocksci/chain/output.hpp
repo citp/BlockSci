@@ -17,7 +17,7 @@
 #include <blocksci/util/data_access.hpp>
 
 namespace std {
-    template<> BLOCKSCI_EXPORT struct hash<blocksci::Output> {
+    template<> struct BLOCKSCI_EXPORT hash<blocksci::Output> {
         size_t operator()(const blocksci::Output &output) const;
     };
 } // namespace std

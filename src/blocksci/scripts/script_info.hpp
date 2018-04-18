@@ -18,11 +18,11 @@
 
 namespace blocksci {
     
-    template BLOCKSCI_EXPORT <typename T>
-    struct FixedSize;
+    template <typename T>
+    struct BLOCKSCI_EXPORT FixedSize;
     
-    template BLOCKSCI_EXPORT <typename ...T>
-    struct Indexed;
+    template <typename ...T>
+    struct BLOCKSCI_EXPORT Indexed;
     
     template <>
     struct BLOCKSCI_EXPORT ScriptInfo<DedupAddressType::PUBKEY> {

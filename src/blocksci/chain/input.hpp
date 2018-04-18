@@ -18,7 +18,7 @@
 
 
 namespace std {
-    template<> BLOCKSCI_EXPORT struct hash<blocksci::Input> {
+    template<> struct BLOCKSCI_EXPORT hash<blocksci::Input> {
         size_t operator()(const blocksci::Input &input) const;
     };
 } // namespace std
