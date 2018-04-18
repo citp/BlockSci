@@ -5,7 +5,7 @@ pybind11_add_module(blocksci_interface ${PYTHON_INTERFACE_SOURCES} ${PYTHON_INTE
 
 target_compile_options(blocksci_interface PRIVATE -Wall -Wextra -Wpedantic)
 
-target_link_libraries( blocksci_interface PUBLIC blocksci_static)
+target_link_libraries( blocksci_interface PUBLIC blocksci)
 
 install(TARGETS blocksci_interface DESTINATION ${CMAKE_SOURCE_DIR}/Notebooks/blocksci)
 
