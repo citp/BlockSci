@@ -56,7 +56,7 @@ namespace blocksci {
         auto getAddresses() const {
             auto &addressIndex = clusterAccess.access.addressIndex;
             return getPossibleAddresses() | ranges::view::filter([&addressIndex](const Address &address) {
-                return addressIndex.checkIfExists(address);
+                return addressIndex.checkIfTopLevel(address);
             });
         }
         
