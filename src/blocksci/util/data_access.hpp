@@ -9,6 +9,7 @@
 #ifndef data_access_hpp
 #define data_access_hpp
 
+#include <blocksci/blocksci_export.h>
 #include "data_configuration.hpp"
 
 #include <blocksci/chain/chain_access.hpp>
@@ -18,7 +19,7 @@
 #include <blocksci/scripts/script_access.hpp>
 
 namespace blocksci {
-    class DataAccess {
+    class BLOCKSCI_EXPORT DataAccess {
     public:
         DataConfiguration config;
         ChainAccess chain;

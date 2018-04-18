@@ -8,6 +8,7 @@
 #ifndef dedup_address_type_hpp
 #define dedup_address_type_hpp
 
+#include <blocksci/blocksci_export.h>
 #include <array>
 
 #define DEDUP_ADDRESS_TYPE_LIST VAL(NONSTANDARD), VAL(PUBKEY), VAL(SCRIPTHASH), VAL(MULTISIG), VAL(NULL_DATA)
@@ -15,7 +16,7 @@
 namespace blocksci {
     
     
-    struct DedupAddressType {
+    struct BLOCKSCI_EXPORT DedupAddressType {
         
         enum Enum {
 #define VAL(x) x

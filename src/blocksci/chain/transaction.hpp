@@ -9,6 +9,7 @@
 #ifndef transaction_hpp
 #define transaction_hpp
 
+#include <blocksci/blocksci_export.h>
 #include "raw_transaction.hpp"
 
 #include "output.hpp"
@@ -21,7 +22,7 @@ namespace blocksci {
     class uint256;
     class HashIndex;
     
-    struct InvalidHashException : public std::runtime_error {
+    struct BLOCKSCI_EXPORT InvalidHashException : public std::runtime_error {
         InvalidHashException() : std::runtime_error("No Match for hash") {}
     };
     
@@ -35,7 +36,7 @@ namespace blocksci {
         }
     }
     
-    class Transaction {
+    class BLOCKSCI_EXPORT Transaction {
     private:
         DataAccess *access;
         const RawTransaction *data;
@@ -147,38 +148,38 @@ namespace blocksci {
         Block block() const;
     };
     
-    inline bool operator==(const Transaction& a, const Transaction& b) {
+    inline bool BLOCKSCI_EXPORT operator==(const Transaction& a, const Transaction& b) {
         return a.txNum == b.txNum;
     }
 
-    inline bool operator!=(const Transaction& a, const Transaction& b) {
+    inline bool BLOCKSCI_EXPORT operator!=(const Transaction& a, const Transaction& b) {
         return a.txNum != b.txNum;
     }
     
-    inline bool operator<(const Transaction& a, const Transaction& b) {
+    inline bool BLOCKSCI_EXPORT operator<(const Transaction& a, const Transaction& b) {
         return a.txNum < b.txNum;
     }
 
-    inline bool operator<=(const Transaction& a, const Transaction& b) {
+    inline bool BLOCKSCI_EXPORT operator<=(const Transaction& a, const Transaction& b) {
         return a.txNum <= b.txNum;
     }
 
-    inline bool operator>(const Transaction& a, const Transaction& b) {
+    inline bool BLOCKSCI_EXPORT operator>(const Transaction& a, const Transaction& b) {
         return a.txNum > b.txNum;
     }
 
-    inline bool operator>=(const Transaction& a, const Transaction& b) {
+    inline bool BLOCKSCI_EXPORT operator>=(const Transaction& a, const Transaction& b) {
         return a.txNum >= b.txNum;
     }
     
     using input_range = decltype(std::declval<Transaction>().inputs());
     using output_range = decltype(std::declval<Transaction>().outputs());
     
-    bool hasFeeGreaterThan(Transaction &tx, int64_t txFee);
+    bool BLOCKSCI_EXPORT hasFeeGreaterThan(Transaction &tx, int64_t txFee);
     
-    ranges::optional<Output> getOpReturn(const Transaction &tx);
+    ranges::optional<Output> BLOCKSCI_EXPORT getOpReturn(const Transaction &tx);
 
-    inline std::ostream &operator<<(std::ostream &os, const Transaction &tx) { 
+    inline std::ostream BLOCKSCI_EXPORT &operator<<(std::ostream &os, const Transaction &tx) {
         return os << tx.toString();
     }
 } // namespace blocksci
@@ -186,7 +187,7 @@ namespace blocksci {
 
 namespace std {
     template <>
-    struct hash<blocksci::Transaction> {
+    struct BLOCKSCI_EXPORT hash<blocksci::Transaction> {
         typedef blocksci::Transaction argument_type;
         typedef size_t  result_type;
         result_type operator()(const argument_type &b) const {

@@ -8,10 +8,11 @@
 #ifndef raw_block_hpp
 #define raw_block_hpp
 
+#include <blocksci/blocksci_export.h>
 #include <blocksci/util/bitcoin_uint256.hpp>
 
 namespace blocksci {
-    struct RawBlock {
+    struct BLOCKSCI_EXPORT RawBlock {
         uint32_t firstTxIndex;
         uint32_t numTxes;
         uint32_t height;

@@ -9,12 +9,13 @@
 #ifndef multisig_script_hpp
 #define multisig_script_hpp
 
+#include <blocksci/blocksci_export.h>
 #include "script.hpp"
 #include "multisig_pubkey_script.hpp"
 
 namespace blocksci {
     template <>
-    class ScriptAddress<AddressType::MULTISIG> : public ScriptBase {
+    class BLOCKSCI_EXPORT ScriptAddress<AddressType::MULTISIG> : public ScriptBase {
     private:
         const MultisigData *getData() const {
             return reinterpret_cast<const MultisigData *>(ScriptBase::getData());

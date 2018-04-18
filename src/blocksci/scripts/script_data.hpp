@@ -22,7 +22,7 @@
 
 namespace blocksci {
     
-    struct ScriptDataBase {
+    struct BLOCKSCI_EXPORT ScriptDataBase {
         uint32_t txFirstSeen;
         uint32_t txFirstSpent;
         
@@ -47,7 +47,7 @@ namespace blocksci {
         }
     };
     
-    struct PubkeyData : public ScriptDataBase {
+    struct BLOCKSCI_EXPORT PubkeyData : public ScriptDataBase {
         CPubKey pubkey;
         uint160 address;
         
@@ -58,7 +58,7 @@ namespace blocksci {
         }
     };
     
-    struct ScriptHashData : public ScriptDataBase {
+    struct BLOCKSCI_EXPORT ScriptHashData : public ScriptDataBase {
         union {
             uint160 hash160;
             uint256 hash256;
@@ -99,7 +99,7 @@ namespace blocksci {
         }
     };
     
-    struct MultisigData : public ScriptDataBase {
+    struct BLOCKSCI_EXPORT MultisigData : public ScriptDataBase {
         uint8_t m;
         uint8_t n;
         InPlaceArray<uint32_t, uint16_t> addresses;
@@ -122,7 +122,7 @@ namespace blocksci {
         }
     };
     
-    struct NonstandardScriptData : public ScriptDataBase {
+    struct BLOCKSCI_EXPORT NonstandardScriptData : public ScriptDataBase {
         InPlaceArray<unsigned char> scriptData;
         
         size_t realSize() const {
@@ -132,7 +132,7 @@ namespace blocksci {
         NonstandardScriptData(uint32_t txNum, uint32_t scriptLength) : ScriptDataBase(txNum), scriptData(scriptLength) {}
     };
     
-    struct NonstandardSpendScriptData {
+    struct BLOCKSCI_EXPORT NonstandardSpendScriptData {
         InPlaceArray<unsigned char> scriptData;
         
         size_t realSize() const {
@@ -142,7 +142,7 @@ namespace blocksci {
         explicit NonstandardSpendScriptData(uint32_t scriptLength) : scriptData(scriptLength) {}
     };
     
-    struct RawData : public ScriptDataBase {
+    struct BLOCKSCI_EXPORT RawData : public ScriptDataBase {
         InPlaceArray<unsigned char> rawData;
         
         std::string getData() const {
@@ -157,47 +157,47 @@ namespace blocksci {
     };
 
     template <>
-    struct ScriptData<AddressType::PUBKEY> {
+    struct BLOCKSCI_EXPORT ScriptData<AddressType::PUBKEY> {
         using type = PubkeyData;
     };
     
     template <>
-    struct ScriptData<AddressType::PUBKEYHASH> {
+    struct BLOCKSCI_EXPORT ScriptData<AddressType::PUBKEYHASH> {
         using type = PubkeyData;
     };
     
     template <>
-    struct ScriptData<AddressType::MULTISIG_PUBKEY> {
+    struct BLOCKSCI_EXPORT ScriptData<AddressType::MULTISIG_PUBKEY> {
         using type = PubkeyData;
     };
     
     template <>
-    struct ScriptData<AddressType::WITNESS_PUBKEYHASH> {
+    struct BLOCKSCI_EXPORT ScriptData<AddressType::WITNESS_PUBKEYHASH> {
         using type = PubkeyData;
     };
     
     template <>
-    struct ScriptData<AddressType::SCRIPTHASH> {
+    struct BLOCKSCI_EXPORT ScriptData<AddressType::SCRIPTHASH> {
         using type = ScriptHashData;
     };
     
     template <>
-    struct ScriptData<AddressType::WITNESS_SCRIPTHASH> {
+    struct BLOCKSCI_EXPORT ScriptData<AddressType::WITNESS_SCRIPTHASH> {
         using type = ScriptHashData;
     };
     
     template <>
-    struct ScriptData<AddressType::MULTISIG> {
+    struct BLOCKSCI_EXPORT ScriptData<AddressType::MULTISIG> {
         using type = MultisigData;
     };
     
     template <>
-    struct ScriptData<AddressType::NULL_DATA> {
+    struct BLOCKSCI_EXPORT ScriptData<AddressType::NULL_DATA> {
         using type = RawData;
     };
     
     template <>
-    struct ScriptData<AddressType::NONSTANDARD> {
+    struct BLOCKSCI_EXPORT ScriptData<AddressType::NONSTANDARD> {
         using type = NonstandardScriptData;
     };
     

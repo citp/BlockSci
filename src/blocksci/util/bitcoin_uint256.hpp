@@ -20,7 +20,7 @@ namespace blocksci {
     signed char HexDigit(char c);
     
     template<typename T>
-    std::string HexStr(const T itbegin, const T itend, bool fSpaces=false)
+    std::string BLOCKSCI_EXPORT HexStr(const T itbegin, const T itend, bool fSpaces=false)
     {
         std::string rv;
         static const char hexmap[16] = { '0', '1', '2', '3', '4', '5', '6', '7',
@@ -39,7 +39,7 @@ namespace blocksci {
     }
     
     template<typename T>
-    inline std::string HexStr(const T& vch, bool fSpaces=false)
+    inline std::string BLOCKSCI_EXPORT HexStr(const T& vch, bool fSpaces=false)
     {
         return HexStr(vch.begin(), vch.end(), fSpaces);
     }

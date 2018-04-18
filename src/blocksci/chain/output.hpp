@@ -9,6 +9,7 @@
 #ifndef output_hpp
 #define output_hpp
 
+#include <blocksci/blocksci_export.h>
 #include "inout.hpp"
 #include "inout_pointer.hpp"
 
@@ -16,13 +17,13 @@
 #include <blocksci/util/data_access.hpp>
 
 namespace std {
-    template<> struct hash<blocksci::Output> {
+    template<> BLOCKSCI_EXPORT struct hash<blocksci::Output> {
         size_t operator()(const blocksci::Output &output) const;
     };
 } // namespace std
 
 namespace blocksci {
-    class Output {
+    class BLOCKSCI_EXPORT Output {
         DataAccess *access;
         const Inout *inout;
         uint32_t spendingTxIndex;

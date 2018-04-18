@@ -9,10 +9,11 @@
 #ifndef transaction_summary_hpp
 #define transaction_summary_hpp
 
+#include <blocksci/blocksci_export.h>
 #include "transaction.hpp"
 
 namespace blocksci {
-    struct TransactionSummary {
+    struct BLOCKSCI_EXPORT TransactionSummary {
         uint64_t totalInputs;
         uint64_t totalOutputs;
         uint64_t totalSize;

@@ -9,6 +9,7 @@
 #ifndef raw_input_hpp
 #define raw_input_hpp
 
+#include <blocksci/blocksci_export.h>
 #include "inout.hpp"
 #include "inout_pointer.hpp"
 
@@ -17,14 +18,14 @@
 
 
 namespace std {
-    template<> struct hash<blocksci::Input> {
+    template<> BLOCKSCI_EXPORT struct hash<blocksci::Input> {
         size_t operator()(const blocksci::Input &input) const;
     };
 } // namespace std
 
 namespace blocksci {
     
-    class Input {
+    class BLOCKSCI_EXPORT Input {
         DataAccess *access;
         const Inout *inout;
         const uint32_t *sequenceNum;
@@ -96,7 +97,7 @@ namespace blocksci {
         Transaction getSpentTx() const;
     };
 
-    inline std::ostream &operator<<(std::ostream &os, const Input &input) { 
+    inline std::ostream BLOCKSCI_EXPORT &operator<<(std::ostream &os, const Input &input) { 
         return os << input.toString();
     }
 } // namespace blocksci

@@ -18,38 +18,38 @@
 
 namespace blocksci {
     
-    template <typename T>
+    template BLOCKSCI_EXPORT <typename T>
     struct FixedSize;
     
-    template <typename ...T>
+    template BLOCKSCI_EXPORT <typename ...T>
     struct Indexed;
     
     template <>
-    struct ScriptInfo<DedupAddressType::PUBKEY> {
+    struct BLOCKSCI_EXPORT ScriptInfo<DedupAddressType::PUBKEY> {
         using outputType = PubkeyData;
         using storage = FixedSize<PubkeyData>;
     };
     
     template <>
-    struct ScriptInfo<DedupAddressType::SCRIPTHASH> {
+    struct BLOCKSCI_EXPORT BLOCKSCI_EXPORT ScriptInfo<DedupAddressType::SCRIPTHASH> {
         using outputType = ScriptHashData;
         using storage = FixedSize<ScriptHashData>;
     };
     
     template <>
-    struct ScriptInfo<DedupAddressType::MULTISIG> {
+    struct BLOCKSCI_EXPORT ScriptInfo<DedupAddressType::MULTISIG> {
         using outputType = MultisigData;
         using storage = Indexed<MultisigData>;
     };
     
     template <>
-    struct ScriptInfo<DedupAddressType::NONSTANDARD> {
+    struct BLOCKSCI_EXPORT ScriptInfo<DedupAddressType::NONSTANDARD> {
         using outputType = NonstandardScriptData;
         using storage = Indexed<NonstandardScriptData,NonstandardSpendScriptData>;
     };
     
     template <>
-    struct ScriptInfo<DedupAddressType::NULL_DATA> {
+    struct BLOCKSCI_EXPORT ScriptInfo<DedupAddressType::NULL_DATA> {
         using outputType = RawData;
         using storage = Indexed<RawData>;
     };

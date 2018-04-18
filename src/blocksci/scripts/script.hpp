@@ -16,7 +16,7 @@ namespace blocksci {
     struct DataConfiguration;
     class DataAccess;
     
-    class ScriptBase : public Address  {
+    class BLOCKSCI_EXPORT ScriptBase : public Address  {
         const ScriptDataBase *rawData;
         
     protected:

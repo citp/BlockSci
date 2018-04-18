@@ -9,6 +9,7 @@
 #ifndef scripthash_script_hpp
 #define scripthash_script_hpp
 
+#include <blocksci/blocksci_export.h>
 #include "script.hpp"
 
 #include "bitcoin_base58.hpp"
@@ -18,7 +19,7 @@
 #include <blocksci/util/data_access.hpp>
 
 namespace blocksci {
-    class ScriptHashBase : public ScriptBase {
+    class BLOCKSCI_EXPORT ScriptHashBase : public ScriptBase {
         const ScriptHashData *getBackingData() const {
             return reinterpret_cast<const ScriptHashData *>(ScriptBase::getData());
         }
@@ -54,7 +55,7 @@ namespace blocksci {
     };
     
     template <>
-    class ScriptAddress<AddressType::SCRIPTHASH> : public ScriptHashBase {
+    class BLOCKSCI_EXPORT ScriptAddress<AddressType::SCRIPTHASH> : public ScriptHashBase {
     public:
         constexpr static AddressType::Enum addressType = AddressType::SCRIPTHASH;
         
@@ -78,7 +79,7 @@ namespace blocksci {
     };
     
     template <>
-    class ScriptAddress<AddressType::WITNESS_SCRIPTHASH> : public ScriptHashBase {
+    class BLOCKSCI_EXPORT ScriptAddress<AddressType::WITNESS_SCRIPTHASH> : public ScriptHashBase {
     public:
         constexpr static AddressType::Enum addressType = AddressType::WITNESS_SCRIPTHASH;
         

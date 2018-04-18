@@ -8,6 +8,7 @@
 #ifndef equiv_address_hpp
 #define equiv_address_hpp
 
+#include <blocksci/blocksci_export.h>
 #include <blocksci/blocksci_fwd.hpp>
 #include <blocksci/address/address.hpp>
 #include <blocksci/address/address_info.hpp>
@@ -20,7 +21,7 @@
 #include <unordered_set>
 
 namespace blocksci {
-    class EquivAddress {
+    class BLOCKSCI_EXPORT EquivAddress {
         std::unordered_set<Address> addresses;
         bool scriptEquivalent;
         DataAccess &access;

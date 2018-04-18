@@ -8,6 +8,7 @@
 #ifndef pubkey_base_script_h
 #define pubkey_base_script_h
 
+#include <blocksci/blocksci_export.h>
 #include "script.hpp"
 #include "script_data.hpp"
 
@@ -15,7 +16,7 @@
 #include <blocksci/util/data_access.hpp>
 
 namespace blocksci {
-    class PubkeyAddressBase : public ScriptBase {
+    class BLOCKSCI_EXPORT PubkeyAddressBase : public ScriptBase {
     protected:
         PubkeyAddressBase(uint32_t scriptNum_, AddressType::Enum type_, const PubkeyData *rawData_, DataAccess &access_) : ScriptBase(scriptNum_, type_, access_, rawData_) {}
         

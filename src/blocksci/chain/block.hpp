@@ -9,6 +9,7 @@
 #ifndef block_hpp
 #define block_hpp
 
+#include <blocksci/blocksci_export.h>
 #include "transaction.hpp"
 #include "raw_block.hpp"
 
@@ -24,7 +25,7 @@
 namespace blocksci {
     class DataAccess;
     
-    class Block : public ranges::view_facade<Block> {
+    class BLOCKSCI_EXPORT Block : public ranges::view_facade<Block> {
         friend ranges::range_access;
         
         DataAccess *access;
@@ -215,11 +216,11 @@ namespace blocksci {
         }
     };
 
-    bool isSegwit(const Block &block);
+    bool BLOCKSCI_EXPORT isSegwit(const Block &block);
     
-    TransactionSummary transactionStatistics(const Block &block, const ChainAccess &access);
+    TransactionSummary BLOCKSCI_EXPORT transactionStatistics(const Block &block, const ChainAccess &access);
     
-    inline std::unordered_map<AddressType::Enum, int64_t> netAddressTypeValue(const Block &block) {
+    inline std::unordered_map<AddressType::Enum, int64_t> BLOCKSCI_EXPORT netAddressTypeValue(const Block &block) {
         std::unordered_map<AddressType::Enum, int64_t> net;
         RANGES_FOR(auto tx, block) {
             RANGES_FOR(auto output, tx.outputs()) {
@@ -232,7 +233,7 @@ namespace blocksci {
         return net;
     }
     
-    inline std::unordered_map<std::string, int64_t> netFullTypeValue(const Block &block) {
+    inline std::unordered_map<std::string, int64_t> BLOCKSCI_EXPORT netFullTypeValue(const Block &block) {
         std::unordered_map<std::string, int64_t> net;
         RANGES_FOR(auto tx, block) {
             RANGES_FOR(auto output, tx.outputs()) {
@@ -245,7 +246,7 @@ namespace blocksci {
         return net;
     }
     
-    inline std::vector<int64_t> getTotalSpentOfAges(const Block &block, BlockHeight maxAge) {
+    inline std::vector<int64_t> BLOCKSCI_EXPORT getTotalSpentOfAges(const Block &block, BlockHeight maxAge) {
         std::vector<int64_t> totals(static_cast<size_t>(static_cast<int>(maxAge)));
         uint32_t newestTxNum = block.prevBlock().endTxIndex() - 1;
         auto inputs = block.allInputs()
@@ -263,7 +264,7 @@ namespace blocksci {
     
 } // namespace blocksci
 
-inline std::ostream &operator<<(std::ostream &os, const blocksci::Block &block) {
+inline std::ostream BLOCKSCI_EXPORT &operator<<(std::ostream &os, const blocksci::Block &block) {
     os << block.toString();
     return os;
 }

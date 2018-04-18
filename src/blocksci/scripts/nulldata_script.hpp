@@ -9,6 +9,7 @@
 #ifndef nulldata_script_hpp
 #define nulldata_script_hpp
 
+#include <blocksci/blocksci_export.h>
 #include "script.hpp"
 
 #include <blocksci/util/data_access.hpp>
@@ -18,7 +19,7 @@
 
 namespace blocksci {
     template <>
-    class ScriptAddress<AddressType::NULL_DATA> : public ScriptBase {
+    class BLOCKSCI_EXPORT ScriptAddress<AddressType::NULL_DATA> : public ScriptBase {
         
         const RawData *getBackingData() const {
             return reinterpret_cast<const RawData *>(ScriptBase::getData());

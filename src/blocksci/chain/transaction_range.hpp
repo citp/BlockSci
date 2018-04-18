@@ -8,10 +8,11 @@
 #ifndef transaction_range_hpp
 #define transaction_range_hpp
 
+#include <blocksci/blocksci_export.h>
 #include "transaction.hpp"
 
 namespace blocksci {
-    class TransactionRange : public ranges::view_facade<TransactionRange> {
+    class BLOCKSCI_EXPORT TransactionRange : public ranges::view_facade<TransactionRange> {
         friend ranges::range_access;
         
         DataAccess *access;
@@ -74,7 +75,7 @@ namespace blocksci {
         }
     };
     
-    class RawTransactionRange : public ranges::view_facade<RawTransactionRange> {
+    class BLOCKSCI_EXPORT RawTransactionRange : public ranges::view_facade<RawTransactionRange> {
         friend ranges::range_access;
         
         const ChainAccess *access;

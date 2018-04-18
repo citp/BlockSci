@@ -9,6 +9,7 @@
 #ifndef inout_pointer_hpp
 #define inout_pointer_hpp
 
+#include <blocksci/blocksci_export.h>
 #include "chain_fwd.hpp"
 
 #include <blocksci/util/hash.hpp>
@@ -20,7 +21,7 @@
 namespace blocksci {
     class DataAccess;
     
-    struct InoutPointer {
+    struct BLOCKSCI_EXPORT InoutPointer {
         uint32_t txNum;
         uint16_t inoutNum;
         
@@ -36,7 +37,7 @@ namespace blocksci {
         }
     };
     
-    struct InputPointer : public InoutPointer {
+    struct BLOCKSCI_EXPORT InputPointer : public InoutPointer {
         using InoutPointer::InoutPointer;
         
         bool operator<(const InputPointer& other) const {
@@ -56,7 +57,7 @@ namespace blocksci {
         }
     };
     
-    struct OutputPointer : public InoutPointer {
+    struct BLOCKSCI_EXPORT OutputPointer : public InoutPointer {
         using InoutPointer::InoutPointer;
         
         bool operator<(const OutputPointer& other) const {
@@ -76,24 +77,24 @@ namespace blocksci {
         }
     };
     
-    std::vector<Input> getInputs(const std::vector<OutputPointer> &pointers, DataAccess &access);
-    std::vector<Transaction> getTransactions(const std::vector<OutputPointer> &pointers, DataAccess &access);
-    std::vector<Transaction> getOutputTransactions(const std::vector<OutputPointer> &pointers, DataAccess &access);
-    std::vector<Transaction> getInputTransactions(const std::vector<OutputPointer> &pointers, DataAccess &access);
+    std::vector<Input> BLOCKSCI_EXPORT getInputs(const std::vector<OutputPointer> &pointers, DataAccess &access);
+    std::vector<Transaction> BLOCKSCI_EXPORT getTransactions(const std::vector<OutputPointer> &pointers, DataAccess &access);
+    std::vector<Transaction> BLOCKSCI_EXPORT getOutputTransactions(const std::vector<OutputPointer> &pointers, DataAccess &access);
+    std::vector<Transaction> BLOCKSCI_EXPORT getInputTransactions(const std::vector<OutputPointer> &pointers, DataAccess &access);
 } // namespace blocksci
 
-inline std::ostream &operator<<(std::ostream &os, const blocksci::InputPointer &pointer) {
+inline std::ostream BLOCKSCI_EXPORT &operator<<(std::ostream &os, const blocksci::InputPointer &pointer) {
     os << pointer.toString();
     return os;
 }
 
-inline std::ostream &operator<<(std::ostream &os, const blocksci::OutputPointer &pointer) {
+inline std::ostream BLOCKSCI_EXPORT &operator<<(std::ostream &os, const blocksci::OutputPointer &pointer) {
     os << pointer.toString();
     return os;
 }
 
 namespace std {
-    template<> struct hash<blocksci::InputPointer> {
+    template<> struct BLOCKSCI_EXPORT hash<blocksci::InputPointer> {
         size_t operator()(const blocksci::InputPointer &pointer) const {
             std::size_t seed = 41352363;
             hash_combine(seed, pointer.txNum);
@@ -101,7 +102,7 @@ namespace std {
             return seed;
         }
     };
-    template<> struct hash<blocksci::OutputPointer> {
+    template<> struct BLOCKSCI_EXPORT hash<blocksci::OutputPointer> {
         size_t operator()(const blocksci::OutputPointer &pointer) const {
             std::size_t seed = 41352363;
             hash_combine(seed, pointer.txNum);

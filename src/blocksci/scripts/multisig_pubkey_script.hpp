@@ -8,12 +8,13 @@
 #ifndef multisig_pubkey_script_hpp
 #define multisig_pubkey_script_hpp
 
+#include <blocksci/blocksci_export.h>
 #include "pubkey_base_script.hpp"
 #include "bitcoin_base58.hpp"
 
 namespace blocksci {
     template <>
-    class ScriptAddress<AddressType::MULTISIG_PUBKEY> : public PubkeyAddressBase {
+    class BLOCKSCI_EXPORT ScriptAddress<AddressType::MULTISIG_PUBKEY> : public PubkeyAddressBase {
     public:
         constexpr static AddressType::Enum addressType = AddressType::MULTISIG_PUBKEY;
         

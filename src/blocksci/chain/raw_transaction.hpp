@@ -8,13 +8,14 @@
 #ifndef raw_transaction_hpp
 #define raw_transaction_hpp
 
+#include <blocksci/blocksci_export.h>
 #include "chain_fwd.hpp"
 #include "inout.hpp"
 
 #include <range/v3/iterator_range.hpp>
 
 namespace blocksci {
-    struct RawTransaction {
+    struct BLOCKSCI_EXPORT RawTransaction {
         uint32_t realSize;
         uint32_t baseSize;
         uint32_t locktime;

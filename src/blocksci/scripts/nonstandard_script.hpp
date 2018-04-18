@@ -9,6 +9,7 @@
 #ifndef nonstandard_script_hpp
 #define nonstandard_script_hpp
 
+#include <blocksci/blocksci_export.h>
 #include "script.hpp"
 #include "script_view.hpp"
 
@@ -17,7 +18,7 @@
 
 namespace blocksci {
     template <>
-    class ScriptAddress<AddressType::NONSTANDARD> : public ScriptBase {
+    class BLOCKSCI_EXPORT ScriptAddress<AddressType::NONSTANDARD> : public ScriptBase {
         const NonstandardSpendScriptData *rawInputData;
         
         ScriptAddress(uint32_t scriptNum_, std::tuple<const NonstandardScriptData *, const NonstandardSpendScriptData *> &&rawData_, DataAccess &access_) : ScriptBase(scriptNum_, addressType, access_, std::get<0>(rawData_)), rawInputData(std::get<1>(rawData_)) {}

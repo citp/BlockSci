@@ -9,18 +9,19 @@
 #ifndef inout_hpp
 #define inout_hpp
 
+#include <blocksci/blocksci_export.h>
 #include "chain_fwd.hpp"
 #include <blocksci/address/address_types.hpp>
 #include <blocksci/util/hash.hpp>
 
 namespace std {
-    template<> struct hash<blocksci::Inout> {
+    template<> struct BLOCKSCI_EXPORT hash<blocksci::Inout> {
         size_t operator()(const blocksci::Inout &inout) const;
     };
 } // namespace std
 
 namespace blocksci {
-    struct Inout {
+    struct BLOCKSCI_EXPORT Inout {
         Inout(uint32_t linkedTxNum_, uint32_t addressNum, AddressType::Enum type, int64_t value)  : linkedTxNum(linkedTxNum_), toAddressNum(addressNum), other(0) {
             setValue(value);
             setType(type);

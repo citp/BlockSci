@@ -8,6 +8,7 @@
 #ifndef script_view_hpp
 #define script_view_hpp
 
+#include <blocksci/blocksci_export.h>
 #include "bitcoin_script.hpp"
 
 #include <range/v3/iterator_range.hpp>
@@ -21,7 +22,7 @@
 namespace blocksci {
     
     /** Serialized script, used inside transaction inputs and outputs */
-    class CScriptView : public ranges::iterator_range<const unsigned char *>  {
+    class BLOCKSCI_EXPORT CScriptView : public ranges::iterator_range<const unsigned char *>  {
     public:
         CScriptView() : ranges::iterator_range<const unsigned char *>() {}
         CScriptView(const unsigned char* pbegin, const unsigned char* pend) : ranges::iterator_range<const unsigned char *>(pbegin, pend) {}

@@ -9,13 +9,14 @@
 #ifndef pubkey_script_hpp
 #define pubkey_script_hpp
 
+#include <blocksci/blocksci_export.h>
 #include "pubkey_base_script.hpp"
 #include "bitcoin_base58.hpp"
 #include "bitcoin_segwit_addr.hpp"
 
 namespace blocksci {
     template <>
-    class ScriptAddress<AddressType::PUBKEY> : public PubkeyAddressBase {
+    class BLOCKSCI_EXPORT ScriptAddress<AddressType::PUBKEY> : public PubkeyAddressBase {
     public:
         using PubkeyAddressBase::PubkeyAddressBase;
         
@@ -39,7 +40,7 @@ namespace blocksci {
     };
     
     template <>
-    class ScriptAddress<AddressType::PUBKEYHASH> : public PubkeyAddressBase {
+    class BLOCKSCI_EXPORT ScriptAddress<AddressType::PUBKEYHASH> : public PubkeyAddressBase {
     public:
         using PubkeyAddressBase::PubkeyAddressBase;
         
@@ -63,7 +64,7 @@ namespace blocksci {
     };
     
     template <>
-    class ScriptAddress<AddressType::WITNESS_PUBKEYHASH> : public PubkeyAddressBase {
+    class BLOCKSCI_EXPORT ScriptAddress<AddressType::WITNESS_PUBKEYHASH> : public PubkeyAddressBase {
     public:
         using PubkeyAddressBase::PubkeyAddressBase;
         

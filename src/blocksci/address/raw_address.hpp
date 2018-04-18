@@ -8,12 +8,13 @@
 #ifndef raw_address_hpp
 #define raw_address_hpp
 
+#include <blocksci/blocksci_export.h>
 #include <blocksci/scripts/scripts_fwd.hpp>
 
 #include <functional>
 
 namespace blocksci {
-    struct RawAddress {
+    struct BLOCKSCI_EXPORT RawAddress {
         uint32_t scriptNum;
         AddressType::Enum type;
         

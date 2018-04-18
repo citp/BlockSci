@@ -20,15 +20,15 @@
 
 namespace blocksci {
     
-    struct MempoolRecord {
+    struct BLOCKSCI_EXPORT MempoolRecord {
         time_t time;
     };
     
-    struct BlockRecord {
+    struct BLOCKSCI_EXPORT BlockRecord {
         time_t observationTime;
     };
     
-    struct TimestampIndex {
+    struct BLOCKSCI_EXPORT TimestampIndex {
         FixedSizeFileMapper<MempoolRecord> timestampFile;
         uint32_t firstTxIndex;
         
@@ -61,7 +61,7 @@ namespace blocksci {
         }
     };
     
-    struct BlocktimeIndex {
+    struct BLOCKSCI_EXPORT BlocktimeIndex {
         FixedSizeFileMapper<BlockRecord> timestampFile;
         int firstBlockNum;
         
@@ -86,7 +86,7 @@ namespace blocksci {
         }
     };
     
-    class MempoolIndex {
+    class BLOCKSCI_EXPORT MempoolIndex {
         DataConfiguration config;
         std::vector<TimestampIndex> timestampFiles;
         std::vector<BlocktimeIndex> blockTimeFiles;
