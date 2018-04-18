@@ -24,9 +24,7 @@ namespace blocksci {
         }
         
     }
-    
-    ColumnIterator::cursor::cursor(rocksdb::DB *db_, rocksdb::ColumnFamilyHandle *column_) : cursor(db_, column_, std::vector<char>{}) {}
-    
+
     ColumnIterator::cursor::cursor(const cursor &other) : db(other.db), column(other.column), it(other.it), prefixBytes(other.prefixBytes) {}
     
     ColumnIterator::cursor::cursor(cursor &&other) : db(other.db), column(other.column), it(std::move(other.it)), prefixBytes(std::move(other.prefixBytes)) {}

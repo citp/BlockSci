@@ -37,7 +37,6 @@ namespace blocksci {
             std::vector<char> prefixBytes;
         public:
             cursor();
-            cursor(rocksdb::DB *db_, rocksdb::ColumnFamilyHandle *column_);
             cursor(rocksdb::DB *db_, rocksdb::ColumnFamilyHandle *column_, std::vector<char> prefix);
             cursor(const cursor &other);
             cursor(cursor && other);
