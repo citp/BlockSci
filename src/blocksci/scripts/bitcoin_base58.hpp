@@ -14,6 +14,7 @@
 #ifndef BLOCKSCI_BITCOIN_BASE58_H
 #define BLOCKSCI_BITCOIN_BASE58_H
 
+#include <blocksci/blocksci_export.h>
 #include <blocksci/address/address_types.hpp>
 
 #include <string>
@@ -24,7 +25,7 @@ namespace blocksci {
     struct DataConfiguration;
     class uint160;
     
-    class InvalidAddressException : virtual public std::runtime_error {
+    class BLOCKSCI_EXPORT InvalidAddressException : virtual public std::runtime_error {
     public:
         InvalidAddressException() : std::runtime_error("Tried to construct invalid address") {}
         InvalidAddressException(const InvalidAddressException &) = default;
@@ -36,47 +37,47 @@ namespace blocksci {
      * Encode a byte sequence as a base58-encoded string.
      * pbegin and pend cannot be nullptr, unless both are.
      */
-    std::string EncodeBase58(const unsigned char* pbegin, const unsigned char* pend);
+    std::string BLOCKSCI_EXPORT EncodeBase58(const unsigned char* pbegin, const unsigned char* pend);
     
     /**
      * Encode a byte vector as a base58-encoded string
      */
-    std::string EncodeBase58(const std::vector<unsigned char>& vch);
+    std::string BLOCKSCI_EXPORT EncodeBase58(const std::vector<unsigned char>& vch);
     
     /**
      * Decode a base58-encoded string (psz) into a byte vector (vchRet).
      * return true if decoding is successful.
      * psz cannot be nullptr.
      */
-    bool DecodeBase58(const char* psz, std::vector<unsigned char>& vchRet);
+    bool BLOCKSCI_EXPORT DecodeBase58(const char* psz, std::vector<unsigned char>& vchRet);
     
     /**
      * Decode a base58-encoded string (str) into a byte vector (vchRet).
      * return true if decoding is successful.
      */
-    bool DecodeBase58(const std::string& str, std::vector<unsigned char>& vchRet);
+    bool BLOCKSCI_EXPORT DecodeBase58(const std::string& str, std::vector<unsigned char>& vchRet);
     
     /**
      * Encode a byte vector into a base58-encoded string, including checksum
      */
-    std::string EncodeBase58Check(const std::vector<unsigned char>& vchIn);
+    std::string BLOCKSCI_EXPORT EncodeBase58Check(const std::vector<unsigned char>& vchIn);
     
     /**
      * Decode a base58-encoded string (psz) that includes a checksum into a byte
      * vector (vchRet), return true if decoding is successful
      */
-    inline bool DecodeBase58Check(const char* psz, std::vector<unsigned char>& vchRet);
+    inline bool BLOCKSCI_EXPORT DecodeBase58Check(const char* psz, std::vector<unsigned char>& vchRet);
     
     /**
      * Decode a base58-encoded string (str) that includes a checksum into a byte
      * vector (vchRet), return true if decoding is successful
      */
-    inline bool DecodeBase58Check(const std::string& str, std::vector<unsigned char>& vchRet);
+    inline bool BLOCKSCI_EXPORT DecodeBase58Check(const std::string& str, std::vector<unsigned char>& vchRet);
     
     /**
      * Base class for all base58-encoded data
      */
-    class CBase58Data
+    class BLOCKSCI_EXPORT CBase58Data
     {
     protected:
         //! the version byte(s)
@@ -109,7 +110,7 @@ namespace blocksci {
      * Script-hash-addresses have version 5 (or 196 testnet).
      * The data vector contains RIPEMD160(SHA256(cscript)), where cscript is the serialized redemption script.
      */
-    class CBitcoinAddress : public CBase58Data {
+    class BLOCKSCI_EXPORT CBitcoinAddress : public CBase58Data {
     public:
         CBitcoinAddress(const uint160 &dest, AddressType::Enum type, const DataConfiguration &config);
         CBitcoinAddress(const uint160 &dest, const std::vector<unsigned char>& version);
