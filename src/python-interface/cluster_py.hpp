@@ -34,6 +34,9 @@ void addClusterMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     .def("size", func([](Cluster &cluster) -> int64_t {
         return cluster.getSize();
     }), func2("The number of addresses in the cluster"))
+    .def("type_equiv_size", func([](Cluster &cluster) -> int64_t {
+        return cluster.getTypeEquivSize();
+    }), func2("The number of addresses in the cluster not counting type equivalent addresses"))
     .def("balance", func([](Cluster &cluster, int height) -> int64_t {
         return cluster.calculateBalance(height);
     }), pybind11::arg("height") = -1, func2("Calculates the balance held by this cluster at the height (Defaults to the full chain)"))

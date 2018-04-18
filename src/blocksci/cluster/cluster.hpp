@@ -37,10 +37,13 @@ namespace blocksci {
     class BLOCKSCI_EXPORT Cluster {
         const ClusterAccess &clusterAccess;
         
+        auto getDedupAddresses() const {
+            return clusterAccess.getClusterScripts(clusterNum);
+        }
+        
         auto getPossibleAddresses() const {
             auto &access_ = clusterAccess.access;
-            auto scripts = clusterAccess.getClusterScripts(clusterNum);
-            return scripts | ranges::view::transform([&access_](const DedupAddress &dedupAddress) {
+            return getDedupAddresses() | ranges::view::transform([&access_](const DedupAddress &dedupAddress) {
                 uint32_t scriptNum = dedupAddress.scriptNum;
                 return addressTypesRange(dedupAddress.type) | ranges::view::transform([&access_, scriptNum](AddressType::Enum addressType) {
                     return Address(scriptNum, addressType, access_);
@@ -77,6 +80,10 @@ namespace blocksci {
         
         int64_t getSize() const {
             return ranges::distance(getAddresses());
+        }
+        
+        int64_t getTypeEquivSize() const {
+            return ranges::distance(getDedupAddresses());
         }
         
         auto getOutputPointers() const {
