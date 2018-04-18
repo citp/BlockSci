@@ -53,7 +53,7 @@ namespace blocksci {
         };
         
         cursor begin_cursor() const {
-            return cursor{db, column};
+            return cursor{db, column, prefixBytes};
         }
         
         ranges::default_sentinel end_cursor() const {
