@@ -147,14 +147,14 @@ namespace blocksci {
     template <typename T>
     inline auto BLOCKSCI_EXPORT outputsSpentWithinRelativeHeight(T && t, blocksci::BlockHeight difference) {
         return outputs(std::forward<T>(t)) | ranges::view::filter([=](const Output &output) { 
-            return output.isSpent() && output.getSpendingTx()->blockHeight - output.blockHeight < difference; 
+            return output.isSpent() && output.getSpendingTx()->blockHeight - output.getBlockHeight() < difference;
         });
     }
     
     template <typename T>
     inline auto BLOCKSCI_EXPORT outputsSpentOutsideRelativeHeight(T && t, blocksci::BlockHeight difference) {
         return outputs(std::forward<T>(t)) | ranges::view::filter([=](const Output &output) { 
-            return output.isSpent() && output.getSpendingTx()->blockHeight - output.blockHeight >= difference; 
+            return output.isSpent() && output.getSpendingTx()->blockHeight - output.getBlockHeight() >= difference; 
         });
     }
     
