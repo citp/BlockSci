@@ -158,7 +158,6 @@ set(UTIL_HEADERS
   util/in_place_array.hpp
   util/apply_template.hpp
   util/apply.hpp
-  util/for_each.hpp
   util/dynamic_table.hpp
   util/static_table.hpp
   util/memory_view.hpp

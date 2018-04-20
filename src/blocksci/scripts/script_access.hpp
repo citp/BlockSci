@@ -18,10 +18,11 @@
 #include <blocksci/util/file_mapper.hpp>
 #include <blocksci/util/dynamic_table.hpp>
 #include <blocksci/util/apply.hpp>
-#include <blocksci/util/for_each.hpp>
 
 #include <mpark/variant.hpp>
 
+#include <memory>
+#include <tuple>
 
 namespace blocksci {
     namespace internal {

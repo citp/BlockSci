@@ -13,7 +13,7 @@
 #include <blocksci/scripts/bitcoin_base58.hpp>
 #include <blocksci/scripts/script_info.hpp>
 #include <blocksci/address/address.hpp>
-#include <blocksci/util/for_each.hpp>
+#include <blocksci/util/apply.hpp>
 #include <blocksci/util/state.hpp>
 
 #include <rocksdb/table.h>

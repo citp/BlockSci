@@ -7,7 +7,7 @@
 
 #include "hash_index_priv.hpp"
 
-#include <blocksci/util/for_each.hpp>
+#include <blocksci/util/apply.hpp>
 
 namespace blocksci {
     
@@ -38,6 +38,7 @@ namespace blocksci {
             assert(s.ok());
         } else {
             rocksdb::Status s = rocksdb::DB::Open(options, path.c_str(), columnDescriptors, &columnHandlePtrs, &dbPtr);
+            assert(s.ok());
         }
         db = std::unique_ptr<rocksdb::DB>(dbPtr);
         for (auto handle : columnHandlePtrs) {

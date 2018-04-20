@@ -118,7 +118,7 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::B
     return state;
 }
 
-void rollbackTransactions(blocksci::BlockHeight blockKeepCount, const ParserConfigurationBase &config) {
+void rollbackTransactions(blocksci::BlockHeight blockKeepCount, HashIndexCreator &hashDb, const ParserConfigurationBase &config) {
     using blocksci::AccessMode;
     using blocksci::RawBlock;
     using blocksci::IndexedFileMapper;
@@ -144,13 +144,9 @@ void rollbackTransactions(blocksci::BlockHeight blockKeepCount, const ParserConf
         blockFile.truncate(blockKeepSize);
         AddressWriter(config).rollback(blocksciState);
         
-        HashIndexCreator hashDb(config, config.dataConfig.hashIndexFilePath().native());
-        {
-            AddressState addressState{config.addressPath(), hashDb};
-            hashDb.db.rollback(blocksciState);
-            addressState.reset(blocksciState);
-        }
-        blocksci::HashIndex(config.dataConfig.hashIndexFilePath().native(), false).rollback(blocksciState);
+        AddressState addressState{config.addressPath(), hashDb};
+        hashDb.db.rollback(blocksciState);
+        addressState.reset(blocksciState);
     }
 }
 
@@ -213,7 +209,7 @@ std::vector<blocksci::RawBlock> updateChain(const ParserConfiguration<ParserTag>
     
     std::ios::sync_with_stdio(false);
     
-    rollbackTransactions(splitPoint, config);
+    rollbackTransactions(splitPoint, hashDb, config);
     
     if (blocksToAdd.size() == 0) {
         return {};
@@ -390,9 +386,11 @@ int main(int argc, char * argv[]) {
             
 
             // It'd be nice to do this after the indexes are updated, but they currently depend on the chain being fully updated
-            blocksci::FixedSizeFileWriter<blocksci::RawBlock> blockFile{config.dataConfig.blockFilePath()};
-            for (auto &block : newBlocks) {
-                blockFile.write(block);
+            {
+                blocksci::FixedSizeFileWriter<blocksci::RawBlock> blockFile{config.dataConfig.blockFilePath()};
+                for (auto &block : newBlocks) {
+                    blockFile.write(block);
+                }
             }
 
             if (selected == mode::update) {
