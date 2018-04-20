@@ -62,7 +62,9 @@ namespace blocksci {
         Transaction transaction() const;
         Block block() const;
         
-        BlockHeight age() const;
+        BlockHeight age() const {
+            return blockHeight - access->chain.getBlockHeight(inout->getLinkedTxNum());
+        }
 
         bool operator==(const Inout &other) const {
             return *inout == other;

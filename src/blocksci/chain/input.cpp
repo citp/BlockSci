@@ -33,8 +33,4 @@ namespace blocksci {
     Transaction Input::getSpentTx() const {
         return {inout->getLinkedTxNum(), *access};
     }
-
-    BlockHeight Input::age() const {
-        return blockHeight - getSpentTx().blockHeight;
-    }
 } // namespace blocksci
