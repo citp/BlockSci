@@ -25,7 +25,7 @@ template <typename Class, typename FuncApplication, typename FuncDoc>
 void addClusterMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     using namespace blocksci;
     cl
-    .def_property_readonly("cluster_num", func([](const Cluster &cluster) -> int64_t {
+    .def_property_readonly("index", func([](const Cluster &cluster) -> int64_t {
         return cluster.clusterNum;
     }), func2("The internal identifier of the cluster"))
     .def("tagged_addresses", func([](const Cluster &cluster, const std::unordered_map<blocksci::Address, std::string> &tags) -> ranges::any_view<TaggedAddress> {
