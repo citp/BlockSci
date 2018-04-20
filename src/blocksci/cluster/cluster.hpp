@@ -95,7 +95,14 @@ namespace blocksci {
         }
         
         int64_t calculateBalance(BlockHeight height) const {
-            auto balances = getPossibleAddresses() | ranges::view::transform([height](auto && address) { return address.calculateBalance(height); });
+            auto &access_ = clusterAccess.access;
+            auto balances = getDedupAddresses() | ranges::view::transform([&access_, height](const DedupAddress &dedupAddress) {
+                uint32_t scriptNum = dedupAddress.scriptNum;
+                auto possibleAddressBalances = addressTypesRange(dedupAddress.type) | ranges::view::transform([&access_, scriptNum, height](AddressType::Enum addressType) {
+                    return Address(scriptNum, addressType, access_).calculateBalance(height);
+                });
+                return ranges::accumulate(possibleAddressBalances, int64_t{0});
+            });
             return ranges::accumulate(balances, int64_t{0});
         }
         
