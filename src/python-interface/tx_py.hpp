@@ -8,9 +8,6 @@
 #ifndef tx_py_h
 #define tx_py_h
 
-#include "any_script_caster.hpp"
-#include "optional_py.hpp"
-
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/block.hpp>
 #include <blocksci/chain/algorithms.hpp>
@@ -117,12 +114,6 @@ void addTransactionMethods(Class &cl, FuncApplication func, FuncDoc func2) {
         return heuristics::uniqueChangeByLegacyHeuristic(tx);
     }), func2("If the change address in this transaction can be determined via the fresh address criteria, return it. Otherwise return None."))
     ;
-}
-
-template <typename Class, typename FuncApplication>
-void addTransactionRangeMethods(Class &cl, FuncApplication func) {
-    using namespace blocksci;
-    using Range = typename Class::type;
 }
 
 #endif /* tx_py_h */

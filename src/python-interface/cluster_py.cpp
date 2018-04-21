@@ -7,8 +7,10 @@
 //
 
 #include "cluster_py.hpp"
-#include "variant_py.hpp"
+#include "caster_py.hpp"
 #include "ranges_py.hpp"
+#include "range_apply_py.hpp"
+#include "self_apply_py.hpp"
 
 #include <blocksci/cluster/cluster.hpp>
 #include <blocksci/cluster/cluster_manager.hpp>
@@ -87,13 +89,6 @@ void init_cluster(pybind11::module &m) {
     auto s = m.def_submodule("cluster");
     s
     .def("total_without_self_churn", totalOutWithoutSelfChurn)
-    .def("create_clustering", [](Blockchain &chain, const heuristics::ChangeHeuristic &heuristic, const std::string &location, bool shouldOverwrite) {
-        py::scoped_ostream_redirect stream(
-            std::cout,
-            py::module::import("sys").attr("stdout")
-        );
-        return ClusterManager::createClustering(chain, heuristic, location, shouldOverwrite);
-    }, py::arg("chain"), py::arg("heuristic"), py::arg("location"), py::arg("should_overwrite") = false)
     ;
 
     
@@ -101,6 +96,13 @@ void init_cluster(pybind11::module &m) {
     .def(py::init([](std::string arg, blocksci::Blockchain &chain) {
        return ClusterManager(arg, chain.getAccess());
     }))
+    .def_static("create_clustering", [](const std::string &location, Blockchain &chain, const heuristics::ChangeHeuristic &heuristic, bool shouldOverwrite) {
+        py::scoped_ostream_redirect stream(
+                                           std::cout,
+                                           py::module::import("sys").attr("stdout")
+                                           );
+        return ClusterManager::createClustering(chain, heuristic, location, shouldOverwrite);
+    }, py::arg("location"), py::arg("chain"), py::arg("heuristic") = heuristics::LegacyChange{}, py::arg("should_overwrite") = false)
     .def("cluster_with_address", [](const ClusterManager &cm, const Address &address) -> Cluster {
        return cm.getCluster(address);
     }, "Return the cluster containing the given address")

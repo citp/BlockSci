@@ -8,9 +8,6 @@
 #ifndef block_py_h
 #define block_py_h
 
-#include "any_script_caster.hpp"
-#include "optional_py.hpp"
-
 #include <blocksci/chain/block.hpp>
 #include <blocksci/chain/algorithms.hpp>
 
@@ -25,6 +22,28 @@ void addBlockMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     namespace py = pybind11;
     using namespace blocksci;
     cl
+    .def_property_readonly("txes", func([](const Block &block) -> ranges::any_view<Transaction, ranges::category::random_access> {
+        return block;
+    }), func2(R"docstring(
+       Returns a range of all of the txes in the block.
+       
+       :returns: AnyTxRange
+       )docstring"))
+    .def_property_readonly("inputs", func([](const Block &block) -> ranges::any_view<Input> {
+        return inputs(block);
+    }), func2(R"docstring(
+       Returns a range of all of the inputs in the block.
+       
+       :returns: AnyInputRange
+       )docstring"))
+    
+    .def_property_readonly("outputs", func([](const Block &block) -> ranges::any_view<Output> {
+        return outputs(block);
+    }), func2(R"docstring(
+       Returns a range of all of the outputs in the block.
+       
+       :returns: AnyOutputRange
+       )docstring"))
     .def_property_readonly("hash", func([](const Block &block) -> uint256 {
         return block.getHash();
     }), func2("Hash of this block"))
@@ -88,29 +107,6 @@ void addBlockMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     .def_property_readonly("output_count", func([](const Block &block) -> int64_t {
         return outputCount(block);
     }), func2("Returns total number of outputs included in this block"))
-    ;
-}
-
-template <typename Class, typename FuncApplication>
-void addBlockRangeMethods(Class &cl, FuncApplication func) {
-    using namespace blocksci;
-    using Range = typename Class::type;
-    cl
-    .def_property_readonly("txes", [=](Range &range) -> ranges::any_view<Transaction>  {
-        return func(range, [=](auto && r) -> ranges::any_view<Transaction> {
-            return txes(r);
-        });
-    }, "A list of the inputs of the listed blocks")
-    .def_property_readonly("inputs", [=](Range &range) -> ranges::any_view<Input>  {
-        return func(range, [=](auto && r) -> ranges::any_view<Input> {
-            return inputs(r);
-        });
-    }, "A list of the inputs of the listed blocks")
-    .def_property_readonly("outputs", [=](Range &range) -> ranges::any_view<Output>  {
-        return func(range, [=](auto && r) -> ranges::any_view<Output> {
-            return outputs(r);
-        });
-    }, "A list of the outputs of the listed blocks")
     ;
 }
 

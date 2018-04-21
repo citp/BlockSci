@@ -6,14 +6,12 @@
 //
 //
 
-#include "any_script_caster.hpp"
-#include "optional_py.hpp"
+#include "caster_py.hpp"
 
 #include <blocksci/chain/transaction_summary.hpp>
 #include <blocksci/chain/transaction.hpp>
 
 #include <pybind11/operators.h>
-#include <pybind11/pybind11.h>
 
 namespace py = pybind11;
 using namespace blocksci;

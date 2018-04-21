@@ -8,15 +8,10 @@
 #ifndef output_py_h
 #define output_py_h
 
-#include "any_script_caster.hpp"
-#include "optional_py.hpp"
-
 #include <pybind11/pybind11.h>
 
 #include <blocksci/chain/algorithms.hpp>
-#include <blocksci/chain/output.hpp>
 #include <blocksci/chain/block.hpp>
-#include <blocksci/address/address.hpp>
 #include <blocksci/scripts/script_variant.hpp>
 
 #include <range/v3/view/any_view.hpp>
@@ -57,43 +52,6 @@ void addOutputMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     .def_property_readonly("tx_index", func([](const Output &output) -> int64_t {
         return output.txIndex();
     }), func2("The tx index of this output's transaction"))
-    ;
-}
-
-template <typename Class, typename FuncApplication>
-void addOutputRangeMethods(Class &cl, FuncApplication func) {
-    using Range = typename Class::type;
-    cl
-    .def_property_readonly("unspent",  [=](Range &range) {
-        return func(range, [=](auto && r) -> ranges::any_view<blocksci::Output> {
-            return outputsUnspent(r);
-        });
-    }, "Returns a range including the subset of outputs which were never spent")
-    .def("spent_before",  [=](Range &range, blocksci::BlockHeight height) {
-        return func(range, [=](auto && r) -> ranges::any_view<blocksci::Output> {
-            return outputsSpentBeforeHeight(r, height);
-        });
-    }, "Returns a range including the subset of outputs which were spent before the given height")
-    .def("spent_after",  [=](Range &range, blocksci::BlockHeight height) {
-        return func(range, [=](auto && r) -> ranges::any_view<blocksci::Output> {
-            return outputsSpentAfterHeight(std::forward<decltype(r)>(r), height);
-        });
-    }, "Returns a range including the subset of outputs which were spent after the given height")
-    .def("spent_within",  [=](Range &range, blocksci::BlockHeight height) {
-        return func(range, [=](auto && r) -> ranges::any_view<blocksci::Output> {
-            return outputsSpentWithinRelativeHeight(std::forward<decltype(r)>(r), height);
-        });
-    }, "Returns a range including the subset of outputs which were spent within the given number of blocks")
-    .def("spent_outside",  [=](Range &range, blocksci::BlockHeight height) {
-        return func(range, [=](auto && r) -> ranges::any_view<blocksci::Output> {
-            return outputsSpentOutsideRelativeHeight(std::forward<decltype(r)>(r), height);
-        });
-    }, "Returns a range including the subset of outputs which were spent later than the given number of blocks")
-    .def("with_type", [=](Range &range, blocksci::AddressType::Enum type) {
-        return func(range, [=](auto && r) -> ranges::any_view<blocksci::Output> {
-            return outputsOfType(std::forward<decltype(r)>(r), type);
-        });
-    }, "Returns a range including the subset of outputs which were sent to the given address type")
     ;
 }
 

@@ -8,11 +8,6 @@
 #ifndef blocksci_address_py_h
 #define blocksci_address_py_h
 
-#include "ranges_py.hpp"
-#include "variant_py.hpp"
-#include "any_script_caster.hpp"
-#include "optional_py.hpp"
-
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/scripts/script.hpp>
 #include <blocksci/address/equiv_address.hpp>
@@ -56,32 +51,5 @@ void addAddressMethods(Class &cl, FuncApplication func, FuncDoc func2) {
     }), func2("Returns a range of all outputs sent to this address"))
     ;
 }
-
-template <blocksci::AddressType::Enum type>
-using ScriptRange = ranges::any_view<blocksci::ScriptAddress<type>>;
-using ScriptRangeVariant = blocksci::to_variadic_t<blocksci::to_address_tuple_t<ScriptRange>, mpark::variant>;
-
-template<blocksci::AddressType::Enum type, typename Range>
-struct ScriptRangeWithTypeFunctor {
-    static ScriptRangeVariant f(Range &&range) {
-        return range |
-        ranges::view::filter([](const auto &address) { return address.getType() == type; }) |
-        ranges::view::transform([](const auto &address) { return mpark::get<blocksci::ScriptAddress<type>>(address.wrapped); });
-    }
-};
-
-template <typename Range, typename Class, typename FuncApplication>
-struct AddAddressRangeMethods {
-	void operator()(Class &cl, FuncApplication func) {
-	    cl
-	    .def("with_type", func([=](Range &&range, blocksci::AddressType::Enum type) {
-	    	static auto table = blocksci::make_dynamic_table<blocksci::AddressType, ScriptRangeWithTypeFunctor, Range>();
-	        auto index = static_cast<size_t>(type);
-	        return table.at(index)(std::move(range));
-	    }), "Returns a range including the subset of addresses which have the given type")
-	    ;
-	}
-};
-
 
 #endif /* blocksci_address_py_h */

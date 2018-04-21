@@ -7,9 +7,12 @@
 //
 
 #include "block_py.hpp"
+#include "caster_py.hpp"
 #include "ranges_py.hpp"
+#include "range_apply_py.hpp"
+#include "self_apply_py.hpp"
 
-#include <range/v3/view/any_view.hpp>
+#include <pybind11/operators.h>
 
 namespace py = pybind11;
 
@@ -25,9 +28,6 @@ auto addBlockRange(py::module &m, const std::string &name) {
         ss << "For each block: " << docstring;
         return strdup(ss.str().c_str());
     });
-    addBlockRangeMethods(cl, [](auto &range, auto func) {
-        return func(range);
-    });
     return cl;
 }
 
@@ -40,9 +40,6 @@ auto addOptionalBlockRange(py::module &m, const std::string &name) {
         std::stringstream ss;
         ss << "For each block: " << docstring;
         return strdup(ss.str().c_str());
-    });
-    addBlockRangeMethods(cl, [](auto &range, auto func) {
-        return func(range | flatMapOptionals());
     });
     return cl;
 }
@@ -84,28 +81,6 @@ void init_block(py::module &m) {
     .def(py::self == py::self)
     .def(hash(py::self))
     .def_property_readonly("_access", &Block::getAccess, py::return_value_policy::reference)
-    .def_property_readonly("txes", [](const Block &block) -> ranges::any_view<Transaction, ranges::category::random_access> {
-        return block;
-    }, R"docstring(
-         Returns a range of all of the txes in the block.
-
-         :returns: AnyTxRange
-         )docstring")
-    .def_property_readonly("inputs", [](const Block &block) -> ranges::any_view<Input> {
-        return inputs(block);
-    }, R"docstring(
-         Returns a range of all of the inputs in the block.
-
-         :returns: AnyInputRange
-         )docstring")
-
-    .def_property_readonly("outputs", [](const Block &block) -> ranges::any_view<Output> {
-        return outputs(block);
-    }, R"docstring(
-         Returns a range of all of the outputs in the block.
-
-         :returns: AnyOutputRange
-         )docstring")
     .def_property_readonly("next_block", &Block::nextBlock, "Returns the block which follows this one in the chain")
     .def_property_readonly("prev_block", &Block::prevBlock, "Returns the block which comes before this one in the chain")
     .def("total_spent_of_ages", py::overload_cast<const Block &, blocksci::BlockHeight>(getTotalSpentOfAges), "Returns a list of sum of all the outputs in the block that were spent within a certain of blocks, up to the max age given")

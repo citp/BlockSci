@@ -7,11 +7,16 @@
 //
 
 #include "tx_py.hpp"
+#include "caster_py.hpp"
 #include "ranges_py.hpp"
+#include "range_apply_py.hpp"
+#include "self_apply_py.hpp"
 
 #include <blocksci/chain/blockchain.hpp>
 #include <blocksci/index/address_index.hpp>
 #include <blocksci/index/hash_index.hpp>
+
+#include <pybind11/operators.h>
 
 namespace py = pybind11;
 
@@ -27,9 +32,6 @@ auto addTxRange(py::module &m, const std::string &name) {
         ss << "For each transaction: " << docstring;
         return strdup(ss.str().c_str());
     });
-    addTransactionRangeMethods(cl, [](auto &range, auto func) {
-        return func(range);
-    });
     return cl;
 }
 
@@ -42,9 +44,6 @@ auto addOptionalTxRange(py::module &m, const std::string &name) {
         std::stringstream ss;
         ss << "For each transaction: " << docstring;
         return strdup(ss.str().c_str());
-    });
-    addTransactionRangeMethods(cl, [](auto &range, auto func) {
-        return func(range | flatMapOptionals());
     });
     return cl;
 }

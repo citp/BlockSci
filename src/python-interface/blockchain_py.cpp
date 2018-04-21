@@ -6,12 +6,11 @@
 //
 //
 
-#include "variant_py.hpp"
-#include "optional_py.hpp"
-#include "ranges_py.hpp"
 #include "block_py.hpp"
-#include "address_py.hpp"
-#include "any_script_caster.hpp"
+#include "caster_py.hpp"
+#include "ranges_py.hpp"
+#include "range_apply_py.hpp"
+#include "self_apply_py.hpp"
 
 #include <blocksci/chain/blockchain.hpp>
 

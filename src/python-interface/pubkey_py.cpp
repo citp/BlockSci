@@ -7,8 +7,10 @@
 //
 
 #include "pubkey_py.hpp"
-#include "variant_py.hpp"
+#include "caster_py.hpp"
 #include "ranges_py.hpp"
+#include "range_apply_py.hpp"
+#include "self_apply_py.hpp"
 
 #include <blocksci/scripts/pubkey_script.hpp>
 #include <blocksci/scripts/multisig_pubkey_script.hpp>

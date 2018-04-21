@@ -9,9 +9,6 @@
 #ifndef blocksci_nulldata_py_h
 #define blocksci_nulldata_py_h
 
-#include "any_script_caster.hpp"
-#include "optional_py.hpp"
-
 #include <blocksci/scripts/nulldata_script.hpp>
 #include <pybind11/pybind11.h>
 

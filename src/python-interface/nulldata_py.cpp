@@ -7,8 +7,10 @@
 //
 
 #include "nulldata_py.hpp"
-#include "variant_py.hpp"
+#include "caster_py.hpp"
 #include "ranges_py.hpp"
+#include "range_apply_py.hpp"
+#include "self_apply_py.hpp"
 
 using namespace blocksci;
 namespace py = pybind11;

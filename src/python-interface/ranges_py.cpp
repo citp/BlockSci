@@ -6,6 +6,7 @@
 //
 
 #include "ranges_py.hpp"
+#include "caster_py.hpp"
 
 namespace py = pybind11;
 using namespace blocksci;

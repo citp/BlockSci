@@ -7,14 +7,11 @@
 //
 
 #include "address_py.hpp"
+#include "caster_py.hpp"
+#include "self_apply_py.hpp"
 
-#include <blocksci/address/equiv_address.hpp>
-#include <blocksci/scripts/script_variant.hpp>
 #include <blocksci/chain/algorithms.hpp>
-#include <blocksci/chain/input.hpp>
-#include <blocksci/chain/transaction.hpp>
 
-#include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
 
 #include <range/v3/view/transform.hpp>
@@ -22,34 +19,6 @@
 namespace py = pybind11;
 
 using namespace blocksci;
-
-template <typename T, typename T2>
-auto addAddressRange(py::module &m, const std::string &name) {
-    auto cl = addRangeClass<T>(m, name);
-    addAddressMethods<T2>(cl, [](auto func) {
-        return applyMethodsToRange<T>(func);
-    }, [](std::string docstring) {
-        std::stringstream ss;
-        ss << "For each address: " << docstring;
-        return strdup(ss.str().c_str());
-    });
-    applyRangeMethodsToRange<AddAddressRangeMethods>(cl);
-    return cl;
-}
-
-template <typename T, typename T2>
-auto addOptionalAddressRange(py::module &m, const std::string &name) {
-    auto cl = addOptionalRangeClass<T>(m, name);
-    addAddressMethods<T2>(cl, [](auto func) {
-        return applyMethodsToRange<T>(func);
-    }, [](std::string docstring) {
-        std::stringstream ss;
-        ss << "For each address: " << docstring;
-        return strdup(ss.str().c_str());
-    });
-    applyRangeMethodsToRange<AddAddressRangeMethods>(cl);
-    return cl;
-}
 
 py::class_<ScriptBase> init_address(py::module &m) {
     py::class_<ScriptBase> addressCl(m, "Address", "Represents an abstract address object which uniquely identifies a given address");
@@ -96,11 +65,6 @@ py::class_<ScriptBase> init_address(py::module &m) {
     }, "Return the number of transactions where these equivalent addresses were an input")
     ;
 
-    addAddressRange<ranges::any_view<AnyScript>, AnyScript>(m, "AnyAddressRange");
-    addAddressRange<ranges::any_view<AnyScript, ranges::category::random_access>, AnyScript>(m, "AddressRange");
-    addOptionalAddressRange<ranges::any_view<ranges::optional<AnyScript>>, AnyScript>(m, "AnyOptionalAddressRange");
-    addOptionalAddressRange<ranges::any_view<ranges::optional<AnyScript>, ranges::category::random_access>, AnyScript>(m, "OptionalAddressRange");
-    
     py::enum_<AddressType::Enum>(m, "address_type", py::arithmetic(), "Enumeration of all address types")
     .value("nonstandard", AddressType::Enum::NONSTANDARD)
     .value("pubkey", AddressType::Enum::PUBKEY)
