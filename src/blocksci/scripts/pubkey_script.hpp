@@ -11,8 +11,6 @@
 
 #include <blocksci/blocksci_export.h>
 #include "pubkey_base_script.hpp"
-#include "bitcoin_base58.hpp"
-#include "bitcoin_segwit_addr.hpp"
 
 namespace blocksci {
     template <>
@@ -24,9 +22,7 @@ namespace blocksci {
         
         ScriptAddress(uint32_t addressNum_, DataAccess &access_) : PubkeyAddressBase(addressNum_, addressType, access_.scripts.getScriptData<dedupType(addressType)>(addressNum_), access_) {}
         
-        std::string addressString() const {
-            return CBitcoinAddress(getPubkeyHash(), AddressType::Enum::PUBKEYHASH, getAccess().config).ToString();
-        }
+        std::string addressString() const;
         
         std::string toString() const {
             std::stringstream ss;
@@ -48,9 +44,7 @@ namespace blocksci {
         
         ScriptAddress(uint32_t addressNum_, DataAccess &access_) : PubkeyAddressBase(addressNum_, addressType, access_.scripts.getScriptData<dedupType(addressType)>(addressNum_), access_) {}
         
-        std::string addressString() const {
-            return CBitcoinAddress(getPubkeyHash(), AddressType::Enum::PUBKEYHASH, getAccess().config).ToString();
-        }
+        std::string addressString() const;
         
         std::string toString() const {
             std::stringstream ss;
@@ -72,12 +66,7 @@ namespace blocksci {
         
         ScriptAddress(uint32_t addressNum_, DataAccess &access_) : PubkeyAddressBase(addressNum_, addressType, access_.scripts.getScriptData<dedupType(addressType)>(addressNum_), access_) {}
         
-        std::string addressString() const {
-            std::vector<uint8_t> witprog;
-            auto pubkeyhash = getPubkeyHash();
-            witprog.insert(witprog.end(), reinterpret_cast<const uint8_t *>(&pubkeyhash), reinterpret_cast<const uint8_t *>(&pubkeyhash) + sizeof(pubkeyhash));
-            return segwit_addr::encode(getAccess().config, 0, witprog);
-        }
+        std::string addressString() const;
         
         std::string toString() const {
             std::stringstream ss;

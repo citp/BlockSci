@@ -12,12 +12,6 @@
 #include <blocksci/blocksci_export.h>
 #include "script.hpp"
 
-#include "bitcoin_base58.hpp"
-#include "bitcoin_segwit_addr.hpp"
-
-#include <blocksci/address/address.hpp>
-#include <blocksci/util/data_access.hpp>
-
 namespace blocksci {
     class BLOCKSCI_EXPORT ScriptHashBase : public ScriptBase {
         const ScriptHashData *getBackingData() const {
@@ -65,9 +59,7 @@ namespace blocksci {
             return getUint160Address();
         }
         
-        std::string addressString() const {
-            return CBitcoinAddress(getAddressHash(), AddressType::Enum::SCRIPTHASH, getAccess().config).ToString();
-        }
+        std::string addressString() const;
         
         std::string toString() const {
             std::stringstream ss;
@@ -89,12 +81,7 @@ namespace blocksci {
             return getUint256Address();
         }
         
-        std::string addressString() const {
-            std::vector<uint8_t> witprog;
-            auto addressHash = getAddressHash();
-            witprog.insert(witprog.end(), reinterpret_cast<const uint8_t *>(&addressHash), reinterpret_cast<const uint8_t *>(&addressHash) + sizeof(addressHash));
-            return segwit_addr::encode(getAccess().config, 0, witprog);
-        }
+        std::string addressString() const;
         
         std::string toString() const {
             std::stringstream ss;

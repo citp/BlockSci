@@ -21,6 +21,16 @@ namespace blocksci {
         ReorgException &operator=(ReorgException &&) = default;
         virtual ~ReorgException();
     };
+    
+    class BLOCKSCI_EXPORT InvalidAddressException : virtual public std::runtime_error {
+    public:
+        InvalidAddressException() : std::runtime_error("Tried to construct invalid address") {}
+        InvalidAddressException(const InvalidAddressException &) = default;
+        InvalidAddressException(InvalidAddressException &&) = default;
+        InvalidAddressException &operator=(const InvalidAddressException &) = default;
+        InvalidAddressException &operator=(InvalidAddressException &&) = default;
+        virtual ~InvalidAddressException();
+    };
 } // namespace blocksci
 
 #endif /* blocksci_exception_hpp */

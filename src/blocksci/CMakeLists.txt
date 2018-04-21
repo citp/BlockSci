@@ -109,11 +109,8 @@ set(INDEX_SOURCES
 
 set(SCRIPT_HEADERS
   scripts/scripts_fwd.hpp
-  scripts/bitcoin_base58.hpp
-  scripts/bitcoin_bech32.hpp
   scripts/bitcoin_pubkey.hpp
   scripts/bitcoin_script.hpp
-  scripts/bitcoin_segwit_addr.hpp
   scripts/multisig_script.hpp
   scripts/multisig_pubkey_script.hpp
   scripts/nonstandard_script.hpp
@@ -129,12 +126,20 @@ set(SCRIPT_HEADERS
   scripts/scripthash_script.hpp
 )
 
+set(SCRIPT_PRIVATE_HEADERS
+  scripts/bitcoin_base58.hpp
+  scripts/bitcoin_bech32.hpp
+  scripts/bitcoin_segwit_addr.hpp
+)
+
 set(SCRIPT_SOURCES
   scripts/bitcoin_base58.cpp
   scripts/bitcoin_bech32.cpp
   scripts/bitcoin_pubkey.cpp
   scripts/bitcoin_script.cpp
   scripts/bitcoin_segwit_addr.cpp
+  scripts/multisig_pubkey_script.cpp
+  scripts/pubkey_script.cpp
   scripts/script_view.cpp
   scripts/script.cpp
   scripts/script_variant.cpp
@@ -183,7 +188,7 @@ set(CLUSTER_SOURCES
   cluster/cluster.cpp
 )
 
-set(ALL_SOURCES ${BLOCKSCI_HEADERS} ${BLOCKSCI_SOURCES} ${ADDRESS_HEADERS} ${ADDRESS_SOURCES}  ${SCRIPT_HEADERS} ${SCRIPT_SOURCES} ${CHAIN_HEADERS} ${CHAIN_SOURCES} ${INDEX_HEADERS} ${INDEX_PRIVATE_HEADERS} ${INDEX_SOURCES} ${UTIL_HEADERS} ${UTIL_SOURCES} ${HEURISTICS_HEADERS} ${HEURISTICS_SOURCES} ${CLUSTER_HEADERS} ${CLUSTER_SOURCES})
+set(ALL_SOURCES ${BLOCKSCI_HEADERS} ${BLOCKSCI_SOURCES} ${ADDRESS_HEADERS} ${ADDRESS_SOURCES}  ${SCRIPT_HEADERS} ${SCRIPT_PRIVATE_HEADERS} ${SCRIPT_SOURCES} ${CHAIN_HEADERS} ${CHAIN_SOURCES} ${INDEX_HEADERS} ${INDEX_PRIVATE_HEADERS} ${INDEX_SOURCES} ${UTIL_HEADERS} ${UTIL_SOURCES} ${HEURISTICS_HEADERS} ${HEURISTICS_SOURCES} ${CLUSTER_HEADERS} ${CLUSTER_SOURCES})
 
 add_library(blocksci SHARED ${ALL_SOURCES})
 add_library(blocksci_static STATIC ${ALL_SOURCES})
@@ -278,7 +283,7 @@ endif()
 
 source_group(blocksci\\chain FILES ${CHAIN_HEADERS} ${CHAIN_SOURCES})
 source_group(blocksci\\address FILES ${ADDRESS_HEADERS} ${ADDRESS_SOURCES})
-source_group(blocksci\\scripts FILES ${SCRIPT_HEADERS} ${SCRIPT_SOURCES})
+source_group(blocksci\\scripts FILES ${SCRIPT_HEADERS} ${SCRIPT_SOURCES} ${SCRIPT_PRIVATE_HEADERS})
 source_group(blocksci\\index FILES ${INDEX_HEADERS} ${INDEX_PRIVATE_HEADERS} ${INDEX_SOURCES})
 source_group(blocksci\\util FILES ${UTIL_HEADERS} ${UTIL_SOURCES})
 source_group(blocksci\\heuristics FILES ${HEURISTICS_HEADERS} ${HEURISTICS_SOURCES})

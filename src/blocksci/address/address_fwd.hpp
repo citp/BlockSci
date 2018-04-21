@@ -16,6 +16,7 @@ namespace blocksci {
     
     class Address;
     struct DedupAddress;
+    class EquivAddress;
     
     template <AddressType::Enum>
     struct AddressInfo;

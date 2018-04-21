@@ -25,7 +25,6 @@
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/transaction.hpp>
-#include <blocksci/scripts/bitcoin_pubkey.hpp>
 #include <blocksci/util/file_writer.hpp>
 #include <blocksci/util/bitcoin_uint256.hpp>
 #include <blocksci/util/hash.hpp>
