@@ -97,12 +97,9 @@ add_library(rocksdb_headers INTERFACE)
 target_include_directories(rocksdb_headers SYSTEM INTERFACE libs/rocksdb/include)
 
 set(CMAKE_CXX_FLAGS "${saved_flags}")
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
 add_subdirectory(libs/pybind11)
 add_subdirectory(libs/bitcoin-api-cpp EXCLUDE_FROM_ALL)
-
 
 add_subdirectory(src/blocksci)
 add_subdirectory(src/parser)
@@ -114,6 +111,3 @@ add_subdirectory(src/example)
 
 include( CMakePackageConfigHelpers )
 set(CONFIG_PACKAGE_INSTALL_DIR lib/cmake/blocksci)
-
-#install(EXPORT blocksci_ranges DESTINATION ${CONFIG_PACKAGE_INSTALL_DIR})
-#install(EXPORT blocksci-targets FILE blocksci-config.cmake DESTINATION ${CONFIG_PACKAGE_INSTALL_DIR})

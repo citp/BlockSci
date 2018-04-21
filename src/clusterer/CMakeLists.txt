@@ -9,6 +9,6 @@ endif()
 
 target_link_libraries( blocksci_clusterer dset)
 target_link_libraries( blocksci_clusterer clipp)
-target_link_libraries( blocksci_clusterer blocksci_static)
+target_link_libraries( blocksci_clusterer blocksci)
 
 install(TARGETS blocksci_clusterer DESTINATION bin)

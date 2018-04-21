@@ -10,219 +10,13 @@ set(INCLUDE_INSTALL_DIR include/blocksci )
 set(LIB_INSTALL_DIR lib/ )
 set(SYSCONFIG_INSTALL_DIR etc/blocksci/ . )
 
-set(BLOCKSCI_HEADERS
-  address.hpp
-  blocksci_fwd.hpp
-  blocksci.hpp
-  chain.hpp
-  heuristics.hpp
-  script.hpp
-  cluster.hpp
-  index.hpp
-  exception.hpp
-)
+set(BLOCKSCI_HEADER_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/include/blocksci)
+set(BLOCKSCI_SOURCE_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-set(BLOCKSCI_SOURCES
-  exception.cpp
-)
+add_library(blocksci SHARED "")
 
-set(ADDRESS_HEADERS
-  address/address_fwd.hpp
-  address/address_info.hpp
-  address/address_types.hpp
-  address/address.hpp
-  address/raw_address.hpp
-  address/dedup_address_info.hpp
-  address/dedup_address_type.hpp
-  address/dedup_address.hpp
-  address/equiv_address_type.hpp
-  address/equiv_address.hpp
-)
-
-set(ADDRESS_SOURCES
-  address/address_info.cpp
-  address/address.cpp
-  address/raw_address.cpp
-  address/dedup_address_info.cpp
-  address/equiv_address.cpp
-)
-
-set(CHAIN_HEADERS
-  chain/chain_fwd.hpp
-  chain/algorithms.hpp
-  chain/block.hpp
-  chain/blockchain.hpp
-  chain/chain_access.hpp
-  chain/inout_pointer.hpp
-  chain/inout.hpp
-  chain/input.hpp
-  chain/output.hpp
-  chain/raw_block.hpp
-  chain/raw_transaction.hpp
-  chain/transaction_range.hpp
-  chain/transaction_summary.hpp
-  chain/transaction.hpp
-)
-
-set(CHAIN_SOURCES
-  chain/block.cpp
-  chain/blockchain.cpp
-  chain/inout_pointer.cpp
-  chain/input.cpp
-  chain/output.cpp
-  chain/transaction.cpp
-)
-
-set(HEURISTICS_HEADERS
-  heuristics/blockchain_heuristics.hpp
-  heuristics/change_address.hpp
-  heuristics/taint.hpp
-  heuristics/tx_identification.hpp
-)
-
-set(HEURISTICS_SOURCES
-  heuristics/blockchain_heuristics.cpp
-  heuristics/change_address.cpp
-  heuristics/taint.cpp
-  heuristics/tx_identification.cpp
-)
-
-set(INDEX_HEADERS
-  index/address_index.hpp
-  index/hash_index.hpp
-  index/mempool_index.hpp
-  index/column_iterator.hpp
-)
-
-set(INDEX_PRIVATE_HEADERS
-  index/address_index_priv.hpp
-  index/hash_index_priv.hpp
-)
-
-set(INDEX_SOURCES
-  index/address_index.cpp
-  index/address_index_priv.cpp
-  index/hash_index.cpp
-  index/hash_index_priv.cpp
-  index/column_iterator.cpp
-)
-
-set(SCRIPT_HEADERS
-  scripts/scripts_fwd.hpp
-  scripts/bitcoin_pubkey.hpp
-  scripts/bitcoin_script.hpp
-  scripts/multisig_script.hpp
-  scripts/multisig_pubkey_script.hpp
-  scripts/nonstandard_script.hpp
-  scripts/nulldata_script.hpp
-  scripts/pubkey_script.hpp
-  scripts/pubkey_base_script.hpp
-  scripts/script_access.hpp
-  scripts/script_data.hpp
-  scripts/script_info.hpp
-  scripts/script_variant.hpp
-  scripts/script_view.hpp
-  scripts/script.hpp
-  scripts/scripthash_script.hpp
-)
-
-set(SCRIPT_PRIVATE_HEADERS
-  scripts/bitcoin_base58.hpp
-  scripts/bitcoin_bech32.hpp
-  scripts/bitcoin_segwit_addr.hpp
-)
-
-set(SCRIPT_SOURCES
-  scripts/bitcoin_base58.cpp
-  scripts/bitcoin_bech32.cpp
-  scripts/bitcoin_pubkey.cpp
-  scripts/bitcoin_script.cpp
-  scripts/bitcoin_segwit_addr.cpp
-  scripts/multisig_pubkey_script.cpp
-  scripts/pubkey_script.cpp
-  scripts/script_view.cpp
-  scripts/script.cpp
-  scripts/script_variant.cpp
-  scripts/scripthash_script.cpp
-)
-
-set_source_files_properties(scripts/bitcoin_bech32.cpp PROPERTIES COMPILE_FLAGS -Wno-everything)
-
-set(UTIL_HEADERS
-  util/file_mapper_fwd.hpp
-  util/bitcoin_uint256.hpp
-  util/data_access.hpp
-  util/data_configuration.hpp
-  util/file_mapper.hpp
-  util/file_writer.hpp
-  util/hash.hpp
-  util/parallel.hpp
-  util/progress_bar.hpp
-  util/state.hpp
-  util/util.hpp
-  util/in_place_array.hpp
-  util/apply_template.hpp
-  util/apply.hpp
-  util/dynamic_table.hpp
-  util/static_table.hpp
-  util/memory_view.hpp
-)
-
-set(UTIL_SOURCES
-  util/bitcoin_uint256.cpp
-  util/data_configuration.cpp
-  util/hash.cpp
-)
-
-set(CLUSTER_HEADERS
-  cluster/cluster_fwd.hpp
-  cluster/cluster_manager.hpp
-  cluster/cluster.hpp
-  cluster/cluster_access.hpp
-)
-
-set_source_files_properties(cluster/cluster_manager.cpp PROPERTIES COMPILE_FLAGS "-Wno-reserved-id-macro -Wno-shorten-64-to-32")
-
-set(CLUSTER_SOURCES
-  cluster/cluster_manager.cpp
-  cluster/cluster.cpp
-)
-
-set(ALL_SOURCES ${BLOCKSCI_HEADERS} ${BLOCKSCI_SOURCES} ${ADDRESS_HEADERS} ${ADDRESS_SOURCES}  ${SCRIPT_HEADERS} ${SCRIPT_PRIVATE_HEADERS} ${SCRIPT_SOURCES} ${CHAIN_HEADERS} ${CHAIN_SOURCES} ${INDEX_HEADERS} ${INDEX_PRIVATE_HEADERS} ${INDEX_SOURCES} ${UTIL_HEADERS} ${UTIL_SOURCES} ${HEURISTICS_HEADERS} ${HEURISTICS_SOURCES} ${CLUSTER_HEADERS} ${CLUSTER_SOURCES})
-
-add_library(blocksci SHARED ${ALL_SOURCES})
-add_library(blocksci_static STATIC ${ALL_SOURCES})
-
-
-target_compile_features(blocksci_static PUBLIC 
-  cxx_aggregate_default_initializers
-  cxx_auto_type
-  cxx_decltype
-  cxx_default_function_template_args
-  cxx_defaulted_functions
-  cxx_defaulted_move_initializers
-  cxx_delegating_constructors
-  cxx_deleted_functions
-  cxx_explicit_conversions
-  cxx_extern_templates
-  cxx_generalized_initializers
-  cxx_generic_lambdas
-  cxx_inheriting_constructors
-  cxx_lambdas
-  cxx_long_long_type
-  cxx_nullptr
-  cxx_override
-  cxx_range_for
-  cxx_return_type_deduction
-  cxx_right_angle_brackets
-  cxx_rvalue_references
-  cxx_static_assert
-  cxx_trailing_return_types
-  cxx_uniform_initialization
-  cxx_variable_templates
-  cxx_variadic_templates
-  cxx_template_template_parameters
-)
+set_target_properties(blocksci PROPERTIES CXX_VISIBILITY_PRESET hidden)
+set_target_properties(blocksci PROPERTIES VISIBILITY_INLINES_HIDDEN 1)
 
 target_compile_features(blocksci PUBLIC 
   cxx_aggregate_default_initializers
@@ -254,25 +48,232 @@ target_compile_features(blocksci PUBLIC
   cxx_template_template_parameters
 )
 
-target_compile_options(blocksci_static PRIVATE -Wall -Wextra -Wpedantic)
-
-if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-target_compile_options(blocksci_static PRIVATE -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-old-style-cast -Wno-documentation-unknown-command -Wno-documentation -Wno-shadow -Wno-covered-switch-default -Wno-missing-prototypes -Wno-weak-vtables -Wno-unused-macros -Wno-padded)
-endif()
-
 target_compile_options(blocksci PRIVATE -Wall -Wextra -Wpedantic)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 target_compile_options(blocksci PRIVATE -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-old-style-cast -Wno-documentation-unknown-command -Wno-documentation -Wno-shadow -Wno-covered-switch-default -Wno-missing-prototypes -Wno-weak-vtables -Wno-unused-macros -Wno-padded)
 endif()
 
+target_link_libraries( blocksci PUBLIC Threads::Threads)
+target_link_libraries( blocksci PUBLIC Boost::filesystem Boost::iostreams Boost::serialization)
+target_link_libraries( blocksci PRIVATE OpenSSL::Crypto )
+target_link_libraries( blocksci PRIVATE rocksdb rocksdb_headers)
+target_link_libraries( blocksci PRIVATE secp256k1)
+target_link_libraries( blocksci PRIVATE dset)
+target_link_libraries( blocksci PUBLIC blocksci_mpark_variant blocksci_ranges)
+
+target_include_directories(blocksci PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
+  $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>
+)
+
+target_include_directories(blocksci PRIVATE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+)
+
+set(BLOCKSCI_HEADERS
+  ${BLOCKSCI_HEADER_PREFIX}/address.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/blocksci_fwd.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/blocksci.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/chain.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/heuristics.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/script.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/cluster.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/index.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/exception.hpp
+)
+
+set(ADDRESS_HEADERS
+  ${BLOCKSCI_HEADER_PREFIX}/address/address_fwd.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/address/address_info.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/address/address_types.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/address/address.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/address/raw_address.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/address/dedup_address_info.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/address/dedup_address_type.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/address/dedup_address.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/address/equiv_address_type.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/address/equiv_address.hpp
+)
+
+set(CHAIN_HEADERS
+  ${BLOCKSCI_HEADER_PREFIX}/chain/chain_fwd.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/chain/algorithms.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/chain/block.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/chain/blockchain.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/chain/chain_access.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/chain/inout_pointer.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/chain/inout.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/chain/input.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/chain/output.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/chain/raw_block.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/chain/raw_transaction.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/chain/transaction_range.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/chain/transaction_summary.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/chain/transaction.hpp
+)
+
+set(HEURISTICS_HEADERS
+  ${BLOCKSCI_HEADER_PREFIX}/heuristics/blockchain_heuristics.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/heuristics/change_address.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/heuristics/taint.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/heuristics/tx_identification.hpp
+)
+
+set(CLUSTER_HEADERS
+  ${BLOCKSCI_HEADER_PREFIX}/cluster/cluster_fwd.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/cluster/cluster_manager.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/cluster/cluster.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/cluster/cluster_access.hpp
+)
+
+set(INDEX_HEADERS
+  ${BLOCKSCI_HEADER_PREFIX}/index/address_index.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/index/hash_index.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/index/mempool_index.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/index/column_iterator.hpp
+)
+
+set(SCRIPT_HEADERS
+  ${BLOCKSCI_HEADER_PREFIX}/scripts/scripts_fwd.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/scripts/bitcoin_pubkey.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/scripts/bitcoin_script.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/scripts/multisig_script.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/scripts/multisig_pubkey_script.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/scripts/nonstandard_script.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/scripts/nulldata_script.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/scripts/pubkey_script.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/scripts/pubkey_base_script.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/scripts/script_access.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/scripts/script_data.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/scripts/script_info.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/scripts/script_variant.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/scripts/script_view.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/scripts/script.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/scripts/scripthash_script.hpp
+)
+
+set(UTIL_HEADERS
+  ${BLOCKSCI_HEADER_PREFIX}/util/file_mapper_fwd.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/util/bitcoin_uint256.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/util/data_access.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/util/data_configuration.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/util/file_mapper.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/util/file_writer.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/util/hash.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/util/parallel.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/util/progress_bar.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/util/state.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/util/util.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/util/in_place_array.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/util/apply_template.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/util/apply.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/util/dynamic_table.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/util/static_table.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/util/memory_view.hpp
+)
+
+target_sources(blocksci PUBLIC $<BUILD_INTERFACE:${BLOCKSCI_HEADERS}>)
+target_sources(blocksci PUBLIC $<BUILD_INTERFACE:${ADDRESS_HEADERS}>)
+target_sources(blocksci PUBLIC $<BUILD_INTERFACE:${CHAIN_HEADERS}>)
+target_sources(blocksci PUBLIC $<BUILD_INTERFACE:${SCRIPT_HEADERS}>)
+target_sources(blocksci PUBLIC $<BUILD_INTERFACE:${HEURISTICS_HEADERS}>)
+target_sources(blocksci PUBLIC $<BUILD_INTERFACE:${CLUSTER_HEADERS}>)
+target_sources(blocksci PUBLIC $<BUILD_INTERFACE:${INDEX_HEADERS}>)
+target_sources(blocksci PUBLIC $<BUILD_INTERFACE:${UTIL_HEADERS}>)
+
+set(BLOCKSCI_SOURCES
+  ${BLOCKSCI_SOURCE_PREFIX}/exception.cpp
+)
+
+set(ADDRESS_SOURCES
+  ${BLOCKSCI_SOURCE_PREFIX}/address/address_info.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/address/address.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/address/raw_address.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/address/dedup_address_info.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/address/equiv_address.cpp
+)
+
+set(CHAIN_SOURCES
+  ${BLOCKSCI_SOURCE_PREFIX}/chain/block.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/chain/blockchain.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/chain/inout_pointer.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/chain/input.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/chain/output.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/chain/transaction.cpp
+)
+
+set(HEURISTICS_SOURCES
+  ${BLOCKSCI_SOURCE_PREFIX}/heuristics/blockchain_heuristics.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/heuristics/change_address.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/heuristics/taint.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/heuristics/tx_identification.cpp
+)
+
+set(INDEX_PRIVATE_HEADERS
+  ${BLOCKSCI_SOURCE_PREFIX}/index/address_index_priv.hpp
+  ${BLOCKSCI_SOURCE_PREFIX}/index/hash_index_priv.hpp
+)
+
+set(INDEX_SOURCES
+  ${BLOCKSCI_SOURCE_PREFIX}/index/address_index.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/index/address_index_priv.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/index/hash_index.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/index/hash_index_priv.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/index/column_iterator.cpp
+)
+
+set(SCRIPT_PRIVATE_HEADERS
+  ${BLOCKSCI_SOURCE_PREFIX}/scripts/bitcoin_base58.hpp
+  ${BLOCKSCI_SOURCE_PREFIX}/scripts/bitcoin_bech32.hpp
+  ${BLOCKSCI_SOURCE_PREFIX}/scripts/bitcoin_segwit_addr.hpp
+)
+
+set(SCRIPT_SOURCES
+  ${BLOCKSCI_SOURCE_PREFIX}/scripts/bitcoin_base58.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/scripts/bitcoin_bech32.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/scripts/bitcoin_pubkey.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/scripts/bitcoin_script.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/scripts/bitcoin_segwit_addr.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/scripts/multisig_pubkey_script.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/scripts/pubkey_script.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/scripts/script_view.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/scripts/script.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/scripts/script_variant.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/scripts/scripthash_script.cpp
+)
+
+set_source_files_properties(${BLOCKSCI_SOURCE_PREFIX}/scripts/bitcoin_bech32.cpp PROPERTIES COMPILE_FLAGS -Wno-everything)
+
+set(UTIL_SOURCES
+  ${BLOCKSCI_SOURCE_PREFIX}/util/bitcoin_uint256.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/util/data_configuration.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/util/hash.cpp
+)
+
+set_source_files_properties(${BLOCKSCI_SOURCE_PREFIX}/cluster/cluster_manager.cpp PROPERTIES COMPILE_FLAGS "-Wno-reserved-id-macro -Wno-shorten-64-to-32")
+
+set(CLUSTER_SOURCES
+  ${BLOCKSCI_SOURCE_PREFIX}/cluster/cluster_manager.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/cluster/cluster.cpp
+)
+
+target_sources(blocksci PRIVATE ${BLOCKSCI_SOURCES})
+target_sources(blocksci PRIVATE ${ADDRESS_SOURCES})
+target_sources(blocksci PRIVATE ${SCRIPT_SOURCES})
+target_sources(blocksci PRIVATE ${CHAIN_SOURCES})
+target_sources(blocksci PRIVATE ${HEURISTICS_SOURCES})
+target_sources(blocksci PRIVATE ${INDEX_SOURCES})
+target_sources(blocksci PRIVATE ${UTIL_SOURCES})
+target_sources(blocksci PRIVATE ${CLUSTER_SOURCES})
+target_sources(blocksci PRIVATE ${INDEX_PRIVATE_HEADERS})
+target_sources(blocksci PRIVATE ${SCRIPT_PRIVATE_HEADERS})
+
 include(GenerateExportHeader)
 generate_export_header(blocksci)
-set_target_properties(blocksci_static PROPERTIES COMPILE_FLAGS -DBLOCKSCI_STATIC_DEFINE)
 
 set_property(TARGET blocksci PROPERTY VERSION ${Upstream_VERSION})
-set_property(TARGET blocksci_static PROPERTY VERSION ${Upstream_VERSION})
-set_property(TARGET blocksci_static PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 if( supported )
     message(STATUS "IPO / LTO enabled")
@@ -290,46 +291,9 @@ source_group(blocksci\\heuristics FILES ${HEURISTICS_HEADERS} ${HEURISTICS_SOURC
 source_group(blocksci\\cluster FILES ${CLUSTER_HEADERS} ${CLUSTER_SOURCES})
 source_group(blocksci FILES ${BLOCKSCI_HEADERS} ${BLOCKSCI_SOURCES})
 
-target_link_libraries( blocksci PUBLIC Threads::Threads)
-target_link_libraries( blocksci PUBLIC Boost::filesystem Boost::iostreams Boost::serialization)
-target_link_libraries( blocksci PRIVATE OpenSSL::Crypto )
-target_link_libraries( blocksci PRIVATE rocksdb rocksdb_headers)
-target_link_libraries( blocksci PRIVATE secp256k1)
-target_link_libraries( blocksci PRIVATE dset)
-target_link_libraries( blocksci PUBLIC blocksci_mpark_variant blocksci_ranges)
-
-SET_TARGET_PROPERTIES(blocksci_static PROPERTIES OUTPUT_NAME blocksci)
-
-target_link_libraries( blocksci_static PUBLIC Threads::Threads)
-target_link_libraries( blocksci_static PUBLIC Boost::filesystem Boost::iostreams Boost::serialization)
-target_link_libraries( blocksci_static PRIVATE OpenSSL::Crypto )
-target_link_libraries( blocksci_static PRIVATE rocksdb rocksdb_headers)
-target_link_libraries( blocksci_static PRIVATE secp256k1)
-target_link_libraries( blocksci_static PRIVATE dset)
-target_link_libraries( blocksci_static PUBLIC blocksci_mpark_variant blocksci_ranges)
-
-target_include_directories(blocksci PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
-  $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>
-)
-
-target_include_directories(blocksci_static PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
-  $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>
-)
-
-SET(VERSION_STRING ${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION})
-
-SET_TARGET_PROPERTIES(blocksci blocksci_static PROPERTIES
-    VERSION "${VERSION_STRING}"
-    SOVERSION "${SO_VERSION}")
-
 include(CMakePackageConfigHelpers)
 
 INSTALL(TARGETS blocksci EXPORT blocksci-targets LIBRARY DESTINATION ${LIB_INSTALL_DIR} ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
-INSTALL(TARGETS blocksci_static EXPORT blocksci_static LIBRARY DESTINATION ${LIB_INSTALL_DIR} ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
 
 export(EXPORT blocksci-targets
   FILE "${CMAKE_CURRENT_BINARY_DIR}/blocksci-targets.cmake"
@@ -353,11 +317,5 @@ install(
     Devel
 )
 
+install(DIRECTORY ${BLOCKSCI_HEADER_PREFIX}/ DESTINATION ${INCLUDE_INSTALL_DIR})
 install(FILES ${BLOCKSCI_HEADERS} ${CMAKE_CURRENT_BINARY_DIR}/blocksci_export.h DESTINATION ${INCLUDE_INSTALL_DIR})
-install(FILES ${ADDRESS_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/address)
-install(FILES ${SCRIPT_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/scripts)
-install(FILES ${UTIL_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/util)
-install(FILES ${INDEX_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/index)
-install(FILES ${CHAIN_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/chain)
-install(FILES ${HEURISTICS_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/heuristics)
-install(FILES ${CLUSTER_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/cluster)
