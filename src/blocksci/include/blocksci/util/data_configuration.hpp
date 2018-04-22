@@ -12,7 +12,6 @@
 #include <blocksci/blocksci_export.h>
 #include <blocksci/blocksci_fwd.hpp>
 #include <blocksci/typedefs.hpp>
-#include <boost/filesystem/path.hpp>
 
 #include <string>
 #include <sstream>
@@ -24,10 +23,10 @@ namespace blocksci {
     struct BLOCKSCI_EXPORT DataConfiguration {
         DataConfiguration() {}
         // May create data directory (Used by parser)
-        explicit DataConfiguration(boost::filesystem::path dataDirectory);
+        explicit DataConfiguration(const std::string &dataDirectory);
         
         // Must point to existing data directory
-        DataConfiguration(boost::filesystem::path dataDirectory, bool errorOnReorg, BlockHeight blocksIgnored);
+        DataConfiguration(const std::string &dataDirectory, bool errorOnReorg, BlockHeight blocksIgnored);
         
         bool errorOnReorg;
         BlockHeight blocksIgnored;
@@ -36,55 +35,26 @@ namespace blocksci {
         std::vector<unsigned char> scriptPrefix;
         std::string segwitPrefix;
         
-        boost::filesystem::path dataDirectory;
+        std::string dataDirectory;
         
         bool isNull() const {
             return dataDirectory.empty();
         }
         
-        boost::filesystem::path scriptsDirectory() const {
-            return dataDirectory/"scripts";
-        }
+        std::string scriptsDirectory() const;
         
-        boost::filesystem::path chainDirectory() const {
-            return dataDirectory/"chain";
-        }
+        std::string chainDirectory() const;
         
-        boost::filesystem::path mempoolDirectory() const {
-            return dataDirectory/"mempool";
-        }
+        std::string mempoolDirectory() const;
         
-        boost::filesystem::path txFilePath() const {
-            return chainDirectory()/"tx";
-        }
+        std::string txFilePath() const;
+        std::string txHashesFilePath() const;
+        std::string blockFilePath() const;
+        std::string blockCoinbaseFilePath() const;
+        std::string sequenceFilePath() const;
         
-        boost::filesystem::path txHashesFilePath() const {
-            return chainDirectory()/"tx_hashes";
-        }
-        
-        boost::filesystem::path blockFilePath() const {
-            return chainDirectory()/"block";
-        }
-        
-        boost::filesystem::path blockCoinbaseFilePath() const {
-            return chainDirectory()/"coinbases";
-        }
-        
-        boost::filesystem::path sequenceFilePath() const {
-            return chainDirectory()/"sequence";
-        }
-        
-        boost::filesystem::path addressDBFilePath() const {
-            return dataDirectory/"addressesDb";
-        }
-        
-        boost::filesystem::path hashIndexFilePath() const {
-            return dataDirectory/"hashIndex";
-        }
-        
-        boost::filesystem::path scriptTypeCountFile() const {
-            return chainDirectory()/"scriptTypeCount.txt";
-        }
+        std::string addressDBFilePath() const;
+        std::string hashIndexFilePath() const;
         
         bool operator==(const DataConfiguration &other) const {
             return dataDirectory == other.dataDirectory;

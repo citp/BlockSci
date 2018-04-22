@@ -73,7 +73,7 @@ namespace {
 }
 
 namespace blocksci {
-    ClusterManager::ClusterManager(const boost::filesystem::path &baseDirectory, blocksci::DataAccess &access_) : access(baseDirectory, access_) {}
+    ClusterManager::ClusterManager(const std::string &baseDirectory, blocksci::DataAccess &access_) : access(baseDirectory, access_) {}
     
     Cluster ClusterManager::getCluster(const blocksci::Address &address) const {
         return Cluster(access.getClusterNum(address), access);
@@ -300,7 +300,7 @@ namespace blocksci {
         recordOrdered.get();
         
         clusterOffsetFile.write(reinterpret_cast<char *>(clusterPositions.data()), static_cast<long>(sizeof(uint32_t) * clusterPositions.size()));
-        return ClusterManager{outputLocation, chain.getAccess()};
+        return ClusterManager{outputLocation.native(), chain.getAccess()};
     }
 } // namespace blocksci
 

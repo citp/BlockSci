@@ -55,7 +55,7 @@ void replayBlock(const ParserConfiguration<FileTag> &config, blocksci::BlockHeig
     
     std::vector<unsigned char> coinbase;
     
-    HashIndexCreator hashDb(config, config.dataConfig.hashIndexFilePath().native());
+    HashIndexCreator hashDb(config, config.dataConfig.hashIndexFilePath());
     AddressState addressState{config.addressPath(), hashDb};
     blocksci::DataAccess access(config.dataConfig);
     

@@ -20,12 +20,12 @@
 #include "utxo_address_state.hpp"
 #include "output_spend_data.hpp"
 #include "serializable_map.hpp"
+#include "file_writer.hpp"
 
 #include <blocksci/chain/block.hpp>
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/transaction.hpp>
-#include <blocksci/util/file_writer.hpp>
 #include <blocksci/core/bitcoin_uint256.hpp>
 #include <blocksci/util/hash.hpp>
 #include <blocksci/util/progress_bar.hpp>
@@ -428,7 +428,7 @@ void backUpdateTxes(const ParserConfigurationBase &config) {
         }
     }
     
-    boost::filesystem::remove(config.txUpdatesFilePath().concat(".dat"));
+    boost::filesystem::remove(config.txUpdatesFilePath() + ".dat");
 }
 
 struct CompletionGuard {

@@ -8,8 +8,9 @@
 
 #define BLOCKSCI_WITHOUT_SINGLETON
 
+#include "file_writer.hpp"
+
 #include <blocksci/chain/blockchain.hpp>
-#include <blocksci/util/file_writer.hpp>
 #include <blocksci/chain/block.hpp>
 #include <blocksci/index/mempool_index.hpp>
 
@@ -44,10 +45,10 @@ int initializeRecordingFile(Blockchain &chain) {
         boost::filesystem::create_directory(mempoolDir);
     }
     auto mostRecentBlock = chain[static_cast<int>(chain.size()) - 1];
-    blocksci::FixedSizeFileWriter<uint32_t> txIndexFile(chain.getAccess().config.mempoolDirectory()/"tx_index");
+    blocksci::FixedSizeFileWriter<uint32_t> txIndexFile((boost::filesystem::path{chain.getAccess().config.mempoolDirectory()}/"tx_index").native());
     auto fileNum = static_cast<int>(txIndexFile.size());
     txIndexFile.write(mostRecentBlock.endTxIndex());
-    blocksci::FixedSizeFileWriter<int32_t> blockIndexFile(chain.getAccess().config.mempoolDirectory()/"block_index");
+    blocksci::FixedSizeFileWriter<int32_t> blockIndexFile((boost::filesystem::path{chain.getAccess().config.mempoolDirectory()}/"block_index").native());
     assert(blockIndexFile.size() == fileNum);
     blockIndexFile.write(mostRecentBlock.height() + 1);
     return fileNum;

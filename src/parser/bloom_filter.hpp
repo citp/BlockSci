@@ -11,6 +11,7 @@
 
 #include <blocksci/core/file_mapper.hpp>
 
+#include <boost/filesystem/path.hpp>
 #include <boost/serialization/access.hpp>
 
 #include <fstream>
@@ -20,7 +21,7 @@ struct BloomStore {
     using BlockType = size_t;
     static constexpr size_t BlockSize = sizeof(BlockType) * 8;
 
-    BloomStore(boost::filesystem::path path, uint64_t length);
+    BloomStore(const std::string &path, uint64_t length);
     
     void setBit(uint64_t bitPos);
     bool isSet(uint64_t bitPos) const;
@@ -60,7 +61,7 @@ struct BloomFilterData {
 class BloomFilter {
 public:
     // Load or create
-    BloomFilter(boost::filesystem::path path, uint64_t maxItems, double fpRate);
+    BloomFilter(const std::string &path, uint64_t maxItems, double fpRate);
     BloomFilter(const BloomFilter &) = delete;
     BloomFilter &operator=(const BloomFilter &) = delete;
     ~BloomFilter();
@@ -104,7 +105,7 @@ public:
     }
     
 private:
-    boost::filesystem::path path;
+    std::string path;
     BloomFilterData impData;
     BloomStore store;
     

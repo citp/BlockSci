@@ -12,8 +12,8 @@
 
 #include "parser_fwd.hpp"
 #include "parser_configuration.hpp"
+#include "file_writer.hpp"
 
-#include <blocksci/util/file_writer.hpp>
 #include <blocksci/core/file_mapper.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/block.hpp>

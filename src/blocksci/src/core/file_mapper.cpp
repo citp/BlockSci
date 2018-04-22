@@ -27,8 +27,7 @@ namespace {
 
 
 namespace blocksci {
-    SimpleFileMapperBase::SimpleFileMapperBase(boost::filesystem::path path_, AccessMode mode) : file(std::make_unique<boost::iostreams::mapped_file>()), fileEnd(0), path(std::move(path_)), fileMode(mode) {
-        path += ".dat";
+    SimpleFileMapperBase::SimpleFileMapperBase(const std::string &path_, AccessMode mode) : file(std::make_unique<boost::iostreams::mapped_file>()), fileEnd(0), path(path_ + ".dat"), fileMode(mode) {
         if (boost::filesystem::exists(path)) {
             openFile(fileSize());
         }
@@ -74,7 +73,7 @@ namespace blocksci {
         return boost::filesystem::file_size(path);
     }
 
-    SimpleFileMapper<AccessMode::readwrite>::SimpleFileMapper(boost::filesystem::path path) : SimpleFileMapperBase(std::move(path), AccessMode::readwrite), writePos(size()) {
+    SimpleFileMapper<AccessMode::readwrite>::SimpleFileMapper(const std::string &path) : SimpleFileMapperBase(std::move(path), AccessMode::readwrite), writePos(size()) {
         dataPtr = file->data();
     }
 
@@ -108,7 +107,7 @@ namespace blocksci {
     void SimpleFileMapper<AccessMode::readwrite>::clearBuffer() {
         if (buffer.size() > 0) {
             if (!file->is_open()) {
-                boost::iostreams::mapped_file_params params{path.native()};
+                boost::iostreams::mapped_file_params params{path};
                 params.new_file_size = static_cast<decltype(params.new_file_size)>(buffer.size());
                 params.flags = boost::iostreams::mapped_file::readwrite;
                 file->open(params);

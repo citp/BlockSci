@@ -11,9 +11,8 @@
 
 #include <blocksci/blocksci_export.h>
 
-#include <boost/filesystem/path.hpp>
-
 #include <array>
+#include <string>
 #include <vector>
 
 namespace boost { namespace iostreams {
@@ -70,10 +69,10 @@ namespace blocksci {
         size_t fileEnd;
         const char *const_data;
     public:
-        boost::filesystem::path path;
+        std::string path;
         AccessMode fileMode;
         
-        SimpleFileMapperBase(boost::filesystem::path path_, AccessMode mode);
+        SimpleFileMapperBase(const std::string &path_, AccessMode mode);
         SimpleFileMapperBase(SimpleFileMapperBase &&other);
         ~SimpleFileMapperBase();
         
@@ -100,7 +99,7 @@ namespace blocksci {
     
     template <>
     struct BLOCKSCI_EXPORT SimpleFileMapper<AccessMode::readonly> : public SimpleFileMapperBase {
-        SimpleFileMapper(boost::filesystem::path path) : SimpleFileMapperBase(std::move(path), AccessMode::readonly) {}
+        SimpleFileMapper(std::string path) : SimpleFileMapperBase(std::move(path), AccessMode::readonly) {}
     };
     
     template <typename MainType>
@@ -147,7 +146,7 @@ namespace blocksci {
         std::vector<char> buffer;
         static constexpr auto mode = AccessMode::readwrite;
         
-        explicit SimpleFileMapper(boost::filesystem::path path);
+        explicit SimpleFileMapper(const std::string &path);
         
         SimpleFileMapper(const SimpleFileMapper &) = delete;
         SimpleFileMapper(SimpleFileMapper &&) = default;
@@ -289,7 +288,7 @@ namespace blocksci {
         using const_pointer = add_const_ptr_t<T>;
 
         
-        explicit FixedSizeFileMapper(boost::filesystem::path path) : dataFile(std::move(path)) {}
+        explicit FixedSizeFileMapper(std::string path) : dataFile(std::move(path)) {}
         
         const_pointer operator[](size_type index) const {
             assert(index < size());
@@ -423,7 +422,7 @@ namespace blocksci {
         }
         
     public:
-        explicit IndexedFileMapper(const boost::filesystem::path &pathPrefix) : dataFile(boost::filesystem::path(pathPrefix).concat("_data")), indexFile(boost::filesystem::path(pathPrefix).concat("_index")) {
+        explicit IndexedFileMapper(const std::string &pathPrefix) : dataFile(pathPrefix + "_data"), indexFile(pathPrefix + "_index") {
         }
         
         void reload() {

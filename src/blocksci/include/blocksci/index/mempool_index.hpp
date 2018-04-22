@@ -32,7 +32,7 @@ namespace blocksci {
         FixedSizeFileMapper<MempoolRecord> timestampFile;
         uint32_t firstTxIndex;
         
-        explicit TimestampIndex(const boost::filesystem::path &path, uint32_t firstTxIndex_) : timestampFile(path), firstTxIndex(firstTxIndex_) {}
+        explicit TimestampIndex(const std::string &path, uint32_t firstTxIndex_) : timestampFile(path), firstTxIndex(firstTxIndex_) {}
         
         ranges::optional<std::chrono::system_clock::time_point> getTimestamp(uint32_t index) const {
             auto record = timestampFile[index - firstTxIndex];
@@ -65,7 +65,7 @@ namespace blocksci {
         FixedSizeFileMapper<BlockRecord> timestampFile;
         int firstBlockNum;
         
-        explicit BlocktimeIndex(const boost::filesystem::path &path, int firstBlockNum_) : timestampFile(path), firstBlockNum(firstBlockNum_) {}
+        explicit BlocktimeIndex(const std::string &path, int firstBlockNum_) : timestampFile(path), firstBlockNum(firstBlockNum_) {}
         
         ranges::optional<std::chrono::system_clock::time_point> getTimestamp(int index) const {
             assert(index - firstBlockNum >= 0);
@@ -93,16 +93,21 @@ namespace blocksci {
         
         void setup() {
             timestampFiles.clear();
-            FixedSizeFileMapper<uint32_t> txRecordingPositions{config.mempoolDirectory()/"tx_index"};
+            FixedSizeFileMapper<uint32_t> txRecordingPositions{txIndexFilePath()};
             for (size_t i = 0; i < txRecordingPositions.size(); i++) {
-                timestampFiles.emplace_back((config.mempoolDirectory()/std::to_string(i)).concat("_tx"), *txRecordingPositions[i]);
+                timestampFiles.emplace_back(nthTxFilePath(i), *txRecordingPositions[i]);
             }
             blockTimeFiles.clear();
-            FixedSizeFileMapper<int> blockRecordingPositions{config.mempoolDirectory()/"block_index"};
+            FixedSizeFileMapper<int> blockRecordingPositions{blockIndexFilePath()};
             for (size_t i = 0; i < blockRecordingPositions.size(); i++) {
-                blockTimeFiles.emplace_back((config.mempoolDirectory()/std::to_string(i)).concat("_block"), *blockRecordingPositions[i]);
+                blockTimeFiles.emplace_back(nthBlockFilePath(i), *blockRecordingPositions[i]);
             }
         }
+        
+        std::string txIndexFilePath() const;
+        std::string blockIndexFilePath() const;
+        std::string nthTxFilePath(size_t i) const;
+        std::string nthBlockFilePath(size_t i) const;
         
     public:
         explicit MempoolIndex(const DataConfiguration &config_) :  config(config_) {

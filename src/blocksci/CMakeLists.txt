@@ -54,8 +54,8 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_ID STREQUAL
 target_compile_options(blocksci PRIVATE -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-old-style-cast -Wno-documentation-unknown-command -Wno-documentation -Wno-shadow -Wno-covered-switch-default -Wno-missing-prototypes -Wno-weak-vtables -Wno-unused-macros -Wno-padded)
 endif()
 
-target_link_libraries( blocksci PUBLIC Threads::Threads )
-target_link_libraries( blocksci PUBLIC Boost::filesystem )
+target_link_libraries( blocksci PRIVATE Threads::Threads )
+target_link_libraries( blocksci PRIVATE Boost::filesystem )
 target_link_libraries( blocksci PRIVATE Boost::iostreams )
 target_link_libraries( blocksci PRIVATE OpenSSL::Crypto )
 target_link_libraries( blocksci PRIVATE rocksdb rocksdb_headers)
@@ -78,6 +78,7 @@ set(BLOCKSCI_HEADERS
   ${BLOCKSCI_HEADER_PREFIX}/blocksci_fwd.hpp
   ${BLOCKSCI_HEADER_PREFIX}/blocksci.hpp
   ${BLOCKSCI_HEADER_PREFIX}/chain.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/core.hpp
   ${BLOCKSCI_HEADER_PREFIX}/heuristics.hpp
   ${BLOCKSCI_HEADER_PREFIX}/script.hpp
   ${BLOCKSCI_HEADER_PREFIX}/cluster.hpp
@@ -148,7 +149,6 @@ set(SCRIPT_HEADERS
 set(UTIL_HEADERS
   ${BLOCKSCI_HEADER_PREFIX}/util/data_access.hpp
   ${BLOCKSCI_HEADER_PREFIX}/util/data_configuration.hpp
-  ${BLOCKSCI_HEADER_PREFIX}/util/file_writer.hpp
   ${BLOCKSCI_HEADER_PREFIX}/util/hash.hpp
   ${BLOCKSCI_HEADER_PREFIX}/util/parallel.hpp
   ${BLOCKSCI_HEADER_PREFIX}/util/progress_bar.hpp
@@ -230,6 +230,7 @@ set(INDEX_SOURCES
   ${BLOCKSCI_SOURCE_PREFIX}/index/hash_index.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/index/hash_index_priv.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/index/column_iterator.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/index/mempool_index.cpp
 )
 
 set(SCRIPT_PRIVATE_HEADERS
@@ -273,6 +274,7 @@ set_source_files_properties(${BLOCKSCI_SOURCE_PREFIX}/cluster/cluster_manager.cp
 set(CLUSTER_SOURCES
   ${BLOCKSCI_SOURCE_PREFIX}/cluster/cluster_manager.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/cluster/cluster.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/cluster/cluster_access.cpp
 )
 
 target_sources(blocksci PRIVATE ${BLOCKSCI_SOURCES})
@@ -299,6 +301,8 @@ else()
     message(STATUS "IPO / LTO not supported: <${error}>")
 endif()
 
+source_group(blocksci\\core FILES ${CORE_HEADERS} ${CORE_SOURCES})
+source_group(blocksci\\meta FILES ${META_HEADERS} ${META_SOURCES})
 source_group(blocksci\\chain FILES ${CHAIN_HEADERS} ${CHAIN_SOURCES})
 source_group(blocksci\\address FILES ${ADDRESS_HEADERS} ${ADDRESS_SOURCES})
 source_group(blocksci\\scripts FILES ${SCRIPT_HEADERS} ${SCRIPT_SOURCES} ${SCRIPT_PRIVATE_HEADERS})

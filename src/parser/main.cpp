@@ -268,7 +268,7 @@ void updateAddressDB(const ParserConfigurationBase &config) {
     blocksci::ScriptAccess scripts{config.dataConfig};
     
     blocksci::State updateState{chain, scripts};
-    AddressDB db(config, config.dataConfig.addressDBFilePath().native());
+    AddressDB db(config, config.dataConfig.addressDBFilePath());
     
     std::cout << "Updating address index\n";
     
@@ -355,20 +355,20 @@ int main(int argc, char * argv[]) {
     switch (selected) {
         case mode::update:
         case mode::updateCore: {
-            ParserConfigurationBase config{dataDirectory};
-            HashIndexCreator hashDb(config, config.dataConfig.hashIndexFilePath().native());
+            ParserConfigurationBase config{dataDirectory.native()};
+            HashIndexCreator hashDb(config, config.dataConfig.hashIndexFilePath());
             std::vector<blocksci::RawBlock> newBlocks;
             switch (selectedUpdateMode) {
                 case updateMode::disk: {
                     boost::filesystem::path bitcoinDirectory = {bitcoinDirectoryString};
                     bitcoinDirectory = boost::filesystem::absolute(bitcoinDirectory);
-                    ParserConfiguration<FileTag> config{bitcoinDirectory, dataDirectory};
+                    ParserConfiguration<FileTag> config{bitcoinDirectory, dataDirectory.native()};
                     newBlocks = updateChain(config, blocksci::BlockHeight{maxBlockNum}, hashDb);
                     break;
                 }
 
                 case updateMode::rpc: {
-                    ParserConfiguration<RPCTag> config(username, password, address, port, dataDirectory);
+                    ParserConfiguration<RPCTag> config(username, password, address, port, dataDirectory.native());
                     newBlocks = updateChain(config, blocksci::BlockHeight{maxBlockNum}, hashDb);
                     break;
                 }
@@ -393,36 +393,36 @@ int main(int argc, char * argv[]) {
         }
 
         case mode::updateIndexes: {
-            ParserConfigurationBase config{dataDirectory};
+            ParserConfigurationBase config{dataDirectory.native()};
             updateAddressDB(config);
             {
-                HashIndexCreator db(config, config.dataConfig.hashIndexFilePath().native());
+                HashIndexCreator db(config, config.dataConfig.hashIndexFilePath());
                 updateHashDB(config, db);
             }
             break;
         }
 
         case mode::updateHashIndex: {
-            ParserConfigurationBase config{dataDirectory};
-            HashIndexCreator db(config, config.dataConfig.hashIndexFilePath().native());
+            ParserConfigurationBase config{dataDirectory.native()};
+            HashIndexCreator db(config, config.dataConfig.hashIndexFilePath());
             updateHashDB(config, db);
             break;
         }
 
         case mode::updateAddressIndex: {
-            ParserConfigurationBase config{dataDirectory};
+            ParserConfigurationBase config{dataDirectory.native()};
             updateAddressDB(config);
             break;
         }
             
         case mode::compactIndexes: {
-            ParserConfigurationBase config{dataDirectory};
+            ParserConfigurationBase config{dataDirectory.native()};
             {
-                AddressDB db(config, config.dataConfig.addressDBFilePath().native());
+                AddressDB db(config, config.dataConfig.addressDBFilePath());
                 db.compact();
             }
             {
-                HashIndexCreator db(config, config.dataConfig.hashIndexFilePath().native());
+                HashIndexCreator db(config, config.dataConfig.hashIndexFilePath());
                 db.compact();
             }
             break;

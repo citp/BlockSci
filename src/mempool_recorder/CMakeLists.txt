@@ -1,3 +1,5 @@
+find_package( Boost 1.58 COMPONENTS filesystem REQUIRED )
+
 add_executable(mempool_recorder main.cpp)
 
 target_compile_options(mempool_recorder PRIVATE -Wall -Wextra -Wpedantic)
@@ -9,5 +11,6 @@ endif()
 target_link_libraries( mempool_recorder blocksci)
 target_link_libraries( mempool_recorder bitcoinapi_static)
 target_link_libraries( mempool_recorder clipp)
+target_link_libraries( mempool_recorder Boost::filesystem)
 
 install(TARGETS mempool_recorder DESTINATION bin)

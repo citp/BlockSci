@@ -66,7 +66,7 @@ class AddressState {
     class AddressBloomFilter : public BloomFilter  {
     public:
         static constexpr auto type = scriptType;
-        AddressBloomFilter(const boost::filesystem::path &path) : BloomFilter(boost::filesystem::path(path).concat(dedupAddressName(type)), startingCount<scriptType>, AddressFalsePositiveRate)  {}
+        AddressBloomFilter(const boost::filesystem::path &path) : BloomFilter(boost::filesystem::path(path).concat(dedupAddressName(type)).native(), startingCount<scriptType>, AddressFalsePositiveRate)  {}
     };
 
     template<blocksci::DedupAddressType::Enum scriptType>

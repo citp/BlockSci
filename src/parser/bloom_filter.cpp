@@ -22,7 +22,7 @@
 constexpr double Log2 = 0.69314718056;
 constexpr double Log2Squared = Log2 * Log2;
 
-BloomStore::BloomStore(boost::filesystem::path path_, uint64_t length_) : bitMasks{}, backingFile(std::move(path_)), length(length_) {
+BloomStore::BloomStore(const std::string &path_, uint64_t length_) : bitMasks{}, backingFile(path_), length(length_) {
     
     for (size_t i = 0; i < BloomStore::BlockSize; ++i) {
         bitMasks.at(i) = BloomStore::BlockType{1} << i;
@@ -76,7 +76,7 @@ BloomFilterData loadData(const boost::filesystem::path &path, uint64_t maxItems,
     return data;
 }
 
-BloomFilter::BloomFilter(boost::filesystem::path path_, uint64_t maxItems, double fpRate) : path(std::move(path_)), impData(loadData(metaPath(), maxItems, fpRate)), store(storePath(), impData.length) {}
+BloomFilter::BloomFilter(const std::string &path_, uint64_t maxItems, double fpRate) : path(path_), impData(loadData(metaPath(), maxItems, fpRate)), store(storePath().native(), impData.length) {}
 
 BloomFilter::~BloomFilter() {
     boost::filesystem::ofstream file(metaPath(), std::ios::binary);

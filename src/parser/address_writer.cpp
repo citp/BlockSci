@@ -15,7 +15,7 @@ using blocksci::DedupAddressType;
 
 AddressWriter::AddressWriter(const ParserConfigurationBase &config) :
 scriptFiles(blocksci::apply(blocksci::DedupAddressType::all(), [&] (auto tag) {
-    return ScriptFile<tag>(config.dataConfig.scriptsDirectory()/ std::string{dedupAddressName(tag)});
+    return ScriptFile<tag>((boost::filesystem::path{config.dataConfig.scriptsDirectory()}/std::string{dedupAddressName(tag)}).native());
 })) {
 }
 

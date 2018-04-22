@@ -22,14 +22,14 @@ namespace blocksci {
         }
     }
     
-    DataConfiguration::DataConfiguration(boost::filesystem::path dataDirectory_) : errorOnReorg(false), blocksIgnored(0), dataDirectory(std::move(dataDirectory_)) {
+    DataConfiguration::DataConfiguration(const std::string &dataDirectory_) : errorOnReorg(false), blocksIgnored(0), dataDirectory(boost::filesystem::path{dataDirectory_}.native()) {
         createDirectory(dataDirectory);
         createDirectory(scriptsDirectory());
         createDirectory(chainDirectory());
         createDirectory(mempoolDirectory());
         
         boost::property_tree::ptree root;
-        auto configFile = dataDirectory/"config.ini";
+        auto configFile = boost::filesystem::path{dataDirectory}/"config.ini";
         if (boost::filesystem::exists(configFile)) {
             boost::filesystem::ifstream configStream{configFile};
             boost::property_tree::read_ini(configStream, root);
@@ -40,7 +40,7 @@ namespace blocksci {
         }
     }
     
-    DataConfiguration::DataConfiguration(boost::filesystem::path dataDirectory_, bool errorOnReorg_, BlockHeight blocksIgnored_) : errorOnReorg(errorOnReorg_), blocksIgnored(blocksIgnored_), dataDirectory(std::move(dataDirectory_)) {
+    DataConfiguration::DataConfiguration(const std::string &dataDirectory_, bool errorOnReorg_, BlockHeight blocksIgnored_) : errorOnReorg(errorOnReorg_), blocksIgnored(blocksIgnored_), dataDirectory(boost::filesystem::path{dataDirectory_}.native()) {
         if(!(boost::filesystem::exists(dataDirectory))){
             throw std::runtime_error("Error, blocksci data directory does not exist");
         }
@@ -53,10 +53,8 @@ namespace blocksci {
             throw std::runtime_error("Error, blocksci chain directory does not exist");
         }
         
-        
-        
         boost::property_tree::ptree root;
-        auto configFile = dataDirectory/"config.ini";
+        auto configFile = boost::filesystem::path{dataDirectory}/"config.ini";
         if (boost::filesystem::exists(configFile)) {
             boost::filesystem::ifstream configStream{configFile};
             boost::property_tree::read_ini(configStream, root);
@@ -70,20 +68,19 @@ namespace blocksci {
             throw std::runtime_error(ss.str());
         }
         
-        auto dataDirectoryString = dataDirectory.native();
-        if(dataDirectoryString.find("dash") != std::string::npos) {
+        if(dataDirectory.find("dash") != std::string::npos) {
             pubkeyPrefix = {76};
             scriptPrefix = {16};
             segwitPrefix = "NONE";
-        } else if(dataDirectoryString.find("litecoin") != std::string::npos) {
+        } else if(dataDirectory.find("litecoin") != std::string::npos) {
             pubkeyPrefix = {48};
             scriptPrefix = {50};
             segwitPrefix = "ltc";
-        } else if(dataDirectoryString.find("zcash") != std::string::npos) {
+        } else if(dataDirectory.find("zcash") != std::string::npos) {
             pubkeyPrefix = {28,184};
             scriptPrefix = {28,189};
             segwitPrefix = "NONE";
-        } else if(dataDirectoryString.find("namecoin") != std::string::npos) {
+        } else if(dataDirectory.find("namecoin") != std::string::npos) {
             pubkeyPrefix = {52};
             scriptPrefix = {13};
             segwitPrefix = "nc";
@@ -92,6 +89,46 @@ namespace blocksci {
             scriptPrefix = std::vector<unsigned char>(1,5);
             segwitPrefix = "bc";
         }
+    }
+    
+    std::string DataConfiguration::scriptsDirectory() const {
+        return (boost::filesystem::path{dataDirectory}/"scripts").native();
+    }
+    
+    std::string DataConfiguration::chainDirectory() const {
+        return (boost::filesystem::path{dataDirectory}/"chain").native();
+    }
+    
+    std::string DataConfiguration::mempoolDirectory() const {
+        return (boost::filesystem::path{dataDirectory}/"mempool").native();
+    }
+    
+    std::string DataConfiguration::txFilePath() const {
+        return (boost::filesystem::path{chainDirectory()}/"tx").native();
+    }
+    
+    std::string DataConfiguration::txHashesFilePath() const {
+        return (boost::filesystem::path{chainDirectory()}/"tx_hashes").native();
+    }
+    
+    std::string DataConfiguration::blockFilePath() const {
+        return (boost::filesystem::path{chainDirectory()}/"block").native();
+    }
+    
+    std::string DataConfiguration::blockCoinbaseFilePath() const {
+        return (boost::filesystem::path{chainDirectory()}/"coinbases").native();
+    }
+    
+    std::string DataConfiguration::sequenceFilePath() const {
+        return (boost::filesystem::path{chainDirectory()}/"sequence").native();
+    }
+    
+    std::string DataConfiguration::addressDBFilePath() const {
+        return (boost::filesystem::path{dataDirectory}/"addressesDb").native();
+    }
+    
+    std::string DataConfiguration::hashIndexFilePath() const {
+        return (boost::filesystem::path{dataDirectory}/"hashIndex").native();
     }
     
 }

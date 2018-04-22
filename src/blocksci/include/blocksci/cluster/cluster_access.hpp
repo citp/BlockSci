@@ -51,15 +51,7 @@ namespace blocksci {
     public:
         DataAccess &access;
         
-        ClusterAccess(const boost::filesystem::path &baseDirectory, blocksci::DataAccess &access_) :
-        clusterOffsetFile(baseDirectory/"clusterOffsets"),
-        clusterScriptsFile(baseDirectory/"clusterAddresses"),
-        scriptClusterIndexFiles(blocksci::apply(blocksci::DedupAddressType::all(), [&] (auto tag) {
-            std::stringstream ss;
-            ss << blocksci::dedupAddressName(tag) << "_cluster_index";
-            return baseDirectory/ss.str();
-        })),
-        access(access_)  {}
+        ClusterAccess(const std::string &baseDirectory, blocksci::DataAccess &access_);
         
         uint32_t getClusterNum(const Address &address) const {
             static auto table = blocksci::make_dynamic_table<DedupAddressType, ClusterNumFunctor>();

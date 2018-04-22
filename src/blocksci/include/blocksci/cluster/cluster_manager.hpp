@@ -20,9 +20,6 @@
 #include <range/v3/view/transform.hpp>
 #include <range/v3/view/iota.hpp>
 
-#include <boost/filesystem/path.hpp>
-
-
 namespace blocksci {
     
     class BLOCKSCI_EXPORT ClusterManager {
@@ -31,7 +28,7 @@ namespace blocksci {
         friend class Cluster;
         
     public:
-        ClusterManager(const boost::filesystem::path &baseDirectory, DataAccess &access);
+        ClusterManager(const std::string &baseDirectory, DataAccess &access);
         
         static ClusterManager createClustering(Blockchain &chain, const heuristics::ChangeHeuristic &heuristic, const std::string &outputPath, bool overwrite = false);
         

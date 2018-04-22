@@ -22,10 +22,10 @@ struct ParserConfigurationBase {
     blocksci::DataConfiguration dataConfig;
     
     ParserConfigurationBase();
-    ParserConfigurationBase(boost::filesystem::path dataDirectory_);
+    ParserConfigurationBase(const std::string &dataDirectory_);
     
     boost::filesystem::path parserDirectory() const {
-        return dataConfig.dataDirectory/"parser";
+        return boost::filesystem::path{dataConfig.dataDirectory}/"parser";
     }
     
     boost::filesystem::path utxoCacheFile() const {
@@ -48,8 +48,8 @@ struct ParserConfigurationBase {
         return parserDirectory()/"blockList.dat";
     }
     
-    boost::filesystem::path txUpdatesFilePath() const {
-        return parserDirectory()/"txUpdates";
+    std::string txUpdatesFilePath() const {
+        return (parserDirectory()/"txUpdates").native();
     }
     
     bool witnessActivatedAtHeight(uint32_t blockHeight) const;
@@ -59,7 +59,7 @@ struct ParserConfigurationBase {
 template<>
 struct ParserConfiguration<FileTag> : public ParserConfigurationBase {
     ParserConfiguration();
-    ParserConfiguration(boost::filesystem::path bitcoinDirectory_, boost::filesystem::path dataDirectory_);
+    ParserConfiguration(boost::filesystem::path bitcoinDirectory_, const std::string &dataDirectory_);
     
     boost::filesystem::path bitcoinDirectory;
     uint32_t blockMagic = 0;
@@ -77,7 +77,7 @@ class BitcoinAPI;
 template<>
 struct ParserConfiguration<RPCTag> : public ParserConfigurationBase {
     ParserConfiguration();
-    ParserConfiguration(std::string username, std::string password, std::string address, int port, boost::filesystem::path dataDirectory_);
+    ParserConfiguration(std::string username, std::string password, std::string address, int port, const std::string &dataDirectory_);
     
     std::string username;
     std::string password;
