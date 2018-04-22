@@ -18,6 +18,8 @@
 #include <blocksci/exception.hpp>
 #include <blocksci/typedefs.hpp>
 
+#include <algorithm>
+
 namespace blocksci {
     
     struct DataConfiguration;
