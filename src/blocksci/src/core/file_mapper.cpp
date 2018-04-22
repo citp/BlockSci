@@ -27,9 +27,8 @@ namespace {
 
 
 namespace blocksci {
-    SimpleFileMapperBase::SimpleFileMapperBase(boost::filesystem::path path_, AccessMode mode) : fileEnd(0), path(std::move(path_)), fileMode(mode) {
+    SimpleFileMapperBase::SimpleFileMapperBase(boost::filesystem::path path_, AccessMode mode) : file(std::make_unique<boost::iostreams::mapped_file>()), fileEnd(0), path(std::move(path_)), fileMode(mode) {
         path += ".dat";
-        
         if (boost::filesystem::exists(path)) {
             openFile(fileSize());
         }

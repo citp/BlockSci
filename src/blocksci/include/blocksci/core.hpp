@@ -14,6 +14,8 @@
 #include <blocksci/core/script_access.hpp>
 #include <blocksci/core/script_data.hpp>
 #include <blocksci/core/script_info.hpp>
+#include <blocksci/core/dedup_address_type.hpp>
+#include <blocksci/core/address_types.hpp>
 #include <blocksci/core/inout.hpp>
 #include <blocksci/core/raw_transaction.hpp>
 #include <blocksci/core/raw_block.hpp>
