@@ -54,8 +54,9 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_ID STREQUAL
 target_compile_options(blocksci PRIVATE -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-old-style-cast -Wno-documentation-unknown-command -Wno-documentation -Wno-shadow -Wno-covered-switch-default -Wno-missing-prototypes -Wno-weak-vtables -Wno-unused-macros -Wno-padded)
 endif()
 
-target_link_libraries( blocksci PUBLIC Threads::Threads)
-target_link_libraries( blocksci PUBLIC Boost::filesystem Boost::iostreams)
+target_link_libraries( blocksci PUBLIC Threads::Threads )
+target_link_libraries( blocksci PUBLIC Boost::filesystem )
+target_link_libraries( blocksci PRIVATE Boost::iostreams )
 target_link_libraries( blocksci PRIVATE OpenSSL::Crypto )
 target_link_libraries( blocksci PRIVATE rocksdb rocksdb_headers)
 target_link_libraries( blocksci PRIVATE secp256k1)

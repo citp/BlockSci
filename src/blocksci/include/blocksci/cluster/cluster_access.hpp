@@ -80,7 +80,7 @@ namespace blocksci {
             return static_cast<uint32_t>(clusterOffsetFile.size());
         }
         
-        boost::iterator_range<const blocksci::DedupAddress *> getClusterScripts(uint32_t clusterNum) const {
+        ranges::iterator_range<const blocksci::DedupAddress *> getClusterScripts(uint32_t clusterNum) const {
             auto nextClusterOffset = *clusterOffsetFile[clusterNum];
             uint32_t clusterOffset = 0;
             if (clusterNum > 0) {
@@ -90,7 +90,7 @@ namespace blocksci {
             
             auto firstAddressOffset = clusterScriptsFile[clusterOffset];
             
-            return boost::make_iterator_range_n(firstAddressOffset, clusterSize);
+            return ranges::make_iterator_range(firstAddressOffset, firstAddressOffset + clusterSize);
         }
         
         std::vector<uint32_t> getClusterSizes() const {

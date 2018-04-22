@@ -205,7 +205,7 @@ uint32_t AnyScriptOutput::resolve(AddressState &state) {
 
 // MARK: TX_PUBKEY
 
-ScriptOutputData<blocksci::AddressType::Enum::PUBKEY>::ScriptOutputData(const boost::iterator_range<const unsigned char *> &vch1) : pubkey(vch1.begin(), vch1.end()) {}
+ScriptOutputData<blocksci::AddressType::Enum::PUBKEY>::ScriptOutputData(const ranges::iterator_range<const unsigned char *> &vch1) : pubkey(vch1.begin(), vch1.end()) {}
 
 blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::PUBKEY>::getHash() const {
     return pubkey.GetID();
@@ -228,7 +228,7 @@ blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::PUBKEYHASH>::
 
 // MARK: MULTISIG_PUBKEY
 
-ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY>::ScriptOutputData(const boost::iterator_range<const unsigned char *> &vch1) : pubkey(vch1.begin(), vch1.end()) {}
+ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY>::ScriptOutputData(const ranges::iterator_range<const unsigned char *> &vch1) : pubkey(vch1.begin(), vch1.end()) {}
 
 blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY>::getHash() const {
     return pubkey.GetID();
@@ -299,7 +299,7 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::MULTISIG>::getHa
     return ripemd160(sigData.data(), sigData.size());
 }
 
-void ScriptOutputData<blocksci::AddressType::Enum::MULTISIG>::addAddress(const boost::iterator_range<const unsigned char *> &vch1) {
+void ScriptOutputData<blocksci::AddressType::Enum::MULTISIG>::addAddress(const ranges::iterator_range<const unsigned char *> &vch1) {
     addresses.emplace_back(blocksci::CPubKey(vch1.begin(), vch1.end()));
     addressCount++;
 }

@@ -11,11 +11,14 @@
 
 #include <blocksci/blocksci_export.h>
 
-#include <boost/iostreams/device/mapped_file.hpp>
 #include <boost/filesystem/path.hpp>
 
 #include <array>
 #include <vector>
+
+namespace boost { namespace iostreams {
+    class mapped_file;
+}}
 
 namespace blocksci {
     enum class AccessMode {
@@ -30,17 +33,6 @@ namespace blocksci {
     
     template <AccessMode mode = AccessMode::readonly, typename... T>
     struct IndexedFileMapper;
-
-    inline boost::iostreams::mapped_file::mapmode getMapMode(blocksci::AccessMode mode) {
-        switch (mode) {
-            case blocksci::AccessMode::readwrite:
-                return boost::iostreams::mapped_file::mapmode::readwrite;
-            case blocksci::AccessMode::readonly:
-                return boost::iostreams::mapped_file::mapmode::readonly;
-        }
-        assert(false);
-        return boost::iostreams::mapped_file::mapmode::readonly;
-    }
     
     template<typename U>
     struct add_const_ptr {
@@ -71,27 +63,21 @@ namespace blocksci {
     constexpr OffsetType InvalidFileIndex = std::numeric_limits<OffsetType>::max();
 
     struct BLOCKSCI_EXPORT SimpleFileMapperBase {
-        using FileType = boost::iostreams::mapped_file;
     private:
-        void openFile(size_t size) {
-            fileEnd = size;
-            if (fileEnd != 0) {
-                file.open(path, getMapMode(fileMode));
-            }
-        }
-        
+        void openFile(size_t size);
     protected:
-        FileType file;
+        std::unique_ptr<boost::iostreams::mapped_file> file;
         size_t fileEnd;
+        const char *const_data;
     public:
         boost::filesystem::path path;
         AccessMode fileMode;
         
         SimpleFileMapperBase(boost::filesystem::path path_, AccessMode mode);
+        SimpleFileMapperBase(SimpleFileMapperBase &&other);
+        ~SimpleFileMapperBase();
         
-        bool isGood() const {
-            return file.is_open();
-        }
+        bool isGood() const;
         
         void clearBuffer() {}
         
@@ -100,7 +86,7 @@ namespace blocksci {
                 return nullptr;
             }
             assert(offset < size());
-            return file.const_data() + offset;
+            return const_data + offset;
         }
         
         size_t size() const {
@@ -161,7 +147,7 @@ namespace blocksci {
         std::vector<char> buffer;
         static constexpr auto mode = AccessMode::readwrite;
         
-        explicit SimpleFileMapper(boost::filesystem::path path) : SimpleFileMapperBase(std::move(path), AccessMode::readwrite), writePos(size()) {}
+        explicit SimpleFileMapper(boost::filesystem::path path);
         
         SimpleFileMapper(const SimpleFileMapper &) = delete;
         SimpleFileMapper(SimpleFileMapper &&) = default;
@@ -174,10 +160,11 @@ namespace blocksci {
         
     private:
         OffsetType writePos;
+        char *dataPtr;
         
         char *getWritePos() {
             if (writePos < fileEnd) {
-                return reinterpret_cast<char *>(file.data()) + writePos;
+                return reinterpret_cast<char *>(dataPtr) + writePos;
             } else if (writePos < fileEnd + buffer.size()) {
                 return reinterpret_cast<char *>(buffer.data()) + (writePos - fileEnd);
             } else {
@@ -197,10 +184,7 @@ namespace blocksci {
         
     public:
         
-        void reload() {
-            clearBuffer();
-            SimpleFileMapperBase::reload();
-        }
+        void reload();
         
         OffsetType getWriteOffset() const {
             return writePos;
@@ -251,28 +235,14 @@ namespace blocksci {
             return write(t.dataView(), t.size());
         }
         
-        void clearBuffer() {
-            if (buffer.size() > 0) {
-                if (!file.is_open()) {
-                    boost::iostreams::mapped_file_params params{path.native()};
-                    params.new_file_size = static_cast<decltype(params.new_file_size)>(buffer.size());
-                    params.flags = boost::iostreams::mapped_file::readwrite;
-                    file.open(params);
-                } else {
-                    file.resize(static_cast<int64_t>(fileEnd + buffer.size()));
-                }
-                memcpy(file.data() + fileEnd, buffer.data(), buffer.size());
-                fileEnd += buffer.size();
-                buffer.clear();
-            }
-        }
+        void clearBuffer();
         
         char *getDataAtOffset(OffsetType offset) {
             assert(offset < fileEnd + buffer.size() || offset == InvalidFileIndex);
             if (offset == InvalidFileIndex) {
                 return nullptr;
             } else if (offset < fileEnd) {
-                return file.data() + offset;
+                return dataPtr + offset;
             } else {
                 return buffer.data() + (offset - fileEnd);
             }
@@ -283,7 +253,7 @@ namespace blocksci {
             if (offset == InvalidFileIndex) {
                 return nullptr;
             } else if (offset < fileEnd) {
-                return file.const_data() + offset;
+                return const_data + offset;
             } else {
                 return buffer.data() + (offset - fileEnd);
             }

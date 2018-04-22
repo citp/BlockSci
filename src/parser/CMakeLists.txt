@@ -1,7 +1,7 @@
 find_package(OpenSSL REQUIRED)
 find_package(Sparsehash REQUIRED)
 
-find_package( Boost 1.58 COMPONENTS serialization REQUIRED )
+find_package( Boost 1.58 COMPONENTS serialization iostreams REQUIRED )
 
 file(GLOB PARSER_HEADERS "*.hpp")
 file(GLOB PARSER_SOURCES "*.cpp")
@@ -22,7 +22,7 @@ target_link_libraries( blocksci_parser OpenSSL::Crypto )
 target_link_libraries( blocksci_parser bitcoinapi_static)
 target_link_libraries( blocksci_parser clipp)
 target_link_libraries( blocksci_parser blocksci)
-target_link_libraries( blocksci_parser Boost::serialization)
+target_link_libraries( blocksci_parser Boost::serialization Boost::iostreams)
 target_link_libraries( blocksci_parser secp256k1)
 target_link_libraries( blocksci_parser sparsehash)
 

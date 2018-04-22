@@ -69,7 +69,7 @@ struct ScriptOutputData<blocksci::AddressType::Enum::PUBKEY> : public ScriptOutp
     
     blocksci::CPubKey pubkey;
     
-    ScriptOutputData(const boost::iterator_range<const unsigned char *> &vch1);
+    ScriptOutputData(const ranges::iterator_range<const unsigned char *> &vch1);
     ScriptOutputData(const blocksci::CPubKey &pub) : pubkey(pub) {}
     ScriptOutputData() = default;
     
@@ -96,7 +96,7 @@ struct ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY> : public S
     
     blocksci::CPubKey pubkey;
     
-    ScriptOutputData(const boost::iterator_range<const unsigned char *> &vch1);
+    ScriptOutputData(const ranges::iterator_range<const unsigned char *> &vch1);
     ScriptOutputData(const blocksci::CPubKey &pub) : pubkey(pub) {}
     ScriptOutputData() = default;
     
@@ -152,7 +152,7 @@ struct ScriptOutputData<blocksci::AddressType::Enum::MULTISIG> : public ScriptOu
     
     ScriptOutputData() : addressCount(0) {}
     
-    void addAddress(const boost::iterator_range<const unsigned char *> &vch1);
+    void addAddress(const ranges::iterator_range<const unsigned char *> &vch1);
     
     bool isValid() const {
         return numRequired <= numTotal && numTotal == addressCount;
