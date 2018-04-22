@@ -19,6 +19,8 @@
 
 #include <range/v3/range_for.hpp>
 
+#include <boost/filesystem/operations.hpp>
+
 #include <chrono>
 #include <iostream>
 #include <future>

@@ -19,7 +19,7 @@ endif()
 source_group(blocksci_parser FILES ${PARSER_SOURCES} ${PARSER_HEADERS})
 
 target_link_libraries( blocksci_parser OpenSSL::Crypto )
-target_link_libraries( blocksci_parser bitcoinapi)
+target_link_libraries( blocksci_parser bitcoinapi_static)
 target_link_libraries( blocksci_parser clipp)
 target_link_libraries( blocksci_parser blocksci)
 target_link_libraries( blocksci_parser Boost::serialization)
