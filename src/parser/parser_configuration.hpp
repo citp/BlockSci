@@ -11,7 +11,7 @@
 
 #include "parser_fwd.hpp"
 
-#include <blocksci/util/bitcoin_uint256.hpp>
+#include <blocksci/core/bitcoin_uint256.hpp>
 #include <blocksci/util/data_configuration.hpp>
 
 #include <boost/filesystem/path.hpp>

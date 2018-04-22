@@ -10,7 +10,7 @@
 #define transaction_hpp
 
 #include <blocksci/blocksci_export.h>
-#include "raw_transaction.hpp"
+#include <blocksci/core/raw_transaction.hpp>
 
 #include "output.hpp"
 #include "input.hpp"
@@ -115,13 +115,13 @@ namespace blocksci {
         }
         
         ranges::iterator_range<const Inout *> rawOutputs() const {
-            return data->outputs();
+            return ranges::make_iterator_range(data->beginOutputs(), data->endOutputs());
         }
         
         ranges::iterator_range<const Inout *> rawInputs() const {
-            return data->inputs();
+            return ranges::make_iterator_range(data->beginInputs(), data->endInputs());
         }
-        
+
         auto outputs() const {
             auto dataAccess = access;
             uint32_t txIndex = txNum;

@@ -9,7 +9,7 @@
 #include "address_state.hpp"
 #include "parser_configuration.hpp"
 
-#include <blocksci/util/bitcoin_uint256.hpp>
+#include <blocksci/core/bitcoin_uint256.hpp>
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/util/hash.hpp>
 

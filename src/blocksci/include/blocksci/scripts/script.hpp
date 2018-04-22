@@ -9,7 +9,7 @@
 #ifndef script_hpp
 #define script_hpp
 
-#include "script_data.hpp"
+#include <blocksci/core/script_data.hpp>
 #include <blocksci/address/address.hpp>
 
 namespace blocksci {

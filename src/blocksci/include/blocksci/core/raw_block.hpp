@@ -8,8 +8,9 @@
 #ifndef raw_block_hpp
 #define raw_block_hpp
 
+#include "bitcoin_uint256.hpp"
+
 #include <blocksci/blocksci_export.h>
-#include <blocksci/util/bitcoin_uint256.hpp>
 
 namespace blocksci {
     struct BLOCKSCI_EXPORT RawBlock {

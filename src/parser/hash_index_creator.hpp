@@ -15,7 +15,7 @@
 
 #include <blocksci/chain/chain_fwd.hpp>
 #include <blocksci/index/hash_index.hpp>
-#include <blocksci/util/hash.hpp>
+#include <blocksci/core/hash_combine.hpp>
 
 #include <tuple>
 
@@ -46,8 +46,8 @@ namespace std {
     struct hash<DenseHashMapWrappedKey<T>> {
         size_t operator()(const DenseHashMapWrappedKey<T> &item) const {
             std::size_t seed = 71854362;
-            hash_combine(seed, item.key);
-            hash_combine(seed, item.extra);
+            blocksci::hash_combine(seed, item.key);
+            blocksci::hash_combine(seed, item.extra);
             return seed;
         }
     };

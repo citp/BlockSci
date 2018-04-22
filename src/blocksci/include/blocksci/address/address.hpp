@@ -12,8 +12,8 @@
 #include <blocksci/blocksci_export.h>
 
 #include "address_fwd.hpp"
-#include "address_types.hpp"
 
+#include <blocksci/core/address_types.hpp>
 #include <blocksci/chain/chain_fwd.hpp>
 #include <blocksci/scripts/scripts_fwd.hpp>
 #include <blocksci/util/data_access.hpp>

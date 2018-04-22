@@ -9,7 +9,7 @@
 #ifndef bloom_filter_hpp
 #define bloom_filter_hpp
 
-#include <blocksci/util/file_mapper.hpp>
+#include <blocksci/core/file_mapper.hpp>
 
 #include <boost/serialization/access.hpp>
 

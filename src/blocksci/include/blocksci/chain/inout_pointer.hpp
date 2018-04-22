@@ -10,9 +10,9 @@
 #define inout_pointer_hpp
 
 #include <blocksci/blocksci_export.h>
-#include "chain_fwd.hpp"
-
-#include <blocksci/util/hash.hpp>
+#include <blocksci/core/core_fwd.hpp>
+#include <blocksci/core/hash_combine.hpp>
+#include <blocksci/chain/chain_fwd.hpp>
 
 #include <string>
 #include <sstream>
@@ -97,16 +97,16 @@ namespace std {
     template<> struct BLOCKSCI_EXPORT hash<blocksci::InputPointer> {
         size_t operator()(const blocksci::InputPointer &pointer) const {
             std::size_t seed = 41352363;
-            hash_combine(seed, pointer.txNum);
-            hash_combine(seed, pointer.inoutNum);
+            blocksci::hash_combine(seed, pointer.txNum);
+            blocksci::hash_combine(seed, pointer.inoutNum);
             return seed;
         }
     };
     template<> struct BLOCKSCI_EXPORT hash<blocksci::OutputPointer> {
         size_t operator()(const blocksci::OutputPointer &pointer) const {
-            std::size_t seed = 41352363;
-            hash_combine(seed, pointer.txNum);
-            hash_combine(seed, pointer.inoutNum);
+            std::size_t seed = 875697;
+            blocksci::hash_combine(seed, pointer.txNum);
+            blocksci::hash_combine(seed, pointer.inoutNum);
             return seed;
         }
     };

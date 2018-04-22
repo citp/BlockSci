@@ -28,28 +28,28 @@ void AddressWriter::serialize(const AnyScriptInput &input, uint32_t txNum, uint3
 }
 
 void AddressWriter::serializeImp(const ScriptOutput<AddressType::PUBKEY> &output, ScriptFile<DedupAddressType::PUBKEY> &file) {
-    auto data = file.getData(output.scriptNum - 1);
+    auto data = file[output.scriptNum - 1];
     data->pubkey = output.data.pubkey;
 }
 
 void AddressWriter::serializeImp(const ScriptOutput<AddressType::WITNESS_SCRIPTHASH> &output, ScriptFile<blocksci::DedupAddressType::SCRIPTHASH> &file) {
-    auto data = file.getData(output.scriptNum - 1);
+    auto data = file[output.scriptNum - 1];
     data->hash256 = output.data.hash;
     data->isSegwit = true;
 }
 
 void AddressWriter::serializeImp(const ScriptInput<AddressType::PUBKEYHASH> &input, ScriptFile<DedupAddressType::PUBKEY> &file) {
-    auto data = file.getData(input.scriptNum - 1);
+    auto data = file[input.scriptNum - 1];
     data->pubkey = input.data.pubkey;
 }
 
 void AddressWriter::serializeImp(const ScriptInput<AddressType::WITNESS_PUBKEYHASH> &input, ScriptFile<DedupAddressType::PUBKEY> &file) {
-    auto data = file.getData(input.scriptNum - 1);
+    auto data = file[input.scriptNum - 1];
     data->pubkey = input.data.pubkey;
 }
 
 void AddressWriter::serializeImp(const ScriptInput<AddressType::WITNESS_SCRIPTHASH> &input, ScriptFile<DedupAddressType::SCRIPTHASH> &file) {
-    auto data = file.getData(input.scriptNum - 1);
+    auto data = file[input.scriptNum - 1];
     data->wrappedAddress = input.data.wrappedScriptOutput.address();
 }
 
@@ -59,7 +59,7 @@ void AddressWriter::serializeWrapped(const ScriptInputData<AddressType::Enum::WI
 }
 
 void AddressWriter::serializeImp(const ScriptInput<AddressType::SCRIPTHASH> &input, ScriptFile<DedupAddressType::SCRIPTHASH> &file) {
-    auto data = file.getData(input.scriptNum - 1);
+    auto data = file[input.scriptNum - 1];
     data->wrappedAddress = input.data.wrappedScriptOutput.address();
 }
 

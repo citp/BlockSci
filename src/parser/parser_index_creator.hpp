@@ -13,11 +13,11 @@
 #include "parser_index.hpp"
 
 #include <blocksci/util/state.hpp>
-#include <blocksci/chain/chain_access.hpp>
+#include <blocksci/core/chain_access.hpp>
+#include <blocksci/core/script_access.hpp>
 #include <blocksci/chain/chain_fwd.hpp>
 #include <blocksci/scripts/scripts_fwd.hpp>
 #include <blocksci/scripts/script.hpp>
-#include <blocksci/scripts/script_access.hpp>
 
 #include <future>
 #include <vector>

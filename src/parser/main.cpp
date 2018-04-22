@@ -22,16 +22,7 @@
 #include "address_writer.hpp"
 #include "utxo_address_state.hpp"
 
-#include <blocksci/util/state.hpp>
-#include <blocksci/address/address_types.hpp>
-#include <blocksci/chain/chain_access.hpp>
-#include <blocksci/chain/input.hpp>
-#include <blocksci/chain/output.hpp>
-#include <blocksci/chain/transaction.hpp>
-#include <blocksci/chain/block.hpp>
 #include <blocksci/scripts/script_variant.hpp>
-#include <blocksci/scripts/script_access.hpp>
-#include <blocksci/scripts/scripthash_script.hpp>
 
 #ifdef BLOCKSCI_RPC_PARSER
 #include <bitcoinapi/bitcoinapi.h>
@@ -72,7 +63,7 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::B
     auto totalTxCount = static_cast<uint32_t>(txFile.size());
     for (uint32_t txNum = totalTxCount - 1; txNum >= firstDeletedTxNum; txNum--) {
         auto tx = txFile.getData(txNum);
-        auto hash = txHashesFile.getData(txNum);
+        auto hash = txHashesFile[txNum];
         for (uint16_t i = 0; i < tx->outputCount; i++) {
             auto &output = tx->getOutput(i);
             blocksci::AnyScript script(output.getAddressNum(), output.getType(), access);
@@ -94,7 +85,7 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::B
             auto &input = tx->getInput(i);
             auto spentTxNum = input.getLinkedTxNum();
             auto spentTx = txFile.getData(spentTxNum);
-            auto spentHash = txHashesFile.getData(spentTxNum);
+            auto spentHash = txHashesFile[spentTxNum];
             for (uint16_t j = 0; j < spentTx->outputCount; j++) {
                 auto &output = spentTx->getOutput(j);
                 if (output.getLinkedTxNum() == txNum) {
@@ -132,7 +123,7 @@ void rollbackTransactions(blocksci::BlockHeight blockKeepCount, HashIndexCreator
     auto blockKeepSize = static_cast<size_t>(static_cast<int>(blockKeepCount));
     if (blockFile.size() > blockKeepSize) {
         
-        auto firstDeletedBlock = blockFile.getData(blockKeepSize);
+        auto firstDeletedBlock = blockFile[blockKeepSize];
         auto firstDeletedTxNum = firstDeletedBlock->firstTxIndex;
         
         auto blocksciState = rollbackState(config, blockKeepCount, firstDeletedTxNum);

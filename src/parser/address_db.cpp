@@ -11,18 +11,16 @@
 
 #include <blocksci/index/address_index.hpp>
 #include <blocksci/address/dedup_address.hpp>
-#include <blocksci/scripts/script_info.hpp>
 #include <blocksci/scripts/script_variant.hpp>
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/inout_pointer.hpp>
 #include <blocksci/chain/transaction.hpp>
-#include <blocksci/chain/chain_access.hpp>
+#include <blocksci/core/chain_access.hpp>
+#include <blocksci/core/script_access.hpp>
 #include <blocksci/address/address.hpp>
-#include <blocksci/address/address_types.hpp>
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/scripts/scripthash_script.hpp>
-#include <blocksci/scripts/script_access.hpp>
 
 #include <unordered_set>
 #include <string>
@@ -61,7 +59,8 @@ void AddressDB::processTx(const blocksci::RawTransaction *tx, uint32_t txNum, co
         }
         return false;
     };
-    for (auto &input : tx->inputs()) {
+    auto inputs = ranges::make_iterator_range(tx->beginInputs(), tx->endInputs());
+    for (auto &input : inputs) {
         visit(RawAddress{input.getAddressNum(), input.getType()}, visitFunc, scripts);
     }
     

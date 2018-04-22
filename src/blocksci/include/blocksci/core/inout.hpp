@@ -9,10 +9,12 @@
 #ifndef inout_hpp
 #define inout_hpp
 
+#include "address_types.hpp"
+#include "core_fwd.hpp"
+#include "hash_combine.hpp"
+
 #include <blocksci/blocksci_export.h>
-#include "chain_fwd.hpp"
-#include <blocksci/address/address_types.hpp>
-#include <blocksci/util/hash.hpp>
+#include <blocksci/typedefs.hpp>
 
 namespace std {
     template<> struct BLOCKSCI_EXPORT hash<blocksci::Inout> {
@@ -81,9 +83,9 @@ namespace blocksci {
 namespace std {
     inline size_t hash<blocksci::Inout>::operator()(const blocksci::Inout &inout) const {
         std::size_t seed = 65246342;
-        hash_combine(seed, inout.linkedTxNum);
-        hash_combine(seed, inout.toAddressNum);
-        hash_combine(seed, inout.other);
+        blocksci::hash_combine(seed, inout.linkedTxNum);
+        blocksci::hash_combine(seed, inout.toAddressNum);
+        blocksci::hash_combine(seed, inout.other);
         return seed;
     }
 } // namespace std

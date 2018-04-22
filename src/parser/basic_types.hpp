@@ -9,7 +9,7 @@
 #ifndef bascic_types_h
 #define bascic_types_h
 
-#include <blocksci/util/bitcoin_uint256.hpp>
+#include <blocksci/core/bitcoin_uint256.hpp>
 
 #include <functional>
 #include <cstdint>

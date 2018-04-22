@@ -13,13 +13,12 @@
 #include "script_output.hpp"
 #include "script_input.hpp"
 
-#include <blocksci/util/file_mapper.hpp>
-#include <blocksci/util/state.hpp>
 #include <blocksci/address/address_info.hpp>
-#include <blocksci/scripts/script_info.hpp>
-#include <blocksci/scripts/script_data.hpp>
+#include <blocksci/core/script_data.hpp>
 #include <blocksci/scripts/script.hpp>
 #include <blocksci/scripts/scripts_fwd.hpp>
+#include <blocksci/core/file_mapper.hpp>
+#include <blocksci/util/state.hpp>
 
 template<typename T>
 struct ScriptFileType;

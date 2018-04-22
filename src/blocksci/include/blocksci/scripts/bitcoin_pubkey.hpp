@@ -7,7 +7,7 @@
 #define BLOCKSCI_BITCOIN_PUBKEY_H
 
 #include <blocksci/blocksci_export.h>
-#include <blocksci/util/bitcoin_uint256.hpp>
+#include <blocksci/core/bitcoin_uint256.hpp>
 
 #include <array>
 #include <stdexcept>

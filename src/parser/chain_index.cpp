@@ -13,7 +13,7 @@
 #include "safe_mem_reader.hpp"
 #include "preproccessed_block.hpp"
 
-#include <blocksci/chain/chain_access.hpp>
+#include <blocksci/core/chain_access.hpp>
 #include <blocksci/chain/block.hpp>
 #include <blocksci/util/hash.hpp>
 

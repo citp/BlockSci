@@ -8,8 +8,10 @@
 #ifndef raw_address_hpp
 #define raw_address_hpp
 
+#include "core_fwd.hpp"
+#include "address_types.hpp"
+
 #include <blocksci/blocksci_export.h>
-#include <blocksci/scripts/scripts_fwd.hpp>
 
 #include <functional>
 

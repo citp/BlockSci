@@ -9,7 +9,6 @@
 #ifndef utxo_hpp
 #define utxo_hpp
 
-#include <blocksci/address/address_types.hpp>
 #include <blocksci/chain/output.hpp>
 
 struct UTXO {

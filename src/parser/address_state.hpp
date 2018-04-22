@@ -16,8 +16,7 @@
 
 #include <blocksci/index/hash_index.hpp>
 #include <blocksci/util/state.hpp>
-#include <blocksci/util/bitcoin_uint256.hpp>
-#include <blocksci/scripts/script_info.hpp>
+#include <blocksci/core/bitcoin_uint256.hpp>
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/address/dedup_address_info.hpp>
 

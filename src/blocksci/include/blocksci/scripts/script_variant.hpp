@@ -18,6 +18,8 @@
 
 #include <blocksci/util/util.hpp>
 
+#include <mpark/variant.hpp>
+
 namespace blocksci {
     namespace internal {
         template<AddressType::Enum type>

@@ -12,7 +12,6 @@
 #include <blocksci/chain/algorithms.hpp>
 #include <blocksci/chain/block.hpp>
 #include <blocksci/chain/blockchain.hpp>
-#include <blocksci/chain/chain_access.hpp>
 #include <blocksci/chain/inout_pointer.hpp>
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>

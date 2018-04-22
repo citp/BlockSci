@@ -11,6 +11,7 @@
 
 #include <blocksci/blocksci_export.h>
 #include <blocksci/blocksci_fwd.hpp>
+#include <blocksci/typedefs.hpp>
 #include <boost/filesystem/path.hpp>
 
 #include <string>

@@ -13,7 +13,7 @@
 #include <blocksci/address/dedup_address.hpp>
 #include <blocksci/address/address.hpp>
 #include <blocksci/util/data_access.hpp>
-#include <blocksci/util/file_mapper.hpp>
+#include <blocksci/core/file_mapper.hpp>
 
 namespace blocksci {
     template<DedupAddressType::Enum type>
@@ -45,7 +45,7 @@ namespace blocksci {
         template<DedupAddressType::Enum type>
         uint32_t getClusterNumImpl(uint32_t scriptNum) const {
             auto &file = std::get<ScriptClusterIndexFile<type>>(scriptClusterIndexFiles);
-            return *file.getData(scriptNum - 1);
+            return *file[scriptNum - 1];
         }
         
     public:
@@ -68,10 +68,10 @@ namespace blocksci {
         }
         
         uint32_t getClusterSize(uint32_t clusterNum) const {
-            auto clusterOffset = *clusterOffsetFile.getData(clusterNum);
+            auto clusterOffset = *clusterOffsetFile[clusterNum];
             auto clusterSize = clusterOffset;
             if (clusterNum > 0) {
-                clusterSize -= *clusterOffsetFile.getData(clusterNum - 1);
+                clusterSize -= *clusterOffsetFile[clusterNum - 1];
             }
             return clusterSize;
         }
@@ -81,14 +81,14 @@ namespace blocksci {
         }
         
         boost::iterator_range<const blocksci::DedupAddress *> getClusterScripts(uint32_t clusterNum) const {
-            auto nextClusterOffset = *clusterOffsetFile.getData(clusterNum);
+            auto nextClusterOffset = *clusterOffsetFile[clusterNum];
             uint32_t clusterOffset = 0;
             if (clusterNum > 0) {
-                clusterOffset = *clusterOffsetFile.getData(clusterNum - 1);
+                clusterOffset = *clusterOffsetFile[clusterNum - 1];
             }
             auto clusterSize = nextClusterOffset - clusterOffset;
             
-            auto firstAddressOffset = clusterScriptsFile.getData(clusterOffset);
+            auto firstAddressOffset = clusterScriptsFile[clusterOffset];
             
             return boost::make_iterator_range_n(firstAddressOffset, clusterSize);
         }
@@ -98,9 +98,9 @@ namespace blocksci {
             std::vector<uint32_t> clusterSizes;
             clusterSizes.resize(tot);
             
-            clusterSizes[tot - 1] = *clusterOffsetFile.getData(tot - 1);
+            clusterSizes[tot - 1] = *clusterOffsetFile[tot - 1];
             for (uint32_t i = 2; i <= tot; i++) {
-                clusterSizes[tot - i] = *clusterOffsetFile.getData(tot - i);
+                clusterSizes[tot - i] = *clusterOffsetFile[tot - i];
                 clusterSizes[(tot - i) + 1] -= clusterSizes[tot - i];
             }
             return clusterSizes;

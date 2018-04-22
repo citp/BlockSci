@@ -15,7 +15,7 @@
 #define BLOCKSCI_BITCOIN_BASE58_H
 
 #include <blocksci/exception.hpp>
-#include <blocksci/address/address_types.hpp>
+#include <blocksci/core/address_types.hpp>
 
 #include <string>
 #include <vector>

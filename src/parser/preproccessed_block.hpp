@@ -14,7 +14,7 @@
 #include "script_input.hpp"
 #include "utxo.hpp"
 
-#include <blocksci/util/bitcoin_uint256.hpp>
+#include <blocksci/core/bitcoin_uint256.hpp>
 
 #include <boost/container/small_vector.hpp>
 

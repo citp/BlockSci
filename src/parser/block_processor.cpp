@@ -26,7 +26,7 @@
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/util/file_writer.hpp>
-#include <blocksci/util/bitcoin_uint256.hpp>
+#include <blocksci/core/bitcoin_uint256.hpp>
 #include <blocksci/util/hash.hpp>
 #include <blocksci/util/progress_bar.hpp>
 
@@ -409,7 +409,7 @@ void backUpdateTxes(const ParserConfigurationBase &config) {
         updates.reserve(linkDataFile.size());
         
         for (uint32_t i = 0; i < linkDataFile.size(); i++) {
-            updates.push_back(*linkDataFile.getData(i));
+            updates.push_back(*linkDataFile[i]);
         }
         
         std::sort(updates.begin(), updates.end(), [](const auto& a, const auto& b) {

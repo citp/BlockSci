@@ -11,17 +11,11 @@
 
 #include <blocksci/blocksci_export.h>
 #include <cstdint>
-#include <functional>
+#include <cstddef>
 
 namespace blocksci {
     class uint256;
     class uint160;
-}
-
-template <class T>
-inline void BLOCKSCI_EXPORT hash_combine(std::size_t &seed, const T& v) {
-    std::hash<T> hasher;
-    seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
 }
 
 blocksci::uint256 BLOCKSCI_EXPORT sha256(const uint8_t *data, size_t len);

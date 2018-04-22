@@ -8,11 +8,10 @@
 #ifndef raw_transaction_hpp
 #define raw_transaction_hpp
 
-#include <blocksci/blocksci_export.h>
-#include "chain_fwd.hpp"
 #include "inout.hpp"
 
-#include <range/v3/iterator_range.hpp>
+#include <blocksci/blocksci_export.h>
+#include <blocksci/typedefs.hpp>
 
 namespace blocksci {
     struct BLOCKSCI_EXPORT RawTransaction {
@@ -44,15 +43,21 @@ namespace blocksci {
         const Inout &getInput(uint16_t inputNum) const {
             return getInouts()[inputNum];
         }
-        
-        ranges::iterator_range<const Inout *> outputs() const {
-            auto &firstOut = getOutput(0);
-            return ranges::make_iterator_range(&firstOut, &firstOut + outputCount);
+
+        const Inout *beginInputs() const {
+            return &getInput(0);
         }
-        
-        ranges::iterator_range<const Inout *> inputs() const {
-            auto &firstIn = getInput(0);
-            return ranges::make_iterator_range(&firstIn, &firstIn + inputCount);
+
+        const Inout *endInputs() const {
+            return &getInput(0) + inputCount;
+        }
+
+        const Inout *beginOutputs() const {
+            return &getOutput(0);
+        }
+
+        const Inout *endOutputs() const {
+            return &getOutput(0) + outputCount;
         }
         
         size_t serializedSize() const {

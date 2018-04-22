@@ -11,7 +11,7 @@
 
 #include <blocksci/blocksci_export.h>
 #include "transaction.hpp"
-#include "raw_block.hpp"
+#include <blocksci/core/raw_block.hpp>
 
 #include <range/v3/range_for.hpp>
 #include <range/v3/view/transform.hpp>

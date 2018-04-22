@@ -13,7 +13,6 @@
 #include "script_output.hpp"
 #include "parser_fwd.hpp"
 
-#include <blocksci/address/address_types.hpp>
 #include <blocksci/address/address.hpp>
 #include <blocksci/scripts/script_view.hpp>
 #include <blocksci/chain/inout_pointer.hpp>

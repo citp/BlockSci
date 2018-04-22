@@ -7,7 +7,7 @@
 //
 
 #include <blocksci/util/hash.hpp>
-#include <blocksci/util/bitcoin_uint256.hpp>
+#include <blocksci/core/bitcoin_uint256.hpp>
 
 #include <openssl/sha.h>
 #include <openssl/ripemd.h>

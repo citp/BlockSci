@@ -10,7 +10,7 @@
 
 #include <blocksci/blocksci_export.h>
 
-#include <blocksci/util/file_mapper.hpp>
+#include <blocksci/core/file_mapper.hpp>
 #include <blocksci/util/data_configuration.hpp>
 
 #include <range/v3/algorithm/upper_bound.hpp>
@@ -35,7 +35,7 @@ namespace blocksci {
         explicit TimestampIndex(const boost::filesystem::path &path, uint32_t firstTxIndex_) : timestampFile(path), firstTxIndex(firstTxIndex_) {}
         
         ranges::optional<std::chrono::system_clock::time_point> getTimestamp(uint32_t index) const {
-            auto record = timestampFile.getData(index - firstTxIndex);
+            auto record = timestampFile[index - firstTxIndex];
             if (record->time > 1) {
                 return std::chrono::system_clock::from_time_t(record->time);
             } else {
@@ -44,7 +44,7 @@ namespace blocksci {
         }
         
         bool observed(uint32_t index) const {
-            auto record = timestampFile.getData(index - firstTxIndex);
+            auto record = timestampFile[index - firstTxIndex];
             if (record->time > 0) {
                 return true;
             } else {
@@ -69,7 +69,7 @@ namespace blocksci {
         
         ranges::optional<std::chrono::system_clock::time_point> getTimestamp(int index) const {
             assert(index - firstBlockNum >= 0);
-            auto record = timestampFile.getData(static_cast<size_t>(index - firstBlockNum));
+            auto record = timestampFile[static_cast<size_t>(index - firstBlockNum)];
             if (record->observationTime > 0) {
                 return std::chrono::system_clock::from_time_t(record->observationTime);
             } else {
@@ -94,12 +94,12 @@ namespace blocksci {
         void setup() {
             timestampFiles.clear();
             FixedSizeFileMapper<uint32_t> txRecordingPositions{config.mempoolDirectory()/"tx_index"};
-            for (int i = 0; i < static_cast<int>(txRecordingPositions.size()); i++) {
+            for (size_t i = 0; i < txRecordingPositions.size(); i++) {
                 timestampFiles.emplace_back((config.mempoolDirectory()/std::to_string(i)).concat("_tx"), *txRecordingPositions[i]);
             }
             blockTimeFiles.clear();
             FixedSizeFileMapper<int> blockRecordingPositions{config.mempoolDirectory()/"block_index"};
-            for (int i = 0; i < static_cast<int>(blockRecordingPositions.size()); i++) {
+            for (size_t i = 0; i < blockRecordingPositions.size(); i++) {
                 blockTimeFiles.emplace_back((config.mempoolDirectory()/std::to_string(i)).concat("_block"), *blockRecordingPositions[i]);
             }
         }

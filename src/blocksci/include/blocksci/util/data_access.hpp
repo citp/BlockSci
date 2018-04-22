@@ -12,11 +12,11 @@
 #include <blocksci/blocksci_export.h>
 #include "data_configuration.hpp"
 
-#include <blocksci/chain/chain_access.hpp>
+#include <blocksci/core/chain_access.hpp>
+#include <blocksci/core/script_access.hpp>
 #include <blocksci/index/address_index.hpp>
 #include <blocksci/index/hash_index.hpp>
 #include <blocksci/index/mempool_index.hpp>
-#include <blocksci/scripts/script_access.hpp>
 
 namespace blocksci {
     class BLOCKSCI_EXPORT DataAccess {

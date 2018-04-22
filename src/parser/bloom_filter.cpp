@@ -8,7 +8,7 @@
 
 #include "bloom_filter.hpp"
 
-#include <blocksci/util/bitcoin_uint256.hpp>
+#include <blocksci/core/bitcoin_uint256.hpp>
 
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
@@ -42,11 +42,11 @@ uint64_t BloomStore::blockCount() const {
 }
 
 void BloomStore::setBit(uint64_t bitPos) {
-    (*backingFile.getData(bitPos / BlockSize)) |= bitMasks[bitPos % BlockSize];
+    (*backingFile[bitPos / BlockSize]) |= bitMasks[bitPos % BlockSize];
 }
 
 bool BloomStore::isSet(uint64_t bitPos) const {
-    return !(((*backingFile.getData(bitPos / BlockSize)) & bitMasks[bitPos % BlockSize]) == 0);
+    return !(((*backingFile[bitPos / BlockSize]) & bitMasks[bitPos % BlockSize]) == 0);
 }
 
 void BloomStore::reset(uint64_t newLength) {

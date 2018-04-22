@@ -12,7 +12,8 @@
 #include "config.hpp"
 #include "parser_fwd.hpp"
 
-#include <blocksci/util/bitcoin_uint256.hpp>
+#include <blocksci/typedefs.hpp>
+#include <blocksci/core/bitcoin_uint256.hpp>
 #include <blocksci/chain/chain_fwd.hpp>
 
 #include <boost/serialization/base_object.hpp>
@@ -27,6 +28,17 @@
 
 class CBlockIndex;
 struct blockinfo_t;
+
+namespace boost {
+namespace serialization {
+
+template<class Archive>
+void serialize(Archive & ar, blocksci::uint256 & g, const unsigned int) {
+    ar & g.data;
+}
+
+} // namespace serialization
+} // namespace boost
 
 struct CBlockHeader {
     friend class boost::serialization::access;

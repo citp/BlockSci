@@ -7,7 +7,7 @@
 
 #include "hash_index_priv.hpp"
 
-#include <blocksci/util/apply.hpp>
+#include <blocksci/meta/apply.hpp>
 
 namespace blocksci {
     

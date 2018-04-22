@@ -8,7 +8,7 @@
 #ifndef address_index_priv_hpp
 #define address_index_priv_hpp
 
-#include <blocksci/address/address_types.hpp>
+#include <blocksci/core/address_types.hpp>
 
 #include <rocksdb/db.h>
 

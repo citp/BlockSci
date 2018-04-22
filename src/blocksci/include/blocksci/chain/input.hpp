@@ -10,7 +10,7 @@
 #define raw_input_hpp
 
 #include <blocksci/blocksci_export.h>
-#include "inout.hpp"
+#include <blocksci/core/inout.hpp>
 #include "inout_pointer.hpp"
 
 #include <blocksci/address/address.hpp>

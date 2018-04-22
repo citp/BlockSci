@@ -8,8 +8,8 @@
 #ifndef address_fwd_h
 #define address_fwd_h
 
-#include "address_types.hpp"
-#include "dedup_address_type.hpp"
+#include <blocksci/core/address_types.hpp>
+#include <blocksci/core/dedup_address_type.hpp>
 
 namespace blocksci {
     struct RawAddress;

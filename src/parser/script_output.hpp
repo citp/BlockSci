@@ -16,7 +16,6 @@
 #include <blocksci/scripts/bitcoin_pubkey.hpp>
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/address/address.hpp>
-#include <blocksci/scripts/script_info.hpp>
 #include <blocksci/scripts/script_view.hpp>
 #include <blocksci/util/util.hpp>
 

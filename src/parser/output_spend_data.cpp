@@ -9,7 +9,6 @@
 #include "script_output.hpp"
 
 #include <blocksci/scripts/script_variant.hpp>
-#include <blocksci/address/address_types.hpp>
 
 #include <type_traits>
 

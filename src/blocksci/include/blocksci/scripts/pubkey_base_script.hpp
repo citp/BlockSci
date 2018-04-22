@@ -10,9 +10,8 @@
 
 #include <blocksci/blocksci_export.h>
 #include "script.hpp"
-#include "script_data.hpp"
 
-#include <blocksci/util/bitcoin_uint256.hpp>
+#include <blocksci/core/bitcoin_uint256.hpp>
 #include <blocksci/util/data_access.hpp>
 
 namespace blocksci {

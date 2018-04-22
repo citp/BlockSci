@@ -10,11 +10,10 @@
 #include "parser_configuration.hpp"
 
 #include <blocksci/index/hash_index.hpp>
-#include <blocksci/chain/chain_access.hpp>
+#include <blocksci/core/chain_access.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/scripts/script.hpp>
-#include <blocksci/scripts/script_info.hpp>
 #include <blocksci/scripts/pubkey_script.hpp>
 #include <blocksci/scripts/scripthash_script.hpp>
 
@@ -75,12 +74,14 @@ void HashIndexCreator::processTx(const blocksci::RawTransaction *tx, uint32_t tx
             return false;
         }
     };
-    for (auto input : tx->inputs()) {
+    auto inputs = ranges::make_iterator_range(tx->beginInputs(), tx->endInputs());
+    for (auto input : inputs) {
         insideP2SH = false;
         visit(blocksci::RawAddress{input.getAddressNum(), input.getType()}, inputVisitFunc, scripts);
     }
     
-    for (auto &txout : tx->outputs()) {
+    auto outputs = ranges::make_iterator_range(tx->beginOutputs(), tx->endOutputs());
+    for (auto &txout : outputs) {
         if (txout.getType() == blocksci::AddressType::WITNESS_SCRIPTHASH) {
             auto script = scripts.getScriptData<blocksci::DedupAddressType::SCRIPTHASH>(txout.getAddressNum());
             addAddress<blocksci::AddressType::WITNESS_SCRIPTHASH>(script->hash256, txout.getAddressNum());

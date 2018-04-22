@@ -14,9 +14,9 @@
 
 #include <blocksci/address/dedup_address.hpp>
 #include <blocksci/blocksci_fwd.hpp>
-#include <blocksci/chain/chain_access.hpp>
+#include <blocksci/core/chain_access.hpp>
+#include <blocksci/core/script_access.hpp>
 #include <blocksci/chain/transaction_range.hpp>
-#include <blocksci/scripts/script_access.hpp>
 #include <blocksci/util/progress_bar.hpp>
 #include <blocksci/util/state.hpp>
 

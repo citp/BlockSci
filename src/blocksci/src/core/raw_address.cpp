@@ -5,7 +5,7 @@
 //  Created by Harry Kalodner on 4/10/18.
 //
 
-#include <blocksci/address/raw_address.hpp>
+#include <blocksci/core/raw_address.hpp>
 #include <blocksci/scripts/script_variant.hpp>
 
 namespace blocksci {

@@ -18,9 +18,9 @@
 #include "output_spend_data.hpp"
 
 #include <blocksci/address/address.hpp>
-#include <blocksci/scripts/script_access.hpp>
+#include <blocksci/core/chain_access.hpp>
+#include <blocksci/core/script_access.hpp>
 #include <blocksci/scripts/script_variant.hpp>
-#include <blocksci/chain/chain_access.hpp>
 #include <blocksci/chain/block.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/input.hpp>

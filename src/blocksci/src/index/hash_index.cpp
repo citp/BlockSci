@@ -9,10 +9,9 @@
 #include <blocksci/index/hash_index.hpp>
 #include "hash_index_priv.hpp"
 
-#include <blocksci/util/bitcoin_uint256.hpp>
-#include <blocksci/scripts/script_info.hpp>
+#include <blocksci/core/bitcoin_uint256.hpp>
 #include <blocksci/address/address.hpp>
-#include <blocksci/util/apply.hpp>
+#include <blocksci/meta/apply.hpp>
 #include <blocksci/util/state.hpp>
 
 #include <rocksdb/table.h>

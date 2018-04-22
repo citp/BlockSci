@@ -9,18 +9,14 @@
 #ifndef chain_access_hpp
 #define chain_access_hpp
 
-#include <blocksci/blocksci_export.h>
-#include "chain_fwd.hpp"
-
+#include "bitcoin_uint256.hpp"
+#include "file_mapper.hpp"
 #include "raw_block.hpp"
 #include "raw_transaction.hpp"
 
+#include <blocksci/blocksci_export.h>
 #include <blocksci/exception.hpp>
-#include <blocksci/util/file_mapper.hpp>
-#include <blocksci/util/data_configuration.hpp>
-#include <blocksci/util/bitcoin_uint256.hpp>
-
-#include <memory>
+#include <blocksci/typedefs.hpp>
 
 namespace blocksci {
     
@@ -52,7 +48,7 @@ namespace blocksci {
             maxHeight = static_cast<BlockHeight>(blockFile.size()) - blocksIgnored;
             if (maxHeight > BlockHeight(0)) {
                 const auto &blockFile_ = blockFile;
-                auto maxLoadedBlock = blockFile_.getData(static_cast<size_t>(static_cast<int>(maxHeight) - 1));
+                auto maxLoadedBlock = blockFile_[static_cast<size_t>(static_cast<int>(maxHeight) - 1)];
                 lastBlockHash = maxLoadedBlock->hash;
                 _maxLoadedTx = maxLoadedBlock->firstTxIndex + maxLoadedBlock->numTxes;
                 lastBlockHashDisk = &maxLoadedBlock->hash;
@@ -62,16 +58,7 @@ namespace blocksci {
         }
         
     public:
-        explicit ChainAccess(const DataConfiguration &config) :
-        blockFile(config.blockFilePath()),
-        blockCoinbaseFile(config.blockCoinbaseFilePath()),
-        txFile(config.txFilePath()),
-        sequenceFile(config.sequenceFilePath()),
-        txHashesFile(config.txHashesFilePath()),
-        blocksIgnored(config.blocksIgnored),
-        errorOnReorg(config.errorOnReorg) {
-            setup();
-        }
+        explicit ChainAccess(const DataConfiguration &config);
         
         uint32_t maxLoadedTx() const {
             return _maxLoadedTx;
@@ -82,22 +69,23 @@ namespace blocksci {
             if (errorOnReorg && txIndex >= _maxLoadedTx) {
                 throw std::out_of_range("Transaction index out of range");
             }
-            auto blockRange = ranges::make_iterator_range(blockFile.getData(0), blockFile.getData(static_cast<size_t>(static_cast<int>(maxHeight) - 1)) + 1);
-            auto it = std::upper_bound(blockRange.begin(), blockRange.end(), txIndex, [](uint32_t index, const RawBlock &b) {
+            auto blockBegin = blockFile[0];
+            auto blockEnd = blockFile[static_cast<size_t>(static_cast<int>(maxHeight) - 1)] + 1;
+            auto it = std::upper_bound(blockBegin, blockEnd, txIndex, [](uint32_t index, const RawBlock &b) {
                 return index < b.firstTxIndex;
             });
             it--;
-            return static_cast<BlockHeight>(std::distance(blockRange.begin(), it));
+            return static_cast<BlockHeight>(std::distance(blockBegin, it));
         }
         
         const RawBlock *getBlock(BlockHeight blockHeight) const {
             reorgCheck();
-            return blockFile.getData(static_cast<size_t>(static_cast<int>(blockHeight)));
+            return blockFile[static_cast<size_t>(blockHeight)];
         }
         
         const uint256 *getTxHash(uint32_t index) const {
             reorgCheck();
-            return txHashesFile.getData(index);
+            return txHashesFile[index];
         }
         
         const RawTransaction *getTx(uint32_t index) const {
@@ -122,8 +110,8 @@ namespace blocksci {
             std::memcpy(&coinbaseLength, pos, sizeof(coinbaseLength));
             uint64_t length = coinbaseLength;
             pos += sizeof(coinbaseLength);
-            auto range = boost::make_iterator_range_n(reinterpret_cast<const unsigned char *>(pos), length);
-            return std::vector<unsigned char>(range.begin(), range.end());
+            auto unsignedPos = reinterpret_cast<const unsigned char *>(pos);
+            return std::vector<unsigned char>(unsignedPos, unsignedPos + length);
         }
         
         void reload() {

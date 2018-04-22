@@ -15,9 +15,6 @@
 #include "cluster.hpp"
 
 #include <blocksci/address/address_info.hpp>
-#include <blocksci/scripts/script_info.hpp>
-#include <blocksci/script.hpp>
-#include <blocksci/util/file_mapper.hpp>
 #include <blocksci/heuristics/change_address.hpp>
 
 #include <range/v3/view/transform.hpp>

@@ -10,7 +10,7 @@
 
 #include "config.hpp"
 
-#include <blocksci/address/address_types.hpp>
+#include <blocksci/core/address_types.hpp>
 
 #ifdef BLOCKSCI_FILE_PARSER
 struct FileTag{};

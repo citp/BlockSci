@@ -9,22 +9,21 @@
 #ifndef script_access_hpp
 #define script_access_hpp
 
-#include <blocksci/blocksci_export.h>
-#include "script_info.hpp"
+#include "file_mapper.hpp"
 #include "script_data.hpp"
+#include "script_info.hpp"
 
-#include <blocksci/address/dedup_address_info.hpp>
-#include <blocksci/util/data_configuration.hpp>
-#include <blocksci/util/file_mapper.hpp>
-#include <blocksci/util/dynamic_table.hpp>
-#include <blocksci/util/apply.hpp>
-
-#include <mpark/variant.hpp>
+#include <blocksci/blocksci_export.h>
+#include <blocksci/meta/dynamic_table.hpp>
+#include <blocksci/meta/static_table.hpp>
+#include <blocksci/meta/apply.hpp>
 
 #include <memory>
 #include <tuple>
 
 namespace blocksci {
+    struct DataConfiguration;
+
     namespace internal {
         template<DedupAddressType::Enum type>
         struct ScriptCountFunctor {
@@ -62,12 +61,7 @@ namespace blocksci {
         
         
     public:
-        explicit ScriptAccess(const DataConfiguration &config_) :
-        scriptFiles(blocksci::apply(DedupAddressType::all(), [&] (auto tag) {
-            return std::make_unique<ScriptFile<tag.value>>(config_.scriptsDirectory()/ std::string{dedupAddressName(tag)});
-        })), config(config_) {}
-        
-        DataConfiguration config;
+        explicit ScriptAccess(const DataConfiguration &config_);
         
         template <DedupAddressType::Enum type>
         ScriptFile<type> &getFile() {
@@ -81,7 +75,7 @@ namespace blocksci {
         
         template <DedupAddressType::Enum type>
         auto getScriptData(uint32_t addressNum) const {
-            return getFile<type>().getData(addressNum - 1);
+            return getFile<type>()[addressNum - 1];
         }
         
         template<DedupAddressType::Enum type>

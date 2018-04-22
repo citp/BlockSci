@@ -7,13 +7,11 @@
 #define BLOCKSCI_BITCOIN_UINT256_H
 
 #include <blocksci/blocksci_export.h>
-#include <boost/serialization/access.hpp>
 
 #include <cassert>
 #include <cstring>
 #include <stdexcept>
 #include <string>
-#include <vector>
 
 namespace blocksci {
     
@@ -48,15 +46,10 @@ namespace blocksci {
     template<unsigned int BITS>
     class base_blob
     {
-    protected:
+    public:
         enum { WIDTH=BITS/8 };
         uint8_t data[WIDTH];
-        
-        friend class boost::serialization::access;
-        template<class Archive> void serialize(Archive & ar, const unsigned int) {
-            ar & data;
-        }
-    public:
+
         base_blob()
         {
             memset(data, 0, sizeof(data));

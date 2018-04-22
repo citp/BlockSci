@@ -14,7 +14,6 @@
 #include "transaction.hpp"
 
 #include <blocksci/address/address_info.hpp>
-#include <blocksci/scripts/script_info.hpp>
 
 #include <range/v3/range_for.hpp>
 #include <range/v3/numeric/accumulate.hpp>

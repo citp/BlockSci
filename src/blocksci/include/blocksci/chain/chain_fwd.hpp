@@ -9,14 +9,6 @@
 #define chain_fwd_h
 
 namespace blocksci {
-    using BlockHeight = int;
-    
-    class ChainAccess;
-    
-    struct RawBlock;
-    struct RawTransaction;
-    struct Inout;
-    
     class Blockchain;
     class Block;
     class Transaction;

@@ -9,8 +9,9 @@
 #ifndef scriptsfwd_h
 #define scriptsfwd_h
 
-#include <blocksci/address/dedup_address_type.hpp>
-#include <blocksci/address/address_types.hpp>
+#include <blocksci/address/address_info.hpp>
+#include <blocksci/core/dedup_address_type.hpp>
+#include <blocksci/core/script_info.hpp>
 #include <blocksci/util/util.hpp>
 
 namespace mpark {
@@ -22,21 +23,10 @@ namespace blocksci {
     class CBitcoinAddress;
     class CKeyID;
     class CPubKey;
-    struct ScriptDataBase;
-    struct PubkeyData;
-    struct MultisigData;
-    struct ScriptHashData;
-    struct RawData;
-    struct NonstandardScriptData;
-    struct NonstandardSpendScriptData;
-    class ScriptAccess;
     struct DataConfiguration;
     
-    template <AddressType::Enum>
-    struct ScriptData;
-    
     template <AddressType::Enum addressType>
-    using ScriptDataPointer = const typename ScriptData<addressType>::type*;
+    using ScriptDataPointer = const typename ScriptInfo<dedupType(addressType)>::outputType*;
     
     namespace internal {
         template <AddressType::Enum type>
@@ -52,9 +42,6 @@ namespace blocksci {
     
     template <AddressType::Enum>
     class ScriptAddress;
-    
-    template <DedupAddressType::Enum>
-    struct ScriptInfo;
     
     using ScriptVariant = to_variadic_t<to_address_tuple_t<ScriptAddress>, mpark::variant>;
     using ScriptDataVariant = to_variadic_t<to_address_tuple_t<internal::ScriptWrapper>, mpark::variant>;

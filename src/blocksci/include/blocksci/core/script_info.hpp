@@ -9,12 +9,8 @@
 #ifndef script_info_hpp
 #define script_info_hpp
 
-#include "scripts_fwd.hpp"
-
-#include <blocksci/address/address_types.hpp>
-#include <blocksci/address/dedup_address_type.hpp>
-
-#include <string>
+#include "core_fwd.hpp"
+#include "dedup_address_type.hpp"
 
 namespace blocksci {
     

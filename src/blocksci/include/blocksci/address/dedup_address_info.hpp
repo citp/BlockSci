@@ -10,7 +10,7 @@
 
 #include <blocksci/blocksci_export.h>
 #include "address_fwd.hpp"
-#include <blocksci/util/static_table.hpp>
+#include <blocksci/meta/static_table.hpp>
 
 #include <range/v3/iterator_range.hpp>
 

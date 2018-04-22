@@ -9,14 +9,11 @@
 #ifndef script_data_hpp
 #define script_data_hpp
 
-#include "bitcoin_pubkey.hpp"
+#include "bitcoin_uint256.hpp"
+#include "in_place_array.hpp"
+#include "raw_address.hpp"
 
-#include <blocksci/address/raw_address.hpp>
-#include <blocksci/util/bitcoin_uint256.hpp>
-#include <blocksci/util/hash.hpp>
-#include <blocksci/util/in_place_array.hpp>
-
-#include <range/v3/utility/optional.hpp>
+#include <blocksci/scripts/bitcoin_pubkey.hpp>
 
 #include <limits>
 
@@ -34,16 +31,8 @@ namespace blocksci {
             return txFirstSeen;
         }
         
-        ranges::optional<uint32_t> getTxRevealedIndex() const {
-            if (txFirstSpent != std::numeric_limits<uint32_t>::max()) {
-                return txFirstSpent;
-            } else {
-                return ranges::nullopt;
-            }
-        }
-        
         bool hasBeenSpent() const {
-            return getTxRevealedIndex().has_value();
+            return txFirstSpent != std::numeric_limits<uint32_t>::max();
         }
     };
     
@@ -73,30 +62,19 @@ namespace blocksci {
         size_t size() {
             return sizeof(ScriptHashData);
         }
-        
-        ranges::optional<RawAddress> getWrappedAddress() const {
-            if (wrappedAddress.scriptNum != 0) {
-                return wrappedAddress;
-            } else {
-                return ranges::nullopt;
-            }
+
+        bool hasWrappedAddress() const {
+            return wrappedAddress.scriptNum != 0;
         }
         
         void visitPointers(const std::function<void(const RawAddress &)> &visitFunc) const {
-            auto wrapped = getWrappedAddress();
-            if (wrapped) {
-                visitFunc(*wrapped);
+            if (hasWrappedAddress()) {
+                visitFunc(wrappedAddress);
             }
         }
         
         
-        uint160 getHash160() const {
-            if (isSegwit) {
-                return ripemd160(reinterpret_cast<const char *>(&hash256), sizeof(hash256));
-            } else {
-                return hash160;
-            }
-        }
+        uint160 getHash160() const;
     };
     
     struct BLOCKSCI_EXPORT MultisigData : public ScriptDataBase {
@@ -154,51 +132,6 @@ namespace blocksci {
         }
         
         RawData(uint32_t txNum, const std::vector<unsigned char> &fullData) : ScriptDataBase(txNum), rawData(static_cast<uint32_t>(fullData.size())) {}
-    };
-
-    template <>
-    struct BLOCKSCI_EXPORT ScriptData<AddressType::PUBKEY> {
-        using type = PubkeyData;
-    };
-    
-    template <>
-    struct BLOCKSCI_EXPORT ScriptData<AddressType::PUBKEYHASH> {
-        using type = PubkeyData;
-    };
-    
-    template <>
-    struct BLOCKSCI_EXPORT ScriptData<AddressType::MULTISIG_PUBKEY> {
-        using type = PubkeyData;
-    };
-    
-    template <>
-    struct BLOCKSCI_EXPORT ScriptData<AddressType::WITNESS_PUBKEYHASH> {
-        using type = PubkeyData;
-    };
-    
-    template <>
-    struct BLOCKSCI_EXPORT ScriptData<AddressType::SCRIPTHASH> {
-        using type = ScriptHashData;
-    };
-    
-    template <>
-    struct BLOCKSCI_EXPORT ScriptData<AddressType::WITNESS_SCRIPTHASH> {
-        using type = ScriptHashData;
-    };
-    
-    template <>
-    struct BLOCKSCI_EXPORT ScriptData<AddressType::MULTISIG> {
-        using type = MultisigData;
-    };
-    
-    template <>
-    struct BLOCKSCI_EXPORT ScriptData<AddressType::NULL_DATA> {
-        using type = RawData;
-    };
-    
-    template <>
-    struct BLOCKSCI_EXPORT ScriptData<AddressType::NONSTANDARD> {
-        using type = NonstandardScriptData;
     };
     
 } // namespace blocksci
