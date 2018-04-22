@@ -12,7 +12,9 @@
 #include <blocksci/blocksci_export.h>
 
 #include <array>
+#include <cassert>
 #include <limits>
+#include <memory>
 #include <string>
 #include <vector>
 
