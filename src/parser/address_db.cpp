@@ -9,22 +9,8 @@
 
 #include "address_db.hpp"
 
-#include <blocksci/index/address_index.hpp>
-#include <blocksci/address/dedup_address.hpp>
-#include <blocksci/scripts/script_variant.hpp>
-#include <blocksci/chain/output.hpp>
-#include <blocksci/chain/input.hpp>
-#include <blocksci/chain/inout_pointer.hpp>
-#include <blocksci/chain/transaction.hpp>
-#include <blocksci/core/chain_access.hpp>
-#include <blocksci/core/script_access.hpp>
-#include <blocksci/address/address.hpp>
-#include <blocksci/address/address_info.hpp>
-#include <blocksci/scripts/scripthash_script.hpp>
-
-#include <unordered_set>
-#include <string>
-#include <iostream>
+#include <blocksci/core/address_info.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
 
 using blocksci::Address;
 using blocksci::RawAddress;
@@ -46,7 +32,6 @@ AddressDB::~AddressDB() {
 }
 
 void AddressDB::processTx(const blocksci::RawTransaction *tx, uint32_t txNum, const blocksci::ChainAccess &, const blocksci::ScriptAccess &scripts) {
-    std::unordered_set<Address> addresses;
     std::function<bool(const RawAddress &)> visitFunc = [&](const RawAddress &a) {
         if (dedupType(a.type) == DedupAddressType::SCRIPTHASH) {
             auto scriptHash = scripts.getScriptData<DedupAddressType::SCRIPTHASH>(a.scriptNum);

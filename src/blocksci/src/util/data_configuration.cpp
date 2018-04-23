@@ -103,26 +103,6 @@ namespace blocksci {
         return (boost::filesystem::path{dataDirectory}/"mempool").native();
     }
     
-    std::string DataConfiguration::txFilePath() const {
-        return (boost::filesystem::path{chainDirectory()}/"tx").native();
-    }
-    
-    std::string DataConfiguration::txHashesFilePath() const {
-        return (boost::filesystem::path{chainDirectory()}/"tx_hashes").native();
-    }
-    
-    std::string DataConfiguration::blockFilePath() const {
-        return (boost::filesystem::path{chainDirectory()}/"block").native();
-    }
-    
-    std::string DataConfiguration::blockCoinbaseFilePath() const {
-        return (boost::filesystem::path{chainDirectory()}/"coinbases").native();
-    }
-    
-    std::string DataConfiguration::sequenceFilePath() const {
-        return (boost::filesystem::path{chainDirectory()}/"sequence").native();
-    }
-    
     std::string DataConfiguration::addressDBFilePath() const {
         return (boost::filesystem::path{dataDirectory}/"addressesDb").native();
     }

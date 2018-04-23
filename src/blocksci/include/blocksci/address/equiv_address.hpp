@@ -8,19 +8,21 @@
 #ifndef equiv_address_hpp
 #define equiv_address_hpp
 
-#include <blocksci/blocksci_export.h>
-#include <blocksci/blocksci_fwd.hpp>
-#include <blocksci/address/address.hpp>
-#include <blocksci/address/address_info.hpp>
-#include <blocksci/address/dedup_address.hpp>
-#include <blocksci/util/data_access.hpp>
+#include "address_fwd.hpp"
 
-#include <range/v3/view/join.hpp>
+#include <blocksci/blocksci_export.h>
+#include <blocksci/chain/chain_fwd.hpp>
+#include <blocksci/typedefs.hpp>
+#include <blocksci/address/address.hpp>
+
+#include <range/v3/view/any_view.hpp>
 
 #include <sstream>
 #include <unordered_set>
 
 namespace blocksci {
+    class DataAccess;
+    
     class BLOCKSCI_EXPORT EquivAddress {
         std::unordered_set<Address> addresses;
         bool scriptEquivalent;
@@ -30,9 +32,8 @@ namespace blocksci {
         
         EquivAddress(uint32_t scriptNum, EquivAddressType::Enum type, bool scriptEquivalent_, DataAccess &access_);
     public:
-        EquivAddress(const Address &address, bool scriptEquivalent_) : EquivAddress(address.scriptNum, equivType(address.type), scriptEquivalent_, address.getAccess()) {}
-        EquivAddress(const DedupAddress &address, bool scriptEquivalent_, DataAccess &access_) :
-        EquivAddress(address.scriptNum, equivType(address.type), scriptEquivalent_, access_) {}
+        EquivAddress(const Address &address, bool scriptEquivalent_);
+        EquivAddress(const DedupAddress &address, bool scriptEquivalent_, DataAccess &access_);
         
         bool operator==(const EquivAddress &other) const {
             if (scriptEquivalent != other.scriptEquivalent) {
@@ -59,14 +60,7 @@ namespace blocksci {
             return scriptEquivalent;
         }
         
-        auto getOutputPointers() const {
-            const auto &access_ = access;
-            return addresses
-            | ranges::view::transform([&access_](const Address &address) { return access_.addressIndex.getOutputPointers(address); })
-            | ranges::view::join
-            ;
-        }
-        
+        ranges::any_view<OutputPointer> getOutputPointers() const;
         int64_t calculateBalance(BlockHeight height);
         ranges::any_view<Output> getOutputs();
         std::vector<Input> getInputs();
@@ -81,13 +75,7 @@ namespace std {
     struct hash<blocksci::EquivAddress> {
         typedef blocksci::EquivAddress argument_type;
         typedef size_t  result_type;
-        result_type operator()(const argument_type &equiv) const {
-            std::size_t seed = 123954;
-            for (const auto &address : equiv.addresses) {
-                seed ^= address.scriptNum + address.type;
-            }
-            return seed;
-        }
+        result_type operator()(const argument_type &equiv) const;
     };
 }
 

@@ -11,7 +11,7 @@
 
 #include <blocksci/core/bitcoin_uint256.hpp>
 #include <blocksci/address/address.hpp>
-#include <blocksci/meta/apply.hpp>
+#include <blocksci/meta.hpp>
 #include <blocksci/util/state.hpp>
 
 #include <rocksdb/table.h>

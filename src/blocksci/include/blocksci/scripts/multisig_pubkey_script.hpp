@@ -8,8 +8,13 @@
 #ifndef multisig_pubkey_script_hpp
 #define multisig_pubkey_script_hpp
 
-#include <blocksci/blocksci_export.h>
 #include "pubkey_base_script.hpp"
+
+#include <blocksci/blocksci_export.h>
+#include <blocksci/core/address_info.hpp>
+#include <blocksci/util/data_access.hpp>
+
+#include <sstream>
 
 namespace blocksci {
     template <>

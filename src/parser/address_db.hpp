@@ -12,12 +12,8 @@
 #include "parser_fwd.hpp"
 #include "parser_index.hpp"
 
+#include <blocksci/address/dedup_address.hpp>
 #include <blocksci/index/address_index.hpp>
-#include <blocksci/chain/chain_fwd.hpp>
-#include <blocksci/address/address_fwd.hpp>
-#include <blocksci/scripts/multisig_script.hpp>
-
-#include <unordered_map>
 
 class AddressDB;
 

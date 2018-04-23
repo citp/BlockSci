@@ -17,20 +17,26 @@
 #include "safe_mem_reader.hpp"
 #include "output_spend_data.hpp"
 
-#include <blocksci/address/address.hpp>
-#include <blocksci/core/chain_access.hpp>
-#include <blocksci/core/script_access.hpp>
-#include <blocksci/scripts/script_variant.hpp>
-#include <blocksci/chain/block.hpp>
-#include <blocksci/chain/transaction.hpp>
-#include <blocksci/chain/input.hpp>
-#include <blocksci/chain/output.hpp>
-#include <blocksci/index/address_index.hpp>
-
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 
 #include <boost/filesystem/fstream.hpp>
+
+bool isSegwitMarker(const blocksci::RawTransaction &tx, blocksci::ScriptAccess &scripts) {
+    for (int i = tx.outputCount - 1; i >= 0; i--) {
+        auto output = tx.getOutput(i);
+        if (output.getType() == blocksci::AddressType::NULL_DATA) {
+            auto nulldata = scripts.getScriptData<blocksci::DedupAddressType::NULL_DATA>(output.getAddressNum());
+            auto data = nulldata->getData();
+            uint32_t startVal;
+            std::memcpy(&startVal, data.c_str(), sizeof(startVal));
+            if (startVal == 0xaa21a9ed) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
 #ifdef BLOCKSCI_FILE_PARSER
 void replayBlock(const ParserConfiguration<FileTag> &config, blocksci::BlockHeight blockNum) {
@@ -49,7 +55,7 @@ void replayBlock(const ParserConfiguration<FileTag> &config, blocksci::BlockHeig
     SafeMemReader reader{blockPath.native()};
     reader.advance(block.nDataPos);
     reader.advance(sizeof(CBlockHeader));
-    auto txCount = reader.readVariableLengthInteger();
+    reader.readVariableLengthInteger();
     blocksci::uint256 nullHash;
     nullHash.SetNull();
     
@@ -57,15 +63,16 @@ void replayBlock(const ParserConfiguration<FileTag> &config, blocksci::BlockHeig
     
     HashIndexCreator hashDb(config, config.dataConfig.hashIndexFilePath());
     AddressState addressState{config.addressPath(), hashDb};
-    blocksci::DataAccess access(config.dataConfig);
+    blocksci::ChainAccess chainAccess{config.dataConfig.chainDirectory(), config.dataConfig.blocksIgnored, config.dataConfig.errorOnReorg};
+    blocksci::ScriptAccess scripts{config.dataConfig.scriptsDirectory()};
     
-    auto realBlock = blocksci::Block(blockNum, access);
-    auto segwit = isSegwit(realBlock);
-    for (int txNum = 0; txNum < static_cast<int>(txCount); txNum++) {
-        auto realTx = realBlock[txNum];
-        
+    auto blockPtr = chainAccess.getBlock(blockNum);
+    auto firstTxNum = blockPtr->firstTxIndex;
+    auto segwit = isSegwitMarker(*chainAccess.getTx(firstTxNum), scripts);
+    for (uint32_t txNum = firstTxNum; txNum < firstTxNum + blockPtr->numTxes; txNum++) {
+        auto realTx = chainAccess.getTx(txNum);
         RawTransaction tx;
-        tx.load(reader, realTx.txNum, blockNum, segwit);
+        tx.load(reader, txNum, blockNum, segwit);
         
         if (tx.inputs.size() == 1 && tx.inputs[0].rawOutputPointer.hash == nullHash) {
             auto scriptView = tx.inputs[0].getScriptView();
@@ -75,10 +82,10 @@ void replayBlock(const ParserConfiguration<FileTag> &config, blocksci::BlockHeig
         
         uint16_t i = 0;
         for (auto &input : tx.inputs) {
-            auto realInput = realTx.inputs()[i];
-            auto address = realInput.getAddress();
+            auto &realInput = realTx->getInput(i);
+            auto address = blocksci::RawAddress{realInput.getAddressNum(), realInput.getType()};
             InputView inputView(i, tx.txNum, input.witnessStack, tx.isSegwit);
-            AnySpendData spendData(address.getScript());
+            AnySpendData spendData(address, scripts);
             tx.scriptInputs.emplace_back(inputView, input.getScriptView(), tx, spendData);
             i++;
         }

@@ -12,11 +12,7 @@
 #include "parser_configuration.hpp"
 #include "block_processor.hpp"
 
-#include <blocksci/address/dedup_address.hpp>
-#include <blocksci/blocksci_fwd.hpp>
-#include <blocksci/core/chain_access.hpp>
-#include <blocksci/core/script_access.hpp>
-#include <blocksci/chain/transaction_range.hpp>
+#include <blocksci/core/raw_transaction.hpp>
 #include <blocksci/util/progress_bar.hpp>
 #include <blocksci/util/state.hpp>
 
@@ -26,7 +22,6 @@
 #include <boost/filesystem/operations.hpp>
 
 #include <iostream>
-#include <future>
 
 template <typename T, blocksci::DedupAddressType::Enum type>
 struct ParserIndexScriptInfo;
@@ -88,17 +83,17 @@ struct ParserScriptUpdater {
 
 template <typename T>
 void ParserIndex<T>::runUpdate(const blocksci::State &state) {
-    blocksci::ChainAccess chain{config.dataConfig};
-    blocksci::ScriptAccess scripts{config.dataConfig};
+    blocksci::ChainAccess chain{config.dataConfig.chainDirectory(), config.dataConfig.blocksIgnored, config.dataConfig.errorOnReorg};
+    blocksci::ScriptAccess scripts{config.dataConfig.scriptsDirectory()};
     
     if (latestState.txCount < state.txCount) {
-        auto newTransactions = blocksci::RawTransactionRange(chain, latestState.txCount, state.txCount);
-        auto newCount = ranges::distance(newTransactions);
+        auto newCount = state.txCount - latestState.txCount;
         std::cout << "Updating index with " << newCount << " txes\n";
         auto progress = blocksci::makeProgressBar(newCount, [=]() {});
         uint32_t num = 0;
-        RANGES_FOR(auto tx, newTransactions) {
-            static_cast<T*>(this)->processTx(tx.first, tx.second, chain, scripts);
+        for (uint32_t txNum = latestState.txCount; txNum < state.txCount; txNum++) {
+            auto tx = chain.getTx(txNum);
+            static_cast<T*>(this)->processTx(tx, txNum, chain, scripts);
             progress.update(num);
             num++;
         }

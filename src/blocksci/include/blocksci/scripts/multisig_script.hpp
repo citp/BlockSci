@@ -9,9 +9,13 @@
 #ifndef multisig_script_hpp
 #define multisig_script_hpp
 
-#include <blocksci/blocksci_export.h>
 #include "script.hpp"
-#include "multisig_pubkey_script.hpp"
+
+#include <blocksci/blocksci_export.h>
+#include <blocksci/core/address_info.hpp>
+#include <blocksci/util/data_access.hpp>
+
+#include <sstream>
 
 namespace blocksci {
     template <>
@@ -30,21 +34,7 @@ namespace blocksci {
             return ss.str();
         }
         
-        std::string toPrettyString() const {
-            std::stringstream ss;
-            ss << "MultisigAddress(" << static_cast<int>(getRequired()) << " of " << static_cast<int>(getTotal()) << " multisig with addresses ";
-            uint8_t i = 0;
-            for (auto &address : getAddresses()) {
-                script::MultisigPubkey pubkeyScript(address.scriptNum, getAccess());
-                ss << pubkeyScript.toPrettyString();
-                if (i < getTotal() - 1) {
-                    ss << ", ";
-                }
-                i++;
-            }
-            ss << ")";
-            return ss.str();
-        }
+        std::string toPrettyString() const;
 
         void visitPointers(const std::function<void(const Address &)> &visitFunc) const {
             for (auto &address : getAddresses()) {

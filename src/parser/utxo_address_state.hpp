@@ -12,10 +12,7 @@
 #include "output_spend_data.hpp"
 #include "serializable_map.hpp"
 
-#include <blocksci/chain/chain_fwd.hpp>
 #include <blocksci/chain/inout_pointer.hpp>
-#include <blocksci/address/address_info.hpp>
-#include <boost/filesystem/path.hpp>
 
 template<blocksci::AddressType::Enum addressType>
 class UTXOAddressTypeState {
@@ -64,8 +61,8 @@ private:
     
 public:
     
-    void unserialize(const boost::filesystem::path &path);
-    void serialize(const boost::filesystem::path &path);
+    void unserialize(const std::string &path);
+    void serialize(const std::string &path);
     
     AnySpendData spendOutput(const blocksci::OutputPointer &outputPointer, blocksci::AddressType::Enum type);
     void addOutput(const AnySpendData &spendData, const blocksci::OutputPointer &outputPointer);

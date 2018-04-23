@@ -9,11 +9,12 @@
 #ifndef nonstandard_script_hpp
 #define nonstandard_script_hpp
 
-#include <blocksci/blocksci_export.h>
 #include "script.hpp"
 #include "script_view.hpp"
 
+#include <blocksci/blocksci_export.h>
 #include <blocksci/util/data_access.hpp>
+
 #include <range/v3/utility/optional.hpp>
 
 namespace blocksci {

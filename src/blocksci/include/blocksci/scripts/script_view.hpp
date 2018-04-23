@@ -8,8 +8,9 @@
 #ifndef script_view_hpp
 #define script_view_hpp
 
-#include <blocksci/blocksci_export.h>
 #include "bitcoin_script.hpp"
+
+#include <blocksci/blocksci_export.h>
 
 #include <range/v3/iterator_range.hpp>
 

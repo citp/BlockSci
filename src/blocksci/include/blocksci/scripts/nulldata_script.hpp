@@ -9,11 +9,13 @@
 #ifndef nulldata_script_hpp
 #define nulldata_script_hpp
 
-#include <blocksci/blocksci_export.h>
 #include "script.hpp"
 
+#include <blocksci/blocksci_export.h>
+#include <blocksci/core/address_info.hpp>
 #include <blocksci/util/data_access.hpp>
 
+#include <cstring>
 #include <string>
 #include <sstream>
 
@@ -30,9 +32,7 @@ namespace blocksci {
         ScriptAddress(uint32_t addressNum_, DataAccess &access_) : ScriptBase(addressNum_, addressType, access_, access_.scripts.getScriptData<dedupType(addressType)>(addressNum_)) {}
         
         std::string toString() const {
-            std::stringstream ss;
-            ss << "NulldataAddressData()";
-            return ss.str();
+            return "NulldataAddressData()";
         }
         
         std::string toPrettyString() const {
@@ -43,6 +43,13 @@ namespace blocksci {
         
         std::string getData() const {
             return getBackingData()->getData();
+        }
+        
+        bool isSegwitMarker() const {
+            auto data = getData();
+            uint32_t startVal;
+            std::memcpy(&startVal, data.c_str(), sizeof(startVal));
+            return startVal == 0xaa21a9ed;
         }
     };
 } // namespace blocksci

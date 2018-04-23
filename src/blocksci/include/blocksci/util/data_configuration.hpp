@@ -10,11 +10,10 @@
 #define data_configuration_h
 
 #include <blocksci/blocksci_export.h>
-#include <blocksci/blocksci_fwd.hpp>
 #include <blocksci/typedefs.hpp>
 
 #include <string>
-#include <sstream>
+#include <vector>
 
 namespace blocksci {
     
@@ -46,12 +45,6 @@ namespace blocksci {
         std::string chainDirectory() const;
         
         std::string mempoolDirectory() const;
-        
-        std::string txFilePath() const;
-        std::string txHashesFilePath() const;
-        std::string blockFilePath() const;
-        std::string blockCoinbaseFilePath() const;
-        std::string sequenceFilePath() const;
         
         std::string addressDBFilePath() const;
         std::string hashIndexFilePath() const;

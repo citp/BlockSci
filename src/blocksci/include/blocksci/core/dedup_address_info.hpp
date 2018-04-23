@@ -8,11 +8,11 @@
 #ifndef dedup_address_info_hpp
 #define dedup_address_info_hpp
 
-#include <blocksci/blocksci_export.h>
-#include "address_fwd.hpp"
-#include <blocksci/meta/static_table.hpp>
+#include "core_fwd.hpp"
+#include "dedup_address_type.hpp"
 
-#include <range/v3/iterator_range.hpp>
+#include <blocksci/blocksci_export.h>
+#include <blocksci/meta.hpp>
 
 #include <vector>
 
@@ -139,24 +139,6 @@ namespace blocksci {
         auto index = static_cast<size_t>(t);
         dedupTypeCheckThrow(index);
         return dedupAddressTypesTable[index];
-    }
-    
-    template<DedupAddressType::Enum type>
-    struct DedupAddressTypesRangeFunctor {
-        static ranges::iterator_range<const AddressType::Enum *> f() {
-            auto &types = DedupAddressInfo<type>::addressTypes;
-            return ranges::iterator_range<const AddressType::Enum *>{types.begin(), types.end()};
-        }
-    };
-    
-    inline ranges::iterator_range<const AddressType::Enum *> addressTypesRange(DedupAddressType::Enum t) {
-        static auto &dedupAddressTypesRangeTable = *[]() {
-            auto nameTable = make_static_table<DedupAddressType, DedupAddressTypesRangeFunctor>();
-            return new decltype(nameTable){nameTable};
-        }();
-        auto index = static_cast<size_t>(t);
-        dedupTypeCheckThrow(index);
-        return dedupAddressTypesRangeTable[index];
     }
 }
 

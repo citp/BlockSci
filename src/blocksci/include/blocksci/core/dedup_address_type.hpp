@@ -8,7 +8,7 @@
 #ifndef dedup_address_type_hpp
 #define dedup_address_type_hpp
 
-#include <blocksci/meta/apply_template.hpp>
+#include <blocksci/meta.hpp>
 
 #define DEDUP_ADDRESS_TYPE_LIST VAL(NONSTANDARD), VAL(PUBKEY), VAL(SCRIPTHASH), VAL(MULTISIG), VAL(NULL_DATA)
 #define DEDUP_ADDRESS_TYPE_SET VAL(NONSTANDARD) VAL(PUBKEY) VAL(SCRIPTHASH) VAL(MULTISIG) VAL(NULL_DATA)

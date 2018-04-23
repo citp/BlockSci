@@ -9,10 +9,7 @@
 #ifndef scriptsfwd_h
 #define scriptsfwd_h
 
-#include <blocksci/address/address_info.hpp>
-#include <blocksci/core/dedup_address_type.hpp>
-#include <blocksci/core/script_info.hpp>
-#include <blocksci/util/util.hpp>
+#include <blocksci/core/address_types.hpp>
 
 namespace mpark {
     template <typename... Types>
@@ -25,16 +22,6 @@ namespace blocksci {
     class CPubKey;
     struct DataConfiguration;
     
-    template <AddressType::Enum addressType>
-    using ScriptDataPointer = const typename ScriptInfo<dedupType(addressType)>::outputType*;
-    
-    namespace internal {
-        template <AddressType::Enum type>
-        struct ScriptWrapper {
-            ScriptDataPointer<type> data;
-        };
-    }
-    
     class ScriptBase;
     
     class AnyScript;
@@ -44,7 +31,6 @@ namespace blocksci {
     class ScriptAddress;
     
     using ScriptVariant = to_variadic_t<to_address_tuple_t<ScriptAddress>, mpark::variant>;
-    using ScriptDataVariant = to_variadic_t<to_address_tuple_t<internal::ScriptWrapper>, mpark::variant>;
     
     namespace script {
         using Pubkey = ScriptAddress<AddressType::PUBKEY>;

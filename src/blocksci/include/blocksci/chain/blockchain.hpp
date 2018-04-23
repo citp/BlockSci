@@ -9,15 +9,22 @@
 #ifndef blockchain_hpp
 #define blockchain_hpp
 
-#include <blocksci/blocksci_export.h>
-
 #include "block.hpp"
-#include <blocksci/scripts/script_variant.hpp>
+
+#include <blocksci/blocksci_export.h>
+#include <blocksci/scripts/multisig_script.hpp>
+#include <blocksci/scripts/nonstandard_script.hpp>
+#include <blocksci/scripts/nulldata_script.hpp>
+#include <blocksci/scripts/pubkey_script.hpp>
+#include <blocksci/scripts/multisig_pubkey_script.hpp>
+#include <blocksci/scripts/scripthash_script.hpp>
 #include <blocksci/util/data_access.hpp>
 
 #include <range/v3/view_facade.hpp>
 #include <range/v3/view/any_view.hpp>
 #include <range/v3/range_for.hpp>
+
+#include <mpark/variant.hpp>
 
 #include <map>
 #include <type_traits>
@@ -181,7 +188,7 @@ namespace blocksci {
         
         template <AddressType::Enum type>
         auto scripts() {
-            return ranges::view::ints(uint32_t{1}, access.scripts.scriptCount<dedupType(type)>() + 1) | ranges::view::transform([&](uint32_t scriptNum) {
+            return ranges::view::ints(uint32_t{1}, access.scripts.scriptCount(dedupType(type)) + 1) | ranges::view::transform([&](uint32_t scriptNum) {
                 return ScriptAddress<type>(scriptNum, access);
             });
         }

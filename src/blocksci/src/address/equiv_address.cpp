@@ -9,11 +9,6 @@
 #include <blocksci/address/dedup_address.hpp>
 
 #include <blocksci/util/data_access.hpp>
-#include <blocksci/util/hash.hpp>
-#include <blocksci/index/address_index.hpp>
-#include <blocksci/chain/inout_pointer.hpp>
-#include <blocksci/chain/input.hpp>
-#include <blocksci/chain/output.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/algorithms.hpp>
 #include <blocksci/scripts/script_variant.hpp>
@@ -38,6 +33,11 @@ namespace blocksci {
         }
     }
     
+    EquivAddress::EquivAddress(const Address &address, bool scriptEquivalent_) : EquivAddress(address.scriptNum, equivType(address.type), scriptEquivalent_, address.getAccess()) {}
+    
+    EquivAddress::EquivAddress(const DedupAddress &address, bool scriptEquivalent_, DataAccess &access_) :
+    EquivAddress(address.scriptNum, equivType(address.type), scriptEquivalent_, access_) {}
+    
     std::string EquivAddress::toString() const {
         std::stringstream ss;
         ss << "EquivAddress(";
@@ -51,6 +51,14 @@ namespace blocksci {
         }
         ss << ")";
         return ss.str();
+    }
+    
+    ranges::any_view<OutputPointer> EquivAddress::getOutputPointers() const {
+        const auto &access_ = access;
+        return addresses
+        | ranges::view::transform([&access_](const Address &address) { return access_.addressIndex.getOutputPointers(address); })
+        | ranges::view::join
+        ;
     }
     
     int64_t EquivAddress::calculateBalance(BlockHeight height) {
@@ -75,6 +83,16 @@ namespace blocksci {
     
     std::vector<Transaction> EquivAddress::getInputTransactions() {
         return blocksci::getInputTransactions(getOutputPointers(), access);
+    }
+}
+
+namespace std {
+    auto hash<blocksci::EquivAddress>::operator()(const argument_type &equiv) const -> result_type {
+        std::size_t seed = 123954;
+        for (const auto &address : equiv.addresses) {
+            seed ^= address.scriptNum + address.type;
+        }
+        return seed;
     }
 }
 

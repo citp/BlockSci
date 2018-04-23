@@ -9,9 +9,9 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "script_input.hpp"
-#include "address_writer.hpp"
 #include "preproccessed_block.hpp"
 #include "output_spend_data.hpp"
+
 #include <blocksci/scripts/bitcoin_pubkey.hpp>
 
 #include <secp256k1.h>

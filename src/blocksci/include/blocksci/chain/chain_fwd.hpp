@@ -15,7 +15,6 @@ namespace blocksci {
     class Output;
     class Input;
     
-    class RawTransactionRange;
     class TransactionRange;
     struct TransactionSummary;
     

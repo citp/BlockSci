@@ -8,10 +8,9 @@
 #ifndef progress_bar_hpp
 #define progress_bar_hpp
 
-#include <cstdint>
-#include <stdio.h>
-#include <iostream>
 #include <cmath>
+#include <cstdint>
+#include <iostream>
 
 namespace blocksci {
     template<typename UpdateFunc>

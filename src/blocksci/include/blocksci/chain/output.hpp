@@ -9,12 +9,16 @@
 #ifndef output_hpp
 #define output_hpp
 
+#include "inout_pointer.hpp"
+
 #include <blocksci/blocksci_export.h>
 #include <blocksci/core/inout.hpp>
-#include "inout_pointer.hpp"
+#include <blocksci/core/raw_transaction.hpp>
 
 #include <blocksci/address/address.hpp>
 #include <blocksci/util/data_access.hpp>
+
+#include <sstream>
 
 namespace std {
     template<> struct BLOCKSCI_EXPORT hash<blocksci::Output> {
@@ -99,7 +103,12 @@ namespace blocksci {
             return inout->getValue();
         }
 
-        std::string toString() const;
+        std::string toString() const  {
+            std::stringstream ss;
+            ss << "TxOut(spending_tx_index=" << inout->getLinkedTxNum() << ", address=" << getAddress().toString() << ", value=" << inout->getValue() << ")";
+            return ss.str();
+        }
+        
         ranges::optional<Transaction> getSpendingTx() const;
     };
 

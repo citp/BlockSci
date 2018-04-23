@@ -14,7 +14,6 @@
 #include <cstdint>
 #include <functional>
 
-
 namespace blocksci {
 	template <class T>
 	inline void BLOCKSCI_EXPORT hash_combine(std::size_t &seed, const T& v) {

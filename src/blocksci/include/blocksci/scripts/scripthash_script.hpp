@@ -9,8 +9,12 @@
 #ifndef scripthash_script_hpp
 #define scripthash_script_hpp
 
-#include <blocksci/blocksci_export.h>
 #include "script.hpp"
+
+#include <blocksci/blocksci_export.h>
+#include <blocksci/util/data_access.hpp>
+
+#include <sstream>
 
 namespace blocksci {
     class BLOCKSCI_EXPORT ScriptHashBase : public ScriptBase {

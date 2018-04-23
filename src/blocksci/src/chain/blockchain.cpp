@@ -8,11 +8,11 @@
 
 #include <blocksci/chain/blockchain.hpp>
 #include <blocksci/heuristics/tx_identification.hpp>
+#include <blocksci/index/address_output_range.hpp>
 
 #include <range/v3/action/push_back.hpp>
 #include <range/v3/algorithm/any_of.hpp>
 #include <range/v3/front.hpp>
-#include <range/v3/view/drop.hpp>
 #include <range/v3/view/filter.hpp>
 #include <range/v3/view/group_by.hpp>
 

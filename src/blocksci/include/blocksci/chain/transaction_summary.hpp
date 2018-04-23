@@ -9,8 +9,8 @@
 #ifndef transaction_summary_hpp
 #define transaction_summary_hpp
 
+#include "block.hpp"
 #include <blocksci/blocksci_export.h>
-#include "transaction.hpp"
 
 namespace blocksci {
     struct BLOCKSCI_EXPORT TransactionSummary {

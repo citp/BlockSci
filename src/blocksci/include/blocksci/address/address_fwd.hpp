@@ -12,20 +12,9 @@
 #include <blocksci/core/dedup_address_type.hpp>
 
 namespace blocksci {
-    struct RawAddress;
-    
     class Address;
     struct DedupAddress;
     class EquivAddress;
-    
-    template <AddressType::Enum>
-    struct AddressInfo;
-    
-    template <DedupAddressType::Enum>
-    struct DedupAddressInfo;
-    
-    template <EquivAddressType::Enum>
-    struct EquivAddressInfo;
 }
 
 #endif /* address_fwd_h */

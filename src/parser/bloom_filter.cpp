@@ -8,8 +8,6 @@
 
 #include "bloom_filter.hpp"
 
-#include <blocksci/core/bitcoin_uint256.hpp>
-
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/filesystem/fstream.hpp>

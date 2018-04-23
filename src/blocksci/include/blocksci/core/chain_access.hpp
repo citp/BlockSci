@@ -10,9 +10,9 @@
 #define chain_access_hpp
 
 #include "bitcoin_uint256.hpp"
+#include "core_fwd.hpp"
 #include "file_mapper.hpp"
 #include "raw_block.hpp"
-#include "raw_transaction.hpp"
 
 #include <blocksci/blocksci_export.h>
 #include <blocksci/exception.hpp>
@@ -21,9 +21,6 @@
 #include <algorithm>
 
 namespace blocksci {
-    
-    struct DataConfiguration;
-    
     class BLOCKSCI_EXPORT ChainAccess {
         FixedSizeFileMapper<RawBlock> blockFile;
         SimpleFileMapper<> blockCoinbaseFile;
@@ -46,21 +43,16 @@ namespace blocksci {
             }
         }
         
-        void setup() {
-            maxHeight = static_cast<BlockHeight>(blockFile.size()) - blocksIgnored;
-            if (maxHeight > BlockHeight(0)) {
-                const auto &blockFile_ = blockFile;
-                auto maxLoadedBlock = blockFile_[static_cast<size_t>(static_cast<int>(maxHeight) - 1)];
-                lastBlockHash = maxLoadedBlock->hash;
-                _maxLoadedTx = maxLoadedBlock->firstTxIndex + maxLoadedBlock->numTxes;
-                lastBlockHashDisk = &maxLoadedBlock->hash;
-            } else {
-                _maxLoadedTx = 0;
-            }
-        }
+        void setup();
         
     public:
-        explicit ChainAccess(const DataConfiguration &config);
+        explicit ChainAccess(const std::string &baseDirectory, BlockHeight blocksIgnored, bool errorOnReorg);
+        
+        static std::string txFilePath(const std::string &baseDirectory);
+        static std::string txHashesFilePath(const std::string &baseDirectory);
+        static std::string blockFilePath(const std::string &baseDirectory);
+        static std::string blockCoinbaseFilePath(const std::string &baseDirectory);
+        static std::string sequenceFilePath(const std::string &baseDirectory);
         
         uint32_t maxLoadedTx() const {
             return _maxLoadedTx;

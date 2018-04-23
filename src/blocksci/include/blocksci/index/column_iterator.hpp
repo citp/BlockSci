@@ -10,8 +10,6 @@
 
 #include <blocksci/blocksci_export.h>
 
-#include <blocksci/util/memory_view.hpp>
-
 #include <range/v3/view_facade.hpp>
 
 #include <vector>
@@ -23,6 +21,8 @@ namespace rocksdb {
 }
 
 namespace blocksci {
+    struct MemoryView;
+    
     class BLOCKSCI_EXPORT ColumnIterator : public ranges::view_facade<ColumnIterator> {
         friend ranges::range_access;
         rocksdb::DB *db;

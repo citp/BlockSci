@@ -8,11 +8,10 @@
 #ifndef pubkey_base_script_h
 #define pubkey_base_script_h
 
-#include <blocksci/blocksci_export.h>
 #include "script.hpp"
 
+#include <blocksci/blocksci_export.h>
 #include <blocksci/core/bitcoin_uint256.hpp>
-#include <blocksci/util/data_access.hpp>
 
 namespace blocksci {
     class BLOCKSCI_EXPORT PubkeyAddressBase : public ScriptBase {
@@ -36,9 +35,7 @@ namespace blocksci {
             }
         }
         
-        std::vector<Address> getIncludingMultisigs() const {
-            return getAccess().addressIndex.getIncludingMultisigs(*this);
-        }
+        std::vector<Address> getIncludingMultisigs() const;
     };
 }
 

@@ -9,7 +9,6 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "script_output.hpp"
-#include "address_writer.hpp"
 
 #include <blocksci/util/hash.hpp>
 
@@ -257,8 +256,7 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::SCRIPTHASH>::get
 }
 
 blocksci::ScriptHashData ScriptOutputData<blocksci::AddressType::Enum::SCRIPTHASH>::getData(uint32_t txNum) const {
-    blocksci::Address wrappedAddress;
-    return {txNum, hash, blocksci::RawAddress{wrappedAddress.scriptNum, wrappedAddress.type}};
+    return {txNum, hash, blocksci::RawAddress{0, blocksci::AddressType::Enum::NONSTANDARD}};
 }
 
 // MARK: WITNESS_SCRIPTHASH
@@ -268,8 +266,7 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHA
 }
 
 blocksci::ScriptHashData ScriptOutputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::getData(uint32_t txNum) const {
-    blocksci::Address wrappedAddress;
-    return {txNum, hash, blocksci::RawAddress{wrappedAddress.scriptNum, wrappedAddress.type}};
+    return {txNum, hash, blocksci::RawAddress{0, blocksci::AddressType::Enum::NONSTANDARD}};
 }
 
 // MARK: TX_MULTISIG

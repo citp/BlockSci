@@ -9,7 +9,7 @@
 #ifndef utxo_hpp
 #define utxo_hpp
 
-#include <blocksci/chain/output.hpp>
+#include <blocksci/core/address_types.hpp>
 
 struct UTXO {
     int64_t value;

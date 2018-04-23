@@ -8,15 +8,10 @@
 #ifndef serializable_map_hpp
 #define serializable_map_hpp
 
-#include <stdio.h>
-
-#include <blocksci/util/hash.hpp>
-
 #include <google/dense_hash_map>
 
-#include <sstream>
+#include <string>
 #include <fstream>
-#include <future>
 
 template<typename Key, typename Value>
 class SerializableMap {

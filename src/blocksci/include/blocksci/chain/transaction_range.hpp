@@ -8,8 +8,9 @@
 #ifndef transaction_range_hpp
 #define transaction_range_hpp
 
-#include <blocksci/blocksci_export.h>
 #include "transaction.hpp"
+
+#include <blocksci/blocksci_export.h>
 
 namespace blocksci {
     class BLOCKSCI_EXPORT TransactionRange : public ranges::view_facade<TransactionRange> {
@@ -72,48 +73,6 @@ namespace blocksci {
         TransactionRange() = default;
         TransactionRange(DataAccess &access_, uint32_t begin, uint32_t end) : access(&access_), currentTxPos(reinterpret_cast<const char *>(access->chain.getTx(begin))), currentTxIndex(begin), endTxIndex(end), blockNum(access->chain.getBlockHeight(begin)) {
             updateNextBlock();
-        }
-    };
-    
-    class BLOCKSCI_EXPORT RawTransactionRange : public ranges::view_facade<RawTransactionRange> {
-        friend ranges::range_access;
-        
-        const ChainAccess *access;
-        mutable const char *currentTxPos;
-        uint32_t currentTxIndex;
-        uint32_t endTxIndex;
-        
-        std::pair<const RawTransaction *, uint32_t> read() const {
-            return std::make_pair(reinterpret_cast<const RawTransaction *>(currentTxPos), currentTxIndex);
-        }
-        
-        bool equal(ranges::default_sentinel) const { return currentTxIndex == endTxIndex; }
-        
-        void next() {
-            auto tx = reinterpret_cast<const RawTransaction *>(currentTxPos);
-            currentTxPos += sizeof(RawTransaction) +
-            static_cast<size_t>(tx->inputCount) * sizeof(Inout) +
-            static_cast<size_t>(tx->outputCount) * sizeof(Inout);
-            ++currentTxIndex;
-        }
-        
-        void prev() {
-            --currentTxIndex;
-            currentTxPos = reinterpret_cast<const char *>(access->getTx(currentTxIndex));
-        }
-        
-        void advance(int amount) {
-            currentTxIndex = static_cast<uint32_t>(static_cast<int>(currentTxIndex) + amount);
-            currentTxPos = reinterpret_cast<const char *>(access->getTx(currentTxIndex));
-        }
-        
-        size_t distance_to(const RawTransactionRange &other) const {
-            return static_cast<size_t>(other.currentTxIndex) - static_cast<size_t>(currentTxIndex);
-        }
-        
-    public:
-        RawTransactionRange() = default;
-        RawTransactionRange(const ChainAccess &access_, uint32_t begin, uint32_t end) : access(&access_), currentTxPos(reinterpret_cast<const char *>(access->getTx(begin))), currentTxIndex(begin), endTxIndex(end) {
         }
     };
 } // namespace blocksci

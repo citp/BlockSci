@@ -5,7 +5,7 @@
 //  Created by Harry Kalodner on 3/7/18.
 //
 
-#include <blocksci/address/dedup_address_info.hpp>
+#include <blocksci/core/dedup_address_info.hpp>
 
 #include <string>
 

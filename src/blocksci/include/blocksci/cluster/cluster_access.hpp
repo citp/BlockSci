@@ -9,11 +9,11 @@
 #define cluster_access_h
 
 #include <blocksci/blocksci_export.h>
-
 #include <blocksci/address/dedup_address.hpp>
 #include <blocksci/address/address.hpp>
-#include <blocksci/util/data_access.hpp>
+#include <blocksci/core/address_info.hpp>
 #include <blocksci/core/file_mapper.hpp>
+#include <blocksci/util/data_access.hpp>
 
 namespace blocksci {
     template<DedupAddressType::Enum type>

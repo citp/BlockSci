@@ -11,10 +11,10 @@
 
 #include <blocksci/address/dedup_address.hpp>
 #include <blocksci/address/equiv_address.hpp>
-#include <blocksci/address/address_info.hpp>
 #include <blocksci/chain/inout_pointer.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/algorithms.hpp>
+#include <blocksci/core/address_info.hpp>
 #include <blocksci/index/address_index.hpp>
 
 namespace blocksci {

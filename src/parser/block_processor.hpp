@@ -14,12 +14,7 @@
 #include "parser_configuration.hpp"
 #include "file_writer.hpp"
 
-#include <blocksci/core/file_mapper.hpp>
-#include <blocksci/chain/transaction.hpp>
-#include <blocksci/chain/block.hpp>
 #include <blocksci/chain/inout_pointer.hpp>
-#include <blocksci/scripts/scripts_fwd.hpp>
-#include <blocksci/core/bitcoin_uint256.hpp>
 
 class BlockFileReaderBase {
 public:

@@ -84,15 +84,13 @@ set(BLOCKSCI_HEADERS
   ${BLOCKSCI_HEADER_PREFIX}/cluster.hpp
   ${BLOCKSCI_HEADER_PREFIX}/index.hpp
   ${BLOCKSCI_HEADER_PREFIX}/exception.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/meta.hpp
 )
 
 set(ADDRESS_HEADERS
   ${BLOCKSCI_HEADER_PREFIX}/address/address_fwd.hpp
-  ${BLOCKSCI_HEADER_PREFIX}/address/address_info.hpp
   ${BLOCKSCI_HEADER_PREFIX}/address/address.hpp
-  ${BLOCKSCI_HEADER_PREFIX}/address/dedup_address_info.hpp
   ${BLOCKSCI_HEADER_PREFIX}/address/dedup_address.hpp
-  ${BLOCKSCI_HEADER_PREFIX}/address/equiv_address_type.hpp
   ${BLOCKSCI_HEADER_PREFIX}/address/equiv_address.hpp
 )
 
@@ -125,6 +123,7 @@ set(CLUSTER_HEADERS
 
 set(INDEX_HEADERS
   ${BLOCKSCI_HEADER_PREFIX}/index/address_index.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/index/address_output_range.hpp
   ${BLOCKSCI_HEADER_PREFIX}/index/hash_index.hpp
   ${BLOCKSCI_HEADER_PREFIX}/index/mempool_index.hpp
   ${BLOCKSCI_HEADER_PREFIX}/index/column_iterator.hpp
@@ -153,21 +152,17 @@ set(UTIL_HEADERS
   ${BLOCKSCI_HEADER_PREFIX}/util/parallel.hpp
   ${BLOCKSCI_HEADER_PREFIX}/util/progress_bar.hpp
   ${BLOCKSCI_HEADER_PREFIX}/util/state.hpp
-  ${BLOCKSCI_HEADER_PREFIX}/util/util.hpp
   ${BLOCKSCI_HEADER_PREFIX}/util/memory_view.hpp
-)
-
-set(META_HEADERS
-  ${BLOCKSCI_HEADER_PREFIX}/meta/apply_template.hpp
-  ${BLOCKSCI_HEADER_PREFIX}/meta/apply.hpp
-  ${BLOCKSCI_HEADER_PREFIX}/meta/dynamic_table.hpp
-  ${BLOCKSCI_HEADER_PREFIX}/meta/static_table.hpp
 )
 
 set(CORE_HEADERS
   ${BLOCKSCI_HEADER_PREFIX}/core/address_types.hpp
-  ${BLOCKSCI_HEADER_PREFIX}/core/dedup_address_type.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/core/address_info.hpp
   ${BLOCKSCI_HEADER_PREFIX}/core/bitcoin_uint256.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/core/core_fwd.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/core/dedup_address_type.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/core/dedup_address_info.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/core/equiv_address_type.hpp
   ${BLOCKSCI_HEADER_PREFIX}/core/file_mapper.hpp
   ${BLOCKSCI_HEADER_PREFIX}/core/hash_combine.hpp
   ${BLOCKSCI_HEADER_PREFIX}/core/inout.hpp
@@ -189,7 +184,6 @@ target_sources(blocksci PUBLIC $<BUILD_INTERFACE:${HEURISTICS_HEADERS}>)
 target_sources(blocksci PUBLIC $<BUILD_INTERFACE:${CLUSTER_HEADERS}>)
 target_sources(blocksci PUBLIC $<BUILD_INTERFACE:${INDEX_HEADERS}>)
 target_sources(blocksci PUBLIC $<BUILD_INTERFACE:${UTIL_HEADERS}>)
-target_sources(blocksci PUBLIC $<BUILD_INTERFACE:${META_HEADERS}>)
 target_sources(blocksci PUBLIC $<BUILD_INTERFACE:${CORE_HEADERS}>)
 
 set(BLOCKSCI_SOURCES
@@ -197,15 +191,13 @@ set(BLOCKSCI_SOURCES
 )
 
 set(ADDRESS_SOURCES
-  ${BLOCKSCI_SOURCE_PREFIX}/address/address_info.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/address/address.cpp
-  ${BLOCKSCI_SOURCE_PREFIX}/address/dedup_address_info.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/address/equiv_address.cpp
 )
 
 set(CHAIN_SOURCES
-  ${BLOCKSCI_SOURCE_PREFIX}/chain/block.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/chain/blockchain.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/chain/block.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/chain/inout_pointer.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/chain/input.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/chain/output.cpp
@@ -227,6 +219,7 @@ set(INDEX_PRIVATE_HEADERS
 set(INDEX_SOURCES
   ${BLOCKSCI_SOURCE_PREFIX}/index/address_index.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/index/address_index_priv.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/index/address_output_range.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/index/hash_index.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/index/hash_index_priv.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/index/column_iterator.cpp
@@ -246,6 +239,8 @@ set(SCRIPT_SOURCES
   ${BLOCKSCI_SOURCE_PREFIX}/scripts/bitcoin_script.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/scripts/bitcoin_segwit_addr.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/scripts/multisig_pubkey_script.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/scripts/multisig_script.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/scripts/pubkey_base_script.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/scripts/pubkey_script.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/scripts/script_view.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/scripts/script.cpp
@@ -254,6 +249,8 @@ set(SCRIPT_SOURCES
 )
 
 set(CORE_SOURCES
+  ${BLOCKSCI_SOURCE_PREFIX}/core/address_info.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/core/dedup_address_info.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/core/bitcoin_uint256.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/core/chain_access.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/core/file_mapper.cpp
@@ -302,7 +299,6 @@ else()
 endif()
 
 source_group(blocksci\\core FILES ${CORE_HEADERS} ${CORE_SOURCES})
-source_group(blocksci\\meta FILES ${META_HEADERS} ${META_SOURCES})
 source_group(blocksci\\chain FILES ${CHAIN_HEADERS} ${CHAIN_SOURCES})
 source_group(blocksci\\address FILES ${ADDRESS_HEADERS} ${ADDRESS_SOURCES})
 source_group(blocksci\\scripts FILES ${SCRIPT_HEADERS} ${SCRIPT_SOURCES} ${SCRIPT_PRIVATE_HEADERS})

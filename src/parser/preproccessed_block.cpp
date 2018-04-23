@@ -14,7 +14,6 @@
 #include "safe_mem_reader.hpp"
 
 #include <blocksci/util/hash.hpp>
-#include <blocksci/chain/transaction.hpp>
 
 #ifdef BLOCKSCI_RPC_PARSER
 #include <bitcoinapi/types.h>

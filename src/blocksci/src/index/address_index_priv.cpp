@@ -7,8 +7,8 @@
 
 #include "address_index_priv.hpp"
 
-#include <blocksci/address/address_info.hpp>
-#include <blocksci/meta/apply.hpp>
+#include <blocksci/meta.hpp>
+#include <blocksci/core/address_info.hpp>
 
 #include <sstream>
 

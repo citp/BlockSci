@@ -25,6 +25,25 @@
 #include <vector>
 
 namespace blocksci {
+    
+    template<DedupAddressType::Enum type>
+    struct DedupAddressTypesRangeFunctor {
+        static ranges::iterator_range<const AddressType::Enum *> f() {
+            auto &types = DedupAddressInfo<type>::addressTypes;
+            return ranges::iterator_range<const AddressType::Enum *>{types.begin(), types.end()};
+        }
+    };
+    
+    inline ranges::iterator_range<const AddressType::Enum *> addressTypesRange(DedupAddressType::Enum t) {
+        static auto &dedupAddressTypesRangeTable = *[]() {
+            auto nameTable = make_static_table<DedupAddressType, DedupAddressTypesRangeFunctor>();
+            return new decltype(nameTable){nameTable};
+        }();
+        auto index = static_cast<size_t>(t);
+        dedupTypeCheckThrow(index);
+        return dedupAddressTypesRangeTable[index];
+    }
+    
     struct BLOCKSCI_EXPORT TaggedAddress {
         blocksci::Address address;
         std::string tag;

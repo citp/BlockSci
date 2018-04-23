@@ -10,13 +10,13 @@
 #include "parser_configuration.hpp"
 
 #include <blocksci/core/bitcoin_uint256.hpp>
-#include <blocksci/address/address_info.hpp>
+#include <blocksci/core/address_info.hpp>
 #include <blocksci/util/hash.hpp>
-
 
 #include <boost/filesystem/fstream.hpp>
 
-#include <iostream>
+#include <string>
+#include <sstream>
 
 namespace {
     static constexpr auto multiAddressFileName = "multi";
@@ -48,12 +48,6 @@ AddressState::AddressState(boost::filesystem::path path_, HashIndexCreator &hash
 }
 
 AddressState::~AddressState() {
-    
-    std::cout << "\nbloomNegativeCount: " << bloomNegativeCount << "\n";
-    std::cout << "multiCount: " << multiCount << "\n";
-    std::cout << "dbCount: " << dbCount << "\n";
-    std::cout << "bloomFPCount: " << bloomFPCount << "\n";
-    
     blocksci::for_each(multiAddressMaps, [&](auto &multiAddressMap) {
         std::stringstream ss;
         ss << multiAddressFileName << "_" << dedupAddressName(multiAddressMap.type) << ".dat";

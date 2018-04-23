@@ -22,14 +22,6 @@
 #include "serializable_map.hpp"
 #include "file_writer.hpp"
 
-#include <blocksci/chain/block.hpp>
-#include <blocksci/chain/input.hpp>
-#include <blocksci/chain/output.hpp>
-#include <blocksci/chain/transaction.hpp>
-#include <blocksci/core/bitcoin_uint256.hpp>
-#include <blocksci/util/hash.hpp>
-#include <blocksci/util/progress_bar.hpp>
-
 #ifdef BLOCKSCI_RPC_PARSER
 #include <bitcoinapi/bitcoinapi.h>
 #endif
@@ -37,11 +29,13 @@
 #include <boost/lockfree/spsc_queue.hpp>
 #include <boost/filesystem/operations.hpp>
 
-#include <cmath>
 #include <atomic>
-#include <thread>
+#include <cmath>
 #include <fstream>
+#include <future>
 #include <iostream>
+#include <thread>
+
 
 using blocksci::FixedSizeFileWriter;
 using blocksci::IndexedFileWriter;
@@ -398,7 +392,8 @@ void serializeAddressess(RawTransaction &tx, AddressWriter &addressWriter) {
 
 void backUpdateTxes(const ParserConfigurationBase &config) {
     {
-        blocksci::IndexedFileMapper<blocksci::AccessMode::readwrite, blocksci::RawTransaction> txFile(config.dataConfig.txFilePath());
+        
+        blocksci::IndexedFileMapper<blocksci::AccessMode::readwrite, blocksci::RawTransaction> txFile(blocksci::ChainAccess::txFilePath(config.dataConfig.chainDirectory()));
         
         blocksci::FixedSizeFileMapper<OutputLinkData> linkDataFile_(config.txUpdatesFilePath());
         const auto &linkDataFile = linkDataFile_;
@@ -514,7 +509,10 @@ ProcessStep<ProcessFunc, AdvanceFunc> makeProcessStep(std::atomic<bool> &prevDon
     return ProcessStep<ProcessFunc, AdvanceFunc>(prevDone, func, advanceFunc);
 }
 
-NewBlocksFiles::NewBlocksFiles(const ParserConfigurationBase &config) : blockCoinbaseFile(config.dataConfig.blockCoinbaseFilePath()), sequenceFile(config.dataConfig.sequenceFilePath()) {}
+NewBlocksFiles::NewBlocksFiles(const ParserConfigurationBase &config) :
+    blockCoinbaseFile(blocksci::ChainAccess::blockCoinbaseFilePath(config.dataConfig.chainDirectory())),
+    sequenceFile(blocksci::ChainAccess::sequenceFilePath(config.dataConfig.chainDirectory())) {}
+
 
 template <typename ParseTag>
 std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> blocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState) {
@@ -522,7 +520,7 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfigu
     std::atomic<bool> rawDone{false};
     boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<10000>> finished_transaction_queue;
     
-    FixedSizeFileWriter<blocksci::uint256> hashFile{config.dataConfig.txHashesFilePath()};
+    FixedSizeFileWriter<blocksci::uint256> hashFile{blocksci::ChainAccess::txHashesFilePath(config.dataConfig.chainDirectory())};
     AddressWriter addressWriter{config};
     
     auto progressBar = blocksci::makeProgressBar(totalTxCount, [=](RawTransaction *tx) {
@@ -556,7 +554,7 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfigu
         recordAddresses(*tx, utxoScriptState);
     };
     
-    IndexedFileWriter<1> txFile(config.dataConfig.txFilePath());
+    IndexedFileWriter<1> txFile(blocksci::ChainAccess::txFilePath(config.dataConfig.chainDirectory()));
     FixedSizeFileWriter<OutputLinkData> linkDataFile(config.txUpdatesFilePath());
     
     auto serializeTransactionFunc = [&](RawTransaction *tx) {
@@ -687,8 +685,8 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocksSingle(const ParserC
         tx = &realTx;
         return true;
     };
-        
-    FixedSizeFileWriter<blocksci::uint256> hashFile{config.dataConfig.txHashesFilePath()};
+    
+    FixedSizeFileWriter<blocksci::uint256> hashFile{blocksci::ChainAccess::txHashesFilePath(config.dataConfig.chainDirectory())};
     AddressWriter addressWriter{config};
     blocksci::ECCVerifyHandle handle;
     
@@ -698,7 +696,7 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocksSingle(const ParserC
     });
     
     FixedSizeFileWriter<OutputLinkData> linkDataFile(config.txUpdatesFilePath());
-    IndexedFileWriter<1> txFile(config.dataConfig.txFilePath());
+    IndexedFileWriter<1> txFile(blocksci::ChainAccess::txFilePath(config.dataConfig.chainDirectory()));
 
     auto outFunc = [&](RawTransaction *tx) {
         calculateHash(*tx, hashFile);

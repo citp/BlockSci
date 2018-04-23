@@ -8,7 +8,6 @@
 #ifndef script_variant_hpp
 #define script_variant_hpp
 
-#include <blocksci/blocksci_export.h>
 #include "multisig_script.hpp"
 #include "nonstandard_script.hpp"
 #include "nulldata_script.hpp"
@@ -16,7 +15,7 @@
 #include "multisig_pubkey_script.hpp"
 #include "scripthash_script.hpp"
 
-#include <blocksci/util/util.hpp>
+#include <blocksci/blocksci_export.h>
 
 #include <mpark/variant.hpp>
 
@@ -27,13 +26,7 @@ namespace blocksci {
             static ScriptVariant f(uint32_t scriptNum, DataAccess &access);
         };
         
-        template<AddressType::Enum type>
-        struct ScriptDataCreateFunctor {
-            static ScriptDataVariant f(uint32_t scriptNum, const ScriptAccess &access);
-        };
-        
         static constexpr auto scriptCreator = make_dynamic_table<AddressType, ScriptCreateFunctor>();
-        static constexpr auto scriptDataCreator = make_dynamic_table<AddressType, ScriptDataCreateFunctor>();
     }
     
     class BLOCKSCI_EXPORT AnyScript {
@@ -94,27 +87,10 @@ namespace blocksci {
         ScriptVariant wrapped;
     };
     
-    class BLOCKSCI_EXPORT AnyScriptData {
-    public:
-        AnyScriptData(const RawAddress &address, const ScriptAccess &access) : wrapped(internal::scriptDataCreator.at(static_cast<size_t>(address.type))(address.scriptNum, access)) {}
-        
-        void visitPointers(const std::function<void(const RawAddress &)> &func) {
-            mpark::visit([&](auto &scriptAddress) { scriptAddress.data->visitPointers(func); }, wrapped);
-        }
-
-        ScriptDataVariant wrapped;
-    };
-    
     namespace internal {
         template<AddressType::Enum type>
         ScriptVariant ScriptCreateFunctor<type>::f(uint32_t scriptNum, DataAccess &access) {
             return ScriptAddress<type>(scriptNum, access);
-        }
-        
-        template<AddressType::Enum type>
-        ScriptDataVariant ScriptDataCreateFunctor<type>::f(uint32_t scriptNum, const ScriptAccess &access) {
-            auto &file = access.getFile<dedupType(type)>();
-            return ScriptWrapper<type>{file.getDataAtIndex(scriptNum - 1)};
         }
     }
 } // namespace blocksci

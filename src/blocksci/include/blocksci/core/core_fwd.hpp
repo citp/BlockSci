@@ -9,6 +9,7 @@
 #ifndef blocksci_core_fwd_hpp
 #define blocksci_core_fwd_hpp
 
+#include "address_types.hpp"
 #include "dedup_address_type.hpp"
 
 namespace blocksci {
@@ -26,6 +27,17 @@ namespace blocksci {
 
     template <DedupAddressType::Enum>
     struct ScriptInfo;
+
+    struct RawAddress;
+    
+    template <AddressType::Enum>
+    struct AddressInfo;
+    
+    template <DedupAddressType::Enum>
+    struct DedupAddressInfo;
+    
+    template <EquivAddressType::Enum>
+    struct EquivAddressInfo;
 
     class uint256;
     class uint160;

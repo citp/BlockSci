@@ -10,7 +10,6 @@
 
 #include <blocksci/address/address.hpp>
 #include <blocksci/address/equiv_address.hpp>
-#include <blocksci/address/address_info.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/algorithms.hpp>
 #include <blocksci/scripts/script_variant.hpp>
@@ -23,6 +22,10 @@
 
 namespace blocksci {
     
+    ranges::any_view<OutputPointer> Address::getOutputPointers() const {
+        return access->addressIndex.getOutputPointers(*this);
+    }
+    
     bool Address::isSpendable() const {
         return blocksci::isSpendable(dedupType(type));
     }
@@ -31,12 +34,7 @@ namespace blocksci {
         if (scriptNum == 0) {
             return "InvalidAddress()";
         } else {
-            std::stringstream ss;
-            ss << "Address(";
-            ss << "addressNum=" << scriptNum;
-            ss << ", type=" << addressName(type);
-            ss << ")";
-            return ss.str();
+            return getScript().toString();
         }
     }
     

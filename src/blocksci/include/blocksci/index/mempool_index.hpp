@@ -11,7 +11,6 @@
 #include <blocksci/blocksci_export.h>
 
 #include <blocksci/core/file_mapper.hpp>
-#include <blocksci/util/data_configuration.hpp>
 
 #include <range/v3/algorithm/upper_bound.hpp>
 #include <range/v3/view/transform.hpp>
@@ -87,30 +86,30 @@ namespace blocksci {
     };
     
     class BLOCKSCI_EXPORT MempoolIndex {
-        DataConfiguration config;
+        std::string baseDirectory;
         std::vector<TimestampIndex> timestampFiles;
         std::vector<BlocktimeIndex> blockTimeFiles;
         
         void setup() {
             timestampFiles.clear();
-            FixedSizeFileMapper<uint32_t> txRecordingPositions{txIndexFilePath()};
+            FixedSizeFileMapper<uint32_t> txRecordingPositions{txIndexFilePath(baseDirectory)};
             for (size_t i = 0; i < txRecordingPositions.size(); i++) {
-                timestampFiles.emplace_back(nthTxFilePath(i), *txRecordingPositions[i]);
+                timestampFiles.emplace_back(nthTxFilePath(baseDirectory, i), *txRecordingPositions[i]);
             }
             blockTimeFiles.clear();
-            FixedSizeFileMapper<int> blockRecordingPositions{blockIndexFilePath()};
+            FixedSizeFileMapper<int> blockRecordingPositions{blockIndexFilePath(baseDirectory)};
             for (size_t i = 0; i < blockRecordingPositions.size(); i++) {
-                blockTimeFiles.emplace_back(nthBlockFilePath(i), *blockRecordingPositions[i]);
+                blockTimeFiles.emplace_back(nthBlockFilePath(baseDirectory, i), *blockRecordingPositions[i]);
             }
         }
         
-        std::string txIndexFilePath() const;
-        std::string blockIndexFilePath() const;
-        std::string nthTxFilePath(size_t i) const;
-        std::string nthBlockFilePath(size_t i) const;
+        static std::string txIndexFilePath(const std::string &baseDirectory);
+        static std::string blockIndexFilePath(const std::string &baseDirectory);
+        static std::string nthTxFilePath(const std::string &baseDirectory, size_t i);
+        static std::string nthBlockFilePath(const std::string &baseDirectory, size_t i);
         
     public:
-        explicit MempoolIndex(const DataConfiguration &config_) :  config(config_) {
+        explicit MempoolIndex(std::string baseDirectory_) :  baseDirectory(std::move(baseDirectory_)) {
             setup();
         }
         

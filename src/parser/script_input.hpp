@@ -9,13 +9,10 @@
 #ifndef script_input_hpp
 #define script_input_hpp
 
-#include "basic_types.hpp"
-#include "script_output.hpp"
 #include "parser_fwd.hpp"
+#include "script_output.hpp"
 
-#include <blocksci/address/address.hpp>
 #include <blocksci/scripts/script_view.hpp>
-#include <blocksci/chain/inout_pointer.hpp>
 
 #include <mpark/variant.hpp>
 

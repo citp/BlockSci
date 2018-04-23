@@ -9,8 +9,9 @@
 #ifndef data_access_hpp
 #define data_access_hpp
 
-#include <blocksci/blocksci_export.h>
 #include "data_configuration.hpp"
+
+#include <blocksci/blocksci_export.h>
 
 #include <blocksci/core/chain_access.hpp>
 #include <blocksci/core/script_access.hpp>
@@ -29,7 +30,13 @@ namespace blocksci {
         MempoolIndex mempoolIndex;
         
         DataAccess() = default;
-        explicit DataAccess(DataConfiguration config_) : config(std::move(config_)), chain{config}, scripts{config}, addressIndex{config.addressDBFilePath(), true}, hashIndex{config.hashIndexFilePath(), true}, mempoolIndex{config} {}
+        explicit DataAccess(DataConfiguration config_) :
+        config(std::move(config_)),
+        chain{config.chainDirectory(), config.blocksIgnored, config.errorOnReorg},
+        scripts{config.scriptsDirectory()},
+        addressIndex{config.addressDBFilePath(), true},
+        hashIndex{config.hashIndexFilePath(), true},
+        mempoolIndex{config.mempoolDirectory()} {}
         
         operator DataConfiguration() const { return config; }
         

@@ -14,7 +14,6 @@
 
 #include <blocksci/typedefs.hpp>
 #include <blocksci/core/bitcoin_uint256.hpp>
-#include <blocksci/chain/chain_fwd.hpp>
 
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/unordered_map.hpp>

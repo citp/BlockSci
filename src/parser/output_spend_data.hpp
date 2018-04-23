@@ -10,11 +10,9 @@
 
 #include "parser_fwd.hpp"
 
-
-#include <blocksci/address/address_info.hpp>
+#include <blocksci/core/address_info.hpp>
 #include <blocksci/scripts/bitcoin_pubkey.hpp>
 #include <blocksci/scripts/scripts_fwd.hpp>
-#include <blocksci/util/util.hpp>
 
 #include <mpark/variant.hpp>
 
@@ -25,6 +23,7 @@ struct SpendData {
     SpendData() = default;
     explicit SpendData(const ScriptOutput<type> &) {}
     explicit SpendData(const blocksci::ScriptAddress<type> &) {}
+    SpendData(const blocksci::RawAddress &, const blocksci::ScriptAccess &) {}
 };
 
 template<>
@@ -37,6 +36,7 @@ struct SpendData<blocksci::AddressType::Enum::MULTISIG> {
     SpendData() = default;
     explicit SpendData(const ScriptOutput<blocksci::AddressType::Enum::MULTISIG> &output);
     explicit SpendData(const blocksci::ScriptAddress<blocksci::AddressType::Enum::MULTISIG> &output);
+    SpendData(const blocksci::RawAddress &address, const blocksci::ScriptAccess &scripts);
 };
 
 using SpendDataType = blocksci::to_variadic_t<blocksci::to_address_tuple_t<SpendData>, mpark::variant>;
@@ -49,6 +49,7 @@ public:
     
     explicit AnySpendData(const AnyScriptOutput &scriptOutput);
     explicit AnySpendData(const blocksci::AnyScript &scriptData);
+    AnySpendData(const blocksci::RawAddress &address, const blocksci::ScriptAccess &scripts);
 };
 
 

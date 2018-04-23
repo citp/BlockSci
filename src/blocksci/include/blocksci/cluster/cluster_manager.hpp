@@ -9,12 +9,11 @@
 #ifndef cluster_manager_hpp
 #define cluster_manager_hpp
 
-#include <blocksci/blocksci_export.h>
-
 #include "cluster_fwd.hpp"
 #include "cluster.hpp"
 
-#include <blocksci/address/address_info.hpp>
+#include <blocksci/blocksci_export.h>
+#include <blocksci/core/address_info.hpp>
 #include <blocksci/heuristics/change_address.hpp>
 
 #include <range/v3/view/transform.hpp>

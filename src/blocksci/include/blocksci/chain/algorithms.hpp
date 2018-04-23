@@ -8,12 +8,11 @@
 #ifndef chain_algorithms_hpp
 #define chain_algorithms_hpp
 
-#include <blocksci/blocksci_export.h>
-
 #include "chain_fwd.hpp"
 #include "transaction.hpp"
 
-#include <blocksci/address/address_info.hpp>
+#include <blocksci/blocksci_export.h>
+#include <blocksci/core/address_info.hpp>
 
 #include <range/v3/range_for.hpp>
 #include <range/v3/numeric/accumulate.hpp>
@@ -21,7 +20,6 @@
 #include <range/v3/view/join.hpp>
 #include <range/v3/view/remove_if.hpp>
 #include <range/v3/view/transform.hpp>
-#include <range/v3/view/unique.hpp>
 
 namespace blocksci {
     

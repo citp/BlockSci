@@ -8,7 +8,7 @@
 
 #define BLOCKSCI_WITHOUT_SINGLETON
 
-#include <blocksci/address/address_info.hpp>
+#include <blocksci/core/address_info.hpp>
 
 namespace blocksci {
     constexpr char AddressInfo<AddressType::PUBKEY>::name[];

@@ -11,6 +11,7 @@
 #include <blocksci/blocksci_export.h>
 #include <blocksci/typedefs.hpp>
 #include <blocksci/chain/chain_fwd.hpp>
+
 #include <cstdint>
 #include <vector>
 

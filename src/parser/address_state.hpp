@@ -14,16 +14,7 @@
 #include "serializable_map.hpp"
 #include "hash_index_creator.hpp"
 
-#include <blocksci/index/hash_index.hpp>
-#include <blocksci/util/state.hpp>
-#include <blocksci/core/bitcoin_uint256.hpp>
-#include <blocksci/address/address_info.hpp>
-#include <blocksci/address/dedup_address_info.hpp>
-
-#include <future>
-#include <unordered_map>
-
-class CBloomFilter;
+#include <memory>
 
 enum class AddressLocation {
     MultiUseMap,

@@ -1,37 +1,29 @@
 //
 //  block.cpp
-//  BlockReader
+//  blocksci
 //
-//  Created by Harry Kalodner on 1/3/17.
-//  Copyright © 2017 Harry Kalodner. All rights reserved.
+//  Created by Harry Kalodner on 4/23/18.
+//  Copyright © 2018 Harry Kalodner. All rights reserved.
 //
-
-#define BLOCKSCI_WITHOUT_SINGLETON
 
 #include <blocksci/chain/block.hpp>
-#include <blocksci/chain/transaction_summary.hpp>
-#include <blocksci/scripts/nulldata_script.hpp>
+
+#include <range/v3/view/remove_if.hpp>
 
 namespace blocksci {
-    bool isSegwit(const Block &block) {
-        auto coinbase = block.coinbaseTx();
-        for (int i = coinbase.outputCount() - 1; i >= 0; i--) {
-            auto output = coinbase.outputs()[i];
-            if (output.getType() == AddressType::Enum::NULL_DATA) {
-                auto nulldata = script::OpReturn(output.getAddress().scriptNum, block.getAccess());
-                auto data = nulldata.getData();
-                uint32_t startVal;
-                std::memcpy(&startVal, data.c_str(), sizeof(startVal));
-                if (startVal == 0xaa21a9ed) {
-                    return true;
-                }
-            }
+    std::vector<int64_t> getTotalSpentOfAges(const Block &block, BlockHeight maxAge) {
+        std::vector<int64_t> totals(static_cast<size_t>(static_cast<int>(maxAge)));
+        uint32_t newestTxNum = block.prevBlock().endTxIndex() - 1;
+        auto inputs = block.allInputs()
+        | ranges::view::remove_if([=](const Input &input) { return input.spentTxIndex() > newestTxNum; });
+        RANGES_FOR(auto input, inputs) {
+            BlockHeight age = std::min(maxAge, block.height() - input.getSpentTx().block().height()) - BlockHeight{1};
+            totals[static_cast<size_t>(static_cast<int>(age))] += input.getValue();
         }
-        return false;
+        for (BlockHeight i{1}; i < maxAge; --i) {
+            auto age = static_cast<size_t>(static_cast<int>(maxAge - i));
+            totals[age - 1] += totals[age];
+        }
+        return totals;
     }
-    
-    TransactionSummary transactionStatistics(const Block &block) {
-        return ranges::accumulate(block, TransactionSummary{});
-    }
-    
 } // namespace blocksci

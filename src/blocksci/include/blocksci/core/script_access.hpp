@@ -14,22 +14,12 @@
 #include "script_info.hpp"
 
 #include <blocksci/blocksci_export.h>
-#include <blocksci/meta/dynamic_table.hpp>
-#include <blocksci/meta/static_table.hpp>
-#include <blocksci/meta/apply.hpp>
+#include <blocksci/meta.hpp>
 
 #include <memory>
 #include <tuple>
 
 namespace blocksci {
-    struct DataConfiguration;
-
-    namespace internal {
-        template<DedupAddressType::Enum type>
-        struct ScriptCountFunctor {
-            static uint32_t f(const ScriptAccess &access);
-        };
-    } // namespace internal
     
     template<typename T>
     struct ScriptFileType;
@@ -59,9 +49,8 @@ namespace blocksci {
         using ScriptFilesTuple = to_dedup_address_tuple_t<ScriptFilePtr>;
         ScriptFilesTuple scriptFiles;
         
-        
     public:
-        explicit ScriptAccess(const DataConfiguration &config_);
+        explicit ScriptAccess(const std::string &baseDirectory);
         
         template <DedupAddressType::Enum type>
         ScriptFile<type> &getFile() {
@@ -78,38 +67,17 @@ namespace blocksci {
             return getFile<type>()[addressNum - 1];
         }
         
-        template<DedupAddressType::Enum type>
-        uint32_t scriptCount() const {
-            return static_cast<uint32_t>(getFile<type>().size());
-        }
+        std::array<uint32_t, DedupAddressType::size> scriptCounts() const;
         
-        std::array<uint32_t, DedupAddressType::size> scriptCounts() const {
-            return make_static_table<DedupAddressType, internal::ScriptCountFunctor>(*this);
-        }
+        uint32_t scriptCount(DedupAddressType::Enum type) const;
         
-        uint32_t scriptCount(DedupAddressType::Enum type) const {
-            static constexpr auto table = make_dynamic_table<DedupAddressType, internal::ScriptCountFunctor>();
-            auto index = static_cast<size_t>(type);
-            return table.at(index)(*this);
-        }
-        
-        size_t totalAddressCount() const {
-            uint32_t count = 0;
-            for_each(scriptFiles, [&count](auto& obj) -> decltype(auto) {count += obj->size();});
-            return count;
-        }
+        size_t totalAddressCount() const;
         
         void reload() {
             for_each(scriptFiles, [&](auto& file) -> decltype(auto) { file->reload(); });
         }
     };
     
-    namespace internal {
-        template<DedupAddressType::Enum type>
-        uint32_t ScriptCountFunctor<type>::f(const ScriptAccess &access) {
-            return access.scriptCount<type>();
-        }
-    } // namespace internal
 } // namespace blocksci
 
 #endif /* script_access_hpp */

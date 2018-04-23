@@ -9,9 +9,9 @@
 #include <blocksci/cluster/cluster_manager.hpp>
 #include <blocksci/cluster/cluster.hpp>
 
-#include <blocksci/address/address_info.hpp>
 #include <blocksci/address/dedup_address.hpp>
 #include <blocksci/chain/blockchain.hpp>
+#include <blocksci/core/address_info.hpp>
 #include <blocksci/heuristics/tx_identification.hpp>
 #include <blocksci/util/progress_bar.hpp>
 

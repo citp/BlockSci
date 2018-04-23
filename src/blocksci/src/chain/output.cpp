@@ -8,7 +8,6 @@
 
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/block.hpp>
-#include <blocksci/scripts/script_variant.hpp>
 
 #include <sstream>
 
@@ -19,12 +18,6 @@ namespace blocksci {
     
     Block Output::block() const {
         return {getBlockHeight(), *access};
-    }
-    
-    std::string Output::toString() const {
-        std::stringstream ss;
-        ss << "TxOut(spending_tx_index=" << inout->getLinkedTxNum() << ", address=" << getAddress().getScript().toString() << ", value=" << inout->getValue() << ")";
-        return ss.str();
     }
     
     ranges::optional<Transaction> Output::getSpendingTx() const {

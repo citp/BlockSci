@@ -12,13 +12,11 @@
 #include "column_iterator.hpp"
 
 #include <blocksci/blocksci_export.h>
-#include <blocksci/address/address_info.hpp>
+#include <blocksci/core/address_info.hpp>
 #include <blocksci/util/memory_view.hpp>
 
-#include <range/v3/view_facade.hpp>
 #include <range/v3/view/transform.hpp>
 
-#include <array>
 #include <vector>
 #include <cstdint>
 #include <cstring>
@@ -31,7 +29,7 @@ namespace blocksci {
         
         std::unique_ptr<HashIndexPriv> impl;
         
-        uint32_t lookupAddressImpl(blocksci::AddressType::Enum type, const char *data, size_t size);
+        uint32_t lookupAddressImpl(AddressType::Enum type, const char *data, size_t size);
         
     public:
         

@@ -9,6 +9,7 @@
 #ifndef address_info_hpp
 #define address_info_hpp
 
+#include "core_fwd.hpp"
 #include "dedup_address_info.hpp"
 
 #include <string>

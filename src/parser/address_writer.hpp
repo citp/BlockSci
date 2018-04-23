@@ -9,16 +9,8 @@
 #ifndef address_writer_hpp
 #define address_writer_hpp
 
-#include "parser_configuration.hpp"
 #include "script_output.hpp"
 #include "script_input.hpp"
-
-#include <blocksci/address/address_info.hpp>
-#include <blocksci/core/script_data.hpp>
-#include <blocksci/scripts/script.hpp>
-#include <blocksci/scripts/scripts_fwd.hpp>
-#include <blocksci/core/file_mapper.hpp>
-#include <blocksci/util/state.hpp>
 
 template<typename T>
 struct ScriptFileType;

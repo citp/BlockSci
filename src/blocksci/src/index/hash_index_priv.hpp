@@ -8,7 +8,7 @@
 #ifndef hash_index_priv_hpp
 #define hash_index_priv_hpp
 
-#include <blocksci/address/address_info.hpp>
+#include <blocksci/core/address_info.hpp>
 #include <blocksci/util/memory_view.hpp>
 
 #include <rocksdb/db.h>

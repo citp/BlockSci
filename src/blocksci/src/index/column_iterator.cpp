@@ -6,6 +6,7 @@
 //
 
 #include <blocksci/index/column_iterator.hpp>
+#include <blocksci/util/memory_view.hpp>
 
 #include <rocksdb/db.h>
 

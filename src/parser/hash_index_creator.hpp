@@ -9,13 +9,12 @@
 #ifndef hash_index_creator_hpp
 #define hash_index_creator_hpp
 
-#include "parser_index.hpp"
 #include "parser_fwd.hpp"
+#include "parser_index.hpp"
 #include "serializable_map.hpp"
 
-#include <blocksci/chain/chain_fwd.hpp>
+#include <blocksci/core/address_info.hpp>
 #include <blocksci/index/hash_index.hpp>
-#include <blocksci/core/hash_combine.hpp>
 
 #include <tuple>
 

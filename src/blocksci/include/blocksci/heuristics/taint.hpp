@@ -9,8 +9,8 @@
 #define taint_hpp
 
 #include <blocksci/blocksci_export.h>
-#include <blocksci/chain/output.hpp>
-#include <stdio.h>
+#include <blocksci/chain/chain_fwd.hpp>
+
 #include <vector>
 
 namespace blocksci { namespace heuristics {

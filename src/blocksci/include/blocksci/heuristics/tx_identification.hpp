@@ -11,7 +11,6 @@
 #include <blocksci/blocksci_export.h>
 #include <blocksci/chain/chain_fwd.hpp>
 #include <blocksci/scripts/scripts_fwd.hpp>
-#include <stdio.h>
 
 namespace blocksci {
     class DataAccess;

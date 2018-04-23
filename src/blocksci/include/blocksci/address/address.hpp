@@ -9,14 +9,13 @@
 #ifndef address_hpp
 #define address_hpp
 
-#include <blocksci/blocksci_export.h>
-
 #include "address_fwd.hpp"
 
+#include <blocksci/blocksci_export.h>
+#include <blocksci/typedefs.hpp>
 #include <blocksci/core/address_types.hpp>
 #include <blocksci/chain/chain_fwd.hpp>
 #include <blocksci/scripts/scripts_fwd.hpp>
-#include <blocksci/util/data_access.hpp>
 
 #include <range/v3/utility/optional.hpp>
 #include <range/v3/view/any_view.hpp>
@@ -67,10 +66,7 @@ namespace blocksci {
         
         EquivAddress getEquivAddresses(bool nestedEquivalent) const;
         
-        auto getOutputPointers() const {
-            return access->addressIndex.getOutputPointers(*this);
-        }
-        
+        ranges::any_view<OutputPointer> getOutputPointers() const;
         int64_t calculateBalance(BlockHeight height);
         ranges::any_view<Output> getOutputs();
         std::vector<Input> getInputs();

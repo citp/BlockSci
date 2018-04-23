@@ -9,15 +9,14 @@
 #ifndef block_hpp
 #define block_hpp
 
-#include <blocksci/blocksci_export.h>
 #include "transaction.hpp"
+
+#include <blocksci/blocksci_export.h>
 #include <blocksci/core/raw_block.hpp>
 
 #include <range/v3/range_for.hpp>
 #include <range/v3/view/transform.hpp>
 #include <range/v3/view/join.hpp>
-#include <range/v3/view/remove_if.hpp>
-#include <range/v3/numeric/accumulate.hpp>
 
 #include <unordered_map>
 #include <chrono>
@@ -215,10 +214,10 @@ namespace blocksci {
             return (*this)[0];
         }
     };
-
-    bool BLOCKSCI_EXPORT isSegwit(const Block &block);
     
-    TransactionSummary BLOCKSCI_EXPORT transactionStatistics(const Block &block, const ChainAccess &access);
+    inline bool BLOCKSCI_EXPORT isSegwit(const Block &block) {
+        return isSegwitMarker(block.coinbaseTx());
+    }
     
     inline std::unordered_map<AddressType::Enum, int64_t> BLOCKSCI_EXPORT netAddressTypeValue(const Block &block) {
         std::unordered_map<AddressType::Enum, int64_t> net;
@@ -246,21 +245,7 @@ namespace blocksci {
         return net;
     }
     
-    inline std::vector<int64_t> BLOCKSCI_EXPORT getTotalSpentOfAges(const Block &block, BlockHeight maxAge) {
-        std::vector<int64_t> totals(static_cast<size_t>(static_cast<int>(maxAge)));
-        uint32_t newestTxNum = block.prevBlock().endTxIndex() - 1;
-        auto inputs = block.allInputs()
-        | ranges::view::remove_if([=](const Input &input) { return input.spentTxIndex() > newestTxNum; });
-        RANGES_FOR(auto input, inputs) {
-            BlockHeight age = std::min(maxAge, block.height() - input.getSpentTx().block().height()) - BlockHeight{1};
-            totals[static_cast<size_t>(static_cast<int>(age))] += input.getValue();
-        }
-        for (BlockHeight i{1}; i < maxAge; --i) {
-            auto age = static_cast<size_t>(static_cast<int>(maxAge - i));
-            totals[age - 1] += totals[age];
-        }
-        return totals;
-    }
+    std::vector<int64_t> BLOCKSCI_EXPORT getTotalSpentOfAges(const Block &block, BlockHeight maxAge);
     
 } // namespace blocksci
 

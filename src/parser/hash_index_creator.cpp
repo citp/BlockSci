@@ -9,15 +9,7 @@
 #include "hash_index_creator.hpp"
 #include "parser_configuration.hpp"
 
-#include <blocksci/index/hash_index.hpp>
-#include <blocksci/core/chain_access.hpp>
-#include <blocksci/chain/transaction.hpp>
-#include <blocksci/address/address_info.hpp>
-#include <blocksci/scripts/script.hpp>
-#include <blocksci/scripts/pubkey_script.hpp>
-#include <blocksci/scripts/scripthash_script.hpp>
-
-#include <sstream>
+#include <blocksci/core/raw_address.hpp>
 
 HashIndexCreator::HashIndexCreator(const ParserConfigurationBase &config_, const std::string &path) : ParserIndex(config_, "hashIndex"), db(path, false) {}
 

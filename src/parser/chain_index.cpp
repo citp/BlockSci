@@ -13,10 +13,6 @@
 #include "safe_mem_reader.hpp"
 #include "preproccessed_block.hpp"
 
-#include <blocksci/core/chain_access.hpp>
-#include <blocksci/chain/block.hpp>
-#include <blocksci/util/hash.hpp>
-
 #ifdef BLOCKSCI_RPC_PARSER
 #include <bitcoinapi/bitcoinapi.h>
 #endif
@@ -27,8 +23,6 @@
 
 #include <cmath>
 #include <future>
-#include <sstream>
-#include <fstream>
 #include <iostream>
 
 #ifdef BLOCKSCI_FILE_PARSER

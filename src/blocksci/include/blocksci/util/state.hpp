@@ -12,8 +12,6 @@
 #include <blocksci/core/dedup_address_type.hpp>
 #include <blocksci/core/script_access.hpp>
 
-
-
 namespace blocksci {
     struct State {
         uint32_t blockCount;

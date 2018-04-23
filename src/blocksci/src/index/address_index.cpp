@@ -12,28 +12,30 @@
 
 #include "address_index_priv.hpp"
 
-#include <blocksci/address/equiv_address.hpp>
-#include <blocksci/chain/transaction.hpp>
 #include <blocksci/address/address.hpp>
 #include <blocksci/address/dedup_address.hpp>
-#include <blocksci/address/address_info.hpp>
-#include <blocksci/scripts/script_variant.hpp>
+#include <blocksci/chain/inout_pointer.hpp>
+#include <blocksci/core/address_info.hpp>
+#include <blocksci/scripts/scripthash_script.hpp>
 #include <blocksci/util/state.hpp>
 
-#include <range/v3/utility/optional.hpp>
-#include <range/v3/view/filter.hpp>
-#include <range/v3/to_container.hpp>
-
-#include <unordered_set>
-#include <vector>
-#include <sstream>
-#include <iostream>
+#include <range/v3/view/transform.hpp>
 
 namespace blocksci {
     
     AddressIndex::AddressIndex(const std::string &path, bool readonly) : impl(std::make_unique<AddressIndexPriv>(path, readonly)) {}
     
     AddressIndex::~AddressIndex() = default;
+    
+    ranges::any_view<OutputPointer> AddressIndex::getOutputPointers(const Address &address) const {
+        return getRawOutputPointerRange(address) | ranges::view::transform([](std::pair<MemoryView, MemoryView> pair) -> OutputPointer {
+            auto &key = pair.first;
+            key.data += sizeof(uint32_t);
+            OutputPointer outPoint;
+            memcpy(&outPoint, key.data, sizeof(outPoint));
+            return outPoint;
+        });
+    }
     
     void AddressIndex::compactDB() {
         impl->compactDB();
@@ -208,85 +210,6 @@ namespace blocksci {
         auto downAddresses = getPossibleNestedEquivalentDown(searchAddress);
         upAddresses.insert(downAddresses.begin(), downAddresses.end());
         return std::vector<Address>{upAddresses.begin(), upAddresses.end()};
-    }
-    
-    AddressOutputRange::cursor::cursor() : access(nullptr), it(nullptr) {}
-    
-    AddressOutputRange::cursor::cursor(DataAccess &access_) : access(&access_), it(nullptr) {
-        advanceToNext();
-    }
-    
-    AddressOutputRange::cursor::cursor(const cursor &other) : access(other.access), rowNum(other.rowNum), currentTypeIndex(other.currentTypeIndex) {
-        if (static_cast<size_t>(currentTypeIndex) < AddressType::size) {
-            it = access->addressIndex.impl->getOutputIterator(static_cast<AddressType::Enum>(currentTypeIndex));
-            it->SeekToFirst();
-        } else {
-            it.reset(nullptr);
-        }
-    }
-    
-    AddressOutputRange::cursor::~cursor() = default;
-    
-    AddressOutputRange::cursor &AddressOutputRange::cursor::operator=(const cursor &other) {
-        access = other.access;
-        rowNum = other.rowNum;
-        currentTypeIndex = other.currentTypeIndex;
-        if (static_cast<size_t>(currentTypeIndex) < AddressType::size) {
-            it = access->addressIndex.impl->getOutputIterator(static_cast<AddressType::Enum>(currentTypeIndex));
-            it->SeekToFirst();
-        } else {
-            it.reset(nullptr);
-        }
-        return *this;
-    }
-    
-    std::pair<Address, OutputPointer> AddressOutputRange::cursor::read() const {
-        auto key = it->key();
-        uint32_t addressNum;
-        OutputPointer outPoint;
-        memcpy(&addressNum, key.data(), sizeof(addressNum));
-        key.remove_prefix(sizeof(addressNum));
-        memcpy(&outPoint, key.data(), sizeof(outPoint));
-        return std::make_pair(Address{addressNum, static_cast<AddressType::Enum>(currentTypeIndex), *access}, outPoint);
-    }
-    
-    void AddressOutputRange::cursor::advanceToNext() {
-        while (it == nullptr || !it->Valid()) {
-            currentTypeIndex++;
-            if (static_cast<size_t>(currentTypeIndex) < AddressType::size) {
-                it = access->addressIndex.impl->getOutputIterator(static_cast<AddressType::Enum>(currentTypeIndex));
-                it->SeekToFirst();
-            } else {
-                it.reset(nullptr);
-                break;
-            }
-        }
-    }
-    
-    bool AddressOutputRange::cursor::equal(ranges::default_sentinel) const {
-        return !it->Valid() && currentTypeIndex == AddressType::size;
-    }
-    
-    void AddressOutputRange::cursor::next() {
-        it->Next();
-        rowNum++;
-        if (!it->Valid()) {
-            advanceToNext();
-        }
-    }
-    
-    void AddressOutputRange::cursor::prev() {
-        it->Prev();
-        rowNum--;
-        if (!it->Valid()) {
-            if (currentTypeIndex > 0) {
-                currentTypeIndex--;
-                it = access->addressIndex.impl->getOutputIterator(static_cast<AddressType::Enum>(currentTypeIndex));
-                it->SeekToLast();
-            } else {
-                it.reset(nullptr);
-            }
-        }
     }
 }
 

@@ -10,17 +10,8 @@
 
 #include "parser_configuration.hpp"
 #include "parser_fwd.hpp"
-#include "parser_index.hpp"
-
-#include <blocksci/util/state.hpp>
-#include <blocksci/core/chain_access.hpp>
-#include <blocksci/core/script_access.hpp>
-#include <blocksci/chain/chain_fwd.hpp>
-#include <blocksci/scripts/scripts_fwd.hpp>
-#include <blocksci/scripts/script.hpp>
 
 #include <future>
-#include <vector>
 
 namespace blocksci {
     struct State;

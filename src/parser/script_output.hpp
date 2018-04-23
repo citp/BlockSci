@@ -14,14 +14,9 @@
 #include "parser_fwd.hpp"
 
 #include <blocksci/scripts/bitcoin_pubkey.hpp>
-#include <blocksci/address/address_info.hpp>
-#include <blocksci/address/address.hpp>
 #include <blocksci/scripts/script_view.hpp>
-#include <blocksci/util/util.hpp>
 
 #include <mpark/variant.hpp>
-
-#include <array>
 
 template<blocksci::AddressType::Enum type>
 struct ScriptOutput {

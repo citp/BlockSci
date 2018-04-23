@@ -28,35 +28,37 @@
 #include <bitcoinapi/bitcoinapi.h>
 #endif
 
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/fstream.hpp>
 #include <clipp.h>
-#include <boost/property_tree/ini_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
 
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/fstream.hpp>
+#include <boost/property_tree/ini_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 
-#include <unordered_set>
 #include <future>
 #include <iostream>
 #include <iomanip>
 #include <cassert>
 
 blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::BlockHeight firstDeletedBlock, uint32_t firstDeletedTxNum) {
-    blocksci::State state{blocksci::ChainAccess{config.dataConfig}, blocksci::ScriptAccess{config.dataConfig}};
+    blocksci::State state{
+        blocksci::ChainAccess{config.dataConfig.chainDirectory(), config.dataConfig.blocksIgnored, config.dataConfig.errorOnReorg},
+        blocksci::ScriptAccess{config.dataConfig.scriptsDirectory()}
+    };
     state.blockCount = static_cast<uint32_t>(static_cast<int>(firstDeletedBlock));
     state.txCount = firstDeletedTxNum;
     
-    blocksci::IndexedFileMapper<blocksci::AccessMode::readwrite, blocksci::RawTransaction> txFile{config.dataConfig.txFilePath()};
-    blocksci::FixedSizeFileMapper<blocksci::uint256, blocksci::AccessMode::readwrite> txHashesFile{config.dataConfig.txHashesFilePath()};
+    blocksci::IndexedFileMapper<blocksci::AccessMode::readwrite, blocksci::RawTransaction> txFile{blocksci::ChainAccess::txFilePath(config.dataConfig.chainDirectory())};
+    blocksci::FixedSizeFileMapper<blocksci::uint256, blocksci::AccessMode::readwrite> txHashesFile{blocksci::ChainAccess::txHashesFilePath(config.dataConfig.chainDirectory())};
     blocksci::DataAccess access(config.dataConfig);
     
     UTXOState utxoState;
     UTXOAddressState utxoAddressState;
     UTXOScriptState utxoScriptState;
     
-    utxoAddressState.unserialize(config.utxoAddressStatePath());
+    utxoAddressState.unserialize(config.utxoAddressStatePath().native());
     utxoState.unserialize(config.utxoCacheFile().native());
     utxoScriptState.unserialize(config.utxoScriptStatePath().native());
     
@@ -102,7 +104,7 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::B
         assert(inputsAdded == tx->inputCount);
     }
     
-    utxoAddressState.serialize(config.utxoAddressStatePath());
+    utxoAddressState.serialize(config.utxoAddressStatePath().native());
     utxoState.serialize(config.utxoCacheFile().native());
     utxoScriptState.serialize(config.utxoScriptStatePath().native());
     
@@ -116,9 +118,8 @@ void rollbackTransactions(blocksci::BlockHeight blockKeepCount, HashIndexCreator
     using blocksci::SimpleFileMapper;
     using blocksci::FixedSizeFileMapper;
     
-    
     constexpr auto readwrite = AccessMode::readwrite;
-    blocksci::FixedSizeFileMapper<RawBlock, readwrite> blockFile(config.dataConfig.blockFilePath());
+    blocksci::FixedSizeFileMapper<RawBlock, readwrite> blockFile(blocksci::ChainAccess::blockFilePath(config.dataConfig.chainDirectory()));
     
     auto blockKeepSize = static_cast<size_t>(static_cast<int>(blockKeepCount));
     if (blockFile.size() > blockKeepSize) {
@@ -128,10 +129,11 @@ void rollbackTransactions(blocksci::BlockHeight blockKeepCount, HashIndexCreator
         
         auto blocksciState = rollbackState(config, blockKeepCount, firstDeletedTxNum);
         
-        IndexedFileMapper<readwrite, blocksci::RawTransaction>(config.dataConfig.txFilePath()).truncate(firstDeletedTxNum);
-        FixedSizeFileMapper<blocksci::uint256, readwrite>(config.dataConfig.txHashesFilePath()).truncate(firstDeletedTxNum);
-        IndexedFileMapper<readwrite, uint32_t>(config.dataConfig.sequenceFilePath()).truncate(firstDeletedTxNum);
-        SimpleFileMapper<readwrite>(config.dataConfig.blockCoinbaseFilePath()).truncate(firstDeletedBlock->coinbaseOffset);
+        
+        IndexedFileMapper<readwrite, blocksci::RawTransaction>(blocksci::ChainAccess::txFilePath(config.dataConfig.chainDirectory())).truncate(firstDeletedTxNum);
+        FixedSizeFileMapper<blocksci::uint256, readwrite>(blocksci::ChainAccess::txHashesFilePath(config.dataConfig.chainDirectory())).truncate(firstDeletedTxNum);
+        IndexedFileMapper<readwrite, uint32_t>(blocksci::ChainAccess::sequenceFilePath(config.dataConfig.chainDirectory())).truncate(firstDeletedTxNum);
+        SimpleFileMapper<readwrite>(blocksci::ChainAccess::blockCoinbaseFilePath(config.dataConfig.chainDirectory())).truncate(firstDeletedBlock->coinbaseOffset);
         blockFile.truncate(blockKeepSize);
         AddressWriter(config).rollback(blocksciState);
         
@@ -148,7 +150,7 @@ struct ChainUpdateInfo {
 };
 
 uint32_t getStartingTxCount(const blocksci::DataConfiguration &config) {
-    blocksci::ChainAccess chain(config);
+    blocksci::ChainAccess chain{config.chainDirectory(), config.blocksIgnored, config.errorOnReorg};
     if (chain.blockCount() > 0) {
         auto lastBlock = chain.getBlock(chain.blockCount() - 1);
         return lastBlock->firstTxIndex + lastBlock->numTxes;
@@ -177,7 +179,7 @@ std::vector<blocksci::RawBlock> updateChain(const ParserConfiguration<ParserTag>
     }();
 
     blocksci::BlockHeight splitPoint = [&]() {
-        blocksci::ChainAccess oldChain(config.dataConfig);
+        blocksci::ChainAccess oldChain{config.dataConfig.chainDirectory(), config.dataConfig.blocksIgnored, config.dataConfig.errorOnReorg};
         blocksci::BlockHeight maxSize = std::min(oldChain.blockCount(), static_cast<blocksci::BlockHeight>(chainBlocks.size()));
         auto splitPoint = maxSize;
         for (blocksci::BlockHeight i{0}; i < maxSize; i++) {
@@ -224,7 +226,7 @@ std::vector<blocksci::RawBlock> updateChain(const ParserConfiguration<ParserTag>
     AddressState addressState{config.addressPath(), hashDb};
     UTXOScriptState utxoScriptState;
     
-    utxoAddressState.unserialize(config.utxoAddressStatePath());
+    utxoAddressState.unserialize(config.utxoAddressStatePath().native());
     utxoState.unserialize(config.utxoCacheFile().native());
     utxoScriptState.unserialize(config.utxoScriptStatePath().native());
     
@@ -247,15 +249,15 @@ std::vector<blocksci::RawBlock> updateChain(const ParserConfiguration<ParserTag>
         backUpdateTxes(config);
     }
     
-    utxoAddressState.serialize(config.utxoAddressStatePath());
+    utxoAddressState.serialize(config.utxoAddressStatePath().native());
     utxoState.serialize(config.utxoCacheFile().native());
     utxoScriptState.serialize(config.utxoScriptStatePath().native());
     return newBlocks;
 }
 
 void updateHashDB(const ParserConfigurationBase &config, HashIndexCreator &db) {
-    blocksci::ChainAccess chain{config.dataConfig};
-    blocksci::ScriptAccess scripts{config.dataConfig};
+    blocksci::ChainAccess chain{config.dataConfig.chainDirectory(), config.dataConfig.blocksIgnored, config.dataConfig.errorOnReorg};
+    blocksci::ScriptAccess scripts{config.dataConfig.scriptsDirectory()};
     
     blocksci::State updateState{chain, scripts};
     std::cout << "Updating hash index\n";
@@ -264,8 +266,8 @@ void updateHashDB(const ParserConfigurationBase &config, HashIndexCreator &db) {
 }
 
 void updateAddressDB(const ParserConfigurationBase &config) {
-    blocksci::ChainAccess chain{config.dataConfig};
-    blocksci::ScriptAccess scripts{config.dataConfig};
+    blocksci::ChainAccess chain{config.dataConfig.chainDirectory(), config.dataConfig.blocksIgnored, config.dataConfig.errorOnReorg};
+    blocksci::ScriptAccess scripts{config.dataConfig.scriptsDirectory()};
     
     blocksci::State updateState{chain, scripts};
     AddressDB db(config, config.dataConfig.addressDBFilePath());
@@ -378,7 +380,7 @@ int main(int argc, char * argv[]) {
 
             // It'd be nice to do this after the indexes are updated, but they currently depend on the chain being fully updated
             {
-                blocksci::FixedSizeFileWriter<blocksci::RawBlock> blockFile{config.dataConfig.blockFilePath()};
+                blocksci::FixedSizeFileWriter<blocksci::RawBlock> blockFile{blocksci::ChainAccess::blockFilePath(config.dataConfig.chainDirectory())};
                 for (auto &block : newBlocks) {
                     blockFile.write(block);
                 }

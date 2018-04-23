@@ -9,8 +9,8 @@
 #define dedup_address_hpp
 
 #include "address_fwd.hpp"
-#include "dedup_address_info.hpp"
 
+#include <blocksci/core/dedup_address_info.hpp>
 #include <blocksci/chain/chain_fwd.hpp>
 
 #include <range/v3/utility/optional.hpp>

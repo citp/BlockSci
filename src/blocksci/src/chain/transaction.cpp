@@ -11,9 +11,25 @@
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/algorithms.hpp>
 #include <blocksci/chain/block.hpp>
-#include <blocksci/scripts/script_variant.hpp>
+
+#include <blocksci/scripts/nulldata_script.hpp>
 
 namespace blocksci {
+    
+    bool isSegwitMarker(const Transaction &tx) {
+        for (int i = tx.outputCount() - 1; i >= 0; i--) {
+            auto output = tx.outputs()[i];
+            if (output.getType() == AddressType::Enum::NULL_DATA) {
+                auto nulldata = script::OpReturn(output.getAddress().scriptNum, tx.getAccess());
+                if (nulldata.isSegwitMarker()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    
     Block Transaction::block() const {
         return {blockHeight, *access};
     }

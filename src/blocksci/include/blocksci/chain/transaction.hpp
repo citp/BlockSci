@@ -9,11 +9,11 @@
 #ifndef transaction_hpp
 #define transaction_hpp
 
-#include <blocksci/blocksci_export.h>
-#include <blocksci/core/raw_transaction.hpp>
-
 #include "output.hpp"
 #include "input.hpp"
+
+#include <blocksci/blocksci_export.h>
+#include <blocksci/core/raw_transaction.hpp>
 
 #include <range/v3/view/iota.hpp>
 #include <range/v3/view/zip_with.hpp>
@@ -182,6 +182,8 @@ namespace blocksci {
     inline std::ostream BLOCKSCI_EXPORT &operator<<(std::ostream &os, const Transaction &tx) {
         return os << tx.toString();
     }
+    
+    bool BLOCKSCI_EXPORT isSegwitMarker(const Transaction &tx);
 } // namespace blocksci
 
 

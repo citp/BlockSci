@@ -12,19 +12,19 @@
 
 namespace blocksci {
     
-    std::string MempoolIndex::txIndexFilePath() const {
-        return (boost::filesystem::path{config.mempoolDirectory()}/"tx_index").native();
+    std::string MempoolIndex::txIndexFilePath(const std::string &baseDirectory) {
+        return (boost::filesystem::path{baseDirectory}/"tx_index").native();
     }
     
-    std::string MempoolIndex::blockIndexFilePath() const {
-        return (boost::filesystem::path{config.mempoolDirectory()}/"block_index").native();
+    std::string MempoolIndex::blockIndexFilePath(const std::string &baseDirectory) {
+        return (boost::filesystem::path{baseDirectory}/"block_index").native();
     }
     
-    std::string MempoolIndex::nthTxFilePath(size_t i) const {
-        return (boost::filesystem::path{config.mempoolDirectory()}/(std::to_string(i) + "_tx")).native();
+    std::string MempoolIndex::nthTxFilePath(const std::string &baseDirectory, size_t i) {
+        return (boost::filesystem::path{baseDirectory}/(std::to_string(i) + "_tx")).native();
     }
     
-    std::string MempoolIndex::nthBlockFilePath(size_t i) const {
-        return (boost::filesystem::path{config.mempoolDirectory()}/(std::to_string(i) + "_block")).native();
+    std::string MempoolIndex::nthBlockFilePath(const std::string &baseDirectory, size_t i) {
+        return (boost::filesystem::path{baseDirectory}/(std::to_string(i) + "_block")).native();
     }
 }
