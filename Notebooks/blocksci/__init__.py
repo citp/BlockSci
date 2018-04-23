@@ -95,7 +95,7 @@ def map_blocks(self, blockFunc, start = None, end = None, cpu_count=psutil.cpu_c
     """Runs the given function over each block in range and returns a list of the results
     """
     def mapFunc(blocks):
-        return [[blockFunc(block)] for block in blocks]
+        return [blockFunc(block) for block in blocks]
 
     def reduceFunc(accum, new_val):
         accum.extend(new_val)
