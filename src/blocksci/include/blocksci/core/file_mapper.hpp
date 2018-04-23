@@ -120,6 +120,7 @@ namespace blocksci {
         template <typename T>
         void add(const T &t) {
             auto data = reinterpret_cast<const char *>(&t);
+            rawData.insert(rawData.end(), data, data + sizeof(t));
         }
         
         template <typename It>
