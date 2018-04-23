@@ -170,7 +170,7 @@ std::vector<blocksci::RawBlock> updateChain(const ParserConfiguration<ParserTag>
             try {
                 boost::archive::binary_iarchive ia(inFile);
                 ia >> index;
-            } catch (const std::exception &) {
+            } catch (const std::exception &e) {
                 std::cout << "Error loading chain index. Reparsing from scratch\n";
                 index = ChainIndex<ParserTag>{};
             }

@@ -104,7 +104,7 @@ namespace std {
     };
     template<> struct BLOCKSCI_EXPORT hash<blocksci::OutputPointer> {
         size_t operator()(const blocksci::OutputPointer &pointer) const {
-            std::size_t seed = 875697;
+            std::size_t seed = 41352363;
             blocksci::hash_combine(seed, pointer.txNum);
             blocksci::hash_combine(seed, pointer.inoutNum);
             return seed;

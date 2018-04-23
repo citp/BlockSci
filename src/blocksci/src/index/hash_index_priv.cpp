@@ -22,10 +22,9 @@ namespace blocksci {
         
         auto cache = rocksdb::NewLRUCache(static_cast<size_t>(1024 * 1024 * 1024));
         std::vector<rocksdb::ColumnFamilyDescriptor> columnDescriptors;
+        columnDescriptors.reserve(AddressType::size + 2);
         for_each(AddressType::all(), [&](auto tag) {
-            auto options = rocksdb::ColumnFamilyOptions{};
-            auto descriptor = rocksdb::ColumnFamilyDescriptor{addressName(tag), options};
-            columnDescriptors.push_back(descriptor);
+            columnDescriptors.emplace_back(addressName(tag), rocksdb::ColumnFamilyOptions{});
         });
         auto txOptions = rocksdb::ColumnFamilyOptions{};
         columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions{});

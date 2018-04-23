@@ -29,6 +29,10 @@ public:
         MissingKeyException() : std::runtime_error("Tried to remove missing key") {}
     };
     
+    struct BadSerializationFormatException : public std::runtime_error {
+        BadSerializationFormatException(const std::string &path) : std::runtime_error("Tried to load data with bad serialization format from file " + path) {}
+    };
+    
     SerializableMap(const Key &deletedKey, const Key emptyKey) {
         map.set_deleted_key(deletedKey);
         map.set_empty_key(emptyKey);
@@ -38,7 +42,10 @@ public:
         std::fstream file{path, std::fstream::in | std::fstream::binary};
         if (file.is_open()) {
             typename Map::NopointerSerializer serializer;
-            return map.unserialize(serializer, &file);
+            if(!map.unserialize(serializer, &file)) {
+                throw BadSerializationFormatException{path};
+            }
+            return true;
         }
         return false;
     }
