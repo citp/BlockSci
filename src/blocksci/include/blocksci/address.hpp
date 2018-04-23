@@ -11,6 +11,6 @@
 
 #include <blocksci/address/address.hpp>
 #include <blocksci/address/dedup_address.hpp>
-#include <blocksci/address/address_info.hpp>
+#include <blocksci/address/equiv_address.hpp>
 
 #endif /* blocksci_address_group_header */

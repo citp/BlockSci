@@ -49,7 +49,7 @@ int initializeRecordingFile(Blockchain &chain) {
     auto fileNum = static_cast<int>(txIndexFile.size());
     txIndexFile.write(mostRecentBlock.endTxIndex());
     blocksci::FixedSizeFileWriter<int32_t> blockIndexFile((boost::filesystem::path{chain.getAccess().config.mempoolDirectory()}/"block_index").native());
-    assert(blockIndexFile.size() == fileNum);
+    assert(static_cast<int>(blockIndexFile.size()) == fileNum);
     blockIndexFile.write(mostRecentBlock.height() + 1);
     return fileNum;
 }
