@@ -23,8 +23,8 @@
 #include <boost/filesystem/fstream.hpp>
 
 bool isSegwitMarker(const blocksci::RawTransaction &tx, blocksci::ScriptAccess &scripts) {
-    for (uint16_t i = tx.outputCount - 1; i >= 0; i--) {
-        auto output = tx.getOutput(i);
+    for (uint16_t i = 0; i < tx.outputCount; i++) {
+        auto output = tx.getOutput(tx.outputCount - i - 1);
         if (output.getType() == blocksci::AddressType::NULL_DATA) {
             auto nulldata = scripts.getScriptData<blocksci::DedupAddressType::NULL_DATA>(output.getAddressNum());
             auto data = nulldata->getData();
