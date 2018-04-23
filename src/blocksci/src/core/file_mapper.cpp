@@ -42,8 +42,10 @@ namespace blocksci {
         if (fileEnd != 0) {
             file->open(path, getMapMode(fileMode));
             const_data = file->const_data();
+            dataPtr = file->data();
         } else {
             const_data = nullptr;
+            dataPtr = nullptr;
         }
     }
 
@@ -66,6 +68,7 @@ namespace blocksci {
             }
             fileEnd = 0;
             const_data = nullptr;
+            dataPtr = nullptr;
         }
     }
 
@@ -73,14 +76,11 @@ namespace blocksci {
         return boost::filesystem::file_size(path);
     }
 
-    SimpleFileMapper<AccessMode::readwrite>::SimpleFileMapper(const std::string &path) : SimpleFileMapperBase(std::move(path), AccessMode::readwrite), writePos(size()) {
-        dataPtr = file->data();
-    }
+    SimpleFileMapper<AccessMode::readwrite>::SimpleFileMapper(const std::string &path) : SimpleFileMapperBase(std::move(path), AccessMode::readwrite), writePos(size()) {}
 
     void SimpleFileMapper<AccessMode::readwrite>::reload() {
         clearBuffer();
         SimpleFileMapperBase::reload();
-        dataPtr = file->data();
     }
 
     void SimpleFileMapper<AccessMode::readwrite>::truncate(OffsetType offset) {
@@ -114,6 +114,8 @@ namespace blocksci {
             } else {
                 file->resize(static_cast<int64_t>(fileEnd + buffer.size()));
             }
+            const_data = file->const_data();
+            dataPtr = file->data();
             memcpy(file->data() + fileEnd, buffer.data(), buffer.size());
             fileEnd += buffer.size();
             buffer.clear();

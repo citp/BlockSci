@@ -72,6 +72,7 @@ namespace blocksci {
         std::unique_ptr<boost::iostreams::mapped_file> file;
         size_t fileEnd;
         const char *const_data;
+        char *dataPtr;
     public:
         std::string path;
         AccessMode fileMode;
@@ -118,8 +119,7 @@ namespace blocksci {
         
         template <typename T>
         void add(const T &t) {
-            auto dataPtr = reinterpret_cast<const char *>(&t);
-            rawData.insert(rawData.end(), dataPtr, dataPtr + sizeof(t));
+            auto data = reinterpret_cast<const char *>(&t);
         }
         
         template <typename It>
@@ -163,7 +163,6 @@ namespace blocksci {
         
     private:
         OffsetType writePos;
-        char *dataPtr;
         
         char *getWritePos() {
             if (writePos < fileEnd) {
