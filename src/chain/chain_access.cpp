@@ -5,7 +5,7 @@
 //  Created by Harry Kalodner on 4/22/18.
 //
 
-#include <blocksci/core/chain_access.hpp>
+#include <blocksci/chain/chain_access.hpp>
 #include <blocksci/core/raw_block.hpp>
 
 #include <boost/filesystem/path.hpp>

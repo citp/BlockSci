@@ -41,9 +41,6 @@ namespace blocksci {
 
     class uint256;
     class uint160;
-
-    class ChainAccess;
-    class ScriptAccess;
 } // namespace blocksci
 
 #endif /* blocksci_core_fwd_hpp */

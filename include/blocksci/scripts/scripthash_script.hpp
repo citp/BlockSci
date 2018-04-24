@@ -10,8 +10,10 @@
 #define scripthash_script_hpp
 
 #include "script.hpp"
+#include "script_access.hpp"
 
 #include <blocksci/blocksci_export.h>
+#include <blocksci/core/address_info.hpp>
 #include <blocksci/util/data_access.hpp>
 
 #include <sstream>
@@ -57,7 +59,7 @@ namespace blocksci {
     public:
         constexpr static AddressType::Enum addressType = AddressType::SCRIPTHASH;
         
-        ScriptAddress(uint32_t addressNum_, DataAccess &access_) : ScriptHashBase(addressNum_, addressType, access_.scripts.getScriptData<dedupType(addressType)>(addressNum_), access_) {}
+        ScriptAddress(uint32_t addressNum_, DataAccess &access_) : ScriptHashBase(addressNum_, addressType, access_.getScripts().getScriptData<dedupType(addressType)>(addressNum_), access_) {}
         
         uint160 getAddressHash() const {
             return getUint160Address();
@@ -79,7 +81,7 @@ namespace blocksci {
     public:
         constexpr static AddressType::Enum addressType = AddressType::WITNESS_SCRIPTHASH;
         
-        ScriptAddress(uint32_t addressNum_, DataAccess &access_) : ScriptHashBase(addressNum_, addressType, access_.scripts.getScriptData<dedupType(addressType)>(addressNum_), access_) {}
+        ScriptAddress(uint32_t addressNum_, DataAccess &access_) : ScriptHashBase(addressNum_, addressType, access_.getScripts().getScriptData<dedupType(addressType)>(addressNum_), access_) {}
         
         uint256 getAddressHash() const {
             return getUint256Address();

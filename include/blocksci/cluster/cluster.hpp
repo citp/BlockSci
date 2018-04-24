@@ -76,12 +76,7 @@ namespace blocksci {
         
         Cluster(uint32_t clusterNum_, const ClusterAccess &access_) : clusterAccess(access_), clusterNum(clusterNum_) {}
         
-        auto getAddresses() const {
-            auto &addressIndex = clusterAccess.access.addressIndex;
-            return getPossibleAddresses() | ranges::view::filter([&addressIndex](const Address &address) {
-                return addressIndex.checkIfTopLevel(address);
-            });
-        }
+        ranges::any_view<Address> getAddresses() const;
         
         auto taggedAddresses(const std::unordered_map<blocksci::Address, std::string> &tags) const {
             return getAddresses() | ranges::view::transform([tags](Address && address) -> ranges::optional<TaggedAddress> {

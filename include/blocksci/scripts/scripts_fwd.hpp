@@ -29,6 +29,8 @@ namespace blocksci {
     
     template <AddressType::Enum>
     class ScriptAddress;
+
+    class ScriptAccess;
     
     using ScriptVariant = to_variadic_t<to_address_tuple_t<ScriptAddress>, mpark::variant>;
     

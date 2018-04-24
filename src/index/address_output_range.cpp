@@ -6,11 +6,12 @@
 //
 //
 
+#include <blocksci/index/address_output_range.hpp>
 #include "address_index_priv.hpp"
 
 #include <blocksci/address/address.hpp>
 #include <blocksci/chain/inout_pointer.hpp>
-#include <blocksci/index/address_output_range.hpp>
+#include <blocksci/index/address_index.hpp>
 #include <blocksci/util/data_access.hpp>
 
 namespace blocksci {
@@ -22,7 +23,7 @@ namespace blocksci {
     
     AddressOutputRange::cursor::cursor(const cursor &other) : access(other.access), rowNum(other.rowNum), currentTypeIndex(other.currentTypeIndex) {
         if (static_cast<size_t>(currentTypeIndex) < AddressType::size) {
-            it = access->addressIndex.impl->getOutputIterator(static_cast<AddressType::Enum>(currentTypeIndex));
+            it = access->getAddressIndex().impl->getOutputIterator(static_cast<AddressType::Enum>(currentTypeIndex));
             it->SeekToFirst();
         } else {
             it.reset(nullptr);
@@ -36,7 +37,7 @@ namespace blocksci {
         rowNum = other.rowNum;
         currentTypeIndex = other.currentTypeIndex;
         if (static_cast<size_t>(currentTypeIndex) < AddressType::size) {
-            it = access->addressIndex.impl->getOutputIterator(static_cast<AddressType::Enum>(currentTypeIndex));
+            it = access->getAddressIndex().impl->getOutputIterator(static_cast<AddressType::Enum>(currentTypeIndex));
             it->SeekToFirst();
         } else {
             it.reset(nullptr);
@@ -58,7 +59,7 @@ namespace blocksci {
         while (it == nullptr || !it->Valid()) {
             currentTypeIndex++;
             if (static_cast<size_t>(currentTypeIndex) < AddressType::size) {
-                it = access->addressIndex.impl->getOutputIterator(static_cast<AddressType::Enum>(currentTypeIndex));
+                it = access->getAddressIndex().impl->getOutputIterator(static_cast<AddressType::Enum>(currentTypeIndex));
                 it->SeekToFirst();
             } else {
                 it.reset(nullptr);
@@ -85,7 +86,7 @@ namespace blocksci {
         if (!it->Valid()) {
             if (currentTypeIndex > 0) {
                 currentTypeIndex--;
-                it = access->addressIndex.impl->getOutputIterator(static_cast<AddressType::Enum>(currentTypeIndex));
+                it = access->getAddressIndex().impl->getOutputIterator(static_cast<AddressType::Enum>(currentTypeIndex));
                 it->SeekToLast();
             } else {
                 it.reset(nullptr);

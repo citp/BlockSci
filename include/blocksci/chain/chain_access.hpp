@@ -9,10 +9,10 @@
 #ifndef chain_access_hpp
 #define chain_access_hpp
 
-#include "bitcoin_uint256.hpp"
-#include "core_fwd.hpp"
-#include "file_mapper.hpp"
-#include "raw_block.hpp"
+#include <blocksci/core/bitcoin_uint256.hpp>
+#include <blocksci/core/core_fwd.hpp>
+#include <blocksci/core/file_mapper.hpp>
+#include <blocksci/core/raw_block.hpp>
 
 #include <blocksci/blocksci_export.h>
 #include <blocksci/exception.hpp>

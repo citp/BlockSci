@@ -9,9 +9,9 @@
 #ifndef script_access_hpp
 #define script_access_hpp
 
-#include "file_mapper.hpp"
-#include "script_data.hpp"
-#include "script_info.hpp"
+#include <blocksci/core/file_mapper.hpp>
+#include <blocksci/core/script_data.hpp>
+#include <blocksci/core/script_info.hpp>
 
 #include <blocksci/blocksci_export.h>
 #include <blocksci/meta.hpp>

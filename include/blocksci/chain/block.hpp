@@ -39,8 +39,8 @@ namespace blocksci {
         public:
             cursor() = default;
             cursor(const Block &block_, uint32_t txNum) : block(&block_), currentTxIndex(txNum) {
-                if (currentTxIndex < block->access->chain.txCount()) {
-                    currentTxPos = reinterpret_cast<const char *>(block->access->chain.getTx(currentTxIndex));
+                if (currentTxIndex < block->access->getChain().txCount()) {
+                    currentTxPos = reinterpret_cast<const char *>(block->access->getChain().getTx(currentTxIndex));
                 } else {
                     currentTxPos = nullptr;
                 }
@@ -77,13 +77,13 @@ namespace blocksci {
             
             void prev() {
                 currentTxIndex--;
-                currentTxPos = reinterpret_cast<const char *>(block->access->chain.getTx(currentTxIndex));
+                currentTxPos = reinterpret_cast<const char *>(block->access->getChain().getTx(currentTxIndex));
             }
             
             void advance(int amount) {
                 currentTxIndex += static_cast<uint32_t>(amount);
-                if (currentTxIndex < block->access->chain.txCount()) {
-                    currentTxPos = reinterpret_cast<const char *>(block->access->chain.getTx(currentTxIndex));
+                if (currentTxIndex < block->access->getChain().txCount()) {
+                    currentTxPos = reinterpret_cast<const char *>(block->access->getChain().getTx(currentTxIndex));
                 } else {
                     currentTxPos = nullptr;
                 }
@@ -100,7 +100,7 @@ namespace blocksci {
         
     public:
         Block() = default;
-        Block(BlockHeight blockNum_, DataAccess &access_) : access(&access_), rawBlock(access->chain.getBlock(blockNum_)), blockNum(blockNum_) {
+        Block(BlockHeight blockNum_, DataAccess &access_) : access(&access_), rawBlock(access->getChain().getBlock(blockNum_)), blockNum(blockNum_) {
         }
         
         DataAccess &getAccess() const {
@@ -148,7 +148,7 @@ namespace blocksci {
         }
         
         ranges::optional<std::chrono::system_clock::time_point> getTimeSeen() const {
-            return access->mempoolIndex.getBlockTimestamp(blockNum);
+            return access->getMempoolIndex().getBlockTimestamp(blockNum);
         }
         
         uint32_t bits() const {
@@ -207,7 +207,7 @@ namespace blocksci {
         }
         
         std::vector<unsigned char> getCoinbase() const {
-            return access->chain.getCoinbase(rawBlock->coinbaseOffset);
+            return access->getChain().getCoinbase(rawBlock->coinbaseOffset);
         }
         
         Transaction coinbaseTx() const {

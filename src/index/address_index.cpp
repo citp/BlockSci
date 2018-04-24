@@ -17,6 +17,7 @@
 #include <blocksci/chain/inout_pointer.hpp>
 #include <blocksci/core/address_info.hpp>
 #include <blocksci/scripts/scripthash_script.hpp>
+#include <blocksci/util/memory_view.hpp>
 #include <blocksci/util/state.hpp>
 
 #include <range/v3/view/transform.hpp>

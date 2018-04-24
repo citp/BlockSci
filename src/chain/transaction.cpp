@@ -11,11 +11,24 @@
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/algorithms.hpp>
 #include <blocksci/chain/block.hpp>
-
+#include <blocksci/index/hash_index.hpp>
 #include <blocksci/scripts/nulldata_script.hpp>
 
+
+namespace {
+    uint32_t getTxIndex(const blocksci::uint256 &hash, blocksci::HashIndex &index) {
+        auto txIndex = index.getTxIndex(hash);
+        if (txIndex == 0) {
+            throw blocksci::InvalidHashException();
+        }
+        return txIndex;
+    }
+}
+
 namespace blocksci {
-    
+
+    Transaction::Transaction(const uint256 &hash, DataAccess &access) : Transaction(getTxIndex(hash, access.getHashIndex()), access) {}
+
     bool isSegwitMarker(const Transaction &tx) {
         for (int i = tx.outputCount() - 1; i >= 0; i--) {
             auto output = tx.outputs()[i];

@@ -9,6 +9,7 @@
 #define chain_fwd_h
 
 namespace blocksci {
+    class ChainAccess;
     class Blockchain;
     class Block;
     class Transaction;

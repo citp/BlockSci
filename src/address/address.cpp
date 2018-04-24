@@ -11,6 +11,8 @@
 #include <blocksci/address/address.hpp>
 #include <blocksci/address/equiv_address.hpp>
 #include <blocksci/chain/algorithms.hpp>
+#include <blocksci/index/address_index.hpp>
+#include <blocksci/index/hash_index.hpp>
 #include <scripts/bitcoin_base58.hpp>
 #include <scripts/bitcoin_segwit_addr.hpp>
 #include <blocksci/scripts/script_variant.hpp>
@@ -18,7 +20,7 @@
 namespace blocksci {
     
     ranges::any_view<OutputPointer> Address::getOutputPointers() const {
-        return access->addressIndex.getOutputPointers(*this);
+        return access->getAddressIndex().getOutputPointers(*this);
     }
     
     bool Address::isSpendable() const {
@@ -53,13 +55,13 @@ namespace blocksci {
             if (decoded.first == 0) {
                 if (decoded.second.size() == 20) {
                     uint160 pubkeyHash(decoded.second.begin(), decoded.second.end());
-                    uint32_t addressNum = access.hashIndex.getPubkeyHashIndex(pubkeyHash);
+                    uint32_t addressNum = access.getHashIndex().getPubkeyHashIndex(pubkeyHash);
                     if (addressNum > 0) {
                         return Address{addressNum, AddressType::WITNESS_PUBKEYHASH, access};
                     }
                 } else if (decoded.second.size() == 32) {
                     uint256 scriptHash(decoded.second.begin(), decoded.second.end());
-                    uint32_t addressNum = access.hashIndex.getScriptHashIndex(scriptHash);
+                    uint32_t addressNum = access.getHashIndex().getScriptHashIndex(scriptHash);
                     if (addressNum > 0) {
                         return Address{addressNum, AddressType::WITNESS_SCRIPTHASH, access};
                     }
@@ -76,9 +78,9 @@ namespace blocksci {
         }
         uint32_t addressNum = 0;
         if (type == AddressType::Enum::PUBKEYHASH) {
-            addressNum = access.hashIndex.getPubkeyHashIndex(hash);
+            addressNum = access.getHashIndex().getPubkeyHashIndex(hash);
         } else if (type == AddressType::Enum::SCRIPTHASH) {
-            addressNum = access.hashIndex.getScriptHashIndex(hash);
+            addressNum = access.getHashIndex().getScriptHashIndex(hash);
         }
         if (addressNum > 0) {
             return Address{addressNum, type, access};
@@ -89,7 +91,7 @@ namespace blocksci {
     template<AddressType::Enum type>
     std::vector<Address> getAddressesWithPrefixImp(const std::string &prefix, DataAccess &access) {
         std::vector<Address> addresses;
-        auto count = access.scripts.scriptCount(dedupType(type));
+        auto count = access.getScripts().scriptCount(dedupType(type));
         for (uint32_t scriptNum = 1; scriptNum <= count; scriptNum++) {
             ScriptAddress<type> script(scriptNum, access);
             if (script.addressString().compare(0, prefix.length(), prefix) == 0) {

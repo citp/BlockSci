@@ -14,6 +14,7 @@
 
 #include <blocksci/blocksci_export.h>
 #include <blocksci/core/raw_transaction.hpp>
+#include <blocksci/index/mempool_index.hpp>
 
 #include <range/v3/view/iota.hpp>
 #include <range/v3/view/zip_with.hpp>
@@ -25,16 +26,6 @@ namespace blocksci {
     struct BLOCKSCI_EXPORT InvalidHashException : public std::runtime_error {
         InvalidHashException() : std::runtime_error("No Match for hash") {}
     };
-    
-    namespace internal {
-        inline uint32_t getTxIndex(const uint256 &hash, HashIndex &index) {
-            auto txIndex = index.getTxIndex(hash);
-            if (txIndex == 0) {
-                throw InvalidHashException();
-            }
-            return txIndex;
-        }
-    }
     
     class BLOCKSCI_EXPORT Transaction {
     private:
@@ -48,13 +39,13 @@ namespace blocksci {
         
         Transaction() = default;
         
-        Transaction(const RawTransaction *data_, uint32_t txNum_, BlockHeight blockHeight_, DataAccess &access_) : access(&access_), data(data_), sequenceNumbers(access_.chain.getSequenceNumbers(txNum_)), txNum(txNum_), blockHeight(blockHeight_) {}
+        Transaction(const RawTransaction *data_, uint32_t txNum_, BlockHeight blockHeight_, DataAccess &access_) : access(&access_), data(data_), sequenceNumbers(access_.getChain().getSequenceNumbers(txNum_)), txNum(txNum_), blockHeight(blockHeight_) {}
         
-        Transaction(uint32_t index, DataAccess &access_) : Transaction(index, access_.chain.getBlockHeight(index), access_) {}
+        Transaction(uint32_t index, DataAccess &access_) : Transaction(index, access_.getChain().getBlockHeight(index), access_) {}
         
-        Transaction(uint32_t index, BlockHeight height, DataAccess &access_) : Transaction(access_.chain.getTx(index), index, height, access_) {}
+        Transaction(uint32_t index, BlockHeight height, DataAccess &access_) : Transaction(access_.getChain().getTx(index), index, height, access_) {}
         
-        Transaction(const uint256 &hash, DataAccess &access) : Transaction(internal::getTxIndex(hash, access.hashIndex), access) {}
+        Transaction(const uint256 &hash, DataAccess &access);
         Transaction(const std::string &hash, DataAccess &access) : Transaction(uint256S(hash), access) {}
         
         DataAccess &getAccess() const {
@@ -62,15 +53,15 @@ namespace blocksci {
         }
 
         uint256 getHash() const {
-            return *access->chain.getTxHash(txNum);
+            return *access->getChain().getTxHash(txNum);
         }
         
         ranges::optional<std::chrono::system_clock::time_point> getTimeSeen() const {
-            return access->mempoolIndex.getTxTimestamp(txNum);
+            return access->getMempoolIndex().getTxTimestamp(txNum);
         }
         
         bool observedInMempool() const {
-            return access->mempoolIndex.observed(txNum);
+            return access->getMempoolIndex().observed(txNum);
         }
         
         std::string toString() const {

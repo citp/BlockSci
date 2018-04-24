@@ -164,13 +164,13 @@ namespace blocksci {
     public:
         Blockchain() = default;
         explicit Blockchain(const DataConfiguration &config) : access(config) {
-            lastBlockHeight = access.chain.blockCount();
+            lastBlockHeight = access.getChain().blockCount();
         }
         explicit Blockchain(const std::string &dataDirectory) : Blockchain(DataConfiguration{dataDirectory, true, BlockHeight{0}}) {}
         
         void reload() {
             access.reload();
-            lastBlockHeight = access.chain.blockCount();
+            lastBlockHeight = access.getChain().blockCount();
         }
         
         DataAccess &getAccess() { return access; }
@@ -183,12 +183,12 @@ namespace blocksci {
         }
         
         uint32_t addressCount(AddressType::Enum type) const {
-            return access.scripts.scriptCount(dedupType(type));
+            return access.getScripts().scriptCount(dedupType(type));
         }
         
         template <AddressType::Enum type>
         auto scripts() {
-            return ranges::view::ints(uint32_t{1}, access.scripts.scriptCount(dedupType(type)) + 1) | ranges::view::transform([&](uint32_t scriptNum) {
+            return ranges::view::ints(uint32_t{1}, access.getScripts().scriptCount(dedupType(type)) + 1) | ranges::view::transform([&](uint32_t scriptNum) {
                 return ScriptAddress<type>(scriptNum, access);
             });
         }

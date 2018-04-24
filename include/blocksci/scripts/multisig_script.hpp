@@ -10,6 +10,7 @@
 #define multisig_script_hpp
 
 #include "script.hpp"
+#include "script_access.hpp"
 
 #include <blocksci/blocksci_export.h>
 #include <blocksci/core/address_info.hpp>
@@ -26,7 +27,7 @@ namespace blocksci {
         }
     public:
         constexpr static AddressType::Enum addressType = AddressType::MULTISIG;
-        ScriptAddress(uint32_t addressNum_, DataAccess &access_) : ScriptBase(addressNum_, addressType, access_, access_.scripts.getScriptData<dedupType(addressType)>(addressNum_)) {}
+        ScriptAddress(uint32_t addressNum_, DataAccess &access_) : ScriptBase(addressNum_, addressType, access_, access_.getScripts().getScriptData<dedupType(addressType)>(addressNum_)) {}
         
         std::string toString() const {
             std::stringstream ss;

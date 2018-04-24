@@ -7,24 +7,24 @@
 
 #include <blocksci/address/equiv_address.hpp>
 #include <blocksci/address/dedup_address.hpp>
-
-#include <blocksci/util/data_access.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/algorithms.hpp>
+#include <blocksci/index/address_index.hpp>
+#include <blocksci/util/data_access.hpp>
 
 namespace blocksci {
     EquivAddress::EquivAddress(uint32_t scriptNum, EquivAddressType::Enum type, bool scriptEquivalent_, DataAccess &access_) : scriptEquivalent(scriptEquivalent_), access(access_) {
         for (auto equivType : equivAddressTypes(type)) {
             Address address(scriptNum, equivType, access);
             if (scriptEquivalent) {
-                auto nested = access.addressIndex.getPossibleNestedEquivalent(address);
+                auto nested = access.getAddressIndex().getPossibleNestedEquivalent(address);
                 for (auto &nestedAddress : nested) {
-                    if (access.addressIndex.checkIfExists(nestedAddress)) {
+                    if (access.getAddressIndex().checkIfExists(nestedAddress)) {
                         addresses.insert(nestedAddress);
                     }
                 }
             } else {
-                if (access.addressIndex.checkIfExists(address)) {
+                if (access.getAddressIndex().checkIfExists(address)) {
                     addresses.insert(address);
                 }
             }
@@ -52,10 +52,10 @@ namespace blocksci {
         return ss.str();
     }
     
-    ranges::any_view<OutputPointer> EquivAddress::getOutputPointers() const {
-        const auto &access_ = access;
+    ranges::any_view<OutputPointer> EquivAddress::getOutputPointers() {
+        auto &access_ = access;
         return addresses
-        | ranges::view::transform([&access_](const Address &address) { return access_.addressIndex.getOutputPointers(address); })
+        | ranges::view::transform([&access_](const Address &address) { return access_.getAddressIndex().getOutputPointers(address); })
         | ranges::view::join
         ;
     }

@@ -6,10 +6,11 @@
 //
 
 #include <blocksci/scripts/pubkey_base_script.hpp>
+#include <blocksci/index/address_index.hpp>
 #include <blocksci/util/data_access.hpp>
 
 namespace blocksci {
     std::vector<Address> PubkeyAddressBase::getIncludingMultisigs() const {
-        return getAccess().addressIndex.getIncludingMultisigs(*this);
+        return getAccess().getAddressIndex().getIncludingMultisigs(*this);
     }
 } // namespace blocksci

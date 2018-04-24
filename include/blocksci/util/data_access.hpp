@@ -13,38 +13,54 @@
 
 #include <blocksci/blocksci_export.h>
 
-#include <blocksci/core/chain_access.hpp>
-#include <blocksci/core/script_access.hpp>
-#include <blocksci/index/address_index.hpp>
-#include <blocksci/index/hash_index.hpp>
-#include <blocksci/index/mempool_index.hpp>
+#include <memory>
 
 namespace blocksci {
+    class ChainAccess;
+    class ScriptAccess;
+    class AddressIndex;
+    class HashIndex;
+    class MempoolIndex;
+
     class BLOCKSCI_EXPORT DataAccess {
     public:
         DataConfiguration config;
-        ChainAccess chain;
-        ScriptAccess scripts;
-        AddressIndex addressIndex;
-        HashIndex hashIndex;
-        MempoolIndex mempoolIndex;
+
+        std::unique_ptr<ChainAccess> chain;
+        std::unique_ptr<ScriptAccess> scripts;
+        std::unique_ptr<AddressIndex> addressIndex;
+        std::unique_ptr<HashIndex> hashIndex;
+        std::unique_ptr<MempoolIndex> mempoolIndex;
         
-        DataAccess() = default;
-        explicit DataAccess(DataConfiguration config_) :
-        config(std::move(config_)),
-        chain{config.chainDirectory(), config.blocksIgnored, config.errorOnReorg},
-        scripts{config.scriptsDirectory()},
-        addressIndex{config.addressDBFilePath(), true},
-        hashIndex{config.hashIndexFilePath(), true},
-        mempoolIndex{config.mempoolDirectory()} {}
+        DataAccess();
+        explicit DataAccess(DataConfiguration config_);
+        DataAccess(DataAccess &&);
+        DataAccess &operator=(DataAccess &&);
+        ~DataAccess();
+
+        const ChainAccess &getChain() const {
+            return *chain;
+        }
+
+        const ScriptAccess &getScripts() const {
+            return *scripts;
+        }
+
+        const MempoolIndex &getMempoolIndex() const {
+            return *mempoolIndex;
+        }
+
+        AddressIndex &getAddressIndex() {
+            return *addressIndex;
+        }
+
+        HashIndex &getHashIndex() {
+            return *hashIndex;
+        }
         
         operator DataConfiguration() const { return config; }
         
-        void reload() {
-            chain.reload();
-            scripts.reload();
-            mempoolIndex.reload();
-        }
+        void reload();
     };
 }
 

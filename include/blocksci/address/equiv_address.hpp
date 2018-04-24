@@ -60,7 +60,7 @@ namespace blocksci {
             return scriptEquivalent;
         }
         
-        ranges::any_view<OutputPointer> getOutputPointers() const;
+        ranges::any_view<OutputPointer> getOutputPointers();
         int64_t calculateBalance(BlockHeight height);
         ranges::any_view<Output> getOutputs();
         std::vector<Input> getInputs();

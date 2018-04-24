@@ -16,6 +16,8 @@
 #include <functional>
 
 namespace blocksci {
+	class ScriptAccess;
+	
     struct BLOCKSCI_EXPORT RawAddress {
         uint32_t scriptNum;
         AddressType::Enum type;

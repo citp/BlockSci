@@ -10,9 +10,11 @@
 #define nonstandard_script_hpp
 
 #include "script.hpp"
+#include "script_access.hpp"
 #include "script_view.hpp"
 
 #include <blocksci/blocksci_export.h>
+#include <blocksci/core/address_info.hpp>
 #include <blocksci/util/data_access.hpp>
 
 #include <range/v3/utility/optional.hpp>
@@ -47,7 +49,7 @@ namespace blocksci {
         constexpr static AddressType::Enum addressType = AddressType::NONSTANDARD;
         
         ScriptAddress() = default;
-        ScriptAddress(uint32_t addressNum_, DataAccess &access_) : ScriptAddress(addressNum_, access_.scripts.getScriptData<dedupType(addressType)>(addressNum_), access_) {}
+        ScriptAddress(uint32_t addressNum_, DataAccess &access_) : ScriptAddress(addressNum_, access_.getScripts().getScriptData<dedupType(addressType)>(addressNum_), access_) {}
         
         std::string inputString() const {
             auto inputScript = getInputScript();

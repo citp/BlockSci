@@ -9,6 +9,7 @@
 #ifndef raw_input_hpp
 #define raw_input_hpp
 
+#include "chain_access.hpp"
 #include "inout_pointer.hpp"
 
 #include <blocksci/blocksci_export.h>
@@ -41,10 +42,10 @@ namespace blocksci {
 
         Input(const InputPointer &pointer_, BlockHeight blockHeight_, const Inout &inout_, const uint32_t *sequenceNum_, DataAccess &access_) :
         access(&access_), inout(&inout_), sequenceNum(sequenceNum_), pointer(pointer_), blockHeight(blockHeight_) {
-            assert(pointer.isValid(access_.chain));
+            assert(pointer.isValid(access_.getChain()));
         }
         Input(const InputPointer &pointer_, DataAccess &access_) :
-        Input(pointer_, access_.chain.getBlockHeight(pointer_.txNum), access_.chain.getTx(pointer_.txNum)->getInput(pointer_.inoutNum), &access_.chain.getSequenceNumbers(pointer_.txNum)[pointer_.inoutNum], access_) {}
+        Input(pointer_, access_.getChain().getBlockHeight(pointer_.txNum), access_.getChain().getTx(pointer_.txNum)->getInput(pointer_.inoutNum), &access_.getChain().getSequenceNumbers(pointer_.txNum)[pointer_.inoutNum], access_) {}
         
         DataAccess &getAccess() const {
             return *access;
@@ -66,7 +67,7 @@ namespace blocksci {
         Block block() const;
         
         BlockHeight age() const {
-            return blockHeight - access->chain.getBlockHeight(inout->getLinkedTxNum());
+            return blockHeight - access->getChain().getBlockHeight(inout->getLinkedTxNum());
         }
 
         bool operator==(const Inout &other) const {

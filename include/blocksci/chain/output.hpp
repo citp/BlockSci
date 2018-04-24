@@ -9,6 +9,7 @@
 #ifndef output_hpp
 #define output_hpp
 
+#include "chain_access.hpp"
 #include "inout_pointer.hpp"
 
 #include <blocksci/blocksci_export.h>
@@ -38,8 +39,8 @@ namespace blocksci {
         
         Output(const OutputPointer &pointer_, BlockHeight blockHeight_, const Inout &inout_, DataAccess &access_) :
         access(&access_), inout(&inout_), blockHeight(blockHeight_), pointer(pointer_) {
-            assert(pointer.isValid(access_.chain));
-            if (inout->getLinkedTxNum() < access->chain.maxLoadedTx()) {
+            assert(pointer.isValid(access_.getChain()));
+            if (inout->getLinkedTxNum() < access->getChain().maxLoadedTx()) {
                 spendingTxIndex = inout->getLinkedTxNum();
             } else {
                 spendingTxIndex = 0;
@@ -47,7 +48,7 @@ namespace blocksci {
         }
         
         Output(const OutputPointer &pointer_, DataAccess &access_) :
-        Output(pointer_, -1, access_.chain.getTx(pointer_.txNum)->getOutput(pointer_.inoutNum), access_) {}
+        Output(pointer_, -1, access_.getChain().getTx(pointer_.txNum)->getOutput(pointer_.inoutNum), access_) {}
         
         DataAccess &getAccess() const {
             return *access;
@@ -55,7 +56,7 @@ namespace blocksci {
         
         BlockHeight getBlockHeight() const {
             if (blockHeight == -1) {
-                blockHeight = access->chain.getBlockHeight(pointer.txNum);
+                blockHeight = access->getChain().getBlockHeight(pointer.txNum);
             }
             return blockHeight;
         }

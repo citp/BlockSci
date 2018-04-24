@@ -5,12 +5,12 @@
 //  Created by Harry Kalodner on 4/10/18.
 //
 
-#include <blocksci/core/address_info.hpp>
 #include <blocksci/core/raw_address.hpp>
-#include <blocksci/core/script_access.hpp>
-#include <blocksci/core/script_data.hpp>
 
 #include <blocksci/meta.hpp>
+#include <blocksci/core/address_info.hpp>
+#include <blocksci/core/script_data.hpp>
+#include <blocksci/scripts/script_access.hpp>
 
 #include <mpark/variant.hpp>
 

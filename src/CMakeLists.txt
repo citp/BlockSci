@@ -111,10 +111,10 @@ target_link_libraries( blocksci
 )
 
 target_include_directories(blocksci PUBLIC
-  $<BUILD_INTERFACE:${BLOCKSCI_HEADER_PREFIX}/include>
+  $<BUILD_INTERFACE:${BLOCKSCI_HEADER_PREFIX}/..>
   $<BUILD_INTERFACE:${BLOCKSCI_HEADER_PREFIX}/external>
   $<BUILD_INTERFACE:${BLOCKSCI_SOURCE_PREFIX}>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/blocksci/external>
 )
@@ -146,6 +146,7 @@ set(ADDRESS_HEADERS
 
 set(CHAIN_HEADERS
   ${BLOCKSCI_HEADER_PREFIX}/chain/chain_fwd.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/chain/chain_access.hpp
   ${BLOCKSCI_HEADER_PREFIX}/chain/algorithms.hpp
   ${BLOCKSCI_HEADER_PREFIX}/chain/block.hpp
   ${BLOCKSCI_HEADER_PREFIX}/chain/blockchain.hpp
@@ -182,6 +183,7 @@ set(INDEX_HEADERS
 
 set(SCRIPT_HEADERS
   ${BLOCKSCI_HEADER_PREFIX}/scripts/scripts_fwd.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/scripts/script_access.hpp
   ${BLOCKSCI_HEADER_PREFIX}/scripts/bitcoin_pubkey.hpp
   ${BLOCKSCI_HEADER_PREFIX}/scripts/bitcoin_script.hpp
   ${BLOCKSCI_HEADER_PREFIX}/scripts/multisig_script.hpp
@@ -218,11 +220,9 @@ set(CORE_HEADERS
   ${BLOCKSCI_HEADER_PREFIX}/core/hash_combine.hpp
   ${BLOCKSCI_HEADER_PREFIX}/core/inout.hpp
   ${BLOCKSCI_HEADER_PREFIX}/core/in_place_array.hpp
-  ${BLOCKSCI_HEADER_PREFIX}/core/chain_access.hpp
   ${BLOCKSCI_HEADER_PREFIX}/core/raw_address.hpp
   ${BLOCKSCI_HEADER_PREFIX}/core/raw_block.hpp
   ${BLOCKSCI_HEADER_PREFIX}/core/raw_transaction.hpp
-  ${BLOCKSCI_HEADER_PREFIX}/core/script_access.hpp
   ${BLOCKSCI_HEADER_PREFIX}/core/script_data.hpp
   ${BLOCKSCI_HEADER_PREFIX}/core/script_info.hpp
 )
@@ -237,6 +237,7 @@ set(ADDRESS_SOURCES
 )
 
 set(CHAIN_SOURCES
+  ${BLOCKSCI_SOURCE_PREFIX}/chain/chain_access.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/chain/blockchain.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/chain/block.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/chain/inout_pointer.cpp
@@ -274,6 +275,7 @@ set(SCRIPT_PRIVATE_HEADERS
 )
 
 set(SCRIPT_SOURCES
+  ${BLOCKSCI_SOURCE_PREFIX}/scripts/script_access.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/scripts/bitcoin_base58.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/scripts/bitcoin_bech32.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/scripts/bitcoin_pubkey.cpp
@@ -293,9 +295,7 @@ set(CORE_SOURCES
   ${BLOCKSCI_SOURCE_PREFIX}/core/address_info.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/core/dedup_address_info.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/core/bitcoin_uint256.cpp
-  ${BLOCKSCI_SOURCE_PREFIX}/core/chain_access.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/core/file_mapper.cpp
-  ${BLOCKSCI_SOURCE_PREFIX}/core/script_access.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/core/script_data.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/core/raw_address.cpp
 )
@@ -303,6 +303,7 @@ set(CORE_SOURCES
 set_source_files_properties(${BLOCKSCI_SOURCE_PREFIX}/scripts/bitcoin_bech32.cpp PROPERTIES COMPILE_FLAGS -Wno-everything)
 
 set(UTIL_SOURCES
+  ${BLOCKSCI_SOURCE_PREFIX}/util/data_access.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/util/data_configuration.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/util/hash.cpp
 )
@@ -341,7 +342,7 @@ target_sources(blocksci
 )
 
 include(GenerateExportHeader)
-generate_export_header(blocksci)
+generate_export_header(blocksci EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/blocksci/blocksci_export.h)
 
 set_property(TARGET blocksci PROPERTY VERSION ${Upstream_VERSION})
 

@@ -265,7 +265,7 @@ namespace blocksci {
         boost::filesystem::ofstream clusterOffsetFile(offsetFile, std::ios::binary);
         // Perform clustering
         
-        auto &scripts = chain.getAccess().scripts;
+        auto &scripts = chain.getAccess().getScripts();
         size_t totalScriptCount = scripts.totalAddressCount();
         
         std::unordered_map<DedupAddressType::Enum, uint32_t> scriptStarts;

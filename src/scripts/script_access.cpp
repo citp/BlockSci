@@ -5,7 +5,7 @@
 //  Created by Harry Kalodner on 4/21/18.
 //
 
-#include <blocksci/core/script_access.hpp>
+#include <blocksci/scripts/script_access.hpp>
 #include <blocksci/core/dedup_address_info.hpp>
 
 #include <boost/filesystem/path.hpp>

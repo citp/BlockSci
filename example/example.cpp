@@ -13,11 +13,8 @@
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/block.hpp>
 #include <blocksci/script.hpp>
-#include <blocksci/index/hash_index.hpp>
 #include <blocksci/address/address.hpp>
 #include <blocksci/chain/transaction_range.hpp>
-
-//#include <hsql/SQLParser.h>
 
 #include <google/sparse_hash_map>
 #include <google/dense_hash_map>
@@ -90,8 +87,6 @@ int main(int argc, const char * argv[]) {
 //        std::cout << out << std::endl;
 //    }
 
-    std::cout << chain.getAccess().hashIndex.countTxes() << std::endl;
-    
     RANGES_FOR(auto block, chain) {
         RANGES_FOR(auto tx, block) {
             std::cout << tx << std::endl;
@@ -121,29 +116,6 @@ int main(int argc, const char * argv[]) {
 //    }
 //    
 //    std::cout << count << "\n";
-    
-//    const std::string query = "Select index FROM txes WHERE locktime > 0";
-//    hsql::SQLParserResult result;
-//    hsql::SQLParser::parse(query, &result);
-//    
-//    if (result.isValid() && result.size() > 0) {
-//        const hsql::SQLStatement* statement = result.getStatement(0);
-//        
-//        if (statement->isType(hsql::kStmtSelect)) {
-//            const hsql::SelectStatement* select = (const hsql::SelectStatement*) statement;
-//            /* ... */
-//        }
-//    }
-//    
-//    HashIndex hashIndex{chain.access.config};
-//    RANGES_FOR(auto block, chain) {
-//        RANGES_FOR(auto tx, block) {
-//            assert(hashIndex.getTxIndex(tx.getHash()) == tx.txNum);
-//        }
-//        
-//    }
-
-    return 0;
     
 //    auto block = chain[100000];
 //    auto tx = block[0];

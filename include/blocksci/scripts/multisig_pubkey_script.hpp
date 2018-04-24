@@ -9,6 +9,7 @@
 #define multisig_pubkey_script_hpp
 
 #include "pubkey_base_script.hpp"
+#include "script_access.hpp"
 
 #include <blocksci/blocksci_export.h>
 #include <blocksci/core/address_info.hpp>
@@ -22,7 +23,7 @@ namespace blocksci {
     public:
         constexpr static AddressType::Enum addressType = AddressType::MULTISIG_PUBKEY;
         
-        ScriptAddress(uint32_t addressNum_, DataAccess &access_) : PubkeyAddressBase(addressNum_, addressType, access_.scripts.getScriptData<dedupType(addressType)>(addressNum_), access_) {}
+        ScriptAddress(uint32_t addressNum_, DataAccess &access_) : PubkeyAddressBase(addressNum_, addressType, access_.getScripts().getScriptData<dedupType(addressType)>(addressNum_), access_) {}
         
         std::string addressString() const;
         

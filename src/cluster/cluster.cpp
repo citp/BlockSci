@@ -20,6 +20,13 @@
 
 namespace blocksci {
     
+    ranges::any_view<Address> Cluster::getAddresses() const {
+        auto &addressIndex = clusterAccess.access.getAddressIndex();
+        return getPossibleAddresses() | ranges::view::filter([&addressIndex](const Address &address) {
+            return addressIndex.checkIfTopLevel(address);
+        });
+    }
+
     ranges::optional<TaggedCluster> Cluster::getTagged(const std::unordered_map<Address, std::string> &tags) const {
         bool isEmpty = [&]() {
             auto addresses = taggedAddresses(tags);
@@ -41,7 +48,7 @@ namespace blocksci {
         for (auto &address : clusterAccess.getClusterScripts(clusterNum)) {
             if (address.type == dedupSearchType) {
                 auto searchAddress = Address{address.scriptNum, type, clusterAccess.access};
-                if (clusterAccess.access.addressIndex.checkIfTopLevel(searchAddress)) {
+                if (clusterAccess.access.getAddressIndex().checkIfTopLevel(searchAddress)) {
                     ++count;
                 }
             }

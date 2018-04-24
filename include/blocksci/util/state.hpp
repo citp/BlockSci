@@ -8,9 +8,9 @@
 #ifndef state_hpp
 #define state_hpp
 
-#include <blocksci/core/chain_access.hpp>
+#include <blocksci/chain/chain_access.hpp>
 #include <blocksci/core/dedup_address_type.hpp>
-#include <blocksci/core/script_access.hpp>
+#include <blocksci/scripts/script_access.hpp>
 
 namespace blocksci {
     struct State {
