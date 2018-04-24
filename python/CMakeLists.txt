@@ -10,7 +10,7 @@ file(GLOB PYTHON_INTERFACE_SOURCES "src/*.cpp")
 
 pybind11_add_module(blocksci_interface ${PYTHON_INTERFACE_SOURCES} ${PYTHON_INTERFACE_HEADERS})
 
-target_compile_options(blocksci_interface PRIVATE -Wall -Wextra -Wpedantic -Winstantiation-after-specialization)
+target_compile_options(blocksci_interface PRIVATE -Wall -Wextra -Wpedantic)
 
 target_link_libraries( blocksci_interface PUBLIC blocksci)
 
