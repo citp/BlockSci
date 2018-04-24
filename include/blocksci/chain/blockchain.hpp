@@ -20,7 +20,6 @@
 #include <blocksci/scripts/scripthash_script.hpp>
 #include <blocksci/util/data_access.hpp>
 
-#include <range/v3/view_facade.hpp>
 #include <range/v3/view/any_view.hpp>
 #include <range/v3/range_for.hpp>
 
@@ -105,58 +104,7 @@ namespace blocksci {
         return segments;
     }
     
-    class BLOCKSCI_EXPORT Blockchain : public ranges::view_facade<Blockchain> {
-        friend ranges::range_access;
-        
-        struct cursor {
-        private:
-            Blockchain *chain;
-            BlockHeight currentBlockHeight;
-        public:
-            cursor() = default;
-            cursor(Blockchain &chain_, BlockHeight height) : chain(&chain_), currentBlockHeight(height) {}
-            
-            bool equal(const cursor &other) const {
-                return currentBlockHeight == other.currentBlockHeight;
-            }
-            
-            Block read() const {
-                return Block(currentBlockHeight, chain->access);
-            }
-            
-            void next() {
-                ++currentBlockHeight;
-            }
-            
-            void prev() {
-                --currentBlockHeight;
-            }
-            
-            int distance_to(cursor const &that) const {
-                return static_cast<int>(that.currentBlockHeight - currentBlockHeight);
-            }
-            
-            void advance(int amount) {
-                currentBlockHeight += BlockHeight{amount};
-            }
-            
-            bool equal(ranges::default_sentinel) const {
-                return currentBlockHeight == chain->lastBlockHeight;
-            }
-            
-            BlockHeight distance_to(ranges::default_sentinel) const {
-                return chain->lastBlockHeight - currentBlockHeight;
-            }
-        };
-        
-        cursor begin_cursor() {
-            return cursor(*this, BlockHeight{0});
-        }
-        
-        ranges::default_sentinel end_cursor() const {
-            return {};
-        }
-        
+    class BLOCKSCI_EXPORT Blockchain { 
         BlockHeight lastBlockHeight;
 
         DataAccess access;
@@ -168,9 +116,27 @@ namespace blocksci {
         }
         explicit Blockchain(const std::string &dataDirectory) : Blockchain(DataConfiguration{dataDirectory, true, BlockHeight{0}}) {}
         
+        auto blocks() {
+            auto dataAccess = &getAccess();
+            return ranges::view::ints(BlockHeight{0}, lastBlockHeight) |
+                   ranges::view::transform([dataAccess](BlockHeight height) {return Block(height, *dataAccess); });
+        }
+
         void reload() {
             access.reload();
             lastBlockHeight = access.getChain().blockCount();
+        }
+
+        auto begin() {
+            return blocks().begin();
+        }
+
+        auto end() {
+            return blocks().end();
+        }
+
+        auto operator[](BlockHeight height) {
+            return Block(height, getAccess());
         }
         
         DataAccess &getAccess() { return access; }
