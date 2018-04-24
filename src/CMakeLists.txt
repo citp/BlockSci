@@ -6,8 +6,6 @@ find_package( OpenSSL REQUIRED)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-set(INCLUDE_INSTALL_DIR include/blocksci )
-set(LIB_INSTALL_DIR lib/ )
 set(SYSCONFIG_INSTALL_DIR etc/blocksci/ . )
 
 set(BLOCKSCI_HEADER_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/../include/blocksci)
@@ -117,8 +115,8 @@ target_include_directories(blocksci PUBLIC
   $<BUILD_INTERFACE:${BLOCKSCI_HEADER_PREFIX}/external>
   $<BUILD_INTERFACE:${BLOCKSCI_SOURCE_PREFIX}>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
-  $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>
-  $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}/external>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/blocksci/external>
 )
 
 target_include_directories(blocksci PRIVATE
@@ -359,12 +357,12 @@ source_group(blocksci FILES ${BLOCKSCI_HEADERS} ${BLOCKSCI_SOURCES})
 
 include(CMakePackageConfigHelpers)
 
-set(ConfigPackageLocation "${LIB_INSTALL_DIR}/cmake/blocksci")
+set(ConfigPackageLocation "${CMAKE_INSTALL_LIBDIR}/cmake/blocksci")
 
 configure_package_config_file(blocksci-config.cmake
   ${CMAKE_CURRENT_BINARY_DIR}/blocksci-config.cmake
   INSTALL_DESTINATION "${ConfigPackageLocation}"
-  PATH_VARS INCLUDE_INSTALL_DIR SYSCONFIG_INSTALL_DIR)
+  PATH_VARS CMAKE_INSTALL_INCLUDEDIR SYSCONFIG_INSTALL_DIR)
 
 install(TARGETS blocksci EXPORT blocksci-targets
     ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -384,5 +382,5 @@ install(
     Devel
 )
 
-install(DIRECTORY ${BLOCKSCI_HEADER_PREFIX}/ DESTINATION ${INCLUDE_INSTALL_DIR})
-install(FILES ${BLOCKSCI_HEADERS} ${CMAKE_CURRENT_BINARY_DIR}/blocksci_export.h DESTINATION ${INCLUDE_INSTALL_DIR})
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../include" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES ${BLOCKSCI_HEADERS} ${CMAKE_CURRENT_BINARY_DIR}/blocksci_export.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/blocksci)
