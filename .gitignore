@@ -5,3 +5,4 @@ debug
 Notebooks/blocksci/pybind11
 *.so
 *.pyc
+src/blocksci/include/blocksci/external

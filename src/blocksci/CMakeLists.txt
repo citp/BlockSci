@@ -15,6 +15,51 @@ set(BLOCKSCI_SOURCE_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 add_library(blocksci SHARED "")
 
+get_property(RANGE_HEADERS GLOBAL PROPERTY ranges_headers)
+get_property(VARIANT_HEADERS GLOBAL PROPERTY variant_headers)
+
+#message(STATUS ${RANGE_HEADERS})
+message(STATUS ${VARIANT_HEADERS})
+
+add_custom_target(copy_externals)
+
+MACRO(COPY_FILE_IF_CHANGED in_file out_file target)
+  ADD_CUSTOM_COMMAND (
+    TARGET     ${target}
+    PRE_BUILD
+    COMMAND    ${CMAKE_COMMAND}
+    ARGS       -E copy_if_different ${in_file} ${out_file}
+  )
+ENDMACRO(COPY_FILE_IF_CHANGED)
+
+MACRO(COPY_FILE_INTO_DIRECTORY_IF_CHANGED in_file out_dir target)
+  GET_FILENAME_COMPONENT(file_name ${in_file} NAME)
+  COPY_FILE_IF_CHANGED(${in_file} ${out_dir}/${file_name} ${target})  
+ENDMACRO(COPY_FILE_INTO_DIRECTORY_IF_CHANGED)
+
+#Copies all the files from in_file_list into the out_dir. 
+# sub-trees are ignored (files are stored in same out_dir)
+MACRO(COPY_FILES_INTO_DIRECTORY_IF_CHANGED in_file_list out_dir target)
+  FOREACH(in_file ${in_file_list})
+    COPY_FILE_INTO_DIRECTORY_IF_CHANGED(${in_file} ${out_dir} ${target})
+  ENDFOREACH(in_file) 
+ENDMACRO(COPY_FILES_INTO_DIRECTORY_IF_CHANGED)
+
+#Copy all files and directories in in_dir to out_dir. 
+# Subtrees remain intact.
+MACRO(COPY_DIRECTORY_IF_CHANGED in_dir out_dir target)
+  FILE(GLOB_RECURSE in_file_list ${in_dir}/*)
+  FOREACH(in_file ${in_file_list})
+    STRING(REGEX REPLACE ${in_dir} ${out_dir} out_file ${in_file})
+    COPY_FILE_IF_CHANGED(${in_file} ${out_file} ${target})
+  ENDFOREACH(in_file) 
+ENDMACRO(COPY_DIRECTORY_IF_CHANGED)
+
+COPY_DIRECTORY_IF_CHANGED("${RANGE_HEADERS}" "${BLOCKSCI_HEADER_PREFIX}/external" copy_externals)
+COPY_DIRECTORY_IF_CHANGED("${VARIANT_HEADERS}" "${BLOCKSCI_HEADER_PREFIX}/external" copy_externals)
+
+add_dependencies(blocksci copy_externals)
+
 set_target_properties(blocksci PROPERTIES CXX_VISIBILITY_PRESET hidden)
 set_target_properties(blocksci PROPERTIES VISIBILITY_INLINES_HIDDEN 1)
 
@@ -54,19 +99,25 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_ID STREQUAL
 target_compile_options(blocksci PRIVATE -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-old-style-cast -Wno-documentation-unknown-command -Wno-documentation -Wno-shadow -Wno-covered-switch-default -Wno-missing-prototypes -Wno-weak-vtables -Wno-unused-macros -Wno-padded)
 endif()
 
-target_link_libraries( blocksci PUBLIC Threads::Threads )
-target_link_libraries( blocksci PRIVATE Boost::filesystem )
-target_link_libraries( blocksci PRIVATE Boost::iostreams )
-target_link_libraries( blocksci PRIVATE OpenSSL::Crypto )
-target_link_libraries( blocksci PRIVATE rocksdb rocksdb_headers)
-target_link_libraries( blocksci PRIVATE secp256k1)
-target_link_libraries( blocksci PRIVATE dset)
-target_link_libraries( blocksci PUBLIC blocksci_mpark_variant blocksci_ranges)
+target_link_libraries( blocksci 
+  PUBLIC 
+    Threads::Threads
+  PRIVATE
+    Boost::filesystem
+    Boost::iostreams
+    OpenSSL::Crypto
+    rocksdb
+    rocksdb_headers
+    secp256k1
+    dset
+)
 
 target_include_directories(blocksci PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/blocksci/external>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
   $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>
+  $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}/blocksci/external>
 )
 
 target_include_directories(blocksci PRIVATE
@@ -102,6 +153,7 @@ set(CHAIN_HEADERS
   ${BLOCKSCI_HEADER_PREFIX}/chain/inout_pointer.hpp
   ${BLOCKSCI_HEADER_PREFIX}/chain/input.hpp
   ${BLOCKSCI_HEADER_PREFIX}/chain/output.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/chain/range_util.hpp
   ${BLOCKSCI_HEADER_PREFIX}/chain/transaction_range.hpp
   ${BLOCKSCI_HEADER_PREFIX}/chain/transaction_summary.hpp
   ${BLOCKSCI_HEADER_PREFIX}/chain/transaction.hpp
@@ -175,16 +227,6 @@ set(CORE_HEADERS
   ${BLOCKSCI_HEADER_PREFIX}/core/script_data.hpp
   ${BLOCKSCI_HEADER_PREFIX}/core/script_info.hpp
 )
-
-target_sources(blocksci PUBLIC $<BUILD_INTERFACE:${BLOCKSCI_HEADERS}>)
-target_sources(blocksci PUBLIC $<BUILD_INTERFACE:${ADDRESS_HEADERS}>)
-target_sources(blocksci PUBLIC $<BUILD_INTERFACE:${CHAIN_HEADERS}>)
-target_sources(blocksci PUBLIC $<BUILD_INTERFACE:${SCRIPT_HEADERS}>)
-target_sources(blocksci PUBLIC $<BUILD_INTERFACE:${HEURISTICS_HEADERS}>)
-target_sources(blocksci PUBLIC $<BUILD_INTERFACE:${CLUSTER_HEADERS}>)
-target_sources(blocksci PUBLIC $<BUILD_INTERFACE:${INDEX_HEADERS}>)
-target_sources(blocksci PUBLIC $<BUILD_INTERFACE:${UTIL_HEADERS}>)
-target_sources(blocksci PUBLIC $<BUILD_INTERFACE:${CORE_HEADERS}>)
 
 set(BLOCKSCI_SOURCES
   ${BLOCKSCI_SOURCE_PREFIX}/exception.cpp
@@ -274,29 +316,35 @@ set(CLUSTER_SOURCES
   ${BLOCKSCI_SOURCE_PREFIX}/cluster/cluster_access.cpp
 )
 
-target_sources(blocksci PRIVATE ${BLOCKSCI_SOURCES})
-target_sources(blocksci PRIVATE ${ADDRESS_SOURCES})
-target_sources(blocksci PRIVATE ${SCRIPT_SOURCES})
-target_sources(blocksci PRIVATE ${CHAIN_SOURCES})
-target_sources(blocksci PRIVATE ${HEURISTICS_SOURCES})
-target_sources(blocksci PRIVATE ${INDEX_SOURCES})
-target_sources(blocksci PRIVATE ${UTIL_SOURCES})
-target_sources(blocksci PRIVATE ${CLUSTER_SOURCES})
-target_sources(blocksci PRIVATE ${INDEX_PRIVATE_HEADERS})
-target_sources(blocksci PRIVATE ${SCRIPT_PRIVATE_HEADERS})
-target_sources(blocksci PRIVATE ${CORE_SOURCES})
+target_sources(blocksci 
+  PUBLIC 
+    $<BUILD_INTERFACE:${BLOCKSCI_HEADERS}>
+    $<BUILD_INTERFACE:${ADDRESS_HEADERS}>
+    $<BUILD_INTERFACE:${CHAIN_HEADERS}>
+    $<BUILD_INTERFACE:${SCRIPT_HEADERS}>
+    $<BUILD_INTERFACE:${HEURISTICS_HEADERS}>
+    $<BUILD_INTERFACE:${CLUSTER_HEADERS}>
+    $<BUILD_INTERFACE:${INDEX_HEADERS}>
+    $<BUILD_INTERFACE:${UTIL_HEADERS}>
+    $<BUILD_INTERFACE:${CORE_HEADERS}>
+  PRIVATE
+    ${BLOCKSCI_SOURCES}
+    ${ADDRESS_SOURCES}
+    ${SCRIPT_SOURCES}
+    ${CHAIN_SOURCES}
+    ${HEURISTICS_SOURCES}
+    ${INDEX_SOURCES}
+    ${UTIL_SOURCES}
+    ${CLUSTER_SOURCES}
+    ${INDEX_PRIVATE_HEADERS}
+    ${SCRIPT_PRIVATE_HEADERS}
+    ${CORE_SOURCES}
+)
 
 include(GenerateExportHeader)
 generate_export_header(blocksci)
 
 set_property(TARGET blocksci PROPERTY VERSION ${Upstream_VERSION})
-
-if( supported )
-    message(STATUS "IPO / LTO enabled")
-    set_property(TARGET blocksci PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
-else()
-    message(STATUS "IPO / LTO not supported: <${error}>")
-endif()
 
 source_group(blocksci\\core FILES ${CORE_HEADERS} ${CORE_SOURCES})
 source_group(blocksci\\chain FILES ${CHAIN_HEADERS} ${CHAIN_SOURCES})
@@ -310,18 +358,16 @@ source_group(blocksci FILES ${BLOCKSCI_HEADERS} ${BLOCKSCI_SOURCES})
 
 include(CMakePackageConfigHelpers)
 
-INSTALL(TARGETS blocksci EXPORT blocksci-targets LIBRARY DESTINATION ${LIB_INSTALL_DIR} ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
-
-export(EXPORT blocksci-targets
-  FILE "${CMAKE_CURRENT_BINARY_DIR}/blocksci-targets.cmake"
-)
-
 set(ConfigPackageLocation "${LIB_INSTALL_DIR}/cmake/blocksci")
 
 configure_package_config_file(blocksci-config.cmake
   ${CMAKE_CURRENT_BINARY_DIR}/blocksci-config.cmake
   INSTALL_DESTINATION "${ConfigPackageLocation}"
   PATH_VARS INCLUDE_INSTALL_DIR SYSCONFIG_INSTALL_DIR)
+
+INSTALL(TARGETS blocksci EXPORT blocksci-targets LIBRARY DESTINATION ${LIB_INSTALL_DIR} ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
+
+export(EXPORT blocksci-targets FILE "${CMAKE_CURRENT_BINARY_DIR}/blocksci-targets.cmake")
 
 install (EXPORT blocksci-targets FILE blocksci-targets.cmake DESTINATION ${ConfigPackageLocation} )
 

@@ -1,24 +1,24 @@
 [submodule "libs/pybind11"]
-	path = libs/pybind11
+	path = external/pybind11
 	url = https://github.com/pybind/pybind11/
 [submodule "libs/bitcoin-api-cpp"]
-	path = libs/bitcoin-api-cpp
+	path = external/bitcoin-api-cpp
 	url = https://github.com/hkalodner/bitcoin-api-cpp.git
 [submodule "libs/dset"]
-	path = libs/dset
+	path = external/dset
 	url = https://github.com/wjakob/dset.git
 [submodule "libs/variant"]
-	path = libs/variant
+	path = external/variant
 	url = https://github.com/mpark/variant.git
 [submodule "libs/range-v3"]
-	path = libs/range-v3
+	path = external/range-v3
 	url = https://github.com/ericniebler/range-v3.git
 [submodule "Notebooks/blocksci/Blockchain-Known-Pools"]
 	path = Notebooks/blocksci/Blockchain-Known-Pools
 	url = https://github.com/blockchain/Blockchain-Known-Pools
 [submodule "libs/clipp"]
-	path = libs/clipp
+	path = external/clipp
 	url = https://github.com/muellan/clipp
 [submodule "libs/rocksdb"]
-	path = libs/rocksdb
+	path = external/rocksdb
 	url = https://github.com/facebook/rocksdb
