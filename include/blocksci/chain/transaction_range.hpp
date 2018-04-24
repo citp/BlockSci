@@ -71,7 +71,7 @@ namespace blocksci {
         
     public:
         TransactionRange() = default;
-        TransactionRange(DataAccess &access_, uint32_t begin, uint32_t end) : access(&access_), currentTxPos(reinterpret_cast<const char *>(access->chain.getTx(begin))), currentTxIndex(begin), endTxIndex(end), blockNum(access->chain.getBlockHeight(begin)) {
+        TransactionRange(DataAccess &access_, uint32_t begin, uint32_t end) : access(&access_), currentTxPos(reinterpret_cast<const char *>(access->getChain().getTx(begin))), currentTxIndex(begin), endTxIndex(end), blockNum(access->getChain().getBlockHeight(begin)) {
             updateNextBlock();
         }
     };
