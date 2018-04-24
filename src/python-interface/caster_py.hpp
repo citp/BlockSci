@@ -17,7 +17,15 @@
 #include <mpark/variant.hpp>
 
 namespace pybind11 { namespace detail {
-    
+    // Specifies the function used to visit the variant -- `apply_visitor` instead of `visit`
+    template <>
+    struct visit_helper<mpark::variant> {
+        template <typename... Args>
+        static auto call(Args &&...args) -> decltype(mpark::visit(args...)) {
+            return mpark::visit(args...);
+        }
+    };
+
     template <> struct type_caster<blocksci::AnyScript> {
     private:
         using value_conv = make_caster<blocksci::ScriptVariant>;
@@ -44,15 +52,6 @@ namespace pybind11 { namespace detail {
     
     template <typename... Ts>
     struct type_caster<mpark::variant<Ts...>> : variant_caster<mpark::variant<Ts...>> {};
-    
-    // Specifies the function used to visit the variant -- `apply_visitor` instead of `visit`
-    template <>
-    struct visit_helper<mpark::variant> {
-        template <typename... Args>
-        static auto call(Args &&...args) -> decltype(mpark::visit(args...)) {
-            return mpark::visit(args...);
-        }
-    };
 }}
 
 #endif /* caster_py_hpp */

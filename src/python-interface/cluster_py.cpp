@@ -14,6 +14,7 @@
 
 #include <blocksci/cluster/cluster.hpp>
 #include <blocksci/cluster/cluster_manager.hpp>
+#include <blocksci/heuristics/change_address.hpp>
 
 #include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/block.hpp>

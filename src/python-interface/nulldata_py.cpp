@@ -7,6 +7,7 @@
 //
 
 #include "nulldata_py.hpp"
+#include "address_py.hpp"
 #include "caster_py.hpp"
 #include "ranges_py.hpp"
 #include "range_apply_py.hpp"
@@ -18,11 +19,18 @@ namespace py = pybind11;
 template <typename T>
 auto addNulldataRange(py::module &m, const std::string &name) {
     auto cl = addRangeClass<T>(m, name);
+    addAddressMethods<ScriptBase>(cl, [](auto func) {
+        return applyMethodsToRange<T>(func);
+    }, [](std::string docstring) {
+        std::stringstream ss;
+        ss << "For each op_return: " << docstring;
+        return strdup(ss.str().c_str());
+    });
     addOpReturnMethods(cl, [](auto func) {
         return applyMethodsToRange<T>(func);
     }, [](std::string docstring) {
         std::stringstream ss;
-        ss << "For each multisig: " << docstring;
+        ss << "For each op_return: " << docstring;
         return strdup(ss.str().c_str());
     });
     return cl;
@@ -31,11 +39,18 @@ auto addNulldataRange(py::module &m, const std::string &name) {
 template <typename T>
 auto addOptionalNulldataRange(py::module &m, const std::string &name) {
     auto cl = addOptionalRangeClass<T>(m, name);
+    addAddressMethods<ScriptBase>(cl, [](auto func) {
+        return applyMethodsToRange<T>(func);
+    }, [](std::string docstring) {
+        std::stringstream ss;
+        ss << "For each op_return: " << docstring;
+        return strdup(ss.str().c_str());
+    });
     addOpReturnMethods(cl, [](auto func) {
         return applyMethodsToRange<T>(func);
     }, [](std::string docstring) {
         std::stringstream ss;
-        ss << "For each multisig: " << docstring;
+        ss << "For each op_return: " << docstring;
         return strdup(ss.str().c_str());
     });
     return cl;

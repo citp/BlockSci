@@ -17,6 +17,7 @@
 #include "address_py.hpp"
 #include "address_range_py.hpp"
 #include "pubkey_py.hpp"
+#include "pubkey_range_py.hpp"
 #include "multisig_py.hpp"
 #include "scripthash_py.hpp"
 #include "nulldata_py.hpp"
@@ -44,6 +45,10 @@ PYBIND11_MODULE(blocksci_interface, m) {
     init_heuristics(m);
     init_cluster(m);
     init_pubkey(m, addressCl);
+    init_pubkey_range(m);
+    init_pubkeyhash_range(m);
+    init_witness_pubkeyhash_range(m);
+    init_multisig_pubkey_range(m);
     init_multisig(m, addressCl);
     init_scripthash(m, addressCl);
     init_nulldata(m, addressCl);

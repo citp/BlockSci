@@ -8,6 +8,7 @@
 
 #include <blocksci/chain/blockchain.hpp>
 #include <blocksci/cluster/cluster_manager.hpp>
+#include <blocksci/heuristics/change_address.hpp>
 
 #include <clipp.h>
 

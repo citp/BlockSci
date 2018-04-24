@@ -17,6 +17,9 @@
 
 #include <range/v3/utility/optional.hpp>
 
+#include <string>
+#include <sstream>
+
 namespace blocksci {
     template <>
     class BLOCKSCI_EXPORT ScriptAddress<AddressType::NONSTANDARD> : public ScriptBase {
