@@ -49,14 +49,14 @@ namespace blocksci {
                 --blockNum;
                 updateNextBlock();
             }
-            currentTxPos = reinterpret_cast<const char *>(access->chain.getTx(currentTxIndex));
+            currentTxPos = reinterpret_cast<const char *>(access->getChain().getTx(currentTxIndex));
         }
         
         void advance(int amount) {
             currentTxIndex += static_cast<uint32_t>(amount);
-            blockNum = access->chain.getBlockHeight(currentTxIndex);
+            blockNum = access->getChain().getBlockHeight(currentTxIndex);
             updateNextBlock();
-            currentTxPos = reinterpret_cast<const char *>(access->chain.getTx(currentTxIndex));
+            currentTxPos = reinterpret_cast<const char *>(access->getChain().getTx(currentTxIndex));
         }
         
         size_t distance_to(const TransactionRange &other) const {
@@ -64,9 +64,9 @@ namespace blocksci {
         }
         
         void updateNextBlock() {
-            auto block = access->chain.getBlock(blockNum);
+            auto block = access->getChain().getBlock(blockNum);
             prevBlockLast = block->firstTxIndex - 1;
-            nextBlockFirst = blockNum < access->chain.blockCount() - BlockHeight{1} ? block->firstTxIndex + static_cast<uint32_t>(block->numTxes) : std::numeric_limits<decltype(nextBlockFirst)>::max();
+            nextBlockFirst = blockNum < access->getChain().blockCount() - BlockHeight{1} ? block->firstTxIndex + static_cast<uint32_t>(block->numTxes) : std::numeric_limits<decltype(nextBlockFirst)>::max();
         }
         
     public:
