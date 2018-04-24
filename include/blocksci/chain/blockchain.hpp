@@ -110,6 +110,36 @@ namespace blocksci {
         DataAccess access;
         
     public:
+        
+        class iterator {
+        public:
+            using self_type = iterator;
+            using value_type = Block;
+            using pointer = Block;
+            using reference = Block;
+            using difference_type = BlockHeight;
+            using iterator_category = std::random_access_iterator_tag;
+
+            iterator() = default;
+            iterator(BlockHeight height_, DataAccess *access_) : height(height_), access(access_) { }
+            self_type &operator+=(difference_type i) { height += i; return *this; }
+            self_type &operator-=(difference_type i) { height -= i; return *this; }
+            self_type &operator++() { ++height; return *this; }
+            self_type &operator--() { --height; return *this; }
+            self_type operator++(int) { self_type tmp = *this; ++height; return tmp; }
+            self_type operator--(int) { self_type tmp = *this; --height; return tmp; }
+            self_type operator+(difference_type i) { self_type tmp = *this; tmp.height += i; return tmp; }
+            self_type operator-(difference_type i) { self_type tmp = *this; tmp.height -= i; return tmp; }
+
+            value_type operator*() { return Block(height, *access); }
+            bool operator==(const self_type& rhs) { return height == rhs.height; }
+            bool operator!=(const self_type& rhs) { return height != rhs.height; }
+            BlockHeight operator-(const self_type& it){return height - it.height;}
+        private:
+            BlockHeight height;
+            DataAccess *access;
+        };
+        
         Blockchain() = default;
         explicit Blockchain(const DataConfiguration &config) : access(config) {
             lastBlockHeight = access.getChain().blockCount();
@@ -128,11 +158,11 @@ namespace blocksci {
         }
 
         auto begin() {
-            return blocks().begin();
+            return iterator(0, &getAccess());
         }
 
         auto end() {
-            return blocks().end();
+            return iterator(lastBlockHeight, &getAccess());
         }
 
         auto operator[](BlockHeight height) {
