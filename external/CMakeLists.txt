@@ -52,8 +52,4 @@ target_include_directories(rocksdb_headers SYSTEM INTERFACE ${CMAKE_CURRENT_SOUR
 
 set(CMAKE_CXX_FLAGS "${saved_flags}")
 
-add_subdirectory(pybind11)
-
-set_property(GLOBAL PROPERTY pybind11_package_location "${CMAKE_CURRENT_SOURCE_DIR}/pybind11")
-
 add_subdirectory(bitcoin-api-cpp EXCLUDE_FROM_ALL)

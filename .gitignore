@@ -1,8 +1,12 @@
 release
 xcode
 debug
+build
 *.DS_Store
-Notebooks/blocksci/pybind11
+Notebooks/blocksci
 *.so
+*.dylib
 *.pyc
-src/blocksci/include/blocksci/external
+include/blocksci/external
+python/blocksci/pybind11
+*.egg-info

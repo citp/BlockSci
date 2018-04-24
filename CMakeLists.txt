@@ -5,15 +5,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
 set(BlockSci_VERSION 0.5.0)
 
+option(BLOCKSCI_PYTHON_BUILD "Install pybind11 header files?" OFF)
+
 add_subdirectory(external)
 
-add_subdirectory(src/blocksci)
-add_subdirectory(src/parser)
-add_subdirectory(src/mempool_recorder)
-add_subdirectory(src/python-interface)
-add_subdirectory(src/clusterer)
-add_subdirectory(src/benchmark)
-add_subdirectory(src/example)
-
-include( CMakePackageConfigHelpers )
-set(CONFIG_PACKAGE_INSTALL_DIR lib/cmake/blocksci)
+add_subdirectory(src)
+add_subdirectory(tools)
+add_subdirectory(benchmark)
+add_subdirectory(example)

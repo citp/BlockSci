@@ -1,5 +1,5 @@
 [submodule "libs/pybind11"]
-	path = external/pybind11
+	path = python/blocksci/pybind11
 	url = https://github.com/pybind/pybind11/
 [submodule "libs/bitcoin-api-cpp"]
 	path = external/bitcoin-api-cpp
@@ -14,7 +14,7 @@
 	path = external/range-v3
 	url = https://github.com/ericniebler/range-v3.git
 [submodule "Notebooks/blocksci/Blockchain-Known-Pools"]
-	path = Notebooks/blocksci/Blockchain-Known-Pools
+	path = python/blocksci/Blockchain-Known-Pools
 	url = https://github.com/blockchain/Blockchain-Known-Pools
 [submodule "libs/clipp"]
 	path = external/clipp
