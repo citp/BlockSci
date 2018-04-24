@@ -11,7 +11,6 @@
 #include <blocksci/util/data_access.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/algorithms.hpp>
-#include <blocksci/scripts/script_variant.hpp>
 
 namespace blocksci {
     EquivAddress::EquivAddress(uint32_t scriptNum, EquivAddressType::Enum type, bool scriptEquivalent_, DataAccess &access_) : scriptEquivalent(scriptEquivalent_), access(access_) {
@@ -43,7 +42,7 @@ namespace blocksci {
         ss << "EquivAddress(";
         size_t i = 0;
         for (auto &address : addresses) {
-            ss << address.getScript().toString();
+            ss << address.toString();
             if (i < addresses.size() - 1) {
                 ss << ", ";
             }

@@ -27,7 +27,7 @@ void init_blockchain(py::module &m) {
     py::class_<DataConfiguration> (m, "DataConfiguration", "This class holds the configuration data about a blockchain instance")
     .def(py::pickle(
         [](const DataConfiguration &config) {
-            return py::make_tuple(config.dataDirectory.native(), config.errorOnReorg, config.blocksIgnored);
+            return py::make_tuple(config.dataDirectory, config.errorOnReorg, config.blocksIgnored);
         },
         [](py::tuple t) {
             if (t.size() != 3) {

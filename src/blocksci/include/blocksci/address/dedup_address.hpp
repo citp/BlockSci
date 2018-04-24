@@ -13,11 +13,8 @@
 #include <blocksci/core/dedup_address_info.hpp>
 #include <blocksci/chain/chain_fwd.hpp>
 
-#include <range/v3/utility/optional.hpp>
-
 #include <functional>
 #include <sstream>
-#include <vector>
 
 namespace blocksci {
     class DataAccess;

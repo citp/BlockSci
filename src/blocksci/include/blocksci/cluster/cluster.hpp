@@ -14,10 +14,11 @@
 #include "cluster_access.hpp"
 
 #include <blocksci/address/address.hpp>
-#include <blocksci/address/dedup_address.hpp>
-#include <blocksci/chain/output.hpp>
-#include <blocksci/chain/algorithms.hpp>
+#include <blocksci/chain/inout_pointer.hpp>
+#include <blocksci/chain/range_util.hpp>
+#include <blocksci/util/data_access.hpp>
 
+#include <range/v3/view/filter.hpp>
 #include <range/v3/view/join.hpp>
 #include <range/v3/distance.hpp>
 
@@ -109,9 +110,7 @@ namespace blocksci {
             return getPossibleAddresses() | ranges::view::transform([](auto && address) { return address.getOutputPointers(); }) | ranges::view::join;
         }
         
-        auto getOutputs() const {
-            return outputs(getOutputPointers(), clusterAccess.access);
-        }
+        
         
         int64_t calculateBalance(BlockHeight height) const {
             auto &access_ = clusterAccess.access;
@@ -124,7 +123,8 @@ namespace blocksci {
             });
             return ranges::accumulate(balances, int64_t{0});
         }
-        
+
+        ranges::any_view<Output> getOutputs() const;
         std::vector<Input> getInputs() const;
         std::vector<Transaction> getTransactions() const;
         std::vector<Transaction> getOutputTransactions() const;

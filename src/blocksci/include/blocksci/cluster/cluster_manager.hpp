@@ -13,14 +13,15 @@
 #include "cluster.hpp"
 
 #include <blocksci/blocksci_export.h>
-#include <blocksci/core/address_info.hpp>
-#include <blocksci/heuristics/change_address.hpp>
 
 #include <range/v3/view/transform.hpp>
 #include <range/v3/view/iota.hpp>
 
 namespace blocksci {
-    
+    namespace heuristics {
+        struct ChangeHeuristic;
+    }
+
     class BLOCKSCI_EXPORT ClusterManager {
         ClusterAccess access;
         
@@ -38,7 +39,7 @@ namespace blocksci {
             | ranges::view::transform([&](uint32_t clusterNum) { return Cluster(clusterNum, access); });
         }
         
-        auto taggedClusters(const std::unordered_map<blocksci::Address, std::string> &tags) {
+        auto taggedClusters(const std::unordered_map<Address, std::string> &tags) {
             return getClusters() | ranges::view::transform([tags](Cluster && cluster) -> ranges::optional<TaggedCluster> {
                 return cluster.getTagged(tags);
             }) | flatMapOptionals();

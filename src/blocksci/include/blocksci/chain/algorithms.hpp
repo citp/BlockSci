@@ -10,6 +10,7 @@
 
 #include "chain_fwd.hpp"
 #include "transaction.hpp"
+#include "range_util.hpp"
 
 #include <blocksci/blocksci_export.h>
 #include <blocksci/core/address_info.hpp>
@@ -59,11 +60,6 @@ namespace blocksci {
     template<typename T>
     struct fail_helper : std::false_type
     { };
-    
-    inline auto flatMapOptionals() {
-        return ranges::view::filter([](const auto &optional) { return static_cast<bool>(optional); })
-    | ranges::view::transform([](const auto &optional) { return *optional; });
-    }
     
     template <typename B, CONCEPT_REQUIRES_(ranges::Range<B>()), std::enable_if_t<isTxRange<B>, int> = 0>
     inline auto BLOCKSCI_EXPORT txes(B && b) {

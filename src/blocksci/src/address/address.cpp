@@ -10,15 +10,10 @@
 
 #include <blocksci/address/address.hpp>
 #include <blocksci/address/equiv_address.hpp>
-#include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/algorithms.hpp>
-#include <blocksci/scripts/script_variant.hpp>
-
 #include <scripts/bitcoin_base58.hpp>
 #include <scripts/bitcoin_segwit_addr.hpp>
-
-#include <unordered_set>
-#include <iostream>
+#include <blocksci/scripts/script_variant.hpp>
 
 namespace blocksci {
     

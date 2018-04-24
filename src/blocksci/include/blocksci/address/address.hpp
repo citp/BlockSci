@@ -17,7 +17,6 @@
 #include <blocksci/chain/chain_fwd.hpp>
 #include <blocksci/scripts/scripts_fwd.hpp>
 
-#include <range/v3/utility/optional.hpp>
 #include <range/v3/view/any_view.hpp>
 
 #include <functional>

@@ -11,12 +11,12 @@
 #include <boost/filesystem/path.hpp>
 
 namespace blocksci {
-	ClusterAccess::ClusterAccess(const std::string &baseDirectory, blocksci::DataAccess &access_) :
+	ClusterAccess::ClusterAccess(const std::string &baseDirectory, DataAccess &access_) :
     clusterOffsetFile((boost::filesystem::path{baseDirectory}/"clusterOffsets").native()),
     clusterScriptsFile((boost::filesystem::path{baseDirectory}/"clusterAddresses").native()),
-    scriptClusterIndexFiles(blocksci::apply(blocksci::DedupAddressType::all(), [&] (auto tag) {
+    scriptClusterIndexFiles(blocksci::apply(DedupAddressType::all(), [&] (auto tag) {
         std::stringstream ss;
-        ss << blocksci::dedupAddressName(tag) << "_cluster_index";
+        ss << dedupAddressName(tag) << "_cluster_index";
         return (boost::filesystem::path{baseDirectory}/ss.str()).native();
     })),
     access(access_)  {}

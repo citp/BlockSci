@@ -8,7 +8,7 @@
 
 #include <blocksci/chain/inout_pointer.hpp>
 #include <blocksci/chain/transaction.hpp>
-#include <blocksci/chain/algorithms.hpp>
+#include <blocksci/chain/range_util.hpp>
 
 #include <range/v3/action/sort.hpp>
 #include <range/v3/action/unique.hpp>

@@ -10,10 +10,11 @@
 
 #include <blocksci/blocksci_export.h>
 #include <blocksci/address/dedup_address.hpp>
-#include <blocksci/address/address.hpp>
 #include <blocksci/core/address_info.hpp>
+#include <blocksci/core/raw_address.hpp>
 #include <blocksci/core/file_mapper.hpp>
-#include <blocksci/util/data_access.hpp>
+
+#include <range/v3/iterator_range.hpp>
 
 namespace blocksci {
     template<DedupAddressType::Enum type>
@@ -53,7 +54,7 @@ namespace blocksci {
         
         ClusterAccess(const std::string &baseDirectory, blocksci::DataAccess &access_);
         
-        uint32_t getClusterNum(const Address &address) const {
+        uint32_t getClusterNum(const RawAddress &address) const {
             static auto table = blocksci::make_dynamic_table<DedupAddressType, ClusterNumFunctor>();
             auto index = static_cast<size_t>(dedupType(address.type));
             return table.at(index)(this, address.scriptNum);

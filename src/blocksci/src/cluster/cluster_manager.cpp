@@ -12,6 +12,7 @@
 #include <blocksci/address/dedup_address.hpp>
 #include <blocksci/chain/blockchain.hpp>
 #include <blocksci/core/address_info.hpp>
+#include <blocksci/heuristics/change_address.hpp>
 #include <blocksci/heuristics/tx_identification.hpp>
 #include <blocksci/util/progress_bar.hpp>
 
@@ -73,10 +74,10 @@ namespace {
 }
 
 namespace blocksci {
-    ClusterManager::ClusterManager(const std::string &baseDirectory, blocksci::DataAccess &access_) : access(baseDirectory, access_) {}
+    ClusterManager::ClusterManager(const std::string &baseDirectory, DataAccess &access_) : access(baseDirectory, access_) {}
     
-    Cluster ClusterManager::getCluster(const blocksci::Address &address) const {
-        return Cluster(access.getClusterNum(address), access);
+    Cluster ClusterManager::getCluster(const Address &address) const {
+        return Cluster(access.getClusterNum(RawAddress{address.scriptNum, address.type}), access);
     }
     
     std::vector<std::pair<Address, Address>> processTransaction(const Transaction &tx, const heuristics::ChangeHeuristic &changeHeuristic) {

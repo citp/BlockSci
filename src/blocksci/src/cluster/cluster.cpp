@@ -11,6 +11,7 @@
 
 #include <blocksci/address/dedup_address.hpp>
 #include <blocksci/address/equiv_address.hpp>
+#include <blocksci/chain/output.hpp>
 #include <blocksci/chain/inout_pointer.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/algorithms.hpp>
@@ -19,7 +20,7 @@
 
 namespace blocksci {
     
-    ranges::optional<TaggedCluster> Cluster::getTagged(const std::unordered_map<blocksci::Address, std::string> &tags) const {
+    ranges::optional<TaggedCluster> Cluster::getTagged(const std::unordered_map<Address, std::string> &tags) const {
         bool isEmpty = [&]() {
             auto addresses = taggedAddresses(tags);
             RANGES_FOR(auto tagged, addresses) {
@@ -34,18 +35,22 @@ namespace blocksci {
         }
     }
     
-    uint32_t Cluster::countOfType(blocksci::AddressType::Enum type) const {
+    uint32_t Cluster::countOfType(AddressType::Enum type) const {
         auto dedupSearchType = dedupType(type);
         uint32_t count = 0;
         for (auto &address : clusterAccess.getClusterScripts(clusterNum)) {
             if (address.type == dedupSearchType) {
-                auto searchAddress = blocksci::Address{address.scriptNum, type, clusterAccess.access};
+                auto searchAddress = Address{address.scriptNum, type, clusterAccess.access};
                 if (clusterAccess.access.addressIndex.checkIfTopLevel(searchAddress)) {
                     ++count;
                 }
             }
         }
         return count;
+    }
+
+    ranges::any_view<Output> Cluster::getOutputs() const {
+        return blocksci::outputs(getOutputPointers(), clusterAccess.access);
     }
     
     std::vector<blocksci::Input> Cluster::getInputs() const {
