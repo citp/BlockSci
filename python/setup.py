@@ -66,7 +66,7 @@ setup(
     author_email='blocksci@cs.princeton.edu',
     description='BlockSci: A high-performance tool for blockchain science and exploration',
     long_description='',
-    ext_modules=[CMakeExtension('blocksci')],
+    ext_modules=[CMakeExtension('blocksci/blocksci')],
     packages = find_packages(),
     include_package_data = True,
     cmdclass=dict(build_ext=CMakeBuild),
