@@ -151,12 +151,14 @@ Ubuntu 16.04
 
 	git clone https://github.com/citp/BlockSci.git
 	cd BlockSci
-	pip3 install -r requirements.txt
 	mkdir release
 	cd release
 	CC=gcc-7 CXX=g++-7 cmake -DCMAKE_BUILD_TYPE=Release ..
 	make
 	sudo make install
+
+	cd ../python
+	sudo -H pip3 install .
 	
 
 Mac OS 10.13
@@ -169,12 +171,14 @@ Mac OS 10.13
 
     git clone https://github.com/citp/BlockSci.git
     cd BlockSci
-    pip3 install -r requirements.txt
     mkdir release
     cd release
     cmake -DCMAKE_BUILD_TYPE=Release -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl ..
     make
     sudo make install
+
+    cd ../python
+	sudo -H pip3 install .
 
 
 Team & contact info
