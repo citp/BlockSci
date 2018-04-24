@@ -366,7 +366,10 @@ configure_package_config_file(blocksci-config.cmake
   INSTALL_DESTINATION "${ConfigPackageLocation}"
   PATH_VARS INCLUDE_INSTALL_DIR SYSCONFIG_INSTALL_DIR)
 
-INSTALL(TARGETS blocksci EXPORT blocksci-targets LIBRARY DESTINATION ${LIB_INSTALL_DIR} ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
+install(TARGETS blocksci EXPORT blocksci-targets
+    ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR})  # This is for Win
 
 export(EXPORT blocksci-targets FILE "${CMAKE_CURRENT_BINARY_DIR}/blocksci-targets.cmake")
 

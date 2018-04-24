@@ -5,7 +5,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
 set(BlockSci_VERSION 0.5.0)
 
-option(BLOCKSCI_PYTHON_BUILD "Install pybind11 header files?" OFF)
+include(GNUInstallDirs)
 
 add_subdirectory(external)
 
