@@ -9,8 +9,6 @@
 #ifndef address_index_hpp
 #define address_index_hpp
 
-#include "column_iterator.hpp"
-
 #include <blocksci/blocksci_export.h>
 #include <blocksci/address/address_fwd.hpp>
 #include <blocksci/chain/chain_fwd.hpp>
@@ -37,8 +35,6 @@ namespace blocksci {
         
         std::unordered_set<Address> getPossibleNestedEquivalentUp(const Address &address) const;
         std::unordered_set<Address> getPossibleNestedEquivalentDown(const Address &address) const;
-        
-        ColumnIterator getRawOutputPointerRange(const Address &address) const;
     public:
         
         AddressIndex(const std::string &path, bool readonly);

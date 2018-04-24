@@ -9,12 +9,11 @@
 #ifndef blocksci_index_hash_index_hpp
 #define blocksci_index_hash_index_hpp
 
-#include "column_iterator.hpp"
-
 #include <blocksci/blocksci_export.h>
 #include <blocksci/core/address_info.hpp>
 #include <blocksci/util/memory_view.hpp>
 
+#include <range/v3/view/any_view.hpp>
 #include <range/v3/view/transform.hpp>
 
 #include <vector>
@@ -68,7 +67,7 @@ namespace blocksci {
         
         void rollback(const blocksci::State &state);
         
-        ColumnIterator getRawAddressRange(AddressType::Enum type);
+        ranges::any_view<std::pair<MemoryView, MemoryView>> getRawAddressRange(AddressType::Enum type);
         
         template<AddressType::Enum type>
         auto getAddressRange() {

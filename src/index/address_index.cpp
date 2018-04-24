@@ -11,6 +11,7 @@
 #include <blocksci/index/address_index.hpp>
 
 #include "address_index_priv.hpp"
+#include "column_iterator.hpp"
 
 #include <blocksci/address/address.hpp>
 #include <blocksci/address/dedup_address.hpp>
@@ -29,7 +30,10 @@ namespace blocksci {
     AddressIndex::~AddressIndex() = default;
     
     ranges::any_view<OutputPointer> AddressIndex::getOutputPointers(const Address &address) const {
-        return getRawOutputPointerRange(address) | ranges::view::transform([](std::pair<MemoryView, MemoryView> pair) -> OutputPointer {
+        auto prefixData = reinterpret_cast<const char *>(&address.scriptNum);
+        std::vector<char> prefix(prefixData, prefixData + sizeof(address.scriptNum));
+        auto rawOutputPointerRange = ColumnIterator(impl->db.get(), impl->getOutputColumn(address.type).get(), prefix);
+        return rawOutputPointerRange | ranges::view::transform([](std::pair<MemoryView, MemoryView> pair) -> OutputPointer {
             auto &key = pair.first;
             key.data += sizeof(uint32_t);
             OutputPointer outPoint;
@@ -121,12 +125,6 @@ namespace blocksci {
             return true;
         }
         return false;
-    }
-    
-    ColumnIterator AddressIndex::getRawOutputPointerRange(const Address &address) const {
-        auto prefixData = reinterpret_cast<const char *>(&address.scriptNum);
-        std::vector<char> prefix(prefixData, prefixData + sizeof(address.scriptNum));
-        return ColumnIterator(impl->db.get(), impl->getOutputColumn(address.type).get(), prefix);
     }
     
     std::vector<Address> AddressIndex::getIncludingMultisigs(const Address &searchAddress) const {

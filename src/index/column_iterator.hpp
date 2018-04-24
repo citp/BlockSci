@@ -9,8 +9,11 @@
 #define column_iterator_h
 
 #include <blocksci/blocksci_export.h>
+#include <blocksci/util/memory_view.hpp>
 
 #include <range/v3/view_facade.hpp>
+
+#include <rocksdb/db.h>
 
 #include <vector>
 
@@ -36,19 +39,36 @@ namespace blocksci {
             std::shared_ptr<rocksdb::Iterator> it;
             std::vector<char> prefixBytes;
         public:
-            cursor();
-            cursor(rocksdb::DB *db_, rocksdb::ColumnFamilyHandle *column_, std::vector<char> prefix);
-            cursor(const cursor &other);
-            cursor(cursor && other);
-            cursor &operator=(const cursor &other);
-            cursor &operator=(cursor && other);
-            ~cursor();
+            cursor() : it(nullptr) {}
+            cursor(rocksdb::DB *db_, rocksdb::ColumnFamilyHandle *column_, std::vector<char> prefix)  : db(db_), column(column_), it(std::shared_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), column)}), prefixBytes(std::move(prefix)) {
+                if (prefixBytes.size() > 0) {
+                    rocksdb::Slice key(prefixBytes.data(), prefixBytes.size());
+                    it->Seek(key);
+                } else {
+                    it->SeekToFirst();
+                }
+                
+            }
             
-            std::pair<MemoryView, MemoryView> read() const;
+            std::pair<MemoryView, MemoryView> read() const {
+                auto key = it->key();
+                auto value = it->value();
+                return {{key.data(), key.size()}, {value.data(), value.size()}};
+            }
             
-            bool equal(ranges::default_sentinel) const;
+            bool equal(ranges::default_sentinel) const {
+                rocksdb::Slice key(prefixBytes.data(), prefixBytes.size());
+                return !it->Valid() || !it->key().starts_with(key);
+            }
             
-            void next();
+            void next() {
+                if (it.use_count() > 1) {
+                    auto newIt = std::shared_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), column)};
+                    newIt->Seek(it->key());
+                    it = newIt;
+                }
+                it->Next();
+            }
         };
         
         cursor begin_cursor() const {
@@ -66,7 +86,5 @@ namespace blocksci {
         
     };
 }
-
-
 
 #endif /* column_iterator_h */

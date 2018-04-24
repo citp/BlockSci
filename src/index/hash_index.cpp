@@ -7,7 +7,9 @@
 //
 
 #include <blocksci/index/hash_index.hpp>
+
 #include "hash_index_priv.hpp"
+#include "column_iterator.hpp"
 
 #include <blocksci/core/bitcoin_uint256.hpp>
 #include <blocksci/address/address.hpp>
@@ -67,7 +69,7 @@ namespace blocksci {
         return keyCount;
     }
     
-    ColumnIterator HashIndex::getRawAddressRange(AddressType::Enum type) {
+    ranges::any_view<std::pair<MemoryView, MemoryView>> HashIndex::getRawAddressRange(AddressType::Enum type) {
         return ColumnIterator(impl->db.get(), impl->getColumn(type).get());
     }
     

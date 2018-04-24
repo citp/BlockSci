@@ -178,7 +178,6 @@ set(INDEX_HEADERS
   ${BLOCKSCI_HEADER_PREFIX}/index/address_output_range.hpp
   ${BLOCKSCI_HEADER_PREFIX}/index/hash_index.hpp
   ${BLOCKSCI_HEADER_PREFIX}/index/mempool_index.hpp
-  ${BLOCKSCI_HEADER_PREFIX}/index/column_iterator.hpp
 )
 
 set(SCRIPT_HEADERS
@@ -256,6 +255,7 @@ set(HEURISTICS_SOURCES
 set(INDEX_PRIVATE_HEADERS
   ${BLOCKSCI_SOURCE_PREFIX}/index/address_index_priv.hpp
   ${BLOCKSCI_SOURCE_PREFIX}/index/hash_index_priv.hpp
+  ${BLOCKSCI_SOURCE_PREFIX}/index/column_iterator.hpp
 )
 
 set(INDEX_SOURCES
@@ -264,7 +264,6 @@ set(INDEX_SOURCES
   ${BLOCKSCI_SOURCE_PREFIX}/index/address_output_range.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/index/hash_index.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/index/hash_index_priv.cpp
-  ${BLOCKSCI_SOURCE_PREFIX}/index/column_iterator.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/index/mempool_index.cpp
 )
 
