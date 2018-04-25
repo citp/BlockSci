@@ -26,6 +26,36 @@
 
 namespace py = pybind11;
 
+const char *clusterDocstring(std::string docstring) {
+    return strdup(docstring.c_str());
+}
+
+const char *clusterRangeDocstring(std::string docstring) {
+    std::stringstream ss;
+    ss << "For each cluster: " << docstring;
+    return strdup(ss.str().c_str());
+}
+
+const char *taggedAddressDocstring(std::string docstring) {
+    return strdup(docstring.c_str());
+}
+
+const char *taggedAddressRangeDocstring(std::string docstring) {
+    std::stringstream ss;
+    ss << "For each taggedAddress: " << docstring;
+    return strdup(ss.str().c_str());
+}
+
+const char *taggedClusterDocstring(std::string docstring) {
+    return strdup(docstring.c_str());
+}
+
+const char *taggedClusterRangeDocstring(std::string docstring) {
+    std::stringstream ss;
+    ss << "For each tagged cluster: " << docstring;
+    return strdup(ss.str().c_str());
+}
+
 int64_t totalOutWithoutSelfChurn(const blocksci::Block &block, blocksci::ClusterManager &manager) {
     int64_t total = 0;
     RANGES_FOR(auto tx, block) {
@@ -48,39 +78,21 @@ int64_t totalOutWithoutSelfChurn(const blocksci::Block &block, blocksci::Cluster
 template <typename T>
 auto addClusterRange(py::module &m, const std::string &name) {
     auto cl = addRangeClass<T>(m, name);
-    addClusterMethods(cl, [](auto func) {
-        return applyMethodsToRange<T>(func);
-    }, [](std::string docstring) {
-        std::stringstream ss;
-        ss << "For each cluster: " << docstring;
-        return strdup(ss.str().c_str());
-    });
+    applyMethodsToRange(cl, AddClusterMethods{clusterRangeDocstring});
     return cl;
 }
 
 template <typename T>
 auto addTaggedAddressRange(py::module &m, const std::string &name) {
     auto cl = addRangeClass<T>(m, name);
-    addTaggedAddressMethods(cl, [](auto func) {
-        return applyMethodsToRange<T>(func);
-    }, [](std::string docstring) {
-        std::stringstream ss;
-        ss << "For each tagged address: " << docstring;
-        return strdup(ss.str().c_str());
-    });
+    applyMethodsToRange(cl, AddTaggedAddressMethods{taggedAddressRangeDocstring});
     return cl;
 }
 
 template <typename T>
 auto addTaggedClusterRange(py::module &m, const std::string &name) {
     auto cl = addRangeClass<T>(m, name);
-    addTaggedClusterMethods(cl, [](auto func) {
-        return applyMethodsToRange<T>(func);
-    }, [](std::string docstring) {
-        std::stringstream ss;
-        ss << "For each tagged cluster: " << docstring;
-        return strdup(ss.str().c_str());
-    });
+    applyMethodsToRange(cl, AddTaggedClusterMethods{taggedClusterRangeDocstring});
     return cl;
 }
 
@@ -128,27 +140,15 @@ void init_cluster(pybind11::module &m) {
     .def("in_txes",&Cluster::getInputTransactions, "Returns a list of all transaction where this cluster was an input")
     .def("out_txes", &Cluster::getOutputTransactions, "Returns a list of all transaction where this cluster was an output")
     ;
-    
-    addClusterMethods(clusterCl, [](auto func) {
-        return applyMethodsToSelf<Cluster>(func);
-    }, [](auto && docstring) {
-        return std::forward<decltype(docstring)>(docstring);
-    });
+    applyMethodsToSelf(clusterCl, AddClusterMethods{clusterDocstring});
     
     py::class_<TaggedAddress> taggedAddressCl(s, "TaggedAddress");
-    addTaggedAddressMethods(taggedAddressCl, [](auto func) {
-        return applyMethodsToSelf<TaggedAddress>(func);
-    }, [](auto && docstring) {
-        return std::forward<decltype(docstring)>(docstring);
-    });
+
+    applyMethodsToSelf(taggedAddressCl, AddTaggedAddressMethods{taggedAddressDocstring});
     
     py::class_<TaggedCluster> taggedClusterCl(s, "TaggedCluster");
-    addTaggedClusterMethods(taggedClusterCl, [](auto func) {
-        return applyMethodsToSelf<TaggedCluster>(func);
-    }, [](auto && docstring) {
-        return std::forward<decltype(docstring)>(docstring);
-    });
-    
+
+    applyMethodsToSelf(taggedClusterCl, AddTaggedClusterMethods{taggedClusterDocstring});
 
     addClusterRange<ranges::any_view<Cluster, ranges::category::random_access>>(s, "ClusterRange");
     addClusterRange<ranges::any_view<Cluster>>(s, "AnyClusterRange");

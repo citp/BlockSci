@@ -17,6 +17,10 @@
 using namespace blocksci;
 namespace py = pybind11;
 
+const char *pubkeyDocstring(std::string docstring) {
+    return strdup(docstring.c_str());
+}
+
 void init_pubkey(py::module &m, py::class_<blocksci::ScriptBase> &addressCl) {
 	py::class_<script::Pubkey> pubkeyAddressCl(m, "PubkeyAddress", addressCl, "Extra data about pay to pubkey address");
     pubkeyAddressCl
@@ -24,11 +28,7 @@ void init_pubkey(py::module &m, py::class_<blocksci::ScriptBase> &addressCl) {
     .def("__str__", &script::Pubkey::toPrettyString)
     ;
 
-    addPubkeyBaseMethods<script::Pubkey>(pubkeyAddressCl, [](auto func) {
-        return applyMethodsToSelf<script::Pubkey>(func);
-    }, [](auto && docstring) {
-        return std::forward<decltype(docstring)>(docstring);
-    });
+    applyMethodsToSelf(pubkeyAddressCl, AddPubkeyBaseMethods<script::Pubkey>{pubkeyDocstring});
     
     py::class_<script::PubkeyHash> pubkeyHashAddressCl(m, "PubkeyHashAddress", addressCl, "Extra data about pay to pubkey address");
     pubkeyHashAddressCl
@@ -36,23 +36,15 @@ void init_pubkey(py::module &m, py::class_<blocksci::ScriptBase> &addressCl) {
     .def("__str__", &script::PubkeyHash::toPrettyString)
     ;
 
-    addPubkeyBaseMethods<script::PubkeyHash>(pubkeyHashAddressCl, [](auto func) {
-        return applyMethodsToSelf<script::PubkeyHash>(func);
-    }, [](auto && docstring) {
-        return std::forward<decltype(docstring)>(docstring);
-    });
-    
+    applyMethodsToSelf(pubkeyHashAddressCl, AddPubkeyBaseMethods<script::PubkeyHash>{pubkeyDocstring});
+
     py::class_<script::WitnessPubkeyHash> witnessPubkeyHashAddressCl(m, "WitnessPubkeyHashAddress", addressCl, "Extra data about pay to pubkey address");
     witnessPubkeyHashAddressCl
     .def("__repr__", &script::WitnessPubkeyHash::toString)
     .def("__str__", &script::WitnessPubkeyHash::toPrettyString)
     ;
 
-    addPubkeyBaseMethods<script::WitnessPubkeyHash>(witnessPubkeyHashAddressCl, [](auto func) {
-        return applyMethodsToSelf<script::WitnessPubkeyHash>(func);
-    }, [](auto && docstring) {
-        return std::forward<decltype(docstring)>(docstring);
-    });
+    applyMethodsToSelf(witnessPubkeyHashAddressCl, AddPubkeyBaseMethods<script::WitnessPubkeyHash>{pubkeyDocstring});
     
     py::class_<script::MultisigPubkey> multisigPubkeyCl(m, "MultisigPubkey", addressCl, "Extra data about a pubkey inside a multisig address");
     multisigPubkeyCl
@@ -60,9 +52,5 @@ void init_pubkey(py::module &m, py::class_<blocksci::ScriptBase> &addressCl) {
     .def("__str__", &script::MultisigPubkey::toPrettyString)
     ;
 
-    addPubkeyBaseMethods<script::MultisigPubkey>(multisigPubkeyCl, [](auto func) {
-        return applyMethodsToSelf<script::MultisigPubkey>(func);
-    }, [](auto && docstring) {
-        return std::forward<decltype(docstring)>(docstring);
-    });
+    applyMethodsToSelf(multisigPubkeyCl, AddPubkeyBaseMethods<script::MultisigPubkey>{pubkeyDocstring});
 }

@@ -18,29 +18,20 @@ namespace py = pybind11;
 
 using namespace blocksci;
 
-template <typename T>
-auto addBlockRange(py::module &m, const std::string &name) {
-    auto cl = addRangeClass<T>(m, name);
-    addBlockMethods(cl, [](auto func) {
-        return applyMethodsToRange<T>(func);
-    }, [](std::string docstring) {
-        std::stringstream ss;
-        ss << "For each block: " << docstring;
-        return strdup(ss.str().c_str());
-    });
-    return cl;
+const char *blockDocstring(std::string docstring) {
+    return strdup(docstring.c_str());
+}
+
+const char *blockRangeDocstring(std::string docstring) {
+    std::stringstream ss;
+    ss << "For each block: " << docstring;
+    return strdup(ss.str().c_str());
 }
 
 template <typename T>
-auto addOptionalBlockRange(py::module &m, const std::string &name) {
-    auto cl = addOptionalRangeClass<T>(m, name);
-    addBlockMethods(cl, [](auto func) {
-        return applyMethodsToRange<T>(func);
-    }, [](std::string docstring) {
-        std::stringstream ss;
-        ss << "For each block: " << docstring;
-        return strdup(ss.str().c_str());
-    });
+auto addBlockRange(py::module &m, const std::string &name) {
+    auto cl = addRangeClass<T>(m, name);
+    applyMethodsToRange(cl, AddBlockMethods{blockRangeDocstring});
     return cl;
 }
 
@@ -88,16 +79,10 @@ void init_block(py::module &m) {
     .def("net_full_type_value", py::overload_cast<const Block &>(netFullTypeValue), "Returns a set of the net change in the utxo pool after this block split up by full type")
     ;
 
-    addBlockMethods(blockCl, [](auto func) {
-        return [=](Block &block) {
-            return func(block);
-        };
-    }, [](auto && docstring) {
-        return std::forward<decltype(docstring)>(docstring);
-    });
+    applyMethodsToSelf(blockCl, AddBlockMethods{blockDocstring});
     
     addBlockRange<ranges::any_view<Block>>(m, "AnyBlockRange");
     addBlockRange<ranges::any_view<Block, ranges::category::random_access>>(m, "BlockRange");
-    addOptionalBlockRange<ranges::any_view<ranges::optional<Block>>>(m, "AnyOptionaBlockRange");
-    addOptionalBlockRange<ranges::any_view<ranges::optional<Block>, ranges::category::random_access>>(m, "OptionaBlockRange");
+    addBlockRange<ranges::any_view<ranges::optional<Block>>>(m, "AnyOptionaBlockRange");
+    addBlockRange<ranges::any_view<ranges::optional<Block>, ranges::category::random_access>>(m, "OptionaBlockRange");
 }

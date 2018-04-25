@@ -16,43 +16,29 @@
 using namespace blocksci;
 namespace py = pybind11;
 
-template <typename T>
-auto addMultisigRange(py::module &m, const std::string &name) {
-    auto cl = addRangeClass<T>(m, name);
-    addAddressMethods<ScriptBase>(cl, [](auto func) {
-        return applyMethodsToRange<T>(func);
-    }, [](std::string docstring) {
-        std::stringstream ss;
-        ss << "For each multisig: " << docstring;
-        return strdup(ss.str().c_str());
-    });
-    addMultisigMethods(cl, [](auto func) {
-        return applyMethodsToRange<T>(func);
-    }, [](std::string docstring) {
-        std::stringstream ss;
-        ss << "For each multisig: " << docstring;
-        return strdup(ss.str().c_str());
-    });
-    return cl;
+pybind11::list pyMultisigAddresses(blocksci::script::Multisig &script) {
+    pybind11::list ret;
+    for (auto &address : script.pubkeyScripts()) {
+        ret.append(address);
+    }
+    return ret;
+}
+
+const char *multisigRangeDocstring(std::string docstring) {
+    std::stringstream ss;
+    ss << "For each address: " << docstring;
+    return strdup(ss.str().c_str());
+}
+
+const char *multisigDocstring(std::string docstring) {
+    return strdup(docstring.c_str());
 }
 
 template <typename T>
-auto addOptionalMultisigRange(py::module &m, const std::string &name) {
-    auto cl = addOptionalRangeClass<T>(m, name);
-    addAddressMethods<ScriptBase>(cl, [](auto func) {
-        return applyMethodsToRange<T>(func);
-    }, [](std::string docstring) {
-        std::stringstream ss;
-        ss << "For each multisig: " << docstring;
-        return strdup(ss.str().c_str());
-    });
-    addMultisigMethods(cl, [](auto func) {
-        return applyMethodsToRange<T>(func);
-    }, [](std::string docstring) {
-        std::stringstream ss;
-        ss << "For each multisig: " << docstring;
-        return strdup(ss.str().c_str());
-    });
+auto addMultisigRange(py::module &m, const std::string &name) {
+    auto cl = addRangeClass<T>(m, name);
+    applyMethodsToRange(cl, AddAddressMethods<ScriptBase>{multisigRangeDocstring});
+    applyMethodsToRange(cl, AddMultisigMethods{multisigRangeDocstring});
     return cl;
 }
 
@@ -63,14 +49,10 @@ void init_multisig(py::module &m, py::class_<blocksci::ScriptBase> &addressCl) {
     .def("__str__", &script::Multisig::toPrettyString)
     ;
 
-    addMultisigMethods(multisigCl, [](auto func) {
-        return applyMethodsToSelf<script::Multisig>(func);
-    }, [](auto && docstring) {
-        return std::forward<decltype(docstring)>(docstring);
-    });
+    applyMethodsToSelf(multisigCl, AddMultisigMethods{multisigDocstring});
 
     addMultisigRange<ranges::any_view<script::Multisig>>(m, "AnyMultisigAddressRange");
     addMultisigRange<ranges::any_view<script::Multisig, ranges::category::random_access>>(m, "MultisigAddressRange");
-    addOptionalMultisigRange<ranges::any_view<ranges::optional<script::Multisig>>>(m, "AnyOptionalMultisigAddressRange");
-    addOptionalMultisigRange<ranges::any_view<ranges::optional<script::Multisig>, ranges::category::random_access>>(m, "OptionalMultisigAddressRange");
+    addMultisigRange<ranges::any_view<ranges::optional<script::Multisig>>>(m, "AnyOptionalMultisigAddressRange");
+    addMultisigRange<ranges::any_view<ranges::optional<script::Multisig>, ranges::category::random_access>>(m, "OptionalMultisigAddressRange");
 }

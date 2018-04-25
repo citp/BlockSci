@@ -43,11 +43,11 @@ namespace blocksci {
             }
         }
         
-        uint8_t getRequired() const {
+        int getRequired() const {
             return getData()->m;
         }
         
-        uint8_t getTotal() const {
+        int getTotal() const {
             return getData()->n;
         }
         
@@ -62,7 +62,7 @@ namespace blocksci {
         
         std::vector<script::MultisigPubkey> pubkeyScripts() const {
             std::vector<script::MultisigPubkey> ret;
-            ret.reserve(getTotal());
+            ret.reserve(static_cast<size_t>(getTotal()));
             for (auto &address : getAddresses()) {
                 ret.emplace_back(address.scriptNum, getAccess());
             }

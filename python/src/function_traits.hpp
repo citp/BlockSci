@@ -10,10 +10,10 @@
 
 #include <tuple>
 
-template <typename T>
+template <typename T, bool = true>
 struct function_traits {
 private:
-	using member_func = function_traits<decltype(&T::operator())>;
+	using member_func = function_traits<decltype(&T::operator()), false>;
 public:
 	using result_type = typename member_func::result_type;
     using arg_tuple = typename member_func::arg_tuple;
@@ -21,7 +21,17 @@ public:
 };
 
 template <typename ClassType, typename ReturnType, typename... Args>
-struct function_traits<ReturnType(ClassType::*)(Args...) const> : public function_traits<ReturnType(Args...)> {};
+struct function_traits<ReturnType(ClassType::*)(Args...) const, false> : public function_traits<ReturnType(Args...)> {};
+
+template <typename ClassType, typename ReturnType, typename... Args>
+struct function_traits<ReturnType(ClassType::*)(Args...) const, true> : public function_traits<ReturnType(const ClassType&, Args...)> {};
+
+template <typename ClassType, typename ReturnType, typename... Args>
+struct function_traits<ReturnType(ClassType::*)(Args...), false> : public function_traits<ReturnType(Args...)> {};
+
+template <typename ClassType, typename ReturnType, typename... Args>
+struct function_traits<ReturnType(ClassType::*)(Args...), true> : public function_traits<ReturnType(ClassType&, Args...)> {};
+
 
 template <typename ReturnType, typename... Args>
 struct function_traits<ReturnType(*)(Args...)> : public function_traits<ReturnType(Args...)> {};

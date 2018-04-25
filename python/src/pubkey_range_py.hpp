@@ -15,43 +15,18 @@
 #include "ranges_py.hpp"
 #include "range_apply_py.hpp"
 
-template <typename T, typename T2>
-auto addPubkeyRange(pybind11::module &m, const std::string &name) {
-    auto cl = addRangeClass<T>(m, name);
-    addAddressMethods<blocksci::ScriptBase>(cl, [](auto func) {
-        return applyMethodsToRange<T>(func);
-    }, [](std::string docstring) {
-        std::stringstream ss;
-        ss << "For each pubkey: " << docstring;
-        return strdup(ss.str().c_str());
-    });
-    addPubkeyBaseMethods<T2>(cl, [](auto func) {
-        return applyMethodsToRange<T>(func);
-    }, [](std::string docstring) {
-        std::stringstream ss;
-        ss << "For each pubkey: " << docstring;
-        return strdup(ss.str().c_str());
-    });
-    return cl;
+inline const char *pubkeyBaseRangeDocstring(std::string docstring) {
+    std::stringstream ss;
+    ss << "For each pubkey: " << docstring;
+    return strdup(ss.str().c_str());
 }
 
 template <typename T, typename T2>
-auto addOptionalPubkeyRange(pybind11::module &m, const std::string &name) {
-    auto cl = addOptionalRangeClass<T>(m, name);
-    addAddressMethods<blocksci::ScriptBase>(cl, [](auto func) {
-        return applyMethodsToRange<T>(func);
-    }, [](std::string docstring) {
-        std::stringstream ss;
-        ss << "For each pubkey: " << docstring;
-        return strdup(ss.str().c_str());
-    });
-    addPubkeyBaseMethods<T2>(cl, [](auto func) {
-        return applyMethodsToRange<T>(func);
-    }, [](std::string docstring) {
-        std::stringstream ss;
-        ss << "For each pubkey: " << docstring;
-        return strdup(ss.str().c_str());
-    });
+auto addPubkeyRange(pybind11::module &m, const std::string &name) {
+    using namespace blocksci;
+    auto cl = addRangeClass<T>(m, name);
+    applyMethodsToRange(cl, AddAddressMethods<ScriptBase>{pubkeyBaseRangeDocstring});
+    applyMethodsToRange(cl, AddPubkeyBaseMethods<T2>{pubkeyBaseRangeDocstring});
     return cl;
 }
 
@@ -65,10 +40,10 @@ void setupRanges(pybind11::module &m, const std::string &name) {
     addPubkeyRange<ranges::any_view<T, ranges::category::random_access>, T>(m, ss.str());
     ss.clear();
     ss << name << "AnyOptional" << name << "Range";
-    addOptionalPubkeyRange<ranges::any_view<ranges::optional<T>>, T>(m, ss.str());
+    addPubkeyRange<ranges::any_view<ranges::optional<T>>, T>(m, ss.str());
     ss.clear();
     ss << name << "Optional" << name << "Range";
-    addOptionalPubkeyRange<ranges::any_view<ranges::optional<T>, ranges::category::random_access>, T>(m, ss.str());
+    addPubkeyRange<ranges::any_view<ranges::optional<T>, ranges::category::random_access>, T>(m, ss.str());
 }
 
 void init_pubkey_range(pybind11::module &m);

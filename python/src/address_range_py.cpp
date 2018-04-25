@@ -27,11 +27,12 @@ struct ScriptRangeWithTypeFunctor {
     }
 };
 
-template <typename Range, typename Class, typename FuncApplication>
+template <typename Range>
 struct AddAddressRangeMethods {
+    template <typename Class, typename FuncApplication>
     void operator()(Class &cl, FuncApplication func) {
         cl
-        .def("with_type", func([=](Range &&range, blocksci::AddressType::Enum type) {
+        .def("with_type", func([](Range &range, blocksci::AddressType::Enum type) {
             static auto table = blocksci::make_dynamic_table<blocksci::AddressType, ScriptRangeWithTypeFunctor, Range>();
             auto index = static_cast<size_t>(type);
             return table.at(index)(std::move(range));
@@ -46,29 +47,27 @@ const char *addressRangeDocstring(std::string docstring) {
     return strdup(ss.str().c_str());
 }
 
-template <typename T, typename T2>
-auto addAddressRange(py::module &m, const std::string &name) {
-    auto cl = addRangeClass<T>(m, name);
-    addAddressMethods<T2>(cl, [](auto func) {
-        return applyMethodsToRange<T>(func);
-    }, addressRangeDocstring);
-    applyRangeMethodsToRange<AddAddressRangeMethods>(cl);
-    return cl;
-}
-
-template <typename T, typename T2>
-auto addOptionalAddressRange(py::module &m, const std::string &name) {
-    auto cl = addOptionalRangeClass<T>(m, name);
-    addAddressMethods<T2>(cl, [](auto func) {
-        return applyMethodsToRange<T>(func);
-    }, addressRangeDocstring);
-    applyRangeMethodsToRange<AddAddressRangeMethods>(cl);
-    return cl;
-}
 
 void init_address_range(py::module &m) {
-    addAddressRange<ranges::any_view<AnyScript>, AnyScript>(m, "AnyAddressRange");
-    addAddressRange<ranges::any_view<AnyScript, ranges::category::random_access>, AnyScript>(m, "AddressRange");
-    addOptionalAddressRange<ranges::any_view<ranges::optional<AnyScript>>, AnyScript>(m, "AnyOptionalAddressRange");
-    addOptionalAddressRange<ranges::any_view<ranges::optional<AnyScript>, ranges::category::random_access>, AnyScript>(m, "OptionalAddressRange");
+    {
+        auto cl = addRangeClass<ranges::any_view<AnyScript>>(m, "AnyAddressRange");
+        applyMethodsToRange(cl, AddAddressMethods<AnyScript>{addressRangeDocstring});
+        applyRangeMethodsToRange(cl, AddAddressRangeMethods<ranges::any_view<AnyScript>>{});
+    }
+
+    {
+        auto cl = addRangeClass<ranges::any_view<AnyScript, ranges::category::random_access>>(m, "AddressRange");
+        applyMethodsToRange(cl, AddAddressMethods<AnyScript>{addressRangeDocstring});
+        applyRangeMethodsToRange(cl, AddAddressRangeMethods<ranges::any_view<AnyScript, ranges::category::random_access>>{});
+    }
+
+    {
+        auto cl = addRangeClass<ranges::any_view<ranges::optional<AnyScript>>>(m, "AnyOptionalAddressRange");
+        applyMethodsToRange(cl, AddAddressMethods<AnyScript>{addressRangeDocstring});
+    }
+
+    {
+        auto cl = addRangeClass<ranges::any_view<ranges::optional<AnyScript>, ranges::category::random_access>>(m, "OptionalAddressRange");
+        applyMethodsToRange(cl, AddAddressMethods<AnyScript>{addressRangeDocstring});
+    }
 }

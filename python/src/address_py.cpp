@@ -20,6 +20,10 @@ namespace py = pybind11;
 
 using namespace blocksci;
 
+const char *addressDocstring(std::string docstring) {
+    return strdup(docstring.c_str());
+}
+
 py::class_<ScriptBase> init_address(py::module &m) {
     py::class_<ScriptBase> addressCl(m, "Address", "Represents an abstract address object which uniquely identifies a given address");
     addressCl
@@ -32,11 +36,7 @@ py::class_<ScriptBase> init_address(py::module &m) {
     .def("out_txes", &ScriptBase::getOutputTransactions, "Returns a list of all transaction where this address was an output")
     ;
 
-    addAddressMethods<ScriptBase>(addressCl, [](auto func) {
-        return applyMethodsToSelf<ScriptBase>(func);
-    }, [](auto && docstring) {
-        return std::forward<decltype(docstring)>(docstring);
-    });
+    applyMethodsToSelf(addressCl, AddAddressMethods<ScriptBase>{addressDocstring});
     
     py::class_<EquivAddress>(m, "EquivAddress", "A set of equivalent addresses")
     .def(py::self == py::self)

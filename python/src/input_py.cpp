@@ -15,6 +15,10 @@ namespace py = pybind11;
 
 using namespace blocksci;
 
+const char *inputDocstring(std::string docstring) {
+    return strdup(docstring.c_str());
+}
+
 void init_input(py::module &m) {
     py::class_<Input> inputClass(m, "Input", "Class representing a transaction input");
     inputClass
@@ -24,9 +28,5 @@ void init_input(py::module &m) {
     .def_property_readonly("_access", &Input::getAccess, py::return_value_policy::reference)
     ;
     
-    addInputMethods(inputClass, [](auto func) {
-        return applyMethodsToSelf<Input>(func);
-    }, [](auto && docstring) {
-        return std::forward<decltype(docstring)>(docstring);
-    });
+    applyMethodsToSelf(inputClass, AddInputMethods{inputDocstring});
 }

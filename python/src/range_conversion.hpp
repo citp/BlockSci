@@ -19,6 +19,10 @@
 
 #include <chrono>
 
+struct ForcedBool {
+    bool val;
+};
+
 struct blocksci_tag {};
 struct py_tag {};
 struct numpy_tag {};
@@ -49,7 +53,7 @@ template <> struct type_tag<blocksci::TaggedCluster> { using type = blocksci_tag
 template <> struct type_tag<blocksci::TaggedAddress> { using type = blocksci_tag; };
 
 template <> struct type_tag<int64_t> { using type = numpy_tag; };
-template <> struct type_tag<bool> { using type = numpy_tag; };
+template <> struct type_tag<ForcedBool> { using type = numpy_tag; };
 template <> struct type_tag<std::chrono::system_clock::time_point> { using type = numpy_tag; };
 template <> struct type_tag<blocksci::uint256> { using type = numpy_tag; };
 template <> struct type_tag<blocksci::uint160> { using type = numpy_tag; };
@@ -66,14 +70,16 @@ template <typename T>
 struct is_tagged<T, meta::void_<typename type_tag<T>::type>> : std::true_type {};
 
 template<typename T, CONCEPT_REQUIRES_(ranges::Range<T>())>
-std::true_type is_range() { return {}; }
+constexpr std::true_type is_range() { return {}; }
 
 template<typename T, CONCEPT_REQUIRES_(!ranges::Range<T>())>
-std::false_type is_range() { return {}; }
+constexpr std::false_type is_range() { return {}; }
 
-struct ForcedBool {
-    bool val;
-};
+template <typename T>
+struct is_optional : std::false_type {};
+
+template <typename T>
+struct is_optional<ranges::optional<T>> : std::true_type {};
 
 template <typename T>
 struct numpy_dtype {
@@ -125,6 +131,11 @@ struct NumpyConverter<std::chrono::system_clock::time_point> {
 };
 
 template<>
+struct NumpyConverter<blocksci::Address> {
+    blocksci::AnyScript operator()(const blocksci::Address &address);
+};
+
+template<>
 struct NumpyConverter<blocksci::uint256> {
     std::array<char, 64> operator()(const blocksci::uint256 &val);
 };
@@ -136,59 +147,95 @@ struct NumpyConverter<bool> {
     }
 };
 
-template <typename T>
-auto flattenIfNestedRangeImpl(T && t, std::true_type) {
-    return std::forward<T>(t) | ranges::view::join;
-}
-
-template <typename T>
-auto flattenIfNestedRangeImpl(T && t, std::false_type) {
-    return std::forward<T>(t);
-}
-
-template <typename T>
-auto flattenIfNestedRange(T && t) {
-    using nested = ranges::range_value_type_t<T>;
-    return flattenIfNestedRangeImpl<T>(std::forward<T>(t), meta::and_<meta::not_<is_tagged<nested>>, decltype(is_range<nested>())>{});
-}
-
-template <typename T, CONCEPT_REQUIRES_(ranges::RandomAccessRange<T>())>
-auto convertRangeToPythonImpl(T && t, blocksci_tag) -> ranges::any_view<ranges::range_value_type_t<T>, ranges::category::random_access> {
-    return std::forward<T>(t);
-}
-
-template <typename T, CONCEPT_REQUIRES_(!ranges::RandomAccessRange<T>())>
-auto convertRangeToPythonImpl(T && t, blocksci_tag) -> ranges::any_view<ranges::range_value_type_t<T>> {
-    return std::forward<T>(t);
-}
-
-template <typename T>
-auto convertRangeToPythonImpl(T && t, numpy_tag) {
-    using RangeType = ranges::range_value_type_t<T>;
-    using Converter = NumpyConverter<RangeType>;
-    using vector_value_type = decltype(Converter{}(std::declval<RangeType>()));
-    auto ret = std::forward<T>(t) | ranges::view::transform([](auto &&item) { return Converter{}(std::forward<decltype(item)>(item)); }) | ranges::to_vector;
-    return pybind11::array{numpy_dtype<vector_value_type>::value(), ret.size(), ret.data()};
-}
-
-template <typename T>
-auto convertRangeToPythonImpl(T && t, py_tag) {
-    pybind11::list list;
-    RANGES_FOR(auto && a, std::forward<T>(t)) {
-        list.append(std::forward<decltype(a)>(a));
+template<>
+struct NumpyConverter<uint16_t> {
+    int64_t operator()(uint16_t val) {
+        return static_cast<int64_t>(val);
     }
-    return list;
+};
+
+template<>
+struct NumpyConverter<int16_t> {
+    int64_t operator()(int16_t val) {
+        return static_cast<int64_t>(val);
+    }
+};
+
+
+template<>
+struct NumpyConverter<int> {
+    int64_t operator()(int val) {
+        return static_cast<int64_t>(val);
+    }
+};
+
+template<>
+struct NumpyConverter<unsigned int> {
+    int64_t operator()(int val) {
+        return static_cast<int64_t>(val);
+    }
+};
+
+template<>
+struct NumpyConverter<uint64_t> {
+    int64_t operator()(int val) {
+        return static_cast<int64_t>(val);
+    }
+};
+
+constexpr ranges::category getBlockSciCategory(ranges::category cat) {
+    if ((cat & ranges::category::random_access) == ranges::category::random_access) {
+        return ranges::category::random_access;
+    } else {
+        return ranges::category::input;
+    }
 }
 
-template <typename T, CONCEPT_REQUIRES_(ranges::Range<T>())>
-auto convertRangeToPython(T && t) {
-    auto && flattened = flattenIfNestedRange(t);
-    return convertRangeToPythonImpl(std::forward<decltype(flattened)>(flattened), typename type_tag<ranges::range_value_type_t<decltype(flattened)>>::type{});
+template <typename T>
+auto convertRangeToPythonImpl(T && t) {
+    auto converted = [&]() {
+        using value_type = ranges::range_value_type_t<T>;
+        using Converter = NumpyConverter<value_type>;
+        if constexpr (is_tagged<value_type>::value) {
+            return t;
+        } else {
+            return t | ranges::view::transform(Converter{});
+        }
+    }();
+
+    using value_type = ranges::range_value_type_t<decltype(converted)>;
+    using range_type = typename type_tag<value_type>::type;
+
+    if constexpr (std::is_same_v<range_type, py_tag>) {
+        pybind11::list list;
+        RANGES_FOR(auto && a, converted) {
+            list.append(std::forward<decltype(a)>(a));
+        }
+        return list;
+    } else if constexpr (std::is_same_v<range_type, numpy_tag>) {
+        using RangeType = ranges::range_value_type_t<T>;
+        using Converter = NumpyConverter<RangeType>;
+        using vector_value_type = decltype(Converter{}(std::declval<RangeType>()));
+        auto ret = converted | ranges::to_vector;
+        return pybind11::array{numpy_dtype<vector_value_type>::value(), ret.size(), ret.data()};
+    } else if constexpr (std::is_same_v<value_type, blocksci_tag>) {
+        return ranges::any_view<value_type, getBlockSciCategory(ranges::get_categories<T>())>{converted};
+    }
 }
 
-template <typename T, CONCEPT_REQUIRES_(!ranges::Range<T>())>
+template <typename T>
 auto convertRangeToPython(T && t) {
-    return std::forward<T>(t);
+    if constexpr (is_range<T>()) {
+        using value_type = ranges::range_value_type_t<T>;
+        // Flatten nested ranges if the nested type is not tagged
+        if constexpr (!is_tagged<value_type>::value && is_range<value_type>().value) {
+            return convertRangeToPythonImpl(std::forward<T>(t) | ranges::view::join);
+        } else {
+            return convertRangeToPythonImpl(std::forward<T>(t));
+        }
+    } else {
+        return std::forward<T>(t);
+    }
 }
 
 #endif /* range_conversion_h */

@@ -13,12 +13,6 @@
 
 #include <range/v3/view/filter.hpp>
 
-template <typename T>
-struct is_optional : std::false_type {};
-
-template <typename T>
-struct is_optional<ranges::optional<T>> : std::true_type {};
-
 // If type is already optional, do nothing. Otherwise make it optional
 template <typename T>
 struct make_optional { using type = ranges::optional<T>; };
@@ -29,79 +23,87 @@ struct make_optional<ranges::optional<T>> { using type = ranges::optional<T>; };
 template <typename T>
 using make_optional_t = typename make_optional<T>::type;
 
-template <typename T, class F, typename... Args>
-auto applyMethodToRangeImpl(T && t, F func, std::true_type, const Args &... args) {
-    return std::forward<T>(t) | ranges::view::transform([=](auto && item) -> make_optional_t<decltype(func(*item, args...))> {
-        if (item) {
-            return func(*item, args...);
+
+template <typename Range, class Traits, typename F, typename S>
+struct ApplyMethodToRange;
+
+template <typename Range, class Traits, typename F, std::size_t ... Is>
+struct ApplyMethodToRange<Range, Traits, F, std::index_sequence<Is...>> {
+    F func;
+
+    ApplyMethodToRange(F func_) : func(std::move(func_)) {}
+
+    auto operator()(Range &t, const std::tuple_element_t<Is + 1, typename Traits::arg_tuple> &... args) const {
+        if constexpr (is_optional<ranges::range_value_type_t<Range>>{}) {
+            return convertRangeToPython(t | ranges::view::transform([&](auto && item) -> make_optional_t<decltype(std::invoke(func, *item, args...))> {
+                if (item) {
+                    return std::invoke(func, *item, args...);
+                } else {
+                    return ranges::nullopt;
+                }
+            }));
         } else {
-            return ranges::nullopt;
+            return convertRangeToPython(t | ranges::view::transform([&](auto && item) {
+                return std::invoke(func, item, args...);
+            }));
         }
-    });
-}
-
-template <typename T, class F, typename... Args>
-auto applyMethodToRangeImpl(T && t, F func, std::false_type, const Args &... args) {
-    return std::forward<T>(t) | ranges::view::transform([=](auto && item) {
-        return func(item, args...);
-    });
-}
-
-template <typename T, typename F, typename... Args, CONCEPT_REQUIRES_(ranges::Range<T>())>
-auto applyMethodToRange(T && t, F func, const Args &... args) {
-    return applyMethodToRangeImpl<T>(std::forward<T>(t), func, is_optional<ranges::range_value_type_t<T>>{}, args...);
-}
+    }
+};
 
 template <typename T>
-auto flattenIfOptionalRangeImpl(T && t, std::true_type) {
-    return std::forward<T>(t) | ranges::view::filter([](const auto &optional) { return static_cast<bool>(optional); })
-    | ranges::view::transform([](const auto &optional) { return *optional; });
+struct ApplyMethodsToRangeImpl {
+    template <typename F>
+    auto operator()(F func) {
+        using traits = function_traits<F>;
+        using arg_sequence = std::make_index_sequence<traits::arity - 1>;
+        return ApplyMethodToRange<T, traits, F, arg_sequence>{func};
+    }
+};
+
+template <typename Class, typename Applier>
+auto applyMethodsToRange(Class &cl, Applier applier) {
+    applier(cl, ApplyMethodsToRangeImpl<typename Class::type>{});
 }
 
-template <typename T>
-auto flattenIfOptionalRangeImpl(T && t, std::false_type) {
-    return std::forward<T>(t);
-}
 
 template <typename T>
 auto flattenIfOptionalRange(T && t) {
-    return flattenIfOptionalRangeImpl<T>(std::forward<T>(t), is_optional<ranges::range_value_type_t<T>>{});
+    if constexpr (is_optional<ranges::range_value_type_t<T>>{}) {
+        return std::forward<T>(t) 
+        | ranges::view::filter([](const auto &optional) { return static_cast<bool>(optional); })
+        | ranges::view::transform([](const auto &optional) { return *optional; });
+    } else {
+        return std::forward<T>(t);
+    }
 }
 
-template <typename T, typename F, std::size_t ... Is, class Traits>
-auto applyMethodsToRangeImpl(F f, std::index_sequence<Is...>, Traits) {
-    return [f](T &view, const std::tuple_element_t<Is + 1, typename Traits::arg_tuple> &... args) {
-        return convertRangeToPython(applyMethodToRange(view, f, args...));
-    };
-}
+template <typename Range, class Traits, typename F, typename S>
+struct ApplyRangeMethodToRange;
 
-template <typename T, typename F>
-auto applyMethodsToRange(F f) {
-    using traits = function_traits<F>;
-    return applyMethodsToRangeImpl<T>(f, std::make_index_sequence<traits::arity - 1>{}, traits{});
-}
+template <typename Range, class Traits, typename F, std::size_t ... Is>
+struct ApplyRangeMethodToRange<Range, Traits, F, std::index_sequence<Is...>> {
+    F func;
 
-template <typename T, typename F, std::size_t ... Is, class Traits>
-auto applyRangeMethodsToRangeImpl(F func, std::index_sequence<Is...>, Traits) {
-    return [func](T &view, const std::tuple_element_t<Is + 1, typename Traits::arg_tuple> &... args) {
-        return convertRangeToPython(func(flattenIfOptionalRange(view), args...));
-    };
-}
+    ApplyRangeMethodToRange(F func_) : func(std::move(func_)) {}
 
-template <typename T, typename F>
-auto applyRangeMethodsToRangeImpl1(F func) {
-    using traits = function_traits<F>;
-    return applyRangeMethodsToRangeImpl<T>(func, std::make_index_sequence<traits::arity - 1>{}, traits{});
-}
+    auto operator()(Range &t, const std::tuple_element_t<Is + 1, typename Traits::arg_tuple> &... args) const {
+        return convertRangeToPython(std::invoke(func, t, args...));
+    }
+};
 
-template <template <typename, typename, typename> class F, typename Class>
-auto applyRangeMethodsToRange(Class &cl) {
-    using Range = typename Class::type;
-    using flattened_type = decltype(flattenIfOptionalRange(std::declval<Range>()));
-    auto handler = [](auto func) {
-        return applyRangeMethodsToRangeImpl1<flattened_type>(func);
-    };
-    F<flattened_type, decltype(cl), decltype(handler)>{}(cl, handler);
+template <typename T>
+struct ApplyRangeMethodsToRangeImpl {
+    template <typename F>
+    auto operator()(F func) {
+        using traits = function_traits<F>;
+        using arg_sequence = std::make_index_sequence<traits::arity - 1>;
+        return ApplyRangeMethodToRange<T, traits, F, arg_sequence>{func};
+    }
+};
+
+template <typename Class, typename Applier>
+auto applyRangeMethodsToRange(Class &cl, Applier applier) {
+    applier(cl, ApplyRangeMethodsToRangeImpl<typename Class::type>{});
 }
 
 #endif /* range_apply_py_h */

@@ -18,69 +18,71 @@
 
 void init_cluster(pybind11::module &m);
 
-template <typename Class, typename FuncApplication, typename FuncDoc>
-void addClusterMethods(Class &cl, FuncApplication func, FuncDoc func2) {
-    using namespace blocksci;
-    cl
-    .def_property_readonly("index", func([](const Cluster &cluster) -> int64_t {
-        return cluster.clusterNum;
-    }), func2("The internal identifier of the cluster"))
-    .def("tagged_addresses", func([](const Cluster &cluster, const std::unordered_map<blocksci::Address, std::string> &tags) -> ranges::any_view<TaggedAddress> {
-        return cluster.taggedAddresses(tags);
-    }), func2("Given a dictionary of tags, return a range of TaggedAddress objects for any tagged addresses in the cluster"))
-    .def("size", func([](Cluster &cluster) -> int64_t {
-        return cluster.getSize();
-    }), func2("The number of addresses in the cluster"))
-    .def_property_readonly("type_equiv_size", func([](Cluster &cluster) -> int64_t {
-        return cluster.getTypeEquivSize();
-    }), func2("The number of addresses in the cluster not counting type equivalent addresses"))
-    .def("balance", func([](Cluster &cluster, int height) -> int64_t {
-        return cluster.calculateBalance(height);
-    }), pybind11::arg("height") = -1, func2("Calculates the balance held by this cluster at the height (Defaults to the full chain)"))
-    .def("out_txes_count", func([](Cluster &cluster) -> int64_t {
-        return cluster.getOutputTransactions().size();
-    }), func2("Return the number of transactions where this cluster was an output"))
-    .def("in_txes_count", func([](Cluster &cluster) -> int64_t {
-        return cluster.getInputTransactions().size();
-    }), func2("Return the number of transactions where this cluster was an input"))
-    .def("outs", func([](Cluster &cluster) -> ranges::any_view<Output> {
-        return cluster.getOutputs();
-    }), func2("Returns a list of all outputs sent to this cluster"))
-    .def_property_readonly("addresses", func([](Cluster &cluster) -> ranges::any_view<AnyScript> {
-        return cluster.getAddresses() | ranges::view::transform([](Address && address) {
-            return address.getScript();
-        });
-    }), func2("Get a iterable over all the addresses in the cluster"))
-    .def("count_of_type", func([](Cluster &cluster, blocksci::AddressType::Enum type) -> int64_t {
-        return cluster.countOfType(type);
-    }), func2("Return the number of addresses of the given type in the cluster"))
-    ;
-}
+struct AddClusterMethods {
+    using FuncDoc = std::function<const char *(std::string)>;
 
-template <typename Class, typename FuncApplication, typename FuncDoc>
-void addTaggedAddressMethods(Class &cl, FuncApplication func, FuncDoc func2) {
-    using namespace blocksci;
-    cl
-    .def_property_readonly("address", func([](const TaggedAddress &tagged) -> AnyScript {
-        return tagged.address.getScript();
-    }), func2("Return the address object which has been tagged"))
-    .def_property_readonly("tag", func([](const TaggedAddress &tagged) -> std::string {
-        return tagged.tag;
-    }), func2("Return the tag associated with the contained address"))
-    ;
-}
+    FuncDoc func2;
 
-template <typename Class, typename FuncApplication, typename FuncDoc>
-void addTaggedClusterMethods(Class &cl, FuncApplication func, FuncDoc func2) {
-    using namespace blocksci;
-    cl
-    .def_property_readonly("cluster", func([](TaggedCluster &tc) -> Cluster {
-        return tc.cluster;
-    }), func2("Return the cluster object which has been tagged"))
-    .def_property_readonly("tagged_addresses",func([](TaggedCluster &tc) -> ranges::any_view<TaggedAddress> {
-        return tc.taggedAddresses;
-    }), func2("Return the list of addresses inside the cluster which have been tagged"))
-    ;
-}
+    AddClusterMethods(FuncDoc funcDoc_) : func2(std::move(funcDoc_)) {}
+
+    template <typename Class, typename FuncApplication>
+    void operator()(Class &cl, FuncApplication func) {
+        using namespace blocksci;
+        cl
+        .def_property_readonly("index", func([](const Cluster &cluster) { return cluster.clusterNum; }), func2("The internal identifier of the cluster"))
+        .def("tagged_addresses", func(&Cluster::taggedAddresses), func2("Given a dictionary of tags, return a range of TaggedAddress objects for any tagged addresses in the cluster"))
+        .def("size", func(&Cluster::getSize), func2("The number of addresses in the cluster"))
+        .def_property_readonly("type_equiv_size", func(&Cluster::getTypeEquivSize), func2("The number of addresses in the cluster not counting type equivalent addresses"))
+        .def("balance", func(&Cluster::calculateBalance), pybind11::arg("height") = -1, func2("Calculates the balance held by this cluster at the height (Defaults to the full chain)"))
+        .def("out_txes_count", func([](Cluster &cluster) -> int64_t {
+            return cluster.getOutputTransactions().size();
+        }), func2("Return the number of transactions where this cluster was an output"))
+        .def("in_txes_count", func([](Cluster &cluster) -> int64_t {
+            return cluster.getInputTransactions().size();
+        }), func2("Return the number of transactions where this cluster was an input"))
+        .def("outs", func(&Cluster::getOutputs), func2("Returns a list of all outputs sent to this cluster"))
+        .def_property_readonly("addresses", func([](Cluster &cluster) -> ranges::any_view<AnyScript> {
+            return cluster.getAddresses() | ranges::view::transform([](Address && address) {
+                return address.getScript();
+            });
+        }), func2("Get a iterable over all the addresses in the cluster"))
+        .def("count_of_type", func(&Cluster::countOfType), func2("Return the number of addresses of the given type in the cluster"))
+        ;
+    }
+};
+
+struct AddTaggedAddressMethods {
+    using FuncDoc = std::function<const char *(std::string)>;
+
+    FuncDoc func2;
+
+    AddTaggedAddressMethods(FuncDoc funcDoc_) : func2(std::move(funcDoc_)) {}
+
+    template <typename Class, typename FuncApplication>
+    void operator()(Class &cl, FuncApplication func) {
+        using namespace blocksci;
+        cl
+        .def_property_readonly("address", func([](const TaggedAddress &t) { return t.address; }), func2("Return the address object which has been tagged"))
+        .def_property_readonly("tag", func([](const TaggedAddress &t) { return t.tag; }), func2("Return the tag associated with the contained address"))
+        ;
+    }
+};
+
+struct AddTaggedClusterMethods {
+    using FuncDoc = std::function<const char *(std::string)>;
+
+    FuncDoc func2;
+
+    AddTaggedClusterMethods(FuncDoc funcDoc_) : func2(std::move(funcDoc_)) {}
+
+    template <typename Class, typename FuncApplication>
+    void operator()(Class &cl, FuncApplication func) {
+        using namespace blocksci;
+        cl
+        .def_property_readonly("cluster", func([](const TaggedCluster &t) { return t.cluster; }), func2("Return the cluster object which has been tagged"))
+        .def_property_readonly("tagged_addresses", func([](const TaggedCluster &t) { return t.taggedAddresses; }), func2("Return the list of addresses inside the cluster which have been tagged"))
+        ;
+    }
+};
 
 #endif /* cluster_py_hpp */

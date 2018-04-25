@@ -15,6 +15,10 @@ namespace py = pybind11;
 
 using namespace blocksci;
 
+const char *outputDocstring(std::string docstring) {
+    return strdup(docstring.c_str());
+}
+
 void init_output(py::module &m) {
     py::class_<Output> outputClass(m, "Output", "Class representing a transaction output");
     outputClass
@@ -24,9 +28,5 @@ void init_output(py::module &m) {
     .def_property_readonly("_access", &Output::getAccess, py::return_value_policy::reference)
     ;
     
-    addOutputMethods(outputClass, [](auto func) {
-        return applyMethodsToSelf<Output>(func);
-    }, [](auto && docstring) {
-        return std::forward<decltype(docstring)>(docstring);
-    });
+    applyMethodsToSelf(outputClass, AddOutputMethods{outputDocstring});
 }

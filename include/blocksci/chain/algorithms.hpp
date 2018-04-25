@@ -171,7 +171,7 @@ namespace blocksci {
     }
     
     template <typename T>
-    inline auto BLOCKSCI_EXPORT outputsOfType(T && t, DedupAddressType::Enum type) {
+    inline auto BLOCKSCI_EXPORT outputsOfDedupType(T && t, DedupAddressType::Enum type) {
         return outputs(std::forward<T>(t)) | ranges::view::filter([=](const Output &output) { return dedupType(output.getType()) == type; });
     }
     
@@ -181,7 +181,7 @@ namespace blocksci {
     }
     
     template <typename T>
-    inline auto BLOCKSCI_EXPORT inputsOfType(T && t, DedupAddressType::Enum type) {
+    inline auto BLOCKSCI_EXPORT inputsOfDedupType(T && t, DedupAddressType::Enum type) {
         return inputs(std::forward<T>(t)) | ranges::view::filter([=](const Input &input) { return dedupType(input.getType()) == type; });
     }
     

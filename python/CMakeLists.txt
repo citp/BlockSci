@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(blockscipy)
 
+set (CMAKE_CXX_STANDARD 17)
+
 find_package(blocksci REQUIRED)
 
 add_subdirectory(blocksci/pybind11)
