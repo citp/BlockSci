@@ -19,19 +19,19 @@ struct AddInputRangeMethods {
     template <typename Class, typename FuncApplication>
     void operator()(Class &cl, FuncApplication func) {
         cl
-        .def("sent_before",  func([](Range &&range, BlockHeight height) {
+        .def("sent_before",  func([](Range &range, BlockHeight height) {
             return inputsCreatedBeforeHeight(range, height);
         }), "Returns a range including the subset of inputs which spent an output created before the given height")
-        .def("sent_after",  func([](Range &&range, BlockHeight height) {
+        .def("sent_after",  func([](Range &range, BlockHeight height) {
             return inputsCreatedAfterHeight(range, height);
         }), "Returns a range including the subset of inputs which spent an output created after the given height")
-        .def("sent_within",  func([](Range &&range, BlockHeight height) {
+        .def("sent_within",  func([](Range &range, BlockHeight height) {
             return inputsCreatedWithinRelativeHeight(range, height);
         }), "Returns a range including the subset of inputs which spent an output created more than a given number of blocks before the input")
-        .def("sent_outside",  func([](Range &&range, BlockHeight height) {
+        .def("sent_outside",  func([](Range &range, BlockHeight height) {
             return inputsCreatedOutsideRelativeHeight(range, height);
         }), "Returns a range including the subset of inputs which spent an output created less than a given number of blocks before the input")
-        .def("with_type", func([](Range && range, AddressType::Enum type) {
+        .def("with_type", func([](Range &range, AddressType::Enum type) {
             return inputsOfType(range, type);
         }), "Return a range including only inputs sent to the given address type")
         ;
