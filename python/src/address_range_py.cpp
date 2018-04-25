@@ -40,17 +40,18 @@ struct AddAddressRangeMethods {
     }
 };
 
+const char *addressRangeDocstring(std::string docstring) {
+    std::stringstream ss;
+    ss << "For each address: " << docstring;
+    return strdup(ss.str().c_str());
+}
 
 template <typename T, typename T2>
 auto addAddressRange(py::module &m, const std::string &name) {
     auto cl = addRangeClass<T>(m, name);
     addAddressMethods<T2>(cl, [](auto func) {
         return applyMethodsToRange<T>(func);
-    }, [](std::string docstring) {
-        std::stringstream ss;
-        ss << "For each address: " << docstring;
-        return strdup(ss.str().c_str());
-    });
+    }, addressRangeDocstring);
     applyRangeMethodsToRange<AddAddressRangeMethods>(cl);
     return cl;
 }
@@ -60,11 +61,7 @@ auto addOptionalAddressRange(py::module &m, const std::string &name) {
     auto cl = addOptionalRangeClass<T>(m, name);
     addAddressMethods<T2>(cl, [](auto func) {
         return applyMethodsToRange<T>(func);
-    }, [](std::string docstring) {
-        std::stringstream ss;
-        ss << "For each address: " << docstring;
-        return strdup(ss.str().c_str());
-    });
+    }, addressRangeDocstring);
     applyRangeMethodsToRange<AddAddressRangeMethods>(cl);
     return cl;
 }

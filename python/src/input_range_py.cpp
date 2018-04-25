@@ -38,16 +38,18 @@ struct AddInputRangeMethods {
 };
 
 
+const char *inputRangeDocstring(std::string docstring) {
+    std::stringstream ss;
+    ss << "For each input: " << docstring;
+    return strdup(ss.str().c_str());
+}
+
 template <typename T>
 auto addInputRange(py::module &m, const std::string &name) {
     auto cl = addRangeClass<T>(m, name);
     addInputMethods(cl, [](auto func) {
         return applyMethodsToRange<T>(func);
-    }, [](std::string docstring) {
-        std::stringstream ss;
-        ss << "For each input: " << docstring;
-        return strdup(ss.str().c_str());
-    });
+    }, inputRangeDocstring);
     applyRangeMethodsToRange<AddInputRangeMethods>(cl);
     return cl;
 }
@@ -57,11 +59,7 @@ auto addOptionalInputRange(py::module &m, const std::string &name) {
     auto cl = addOptionalRangeClass<T>(m, name);
     addInputMethods(cl, [](auto func) {
         return applyMethodsToRange<T>(func);
-    }, [](std::string docstring) {
-        std::stringstream ss;
-        ss << "For each input: " << docstring;
-        return strdup(ss.str().c_str());
-    });
+    }, inputRangeDocstring);
     applyRangeMethodsToRange<AddInputRangeMethods>(cl);
     return cl;
 }

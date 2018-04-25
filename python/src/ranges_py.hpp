@@ -8,7 +8,6 @@
 #ifndef ranges_py_hpp
 #define ranges_py_hpp
 
-#include "function_traits.hpp"
 #include "range_conversion.hpp"
 
 #include <range/v3/range_for.hpp>

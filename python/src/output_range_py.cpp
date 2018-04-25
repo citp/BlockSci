@@ -41,16 +41,18 @@ struct AddOutputRangeMethods {
     }
 };
 
+const char *outputRangeDocstring(std::string docstring) {
+    std::stringstream ss;
+    ss << "For each output: " << docstring;
+    return strdup(ss.str().c_str());
+}
+
 template <typename T>
 auto addOutputRange(py::module &m, const std::string &name) {
     auto cl = addRangeClass<T>(m, name);
     addOutputMethods(cl, [](auto func) {
         return applyMethodsToRange<T>(func);
-    }, [](std::string docstring) {
-        std::stringstream ss;
-        ss << "For each output: " << docstring;
-        return strdup(ss.str().c_str());
-    });
+    }, outputRangeDocstring);
     applyRangeMethodsToRange<AddOutputRangeMethods>(cl);
     return cl;
 }
@@ -60,11 +62,7 @@ auto addOptionalOutputRange(py::module &m, const std::string &name) {
     auto cl = addRangeClass<T>(m, name);
     addOutputMethods(cl, [](auto func) {
         return applyMethodsToRange<T>(func);
-    }, [](std::string docstring) {
-        std::stringstream ss;
-        ss << "For each output: " << docstring;
-        return strdup(ss.str().c_str());
-    });
+    }, outputRangeDocstring);
     applyRangeMethodsToRange<AddOutputRangeMethods>(cl);
     return cl;
 }

@@ -29,8 +29,8 @@ struct make_optional<ranges::optional<T>> { using type = ranges::optional<T>; };
 template <typename T>
 using make_optional_t = typename make_optional<T>::type;
 
-template <typename T, class F, std::size_t ... Is, class Trait, typename... Args>
-auto applyMethodToRangeImpl(T && t, F func, std::index_sequence<Is...>, Trait, std::true_type, const Args &... args) {
+template <typename T, class F, typename... Args>
+auto applyMethodToRangeImpl(T && t, F func, std::true_type, const Args &... args) {
     return std::forward<T>(t) | ranges::view::transform([=](auto && item) -> make_optional_t<decltype(func(*item, args...))> {
         if (item) {
             return func(*item, args...);
@@ -40,8 +40,8 @@ auto applyMethodToRangeImpl(T && t, F func, std::index_sequence<Is...>, Trait, s
     });
 }
 
-template <typename T, class F, std::size_t ... Is, class Trait, typename... Args>
-auto applyMethodToRangeImpl(T && t, F func, std::index_sequence<Is...>, Trait, std::false_type, const Args &... args) {
+template <typename T, class F, typename... Args>
+auto applyMethodToRangeImpl(T && t, F func, std::false_type, const Args &... args) {
     return std::forward<T>(t) | ranges::view::transform([=](auto && item) {
         return func(item, args...);
     });
@@ -49,8 +49,7 @@ auto applyMethodToRangeImpl(T && t, F func, std::index_sequence<Is...>, Trait, s
 
 template <typename T, typename F, typename... Args, CONCEPT_REQUIRES_(ranges::Range<T>())>
 auto applyMethodToRange(T && t, F func, const Args &... args) {
-    using traits = function_traits<F>;
-    return applyMethodToRangeImpl<T>(std::forward<T>(t), func, std::make_index_sequence<traits::arity>{}, traits{}, is_optional<ranges::range_value_type_t<T>>{}, args...);
+    return applyMethodToRangeImpl<T>(std::forward<T>(t), func, is_optional<ranges::range_value_type_t<T>>{}, args...);
 }
 
 template <typename T>
@@ -71,7 +70,7 @@ auto flattenIfOptionalRange(T && t) {
 
 template <typename T, typename F, std::size_t ... Is, class Traits>
 auto applyMethodsToRangeImpl(F f, std::index_sequence<Is...>, Traits) {
-    return [f](T &view, const std::tuple_element_t<Is, typename Traits::arg_tuple> &... args) {
+    return [f](T &view, const std::tuple_element_t<Is + 1, typename Traits::arg_tuple> &... args) {
         return convertRangeToPython(applyMethodToRange(view, f, args...));
     };
 }
@@ -79,12 +78,12 @@ auto applyMethodsToRangeImpl(F f, std::index_sequence<Is...>, Traits) {
 template <typename T, typename F>
 auto applyMethodsToRange(F f) {
     using traits = function_traits<F>;
-    return applyMethodsToRangeImpl<T>(f, std::make_index_sequence<traits::arity>{}, traits{});
+    return applyMethodsToRangeImpl<T>(f, std::make_index_sequence<traits::arity - 1>{}, traits{});
 }
 
 template <typename T, typename F, std::size_t ... Is, class Traits>
 auto applyRangeMethodsToRangeImpl(F func, std::index_sequence<Is...>, Traits) {
-    return [func](T &view, const std::tuple_element_t<Is, typename Traits::arg_tuple> &... args) {
+    return [func](T &view, const std::tuple_element_t<Is + 1, typename Traits::arg_tuple> &... args) {
         return convertRangeToPython(func(flattenIfOptionalRange(view), args...));
     };
 }
@@ -92,7 +91,7 @@ auto applyRangeMethodsToRangeImpl(F func, std::index_sequence<Is...>, Traits) {
 template <typename T, typename F>
 auto applyRangeMethodsToRangeImpl1(F func) {
     using traits = function_traits<F>;
-    return applyRangeMethodsToRangeImpl<T>(func, std::make_index_sequence<traits::arity>{}, traits{});
+    return applyRangeMethodsToRangeImpl<T>(func, std::make_index_sequence<traits::arity - 1>{}, traits{});
 }
 
 template <template <typename, typename, typename> class F, typename Class>
