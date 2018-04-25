@@ -39,7 +39,7 @@ namespace blocksci {
             std::shared_ptr<rocksdb::Iterator> it;
             std::vector<char> prefixBytes;
         public:
-            cursor() : it(nullptr) {}
+            cursor() = default;
             cursor(rocksdb::DB *db_, rocksdb::ColumnFamilyHandle *column_, std::vector<char> prefix)  : db(db_), column(column_), it(std::shared_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), column)}), prefixBytes(std::move(prefix)) {
                 if (prefixBytes.size() > 0) {
                     rocksdb::Slice key(prefixBytes.data(), prefixBytes.size());
