@@ -31,7 +31,9 @@ namespace blocksci {
             _maxLoadedTx = maxLoadedBlock->firstTxIndex + maxLoadedBlock->numTxes;
             lastBlockHashDisk = &maxLoadedBlock->hash;
         } else {
+            lastBlockHash.SetNull();
             _maxLoadedTx = 0;
+            lastBlockHashDisk = nullptr;
         }
     }
     
