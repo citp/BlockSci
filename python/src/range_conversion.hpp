@@ -222,8 +222,7 @@ auto convertRangeToPythonImpl(T && t) {
         auto dtype = numpy_dtype<value_type>::value();
         if constexpr (ranges::RandomAccessRange<range_type>()) {
             pybind11::array ret{dtype, ranges::distance(converted)};
-            auto retBuf = ret.request();
-            auto retPtr = reinterpret_cast<value_type *>(retBuf.ptr);
+            auto retPtr = reinterpret_cast<value_type *>(ret.mutable_data());
             ranges::copy(converted, retPtr);
             return ret;
         } else {
