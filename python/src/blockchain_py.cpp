@@ -120,7 +120,7 @@ void init_blockchain(py::module &m) {
     .def("addresses", [](Blockchain &chain, AddressType::Enum type) {
         return chain.scripts(type);
     })
-    .def("blocks", [](Blockchain &chain) -> ranges::any_view<Block, ranges::category::random_access> {
+    .def_property_readonly("blocks", [](Blockchain &chain) -> ranges::any_view<Block, ranges::category::random_access> {
         return chain.blocks();
     }, "Returns a range of all the blocks in the chain")
     .def("tx_with_index", [](Blockchain &chain, uint32_t index) {

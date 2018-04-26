@@ -12,6 +12,7 @@
 
 #include <pybind11/numpy.h>
 
+#include <range/v3/distance.hpp>
 #include <range/v3/range_for.hpp>
 #include <range/v3/range_traits.hpp>
 #include <range/v3/view/any_view.hpp>
@@ -207,19 +208,30 @@ auto convertRangeToPythonImpl(T && t) {
         }
     }();
 
-    using value_type = ranges::range_value_type_t<decltype(converted)>;
-    using range_type = typename type_tag<value_type>::type;
+    using range_type = decltype(converted);
+    using value_type = ranges::range_value_type_t<range_type>;
+    using range_tag = typename type_tag<value_type>::type;
 
-    if constexpr (std::is_same_v<range_type, py_tag>) {
+    if constexpr (std::is_same_v<range_tag, py_tag>) {
         pybind11::list list;
         RANGES_FOR(auto && a, converted) {
             list.append(std::forward<decltype(a)>(a));
         }
         return list;
-    } else if constexpr (std::is_same_v<range_type, numpy_tag>) {
-        auto ret = converted | ranges::to_vector;
-        return pybind11::array{numpy_dtype<value_type>::value(), ret.size(), ret.data()};
-    } else if constexpr (std::is_same_v<range_type, blocksci_tag>) {
+    } else if constexpr (std::is_same_v<range_tag, numpy_tag>) {
+        auto dtype = numpy_dtype<value_type>::value();
+        if constexpr (ranges::RandomAccessRange<range_type>()) {
+            pybind11::array ret{dtype, ranges::distance(converted)};
+            auto retBuf = ret.request();
+            auto retPtr = reinterpret_cast<value_type *>(retBuf.ptr);
+            ranges::copy(converted, retPtr);
+            return ret;
+        } else {
+            auto ret = converted | ranges::to_vector;
+            return pybind11::array{dtype, ret.size(), ret.data()};
+        }
+        
+    } else if constexpr (std::is_same_v<range_tag, blocksci_tag>) {
         return ranges::any_view<value_type, getBlockSciCategory(ranges::get_categories<T>())>{converted};
     }
 }
