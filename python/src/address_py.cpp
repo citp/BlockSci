@@ -76,8 +76,9 @@ py::class_<ScriptBase> init_address(py::module &m) {
     .value("witness_pubkeyhash", AddressType::Enum::WITNESS_PUBKEYHASH)
     .value("witness_scripthash", AddressType::Enum::WITNESS_SCRIPTHASH)
     .def_property_readonly_static("types", [](py::object) -> std::array<AddressType::Enum, 9> {
-        return {{AddressType::Enum::PUBKEY, AddressType::Enum::PUBKEYHASH, AddressType::Enum::MULTISIG_PUBKEY, AddressType::Enum::SCRIPTHASH,
-            AddressType::Enum::MULTISIG, AddressType::Enum::NULL_DATA, AddressType::Enum::NONSTANDARD,
+        return {{AddressType::Enum::NONSTANDARD, AddressType::Enum::PUBKEY, AddressType::Enum::PUBKEYHASH, 
+            AddressType::Enum::MULTISIG_PUBKEY, AddressType::Enum::SCRIPTHASH,
+            AddressType::Enum::MULTISIG, AddressType::Enum::NULL_DATA,
             AddressType::Enum::WITNESS_PUBKEYHASH, AddressType::Enum::WITNESS_SCRIPTHASH}};
         }, "A list of all possible address types")
     .def("__str__", [](AddressType::Enum val) {

@@ -54,7 +54,7 @@ template <> struct type_tag<blocksci::TaggedAddress> { using type = blocksci_tag
 
 template <> struct type_tag<int64_t> { using type = numpy_tag; };
 template <> struct type_tag<ForcedBool> { using type = numpy_tag; };
-template <> struct type_tag<std::chrono::system_clock::time_point> { using type = numpy_tag; };
+template <> struct type_tag<std::chrono::system_clock::duration> { using type = numpy_tag; };
 template <> struct type_tag<blocksci::uint256> { using type = numpy_tag; };
 template <> struct type_tag<blocksci::uint160> { using type = numpy_tag; };
 template <> struct type_tag<pybind11::bytes> { using type = numpy_tag; };
@@ -226,7 +226,7 @@ auto convertRangeToPython(T && t) {
         using value_type = ranges::range_value_type_t<T>;
         // Flatten nested ranges if the nested type is not tagged
         if constexpr (!is_tagged<value_type>::value && is_range<value_type>().value) {
-            return convertRangeToPythonImpl(std::forward<T>(t) | ranges::view::join);
+            return convertRangeToPython(std::forward<T>(t) | ranges::view::join);
         } else {
             return convertRangeToPythonImpl(std::forward<T>(t));
         }
