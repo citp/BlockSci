@@ -23,6 +23,10 @@ struct ForcedBool {
     bool val;
 };
 
+struct ForcedDatetime {
+    int64_t time;
+};
+
 struct blocksci_tag {};
 struct py_tag {};
 struct numpy_tag {};
@@ -54,7 +58,7 @@ template <> struct type_tag<blocksci::TaggedAddress> { using type = blocksci_tag
 
 template <> struct type_tag<int64_t> { using type = numpy_tag; };
 template <> struct type_tag<ForcedBool> { using type = numpy_tag; };
-template <> struct type_tag<std::chrono::system_clock::duration> { using type = numpy_tag; };
+template <> struct type_tag<ForcedDatetime> { using type = numpy_tag; };
 template <> struct type_tag<blocksci::uint256> { using type = numpy_tag; };
 template <> struct type_tag<blocksci::uint160> { using type = numpy_tag; };
 template <> struct type_tag<pybind11::bytes> { using type = numpy_tag; };
@@ -89,7 +93,7 @@ struct numpy_dtype {
 };
 
 template <>
-struct numpy_dtype<std::chrono::system_clock::duration> {
+struct numpy_dtype<ForcedDatetime> {
     static pybind11::dtype value() {
         return pybind11::dtype{"datetime64[ns]"};
     }
@@ -125,8 +129,8 @@ struct NumpyConverter {
 
 template<>
 struct NumpyConverter<std::chrono::system_clock::time_point> {
-    auto operator()(const std::chrono::system_clock::time_point &val) {
-        return val.time_since_epoch();
+    ForcedDatetime operator()(const std::chrono::system_clock::time_point &val) {
+        return {std::chrono::duration_cast<std::chrono::nanoseconds>(val.time_since_epoch()).count()};
     }
 };
 
