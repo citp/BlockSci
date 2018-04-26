@@ -244,9 +244,6 @@ namespace blocksci {
         }
         return net;
     }
-    
-    std::vector<int64_t> BLOCKSCI_EXPORT getTotalSpentOfAges(const Block &block, BlockHeight maxAge);
-    
 } // namespace blocksci
 
 inline std::ostream BLOCKSCI_EXPORT &operator<<(std::ostream &os, const blocksci::Block &block) {

@@ -74,7 +74,6 @@ void init_block(py::module &m) {
     .def_property_readonly("_access", &Block::getAccess, py::return_value_policy::reference)
     .def_property_readonly("next_block", &Block::nextBlock, "Returns the block which follows this one in the chain")
     .def_property_readonly("prev_block", &Block::prevBlock, "Returns the block which comes before this one in the chain")
-    .def("total_spent_of_ages", py::overload_cast<const Block &, blocksci::BlockHeight>(getTotalSpentOfAges), "Returns a list of sum of all the outputs in the block that were spent within a certain of blocks, up to the max age given")
     .def("net_address_type_value", py::overload_cast<const Block &>(netAddressTypeValue), "Returns a set of the net change in the utxo pool after this block split up by address type")
     .def("net_full_type_value", py::overload_cast<const Block &>(netFullTypeValue), "Returns a set of the net change in the utxo pool after this block split up by full type")
     ;

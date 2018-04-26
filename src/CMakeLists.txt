@@ -238,7 +238,6 @@ set(ADDRESS_SOURCES
 set(CHAIN_SOURCES
   ${BLOCKSCI_SOURCE_PREFIX}/chain/chain_access.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/chain/blockchain.cpp
-  ${BLOCKSCI_SOURCE_PREFIX}/chain/block.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/chain/inout_pointer.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/chain/input.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/chain/output.cpp

@@ -9,6 +9,7 @@
 #define self_py_h
 
 #include "function_traits.hpp"
+#include "range_conversion.hpp"
 
 #include <blocksci/address/address_fwd.hpp>
 #include <blocksci/scripts/scripts_fwd.hpp>
@@ -73,8 +74,14 @@ struct ApplyMethodToSelf<T, Traits, F, std::index_sequence<Is...>> {
     ApplyMethodToSelf(F func_) : func(std::move(func_)) {}
 
     auto operator()(T &t, const std::tuple_element_t<Is + 1, typename Traits::arg_tuple> &... args) const {
-        using Converter = SelfTypeConverter<decltype(std::invoke(func, t, args...))>;
-    	return Converter{}(std::invoke(func, t, args...));
+    	using result_type = decltype(std::invoke(func, t, args...));
+    	if constexpr (!is_tagged<result_type>::value && ranges::Range<result_type>()) {
+    		return convertRangeToPython(std::invoke(func, t, args...));
+    	} else {
+    		using Converter = SelfTypeConverter<decltype(std::invoke(func, t, args...))>;
+    		return Converter{}(std::invoke(func, t, args...));
+    	}
+       
     }
 };
 
