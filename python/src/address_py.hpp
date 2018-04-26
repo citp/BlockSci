@@ -38,6 +38,9 @@ struct AddAddressMethods {
         cl
         .def_property_readonly("address_num", func(&T::getScriptNum), func2("The internal identifier of the address"))
         .def_property_readonly("type", func(&T::getType), func2("The type of address"))
+        .def_property_readonly("raw_type", func([](T &address) {
+            return static_cast<int64_t>(address.getType());
+        }), func2("The type of address"))
         .def("equiv", func(&T::getEquivAddresses), pybind11::arg("equiv_script") = true, "Returns a list of all addresses equivalent to this address")
         .def("balance", func(&T::calculateBalance), pybind11::arg("height") = -1, func2("Calculates the balance held by this address at the height (Defaults to the full chain)"))
         .def("out_txes_count", func(pyAddressOutTxesCount<T>), func2("Return the number of transactions where this address was an output"))
