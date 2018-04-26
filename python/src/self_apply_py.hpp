@@ -97,7 +97,7 @@ struct ApplyMethodsToSelfImpl {
 
 template <typename Class, typename Applier>
 auto applyMethodsToSelf(Class &cl, Applier applier) {
-	return applier(cl, ApplyMethodsToSelfImpl<typename Class::type>{});
+	applier(cl, ApplyMethodsToSelfImpl<typename Class::type>{});
 }
 
 

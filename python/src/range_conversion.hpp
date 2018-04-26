@@ -213,12 +213,9 @@ auto convertRangeToPythonImpl(T && t) {
         }
         return list;
     } else if constexpr (std::is_same_v<range_type, numpy_tag>) {
-        using RangeType = ranges::range_value_type_t<T>;
-        using Converter = NumpyConverter<RangeType>;
-        using vector_value_type = decltype(Converter{}(std::declval<RangeType>()));
         auto ret = converted | ranges::to_vector;
-        return pybind11::array{numpy_dtype<vector_value_type>::value(), ret.size(), ret.data()};
-    } else if constexpr (std::is_same_v<value_type, blocksci_tag>) {
+        return pybind11::array{numpy_dtype<value_type>::value(), ret.size(), ret.data()};
+    } else if constexpr (std::is_same_v<range_type, blocksci_tag>) {
         return ranges::any_view<value_type, getBlockSciCategory(ranges::get_categories<T>())>{converted};
     }
 }
