@@ -72,6 +72,10 @@ namespace blocksci {
             pubkeyPrefix = {76};
             scriptPrefix = {16};
             segwitPrefix = "NONE";
+        } if (dataDirectory.find("dash_testnet") != std::string::npos) {
+            pubkeyPrefix = {140};
+            scriptPrefix = {19};
+            segwitPrefix = "NONE";
         } else if(dataDirectory.find("litecoin") != std::string::npos) {
             pubkeyPrefix = {48};
             scriptPrefix = {50};

@@ -84,6 +84,10 @@ namespace blocksci {
             return HexStr(std::reverse_iterator<const uint8_t*>(data + sizeof(data)), std::reverse_iterator<const uint8_t*>(data));
         }
         
+        std::string GetHexReverse() const {
+            return HexStr(data, data + sizeof(data));
+        }
+        
         void SetHex(const char* psz);
         void SetHex(const std::string& str);
         std::string ToString() const;
