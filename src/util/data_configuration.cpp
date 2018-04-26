@@ -68,13 +68,13 @@ namespace blocksci {
             throw std::runtime_error(ss.str());
         }
         
-        if(dataDirectory.find("dash") != std::string::npos) {
-            pubkeyPrefix = {76};
-            scriptPrefix = {16};
-            segwitPrefix = "NONE";
-        } if (dataDirectory.find("dash_testnet") != std::string::npos) {
+        if (dataDirectory.find("dash_testnet") != std::string::npos) {
             pubkeyPrefix = {140};
             scriptPrefix = {19};
+            segwitPrefix = "NONE";
+        } else if(dataDirectory.find("dash") != std::string::npos) {
+            pubkeyPrefix = {76};
+            scriptPrefix = {16};
             segwitPrefix = "NONE";
         } else if(dataDirectory.find("litecoin") != std::string::npos) {
             pubkeyPrefix = {48};
