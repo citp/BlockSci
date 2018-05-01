@@ -51,7 +51,7 @@ struct BasicTypeConverter {
     template <typename T>
     auto operator()(const ranges::optional<T> &val) -> ranges::optional<decltype(this->operator()(*val))> {
         if (val) {
-            return BasicTypeConverter{}(*val);
+            return ranges::optional<decltype(this->operator()(*val))>{BasicTypeConverter{}(*val)};
         } else {
             return ranges::nullopt;
         }
