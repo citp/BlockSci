@@ -1,4 +1,4 @@
-from blocksci.blocksci_interface import *
+from ._blocksci import *
 import pickle
 import sqlite3
 from collections import namedtuple

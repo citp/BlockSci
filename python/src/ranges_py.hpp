@@ -8,7 +8,9 @@
 #ifndef ranges_py_hpp
 #define ranges_py_hpp
 
+#include "python_fwd.hpp"
 #include "range_conversion.hpp"
+#include "blocksci_range.hpp"
 
 #include <range/v3/range_for.hpp>
 #include <range/v3/view/any_view.hpp>
@@ -31,10 +33,12 @@ auto pythonAllType(T && t) {
     return list;
 }
 
-template<typename Range, typename... Extra>
-auto addRangeClass(pybind11::module &m, const std::string &name, const Extra &... extra) {
+
+
+template<typename Class>
+auto addRangeMethods(Class &cl) {
+    using Range = typename Class::type;
     using value_type = ranges::range_value_type_t<Range>;
-    pybind11::class_<Range> cl(m, name.c_str(), extra...);
 
     cl
     .def("__iter__", [](Range &range) { 
@@ -58,12 +62,12 @@ auto addRangeClass(pybind11::module &m, const std::string &name, const Extra &..
                 throw pybind11::index_error();
             }
             return range[posIndex];
-        })
+        }, pybind11::arg("index"))
         ;
     }
 
     if constexpr (ranges::BidirectionalRange<Range>()) {
-        cl.def("__getitem__", [](Range &range, pybind11::slice slice) -> ranges::any_view<value_type, getBlockSciCategory(ranges::get_categories<Range>())> {
+        cl.def("__getitem__", [](Range &range, pybind11::slice slice) {
             size_t start, stop, step, slicelength;
             auto chainSize = ranges::distance(range);
             if (!slice.compute(chainSize, &start, &stop, &step, &slicelength))
@@ -72,20 +76,28 @@ auto addRangeClass(pybind11::module &m, const std::string &name, const Extra &..
             auto subset =  ranges::view::slice(range,
                                                static_cast<ranges::range_difference_type_t<Range>>(start),
                                                static_cast<ranges::range_difference_type_t<Range>>(stop));
-            return subset | ranges::view::stride(step);
-        });
+            return convertRangeToPython(subset | ranges::view::stride(step));
+        }, pybind11::arg("slice"));
     }
     
+    
+
     if constexpr(is_optional<value_type>{}) {
-        using WrappedType = decltype(*std::declval<ranges::range_value_type_t<Range>>());
+        using WrappedType = typename value_type::value_type;
+
+        std::stringstream ss;
+        ss << "\n\n:type: :class:`" << PythonTypeName<ranges::any_view<WrappedType, getBlockSciCategory(ranges::get_categories<Range>())>>::name() << "`";
+        
+        std::stringstream ss2;
+        ss2 << "\n\n:type: :class:` numpy.ndarray[bool]`";
         cl
         .def_property_readonly("has_value", [](Range &range) {
             return convertRangeToPython(range | ranges::view::transform([](auto && val) { return val.has_value(); }));
-        })
+        }, strdup((std::string("Return a array of bools denoting whether a item in the sequence has a value or is none") + ss2.str()).c_str()))
         .def_property_readonly("with_value", [](Range &range) {
             return convertRangeToPython(range | ranges::view::filter([](const auto &optional) { return static_cast<bool>(optional); })
             | ranges::view::transform([](const auto &optional) { return *optional; }));
-        })
+        }, strdup((std::string("Returns a sequence containing only non-None items in the sequence") + ss.str()).c_str()))
         .def("with_default_value", [](Range &range, const WrappedType &defVal) {
             return convertRangeToPython(range | ranges::view::transform([=](const auto &optional) {
                 if (optional) {
@@ -94,10 +106,18 @@ auto addRangeClass(pybind11::module &m, const std::string &name, const Extra &..
                     return defVal;
                 }
             }));
-        })
+        }, pybind11::arg("default_value"), strdup((std::string("Replace all none values in the sequence with the provided default value and return the resulting sequence") + ss.str()).c_str()))
         ;
     }
     return cl;
+}
+
+template <typename T>
+void addRangeMethods(RangeClasses<T> &cls) {
+    addRangeMethods(cls.iterator);
+    addRangeMethods(cls.range);
+    addRangeMethods(cls.optionalIterator);
+    addRangeMethods(cls.optionalRange);
 }
 
 #endif /* ranges_py_hpp */

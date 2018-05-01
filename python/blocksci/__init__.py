@@ -1,9 +1,9 @@
-from blocksci.blocksci_interface import *
-from blocksci.currency import *
-from blocksci.blockchain_info import *
-from blocksci.blocktrail import *
-from blocksci.opreturn import *
-from blocksci.pickler import *
+from ._blocksci import *
+from .currency import *
+from .blockchain_info import *
+from .blocktrail import *
+from .opreturn import *
+from .pickler import *
 
 from multiprocess import Pool
 from functools import reduce
@@ -22,7 +22,11 @@ import inspect
 import copy
 import io
 
-version = "0.45"
+version = "0.5.0"
+
+sys.modules['blocksci.cluster'] = cluster
+sys.modules['blocksci.heuristics'] = heuristics
+sys.modules['blocksci.heuristics.change'] = heuristics.change
 
 class _NoDefault(object):
     def __repr__(self):

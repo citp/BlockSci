@@ -178,7 +178,7 @@ Mac OS 10.13
     sudo make install
 
     cd ../python
-	sudo -H pip3 install .
+	pip3 install .
 
 
 Team & contact info

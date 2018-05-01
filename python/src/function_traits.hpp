@@ -9,6 +9,7 @@
 #define function_traits_h
 
 #include <tuple>
+#include <functional>
 
 template <typename T, bool = true>
 struct function_traits {
@@ -19,6 +20,9 @@ public:
     using arg_tuple = typename member_func::arg_tuple;
     static constexpr auto arity = member_func::arity;
 };
+
+template <typename ReturnType, typename... Args>
+struct function_traits<std::function<ReturnType(Args...)>> : public function_traits<ReturnType(Args...)> {};
 
 template <typename ClassType, typename ReturnType, typename... Args>
 struct function_traits<ReturnType(ClassType::*)(Args...) const, false> : public function_traits<ReturnType(Args...)> {};

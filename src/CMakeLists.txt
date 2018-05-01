@@ -299,6 +299,8 @@ set(CORE_SOURCES
 )
 
 set_source_files_properties(${BLOCKSCI_SOURCE_PREFIX}/scripts/bitcoin_bech32.cpp PROPERTIES COMPILE_FLAGS -Wno-everything)
+set_source_files_properties(${BLOCKSCI_HEADER_PREFIX}/scripts/bitcoin_script.hpp PROPERTIES COMPILE_FLAGS -Wno-everything)
+
 
 set(UTIL_SOURCES
   ${BLOCKSCI_SOURCE_PREFIX}/util/data_access.cpp
