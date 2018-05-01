@@ -31,10 +31,10 @@ struct AddAddressMethods {
         }), "The type of address");
         func(method_tag, "equiv", toFunc(&T::getEquivAddresses), "Returns a list of all addresses equivalent to this address", pybind11::arg("equiv_script") = true);
         func(method_tag, "balance", toFunc(&T::calculateBalance), "Calculates the balance held by this address at the height (Defaults to the full chain)", pybind11::arg("height") = -1);
-        func(method_tag, "out_txes_count", toFunc([](T &address) {
+        func(method_tag, "out_txes_count", toFunc([](T &address) -> int64_t {
             return ranges::distance(address.getOutputTransactions());
         }), "Return the number of transactions where this address was an output");
-        func(method_tag, "in_txes_count", toFunc([](T &address) {
+        func(method_tag, "in_txes_count", toFunc([](T &address) -> int64_t {
             return ranges::distance(address.getInputTransactions());
         }), "Return the number of transactions where this address was an input");
         func(property_tag, "first_tx", toFunc(&T::getFirstTransaction), "Get the first transaction that was sent to a type equivalent address");

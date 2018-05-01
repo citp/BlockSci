@@ -98,10 +98,10 @@ void init_equiv_address(py::class_<EquivAddress> &cl) {
     .def("txes", &EquivAddress::getTransactions, "Returns a list of all transactions involving these equivalent addresses")
     .def("out_txes",&EquivAddress::getOutputTransactions, "Returns a range of all transaction where these equivalent addresses were an output")
     .def("in_txes",&EquivAddress::getInputTransactions, "Returns a list of all transaction where these equivalent addresses were an input")
-    .def("out_txes_count", [](EquivAddress &address) {
+    .def("out_txes_count", [](EquivAddress &address) -> int64_t {
         return address.getOutputTransactions().size();
     }, "Return the number of transactions where these equivalent addresses were an output")
-    .def("in_txes_count", [](EquivAddress &address) {
+    .def("in_txes_count", [](EquivAddress &address) -> int64_t {
         return address.getInputTransactions().size();
     }, "Return the number of transactions where these equivalent addresses were an input")
     ;
