@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(blocksci_clusterer)
 
-find_package(blocksci REQUIRED)
 add_executable(blocksci_clusterer main.cpp)
 
 target_compile_options(blocksci_clusterer PRIVATE -Wall -Wextra -Wpedantic)

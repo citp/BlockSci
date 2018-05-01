@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(blocksci_example)
 
-find_package(blocksci REQUIRED)
-
 file(GLOB EXAMPLE_HEADERS "*.hpp")
 file(GLOB EXAMPLE_SOURCES "*.cpp")
 

@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(blocksci_benchmark)
 
-find_package(blocksci REQUIRED)
-
 add_executable(blocksci_benchmark EXCLUDE_FROM_ALL main.cpp)
 
 target_compile_options(blocksci_benchmark PRIVATE -Wall -Wextra -Wpedantic)

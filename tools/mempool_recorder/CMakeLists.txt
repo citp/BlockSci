@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(mempool_recorder)
 
-find_package(blocksci REQUIRED)
 find_package( Boost 1.58 COMPONENTS filesystem REQUIRED )
 
 add_executable(mempool_recorder main.cpp)

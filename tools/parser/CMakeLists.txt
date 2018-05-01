@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(blocksci_parser)
 
-find_package(blocksci REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(Sparsehash REQUIRED)
 
