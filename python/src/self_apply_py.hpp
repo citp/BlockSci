@@ -36,12 +36,11 @@ struct SelfApplyTypeConverterImpl;
 
 template <typename result_type>
 struct SelfApplyTypeConverterImpl<result_type, SelfApplyTag::Normal> {
-    using Converter = BasicTypeConverter<result_type>;
-    using return_type = typename Converter::type;
+    using return_type = decltype(BasicTypeConverter{}(std::declval<result_type>()));
     static_assert(std::is_same_v<decltype(PythonTypeName<return_type>::name()), std::string>);
 
     return_type operator()(result_type && result) const {
-        return Converter{}(result);
+        return BasicTypeConverter{}(result);
     }
 };
 

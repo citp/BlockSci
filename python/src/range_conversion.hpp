@@ -151,7 +151,7 @@ struct ConvertedTagImpl<range_cat, T, blocksci_tag> {
 };
 
 template <typename T>
-using converted_range_impl_t = typename ConvertedTagImpl<getBlockSciCategory(ranges::get_categories<T>()), typename BasicTypeConverter<ranges::range_value_type_t<T>>::type>::type;
+using converted_range_impl_t = typename ConvertedTagImpl<getBlockSciCategory(ranges::get_categories<T>()), decltype(BasicTypeConverter{}(std::declval<ranges::range_value_type_t<T>>()))>::type;
 
 template <typename T>
 constexpr bool isNonTaggedRange() {
