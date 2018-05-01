@@ -10,6 +10,8 @@
 
 #include <blocksci/scripts/script_variant.hpp>
 
+#include <pybind11/pybind11.h>
+
 using namespace blocksci;
 
 blocksci::AnyScript BasicTypeConverter::operator()(const blocksci::Address &val) {
