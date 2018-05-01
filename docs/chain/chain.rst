@@ -2,7 +2,7 @@ Chain Classes
 ====================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Chain:
    
    blockchain
@@ -10,6 +10,5 @@ Chain Classes
    tx
    input
    output
-   AnyTxRange
-   AnyInputRange
-   AnyOutputRange
+   ranges/ranges
+   iterators/iterators

@@ -4,11 +4,11 @@ Tagging Classes
 Tagged Cluster
 ====================================
 
-.. autoclass:: blocksci.cluster_python.TaggedCluster
+.. autoclass:: blocksci.cluster.TaggedCluster
    :members:
 
 Tagged Address
 ====================================
 
-.. autoclass:: blocksci.cluster_python.TaggedAddress
+.. autoclass:: blocksci.cluster.TaggedAddress
    :members:

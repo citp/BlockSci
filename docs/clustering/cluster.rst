@@ -1,6 +1,6 @@
 Cluster
 ====================================
 
-.. autoclass:: blocksci.cluster_python.Cluster
+.. autoclass:: blocksci.cluster.Cluster
    :members:
    :inherited-members:

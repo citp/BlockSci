@@ -1,5 +1,5 @@
-Input Range
+Tx Iterator
 ====================================
 
-.. autoclass:: blocksci.AnyInputRange
+.. autoclass:: blocksci.TxIterator
    :members:

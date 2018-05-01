@@ -1,5 +1,8 @@
 Heuristics
 ====================================
 
-.. automodule:: blocksci.blocksci_interface.heuristics
+.. automodule:: blocksci.heuristics
       :members:
+
+.. automodule:: blocksci.heuristics.change
+	:members:

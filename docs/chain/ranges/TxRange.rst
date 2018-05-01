@@ -1,5 +1,5 @@
 Tx Range
 ====================================
 
-.. autoclass:: blocksci.AnyTxRange
+.. autoclass:: blocksci.TxRange
    :members:

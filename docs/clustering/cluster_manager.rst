@@ -1,5 +1,5 @@
 ClusterManager
 ====================================
 
-.. autoclass:: blocksci.cluster_python.ClusterManager
+.. autoclass:: blocksci.cluster.ClusterManager
    :members:

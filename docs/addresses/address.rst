@@ -43,14 +43,14 @@ Multisignature Address
 Pay to script hash Address
 ====================================
 
-.. autoclass:: blocksci.PayToScriptHashAddress
+.. autoclass:: blocksci.ScriptHashAddress
    :members:
    :show-inheritance:
 
 Pay to witness script hash Address
 ====================================
 
-.. autoclass:: blocksci.PayToWitnessScriptHashAddress
+.. autoclass:: blocksci.WitnessScriptHashAddress
    :members:
    :show-inheritance:
 
@@ -61,9 +61,9 @@ Non-standard Address
    :members:
    :show-inheritance:
 
-Op Return Address
+Op Return
 ====================================
 
-.. autoclass:: blocksci.OpReturnAddress
+.. autoclass:: blocksci.OpReturn
    :members:
    :show-inheritance:

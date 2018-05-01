@@ -1,5 +1,5 @@
 Output Range
 ====================================
 
-.. autoclass:: blocksci.AnyOutputRange
+.. autoclass:: blocksci.OutputRange
    :members:
