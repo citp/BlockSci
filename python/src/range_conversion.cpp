@@ -91,7 +91,7 @@ blocksci_range_type_t<T> convertRangeToPythonBlockSci(T && t) {
 
 template <typename T>
 converted_range_impl_t<T> convertRangeToPythonImpl(T && t) {
-    auto converted = std::forward<T>(t) | ranges::view::transform([](auto && x) { return BasicTypeConverter{}(std::forward<decltype(x)>); });
+    auto converted = std::forward<T>(t) | ranges::view::transform([](auto && x) { return BasicTypeConverter{}(std::forward<decltype(x)>(x)); });
     using range_tag = typename type_tag<ranges::range_value_type_t<decltype(converted)>>::type;
 
     if constexpr (std::is_same_v<range_tag, py_tag>) {
