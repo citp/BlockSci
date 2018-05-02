@@ -8,6 +8,7 @@
 #ifndef caster_py_hpp
 #define caster_py_hpp
 
+#include <blocksci/address/address.hpp>
 #include <blocksci/scripts/script_variant.hpp>
 
 #include <pybind11/pybind11.h>
@@ -46,6 +47,31 @@ namespace pybind11 { namespace detail {
         }
         
         PYBIND11_TYPE_CASTER(blocksci::AnyScript, _("AnyAddress"));
+        
+        type_caster() = default;
+    };
+
+    template <> struct type_caster<blocksci::Address> {
+    private:
+        using value_conv = make_caster<blocksci::AnyScript>;
+    public:
+        bool load(handle src, bool convert) {
+            value_conv inner_caster;
+            if (!inner_caster.load(src, convert))
+                return false;
+
+            auto any = cast_op<blocksci::AnyScript &&>(std::move(inner_caster));
+            mpark::visit([&](auto address) {
+                value = address;
+            }, any.wrapped);
+            return true;
+        }
+        
+        static handle cast(const blocksci::Address &src, return_value_policy policy, handle parent) {
+            return value_conv::cast(src.getScript(), policy, parent);
+        }
+
+        PYBIND11_TYPE_CASTER(blocksci::Address, _("Address"));
         
         type_caster() = default;
     };

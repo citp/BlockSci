@@ -12,6 +12,8 @@
 #include "range_conversion.hpp"
 #include "blocksci_range.hpp"
 
+#include <pybind11/functional.h>
+
 #include <range/v3/range_for.hpp>
 #include <range/v3/view/any_view.hpp>
 #include <range/v3/view/filter.hpp>
@@ -47,6 +49,10 @@ auto addRangeMethods(Class &cl) {
     .def_property_readonly("all", [](Range & range) { 
         return pythonAllType(range);
     }, "Returns a list of all of the objects in the range")
+
+    // .def("where", [](Range &range, std::function<bool(const value_type &)> query) {
+    //     return convertRangeToPython(range | ranges::view::filter(query));
+    // }, "Return an iterator over all the items in the sequence matching the given query")
     ;
 
     if constexpr (ranges::ForwardRange<Range>()) {

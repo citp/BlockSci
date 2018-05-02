@@ -14,5 +14,6 @@
 
 void addTxRangeMethods(RangeClasses<blocksci::Transaction> &classes);
 void applyMethodsToTxRange(RangeClasses<blocksci::Transaction> &classes);
+void applyRangeFiltersToTxRange(RangeClasses<blocksci::Transaction> &classes);
 
 #endif /* tx_range_py_h */

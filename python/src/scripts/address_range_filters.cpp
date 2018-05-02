@@ -28,15 +28,13 @@ struct ScriptRangeWithTypeFunctor {
 
 template <typename Range>
 struct AddAddressRangeMethods {
-    template <typename Class, typename FuncApplication>
-    void operator()(Class &cl, FuncApplication func) {
-        cl
-        .def("with_type", func([](Range &range, blocksci::AddressType::Enum type) {
+    template <typename FuncApplication>
+    void operator()(FuncApplication func) {
+        func(method_tag, "with_type", [](Range &range, blocksci::AddressType::Enum type) {
             static auto table = blocksci::make_dynamic_table<blocksci::AddressType, ScriptRangeWithTypeFunctor, Range>();
             auto index = static_cast<size_t>(type);
             return table.at(index)(std::move(range));
-        }), "Returns a range including the subset of addresses which have the given type")
-        ;
+        }, "Returns a range including the subset of addresses which have the given type");
     }
 };
 

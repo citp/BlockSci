@@ -8,8 +8,6 @@
 #ifndef range_conversion_h
 #define range_conversion_h
 
-#include "type_converter.hpp"
-
 #include <blocksci/blocksci_fwd.hpp>
 #include <blocksci/chain/range_util.hpp>
 
@@ -49,6 +47,7 @@ template <> struct type_tag<blocksci::Block> { using type = blocksci_tag; };
 template <> struct type_tag<blocksci::Transaction> { using type = blocksci_tag; };
 template <> struct type_tag<blocksci::Input> { using type = blocksci_tag; };
 template <> struct type_tag<blocksci::Output> { using type = blocksci_tag; };
+template <> struct type_tag<blocksci::Address> { using type = blocksci_tag; };
 template <> struct type_tag<blocksci::AnyScript> { using type = blocksci_tag; };
 template <> struct type_tag<blocksci::EquivAddress> { using type = blocksci_tag; };
 template <> struct type_tag<blocksci::script::Pubkey> { using type = blocksci_tag; };
@@ -65,7 +64,12 @@ template <> struct type_tag<blocksci::Cluster> { using type = blocksci_tag; };
 template <> struct type_tag<blocksci::TaggedCluster> { using type = blocksci_tag; };
 template <> struct type_tag<blocksci::TaggedAddress> { using type = blocksci_tag; };
 
+template <> struct type_tag<int16_t> { using type = numpy_tag; };
+template <> struct type_tag<uint16_t> { using type = numpy_tag; };
+template <> struct type_tag<int32_t> { using type = numpy_tag; };
+template <> struct type_tag<uint32_t> { using type = numpy_tag; };
 template <> struct type_tag<int64_t> { using type = numpy_tag; };
+template <> struct type_tag<uint64_t> { using type = numpy_tag; };
 template <> struct type_tag<bool> { using type = numpy_tag; };
 template <> struct type_tag<std::chrono::system_clock::time_point> { using type = numpy_tag; };
 template <> struct type_tag<blocksci::uint256> { using type = numpy_tag; };
@@ -75,10 +79,59 @@ template <> struct type_tag<pybind11::bytes> { using type = py_tag; };
 template <> struct type_tag<pybind11::list> { using type = py_tag; };
 template <> struct type_tag<std::string> { using type = py_tag; };
 template <> struct type_tag<blocksci::AddressType::Enum> { using type = py_tag; };
+
 template <typename A, typename B> struct type_tag<std::pair<A, B>> { using type = py_tag; };
 
 template <typename T>
 struct type_tag<ranges::optional<T>, std::enable_if_t<is_tagged<T>::value>> { using type = blocksci_tag; };
+
+struct BlockSciTypeConverter {
+    template <typename T>
+    auto operator()(const T &val) {
+        return val;
+    }
+
+    blocksci::AnyScript operator()(const blocksci::Address &address);
+
+    int64_t operator()(uint16_t val) {
+        return static_cast<int64_t>(val);
+    }
+
+    int64_t operator()(int16_t val) {
+        return static_cast<int64_t>(val);
+    }
+
+    int64_t operator()(uint32_t val) {
+        return static_cast<int64_t>(val);
+    }
+
+    int64_t operator()(int32_t val) {
+        return static_cast<int64_t>(val);
+    }
+
+    // Potential overflow
+    int64_t operator()(uint64_t val) {
+        return static_cast<int64_t>(val);
+    }
+
+    int64_t operator()(int64_t val) {
+        return static_cast<int64_t>(val);
+    }
+
+    template <typename A, typename B>
+    auto operator()(const std::pair<A, B> &val) -> std::pair<decltype(this->operator()(val.first)), decltype(this->operator()(val.second))> {
+        return {this->operator()(val.first), this->operator()(val.second)};
+    }
+
+    template <typename T>
+    auto operator()(const ranges::optional<T> &val) -> ranges::optional<decltype(this->operator()(*val))> {
+        if (val) {
+            return this->operator()(*val);
+        } else {
+            return ranges::nullopt;
+        }
+    }
+};
 
 template <typename T>
 struct NumpyConverter {
@@ -147,11 +200,11 @@ struct ConvertedTagImpl<range_cat, T, numpy_tag> {
 
 template <ranges::category range_cat, typename T>
 struct ConvertedTagImpl<range_cat, T, blocksci_tag> {
-    using type = ranges::any_view<T, range_cat>;
+    using type = ranges::any_view<decltype(BlockSciTypeConverter{}(std::declval<T>())), range_cat>;
 };
 
 template <typename T>
-using converted_range_impl_t = typename ConvertedTagImpl<getBlockSciCategory(ranges::get_categories<T>()), decltype(BasicTypeConverter{}(std::declval<ranges::range_value_type_t<T>>()))>::type;
+using converted_range_impl_t = typename ConvertedTagImpl<getBlockSciCategory(ranges::get_categories<T>()), ranges::range_value_type_t<T>>::type;
 
 template <typename T>
 constexpr bool isNonTaggedRange() {

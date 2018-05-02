@@ -34,6 +34,10 @@ namespace pybind11 { namespace detail {
     };
 }}
 
+blocksci::AnyScript BlockSciTypeConverter::operator()(const blocksci::Address &address) {
+    return address.getScript();
+}
+
 typename NumpyConverter<std::chrono::system_clock::time_point>::type NumpyConverter<std::chrono::system_clock::time_point>::operator()(const std::chrono::system_clock::time_point &val) {
     return {std::chrono::duration_cast<std::chrono::nanoseconds>(val.time_since_epoch()).count()};
 }
@@ -91,14 +95,14 @@ blocksci_range_type_t<T> convertRangeToPythonBlockSci(T && t) {
 
 template <typename T>
 converted_range_impl_t<T> convertRangeToPythonImpl(T && t) {
-    auto converted = std::forward<T>(t) | ranges::view::transform([](auto && x) { return BasicTypeConverter{}(std::forward<decltype(x)>(x)); });
-    using range_tag = typename type_tag<ranges::range_value_type_t<decltype(converted)>>::type;
-
+    using range_tag = typename type_tag<ranges::range_value_type_t<T>>::type;
     if constexpr (std::is_same_v<range_tag, py_tag>) {
-        return convertRangeToPythonPy(converted);
+        return convertRangeToPythonPy(std::forward<T>(t));
     } else if constexpr (std::is_same_v<range_tag, numpy_tag>) {
-        return convertRangeToPythonNumpy(converted);
+        return convertRangeToPythonNumpy(std::forward<T>(t));
     } else if constexpr (std::is_same_v<range_tag, blocksci_tag>) {
+        auto converted = std::forward<T>(t) | ranges::view::transform([](auto && x) { return BlockSciTypeConverter{}(std::forward<decltype(x)>(x)); });
+        using range_tag = typename type_tag<ranges::range_value_type_t<decltype(converted)>>::type;
         return convertRangeToPythonBlockSci(converted);
     }
 }

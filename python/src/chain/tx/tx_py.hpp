@@ -68,6 +68,7 @@ struct AddTransactionMethods {
         func(property_tag, "op_return", [](const Transaction &tx) -> ranges::optional<Output> {
             return getOpReturn(tx);
         }, "If this transaction included a null data address, return its output. Otherwise return None");
+        func(method_tag, "includes_output_of_type", includesOutputOfType, "Check whether the given transaction includes an output of the given address type", pybind11::arg("address_type"));
         func(property_tag, "is_coinbase", &Transaction::isCoinbase, "Return's true if this transaction is a Coinbase transaction");
         func(property_tag, "change_output", [](const Transaction &tx) -> ranges::optional<Output> {
             return heuristics::uniqueChangeByLegacyHeuristic(tx);

@@ -5,8 +5,8 @@
 //  Created by Harry Kalodner on 4/30/18.
 //
 
-#ifndef output_py_h
-#define output_py_h
+#ifndef blockchain_py_h
+#define blockchain_py_h
 
 #include "method_tags.hpp"
 
@@ -18,14 +18,14 @@
 
 #include <pybind11/pybind11.h>
 
-void init_blockchain(pybind11::module &m);
+void init_data_access(pybind11::module &m);
+void init_blockchain(pybind11::class_<blocksci::Blockchain> &cl);
 
 struct AddBlockchainMethods {
     template <typename FuncApplication>
     void operator()(FuncApplication func) {
         using namespace blocksci;
         func(method_tag, "address_count", &Blockchain::addressCount, "Get an upper bound of the number of address of a given type (This reflects the number of type equivlant addresses of that type).", pybind11::arg("address_type"));
-        func(method_tag, "address_type_txes", getTransactionIncludingOutput, "Returns a list of all transactions that include outputs of the given address type", pybind11::arg("start"), pybind11::arg("stop"), pybind11::arg("address_type"));
         func(property_tag, "blocks", &Blockchain::blocks, "Returns a range of all the blocks in the chain");
         func(method_tag, "tx_with_index", [](Blockchain &chain, uint32_t index) {
             return Transaction{index, chain.getAccess()};
@@ -67,4 +67,4 @@ struct AddBlockchainMethods {
     }
 };
 
-#endif /* output_py_h */
+#endif /* blockchain_py_h */

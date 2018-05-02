@@ -57,8 +57,6 @@ void init_block(py::class_<Block> &cl) {
     .def(py::self == py::self)
     .def(hash(py::self))
     .def_property_readonly("_access", &Block::getAccess, py::return_value_policy::reference)
-    .def_property_readonly("next_block", &Block::nextBlock, "Returns the block which follows this one in the chain")
-    .def_property_readonly("prev_block", &Block::prevBlock, "Returns the block which comes before this one in the chain")
     .def("net_address_type_value", py::overload_cast<const Block &>(netAddressTypeValue), "Returns a set of the net change in the utxo pool after this block split up by address type")
     .def("net_full_type_value", py::overload_cast<const Block &>(netFullTypeValue), "Returns a set of the net change in the utxo pool after this block split up by full type")
     ;

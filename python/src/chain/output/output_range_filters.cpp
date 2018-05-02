@@ -16,28 +16,26 @@ using namespace blocksci;
 
 template <typename Range>
 struct AddOutputRangeMethods {
-    template <typename Class, typename FuncApplication>
-    void operator()(Class &cl, FuncApplication func) {
-        cl
-        .def_property_readonly("unspent", func([](Range & range) {
+    template <typename FuncApplication>
+    void operator()(FuncApplication func) {
+        func(property_tag, "unspent", [](Range & range) {
             return outputsUnspent(range);
-        }), "Returns a range including the subset of outputs which were never spent")
-        .def("spent_before",  func([](Range &range, BlockHeight height) {
+        }, "Returns a range including the subset of outputs which were never spent");
+        func(method_tag, "spent_before_height",  [](Range &range, BlockHeight height) {
             return outputsSpentBeforeHeight(range, height);
-        }), "Returns a range including the subset of outputs which were spent before the given height")
-        .def("spent_after",  func([](Range &range, BlockHeight height) {
+        }, "Returns a range including the subset of outputs which were spent before the given height", py::arg("height"));
+        func(method_tag, "spent_after_height",  [](Range &range, BlockHeight height) {
             return outputsSpentAfterHeight(range, height);
-        }), "Returns a range including the subset of outputs which were spent after the given height")
-        .def("spent_within",  func([](Range &range, BlockHeight height) {
+        }, "Returns a range including the subset of outputs which were spent after the given height", py::arg("height"));
+        func(method_tag, "spent_with_age_less_than",  [](Range &range, BlockHeight height) {
             return outputsSpentWithinRelativeHeight(range, height);
-        }), "Returns a range including the subset of outputs which were spent within the given number of blocks")
-        .def("spent_outside",  func([](Range &range, BlockHeight height) {
+        }, "Returns a range including the subset of outputs which were spent within the given number of blocks", py::arg("age"));
+        func(method_tag, "spent_with_age_greater_than",  [](Range &range, BlockHeight height) {
             return outputsSpentOutsideRelativeHeight(range, height);
-        }), "Returns a range including the subset of outputs which were spent later than the given number of blocks")
-        .def("with_type", func([](Range &range, AddressType::Enum type) {
+        }, "Returns a range including the subset of outputs which were spent later than the given number of blocks", py::arg("age"));
+        func(method_tag, "with_type", [](Range &range, AddressType::Enum type) {
             return outputsOfType(range, type);
-        }), "Returns a range including the subset of outputs which were sent to the given address type")
-        ;
+        }, "Returns a range including the subset of outputs which were sent to the given address type", py::arg("type"));
     }
 };
 

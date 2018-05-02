@@ -49,7 +49,7 @@ def mapreduce_block_ranges(chain, mapFunc, reduceFunc, init=missing_param,  star
     if cpu_count == 1:
         return mapFunc(chain[start:end])
 
-    raw_segments = chain.segment_indexes(start, end, cpu_count)
+    raw_segments = chain._segment_indexes(start, end, cpu_count)
     config = chain.config
 
     segments = [(raw_segment, config) for raw_segment in raw_segments]
@@ -135,9 +135,15 @@ Blockchain.mapreduce_blocks = mapreduce_blocks
 Blockchain.mapreduce_txes = mapreduce_txes
 
 def heights_to_dates(self, df):
+    """
+    Convert a pandas data frame with a block height index into a frame with a block time index
+    """
     return df.set_index(df.index.to_series().apply(lambda x: self[x].time))
 
-def block_range(self, start, end=None):
+def block_range(self, start, end=None) -> BlockRange:
+    """
+    Return the range of blocks mined between the given dates
+    """
     if self.block_times is None:
         self.block_times = pd.DataFrame([block.time for block in self], columns=["date"])
         self.block_times["height"] = self.block_times.index
@@ -188,7 +194,10 @@ class DummyClass:
     pass
 
 loaderDirectory = os.path.dirname(os.path.abspath(inspect.getsourcefile(DummyClass)))
-def get_miner(block):
+def get_miner(block) -> str:
+    """
+    Get the miner of the block based on the text in the coinbase transaction
+    """
     global first_miner_run
     global tagged_addresses
     global pool_data

@@ -8,7 +8,6 @@
 #ifndef self_py_h
 #define self_py_h
 
-#include "type_converter.hpp"
 #include "function_traits.hpp"
 #include "range_conversion.hpp"
 #include "method_types.hpp"
@@ -36,18 +35,15 @@ struct SelfApplyTypeConverterImpl;
 
 template <typename result_type>
 struct SelfApplyTypeConverterImpl<result_type, SelfApplyTag::Normal> {
-    using return_type = decltype(BasicTypeConverter{}(std::declval<result_type>()));
-    static_assert(std::is_same_v<decltype(PythonTypeName<return_type>::name()), std::string>);
-
+    using return_type = result_type;
     return_type operator()(result_type && result) const {
-        return BasicTypeConverter{}(result);
+        return std::move(result);
     }
 };
 
 template <typename result_type>
 struct SelfApplyTypeConverterImpl<result_type, SelfApplyTag::Range> {
     using return_type = decltype(convertRangeToPython(std::declval<result_type>()));
-    static_assert(std::is_same_v<decltype(PythonTypeName<return_type>::name()), std::string>);
 
     return_type operator()(result_type && result) const {
         return convertRangeToPython(result);
@@ -64,7 +60,6 @@ template <typename T, class Traits, typename F, std::size_t ... Is>
 struct ApplyMethodToSelf<T, Traits, F, std::index_sequence<Is...>> {
     using converter_type = self_apply_converter_t<typename Traits::result_type>;
     using return_type = typename converter_type::return_type;
-    static_assert(std::is_same_v<decltype(PythonTypeName<return_type>::name()), std::string>);
 
     F func;
     converter_type converter{};

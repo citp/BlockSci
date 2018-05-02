@@ -19,7 +19,7 @@ template <typename T>
 struct AddScriptHashBaseMethods {
     template <typename FuncApplication>
     void operator()(FuncApplication func) {
-        func(property_tag, "wrapped_address", &T::wrappedScript, "The address inside this P2SH address");
+        func(property_tag, "wrapped_address", &T::getWrappedAddress, "The address inside this P2SH address");
         func(property_tag, "raw_address",  &T::getAddressHash, "The 160 bit P2SH address hash");
         func(property_tag, "address_string", &T::addressString, "Bitcoin address string");
     }

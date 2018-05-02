@@ -37,6 +37,8 @@ struct AddBlockMethods {
         func(property_tag, "outputs", [](const Block &block) -> ranges::any_view<Output> {
             return outputs(block);
         }, "A range of all of the outputs in the block");
+        func(property_tag, "next_block", &Block::nextBlock, "Returns the block which follows this one in the chain");
+        func(property_tag, "prev_block", &Block::prevBlock, "Returns the block which comes before this one in the chain");
         func(property_tag, "hash", &Block::getHash, "Hash of this block");
         func(property_tag, "version", &Block::version, "Protocol version specified in block header");
         func(property_tag, "timestamp", &Block::timestamp, "Creation timestamp specified in block header");
