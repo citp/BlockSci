@@ -113,14 +113,6 @@ namespace blocksci {
         return chain.mapReduce<std::vector<Transaction>>(startBlock, endBlock, mapFunc, reduceFunc);
     }
     
-    std::vector<Transaction> getTransactionIncludingOutput(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, AddressType::Enum type) {
-        return filter(chain, startBlock, endBlock, [type](const Transaction &tx) {
-            return ranges::any_of(tx.outputs(), [=](const Output &output) {
-                return output.getType() == type;
-            });
-        });
-    }
-    
     std::map<int64_t, Address> mostValuableAddresses(Blockchain &chain) {
         AddressOutputRange range{chain.getAccess()};
         auto grouped = range | ranges::view::group_by([](auto pair1, auto pair2) { return pair1.first == pair2.first; });

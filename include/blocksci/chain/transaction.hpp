@@ -16,6 +16,7 @@
 #include <blocksci/core/raw_transaction.hpp>
 #include <blocksci/index/mempool_index.hpp>
 
+#include <range/v3/algorithm/any_of.hpp>
 #include <range/v3/view/iota.hpp>
 #include <range/v3/view/zip_with.hpp>
 
@@ -167,6 +168,12 @@ namespace blocksci {
     using output_range = decltype(std::declval<Transaction>().outputs());
     
     bool BLOCKSCI_EXPORT hasFeeGreaterThan(Transaction &tx, int64_t txFee);
+    
+    inline bool BLOCKSCI_EXPORT includesOutputOfType(const Transaction &tx, AddressType::Enum type) {
+        return ranges::any_of(tx.outputs(), [=](const Output &output) {
+            return output.getType() == type;
+        });
+    }
     
     ranges::optional<Output> BLOCKSCI_EXPORT getOpReturn(const Transaction &tx);
 

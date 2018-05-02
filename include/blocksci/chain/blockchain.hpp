@@ -265,7 +265,11 @@ namespace blocksci {
     std::vector<Block> BLOCKSCI_EXPORT filter(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, std::function<bool(const Block &block)> testFunc);
     std::vector<Transaction> BLOCKSCI_EXPORT filter(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, std::function<bool(const Transaction &tx)> testFunc);
     
-    std::vector<Transaction> BLOCKSCI_EXPORT getTransactionIncludingOutput(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, AddressType::Enum type);
+    inline std::vector<Transaction> BLOCKSCI_EXPORT getTransactionsIncludingOutput(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, AddressType::Enum type) {
+        return filter(chain, startBlock, endBlock, [type](const Transaction &tx) {
+            return includesOutputOfType(tx, type);
+        });
+    }
     
     std::map<int64_t, Address> BLOCKSCI_EXPORT mostValuableAddresses(Blockchain &chain);
     
