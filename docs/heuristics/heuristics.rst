@@ -1,8 +1,8 @@
 Heuristics
 ====================================
 
-.. automodule:: blocksci.heuristics
-      :members:
-
-.. automodule:: blocksci.heuristics.change
-	:members:
+.. toctree::
+   :maxdepth: 2
+   
+   change
+   other_heuristics

@@ -194,6 +194,11 @@ def process_signature(app, what: str, name: str, obj, options, signature, return
         if first_split[0].strip() == "self":
             return ("(" + ", ".join(raw_parts[1:]) + ")", return_annotation)
     return (signature, return_annotation)
+
+# def process_docstring(app, what, name, obj, options, lines):
+#     if "Overloaded function." in lines:
+#         index = lines.index("Overloaded function.")
+#         print(name, lines[index + 2:])
 # def process_signature(app, what: str, name: str, obj, options, signature, return_annotation):
 #     if signature:
 #         parts = []
@@ -209,3 +214,5 @@ def process_signature(app, what: str, name: str, obj, options, signature, return
 
 def setup(app):
     app.connect('autodoc-process-signature', process_signature)
+    # app.connect('autodoc-process-docstring', process_docstring)
+    
