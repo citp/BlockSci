@@ -1,5 +1,5 @@
 
-execute_process(COMMAND git submodule update --init)
+execute_process(COMMAND git submodule update --init --recursive)
 
 set_property(GLOBAL PROPERTY ranges_headers "${CMAKE_CURRENT_SOURCE_DIR}/range-v3/include/")
 set_property(GLOBAL PROPERTY variant_headers "${CMAKE_CURRENT_SOURCE_DIR}/variant/include/")
