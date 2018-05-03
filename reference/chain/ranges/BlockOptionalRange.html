@@ -1,0 +1,693 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Optional Block Range &mdash; BlockSci 0.5.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Optional Tx Range" href="TxOptionalRange.html" />
+    <link rel="prev" title="Output Range" href="OutputRange.html" /> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> BlockSci
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.5.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Release notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../compiling.html">Compiling BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../setup.html">Local setup</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../reference.html">Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../chain.html">Chain Classes</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../blockchain.html">Blockchain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../block.html">Block</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tx.html">Tx</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../input.html">Input</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../output.html">Output</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="ranges.html">Range Classes</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="BlockRange.html">Block Range</a></li>
+<li class="toctree-l4"><a class="reference internal" href="TxRange.html">Tx Range</a></li>
+<li class="toctree-l4"><a class="reference internal" href="InputRange.html">Input Range</a></li>
+<li class="toctree-l4"><a class="reference internal" href="OutputRange.html">Output Range</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Optional Block Range</a></li>
+<li class="toctree-l4"><a class="reference internal" href="TxOptionalRange.html">Optional Tx Range</a></li>
+<li class="toctree-l4"><a class="reference internal" href="InputOptionalRange.html">Optional Input Range</a></li>
+<li class="toctree-l4"><a class="reference internal" href="OutputOptionalRange.html">Optional Output Range</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../iterators/iterators.html">Iterator Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../addresses/addresses.html">Address Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../heuristics/heuristics.html">Heuristics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../clustering/clustering.html">Clustering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../other/other.html">Other Utility Classes</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BlockSci</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../reference.html">Reference</a> &raquo;</li>
+        
+          <li><a href="../chain.html">Chain Classes</a> &raquo;</li>
+        
+          <li><a href="ranges.html">Range Classes</a> &raquo;</li>
+        
+      <li>Optional Block Range</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/reference/chain/ranges/BlockOptionalRange.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="optional-block-range">
+<h1>Optional Block Range<a class="headerlink" href="#optional-block-range" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="blocksci.BlockOptionalRange">
+<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">BlockOptionalRange</code><a class="headerlink" href="#blocksci.BlockOptionalRange" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.all">
+<code class="descname">all</code><a class="headerlink" href="#blocksci.BlockOptionalRange.all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all of the objects in the range</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.base_size">
+<code class="descname">base_size</code><a class="headerlink" href="#blocksci.BlockOptionalRange.base_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: The size of the non-segwit data in bytes</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../other/ranges/IntOptionalRange.html#blocksci.IntOptionalRange" title="blocksci.IntOptionalRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.IntOptionalRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.bits">
+<code class="descname">bits</code><a class="headerlink" href="#blocksci.BlockOptionalRange.bits" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: Difficulty threshold specified in block header</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../other/ranges/IntOptionalRange.html#blocksci.IntOptionalRange" title="blocksci.IntOptionalRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.IntOptionalRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.coinbase_param">
+<code class="descname">coinbase_param</code><a class="headerlink" href="#blocksci.BlockOptionalRange.coinbase_param" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: Data contained within the coinbase transaction of this block</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../other/ranges/BytesOptionalRange.html#blocksci.BytesOptionalRange" title="blocksci.BytesOptionalRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.BytesOptionalRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.coinbase_tx">
+<code class="descname">coinbase_tx</code><a class="headerlink" href="#blocksci.BlockOptionalRange.coinbase_tx" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: Return the coinbase transaction in this block</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="TxOptionalRange.html#blocksci.TxOptionalRange" title="blocksci.TxOptionalRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.TxOptionalRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.fee">
+<code class="descname">fee</code><a class="headerlink" href="#blocksci.BlockOptionalRange.fee" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: The sum of the transaction fees contained in this block</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../other/ranges/IntOptionalRange.html#blocksci.IntOptionalRange" title="blocksci.IntOptionalRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.IntOptionalRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.has_value">
+<code class="descname">has_value</code><a class="headerlink" href="#blocksci.BlockOptionalRange.has_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a array of bools denoting whether a item in the sequence has a value or is none</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">:class:` numpy.ndarray[bool]`</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.hash">
+<code class="descname">hash</code><a class="headerlink" href="#blocksci.BlockOptionalRange.hash" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: Hash of this block</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../other/ranges/UInt256OptionalRange.html#blocksci.UInt256OptionalRange" title="blocksci.UInt256OptionalRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.UInt256OptionalRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.height">
+<code class="descname">height</code><a class="headerlink" href="#blocksci.BlockOptionalRange.height" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: Height of the block in the blockchain</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../other/ranges/IntOptionalRange.html#blocksci.IntOptionalRange" title="blocksci.IntOptionalRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.IntOptionalRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.input_count">
+<code class="descname">input_count</code><a class="headerlink" href="#blocksci.BlockOptionalRange.input_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: Returns total number of inputs included in this block</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../other/ranges/IntOptionalRange.html#blocksci.IntOptionalRange" title="blocksci.IntOptionalRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.IntOptionalRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.input_value">
+<code class="descname">input_value</code><a class="headerlink" href="#blocksci.BlockOptionalRange.input_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: Returns the sum of the value of all of the inputs included in this block</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../other/ranges/IntOptionalRange.html#blocksci.IntOptionalRange" title="blocksci.IntOptionalRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.IntOptionalRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.inputs">
+<code class="descname">inputs</code><a class="headerlink" href="#blocksci.BlockOptionalRange.inputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: A range of all of the inputs in the block</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../iterators/InputIterator.html#blocksci.InputIterator" title="blocksci.InputIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.InputIterator</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.next_block">
+<code class="descname">next_block</code><a class="headerlink" href="#blocksci.BlockOptionalRange.next_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: Returns the block which follows this one in the chain</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#blocksci.BlockOptionalRange" title="blocksci.BlockOptionalRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.BlockOptionalRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.nonce">
+<code class="descname">nonce</code><a class="headerlink" href="#blocksci.BlockOptionalRange.nonce" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: Nonce specified in block header</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../other/ranges/IntOptionalRange.html#blocksci.IntOptionalRange" title="blocksci.IntOptionalRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.IntOptionalRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.output_count">
+<code class="descname">output_count</code><a class="headerlink" href="#blocksci.BlockOptionalRange.output_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: Returns total number of outputs included in this block</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../other/ranges/IntOptionalRange.html#blocksci.IntOptionalRange" title="blocksci.IntOptionalRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.IntOptionalRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.output_value">
+<code class="descname">output_value</code><a class="headerlink" href="#blocksci.BlockOptionalRange.output_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: Returns the sum of the value of all of the outputs included in this block</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../other/ranges/IntOptionalRange.html#blocksci.IntOptionalRange" title="blocksci.IntOptionalRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.IntOptionalRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.outputs">
+<code class="descname">outputs</code><a class="headerlink" href="#blocksci.BlockOptionalRange.outputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: A range of all of the outputs in the block</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../iterators/OutputIterator.html#blocksci.OutputIterator" title="blocksci.OutputIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.OutputIterator</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.prev_block">
+<code class="descname">prev_block</code><a class="headerlink" href="#blocksci.BlockOptionalRange.prev_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: Returns the block which comes before this one in the chain</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#blocksci.BlockOptionalRange" title="blocksci.BlockOptionalRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.BlockOptionalRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.revenue">
+<code class="descname">revenue</code><a class="headerlink" href="#blocksci.BlockOptionalRange.revenue" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: Total reward received by the miner of this block</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../other/ranges/IntOptionalRange.html#blocksci.IntOptionalRange" title="blocksci.IntOptionalRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.IntOptionalRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.size_bytes">
+<code class="descname">size_bytes</code><a class="headerlink" href="#blocksci.BlockOptionalRange.size_bytes" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: Returns the total size of the block in bytes</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../other/ranges/IntOptionalRange.html#blocksci.IntOptionalRange" title="blocksci.IntOptionalRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.IntOptionalRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.time">
+<code class="descname">time</code><a class="headerlink" href="#blocksci.BlockOptionalRange.time" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: Datetime object created from creation timestamp</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../other/ranges/DateOptionalRange.html#blocksci.DateOptionalRange" title="blocksci.DateOptionalRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.DateOptionalRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.time_seen">
+<code class="descname">time_seen</code><a class="headerlink" href="#blocksci.BlockOptionalRange.time_seen" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: If recorded by the mempool recorder, the time that this block was first seen by your node</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../other/ranges/DateOptionalRange.html#blocksci.DateOptionalRange" title="blocksci.DateOptionalRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.DateOptionalRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.timestamp">
+<code class="descname">timestamp</code><a class="headerlink" href="#blocksci.BlockOptionalRange.timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: Creation timestamp specified in block header</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../other/ranges/IntOptionalRange.html#blocksci.IntOptionalRange" title="blocksci.IntOptionalRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.IntOptionalRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.total_size">
+<code class="descname">total_size</code><a class="headerlink" href="#blocksci.BlockOptionalRange.total_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: The size all block data in bytes</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../other/ranges/IntOptionalRange.html#blocksci.IntOptionalRange" title="blocksci.IntOptionalRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.IntOptionalRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.tx_count">
+<code class="descname">tx_count</code><a class="headerlink" href="#blocksci.BlockOptionalRange.tx_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: A range of all of the txes in the block</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../other/ranges/IntOptionalRange.html#blocksci.IntOptionalRange" title="blocksci.IntOptionalRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.IntOptionalRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.txes">
+<code class="descname">txes</code><a class="headerlink" href="#blocksci.BlockOptionalRange.txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: A range of all of the txes in the block</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../iterators/TxIterator.html#blocksci.TxIterator" title="blocksci.TxIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.TxIterator</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.version">
+<code class="descname">version</code><a class="headerlink" href="#blocksci.BlockOptionalRange.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: Protocol version specified in block header</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../other/ranges/IntOptionalRange.html#blocksci.IntOptionalRange" title="blocksci.IntOptionalRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.IntOptionalRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.virtual_size">
+<code class="descname">virtual_size</code><a class="headerlink" href="#blocksci.BlockOptionalRange.virtual_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: The weight of the block divided by 4</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../other/ranges/IntOptionalRange.html#blocksci.IntOptionalRange" title="blocksci.IntOptionalRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.IntOptionalRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.weight">
+<code class="descname">weight</code><a class="headerlink" href="#blocksci.BlockOptionalRange.weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: Three times the base size plus the total size</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../other/ranges/IntOptionalRange.html#blocksci.IntOptionalRange" title="blocksci.IntOptionalRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.IntOptionalRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.BlockOptionalRange.with_default_value">
+<code class="descname">with_default_value</code><span class="sig-paren">(</span><em>default_value: blocksci.Block</em><span class="sig-paren">)</span> &#x2192; blocksci.BlockRange<a class="headerlink" href="#blocksci.BlockOptionalRange.with_default_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replace all none values in the sequence with the provided default value and return the resulting sequence</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="BlockRange.html#blocksci.BlockRange" title="blocksci.BlockRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.BlockOptionalRange.with_value">
+<code class="descname">with_value</code><a class="headerlink" href="#blocksci.BlockOptionalRange.with_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a sequence containing only non-None items in the sequence</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="BlockRange.html#blocksci.BlockRange" title="blocksci.BlockRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockRange</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="TxOptionalRange.html" class="btn btn-neutral float-right" title="Optional Tx Range" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="OutputRange.html" class="btn btn-neutral" title="Output Range" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Harry Kalodner.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.5.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

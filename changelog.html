@@ -1,43 +1,228 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Release notes &#8212; BlockSci 0.4.5 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Release notes &mdash; BlockSci 0.5.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Chain Classes" href="chain/chain.html" />
-    <link rel="prev" title="BlockSci" href="readme.html" />
+    <link rel="next" title="Compiling BlockSci" href="compiling.html" />
+    <link rel="prev" title="BlockSci" href="readme.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
    
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  <div class="wy-grid-for-nav">
 
-  </head><body>
-  
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
+          
+            <a href="index.html" class="icon icon-home"> BlockSci
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.5.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="readme.html">BlockSci</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Release notes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-5-0">Version 0.5.0</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#feature-enhancements">Feature Enhancements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bug-fixes">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-4-5">Version 0.4.5</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Feature Enhancements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#breaking-changes">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-3">Version 0.3</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#x-performance-increase">5x performance increase</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#new-data-format">New data format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#segwit-support-api-changes">SegWit support &amp; API changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#additional-index-lookup">Additional index lookup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Bug fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#limitations">Limitations</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-2">Version 0.2</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="compiling.html">Compiling BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Local setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/reference.html">Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">BlockSci</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Release notes</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/changelog.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
             
   <div class="section" id="release-notes">
 <h1>Release notes<a class="headerlink" href="#release-notes" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="version-0-4-5">
-<h2>Version 0.4.5<a class="headerlink" href="#version-0-4-5" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="version-0-5-0">
+<h2>Version 0.5.0<a class="headerlink" href="#version-0-5-0" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="feature-enhancements">
 <h3>Feature Enhancements<a class="headerlink" href="#feature-enhancements" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first">Expanded iterator and range functionality to return NumPy arrays.</p>
+<p>Many methods and properties of BlockSci objects return range or iterator objects such as <a class="reference internal" href="reference/chain/ranges/TxRange.html#blocksci.TxRange" title="blocksci.TxRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.TxRange</span></code></a>. These objects allow vectorized operations over sequences of BlockSci objects. Their API matches up with the API of their member objects, and thus <a class="reference internal" href="reference/chain/ranges/TxRange.html#blocksci.TxRange" title="blocksci.TxRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.TxRange</span></code></a> has almost the same set of methods as <a class="reference internal" href="reference/chain/tx.html#blocksci.Tx" title="blocksci.Tx"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.Tx</span></code></a>. These methods will effiently call the given method over all items in the range or iterator. Depending on the return type of the method, the result will either be another range, a NumPy array, or a python list. For further information, look for these classes in the reference.</p>
+</li>
+<li><p class="first">Add custom BlockSci pickler to enable sending and recieving serialized BlockSci objects. This means that returning BlockSci objects from the multiprocessing interface now works correctly.</p>
+</li>
+<li><p class="first">Enhance the change address heuristics interface</p>
+<p>Change address heuristics are now composible in order to form new customized heuristics using the <a class="reference internal" href="reference/heuristics/change.html#blocksci.heuristics.change.ChangeHeuristic" title="blocksci.heuristics.change.ChangeHeuristic"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.heuristics.change.ChangeHeuristic</span></code></a> interface. These can be used in combination with the new clustering interface described below.</p>
+</li>
+<li><p class="first">Incorporate clustering module into main BlockSci library</p>
+<p>The formerly external clustering module is now avaiable as <a class="reference internal" href="reference/clustering/clustering.html#module-blocksci.cluster" title="blocksci.cluster"><code class="xref py py-mod docutils literal notranslate"><span class="pre">blocksci.cluster</span></code></a>. Further, it is now possible to generate new clusterings through the python interface using the <a class="reference internal" href="reference/clustering/cluster_manager.html#blocksci.cluster.ClusterManager.create_clustering" title="blocksci.cluster.ClusterManager.create_clustering"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_clustering()</span></code></a> method. Users can select their choice of change address heuristic in order to experiment with different clustering strategies.</p>
+</li>
+<li><p class="first">Simplified build system</p>
+<p>BlockSci’s install process no longer requires the compilation of any external dependencies to compile on Ubuntu 16.04.</p>
+<p>The BlockSci library no longer has any public dependencies so compiling against it will not require linking against anything else.</p>
+<p>The CMake build script has now been updated to install a Config file which allows you to use <cite>find_package(blocksci)</cite> to import BlockSci’s target’s into your build script. This makes it much easier to build libraries that use BlockSci as a dependency.</p>
+<p>The BlockSci python module has been moved into a separate module to allow for a simple SetupTools or pip based install process: <cite>pip install -e pyblocksci</cite>. The main BlockSci library must be installed first for this to work.</p>
+</li>
+<li><p class="first">Updated mempool recorder and integrated it into BlockSci interface.</p>
+<p>For instructions on running the mempool recorder and using the data it produces, see the <a class="reference external" href="https://citp.github.io/BlockSci/setup.html">setup</a> section.</p>
+</li>
+<li><p class="first">Improve and clean up auto generated API reference.</p>
+<p>All method signatures display correct types and all properties display the type of the returned value. Further, all types link to their definition in the documentation.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="bug-fixes">
+<h3>Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Removed hardcoded paths (<a class="reference external" href="https://github.com/citp/BlockSci/issues/72">Issue #72</a>)</li>
+<li>Fixed <a class="reference internal" href="reference/chain/block.html#blocksci.Block.miner" title="blocksci.Block.miner"><code class="xref py py-func docutils literal notranslate"><span class="pre">miner()</span></code></a> (<a class="reference external" href="https://github.com/citp/BlockSci/issues/76">Issue #76</a>)</li>
+<li>Added pickling support (<a class="reference external" href="https://github.com/citp/BlockSci/issues/84">Issue #84</a>)</li>
+<li>Added <a class="reference internal" href="reference/chain/blockchain.html#blocksci.Blockchain.reload" title="blocksci.Blockchain.reload"><code class="xref py py-func docutils literal notranslate"><span class="pre">reload()</span></code></a> (<a class="reference external" href="https://github.com/citp/BlockSci/issues/98">Issue #98</a>)</li>
+</ul>
+</div>
+</div>
+<div class="section" id="version-0-4-5">
+<h2>Version 0.4.5<a class="headerlink" href="#version-0-4-5" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>Feature Enhancements<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <ul>
 <li><p class="first">Safe incremental updates</p>
 <p>Following an number of enhancements BlockSci is now capable of safely performing incremental updates. The AWS distribution of BlockSci now includes a Bitcoin full node and will automatically update the BlockChain once per hour. For local installations of BlockSci, see the readme for setup instructions.</p>
@@ -69,8 +254,8 @@
 <li>Removed ScriptType since its functionality was superseded by EquivAddress</li>
 </ul>
 </div>
-<div class="section" id="bug-fixes">
-<h3>Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id2">
+<h3>Bug Fixes<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fixed segwit size handling as stated above. (<a class="reference external" href="https://github.com/citp/BlockSci/issues/43">Issue #43</a>)</li>
 <li>Fixed chain.filter_txes (<a class="reference external" href="https://github.com/citp/BlockSci/issues/50">Issue #50</a>)</li>
@@ -171,8 +356,8 @@ distinguish between functions which are guaranteed to be correct and functions w
 <p>We have added an index to allow the lookup of transactions by hash and addresses by address string.</p>
 <p>Transactions can be looked up via <code class="code python docutils literal notranslate"><span class="name"><span class="pre">blocksci</span></span><span class="operator"><span class="pre">.</span></span><span class="name"><span class="pre">Tx</span></span><span class="punctuation"><span class="pre">(</span></span><span class="name"><span class="pre">hash_string</span></span><span class="punctuation"><span class="pre">)</span></span></code> and addresses can be looked up via <code class="code python docutils literal notranslate"><span class="name"><span class="pre">blocksci</span></span><span class="operator"><span class="pre">.</span></span><span class="name"><span class="pre">Address</span></span><span class="operator"><span class="pre">.</span></span><span class="name"><span class="pre">from_string</span></span><span class="punctuation"><span class="pre">(</span></span><span class="name"><span class="pre">address_string</span></span><span class="punctuation"><span class="pre">)</span></span></code>.</p>
 </div>
-<div class="section" id="id1">
-<h3>Bug fixes<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id3">
+<h3>Bug fixes<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
 <li>Many causes of crashes and instability have now been resolved.</li>
@@ -199,75 +384,72 @@ Rerunning the parser in the uncommon situation that a previously parsed block ha
 </div>
 
 
+           </div>
+           
           </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="compiling.html" class="btn btn-neutral float-right" title="Compiling BlockSci" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="readme.html" class="btn btn-neutral" title="BlockSci" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Harry Kalodner.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="index.html">BlockSci</a></h1>
+
+    </section>
+
+  </div>
+  
 
 
+  
 
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.5.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
+  
 
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
 
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
 
-
-<h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="readme.html">BlockSci</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Release notes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-4-5">Version 0.4.5</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-3">Version 0.3</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-2">Version 0.2</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="chain/chain.html">Chain Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="addresses/addresses.html">Address Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="heuristics/heuristics.html">Heuristics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="clustering/clustering.html">Clustering</a></li>
-</ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="readme.html" title="previous chapter">BlockSci</a></li>
-      <li>Next: <a href="chain/chain.html" title="next chapter">Chain Classes</a></li>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &copy;2017, Harry Kalodner.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
-      
-      |
-      <a href="_sources/changelog.rst.txt"
-          rel="nofollow">Page source</a>
-    </div>
-
-    
-
-    
-  </body>
+</body>
 </html>

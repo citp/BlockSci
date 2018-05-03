@@ -1,0 +1,273 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Release notes &#8212; BlockSci 0.4.5 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Chain Classes" href="chain/chain.html" />
+    <link rel="prev" title="BlockSci" href="readme.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="release-notes">
+<h1>Release notes<a class="headerlink" href="#release-notes" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="version-0-4-5">
+<h2>Version 0.4.5<a class="headerlink" href="#version-0-4-5" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="feature-enhancements">
+<h3>Feature Enhancements<a class="headerlink" href="#feature-enhancements" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first">Safe incremental updates</p>
+<p>Following an number of enhancements BlockSci is now capable of safely performing incremental updates. The AWS distribution of BlockSci now includes a Bitcoin full node and will automatically update the BlockChain once per hour. For local installations of BlockSci, see the readme for setup instructions.</p>
+</li>
+<li><p class="first">Introduced new concept of Equivalent Addresses which includes two types of equivalences, Type Equivalent and Script Equivalent. Type equivalent refers to two addresses using the same secret in a different way such as how a single pubkey could be used for a Pay to Pubkey Hash address and a Pay To Witness Pubkey Hash address. Script Equivalent refers to a Pay tp Script Hash address being equivalent to the address it contains. Address.equiv() and the EquivAddress class were added to support these concepts. See the documentation for more information.</p>
+</li>
+<li><p class="first">Enabled the opening of multiple Blockchain objects in the same notebook by removing internal usage of Singleton pattern.</p>
+</li>
+<li><p class="first">Proper handling of segwit tx and block size distinctions. This included updating the parser to store the size of each transaction excluding segwit data and as as supporting the 3 new notions of size that segwit introduced.</p>
+</li>
+<li><p class="first">Proper handling of bech32 addresses.</p>
+<ul class="simple">
+<li>Blockchain.address_from_string() now supports lookup of bech32 addresses.</li>
+<li>Address objects now display the correct human readable address depending on the address type.</li>
+</ul>
+</li>
+<li><p class="first">Improved initial chain parsing from 24 hours down to 12 hours and reduced in parser data size due to unification of the hash index database and parser address hash index database.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="breaking-changes">
+<h3>Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Updated to new data version for the parser output requiring a rerun of the blocksci_parser.</li>
+<li>In order to allow multiple blockchain objects. All constructors and factory methods were removed with parallel methods added to the chain object. For instance Tx(hash) is now chain.tx_with_hash(hash).</li>
+<li>Removed Address.script and merged its functionality into Address</li>
+<li>Modified Address.outs(), Address.balance(), and related functions to only return results for places on the Blockchain where that address appeared in a top level context (Not wrapped inside another address).</li>
+<li>Renamed various methods from using script in their name to address in order to reflect updated terminology.</li>
+<li>Removed ScriptType since its functionality was superseded by EquivAddress</li>
+</ul>
+</div>
+<div class="section" id="bug-fixes">
+<h3>Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Fixed segwit size handling as stated above. (<a class="reference external" href="https://github.com/citp/BlockSci/issues/43">Issue #43</a>)</li>
+<li>Fixed chain.filter_txes (<a class="reference external" href="https://github.com/citp/BlockSci/issues/50">Issue #50</a>)</li>
+<li>Fixed P2SH API issued. (<a class="reference external" href="https://github.com/citp/BlockSci/issues/53">Issue #53</a>)</li>
+</ul>
+<blockquote>
+<div></div></blockquote>
+</div>
+</div>
+<div class="section" id="version-0-3">
+<h2>Version 0.3<a class="headerlink" href="#version-0-3" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="x-performance-increase">
+<h3>5x performance increase<a class="headerlink" href="#x-performance-increase" title="Permalink to this headline">¶</a></h3>
+<p>We achieved a roughly 5x performance increase (for the C++ interface) at the cost of a small (under 4%) increase in memory consumption. BlockSci can now iterate over every transaction input and output on the Bitcoin blockchain in about 1 second on a single 4-core EC2 instance. Most of the improvements came from improving memory alignment in data files.</p>
+<p>In our <a class="reference external" href="https://arxiv.org/pdf/1709.02489.pdf">paper</a> we presented performance results for iterating over transactions using the C++ library (up to block 478,449 of the Bitcoin blockchain). In the table below we compare the timings reported in the paper (Old) to the corresponding timings for version 0.3 (New).</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="38%" />
+<col width="14%" />
+<col width="13%" />
+<col width="17%" />
+<col width="18%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td rowspan="2">Iterating over</td>
+<td colspan="2">Single Threaded</td>
+<td colspan="2">Multithreaded</td>
+</tr>
+<tr class="row-even"><td>Old</td>
+<td>New</td>
+<td>Old</td>
+<td>New</td>
+</tr>
+<tr class="row-odd"><td>Transaction headers</td>
+<td>13.1 sec</td>
+<td>3.0 sec</td>
+<td>3.2 sec</td>
+<td>0.6 sec</td>
+</tr>
+<tr class="row-even"><td>Transaction outputs</td>
+<td>27.9 sec</td>
+<td>3.4 sec</td>
+<td>6.6 sec</td>
+<td>0.9 sec</td>
+</tr>
+<tr class="row-odd"><td>Transaction inputs &amp; outputs</td>
+<td>46.4 sec</td>
+<td>4.2 sec</td>
+<td>10.3 sec</td>
+<td>1.1 sec</td>
+</tr>
+<tr class="row-even"><td>Headers in random order</td>
+<td>303.0 sec</td>
+<td>99.9 sec</td>
+<td>Unsupported</td>
+<td>Unsupported</td>
+</tr>
+</tbody>
+</table>
+<p>In future versions we plan to bring the Python performance for most common types of queries closer to the C++ performance figures in the table.</p>
+</div>
+<div class="section" id="new-data-format">
+<h3>New data format<a class="headerlink" href="#new-data-format" title="Permalink to this headline">¶</a></h3>
+<p>As noted above, we updated the data format. This requires rerunning the parser from scratch if you are running a local
+copy of BlockSci. If you are using the EC2 AMI image you can simply launch a new server with the BlockSci 0.3 image.</p>
+</div>
+<div class="section" id="segwit-support-api-changes">
+<h3>SegWit support &amp; API changes<a class="headerlink" href="#segwit-support-api-changes" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first">We provide full support to two new address types (Pay to Witness Script Hash and Pay to Witness Pubkey Hash)</p>
+</li>
+<li><p class="first">New distinction between address type and script type</p>
+<p>Version 0.3 introduces a distinction between two outputs which are sent the same way and two outputs that can be spent
+using the same information. This difference comes up in multiple circumstances including when a the same public key is used
+is a pay to public key hash output and inside a multisignature output.</p>
+<p>Inside the BlockSci interface these two related concepts map to the Address and Script types respectively. Both objects
+possess very similar APIs, but operate somewhat differently. As an example, given a specific P2PKH address, <code class="code python docutils literal notranslate"><span class="name"><span class="pre">address</span></span></code>, the
+then <code class="code python docutils literal notranslate"><span class="name"><span class="pre">address</span></span><span class="operator"><span class="pre">.</span></span><span class="name"><span class="pre">outs</span></span><span class="punctuation"><span class="pre">()</span></span></code> will return all outputs sent to that specific address. If the pubkey used in that address
+was also used in another type of output, this would not be shown. However calling <code class="code python docutils literal notranslate"><span class="name"><span class="pre">address</span></span><span class="operator"><span class="pre">.</span></span><span class="name"><span class="pre">script</span></span><span class="operator"><span class="pre">.</span></span><span class="name"><span class="pre">outs</span></span><span class="punctuation"><span class="pre">()</span></span></code> will return
+all outputs where that pubkey was used in any form.</p>
+<p>Additionally Script objects contain a large amount of information about the script used. For instance Multisig scripts provide
+access to all the pubkeys involved and P2SH scripts provide access to the wrapped address if it is known.</p>
+</li>
+<li><p class="first">Moved heuristic-based behavior to a separate module (blocksci.heuristics) to make it easier to distinguish it from core functionality.</p>
+<p>The heuristics library contains two main types of heuristics: change address identification and transaction labeling.
+In the previous version these functionalities were included in the main functionality of the library making it difficult to
+distinguish between functions which are guaranteed to be correct and functions which only produce guesses.</p>
+<p>New versions of the API are accessable by using</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">blocksci</span><span class="o">.</span><span class="n">heuristics</span><span class="o">.</span><span class="n">change_by_client_change_address_behavior</span><span class="p">(</span><span class="n">tx</span><span class="p">)</span>
+<span class="n">blocksci</span><span class="o">.</span><span class="n">heuristics</span><span class="o">.</span><span class="n">is_coinjoin</span><span class="p">(</span><span class="n">tx</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div>
+<div class="section" id="additional-index-lookup">
+<h3>Additional index lookup<a class="headerlink" href="#additional-index-lookup" title="Permalink to this headline">¶</a></h3>
+<p>We have added an index to allow the lookup of transactions by hash and addresses by address string.</p>
+<p>Transactions can be looked up via <code class="code python docutils literal notranslate"><span class="name"><span class="pre">blocksci</span></span><span class="operator"><span class="pre">.</span></span><span class="name"><span class="pre">Tx</span></span><span class="punctuation"><span class="pre">(</span></span><span class="name"><span class="pre">hash_string</span></span><span class="punctuation"><span class="pre">)</span></span></code> and addresses can be looked up via <code class="code python docutils literal notranslate"><span class="name"><span class="pre">blocksci</span></span><span class="operator"><span class="pre">.</span></span><span class="name"><span class="pre">Address</span></span><span class="operator"><span class="pre">.</span></span><span class="name"><span class="pre">from_string</span></span><span class="punctuation"><span class="pre">(</span></span><span class="name"><span class="pre">address_string</span></span><span class="punctuation"><span class="pre">)</span></span></code>.</p>
+</div>
+<div class="section" id="id1">
+<h3>Bug fixes<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li>Many causes of crashes and instability have now been resolved.</li>
+<li>Segwit support has been introduced. (<a class="reference external" href="https://github.com/citp/BlockSci/issues/1">Issue #1</a>)</li>
+<li>The address index lookups now will return correct results. (<a class="reference external" href="https://github.com/citp/BlockSci/issues/6">Issue #6</a>)</li>
+<li>The parser no longer reads beyond memory boundaries causing occasional crashes. (<a class="reference external" href="https://github.com/citp/BlockSci/issues/9">Issue #9</a>)</li>
+<li>The initial header parse phase is now multithreaded leading to a substantial performance increase. (<a class="reference external" href="https://github.com/citp/BlockSci/issues/12">Issue #12</a>)</li>
+<li>Fixed bitcoin-api-cpp headers so it now works on both mac and linux. (<a class="reference external" href="https://github.com/citp/BlockSci/issues/15">Issue #15</a>)</li>
+<li>The parser now provides feedback as it goes. (<a class="reference external" href="https://github.com/citp/BlockSci/issues/26">Issue #26</a>)</li>
+<li>The python module no longer crashes on exit. (<a class="reference external" href="https://github.com/citp/BlockSci/issues/25">Issue #25</a>)</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="limitations">
+<h3>Limitations<a class="headerlink" href="#limitations" title="Permalink to this headline">¶</a></h3>
+<p>Incremental updating of the blockchain is currently not supported due to some continuing bugs in blockchain reorg handling.
+Rerunning the parser in the uncommon situation that a previously parsed block has been orphaned may cause data corruption.</p>
+</div>
+</div>
+<div class="section" id="version-0-2">
+<h2>Version 0.2<a class="headerlink" href="#version-0-2" title="Permalink to this headline">¶</a></h2>
+<p>This version was the initial release of BlockSci. <a class="reference external" href="https://citp.github.io/BlockSci/0.2/">Documentation</a> for version 0.2 is still available.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">BlockSci</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="readme.html">BlockSci</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Release notes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-4-5">Version 0.4.5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-3">Version 0.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-2">Version 0.2</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="chain/chain.html">Chain Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="addresses/addresses.html">Address Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="heuristics/heuristics.html">Heuristics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clustering/clustering.html">Clustering</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="readme.html" title="previous chapter">BlockSci</a></li>
+      <li>Next: <a href="chain/chain.html" title="next chapter">Chain Classes</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Harry Kalodner.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/changelog.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

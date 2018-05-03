@@ -1,0 +1,318 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Address Classes &mdash; BlockSci 0.5.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Addresses" href="address.html" />
+    <link rel="prev" title="Optional Output Iterator" href="../chain/iterators/OutputOptionalIterator.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> BlockSci
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.5.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html">BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Release notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../compiling.html">Compiling BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../setup.html">Local setup</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../reference.html">Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../chain/chain.html">Chain Classes</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Address Classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="address.html">Addresses</a></li>
+<li class="toctree-l3"><a class="reference internal" href="equiv_address.html">Equivalent Addresses</a></li>
+<li class="toctree-l3"><a class="reference internal" href="types.html">Address Types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ranges/ranges.html">Range Classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iterators/iterators.html">Iterator Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../heuristics/heuristics.html">Heuristics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../clustering/clustering.html">Clustering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../other/other.html">Other Utility Classes</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BlockSci</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../reference.html">Reference</a> &raquo;</li>
+        
+      <li>Address Classes</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/reference/addresses/addresses.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="address-classes">
+<h1>Address Classes<a class="headerlink" href="#address-classes" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Addresses:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="address.html">Addresses</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="address.html#address">Address</a></li>
+<li class="toctree-l2"><a class="reference internal" href="address.html#pay-to-pubkey-address">Pay to pubkey Address</a></li>
+<li class="toctree-l2"><a class="reference internal" href="address.html#pay-to-pubkey-hash-address">Pay to pubkey hash Address</a></li>
+<li class="toctree-l2"><a class="reference internal" href="address.html#pay-to-witness-pubkey-hash-address">Pay to witness pubkey hash Address</a></li>
+<li class="toctree-l2"><a class="reference internal" href="address.html#multisignature-address">Multisignature Address</a></li>
+<li class="toctree-l2"><a class="reference internal" href="address.html#pay-to-script-hash-address">Pay to script hash Address</a></li>
+<li class="toctree-l2"><a class="reference internal" href="address.html#pay-to-witness-script-hash-address">Pay to witness script hash Address</a></li>
+<li class="toctree-l2"><a class="reference internal" href="address.html#non-standard-address">Non-standard Address</a></li>
+<li class="toctree-l2"><a class="reference internal" href="address.html#op-return">Op Return</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="equiv_address.html">Equivalent Addresses</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="equiv_address.html#equivaddress">EquivAddress</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">Address Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ranges/ranges.html">Range Classes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ranges/AddressRange.html">Address Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ranges/EquivAddressRange.html">Equiv Address Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ranges/PubkeyAddressRange.html">Pubkey Address Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ranges/PubkeyHashAddressRange.html">Pubkey Hash Address Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ranges/MultisigPubkeyRange.html">Multisig Pubkey Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ranges/WitnessPubkeyHashAddressRange.html">Witness Pubkey Hash Address Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ranges/MultisigAddressRange.html">Multisig Address Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ranges/OpReturnRange.html">OpReturn Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ranges/ScriptHashAddressRange.html">Scripthash Address Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ranges/WitnessScriptHashAddressRange.html">Witness Scripthash Address Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ranges/NonstandardAddressRange.html">Nonstandard Address Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ranges/AddressOptionalRange.html">Optional Address Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ranges/EquivAddressOptionalRange.html">Optional Equiv Address Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ranges/PubkeyAddressOptionalRange.html">Optional Pubkey Address Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ranges/PubkeyHashAddressOptionalRange.html">Optional Pubkey Hash Address Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ranges/MultisigPubkeyOptionalRange.html">Optional Multisig Pubkey Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ranges/WitnessPubkeyHashAddressOptionalRange.html">Optional Witness Pubkey Hash Address Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ranges/MultisigAddressOptionalRange.html">Optional Multisig Address Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ranges/OpReturnOptionalRange.html">Optional OpReturn Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ranges/ScriptHashAddressOptionalRange.html">Optional Scripthash Address Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ranges/WitnessScriptHashAddressOptionalRange.html">Optional Witness Scripthash Address Range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ranges/NonstandardAddressOptionalRange.html">Optional Nonstandard Address Range</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="iterators/iterators.html">Iterator Classes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="iterators/AddressIterator.html">Address Iterator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iterators/EquivAddressIterator.html">Equiv Address Iterator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iterators/PubkeyAddressIterator.html">Pubkey Address Iterator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iterators/PubkeyHashAddressIterator.html">Pubkey Hash Address Iterator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iterators/MultisigPubkeyIterator.html">Multisig Pubkey Iterator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iterators/WitnessPubkeyHashAddressIterator.html">Witness Pubkey Hash Address Iterator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iterators/MultisigAddressIterator.html">Multisig Address Iterator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iterators/OpReturnIterator.html">OpReturn Iterator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iterators/ScriptHashAddressIterator.html">Scripthash Address Iterator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iterators/WitnessScriptHashAddressIterator.html">Witness Scripthash Address Iterator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iterators/NonstandardAddressIterator.html">Nonstandard Address Iterator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iterators/AddressOptionalIterator.html">Optional Address Iterator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iterators/EquivAddressOptionalIterator.html">Optional Equiv Address Iterator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iterators/PubkeyAddressOptionalIterator.html">Optional Pubkey Address Iterator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iterators/PubkeyHashAddressOptionalIterator.html">Optional Pubkey Hash Address Iterator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iterators/MultisigPubkeyOptionalIterator.html">Optional Multisig Pubkey Iterator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iterators/WitnessPubkeyHashAddressOptionalIterator.html">Optional Witness Pubkey Hash Address Iterator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iterators/MultisigAddressOptionalIterator.html">Optional Multisig Address Iterator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iterators/OpReturnOptionalIterator.html">Optional OpReturn Iterator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iterators/ScriptHashAddressOptionalIterator.html">Optional Scripthash Address Iterator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iterators/WitnessScriptHashAddressOptionalIterator.html">Optional Witness Scripthash Address Iterator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iterators/NonstandardAddressOptionalIterator.html">Optional Nonstandard Address Iterator</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="address.html" class="btn btn-neutral float-right" title="Addresses" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../chain/iterators/OutputOptionalIterator.html" class="btn btn-neutral" title="Optional Output Iterator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Harry Kalodner.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.5.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

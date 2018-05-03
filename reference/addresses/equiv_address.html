@@ -1,0 +1,377 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Equivalent Addresses &mdash; BlockSci 0.5.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Address Types" href="types.html" />
+    <link rel="prev" title="Addresses" href="address.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> BlockSci
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.5.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html">BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Release notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../compiling.html">Compiling BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../setup.html">Local setup</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../reference.html">Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../chain/chain.html">Chain Classes</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="addresses.html">Address Classes</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="address.html">Addresses</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Equivalent Addresses</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#equivaddress">EquivAddress</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="types.html">Address Types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ranges/ranges.html">Range Classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iterators/iterators.html">Iterator Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../heuristics/heuristics.html">Heuristics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../clustering/clustering.html">Clustering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../other/other.html">Other Utility Classes</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BlockSci</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../reference.html">Reference</a> &raquo;</li>
+        
+          <li><a href="addresses.html">Address Classes</a> &raquo;</li>
+        
+      <li>Equivalent Addresses</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/reference/addresses/equiv_address.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="equivalent-addresses">
+<span id="equiv-addresses-label"></span><h1>Equivalent Addresses<a class="headerlink" href="#equivalent-addresses" title="Permalink to this headline">¶</a></h1>
+<p>Equivalent addresses reflect BlockSci’s understanding that various distinct addresses actually require a common piece of information to spend them.</p>
+<p>BlockSci supports two distinct notions of address equivalence.</p>
+<ol class="arabic simple">
+<li>Type Equivalence - Addresses which require the exact same knowledge to spend them can be considered equivalent. Pay to pubkey, pay to pubkeyhash and pay to witness pubkey hash all require knowledge of a given pubkey in order to be spent and can thus be considered equivalent. Similarly pay to scripthash and pay to witness scripthash both require knowledge of a given spending script.</li>
+<li>Script Equivalence - A Pay to script hash address and the address that is wrapped inside it can be considered equivalent addresses since they reflect the same piece of information.</li>
+</ol>
+<p>Type Equivalence and Script Equivalence together or Type Equivalence alone form an equivalence class over the addresses. This technique allows users to find a set of addresses that is guarenteed to be controlled by the same person.</p>
+<p>EquivAddress provides a very similar interface to address, except operates on a set of equivalent addresses rather than a single address.</p>
+<p>In other analysis tools, this distinction between <cite>Address</cite> and <cite>EquivAddress</cite> is not explicitly handled. Frequently Pay to Pubkey and Pay to Pubkey hash addresses using the same public key are treated as the same address and in many block explorers the balance of an ‘address’ is the sum of the balances of both types. However a Pay to witness pubkey hash address using the same pubkey is treated as completely distinct from the other addresses. Further when a pubkey is used both in P2PKH addresses as well as wrapped inside a P2SH, these are frequently treated as different addresses.  BlockSci allows the user to decide which address concept they would like to work with.</p>
+<div class="section" id="equivaddress">
+<h2>EquivAddress<a class="headerlink" href="#equivaddress" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="blocksci.EquivAddress">
+<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">EquivAddress</code><a class="headerlink" href="#blocksci.EquivAddress" title="Permalink to this definition">¶</a></dt>
+<dd><p>A set of equivalent addresses</p>
+<dl class="attribute">
+<dt id="blocksci.EquivAddress.addresses">
+<code class="descname">addresses</code><a class="headerlink" href="#blocksci.EquivAddress.addresses" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an iterator over the addresses that make up this equivalent address</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="iterators/AddressIterator.html#blocksci.AddressIterator" title="blocksci.AddressIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.AddressIterator</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.EquivAddress.balance">
+<code class="descname">balance</code><span class="sig-paren">(</span><em>height: int=-1</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#blocksci.EquivAddress.balance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the balance held by these equivalent addresses at the height (Defaults to the full chain)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.EquivAddress.in_txes">
+<code class="descname">in_txes</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; List[blocksci.Tx]<a class="headerlink" href="#blocksci.EquivAddress.in_txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all transaction where these equivalent addresses were an input</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.EquivAddress.in_txes_count">
+<code class="descname">in_txes_count</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#blocksci.EquivAddress.in_txes_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of transactions where these equivalent addresses were an input</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.EquivAddress.ins">
+<code class="descname">ins</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; List[blocksci.Input]<a class="headerlink" href="#blocksci.EquivAddress.ins" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all inputs spent from these equivalent addresses</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.EquivAddress.is_script_equiv">
+<code class="descname">is_script_equiv</code><a class="headerlink" href="#blocksci.EquivAddress.is_script_equiv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns whether this equiv address is script equivalent or not</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.EquivAddress.out_txes">
+<code class="descname">out_txes</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; List[blocksci.Tx]<a class="headerlink" href="#blocksci.EquivAddress.out_txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a range of all transaction where these equivalent addresses were an output</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.EquivAddress.out_txes_count">
+<code class="descname">out_txes_count</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#blocksci.EquivAddress.out_txes_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of transactions where these equivalent addresses were an output</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.EquivAddress.outs">
+<code class="descname">outs</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; blocksci.OutputIterator<a class="headerlink" href="#blocksci.EquivAddress.outs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all outputs sent to these equivalent addresses</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="../chain/iterators/OutputIterator.html#blocksci.OutputIterator" title="blocksci.OutputIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.OutputIterator</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.EquivAddress.txes">
+<code class="descname">txes</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; List[blocksci.Tx]<a class="headerlink" href="#blocksci.EquivAddress.txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all transactions involving these equivalent addresses</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="types.html" class="btn btn-neutral float-right" title="Address Types" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="address.html" class="btn btn-neutral" title="Addresses" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Harry Kalodner.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.5.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

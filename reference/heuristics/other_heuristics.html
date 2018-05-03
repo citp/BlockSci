@@ -1,0 +1,324 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Other Heuristics &mdash; BlockSci 0.5.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Clustering" href="../clustering/clustering.html" />
+    <link rel="prev" title="Change Address Heuristics" href="change.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> BlockSci
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.5.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html">BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Release notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../compiling.html">Compiling BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../setup.html">Local setup</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../reference.html">Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../chain/chain.html">Chain Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../addresses/addresses.html">Address Classes</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="heuristics.html">Heuristics</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="change.html">Change Address Heuristics</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Other Heuristics</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../clustering/clustering.html">Clustering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../other/other.html">Other Utility Classes</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BlockSci</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../reference.html">Reference</a> &raquo;</li>
+        
+          <li><a href="heuristics.html">Heuristics</a> &raquo;</li>
+        
+      <li>Other Heuristics</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/reference/heuristics/other_heuristics.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="other-heuristics">
+<h1>Other Heuristics<a class="headerlink" href="#other-heuristics" title="Permalink to this headline">¶</a></h1>
+<p>BlockSci supports various heuristics for matching transactions or blocks with certain unique properties. This module is a work in progress and will be cleaned up over time. This API should be considered totally unstable between versions.</p>
+<span class="target" id="module-blocksci.heuristics"></span><dl class="function">
+<dt id="blocksci.heuristics.address_deanon_txes">
+<code class="descclassname">blocksci.heuristics.</code><code class="descname">address_deanon_txes</code><span class="sig-paren">(</span><em>chain: blocksci.Blockchain</em>, <em>start: int</em>, <em>end: int</em><span class="sig-paren">)</span> &#x2192; List[blocksci.Tx]<a class="headerlink" href="#blocksci.heuristics.address_deanon_txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of all the transactions in the blockchain for which is_address_deanon returns true</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blocksci.heuristics.change_over_txes">
+<code class="descclassname">blocksci.heuristics.</code><code class="descname">change_over_txes</code><span class="sig-paren">(</span><em>chain: blocksci.Blockchain</em>, <em>start: int</em>, <em>end: int</em><span class="sig-paren">)</span> &#x2192; List[blocksci.Tx]<a class="headerlink" href="#blocksci.heuristics.change_over_txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of transactions in the blockchain for which is_change_over returns true</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blocksci.heuristics.coinjoin_txes">
+<code class="descclassname">blocksci.heuristics.</code><code class="descname">coinjoin_txes</code><span class="sig-paren">(</span><em>chain: blocksci.Blockchain</em>, <em>start: int</em>, <em>end: int</em><span class="sig-paren">)</span> &#x2192; List[blocksci.Tx]<a class="headerlink" href="#blocksci.heuristics.coinjoin_txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all transactions in the blockchain that might be JoinMarket coinjoin transactions</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blocksci.heuristics.fifo_tainted_outputs">
+<code class="descclassname">blocksci.heuristics.</code><code class="descname">fifo_tainted_outputs</code><span class="sig-paren">(</span><em>output: blocksci.Output</em>, <em>tainted_value: int</em><span class="sig-paren">)</span> &#x2192; List[Tuple[blocksci.Output, int]]<a class="headerlink" href="#blocksci.heuristics.fifo_tainted_outputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the list of current UTXOs FIFO tainted by this output</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blocksci.heuristics.haircut_tainted_outputs">
+<code class="descclassname">blocksci.heuristics.</code><code class="descname">haircut_tainted_outputs</code><span class="sig-paren">(</span><em>output: blocksci.Output</em>, <em>tainted_value: int</em><span class="sig-paren">)</span> &#x2192; List[Tuple[blocksci.Output, int]]<a class="headerlink" href="#blocksci.heuristics.haircut_tainted_outputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the list of current UTXOs haircut tainted by this output</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blocksci.heuristics.is_address_deanon">
+<code class="descclassname">blocksci.heuristics.</code><code class="descname">is_address_deanon</code><span class="sig-paren">(</span><em>tx: blocksci.Tx</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#blocksci.heuristics.is_address_deanon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns true if this transaction’s change address is deanonymized by the address types involved</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blocksci.heuristics.is_change_over">
+<code class="descclassname">blocksci.heuristics.</code><code class="descname">is_change_over</code><span class="sig-paren">(</span><em>tx: blocksci.Tx</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#blocksci.heuristics.is_change_over" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns true if this transaction contained all inputs of one address type and all outputs of a different type</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blocksci.heuristics.is_coinjoin">
+<code class="descclassname">blocksci.heuristics.</code><code class="descname">is_coinjoin</code><span class="sig-paren">(</span><em>tx: blocksci.Tx</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#blocksci.heuristics.is_coinjoin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses basic structural features to quickly decide whether this transaction might be a JoinMarket coinjoin transaction</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blocksci.heuristics.is_definite_coinjoin">
+<code class="descclassname">blocksci.heuristics.</code><code class="descname">is_definite_coinjoin</code><span class="sig-paren">(</span><em>tx: blocksci.Tx</em>, <em>min_base_fee: int</em>, <em>percentage_fee: float</em>, <em>max_depth: int=0</em><span class="sig-paren">)</span> &#x2192; blocksci.heuristics.CoinJoinResult<a class="headerlink" href="#blocksci.heuristics.is_definite_coinjoin" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function uses subset matching in order to determine whether this transaction is a JoinMarket coinjoin. If maxDepth != 0, it limits the total number of possible subsets the algorithm will check.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blocksci.heuristics.is_keyset_change">
+<code class="descclassname">blocksci.heuristics.</code><code class="descname">is_keyset_change</code><span class="sig-paren">(</span><em>tx: blocksci.Tx</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#blocksci.heuristics.is_keyset_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns true if this transaction contains distinct addresses which share some of the same keys, indicating that the access control structure has changed</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blocksci.heuristics.keyset_change_txes">
+<code class="descclassname">blocksci.heuristics.</code><code class="descname">keyset_change_txes</code><span class="sig-paren">(</span><em>chain: blocksci.Blockchain</em>, <em>start: int</em>, <em>end: int</em><span class="sig-paren">)</span> &#x2192; List[blocksci.Tx]<a class="headerlink" href="#blocksci.heuristics.keyset_change_txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of transaction in the blockchain for which is_keyset_change returns true</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blocksci.heuristics.poison_tainted_outputs">
+<code class="descclassname">blocksci.heuristics.</code><code class="descname">poison_tainted_outputs</code><span class="sig-paren">(</span><em>output: blocksci.Output</em>, <em>tainted_value: int</em><span class="sig-paren">)</span> &#x2192; List[Tuple[blocksci.Output, int]]<a class="headerlink" href="#blocksci.heuristics.poison_tainted_outputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the list of current UTXOs poison tainted by this output</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blocksci.heuristics.possible_coinjoin_txes">
+<code class="descclassname">blocksci.heuristics.</code><code class="descname">possible_coinjoin_txes</code><span class="sig-paren">(</span><em>chain: blocksci.Blockchain</em>, <em>min_base_fee: int</em>, <em>percentage_fee: float</em>, <em>max_depth: int=0</em><span class="sig-paren">)</span> &#x2192; Tuple[List[blocksci.Tx], List[blocksci.Tx]]<a class="headerlink" href="#blocksci.heuristics.possible_coinjoin_txes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all transactions in the blockchain that might be coinjoin transactions</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../clustering/clustering.html" class="btn btn-neutral float-right" title="Clustering" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="change.html" class="btn btn-neutral" title="Change Address Heuristics" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Harry Kalodner.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.5.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

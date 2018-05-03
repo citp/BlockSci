@@ -1,0 +1,410 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Input &mdash; BlockSci 0.5.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Output" href="output.html" />
+    <link rel="prev" title="Tx" href="tx.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> BlockSci
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.5.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html">BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Release notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../compiling.html">Compiling BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../setup.html">Local setup</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../reference.html">Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="chain.html">Chain Classes</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="blockchain.html">Blockchain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="block.html">Block</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tx.html">Tx</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Input</a></li>
+<li class="toctree-l3"><a class="reference internal" href="output.html">Output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ranges/ranges.html">Range Classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iterators/iterators.html">Iterator Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../addresses/addresses.html">Address Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../heuristics/heuristics.html">Heuristics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../clustering/clustering.html">Clustering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../other/other.html">Other Utility Classes</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BlockSci</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../reference.html">Reference</a> &raquo;</li>
+        
+          <li><a href="chain.html">Chain Classes</a> &raquo;</li>
+        
+      <li>Input</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/reference/chain/input.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="input">
+<h1>Input<a class="headerlink" href="#input" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="blocksci.Input">
+<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">Input</code><a class="headerlink" href="#blocksci.Input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing a transaction input</p>
+<dl class="attribute">
+<dt id="blocksci.Input.address">
+<code class="descname">address</code><a class="headerlink" href="#blocksci.Input.address" title="Permalink to this definition">¶</a></dt>
+<dd><p>The address linked to this input</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../addresses/address.html#blocksci.Address" title="blocksci.Address"><code class="xref py py-class docutils literal notranslate"><span class="pre">Address</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.Input.address_type">
+<code class="descname">address_type</code><a class="headerlink" href="#blocksci.Input.address_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>The address type of the input</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../addresses/types.html#blocksci.address_type" title="blocksci.address_type"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.address_type</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.Input.age">
+<code class="descname">age</code><a class="headerlink" href="#blocksci.Input.age" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of blocks between the spent output and this input</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.Input.block">
+<code class="descname">block</code><a class="headerlink" href="#blocksci.Input.block" title="Permalink to this definition">¶</a></dt>
+<dd><p>The block that contains this input</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="block.html#blocksci.Block" title="blocksci.Block"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.Block</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.Input.index">
+<code class="descname">index</code><a class="headerlink" href="#blocksci.Input.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>The index index inside this input’s transaction</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.Input.sequence_num">
+<code class="descname">sequence_num</code><a class="headerlink" href="#blocksci.Input.sequence_num" title="Permalink to this definition">¶</a></dt>
+<dd><p>The sequence number of the input</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.Input.spent_tx">
+<code class="descname">spent_tx</code><a class="headerlink" href="#blocksci.Input.spent_tx" title="Permalink to this definition">¶</a></dt>
+<dd><p>The transaction that this input spent</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="tx.html#blocksci.Tx" title="blocksci.Tx"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.Tx</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.Input.spent_tx_index">
+<code class="descname">spent_tx_index</code><a class="headerlink" href="#blocksci.Input.spent_tx_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>The index of the transaction that this input spent</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.Input.tx">
+<code class="descname">tx</code><a class="headerlink" href="#blocksci.Input.tx" title="Permalink to this definition">¶</a></dt>
+<dd><p>The transaction that contains this input</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="tx.html#blocksci.Tx" title="blocksci.Tx"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.Tx</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.Input.tx_index">
+<code class="descname">tx_index</code><a class="headerlink" href="#blocksci.Input.tx_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>The tx index of this input’s transaction</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blocksci.Input.value">
+<code class="descname">value</code><a class="headerlink" href="#blocksci.Input.value" title="Permalink to this definition">¶</a></dt>
+<dd><p>The value in base currency attached to this input</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="output.html" class="btn btn-neutral float-right" title="Output" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="tx.html" class="btn btn-neutral" title="Tx" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Harry Kalodner.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.5.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

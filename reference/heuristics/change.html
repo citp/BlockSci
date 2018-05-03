@@ -1,0 +1,400 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Change Address Heuristics &mdash; BlockSci 0.5.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Other Heuristics" href="other_heuristics.html" />
+    <link rel="prev" title="Heuristics" href="heuristics.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> BlockSci
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.5.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html">BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Release notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../compiling.html">Compiling BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../setup.html">Local setup</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../reference.html">Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../chain/chain.html">Chain Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../addresses/addresses.html">Address Classes</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="heuristics.html">Heuristics</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Change Address Heuristics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="other_heuristics.html">Other Heuristics</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../clustering/clustering.html">Clustering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../other/other.html">Other Utility Classes</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BlockSci</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../reference.html">Reference</a> &raquo;</li>
+        
+          <li><a href="heuristics.html">Heuristics</a> &raquo;</li>
+        
+      <li>Change Address Heuristics</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/reference/heuristics/change.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="change-address-heuristics">
+<h1>Change Address Heuristics<a class="headerlink" href="#change-address-heuristics" title="Permalink to this headline">¶</a></h1>
+<p>BlockSci supports a number of different heuristics for determining the change address for a given transaction. The heuristics are sometimes contradictory and thus we provide users with the ability to choose which heuristics they wish to apply. Further, we support the composibility of different change address heuristics through the various composition operators of the <a class="reference internal" href="#blocksci.heuristics.change.ChangeHeuristic" title="blocksci.heuristics.change.ChangeHeuristic"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.heuristics.change.ChangeHeuristic</span></code></a> class.</p>
+<span class="target" id="module-blocksci.heuristics.change"></span><dl class="class">
+<dt id="blocksci.heuristics.change.ChangeHeuristic">
+<em class="property">class </em><code class="descclassname">blocksci.heuristics.change.</code><code class="descname">ChangeHeuristic</code><a class="headerlink" href="#blocksci.heuristics.change.ChangeHeuristic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing a change heuristic</p>
+<dl class="method">
+<dt id="blocksci.heuristics.change.ChangeHeuristic.__and__">
+<code class="descname">__and__</code><span class="sig-paren">(</span><em>other_heuristic: blocksci.heuristics.change.ChangeHeuristic</em><span class="sig-paren">)</span> &#x2192; blocksci.heuristics.change.ChangeHeuristic<a class="headerlink" href="#blocksci.heuristics.change.ChangeHeuristic.__and__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new heuristic matching outputs that match both of the given heuristics</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.heuristics.change.ChangeHeuristic.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>tx: blocksci.Tx</em><span class="sig-paren">)</span> &#x2192; Set[blocksci.Output]<a class="headerlink" href="#blocksci.heuristics.change.ChangeHeuristic.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all outputs matching the change heuristic</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.heuristics.change.ChangeHeuristic.__or__">
+<code class="descname">__or__</code><span class="sig-paren">(</span><em>other_heuristic: blocksci.heuristics.change.ChangeHeuristic</em><span class="sig-paren">)</span> &#x2192; blocksci.heuristics.change.ChangeHeuristic<a class="headerlink" href="#blocksci.heuristics.change.ChangeHeuristic.__or__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new heuristic matching outputs that match either of the given heuristics</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.heuristics.change.ChangeHeuristic.__sub__">
+<code class="descname">__sub__</code><span class="sig-paren">(</span><em>other_heuristic: blocksci.heuristics.change.ChangeHeuristic</em><span class="sig-paren">)</span> &#x2192; blocksci.heuristics.change.ChangeHeuristic<a class="headerlink" href="#blocksci.heuristics.change.ChangeHeuristic.__sub__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new heuristic matching outputs matched by the first heuristic unless they’re matched by the second heuristic</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.heuristics.change.ChangeHeuristic.change">
+<code class="descname">change</code><span class="sig-paren">(</span><em>tx: blocksci.Tx</em><span class="sig-paren">)</span> &#x2192; Set[blocksci.Output]<a class="headerlink" href="#blocksci.heuristics.change.ChangeHeuristic.change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all outputs matching the change heuristic</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blocksci.heuristics.change.ChangeHeuristic.unique_change">
+<code class="descname">unique_change</code><span class="sig-paren">(</span><em>tx: blocksci.Tx</em><span class="sig-paren">)</span> &#x2192; Optional[blocksci.Output]<a class="headerlink" href="#blocksci.heuristics.change.ChangeHeuristic.unique_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>If the change heuristic only matches one output return it, otherwise return none</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="blocksci.heuristics.change.address_reuse">
+<code class="descclassname">blocksci.heuristics.change.</code><code class="descname">address_reuse</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.heuristics.change.address_reuse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overloaded function.</p>
+<ol class="arabic simple">
+<li>address_reuse() -&gt; blocksci.heuristics.change.ChangeHeuristic</li>
+</ol>
+<p>Return a ChangeHeuristic object implementing the address reuse heuristic: If input addresses appear as an output address, the client might have reused addresses for change.</p>
+<ol class="arabic simple" start="2">
+<li>address_reuse(tx: blocksci.Tx) -&gt; Set[blocksci.Output]</li>
+</ol>
+<p>Apply the address reuse heuristic to a transaction and return the set outputs that could be the change address.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blocksci.heuristics.change.address_type">
+<code class="descclassname">blocksci.heuristics.change.</code><code class="descname">address_type</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.heuristics.change.address_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overloaded function.</p>
+<ol class="arabic simple">
+<li>address_type() -&gt; blocksci.heuristics.change.ChangeHeuristic</li>
+</ol>
+<p>Return a ChangeHeuristic object implementing the address type heuristic: If all inputs are of one address type (e.g., P2PKH or P2SH), it is likely that the change output has the same type</p>
+<ol class="arabic simple" start="2">
+<li>address_type(tx: blocksci.Tx) -&gt; Set[blocksci.Output]</li>
+</ol>
+<p>Apply the address type heuristic to a transaction and return the set outputs that could be the change address.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blocksci.heuristics.change.client_change_address_behavior">
+<code class="descclassname">blocksci.heuristics.change.</code><code class="descname">client_change_address_behavior</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.heuristics.change.client_change_address_behavior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overloaded function.</p>
+<ol class="arabic simple">
+<li>client_change_address_behavior() -&gt; blocksci.heuristics.change.ChangeHeuristic</li>
+</ol>
+<p>Return a ChangeHeuristic object implementing the client change address behavior heuristic: Most clients will generate a fresh address for the change. If an output is the first to send value to an address, it is potentially the change.</p>
+<ol class="arabic simple" start="2">
+<li>client_change_address_behavior(tx: blocksci.Tx) -&gt; Set[blocksci.Output]</li>
+</ol>
+<p>Apply the client change address behavior heuristic to a transaction and return the set outputs that could be the change address.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blocksci.heuristics.change.legacy">
+<code class="descclassname">blocksci.heuristics.change.</code><code class="descname">legacy</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.heuristics.change.legacy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overloaded function.</p>
+<ol class="arabic simple">
+<li>legacy() -&gt; blocksci.heuristics.change.ChangeHeuristic</li>
+</ol>
+<p>Return a ChangeHeuristic object implementing the legacy heuristic: The original change address heuristic used in blocksci consisting of the intersection of the optimal change heuristic and the client address behavior heuristic</p>
+<ol class="arabic simple" start="2">
+<li>legacy(tx: blocksci.Tx) -&gt; Set[blocksci.Output]</li>
+</ol>
+<p>Apply the legacy heuristic to a transaction and return the set outputs that could be the change address.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blocksci.heuristics.change.locktime">
+<code class="descclassname">blocksci.heuristics.change.</code><code class="descname">locktime</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.heuristics.change.locktime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overloaded function.</p>
+<ol class="arabic simple">
+<li>locktime() -&gt; blocksci.heuristics.change.ChangeHeuristic</li>
+</ol>
+<p>Return a ChangeHeuristic object implementing the locktime heuristic: Bitcoin Core sets the locktime to the current block height to prevent fee sniping. If all outpus have been spent, and there is only one output that has been spent in a transaction that matches this transaction’s locktime behavior, it is the change.</p>
+<ol class="arabic simple" start="2">
+<li>locktime(tx: blocksci.Tx) -&gt; Set[blocksci.Output]</li>
+</ol>
+<p>Apply the locktime reuse heuristic to a transaction and return the set outputs that could be the change address.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blocksci.heuristics.change.optimal_change">
+<code class="descclassname">blocksci.heuristics.change.</code><code class="descname">optimal_change</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.heuristics.change.optimal_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overloaded function.</p>
+<ol class="arabic simple">
+<li>optimal_change() -&gt; blocksci.heuristics.change.ChangeHeuristic</li>
+</ol>
+<p>Return a ChangeHeuristic object implementing the optimal change heuristic: If there exists an output that is smaller than any of the inputs it is likely the change. If a change output was larger than the smallest input, then the coin selection algorithm wouldn’t need to add the input in the first place.</p>
+<ol class="arabic simple" start="2">
+<li>optimal_change(tx: blocksci.Tx) -&gt; Set[blocksci.Output]</li>
+</ol>
+<p>Apply the optimal change heuristic to a transaction and return the set outputs that could be the change address.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blocksci.heuristics.change.peeling_chain">
+<code class="descclassname">blocksci.heuristics.change.</code><code class="descname">peeling_chain</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.heuristics.change.peeling_chain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overloaded function.</p>
+<ol class="arabic simple">
+<li>peeling_chain() -&gt; blocksci.heuristics.change.ChangeHeuristic</li>
+</ol>
+<p>Return a ChangeHeuristic object implementing the power of ten value heuristic: If tx is a peeling chain, returns the smaller output.</p>
+<ol class="arabic simple" start="2">
+<li>peeling_chain(tx: blocksci.Tx) -&gt; Set[blocksci.Output]</li>
+</ol>
+<p>Apply the peeling chain heuristic and return the matching output.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blocksci.heuristics.change.power_of_ten_value">
+<code class="descclassname">blocksci.heuristics.change.</code><code class="descname">power_of_ten_value</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.heuristics.change.power_of_ten_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overloaded function.</p>
+<ol class="arabic simple">
+<li>power_of_ten_value(digits: int=6) -&gt; blocksci.heuristics.change.ChangeHeuristic</li>
+</ol>
+<p>Return a ChangeHeuristic object implementing the power of ten value heuristic: Detects possible change outputs by checking for output values that are multiples of 10^digits.</p>
+<ol class="arabic simple" start="2">
+<li>power_of_ten_value(digits: int=6, tx: blocksci.Tx) -&gt; Set[blocksci.Output]</li>
+</ol>
+<p>Apply the power of ten value heuristic to a transaction and return the set outputs that could be the change address.</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="other_heuristics.html" class="btn btn-neutral float-right" title="Other Heuristics" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="heuristics.html" class="btn btn-neutral" title="Heuristics" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Harry Kalodner.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.5.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

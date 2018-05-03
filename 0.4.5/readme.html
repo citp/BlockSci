@@ -1,0 +1,266 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>BlockSci &#8212; BlockSci 0.4.5 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Release notes" href="changelog.html" />
+    <link rel="prev" title="BlockSci Version 0.4.5 Documentation" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="blocksci">
+<h1>BlockSci<a class="headerlink" href="#blocksci" title="Permalink to this headline">¶</a></h1>
+<p>The Bitcoin blockchain — currently 170 GB and growing — contains a massive amount of data that can give us insights into the Bitcoin ecosystem, including how users, businesses, and miners operate. BlockSci enables fast and expressive analysis of Bitcoin’s and many other blockchains. The accompanying working paper explains its design and applications: <a class="reference external" href="https://arxiv.org/pdf/1709.02489.pdf">https://arxiv.org/pdf/1709.02489.pdf</a></p>
+<p>Current tools for blockchain analysis depend on general-purpose databases that provide “ACID” guarantees. But that’s unnecessary for blockchain analysis where the data structures are append-only. We take advantage of this observation in the design of our custom in-memory blockchain database as well as an analysis library. BlockSci’s core infrastructure is written in C++ and optimized for speed. (For example, traversing every transaction input and output on the Bitcoin blockchain takes only <strong>1 second</strong> on our r4.2xlarge EC2 machine.) To make analysis more convenient, we provide Python bindings and a Jupyter notebook interface.</p>
+<div class="section" id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://citp.github.io/BlockSci/">Documentation</a> is available for the Python interface.</p>
+<p>Additionally, a demonstration <a class="reference external" href="https://citp.github.io/BlockSci/demo.html">Notebook</a> is available in the Notebooks folder.</p>
+<p>For installation instructions, see below. More detailed documentation is coming soon. Meanwhile, feel free to contact us at <a class="reference external" href="mailto:blocksci&#37;&#52;&#48;lists&#46;cs&#46;princeton&#46;edu">blocksci<span>&#64;</span>lists<span>&#46;</span>cs<span>&#46;</span>princeton<span>&#46;</span>edu</a>.</p>
+</div>
+<div class="section" id="latest-release-blocksci-v0-4-5">
+<h2>Latest release (BlockSci v0.4.5)<a class="headerlink" href="#latest-release-blocksci-v0-4-5" title="Permalink to this headline">¶</a></h2>
+<p>Version 0.4.5 introduces full bech32 address support, adds segwit size support, fixes a bug which had been preventing use of continuous incremental blockchain updates, and introduces the concept of Equivalent addresses. The “Local setup” section contains best practices for setting up automatic blockchain updates. You can read more details about the release in the <a class="reference external" href="https://citp.github.io/BlockSci/changelog.html#version-0-4-5">release notes</a>. We are releasing an new <a class="reference external" href="https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-0650807b">AMI</a> running version 0.4.5 (explained under “Quick setup” below).</p>
+</div>
+<div class="section" id="quick-setup-using-amazon-ec2">
+<h2>Quick setup using Amazon EC2<a class="headerlink" href="#quick-setup-using-amazon-ec2" title="Permalink to this headline">¶</a></h2>
+<p>AMI Last updated on March 20, 2018.</p>
+<p>If you want to start using BlockSci immediately, we have made available an EC2 image: <a class="reference external" href="https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-0650807b">ami-0650807b</a>. We recommend using instance with 60 GB of memory or more for optimal performance (r4.2xlarge). On boot, a Jupyter Notebook running BlockSci will launch immediately. To access the notebook, you must set up port forwarding to your computer. Inserting the name of your private key file and the domain of your ec2 instance into the following command will make the Notebook available on your machine.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ssh -i .ssh/your_private_key.pem -N -L <span class="m">8888</span>:localhost:8888 ubuntu@your_url.amazonaws.com
+</pre></div>
+</div>
+<p>This sets up an SSH tunnel between port 8888 on your remote EC2 instance and port 8888 on your localhost. You can use whichever port you like on your local machine. Next, you can navigate to <a class="reference external" href="http://localhost:8888/">http://localhost:8888/</a> in your browser and log in with the password ‘blocksci’. A demo notebook will be available for you to run and you can begin exploring the blockchain. Don’t forget to shut down the EC2 instance when you are finished since EC2 charges hourly.</p>
+<p>AWS instances suffer from a <a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-initialize.html">known performance issue</a> when starting up from an existing AMI. When the machine starts up it doesn’t actually load all of the data on the disk so that startup can be instant. Instead it only loads the data when it is accessed for the first time. Thus BlockSci will temporarily operate slowly when the image has first been launched. Within about 20 minutes after launch, the most crucial data files will be loaded to disk from the network, and most queries should run at full speed, including all examples in the demo Notebook. After about 3.5 hours, all data will be loaded to disk and all queries will reach full speed.</p>
+<p>There is no need for user intervention to resolve this issue since the machine will do so automatically on launch.</p>
+<p>The AMI contains a fully updated version of the Bitcoin blockchain as of the creation date of the AMI (March 8, 2017). Additionally it will automatically start a Bitcoin full node and update the blockchain once every hour to the latest version of the chain.</p>
+</div>
+<div class="section" id="local-setup">
+<h2>Local setup<a class="headerlink" href="#local-setup" title="Permalink to this headline">¶</a></h2>
+<p>To run BlockSci locally, you must be running a full node (such as bitcoind or an altcoin node) since BlockSci requires the full serialized blockchain data structure which full nodes produce.</p>
+<div class="section" id="parser">
+<h3>Parser<a class="headerlink" href="#parser" title="Permalink to this headline">¶</a></h3>
+<p>The next step is parsing the blockchain downloaded by the full node. The blockchain_parser binary which is built from this repo performs the transformation of this blockchain data into our customized BlockSci database format. It has two modes.</p>
+<p>Disk mode is optimized for parsing Bitcoin’s data files. It reads blockchain data directly from disk in a rapid manner. However this means that it does not work on many other blockchains which have different serialization formats than Bitcoin.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>blocksci_parser --output-directory bitcoin-data update disk --coin-directory .bitcoin
+</pre></div>
+</div>
+<p>RPC mode uses the RPC interface of a cryptocurrency to extract data regarding the blockchain. It works with a variety of cryptocurrencies which have the same general model as Bitcoin, but with minor changes to the serialization format which break the parser in disk mode. Examples of this are Zcash and Namecoin. To use the parser in RPC mode, you’re full node must be running with txindex enabled.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>blocksci_parser --output-directory bitcoin-data update rpc --username <span class="o">[</span>user<span class="o">]</span> --password <span class="o">[</span>pass<span class="o">]</span> --address <span class="o">[</span>ip<span class="o">]</span> --port <span class="o">[</span>port<span class="o">]</span>
+</pre></div>
+</div>
+<p>BlockSci can be kept up to date with the blockchain by setting up a cronjob to periodically run the parser command. Updates to the parser should not noticeably impact usage of the analysis library. It is recommended that the Blockchain be kept approximately 6 blocks back from the head of the chain in order to avoid imperfect reorg handling in BlockSci.</p>
+<p>For example you can set BlockSci to update hourly and stay 6 blocks behind the head of the chain via adding</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>@hourly /usr/local/bin/blocksci_parser --output-directory /home/ubuntu/bitcoin-data update --max-block -6 disk --coin-directory /home/ubuntu/.bitcoin
+</pre></div>
+</div>
+<p>to your system <a class="reference external" href="https://help.ubuntu.com/community/CronHowto">crontab</a>.</p>
+</div>
+</div>
+<div class="section" id="using-the-analysis-library">
+<h2>Using the analysis library<a class="headerlink" href="#using-the-analysis-library" title="Permalink to this headline">¶</a></h2>
+<p>After the parser has been run, the analysis library is ready for use. This can again be used through two different interfaces</p>
+<div class="section" id="c">
+<h3>C++<a class="headerlink" href="#c" title="Permalink to this headline">¶</a></h3>
+<p>In order to use the C++ library, you must compile your code against the BlockSci dynamic library and add its headers to your include path. The Blockchain can then be constructed given the path to the output of the parser.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;blocksci/blocksci.hpp&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span> <span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
+        <span class="n">blocksci</span><span class="o">::</span><span class="n">Blockchain</span> <span class="n">chain</span><span class="p">{</span><span class="s">&quot;file_path_to_output-directory&quot;</span><span class="p">};</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="python">
+<h3>Python<a class="headerlink" href="#python" title="Permalink to this headline">¶</a></h3>
+<p>To use the BlockSci in python, you only need to import the BlockSci library. By default the library is installed into BlockSci/Notebooks. To use the library first open the Python interpreter in that folder:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> BlockSci/Notebooks
+python3
+</pre></div>
+</div>
+<p>With the python interpreter open, the following code will load a Blockchain object created from the data output by the parser:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">blocksci</span>
+<span class="n">chain</span> <span class="o">=</span> <span class="n">blocksci</span><span class="o">.</span><span class="n">Blockchain</span><span class="p">(</span><span class="s2">&quot;file_path_to_parser_output-directory&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you would like to use BlockSci through a web interface, we recommend the use of <a class="reference external" href="https://jupyter.readthedocs.io/en/latest/install.html">Jupyter Notebook</a>. Once Jupyter is installed, simply navigate into BlockSci/Notebooks and run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>jupyter notebook
+</pre></div>
+</div>
+<p>which will open a window in your browser to the Jupyter server.</p>
+</div>
+</div>
+<div class="section" id="supported-compilers">
+<h2>Supported Compilers<a class="headerlink" href="#supported-compilers" title="Permalink to this headline">¶</a></h2>
+<p>BlockSci require GCC 6.3 or above or Clang 5 or above.</p>
+</div>
+<div class="section" id="blocksci-compilation-instructions">
+<h2>BlockSci compilation instructions<a class="headerlink" href="#blocksci-compilation-instructions" title="Permalink to this headline">¶</a></h2>
+<p>Here are the steps for compiling BlockSci on Ubuntu 16.04.</p>
+<p>Note that BlockSci only actively supports python 3.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+sudo apt-get update
+sudo apt install build-essential cmake libssl-dev libboost-all-dev libsqlite3-dev autogen <span class="se">\</span>
+autoconf libcurl4-openssl-dev libjsoncpp-dev libjsonrpccpp-dev libjsonrpccpp-tools <span class="se">\</span>
+python3-dev python3-pip liblmdb-dev libsparsehash-dev libargtable2-dev libmicrohttpd-dev <span class="se">\</span>
+libhiredis-dev catch gcc-7 g++-7 libgflags-dev libsnappy-dev zlib1g-dev libbz2-dev <span class="se">\</span>
+liblz4-dev libzstd-dev
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 <span class="m">60</span> --slave /usr/bin/g++ g++ /usr/bin/g++-7
+
+git clone https://github.com/bitcoin-core/secp256k1
+<span class="nb">cd</span> secp256k1
+./autogen.sh
+./configure --enable-module-recovery
+make
+sudo make install
+
+<span class="nb">cd</span> ~
+wget https://cmake.org/files/v3.10/cmake-3.10.0.tar.gz
+tar xzf cmake-3.10.0.tar.gz
+<span class="nb">cd</span> cmake-3.10.0/
+cmake .
+make
+sudo make install
+<span class="nb">exec</span> bash
+
+<span class="nb">cd</span> ~
+git clone https://github.com/facebook/rocksdb --branch v5.10.4
+<span class="nb">cd</span> rocksdb
+make static_lib
+make shared_lib
+sudo make install
+
+<span class="nb">cd</span> ~
+git clone https://github.com/citp/BlockSci.git
+<span class="nb">cd</span> BlockSci
+git submodule init
+git submodule update --recursive
+sudo cp -r libs/range-v3/include/meta /usr/local/include
+sudo cp -r libs/range-v3/include/range /usr/local/include
+
+<span class="nb">cd</span> libs/bitcoin-api-cpp
+mkdir release
+<span class="nb">cd</span> release
+cmake -DCMAKE_BUILD_TYPE<span class="o">=</span>Release ..
+make
+sudo make install
+
+<span class="nb">cd</span> ../../..
+mkdir release
+<span class="nb">cd</span> release
+cmake -DCMAKE_BUILD_TYPE<span class="o">=</span>Release ..
+make
+sudo make install
+
+sudo -H pip3 install --upgrade pip
+sudo -H pip3 install --upgrade multiprocess psutil jupyter pycrypto matplotlib pandas dateparser
+</pre></div>
+</div>
+</div>
+<div class="section" id="team-contact-info">
+<h2>Team &amp; contact info<a class="headerlink" href="#team-contact-info" title="Permalink to this headline">¶</a></h2>
+<p>BlockSci was created by Harry Kalodner, Steven Goldfeder, Alishah Chator, Malte Möser, and Arvind Narayanan at Princeton University. It is supported by NSF grants CNS-1421689 and CNS-1651938 and an NSF Graduate Research Fellowship under grant number DGE-1148900. We’ve released a <a class="reference external" href="https://arxiv.org/abs/1709.02489">paper</a> describing BlockSci’s design and a few applications that illustrate its capabilities. You can contact the team at <a class="reference external" href="mailto:blocksci&#37;&#52;&#48;lists&#46;cs&#46;princeton&#46;edu">blocksci<span>&#64;</span>lists<span>&#46;</span>cs<span>&#46;</span>princeton<span>&#46;</span>edu</a>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">BlockSci</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">BlockSci</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#latest-release-blocksci-v0-4-5">Latest release (BlockSci v0.4.5)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#quick-setup-using-amazon-ec2">Quick setup using Amazon EC2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#local-setup">Local setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-the-analysis-library">Using the analysis library</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#supported-compilers">Supported Compilers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#blocksci-compilation-instructions">BlockSci compilation instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#team-contact-info">Team &amp; contact info</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Release notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chain/chain.html">Chain Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="addresses/addresses.html">Address Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="heuristics/heuristics.html">Heuristics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clustering/clustering.html">Clustering</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">BlockSci Version 0.4.5 Documentation</a></li>
+      <li>Next: <a href="changelog.html" title="next chapter">Release notes</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Harry Kalodner.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/readme.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
