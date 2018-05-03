@@ -49,6 +49,13 @@ typename NumpyConverter<blocksci::uint256>::type NumpyConverter<blocksci::uint25
     return ret;
 }
 
+typename NumpyConverter<blocksci::uint160>::type NumpyConverter<blocksci::uint160>::operator()(const blocksci::uint160 &val) {
+    auto hexStr = val.GetHex();
+    std::array<char, 40> ret;
+    std::copy_n(hexStr.begin(), 40, ret.begin());
+    return ret;
+}
+
 template <typename T>
 pybind11::list convertRangeToPythonPy(T && t) {
     if constexpr (ranges::RandomAccessRange<T>()) {
@@ -86,30 +93,20 @@ pybind11::array_t<typename NumpyConverter<ranges::range_value_type_t<T>>::type> 
 }
 
 template <typename T>
-using blocksci_range_type_t = ranges::any_view<ranges::range_value_type_t<T>, getBlockSciCategory(ranges::get_categories<T>())>;
-
-template <typename T>
-blocksci_range_type_t<T> convertRangeToPythonBlockSci(T && t) {
-    return {std::forward<T>(t)};
+converted_range_impl_t<T> convertRangeToPythonBlockSci(T && t) {
+    return {std::forward<T>(t) | ranges::view::transform([](auto && x) { return BlockSciTypeConverter{}(std::forward<decltype(x)>(x)); })};
 }
 
 template <typename T>
-converted_range_impl_t<T> convertRangeToPythonImpl(T && t) {
+converted_range_t<T> convertAnyRangeToPython(T && t) {
     using range_tag = typename type_tag<ranges::range_value_type_t<T>>::type;
     if constexpr (std::is_same_v<range_tag, py_tag>) {
         return convertRangeToPythonPy(std::forward<T>(t));
     } else if constexpr (std::is_same_v<range_tag, numpy_tag>) {
         return convertRangeToPythonNumpy(std::forward<T>(t));
     } else if constexpr (std::is_same_v<range_tag, blocksci_tag>) {
-        auto converted = std::forward<T>(t) | ranges::view::transform([](auto && x) { return BlockSciTypeConverter{}(std::forward<decltype(x)>(x)); });
-        using range_tag = typename type_tag<ranges::range_value_type_t<decltype(converted)>>::type;
-        return convertRangeToPythonBlockSci(converted);
+        return convertRangeToPythonBlockSci(std::forward<T>(t));
     }
-}
-
-template <typename T>
-converted_range_t<T> convertAnyRangeToPython(T && t) {
-	return convertRangeToPythonImpl(std::forward<T>(t));
 }
 
 template <typename T>

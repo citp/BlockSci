@@ -29,19 +29,9 @@ void init_tx(py::class_<Transaction> &cl) {
     .def_property_readonly("_access", &Transaction::getAccess, py::return_value_policy::reference)
     .def(py::init([](uint32_t index, blocksci::Blockchain &chain) {
         return Transaction{index, chain.getAccess()};
-    }), R"docstring(
-         This functions gets the transaction with given index.
-         
-         :param int index: The index of the transation.
-         :returns: Tx
-         )docstring")
+    }), "This functions gets the transaction with given index.")
     .def(py::init([](const std::string hash, blocksci::Blockchain &chain) {
         return Transaction{hash, chain.getAccess()};
-    }), R"docstring(
-         This functions gets the transaction with given hash.
-         
-         :param string index: The hash of the transation.
-         :returns: Tx
-         )docstring")
+    }), "This functions gets the transaction with given hash.")
     ;
 }

@@ -50,7 +50,7 @@ def mapreduce_block_ranges(chain, mapFunc, reduceFunc, init=missing_param,  star
         return mapFunc(chain[start:end])
 
     raw_segments = chain._segment_indexes(start, end, cpu_count)
-    config = chain.config
+    config = chain._config
 
     segments = [(raw_segment, config) for raw_segment in raw_segments]
 

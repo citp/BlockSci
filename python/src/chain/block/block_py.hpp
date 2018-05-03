@@ -62,6 +62,9 @@ struct AddBlockMethods {
         func(property_tag, "weight", &Block::weight, "Three times the base size plus the total size");
         func(property_tag, "input_value", totalInputValue<Block &>, "Returns the sum of the value of all of the inputs included in this block");
         func(property_tag, "output_value", totalOutputValue<Block &>, "Returns the sum of the value of all of the outputs included in this block");
+        func(property_tag, "tx_count", [](const Block &block) -> int64_t {
+            return block.size();
+        }, "A range of all of the txes in the block");
         func(property_tag, "input_count", inputCount<Block &>, "Returns total number of inputs included in this block");
         func(property_tag, "output_count", outputCount<Block &>, "Returns total number of outputs included in this block");
         ;

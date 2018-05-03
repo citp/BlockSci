@@ -127,7 +127,7 @@ struct ApplyMethodsToRangeImpl {
         PYBIND11_DESCR returnTypeDescr = pybind11::detail::make_caster<typename wrapped_func_type::return_type>::name();
 
         std::stringstream ss;
-        ss << "For each item " << description << "\n\n:type: :class:`" << getTypeName(returnTypeDescr.text(), returnTypeDescr.types()) << "`";
+        ss << "For each item: " << description << "\n\n:type: :class:`" << getTypeName(returnTypeDescr.text(), returnTypeDescr.types()) << "`";
 
         cl.def_property_readonly(strdup(propertyName.c_str()), wrapped_func_type{func}, strdup(ss.str().c_str()));
     }
@@ -137,9 +137,10 @@ struct ApplyMethodsToRangeImpl {
         using traits = function_traits<F>;
         using arg_sequence = std::make_index_sequence<traits::arity - 1>;
         using wrapped_func_type = ApplyMethodToRange<Range, traits, F, arg_sequence>;
-        
+
+        PYBIND11_DESCR returnTypeDescr = pybind11::detail::make_caster<typename wrapped_func_type::return_type>::name();
         std::stringstream ss;
-        ss <<"For each item " << description;
+        ss << "For each item: " << description << "\n\n:rtype: :class:`" << getTypeName(returnTypeDescr.text(), returnTypeDescr.types()) << "`";
 
         cl.def(strdup(propertyName.c_str()), wrapped_func_type{func}, std::forward<Args>(args)..., strdup(ss.str().c_str()));
     }

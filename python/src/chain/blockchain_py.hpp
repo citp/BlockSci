@@ -29,22 +29,10 @@ struct AddBlockchainMethods {
         func(property_tag, "blocks", &Blockchain::blocks, "Returns a range of all the blocks in the chain");
         func(method_tag, "tx_with_index", [](Blockchain &chain, uint32_t index) {
             return Transaction{index, chain.getAccess()};
-        },
-        R"docstring(
-        This functions gets the transaction with given index.
-         
-        :param int index: The index of the transation.
-        :returns: Tx
-        )docstring", pybind11::arg("index"));
+        }, "This functions gets the transaction with given index.", pybind11::arg("index"));
         func(method_tag, "tx_with_hash", [](Blockchain &chain, const std::string &hash) {
             return Transaction{hash, chain.getAccess()};
-        },
-        R"docstring(
-        This functions gets the transaction with given hash.
-        
-        :param string index: The hash of the transation.
-        :returns: Tx
-        )docstring", pybind11::arg("tx_hash"));
+        },"This functions gets the transaction with given hash.", pybind11::arg("tx_hash"));
         func(method_tag, "address_from_index", [](Blockchain &chain, uint32_t index, AddressType::Enum type) {
             return Address{index, type, chain.getAccess()};
         }, "Construct an address object from an address num and type", pybind11::arg("index"), pybind11::arg("type"));

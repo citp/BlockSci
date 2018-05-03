@@ -77,32 +77,3 @@ void init_address(py::class_<blocksci::ScriptBase> &cl) {
 
     applyMethodsToSelf(cl, AddAddressMethods<ScriptBase>{});
 }
-
-void init_equiv_address(py::class_<EquivAddress> &cl) {
-    cl
-    .def(py::self == py::self)
-    .def(hash(py::self))
-    .def("__repr__", &EquivAddress::toString)
-    .def("__len__", [](const EquivAddress &address) { return address.size(); })
-    .def("__bool__", [](const EquivAddress &address) { return address.size() == 0; })
-    .def("__iter__", [](const EquivAddress &address) {
-        auto transformed = address | ranges::view::transform([](const Address &address) {
-            return address.getScript();
-        });
-        return py::make_iterator(transformed.begin(), transformed.end());
-    },py::keep_alive<0, 1>())
-    .def_property_readonly("is_script_equiv", &EquivAddress::isScriptEquiv, "Returns whether this equiv address is script equivalent or not")
-    .def("balance", &EquivAddress::calculateBalance, py::arg("height") = -1, "Calculates the balance held by these equivalent addresses at the height (Defaults to the full chain)")
-    .def("outs", &EquivAddress::getOutputs, "Returns a list of all outputs sent to these equivalent addresses")
-    .def("ins", &EquivAddress::getInputs, "Returns a list of all inputs spent from these equivalent addresses")
-    .def("txes", &EquivAddress::getTransactions, "Returns a list of all transactions involving these equivalent addresses")
-    .def("out_txes",&EquivAddress::getOutputTransactions, "Returns a range of all transaction where these equivalent addresses were an output")
-    .def("in_txes",&EquivAddress::getInputTransactions, "Returns a list of all transaction where these equivalent addresses were an input")
-    .def("out_txes_count", [](EquivAddress &address) -> int64_t {
-        return address.getOutputTransactions().size();
-    }, "Return the number of transactions where these equivalent addresses were an output")
-    .def("in_txes_count", [](EquivAddress &address) -> int64_t {
-        return address.getInputTransactions().size();
-    }, "Return the number of transactions where these equivalent addresses were an input")
-    ;
-}

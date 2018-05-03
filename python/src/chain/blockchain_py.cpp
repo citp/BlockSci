@@ -47,12 +47,12 @@ void init_blockchain(py::class_<Blockchain> &cl) {
     cl
     .def(py::init<std::string>())
     .def(py::init<DataConfiguration>())
-    .def_property_readonly("config", [](Blockchain &chain) -> DataConfiguration { return chain.getAccess().config; }, "Returns the configuration settings for this blockchain")
+    .def_property_readonly("_config", [](Blockchain &chain) -> DataConfiguration { return chain.getAccess().config; }, "Returns the configuration settings for this blockchain")
     .def("_segment", segmentChain, "Divide the blockchain into the given number of chunks with roughly the same number of transactions in each")
     .def("_segment_indexes", segmentChainIndexes, "Return a list of [start, end] block height pairs representing chunks with roughly the same number of transactions in each")
     .def("addresses", [](Blockchain &chain, AddressType::Enum type) {
         return chain.scripts(type);
-    }, py::arg("address_type"))
+    }, py::arg("address_type"), "Return a range of all addresses of the given type")
     .def("most_valuable_addresses", mostValuableAddresses, "Get a list of the top 100 most valuable addresses")
     ;
 
@@ -78,20 +78,10 @@ void init_data_access(py::module &m) {
     py::class_<DataAccess> (m, "_DataAccess", "Private class for accessing blockchain data")
     .def("tx_with_index", [](DataAccess &access, uint32_t index) {
         return Transaction{index, access};
-    }, R"docstring(
-         This functions gets the transaction with given index.
-         
-         :param int index: The index of the transation.
-         :returns: Tx
-         )docstring")
+    }, "This functions gets the transaction with given index.")
     .def("tx_with_hash", [](DataAccess &access, const std::string &hash) {
         return Transaction{hash, access};
-    }, R"docstring(
-         This functions gets the transaction with given hash.
-         
-         :param string index: The hash of the transation.
-         :returns: Tx
-         )docstring")
+    }, "This functions gets the transaction with given hash.")
     .def("address_from_index", [](DataAccess &access, uint32_t index, AddressType::Enum type) -> AnyScript {
         return Address{index, type, access}.getScript().wrapped;
     }, "Construct an address object from an address num and type")

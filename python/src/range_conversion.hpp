@@ -154,6 +154,12 @@ struct NumpyConverter<blocksci::uint256> {
 };
 
 template<>
+struct NumpyConverter<blocksci::uint160> {
+    using type = std::array<char, 40>;
+    type operator()(const blocksci::uint160 &val);
+};
+
+template<>
 struct NumpyConverter<bool> {
     using type = NumpyBool;
     type operator()(const bool &val) {

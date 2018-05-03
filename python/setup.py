@@ -61,7 +61,7 @@ class CMakeBuild(build_ext):
 
 setup(
     name='blocksci',
-    version='0.3',
+    version='0.5.0',
     author='Harry Kalodner',
     author_email='blocksci@cs.princeton.edu',
     description='BlockSci: A high-performance tool for blockchain science and exploration',

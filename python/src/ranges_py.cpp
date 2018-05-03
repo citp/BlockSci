@@ -31,11 +31,11 @@ void init_ranges(py::module &m) {
         addRangeMethods(cl);
     }
     {
-        py::class_<ranges::any_view<ranges::optional<uint256>>> cl(m, "Hash256OptionalIterator");
+        py::class_<ranges::any_view<ranges::optional<uint256>>> cl(m, "UInt256OptionalIterator");
         addRangeMethods(cl);
     }
     {
-        py::class_<ranges::any_view<ranges::optional<uint256>, ranges::category::random_access>> cl(m, "Hash256OptionalRange");
+        py::class_<ranges::any_view<ranges::optional<uint256>, ranges::category::random_access>> cl(m, "UInt256OptionalRange");
         addRangeMethods(cl);
     }
     {

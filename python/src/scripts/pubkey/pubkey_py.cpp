@@ -16,10 +16,6 @@
 using namespace blocksci;
 namespace py = pybind11;
 
-const char *pubkeyDocstring(std::string docstring) {
-    return strdup(docstring.c_str());
-}
-
 void init_pubkey(py::class_<script::Pubkey> &cl) {
     cl
     .def("__repr__", &script::Pubkey::toString)

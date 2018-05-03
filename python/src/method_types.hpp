@@ -29,7 +29,7 @@ struct PythonTypeName;
 template <>
 struct PythonTypeName<blocksci::AnyScript> {
 	static std::string name() {
-		return "AnyAddress";
+		return "Address";
 	}
 };
 

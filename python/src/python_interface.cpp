@@ -28,6 +28,8 @@
 
 #include "scripts/address_py.hpp"
 #include "scripts/address_range_py.hpp"
+#include "scripts/equiv_address/equiv_address_py.hpp"
+#include "scripts/equiv_address/equiv_address_range_py.hpp"
 #include "scripts/pubkey/pubkey_py.hpp"
 #include "scripts/pubkey/pubkey_range_py.hpp"
 #include "scripts/pubkey/pubkeyhash_range_py.hpp"
@@ -83,6 +85,7 @@ PYBIND11_MODULE(_blocksci, m) {
     RangeClasses<Input> inputRangeCls(m);
     RangeClasses<Output> outputRangeCls(m);
     RangeClasses<AnyScript> addressRangeCls(m);
+    RangeClasses<EquivAddress> equivAddressRangeCls(m);
     RangeClasses<script::Pubkey> pubkeyRangeCls(m);
     RangeClasses<script::PubkeyHash> pubkeyHashRangeCls(m);
     RangeClasses<script::WitnessPubkeyHash> witnessPubkeyHashRangeCls(m);
@@ -102,7 +105,11 @@ PYBIND11_MODULE(_blocksci, m) {
     init_blockchain(blockchainCl);
     init_uint160(uint160Cl);
     init_uint256(uint256Cl);
-    init_equiv_address(equivAddressCl);
+    {
+        init_equiv_address(equivAddressCl);
+        addEquivAddressRangeMethods(equivAddressRangeCls);
+        applyMethodsToEquivAddressRange(equivAddressRangeCls);
+    }
     {
         init_block(blockCl);
         addBlockRangeMethods(blockRangeCls);

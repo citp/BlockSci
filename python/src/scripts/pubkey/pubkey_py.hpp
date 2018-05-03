@@ -23,13 +23,7 @@ struct AddPubkeyBaseMethods {
     template <typename FuncApplication>
     void operator()(FuncApplication func) {
         using namespace blocksci;
-        func(method_tag, "find_multisigs", toFunc([](const T &script) {
-            pybind11::list ret;
-            for (auto &address : script.getIncludingMultisigs()) {
-                ret.append(script::Multisig{address.scriptNum, script.getAccess()});
-            }
-            return ret;
-        }), "List of multisigs which include this public key");
+        func(method_tag, "find_multisigs", toFunc(&T::getIncludingMultisigs), "List of multisigs which include this public key");
         func(property_tag, "pubkey", toFunc([](const T &script) -> ranges::optional<pybind11::bytes> {
             auto pubkey = script.getPubkey();
             if (pubkey) {
