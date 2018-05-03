@@ -104,6 +104,11 @@ Compilation_ instructions as well as setup_ instructions are available in the do
 .. _Compilation: https://citp.github.io/BlockSci/compiling.html
 .. _setup: https://citp.github.io/BlockSci/setup.html
 
+Getting help
+============
+
+If you've encountered a bug or have a question about using BlockSci, the best way to get help is to open a GitHub issue. We are an academic team and aren't able to provide the standard of support that you might expect for a commercial project, but we'll do our best. 
+
 Team & contact info
 ===================
 
