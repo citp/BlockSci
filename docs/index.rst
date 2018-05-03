@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-BlockSci Version 0.4.5 Documentation
+BlockSci Version 0.5.0 Documentation
 ====================================
 
 .. toctree::
@@ -14,13 +14,11 @@ BlockSci Version 0.4.5 Documentation
 
    changelog
 
-   chain/chain
+   compiling
 
-   addresses/addresses
+   setup
 
-   heuristics/heuristics
-
-   clustering/clustering
+   reference/reference
 
 Old Documentation
 =======================
