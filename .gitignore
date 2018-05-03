@@ -1,0 +1,12 @@
+release
+xcode
+debug
+build
+*.DS_Store
+Notebooks/blocksci
+*.so
+*.dylib
+*.pyc
+include/blocksci/external
+python/blocksci/pybind11
+*.egg-info

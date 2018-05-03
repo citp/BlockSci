@@ -4,6 +4,59 @@
 Release notes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Version 0.5.0
+========================
+
+Feature Enhancements
+---------------------
+
+- Expanded iterator and range functionality to return NumPy arrays.
+
+  Many methods and properties of BlockSci objects return range or iterator objects such as :class:`blocksci.TxRange`. These objects allow vectorized operations over sequences of BlockSci objects. Their API matches up with the API of their member objects, and thus :class:`blocksci.TxRange` has almost the same set of methods as :class:`blocksci.Tx`. These methods will effiently call the given method over all items in the range or iterator. Depending on the return type of the method, the result will either be another range, a NumPy array, or a python list. For further information, look for these classes in the reference.
+
+- Add custom BlockSci pickler to enable sending and recieving serialized BlockSci objects. This means that returning BlockSci objects from the multiprocessing interface now works correctly.
+
+- Enhance the change address heuristics interface
+
+  Change address heuristics are now composible in order to form new customized heuristics using the :class:`blocksci.heuristics.change.ChangeHeuristic` interface. These can be used in combination with the new clustering interface described below.
+
+- Incorporate clustering module into main BlockSci library
+
+  The formerly external clustering module is now avaiable as :mod:`blocksci.cluster`. Further, it is now possible to generate new clusterings through the python interface using the :func:`~blocksci.cluster.ClusterManager.create_clustering` method. Users can select their choice of change address heuristic in order to experiment with different clustering strategies.
+
+- Simplified build system
+
+  BlockSci's install process no longer requires the compilation of any external dependencies to compile on Ubuntu 16.04.
+
+  The BlockSci library no longer has any public dependencies so compiling against it will not require linking against anything else.
+
+  The CMake build script has now been updated to install a Config file which allows you to use `find_package(blocksci)` to import BlockSci's target's into your build script. This makes it much easier to build libraries that use BlockSci as a dependency.
+
+  The BlockSci python module has been moved into a separate module to allow for a simple SetupTools or pip based install process: `pip install -e pyblocksci`. The main BlockSci library must be installed first for this to work.
+
+- Updated mempool recorder and integrated it into BlockSci interface.
+
+  For instructions on running the mempool recorder and using the data it produces, see the setup_ section.
+
+- Improve and clean up auto generated API reference. 
+
+  All method signatures display correct types and all properties display the type of the returned value. Further, all types link to their definition in the documentation.
+
+
+Bug Fixes
+----------
+
+- Removed hardcoded paths (`Issue #72`_)
+- Fixed :func:`~blocksci.Block.miner` (`Issue #76`_)
+- Added pickling support (`Issue #84`_)
+- Added :func:`~blocksci.Blockchain.reload` (`Issue #98`_)
+
+.. _setup: https://citp.github.io/BlockSci/setup.html
+.. _Issue #72: https://github.com/citp/BlockSci/issues/72
+.. _Issue #76: https://github.com/citp/BlockSci/issues/76
+.. _Issue #84: https://github.com/citp/BlockSci/issues/84
+.. _Issue #98: https://github.com/citp/BlockSci/issues/98
+
 Version 0.4.5
 ========================
 
