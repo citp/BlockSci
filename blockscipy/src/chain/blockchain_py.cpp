@@ -50,6 +50,7 @@ void init_blockchain(py::class_<Blockchain> &cl) {
     .def_property_readonly("_config", [](Blockchain &chain) -> DataConfiguration { return chain.getAccess().config; }, "Returns the configuration settings for this blockchain")
     .def("_segment", segmentChain, "Divide the blockchain into the given number of chunks with roughly the same number of transactions in each")
     .def("_segment_indexes", segmentChainIndexes, "Return a list of [start, end] block height pairs representing chunks with roughly the same number of transactions in each")
+    .def("reload", &Blockchain::reload, "Reload the blockchain to make new blocks visible (Invalidates current BlockSci objects)")
     .def("addresses", [](Blockchain &chain, AddressType::Enum type) {
         return chain.scripts(type);
     }, py::arg("address_type"), "Return a range of all addresses of the given type")

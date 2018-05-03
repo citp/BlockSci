@@ -7,7 +7,8 @@ Release notes
 Version 0.5.0
 ========================
 
-Feature Enchancements
+Feature Enhancements
+---------------------
 
 - Expanded iterator and range functionality to return NumPy arrays.
 
@@ -42,8 +43,19 @@ Feature Enchancements
   All method signatures display correct types and all properties display the type of the returned value. Further, all types link to their definition in the documentation.
 
 
-.. _setup: https://citp.github.io/BlockSci/setup.html
+Bug Fixes
+----------
 
+- Removed hardcoded paths (`Issue #72`_)
+- Fixed :func:`~blocksci.Block.miner` (`Issue #76`_)
+- Added pickling support (`Issue #84`_)
+- Added :func:`~blocksci.Blockchain.reload` (`Issue #98`_)
+
+.. _setup: https://citp.github.io/BlockSci/setup.html
+.. _Issue #72: https://github.com/citp/BlockSci/issues/72
+.. _Issue #76: https://github.com/citp/BlockSci/issues/76
+.. _Issue #84: https://github.com/citp/BlockSci/issues/84
+.. _Issue #98: https://github.com/citp/BlockSci/issues/98
 
 Version 0.4.5
 ========================

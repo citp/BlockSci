@@ -23,12 +23,13 @@ BlockSci Version 0.5.0 Documentation
 Old Documentation
 =======================
 
-BlockSci `Version 0.3 Documentation`_
+- BlockSci `Version 0.4.5 Documentation`_
+- BlockSci `Version 0.3 Documentation`_
+- BlockSci `Version 0.2 Documentation`_
 
-BlockSci `Version 0.2 Documentation`_
-
-.. _Version 0.3 Documentation: 0.3
-.. _Version 0.2 Documentation: 0.2
+.. _Version 0.4.5 Documentation: 0.4.5/index.html
+.. _Version 0.3 Documentation: 0.3/index.html
+.. _Version 0.2 Documentation: 0.2/index.html
 
 
 Indices and tables
