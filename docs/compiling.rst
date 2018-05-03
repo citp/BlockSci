@@ -26,7 +26,7 @@ Ubuntu 16.04
 	sudo make install
 
 	cd ..
-	sudo -H pip3 install -e pyblocksci
+	sudo -H pip3 install -e blockscipy
 	
 
 Mac OS 10.13
@@ -46,4 +46,4 @@ Mac OS 10.13
     sudo make install
 
     cd ..
-	pip3 install -e pyblocksci
+	pip3 install -e blockscipy
