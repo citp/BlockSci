@@ -289,11 +289,7 @@ class CPP(object):
             f.write(full_code)
         with open(builddir.name + '/CMakeLists.txt', 'w') as f:
             f.write(makefile)
-        if sys.platform == "darwin":
-            process_params = ["cmake", "-DOPENSSL_ROOT_DIR=/usr/local/opt/openssl", "."]
-        else:
-            process_params = ["cmake", "."]
-        process = subprocess.Popen(process_params, cwd=builddir.name, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(["cmake", "."], cwd=builddir.name, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         print(err.decode('utf8'))
         process = subprocess.Popen(["make"], cwd=builddir.name, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
