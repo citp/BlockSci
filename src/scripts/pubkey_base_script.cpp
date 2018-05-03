@@ -10,7 +10,7 @@
 #include <blocksci/util/data_access.hpp>
 
 namespace blocksci {
-    std::vector<Address> PubkeyAddressBase::getIncludingMultisigs() const {
+    ranges::any_view<Address> PubkeyAddressBase::getIncludingMultisigs() const {
         return getAccess().getAddressIndex().getIncludingMultisigs(*this);
     }
 } // namespace blocksci

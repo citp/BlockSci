@@ -42,6 +42,24 @@ namespace blocksci {
         });
     }
     
+    ranges::any_view<Address> AddressIndex::getIncludingMultisigs(const Address &searchAddress) const {
+        if (dedupType(searchAddress.type) != DedupAddressType::PUBKEY) {
+            return {};
+        }
+        
+        auto prefixData = reinterpret_cast<const char *>(&searchAddress.scriptNum);
+        std::vector<char> prefix(prefixData, prefixData + sizeof(searchAddress.scriptNum));
+        auto rawDedupAddressRange = ColumnIterator(impl->db.get(), impl->getNestedColumn(AddressType::MULTISIG_PUBKEY).get(), prefix);
+        auto access = &searchAddress.getAccess();
+        return rawDedupAddressRange | ranges::view::transform([access](std::pair<MemoryView, MemoryView> pair) -> Address {
+            auto &key = pair.first;
+            key.data += sizeof(uint32_t);
+            DedupAddress rawParent;
+            memcpy(&rawParent, key.data, sizeof(rawParent));
+            return Address{rawParent.scriptNum, AddressType::MULTISIG, *access};
+        });
+    }
+    
     void AddressIndex::compactDB() {
         impl->compactDB();
     }
@@ -125,24 +143,6 @@ namespace blocksci {
             return true;
         }
         return false;
-    }
-    
-    std::vector<Address> AddressIndex::getIncludingMultisigs(const Address &searchAddress) const {
-        if (dedupType(searchAddress.type) != DedupAddressType::PUBKEY) {
-            return {};
-        }
-        
-        rocksdb::Slice key{reinterpret_cast<const char *>(&searchAddress.scriptNum), sizeof(searchAddress.scriptNum)};
-        std::vector<Address> addresses;
-        auto it = impl->getNestedIterator(AddressType::MULTISIG_PUBKEY);
-        for (it->Seek(key); it->Valid() && it->key().starts_with(key); it->Next()) {
-            auto foundKey = it->key();
-            foundKey.remove_prefix(sizeof(uint32_t));
-            DedupAddress rawParent;
-            memcpy(&rawParent, foundKey.data(), sizeof(rawParent));
-            addresses.emplace_back(rawParent.scriptNum, AddressType::MULTISIG, searchAddress.getAccess());
-        }
-        return addresses;
     }
     
     std::unordered_set<Address> AddressIndex::getPossibleNestedEquivalentDown(const Address &searchAddress) const {

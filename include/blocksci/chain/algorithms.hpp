@@ -210,18 +210,7 @@ namespace blocksci {
     }
     
     inline int64_t BLOCKSCI_EXPORT fee(const Transaction &tx) {
-        if (tx.isCoinbase()) {
-            return 0;
-        } else {
-            int64_t total = 0;
-            for (auto &input : tx.rawInputs()) {
-                total += input.getValue();
-            }
-            for (auto &output : tx.rawOutputs()) {
-                total -= output.getValue();
-            }
-            return total;
-        }
+        return tx.fee();
     }
     
     template <typename T>

@@ -35,7 +35,7 @@ namespace blocksci {
             }
         }
         
-        std::vector<Address> getIncludingMultisigs() const;
+        ranges::any_view<Address> getIncludingMultisigs() const;
     };
 }
 

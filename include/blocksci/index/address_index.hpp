@@ -46,7 +46,7 @@ namespace blocksci {
         ranges::any_view<OutputPointer> getOutputPointers(const Address &address) const;
         
         std::vector<Address> getPossibleNestedEquivalent(const Address &address) const;
-        std::vector<Address> getIncludingMultisigs(const Address &searchAddress) const;
+        ranges::any_view<Address> getIncludingMultisigs(const Address &searchAddress) const;
         
         void addNestedAddresses(std::vector<std::pair<blocksci::RawAddress, blocksci::DedupAddress>> nestedCache);
         void addOutputAddresses(std::vector<std::pair<blocksci::RawAddress, blocksci::OutputPointer>> outputCache);

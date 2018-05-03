@@ -11,12 +11,14 @@
 
 #include "script.hpp"
 #include "script_access.hpp"
+#include "multisig_pubkey_script.hpp"
 
 #include <blocksci/blocksci_export.h>
 #include <blocksci/core/address_info.hpp>
 #include <blocksci/util/data_access.hpp>
 
 #include <sstream>
+#include <vector>
 
 namespace blocksci {
     template <>

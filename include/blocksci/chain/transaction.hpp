@@ -94,6 +94,21 @@ namespace blocksci {
             return virtualSize();
         }
         
+        int64_t fee() const {
+            if (isCoinbase()) {
+                return 0;
+            } else {
+                int64_t total = 0;
+                for (auto &input : rawInputs()) {
+                    total += input.getValue();
+                }
+                for (auto &output : rawOutputs()) {
+                    total -= output.getValue();
+                }
+                return total;
+            }
+        }
+        
         uint32_t locktime() const {
             return data->locktime;
         }
