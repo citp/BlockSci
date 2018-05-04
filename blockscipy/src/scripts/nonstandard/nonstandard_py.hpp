@@ -19,7 +19,7 @@ struct AddNonstandardMethods {
     void operator()(FuncApplication func) {
     	using namespace blocksci;
         func(property_tag, "in_script", &blocksci::script::Nonstandard::inputString, "Nonstandard input script");
-		func(property_tag, "total", &blocksci::script::Nonstandard::outputString, "Nonstandard output script");
+        func(property_tag, "out_script", &blocksci::script::Nonstandard::outputString, "Nonstandard output script");
     }
 };
 
