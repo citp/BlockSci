@@ -34,7 +34,7 @@ namespace blocksci {
     class DataAccess;
     
     template <AddressType::Enum type>
-    using ScriptRange = ranges::any_view<ScriptAddress<type>, ranges::category::random_access>;
+    using ScriptRange = ranges::any_view<ScriptAddress<type>, ranges::category::random_access | ranges::category::sized>;
     using ScriptRangeVariant = to_variadic_t<to_address_tuple_t<ScriptRange>, mpark::variant>;
     
     namespace internal {

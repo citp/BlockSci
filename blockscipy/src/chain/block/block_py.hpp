@@ -28,7 +28,7 @@ struct AddBlockMethods {
         using namespace blocksci;
         namespace py = pybind11;
         
-        func(property_tag, "txes", [](const Block &block) -> ranges::any_view<Transaction, ranges::category::random_access> {
+        func(property_tag, "txes", [](const Block &block) -> ranges::any_view<Transaction, ranges::category::random_access | ranges::category::sized> {
             return block;
         }, "A range of all of the txes in the block");
         func(property_tag, "inputs", [](const Block &block) -> ranges::any_view<Input> {

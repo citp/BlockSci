@@ -58,8 +58,8 @@ typename NumpyConverter<blocksci::uint160>::type NumpyConverter<blocksci::uint16
 
 template <typename T>
 pybind11::list convertRangeToPythonPy(T && t) {
-    if constexpr (ranges::RandomAccessRange<T>()) {
-        auto rangeSize = static_cast<size_t>(ranges::distance(t));
+    if constexpr (ranges::SizedRange<T>()) {
+        auto rangeSize = static_cast<size_t>(ranges::size(t));
         pybind11::list list{rangeSize};
         RANGES_FOR(auto && a, t) {
             list.append(std::forward<decltype(a)>(a));
@@ -80,8 +80,8 @@ pybind11::array_t<typename NumpyConverter<ranges::range_value_type_t<T>>::type> 
     using numpy_value_type = typename numpy_converter::type;
 
     auto numpy_converted = std::forward<T>(t) | ranges::view::transform(numpy_converter{});
-    if constexpr (ranges::RandomAccessRange<T>()) {
-        auto rangeSize = static_cast<size_t>(ranges::distance(numpy_converted));
+    if constexpr (ranges::SizedRange<T>()) {
+        auto rangeSize = static_cast<size_t>(ranges::size(numpy_converted));
         pybind11::array_t<numpy_value_type> ret{rangeSize};
         auto retPtr = ret.mutable_data();
         ranges::copy(numpy_converted, retPtr);
@@ -110,7 +110,7 @@ converted_range_t<T> convertAnyRangeToPython(T && t) {
 }
 
 template <typename T>
-using random_range = ranges::any_view<T, ranges::category::random_access>;
+using random_range = ranges::any_view<T, ranges::category::random_access | ranges::category::sized>;
 
 #define createConvertedRangeTag(functype) \
 	template converted_range_t<functype> convertAnyRangeToPython<functype>(functype &&);

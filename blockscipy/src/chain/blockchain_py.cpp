@@ -30,7 +30,7 @@ void init_blockchain(py::class_<Blockchain> &cl) {
         }
         return chain[posIndex];
     }, py::arg("index"))
-    .def("__getitem__", [](Blockchain &chain, pybind11::slice slice) -> ranges::any_view<decltype(chain[0]), ranges::category::random_access> {
+    .def("__getitem__", [](Blockchain &chain, pybind11::slice slice) -> ranges::any_view<decltype(chain[0]), ranges::category::random_access | ranges::category::sized> {
         size_t start, stop, step, slicelength;
         if (!slice.compute(chain.size(), &start, &stop, &step, &slicelength))
             throw pybind11::error_already_set();

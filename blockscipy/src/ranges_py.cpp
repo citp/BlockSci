@@ -14,12 +14,13 @@ namespace py = pybind11;
 using namespace blocksci;
 
 void init_ranges(py::module &m) {
+    constexpr auto rangeCat = ranges::category::random_access | ranges::category::sized;
     {
         py::class_<ranges::any_view<ranges::optional<int64_t>>> cl(m, "IntOptionalIterator");
         addRangeMethods(cl);
     }
     {
-        py::class_<ranges::any_view<ranges::optional<int64_t>, ranges::category::random_access>> cl(m, "IntOptionalRange");
+        py::class_<ranges::any_view<ranges::optional<int64_t>, rangeCat>> cl(m, "IntOptionalRange");
         addRangeMethods(cl);
     }
     {
@@ -27,7 +28,7 @@ void init_ranges(py::module &m) {
         addRangeMethods(cl);
     }
     {
-        py::class_<ranges::any_view<ranges::optional<std::chrono::system_clock::time_point>, ranges::category::random_access>> cl(m, "DateOptionalRange");
+        py::class_<ranges::any_view<ranges::optional<std::chrono::system_clock::time_point>, rangeCat>> cl(m, "DateOptionalRange");
         addRangeMethods(cl);
     }
     {
@@ -35,7 +36,7 @@ void init_ranges(py::module &m) {
         addRangeMethods(cl);
     }
     {
-        py::class_<ranges::any_view<ranges::optional<uint256>, ranges::category::random_access>> cl(m, "UInt256OptionalRange");
+        py::class_<ranges::any_view<ranges::optional<uint256>, rangeCat>> cl(m, "UInt256OptionalRange");
         addRangeMethods(cl);
     }
     {
@@ -43,7 +44,7 @@ void init_ranges(py::module &m) {
         addRangeMethods(cl);
     }
     {
-        py::class_<ranges::any_view<ranges::optional<bool>, ranges::category::random_access>> cl(m, "BoolOptionalRange");
+        py::class_<ranges::any_view<ranges::optional<bool>, rangeCat>> cl(m, "BoolOptionalRange");
         addRangeMethods(cl);
     }
     {
@@ -51,7 +52,7 @@ void init_ranges(py::module &m) {
         addRangeMethods(cl);
     }
     {
-        py::class_<ranges::any_view<ranges::optional<AddressType::Enum>, ranges::category::random_access>> cl(m, "AddressTypeOptionalRange");
+        py::class_<ranges::any_view<ranges::optional<AddressType::Enum>, rangeCat>> cl(m, "AddressTypeOptionalRange");
         addRangeMethods(cl);
     }
     {
@@ -59,7 +60,7 @@ void init_ranges(py::module &m) {
         addRangeMethods(cl);
     }
     {
-        py::class_<ranges::any_view<ranges::optional<py::bytes>, ranges::category::random_access>> cl(m, "BytesOptionalRange");
+        py::class_<ranges::any_view<ranges::optional<py::bytes>, rangeCat>> cl(m, "BytesOptionalRange");
         addRangeMethods(cl);
     }
 }

@@ -13,7 +13,6 @@
 
 #include <pybind11/numpy.h>
 
-#include <range/v3/distance.hpp>
 #include <range/v3/range_for.hpp>
 #include <range/v3/range_traits.hpp>
 #include <range/v3/view/any_view.hpp>
@@ -183,9 +182,12 @@ struct make_optional<ranges::optional<T>> { using type = ranges::optional<T>; };
 template <typename T>
 using make_optional_t = typename make_optional<T>::type;
 
+template<class T> struct dependent_false : std::false_type {};
+
 constexpr ranges::category getBlockSciCategory(ranges::category cat) {
-    if ((cat & ranges::category::random_access) == ranges::category::random_access) {
-        return ranges::category::random_access;
+    constexpr auto randomSized = ranges::category::random_access | ranges::category::sized;
+    if ((cat & randomSized) == randomSized) {
+        return randomSized;
     } else {
         return ranges::category::input;
     }
@@ -277,7 +279,7 @@ template <typename T>
 struct is_any_view : std::false_type {};
 
 template <typename T>
-struct is_any_view<ranges::any_view<T, ranges::category::random_access>> : std::true_type {};
+struct is_any_view<ranges::any_view<T, ranges::category::random_access | ranges::category::sized>> : std::true_type {};
 
 template <typename T>
 struct is_any_view<ranges::any_view<T>> : std::true_type {};

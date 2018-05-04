@@ -60,7 +60,7 @@ void init_cluster_manager(pybind11::module &s) {
     .def("cluster_with_address", [](const ClusterManager &cm, const Address &address) -> Cluster {
        return cm.getCluster(address);
     }, py::arg("address"), "Return the cluster containing the given address")
-    .def("clusters", [](ClusterManager &cm) -> ranges::any_view<Cluster, ranges::category::random_access> {
+    .def("clusters", [](ClusterManager &cm) -> ranges::any_view<Cluster, ranges::category::random_access | ranges::category::sized> {
         return cm.getClusters();
     }, "Get a list of all clusters (The list is lazy so there is no cost to calling this method)")
     .def("tagged_clusters", [](ClusterManager &cm, const std::unordered_map<blocksci::Address, std::string> &tags) -> ranges::any_view<TaggedCluster> {

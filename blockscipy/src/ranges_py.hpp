@@ -15,6 +15,7 @@
 #include <pybind11/functional.h>
 
 #include <range/v3/range_for.hpp>
+#include <range/v3/size.hpp>
 #include <range/v3/view/any_view.hpp>
 #include <range/v3/view/filter.hpp>
 #include <range/v3/view/slice.hpp>
@@ -58,9 +59,14 @@ auto addRangeMethods(Class &cl) {
     if constexpr (ranges::ForwardRange<Range>()) {
         cl
         .def("__bool__", [](Range &range) { return !ranges::empty(range); })
-        .def("__len__", [](Range &range) { return ranges::distance(range); })
+        ;
+    }
+
+    if constexpr (ranges::BidirectionalRange<Range>()) {
+        cl
+        .def("__len__", [](Range &range) { return range.size(); })
         .def("__getitem__", [](Range &range, int64_t posIndex) {
-            auto chainSize = static_cast<int64_t>(ranges::distance(range));
+            auto chainSize = static_cast<int64_t>(range.size());
             if (posIndex < 0) {
                 posIndex += chainSize;
             }
@@ -69,21 +75,27 @@ auto addRangeMethods(Class &cl) {
             }
             return range[posIndex];
         }, pybind11::arg("index"))
-        ;
-    }
 
-    if constexpr (ranges::BidirectionalRange<Range>()) {
-        cl.def("__getitem__", [](Range &range, pybind11::slice slice) {
+        .def("__getitem__", [](Range &range, pybind11::slice slice) {
             size_t start, stop, step, slicelength;
-            auto chainSize = ranges::distance(range);
+            const auto &constRange = range;
+            auto chainSize = ranges::size(constRange);
+            // static_assert(std::is_integral<decltype(chainSize)>::value, "Size is not integral");
+            // static_assert(!ranges::disable_sized_range<Range>::value, "Size is disabled");
+            // static_assert(ranges::SizedRange<Range>(), "range is not sized");
+            // static_assert(ranges::SizedRange<const Range>(), "const range is not sized");
             if (!slice.compute(chainSize, &start, &stop, &step, &slicelength))
                 throw pybind11::error_already_set();
             
             auto subset =  ranges::view::slice(range,
                                                static_cast<ranges::range_difference_type_t<Range>>(start),
                                                static_cast<ranges::range_difference_type_t<Range>>(stop));
-            return convertRangeToPython(subset | ranges::view::stride(step));
-        }, pybind11::arg("slice"));
+            // static_assert(ranges::SizedRange<const decltype(subset)>(), "slice is not sized");
+            auto strided = subset | ranges::view::stride(step);
+            // static_assert(ranges::SizedRange<const decltype(strided)>(), "strided is not sized");
+            return convertRangeToPython(strided);
+        }, pybind11::arg("slice"))
+        ;
     }
     
     
@@ -95,7 +107,7 @@ auto addRangeMethods(Class &cl) {
         ss << "\n\n:type: :class:`" << PythonTypeName<ranges::any_view<WrappedType, getBlockSciCategory(ranges::get_categories<Range>())>>::name() << "`";
         
         std::stringstream ss2;
-        ss2 << "\n\n:type: :class:` numpy.ndarray[bool]`";
+        ss2 << "\n\n:type: :class:`numpy.ndarray[bool]`";
         cl
         .def_property_readonly("has_value", [](Range &range) {
             return convertRangeToPython(range | ranges::view::transform([](auto && val) { return val.has_value(); }));

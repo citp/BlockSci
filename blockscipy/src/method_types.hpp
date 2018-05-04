@@ -223,7 +223,7 @@ struct PythonTypeName<ranges::optional<T>> {
 };
 
 template <typename T>
-struct PythonTypeName<ranges::any_view<T, ranges::category::random_access>> {
+struct PythonTypeName<ranges::any_view<T, ranges::category::random_access | ranges::category::sized>> {
 	static std::string name() {
 		return PythonTypeName<T>::name() + "Range";
 	}
@@ -237,7 +237,7 @@ struct PythonTypeName<ranges::any_view<T>> {
 };
 
 template <typename T>
-struct PythonTypeName<ranges::any_view<ranges::optional<T>, ranges::category::random_access>> {
+struct PythonTypeName<ranges::any_view<ranges::optional<T>, ranges::category::random_access | ranges::category::sized>> {
 	static std::string name() {
 		return PythonTypeName<T>::name() + "OptionalRange";
 	}

@@ -114,7 +114,7 @@ auto applyRangeMethodsToRange(Class &cl, Applier applier) {
 template <template<typename> class Applier, typename T>
 void applyRangeFiltersToRange(RangeClasses<T> &cls) {
     applyRangeMethodsToRange(cls.iterator, Applier<ranges::any_view<T>>{});
-    applyRangeMethodsToRange(cls.range, Applier<ranges::any_view<T, ranges::category::random_access>>{});
+    applyRangeMethodsToRange(cls.range, Applier<ranges::any_view<T, ranges::category::random_access | ranges::category::sized>>{});
 }
 
 #endif /* range_filter_apply_py_h */
