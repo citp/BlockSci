@@ -25,7 +25,7 @@ namespace blocksci {
         auto lastTx = chain[endBlock - BlockHeight{1}].endTxIndex();
         auto firstTx = chain[startBlock].firstTxIndex();
         auto totalTxCount = lastTx - firstTx;
-        double segmentSize = static_cast<double>(totalTxCount) / segmentCount;
+        double segmentSize = std::max(static_cast<double>(totalTxCount) / segmentCount, 1.0);
         
         std::vector<std::vector<Block>> segments;
         auto it = chain.begin();
