@@ -25,7 +25,7 @@ namespace blocksci {
     class BLOCKSCI_EXPORT ClusterManager {
         ClusterAccess access;
         
-        friend class Cluster;
+        friend class blocksci::Cluster;
         
     public:
         ClusterManager(const std::string &baseDirectory, DataAccess &access);
@@ -41,7 +41,7 @@ namespace blocksci {
         
         auto taggedClusters(const std::unordered_map<Address, std::string> &tags) {
             return getClusters() | ranges::view::transform([tags](Cluster && cluster) -> ranges::optional<TaggedCluster> {
-                return cluster.getTagged(tags);
+                return cluster.getTaggedUnsafe(tags);
             }) | flatMapOptionals();
         }
     };

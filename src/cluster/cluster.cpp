@@ -42,6 +42,21 @@ namespace blocksci {
         }
     }
     
+    ranges::optional<TaggedCluster> Cluster::getTaggedUnsafe(const std::unordered_map<blocksci::Address, std::string> &tags) const {
+        bool isEmpty = [&]() {
+            auto addresses = taggedAddressesUnsafe(tags);
+            RANGES_FOR(auto tagged, addresses) {
+                return true;
+            }
+            return false;
+        }();
+        if (isEmpty) {
+            return TaggedCluster{*this, taggedAddresses(tags)};
+        } else {
+            return ranges::nullopt;
+        }
+    }
+    
     uint32_t Cluster::countOfType(AddressType::Enum type) const {
         auto dedupSearchType = dedupType(type);
         uint32_t count = 0;
