@@ -48,14 +48,18 @@ Bug Fixes
 
 - Removed hardcoded paths (`Issue #72`_)
 - Fixed :func:`~blocksci.Block.miner` (`Issue #76`_)
+- Made it possible to iterate over the ouputs linked to a cluster (`Issue #81`_)
 - Added pickling support (`Issue #84`_)
 - Added :func:`~blocksci.Blockchain.reload` (`Issue #98`_)
+- Fixed infinite loop in `segmentChain` (`Issue #104`_)
 
 .. _setup: https://citp.github.io/BlockSci/setup.html
 .. _Issue #72: https://github.com/citp/BlockSci/issues/72
 .. _Issue #76: https://github.com/citp/BlockSci/issues/76
+.. _Issue #81: https://github.com/citp/BlockSci/issues/81
 .. _Issue #84: https://github.com/citp/BlockSci/issues/84
 .. _Issue #98: https://github.com/citp/BlockSci/issues/98
+.. _Issue #104: https://github.com/citp/BlockSci/issues/104
 
 Version 0.4.5
 ========================
