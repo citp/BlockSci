@@ -15,7 +15,7 @@ Additionally, a demonstration Notebook_ is available in the Notebooks folder.
 
 .. _Notebook: https://citp.github.io/BlockSci/demo.html
 
-For installation instructions, see below. More detailed documentation is coming soon. Meanwhile, feel free to contact us at blocksci@lists.cs.princeton.edu.
+For installation instructions, see below. 
 
 Latest release (BlockSci v0.5.0)
 ================================
