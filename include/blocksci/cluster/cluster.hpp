@@ -91,18 +91,6 @@ namespace blocksci {
         
         ranges::any_view<Address> getAddresses() const;
         
-//        auto taggedAddressesImpl(const std::unordered_map<DedupAddress, std::pair<AddressType::Enum, std::string> &tags) const {
-//            auto access_ = &clusterAccess.access;
-//            return getPossibleAddresses() | ranges::view::transform([tags, access_](const DedupAddress &address) -> ranges::optional<TaggedAddress> {
-//                auto it = tags.find(address);
-//                if (it != tags.end()) {
-//                    return TaggedAddress{Address(address.scriptNum, it->second.first, *access_), it->second.second};
-//                } else {
-//                    return ranges::nullopt;
-//                }
-//            }) | flatMapOptionals();
-//        }
-        
         auto taggedAddresses(const std::unordered_map<blocksci::Address, std::string> &tags) const {
             return getPossibleAddresses() | ranges::view::transform([tags](Address && address) -> ranges::optional<TaggedAddress> {
                 auto it = tags.find(address);

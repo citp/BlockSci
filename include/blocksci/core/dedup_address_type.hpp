@@ -28,6 +28,12 @@ namespace blocksci {
         using all = std::tuple<DEDUP_ADDRESS_TYPE_LIST>;
         #undef VAL
         static constexpr Enum example = PUBKEY;
+        
+        #define VAL(x) x
+        static std::array<Enum,size> allArray() {
+            return {{DEDUP_ADDRESS_TYPE_LIST}};
+        }
+        #undef VAL
     };
     
     template <template<DedupAddressType::Enum> class K>
