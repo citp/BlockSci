@@ -42,16 +42,13 @@ namespace blocksci {
     using ScriptFile = ScriptFileType_t<typename ScriptInfo<type>::storage>;
     
     template<DedupAddressType::Enum type>
-    using ScriptFilePtr = std::unique_ptr<ScriptFile<type>>;
-    
-    template<DedupAddressType::Enum type>
     struct ScriptDataBaseFunctor {
         static const ScriptDataBase * f(uint32_t scriptNum, const ScriptAccess &access);
     };
     
     class BLOCKSCI_EXPORT ScriptAccess {
     private:
-        using ScriptFilesTuple = to_dedup_address_tuple_t<ScriptFilePtr>;
+        using ScriptFilesTuple = to_dedup_address_tuple_t<ScriptFile>;
         ScriptFilesTuple scriptFiles;
         
     public:
@@ -64,7 +61,7 @@ namespace blocksci {
         
         template <DedupAddressType::Enum type>
         const ScriptFile<type> &getFile() const {
-            return *std::get<ScriptFilePtr<type>>(scriptFiles);
+            return std::get<ScriptFile<type>>(scriptFiles);
         }
         
         template <DedupAddressType::Enum type>
@@ -88,7 +85,7 @@ namespace blocksci {
         size_t totalAddressCount() const;
         
         void reload() {
-            for_each(scriptFiles, [&](auto& file) -> decltype(auto) { file->reload(); });
+            for_each(scriptFiles, [&](auto& file) -> decltype(auto) { file.reload(); });
         }
     };
     

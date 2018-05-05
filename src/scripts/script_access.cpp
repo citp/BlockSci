@@ -23,7 +23,7 @@ namespace blocksci {
     
     ScriptAccess::ScriptAccess(const std::string &baseDirectory) :
         scriptFiles(blocksci::apply(DedupAddressType::all(), [&] (auto tag) {
-            return std::make_unique<ScriptFile<tag.value>>((boost::filesystem::path{baseDirectory}/std::string{dedupAddressName(tag)}).native());
+            return ScriptFile<tag.value>{(boost::filesystem::path{baseDirectory}/std::string{dedupAddressName(tag)}).native()};
         })) {}
     
     std::array<uint32_t, DedupAddressType::size> ScriptAccess::scriptCounts() const {
@@ -38,7 +38,7 @@ namespace blocksci {
     
     size_t ScriptAccess::totalAddressCount() const {
         uint32_t count = 0;
-        for_each(scriptFiles, [&count](auto& obj) -> decltype(auto) {count += obj->size();});
+        for_each(scriptFiles, [&count](auto& obj) -> decltype(auto) {count += obj.size();});
         return count;
     }
 } // namespace blocksci
