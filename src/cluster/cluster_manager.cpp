@@ -271,8 +271,7 @@ namespace blocksci {
         
         std::unordered_map<DedupAddressType::Enum, uint32_t> scriptStarts;
         {
-            std::vector<uint32_t> starts;
-            starts.reserve(DedupAddressType::size);
+            std::vector<uint32_t> starts(DedupAddressType::size);
             for (size_t i = 0; i < DedupAddressType::size; i++) {
                 if (i > 0) {
                     starts[i] = scripts.scriptCount(static_cast<DedupAddressType::Enum>(i - 1)) + starts[i - 1];
