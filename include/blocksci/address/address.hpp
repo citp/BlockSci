@@ -63,6 +63,8 @@ namespace blocksci {
 
         AnyScript getScript() const;
         
+        ScriptBase getBaseScript() const;
+        
         EquivAddress getEquivAddresses(bool nestedEquivalent) const;
         
         ranges::any_view<OutputPointer> getOutputPointers() const;

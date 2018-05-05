@@ -49,6 +49,10 @@ namespace blocksci {
         return AnyScript{*this};
     }
     
+    ScriptBase Address::getBaseScript() const {
+        return ScriptBase(*this);
+    }
+    
     ranges::optional<Address> getAddressFromString(const std::string &addressString, DataAccess &access) {
         if (addressString.compare(0, access.config.segwitPrefix.size(), access.config.segwitPrefix) == 0) {
             std::pair<int, std::vector<uint8_t> > decoded = segwit_addr::decode(access.config.segwitPrefix, addressString);

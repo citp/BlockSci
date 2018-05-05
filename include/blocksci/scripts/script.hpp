@@ -27,6 +27,8 @@ namespace blocksci {
         ScriptBase() = default;
         ScriptBase(uint32_t scriptNum_, AddressType::Enum type_, DataAccess &access_, const ScriptDataBase *rawData_) : Address(scriptNum_, type_, access_), rawData(rawData_) {}
         
+        explicit ScriptBase(const Address &address);
+        
         void visitPointers(const std::function<void(const Address &)> &) const {}
 
         uint32_t getFirstTxIndex() const {

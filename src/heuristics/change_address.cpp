@@ -209,7 +209,7 @@ namespace blocksci { namespace heuristics {
         std::unordered_set<Output> candidates;
         
         for (auto output : tx.outputs()) {
-            if (output.getAddress().isSpendable() && output.getAddress().getScript().firstTxIndex() == tx.txNum) {
+            if (output.getAddress().isSpendable() && output.getAddress().getBaseScript().getFirstTxIndex() == tx.txNum) {
                 candidates.insert(output);
             }
         }
@@ -232,7 +232,7 @@ namespace blocksci { namespace heuristics {
         for (auto output : tx.outputs()) {
             if (output.getAddress().isSpendable()) {
                 spendableCount++;
-                if (output.getValue() < smallestInput && output.getAddress().getScript().firstTxIndex() == tx.txNum) {
+                if (output.getValue() < smallestInput && output.getAddress().getBaseScript().getFirstTxIndex() == tx.txNum) {
                     if (change) {
                         return ranges::nullopt;
                     }
