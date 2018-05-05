@@ -23,11 +23,15 @@ public:
     typedef boost::iostreams::mapped_file_source::size_type size_type;
     typedef std::iterator_traits<iterator>::difference_type difference_type;
     
-    explicit SafeMemReader(const std::string &path) {
+    explicit SafeMemReader(std::string path_) : path(std::move(path_)) {
         fileMap.open(path);
         begin = fileMap.begin();
         end = fileMap.end();
         pos = begin;
+    }
+    
+    std::string getPath() const {
+        return path;
     }
 
     bool has(difference_type n) {
@@ -36,13 +40,19 @@ public:
     
     template<typename Type>
     Type readNext() {
+        auto val = peakNext<Type>();
+        pos += sizeof(val);
+        return val;
+    }
+    
+    template<typename Type>
+    Type peakNext() {
         constexpr auto size = sizeof(Type);
         if (!has(size)) {
             throw std::out_of_range("Tried to read past end of file");
         }
         Type val;
         memcpy(&val, pos, size);
-        pos += size;
         return val;
     }
     
@@ -89,6 +99,7 @@ public:
     
 protected:
     boost::iostreams::mapped_file_source fileMap;
+    std::string path;
     iterator pos;
     iterator begin;
     iterator end;

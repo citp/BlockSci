@@ -51,6 +51,58 @@ int maxBlockFileNum(int startFile, const ParserConfiguration<FileTag> &config) {
     return fileNum - 1;
 }
 
+namespace {
+    std::vector<BlockInfo<FileTag>> readBlocksImpl(SafeMemReader &reader, int fileNum, const ParserConfiguration<FileTag> &config) {
+        try {
+            std::vector<BlockInfo<FileTag>> blocks;
+            // read blocks in loop while we can...
+            while (reader.has(sizeof(uint32_t))) {
+                auto magic = reader.readNext<uint32_t>();
+                if (magic != config.blockMagic) {
+                    break;
+                }
+                auto length = reader.readNext<uint32_t>();
+                auto blockStartOffset = reader.offset();
+                assert(reader.has(length));
+                while (reader.peakNext<uint32_t>() == config.blockMagic) {
+                    // The previous block must have been cut off
+                    // See https://github.com/bitcoin/bitcoin/issues/8614
+                    reader.advance(sizeof(uint32_t));
+                    length = reader.readNext<uint32_t>();
+                    blockStartOffset = reader.offset();
+                }
+                auto header = reader.readNext<CBlockHeader>();
+                auto numTxes = reader.readVariableLengthInteger();
+                uint32_t inputCount = 0;
+                uint32_t outputCount = 0;
+                for (size_t i = 0; i < numTxes; i++) {
+                    TransactionHeader h(reader);
+                    inputCount += h.inputCount;
+                    outputCount += h.outputCount;
+                }
+                // The next two lines bring the reader to the end of this block
+                reader.reset(blockStartOffset);
+                reader.advance(length);
+                inputCount--;
+                blocks.emplace_back(header, length, numTxes, inputCount, outputCount, config, fileNum, blockStartOffset);
+            }
+            return blocks;
+        } catch (const std::out_of_range &e) {
+            std::cerr << "Failed to read block header information"
+            << " from " << reader.getPath()
+            << " at offset " << reader.offset()
+            << ": " << e.what() << "\n";
+            throw;
+        }
+    }
+}
+
+std::vector<BlockInfo<FileTag>> readBlocksInfo(int fileNum, const ParserConfiguration<FileTag> &config) {
+    auto blockFilePath = config.pathForBlockFile(fileNum);
+    SafeMemReader reader{blockFilePath.native()};
+    return readBlocksImpl(reader, fileNum, config);
+}
+
 template <>
 void ChainIndex<FileTag>::update(const ConfigType &config) {
     int fileNum = 0;
@@ -86,43 +138,11 @@ void ChainIndex<FileTag>::update(const ConfigType &config) {
                 // determine block file path
                 auto blockFilePath = localConfig.pathForBlockFile(fileNum);
                 SafeMemReader reader{blockFilePath.native()};
-                std::vector<BlockInfo<FileTag>> blocks;
-                try {
-                    // logic for resume from last processed block, note blockStartOffset and length below
-                    if (fileNum == firstFile) {
-                        reader.reset(filePos);
-                    }
-                    
-                    // read blocks in loop while we can...
-                    while (reader.has(sizeof(uint32_t))) {
-                        auto magic = reader.readNext<uint32_t>();
-                        if (magic != localConfig.blockMagic) {
-                            break;
-                        }
-                        auto length = reader.readNext<uint32_t>();
-                        auto blockStartOffset = reader.offset();
-                        auto header = reader.readNext<CBlockHeader>();
-                        auto numTxes = reader.readVariableLengthInteger();
-                        uint32_t inputCount = 0;
-                        uint32_t outputCount = 0;
-                        for (size_t i = 0; i < numTxes; i++) {
-                            TransactionHeader h(reader);
-                            inputCount += h.inputCount;
-                            outputCount += h.outputCount;
-                        }
-                        // The next two lines bring the reader to the end of this block
-                        reader.reset(blockStartOffset);
-                        reader.advance(length);
-                        inputCount--;
-                        blocks.emplace_back(header, length, numTxes, inputCount, outputCount, localConfig, fileNum, blockStartOffset);
-                    }
-                } catch (const std::out_of_range &e) {
-                    std::cerr << "Failed to read block header information"
-                    << " from " << blockFilePath
-                    << " at offset " << reader.offset()
-                    << ": " << e.what() << "\n";
-                    throw;
+                // logic for resume from last processed block, note blockStartOffset and length below
+                if (fileNum == firstFile) {
+                    reader.reset(filePos);
                 }
+                auto blocks = readBlocksImpl(reader, fileNum, localConfig);
                 
                 if (fileNum == maxFileNum && blocks.size() > 0) {
                     newestBlock = blocks.back();

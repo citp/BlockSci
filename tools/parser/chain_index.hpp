@@ -168,11 +168,11 @@ struct ChainIndex {
         
         std::reverse(chain.begin(), chain.end());
         if (maxBlockHeight < 0) {
-            return {chain.begin(), chain.end() + static_cast<int>(maxBlockHeight)};
+            return {chain.begin(), chain.end() + maxBlockHeight};
         } else if (maxBlockHeight == 0 || maxBlockHeight > static_cast<blocksci::BlockHeight>(chain.size())) {
             return chain;
         } else {
-            return {chain.begin(), chain.begin() + static_cast<int>(maxBlockHeight)};
+            return {chain.begin(), chain.begin() + maxBlockHeight};
         }
     }
     
@@ -204,5 +204,7 @@ private:
     
     int updateHeight(size_t blockNum, const std::unordered_map<blocksci::uint256, size_t> &indexMap);
 };
+
+std::vector<BlockInfo<FileTag>> readBlocksInfo(int fileNum, const ParserConfiguration<FileTag> &config);
 
 #endif /* data_store_hpp */
