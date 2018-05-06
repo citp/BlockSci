@@ -34,6 +34,8 @@ Feature Enhancements
 
   The BlockSci python module has been moved into a separate module to allow for a simple SetupTools or pip based install process: `pip install -e pyblocksci`. The main BlockSci library must be installed first for this to work.
 
+  Finally, install instructions_ for the mac have been added along with Ubuntu 16.06 instructions.
+
 - Updated mempool recorder and integrated it into BlockSci interface.
 
   For instructions on running the mempool recorder and using the data it produces, see the setup_ section.
@@ -42,10 +44,11 @@ Feature Enhancements
 
   All method signatures display correct types and all properties display the type of the returned value. Further, all types link to their definition in the documentation.
 
+.. _instructions: https://citp.github.io/BlockSci/compiling.html
 
 Bug Fixes
 ----------
-
+- Fixed rare parser bug causing blocks to be ignored (`Issue #45`_,`Issue #69`_)
 - Removed hardcoded paths (`Issue #72`_)
 - Fixed :func:`~blocksci.Block.miner` (`Issue #76`_)
 - Made it possible to iterate over the ouputs linked to a cluster (`Issue #81`_)
@@ -54,6 +57,8 @@ Bug Fixes
 - Fixed infinite loop in `segmentChain` (`Issue #104`_)
 
 .. _setup: https://citp.github.io/BlockSci/setup.html
+.. _Issue #45: https://github.com/citp/BlockSci/issues/45
+.. _Issue #69: https://github.com/citp/BlockSci/issues/69
 .. _Issue #72: https://github.com/citp/BlockSci/issues/72
 .. _Issue #76: https://github.com/citp/BlockSci/issues/76
 .. _Issue #81: https://github.com/citp/BlockSci/issues/81
