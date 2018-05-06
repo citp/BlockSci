@@ -205,6 +205,20 @@ int main(int argc, char * argv[]) {
 
     BitcoinAPI bitcoinAPI{username, password, address, port};
     
+    auto connected = false;
+    while (!connected) {
+        try {
+            bitcoinAPI.getrawmempool();
+            connected = true;
+        } catch (BitcoinException &) {
+            std::cerr << "Mempool recorder failed to connect to bitcoin node with {username = " << username
+            << ", password = " << password
+            << ", address = " << address
+            << ", port = " << port << "}" << std::endl;
+            std::this_thread::sleep_for(std::chrono::seconds(30));
+        }
+    }
+    
     MempoolRecorder recorder{dataLocation, bitcoinAPI};
     
     int updateCount = 0;
