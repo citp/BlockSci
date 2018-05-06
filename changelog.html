@@ -200,6 +200,7 @@
 <p>The BlockSci library no longer has any public dependencies so compiling against it will not require linking against anything else.</p>
 <p>The CMake build script has now been updated to install a Config file which allows you to use <cite>find_package(blocksci)</cite> to import BlockSci’s target’s into your build script. This makes it much easier to build libraries that use BlockSci as a dependency.</p>
 <p>The BlockSci python module has been moved into a separate module to allow for a simple SetupTools or pip based install process: <cite>pip install -e pyblocksci</cite>. The main BlockSci library must be installed first for this to work.</p>
+<p>Finally, install <a class="reference external" href="https://citp.github.io/BlockSci/compiling.html">instructions</a> for the mac have been added along with Ubuntu 16.06 instructions.</p>
 </li>
 <li><p class="first">Updated mempool recorder and integrated it into BlockSci interface.</p>
 <p>For instructions on running the mempool recorder and using the data it produces, see the <a class="reference external" href="https://citp.github.io/BlockSci/setup.html">setup</a> section.</p>
@@ -212,6 +213,7 @@
 <div class="section" id="bug-fixes">
 <h3>Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
+<li>Fixed rare parser bug causing blocks to be ignored (<a class="reference external" href="https://github.com/citp/BlockSci/issues/45">Issue #45</a>,`Issue #69`_)</li>
 <li>Removed hardcoded paths (<a class="reference external" href="https://github.com/citp/BlockSci/issues/72">Issue #72</a>)</li>
 <li>Fixed <a class="reference internal" href="reference/chain/block.html#blocksci.Block.miner" title="blocksci.Block.miner"><code class="xref py py-func docutils literal notranslate"><span class="pre">miner()</span></code></a> (<a class="reference external" href="https://github.com/citp/BlockSci/issues/76">Issue #76</a>)</li>
 <li>Made it possible to iterate over the ouputs linked to a cluster (<a class="reference external" href="https://github.com/citp/BlockSci/issues/81">Issue #81</a>)</li>
