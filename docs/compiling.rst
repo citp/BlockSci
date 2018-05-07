@@ -5,6 +5,15 @@ BlockSci supports GCC 7.2 or above and Clang 5 or above.
 
 Note that BlockSci only actively supports python 3.
 
+If you have previously had BlockSci v0.4.5 or below installed you must first remove the existing installations
+
+..  code-block:: bash
+
+	rm -rf /usr/local/include/blocksci
+	rm /usr/local/lib/libblocksci*
+	rm /usr/local/bin/blocksci*
+	rm /usr/local/bin/mempool_recorder
+
 Ubuntu 16.04
 --------------
 
