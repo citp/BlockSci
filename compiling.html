@@ -162,6 +162,13 @@
 <h1>Compiling BlockSci<a class="headerlink" href="#compiling-blocksci" title="Permalink to this headline">¶</a></h1>
 <p>BlockSci supports GCC 7.2 or above and Clang 5 or above.</p>
 <p>Note that BlockSci only actively supports python 3.</p>
+<p>If you have previously had BlockSci v0.4.5 or below installed you must first remove the existing installations</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>rm -rf /usr/local/include/blocksci
+rm /usr/local/lib/libblocksci*
+rm /usr/local/bin/blocksci*
+rm /usr/local/bin/mempool_recorder
+</pre></div>
+</div>
 <div class="section" id="ubuntu-16-04">
 <h2>Ubuntu 16.04<a class="headerlink" href="#ubuntu-16-04" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
