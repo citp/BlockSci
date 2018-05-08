@@ -48,7 +48,7 @@ Feature Enhancements
 
 Bug Fixes
 ----------
-- Fixed rare parser bug causing blocks to be ignored (`Issue #45`_,`Issue #69`_)
+- Fixed rare parser bug causing blocks to be ignored (`Issue #45`_, `Issue #69`_)
 - Removed hardcoded paths (`Issue #72`_)
 - Fixed :func:`~blocksci.Block.miner` (`Issue #76`_)
 - Made it possible to iterate over the ouputs linked to a cluster (`Issue #81`_)
