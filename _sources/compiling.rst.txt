@@ -35,7 +35,7 @@ Ubuntu 16.04
 	sudo make install
 
 	cd ..
-	sudo -H pip3 install -e blockscipy
+	CC=gcc-7 CXX=g++-7 sudo -H pip3 install -e blockscipy
 	
 
 Mac OS 10.13
