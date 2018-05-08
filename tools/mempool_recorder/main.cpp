@@ -64,18 +64,47 @@ struct MempoolFiles {
     {}
 };
 
+class SaferBitcoinApi {
+    std::string username;
+    std::string password;
+    std::string address;
+    int port;
+    BitcoinAPI bitcoinAPI;
+    
+public:
+    
+    SaferBitcoinApi(std::string username_, std::string password_, std::string address_, int port_) :
+    username(std::move(username_)), password(std::move(password_)), address(std::move(address_)), port(port_), bitcoinAPI(username, password, address, port) {}
+    
+    std::vector<chaintip_t> getchaintips() {
+        return bitcoinAPI.getchaintips();
+    }
+    
+    int getblockcount() {
+        return bitcoinAPI.getblockcount();
+    }
+    
+    std::string getpreviousblockhash(const std::string& blockhash) {
+        return bitcoinAPI.getpreviousblockhash(blockhash);
+    }
+    
+    std::vector<std::string> getrawmempool() {
+        return bitcoinAPI.getrawmempool();
+    }
+};
+
 class MempoolRecorder {
     blocksci::Blockchain chain;
     blocksci::BlockHeight lastHeight;
     std::unordered_map<blocksci::uint256, MempoolRecord, std::hash<blocksci::uint256>> mempool;
-    BitcoinAPI &bitcoinAPI;
+    SaferBitcoinApi &bitcoinAPI;
     
     MempoolFiles files;
     std::unordered_map<std::string, std::pair<BlockRecord, int>> blocksSeen;
     
     static constexpr int heightCutoff = 1000;
 public:
-    MempoolRecorder(const std::string &dataLocation, BitcoinAPI &bitcoinAPI_) :
+    MempoolRecorder(const std::string &dataLocation, SaferBitcoinApi &bitcoinAPI_) :
     chain(dataLocation),
     lastHeight(static_cast<int>(chain.size())),
     bitcoinAPI(bitcoinAPI_),
@@ -114,7 +143,7 @@ public:
             updateTxTimes(system_clock::to_time_t(system_clock::now()));
             updateBlockTimes(system_clock::to_time_t(system_clock::now()));
         } catch (BitcoinException& e){
-            std::cout << "Failed to update mempool with error: " << e.what() << std::endl;
+            std::cerr << "Failed to update mempool with error: " << e.what() << std::endl;
         }
     }
     
@@ -203,7 +232,7 @@ int main(int argc, char * argv[]) {
         return 0;
     }
 
-    BitcoinAPI bitcoinAPI{username, password, address, port};
+    SaferBitcoinApi bitcoinAPI{username, password, address, port};
     
     auto connected = false;
     while (!connected) {
