@@ -171,8 +171,12 @@ namespace blocksci {
         
         DataAccess &getAccess() { return access; }
         
-        uint32_t firstTxIndex() const;
-        uint32_t endTxIndex() const;
+        uint32_t firstTxIndex() {
+            return 0;
+        }
+        uint32_t endTxIndex() {
+            return Block(lastBlockHeight - 1, access).endTxIndex();
+        }
         
         uint32_t size() const {
             return static_cast<uint32_t>(lastBlockHeight);

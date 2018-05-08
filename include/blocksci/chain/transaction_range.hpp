@@ -31,9 +31,9 @@ namespace blocksci {
             currentTxPos += sizeof(RawTransaction) +
             static_cast<size_t>(tx->inputCount) * sizeof(Inout) +
             static_cast<size_t>(tx->outputCount) * sizeof(Inout);
-            --currentTxIndex;
+            ++currentTxIndex;
             if (currentTxIndex == nextBlockFirst) {
-                --blockNum;
+                ++blockNum;
                 updateNextBlock();
             }
         }
