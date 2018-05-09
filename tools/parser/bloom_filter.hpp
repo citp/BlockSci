@@ -19,34 +19,34 @@
 
 struct BloomStore {
     using BlockType = size_t;
-    static constexpr size_t BlockSize = sizeof(BlockType) * 8;
+    static constexpr int64_t BlockSize = static_cast<int64_t>(sizeof(BlockType) * 8);
 
-    BloomStore(const std::string &path, uint64_t length);
+    BloomStore(const std::string &path, int64_t length);
     
-    void setBit(uint64_t bitPos);
-    bool isSet(uint64_t bitPos) const;
+    void setBit(int64_t bitPos);
+    bool isSet(int64_t bitPos) const;
     
-    void reset(uint64_t length);
+    void reset(int64_t length);
     
 private:
     std::array<BloomStore::BlockType, BloomStore::BlockSize> bitMasks;
     
 private:
-    blocksci::FixedSizeFileMapper<BlockType, blocksci::AccessMode::readwrite> backingFile;
-    uint64_t length;
+    blocksci::FixedSizeFileMapper<BlockType, mio::access_mode::write> backingFile;
+    int64_t length;
     
-    uint64_t blockCount() const;
+    int64_t blockCount() const;
 };
 
 struct BloomFilterData {
-    uint64_t maxItems;
+    int64_t maxItems;
     double fpRate;
     uint8_t m_numHashes;
-    uint64_t length;
-    uint64_t addedCount;
+    int64_t length;
+    int64_t addedCount;
     
     BloomFilterData();
-    BloomFilterData(uint64_t maxItems_, double fpRate_);
+    BloomFilterData(int64_t maxItems_, double fpRate_);
     
     friend class boost::serialization::access;
     template<class Archive> void serialize(Archive & ar, const unsigned int) {
@@ -61,12 +61,12 @@ struct BloomFilterData {
 class BloomFilter {
 public:
     // Load or create
-    BloomFilter(const std::string &path, uint64_t maxItems, double fpRate);
+    BloomFilter(const std::string &path, int64_t maxItems, double fpRate);
     BloomFilter(const BloomFilter &) = delete;
     BloomFilter &operator=(const BloomFilter &) = delete;
     ~BloomFilter();
     
-    void reset(uint64_t maxItems, double fpRate);
+    void reset(int64_t maxItems, double fpRate);
     
     template<class Key>
     void add(const Key &key) {
@@ -86,9 +86,9 @@ public:
         return impData.addedCount >= impData.maxItems;
     }
     
-    size_t size() { return impData.addedCount; }
+    int64_t size() { return impData.addedCount; }
     
-    uint64_t getMaxItems() const {
+    int64_t getMaxItems() const {
         return impData.maxItems;
     }
     

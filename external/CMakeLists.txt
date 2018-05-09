@@ -3,6 +3,8 @@ execute_process(COMMAND git submodule update --init --recursive)
 
 set_property(GLOBAL PROPERTY ranges_headers "${CMAKE_CURRENT_SOURCE_DIR}/range-v3/include/")
 set_property(GLOBAL PROPERTY variant_headers "${CMAKE_CURRENT_SOURCE_DIR}/variant/include/")
+set_property(GLOBAL PROPERTY mio_headers "${CMAKE_CURRENT_SOURCE_DIR}/mio/include/")
+set_property(GLOBAL PROPERTY filesystem_headers "${CMAKE_CURRENT_SOURCE_DIR}/filesystem/include/")
 
 add_library(dset INTERFACE)
 target_include_directories(dset INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})

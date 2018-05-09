@@ -1,6 +1,6 @@
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native")
 
-find_package( Boost 1.58 COMPONENTS filesystem iostreams REQUIRED )
+find_package( Boost 1.58 COMPONENTS filesystem REQUIRED )
 find_package( OpenSSL REQUIRED)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -15,9 +15,8 @@ add_library(blocksci SHARED "")
 
 get_property(RANGE_HEADERS GLOBAL PROPERTY ranges_headers)
 get_property(VARIANT_HEADERS GLOBAL PROPERTY variant_headers)
-
-#message(STATUS ${RANGE_HEADERS})
-message(STATUS ${VARIANT_HEADERS})
+get_property(MIO_HEADERS GLOBAL PROPERTY mio_headers)
+get_property(FILESYSTEM_HEADERS GLOBAL PROPERTY filesystem_headers)
 
 add_custom_target(copy_externals)
 
@@ -55,6 +54,8 @@ ENDMACRO(COPY_DIRECTORY_IF_CHANGED)
 
 COPY_DIRECTORY_IF_CHANGED("${RANGE_HEADERS}" "${BLOCKSCI_HEADER_PREFIX}/external" copy_externals)
 COPY_DIRECTORY_IF_CHANGED("${VARIANT_HEADERS}" "${BLOCKSCI_HEADER_PREFIX}/external" copy_externals)
+COPY_DIRECTORY_IF_CHANGED("${MIO_HEADERS}" "${BLOCKSCI_HEADER_PREFIX}/external" copy_externals)
+COPY_DIRECTORY_IF_CHANGED("${FILESYSTEM_HEADERS}" "${BLOCKSCI_HEADER_PREFIX}/external" copy_externals)
 
 add_dependencies(blocksci copy_externals)
 
@@ -102,7 +103,6 @@ target_link_libraries( blocksci
     Threads::Threads
   PRIVATE
     Boost::filesystem
-    Boost::iostreams
     OpenSSL::Crypto
     rocksdb
     rocksdb_headers

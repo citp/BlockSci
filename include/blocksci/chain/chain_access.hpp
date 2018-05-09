@@ -25,11 +25,11 @@ namespace blocksci {
         FixedSizeFileMapper<RawBlock> blockFile;
         SimpleFileMapper<> blockCoinbaseFile;
         
-        IndexedFileMapper<AccessMode::readonly, RawTransaction> txFile;
+        IndexedFileMapper<mio::access_mode::read, RawTransaction> txFile;
         FixedSizeFileMapper<int32_t> txVersionFile;
         FixedSizeFileMapper<uint64_t> txFirstInputFile;
         FixedSizeFileMapper<uint64_t> txFirstOutputFile;
-        IndexedFileMapper<AccessMode::readonly, uint32_t> sequenceFile;
+        IndexedFileMapper<mio::access_mode::read, uint32_t> sequenceFile;
         
         FixedSizeFileMapper<uint256> txHashesFile;
         
@@ -68,7 +68,7 @@ namespace blocksci {
                 throw std::out_of_range("Transaction index out of range");
             }
             auto blockBegin = blockFile[0];
-            auto blockEnd = blockFile[static_cast<size_t>(static_cast<int>(maxHeight) - 1)] + 1;
+            auto blockEnd = blockFile[static_cast<OffsetType>(maxHeight) - 1] + 1;
             auto it = std::upper_bound(blockBegin, blockEnd, txIndex, [](uint32_t index, const RawBlock &b) {
                 return index < b.firstTxIndex;
             });
@@ -78,7 +78,7 @@ namespace blocksci {
         
         const RawBlock *getBlock(BlockHeight blockHeight) const {
             reorgCheck();
-            return blockFile[static_cast<size_t>(blockHeight)];
+            return blockFile[static_cast<OffsetType>(blockHeight)];
         }
         
         const uint256 *getTxHash(uint32_t index) const {
@@ -111,7 +111,7 @@ namespace blocksci {
         }
         
         std::vector<unsigned char> getCoinbase(uint64_t offset) const {
-            auto pos = blockCoinbaseFile.getDataAtOffset(offset);
+            auto pos = blockCoinbaseFile.getDataAtOffset(static_cast<OffsetType>(offset));
             uint32_t coinbaseLength;
             std::memcpy(&coinbaseLength, pos, sizeof(coinbaseLength));
             uint64_t length = coinbaseLength;

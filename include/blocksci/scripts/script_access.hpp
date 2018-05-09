@@ -31,7 +31,7 @@ namespace blocksci {
     
     template<typename ...T>
     struct ScriptFileType<Indexed<T...>> {
-        using type = IndexedFileMapper<AccessMode::readonly, T...>;
+        using type = IndexedFileMapper<mio::access_mode::read, T...>;
     };
     
     template<typename T>

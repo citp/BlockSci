@@ -45,18 +45,18 @@ int initializeRecordingFile(Blockchain &chain) {
         boost::filesystem::create_directory(mempoolDir);
     }
     auto mostRecentBlock = chain[static_cast<int>(chain.size()) - 1];
-    blocksci::FixedSizeFileWriter<uint32_t> txIndexFile((boost::filesystem::path{chain.getAccess().config.mempoolDirectory()}/"tx_index").native());
+    FixedSizeFileWriter<uint32_t> txIndexFile((boost::filesystem::path{chain.getAccess().config.mempoolDirectory()}/"tx_index").native());
     auto fileNum = static_cast<int>(txIndexFile.size());
     txIndexFile.write(mostRecentBlock.endTxIndex());
-    blocksci::FixedSizeFileWriter<int32_t> blockIndexFile((boost::filesystem::path{chain.getAccess().config.mempoolDirectory()}/"block_index").native());
+    FixedSizeFileWriter<int32_t> blockIndexFile((boost::filesystem::path{chain.getAccess().config.mempoolDirectory()}/"block_index").native());
     assert(static_cast<int>(blockIndexFile.size()) == fileNum);
     blockIndexFile.write(mostRecentBlock.height() + 1);
     return fileNum;
 }
 
 struct MempoolFiles {
-    blocksci::FixedSizeFileWriter<MempoolRecord> txTimeFile;
-    blocksci::FixedSizeFileWriter<BlockRecord> blockTimeFile;
+    FixedSizeFileWriter<MempoolRecord> txTimeFile;
+    FixedSizeFileWriter<BlockRecord> blockTimeFile;
     
     MempoolFiles(const boost::filesystem::path &mempoolPath, int fileNum) :
     txTimeFile(boost::filesystem::path{mempoolPath/std::to_string(fileNum)}.concat("_tx")),

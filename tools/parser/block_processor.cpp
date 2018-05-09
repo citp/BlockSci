@@ -36,10 +36,6 @@
 #include <iostream>
 #include <thread>
 
-
-using blocksci::FixedSizeFileWriter;
-using blocksci::IndexedFileWriter;
-
 std::vector<unsigned char> ParseHex(const char* psz);
 
 BlockProcessor::BlockProcessor(uint32_t startingTxCount_, uint64_t startingInputCount, uint64_t startingOutputCount, uint32_t totalTxCount_, blocksci::BlockHeight maxBlockHeight_) : startingTxCount(startingTxCount_), currentTxNum(startingTxCount_), currentInputNum(startingInputCount), currentOutputNum(startingOutputCount), totalTxCount(totalTxCount_), maxBlockHeight(maxBlockHeight_) {
@@ -405,7 +401,7 @@ void backUpdateTxes(const ParserConfigurationBase &config) {
     
     {
         blocksci::FixedSizeFileMapper<OutputLinkData> linkDataFile(config.txUpdatesFilePath());
-        updates.reserve(linkDataFile.size());
+        updates.reserve(static_cast<size_t>(linkDataFile.size()));
         
         for (uint32_t i = 0; i < linkDataFile.size(); i++) {
             updates.push_back(*linkDataFile[i]);
@@ -417,18 +413,18 @@ void backUpdateTxes(const ParserConfigurationBase &config) {
     }
     
     {
-        blocksci::IndexedFileMapper<blocksci::AccessMode::readwrite, blocksci::RawTransaction> txFile(blocksci::ChainAccess::txFilePath(config.dataConfig.chainDirectory()));
+        blocksci::IndexedFileMapper<mio::access_mode::write, blocksci::RawTransaction> txFile(blocksci::ChainAccess::txFilePath(config.dataConfig.chainDirectory()));
         
-        auto maxTxNum = txFile.size() - 1;
+        auto maxTxNum = static_cast<uint32_t>(txFile.size() - 1);
         auto lastOutputCount = txFile[maxTxNum]->outputCount;
         
         blocksci::FixedSizeFileMapper<uint64_t> firstOutputFile(blocksci::ChainAccess::firstOutputFilePath(config.dataConfig.chainDirectory()));
-        auto totalOutputCount = *firstOutputFile[maxTxNum] + lastOutputCount;
+        auto totalOutputCount = static_cast<blocksci::OffsetType>(*firstOutputFile[maxTxNum] + lastOutputCount);
         
         
         auto outputSpendingInputNumFilePath = blocksci::ChainAccess::outputSpendingInputNumFilePath(config.dataConfig.chainDirectory());
         
-        blocksci::FixedSizeFileMapper<uint16_t, blocksci::AccessMode::readwrite> outputSpendingInputNumFile(outputSpendingInputNumFilePath);
+        blocksci::FixedSizeFileMapper<uint16_t, mio::access_mode::write> outputSpendingInputNumFile(outputSpendingInputNumFilePath);
         outputSpendingInputNumFile.truncate(totalOutputCount);
         
         auto progressBar = blocksci::makeProgressBar(updates.size(), [=]() {});
@@ -439,7 +435,7 @@ void backUpdateTxes(const ParserConfigurationBase &config) {
             auto &output = tx->getOutput(update.pointer.inoutNum);
             output.setLinkedTxNum(update.txNum);
             
-            auto firstOutputNum = *firstOutputFile[update.pointer.txNum];
+            auto firstOutputNum = static_cast<blocksci::OffsetType>(*firstOutputFile[update.pointer.txNum]);
             *outputSpendingInputNumFile[firstOutputNum] = update.pointer.inoutNum;
             
             count++;
@@ -538,9 +534,8 @@ NewBlocksFiles::NewBlocksFiles(const ParserConfigurationBase &config) :
     txFirstInput(blocksci::ChainAccess::firstInputFilePath(config.dataConfig.chainDirectory())),
     txFirstOutput(blocksci::ChainAccess::firstOutputFilePath(config.dataConfig.chainDirectory())),
     txVersionFile(blocksci::ChainAccess::txVersionFilePath((config.dataConfig.chainDirectory()))),
-    inputSequenceFile(blocksci::ChainAccess::sequenceFilePath(config.dataConfig.chainDirectory())),
-    inputSpentOutNumFile(blocksci::ChainAccess::inputSpentOutNumFilePath(config.dataConfig.chainDirectory())) {}
-
+    inputSpentOutNumFile(blocksci::ChainAccess::inputSpentOutNumFilePath(config.dataConfig.chainDirectory())),
+    inputSequenceFile(blocksci::ChainAccess::sequenceFilePath(config.dataConfig.chainDirectory())) {}
 
 template <typename ParseTag>
 std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> blocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState) {

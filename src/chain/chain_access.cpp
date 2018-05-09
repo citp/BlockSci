@@ -29,8 +29,7 @@ namespace blocksci {
     void ChainAccess::setup() {
         maxHeight = static_cast<BlockHeight>(blockFile.size()) - blocksIgnored;
         if (maxHeight > BlockHeight(0)) {
-            const auto &blockFile_ = blockFile;
-            auto maxLoadedBlock = blockFile_[static_cast<size_t>(static_cast<int>(maxHeight) - 1)];
+            auto maxLoadedBlock = blockFile[static_cast<OffsetType>(maxHeight) - 1];
             lastBlockHash = maxLoadedBlock->hash;
             _maxLoadedTx = maxLoadedBlock->firstTxIndex + maxLoadedBlock->txCount;
             lastBlockHashDisk = &maxLoadedBlock->hash;

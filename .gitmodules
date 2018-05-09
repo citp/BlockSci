@@ -22,3 +22,6 @@
 [submodule "libs/rocksdb"]
 	path = external/rocksdb
 	url = https://github.com/facebook/rocksdb
+[submodule "external/mio"]
+	path = external/mio
+	url = https://github.com/hkalodner/mio

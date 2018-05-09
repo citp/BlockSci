@@ -8,7 +8,7 @@
 #ifndef safe_mem_reader_hpp
 #define safe_mem_reader_hpp
 
-#include <boost/iostreams/device/mapped_file.hpp>
+#include <mio/mmap.hpp>
 
 inline unsigned int variableLengthIntSize(uint64_t nSize) {
     if (nSize < 253)             return sizeof(unsigned char);
@@ -19,12 +19,15 @@ inline unsigned int variableLengthIntSize(uint64_t nSize) {
 
 class SafeMemReader {
 public:
-    typedef boost::iostreams::mapped_file_source::iterator iterator;
-    typedef boost::iostreams::mapped_file_source::size_type size_type;
-    typedef std::iterator_traits<iterator>::difference_type difference_type;
+    using iterator = mio::mmap_source::const_iterator;
+    using size_type = mio::mmap_source::size_type;
+    using difference_type = mio::mmap_source::difference_type;
     
     explicit SafeMemReader(std::string path_) : path(std::move(path_)) {
-        fileMap.open(path);
+        std::error_code error;
+        fileMap.map(path, 0, mio::map_entire_file, error);
+        if(error) { throw error; }
+        
         begin = fileMap.begin();
         end = fileMap.end();
         pos = begin;
@@ -93,12 +96,12 @@ public:
         return std::distance(begin, pos);
     }
     
-    boost::iostreams::mapped_file_source::iterator unsafePos() {
+    iterator unsafePos() {
         return pos;
     }
     
 protected:
-    boost::iostreams::mapped_file_source fileMap;
+    mio::mmap_source fileMap;
     std::string path;
     iterator pos;
     iterator begin;

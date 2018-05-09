@@ -20,7 +20,7 @@
 constexpr double Log2 = 0.69314718056;
 constexpr double Log2Squared = Log2 * Log2;
 
-BloomStore::BloomStore(const std::string &path_, uint64_t length_) : bitMasks{}, backingFile(path_), length(length_) {
+BloomStore::BloomStore(const std::string &path_, int64_t length_) : bitMasks{}, backingFile(path_), length(length_) {
     
     for (size_t i = 0; i < BloomStore::BlockSize; ++i) {
         bitMasks.at(i) = BloomStore::BlockType{1} << i;
@@ -35,25 +35,25 @@ BloomStore::BloomStore(const std::string &path_, uint64_t length_) : bitMasks{},
     }
 }
 
-uint64_t BloomStore::blockCount() const {
+int64_t BloomStore::blockCount() const {
     return (length + BlockSize - 1) / BlockSize;
 }
 
-void BloomStore::setBit(uint64_t bitPos) {
+void BloomStore::setBit(int64_t bitPos) {
     (*backingFile[bitPos / BlockSize]) |= bitMasks[bitPos % BlockSize];
 }
 
-bool BloomStore::isSet(uint64_t bitPos) const {
+bool BloomStore::isSet(int64_t bitPos) const {
     return !(((*backingFile[bitPos / BlockSize]) & bitMasks[bitPos % BlockSize]) == 0);
 }
 
-void BloomStore::reset(uint64_t newLength) {
+void BloomStore::reset(int64_t newLength) {
     backingFile.truncate(0);
     backingFile.truncate((newLength + BlockSize - 1) / BlockSize);
 }
 
-uint64_t calculateLength(uint64_t maxItems, double fpRate) {
-    return static_cast<uint64_t>(std::ceil(-(std::log(fpRate) * maxItems) / Log2Squared));
+int64_t calculateLength(int64_t maxItems, double fpRate) {
+    return static_cast<int64_t>(std::ceil(-(std::log(fpRate) * maxItems) / Log2Squared));
 }
 
 uint8_t calculateHashes(double fpRate) {
@@ -61,10 +61,10 @@ uint8_t calculateHashes(double fpRate) {
 }
 
 BloomFilterData::BloomFilterData() : maxItems(0), fpRate(1), m_numHashes(0), length(0), addedCount(0) {}
-BloomFilterData::BloomFilterData(uint64_t maxItems_, double fpRate_) : maxItems(maxItems_), fpRate(fpRate_), m_numHashes(calculateHashes(fpRate_)), length(calculateLength(maxItems_, fpRate_)), addedCount(0) {}
+BloomFilterData::BloomFilterData(int64_t maxItems_, double fpRate_) : maxItems(maxItems_), fpRate(fpRate_), m_numHashes(calculateHashes(fpRate_)), length(calculateLength(maxItems_, fpRate_)), addedCount(0) {}
 
 
-BloomFilterData loadData(const boost::filesystem::path &path, uint64_t maxItems, double fpRate) {
+BloomFilterData loadData(const boost::filesystem::path &path, int64_t maxItems, double fpRate) {
     BloomFilterData data{maxItems, fpRate};
     boost::filesystem::ifstream file(path, std::ios::binary);
     if (file.good()) {
@@ -74,7 +74,7 @@ BloomFilterData loadData(const boost::filesystem::path &path, uint64_t maxItems,
     return data;
 }
 
-BloomFilter::BloomFilter(const std::string &path_, uint64_t maxItems, double fpRate) : path(path_), impData(loadData(metaPath(), maxItems, fpRate)), store(storePath().native(), impData.length) {}
+BloomFilter::BloomFilter(const std::string &path_, int64_t maxItems, double fpRate) : path(path_), impData(loadData(metaPath(), maxItems, fpRate)), store(storePath().native(), impData.length) {}
 
 BloomFilter::~BloomFilter() {
     boost::filesystem::ofstream file(metaPath(), std::ios::binary);
@@ -82,7 +82,7 @@ BloomFilter::~BloomFilter() {
     oa << impData;
 }
 
-void BloomFilter::reset(uint64_t maxItems, double fpRate) {
+void BloomFilter::reset(int64_t maxItems, double fpRate) {
     impData = BloomFilterData(maxItems, fpRate);
     store.reset(impData.length);
 }
@@ -94,8 +94,8 @@ inline std::array<uint64_t, 2> hash(const uint8_t *data, int len) {
     return {{hashA, hashB}};
 }
 
-inline uint64_t nthHash(uint8_t n, uint64_t hashA, uint64_t hashB, uint64_t filterSize) {
-    return (hashA + n * hashB) % filterSize;
+inline int64_t nthHash(uint8_t n, uint64_t hashA, uint64_t hashB, int64_t filterSize) {
+    return static_cast<int64_t>((hashA + n * hashB) % static_cast<uint64_t>(filterSize));
 }
 
 void BloomFilter::add(const uint8_t *item, int length) {

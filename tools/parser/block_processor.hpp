@@ -28,12 +28,12 @@ public:
 };
 
 struct NewBlocksFiles {
-    blocksci::ArbitraryFileWriter blockCoinbaseFile;
-    blocksci::FixedSizeFileWriter<uint64_t> txFirstInput;
-    blocksci::FixedSizeFileWriter<uint64_t> txFirstOutput;
-    blocksci::FixedSizeFileWriter<uint32_t> txVersionFile;
-    blocksci::FixedSizeFileWriter<uint16_t> inputSpentOutNumFile;
-    blocksci::FixedSizeFileWriter<uint32_t> inputSequenceFile;
+    ArbitraryFileWriter blockCoinbaseFile;
+    FixedSizeFileWriter<uint64_t> txFirstInput;
+    FixedSizeFileWriter<uint64_t> txFirstOutput;
+    FixedSizeFileWriter<uint32_t> txVersionFile;
+    FixedSizeFileWriter<uint16_t> inputSpentOutNumFile;
+    FixedSizeFileWriter<uint32_t> inputSequenceFile;
     
     NewBlocksFiles(const ParserConfigurationBase &config);
 };
@@ -44,10 +44,10 @@ struct OutputLinkData {
 };
 
 blocksci::RawBlock readNewBlock(uint32_t firstTxNum, uint64_t firstInputNum, uint64_t firstOutputNum, const BlockInfoBase &block, BlockFileReaderBase &fileReader, NewBlocksFiles &files, const std::function<bool(RawTransaction *&tx)> &loadFunc, const std::function<void(RawTransaction *tx)> &outFunc);
-void calculateHash(RawTransaction &tx, blocksci::FixedSizeFileWriter<blocksci::uint256> &hashFile);
+void calculateHash(RawTransaction &tx, FixedSizeFileWriter<blocksci::uint256> &hashFile);
 void generateScriptOutputs(RawTransaction &tx);
 void connectUTXOs(RawTransaction &tx, UTXOState &utxoState);
-void serializeTransaction(RawTransaction &tx, blocksci::IndexedFileWriter<1> &txFile, blocksci::FixedSizeFileWriter<OutputLinkData> &linkDataFile);
+void serializeTransaction(RawTransaction &tx, IndexedFileWriter<1> &txFile, FixedSizeFileWriter<OutputLinkData> &linkDataFile);
 void generateScriptInput(RawTransaction &tx, UTXOAddressState &utxoAddressState);
 void processAddresses(RawTransaction &tx, AddressState &addressState);
 void recordAddresses(RawTransaction &tx, UTXOScriptState &state);

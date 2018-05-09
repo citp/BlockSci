@@ -66,9 +66,9 @@ namespace blocksci {
         
         explicit BlocktimeIndex(const std::string &path, int firstBlockNum_) : timestampFile(path), firstBlockNum(firstBlockNum_) {}
         
-        ranges::optional<std::chrono::system_clock::time_point> getTimestamp(int index) const {
+        ranges::optional<std::chrono::system_clock::time_point> getTimestamp(OffsetType index) const {
             assert(index - firstBlockNum >= 0);
-            auto record = timestampFile[static_cast<size_t>(index - firstBlockNum)];
+            auto record = timestampFile[index - firstBlockNum];
             if (record->observationTime > 0) {
                 return std::chrono::system_clock::from_time_t(record->observationTime);
             } else {
@@ -93,20 +93,20 @@ namespace blocksci {
         void setup() {
             timestampFiles.clear();
             FixedSizeFileMapper<uint32_t> txRecordingPositions{txIndexFilePath(baseDirectory)};
-            for (size_t i = 0; i < txRecordingPositions.size(); i++) {
+            for (OffsetType i = 0; i < static_cast<OffsetType>(txRecordingPositions.size()); i++) {
                 timestampFiles.emplace_back(nthTxFilePath(baseDirectory, i), *txRecordingPositions[i]);
             }
             blockTimeFiles.clear();
             FixedSizeFileMapper<int> blockRecordingPositions{blockIndexFilePath(baseDirectory)};
-            for (size_t i = 0; i < blockRecordingPositions.size(); i++) {
+            for (OffsetType i = 0; i < static_cast<OffsetType>(blockRecordingPositions.size()); i++) {
                 blockTimeFiles.emplace_back(nthBlockFilePath(baseDirectory, i), *blockRecordingPositions[i]);
             }
         }
         
         static std::string txIndexFilePath(const std::string &baseDirectory);
         static std::string blockIndexFilePath(const std::string &baseDirectory);
-        static std::string nthTxFilePath(const std::string &baseDirectory, size_t i);
-        static std::string nthBlockFilePath(const std::string &baseDirectory, size_t i);
+        static std::string nthTxFilePath(const std::string &baseDirectory, int64_t i);
+        static std::string nthBlockFilePath(const std::string &baseDirectory, int64_t i);
         
     public:
         explicit MempoolIndex(std::string baseDirectory_) :  baseDirectory(std::move(baseDirectory_)) {

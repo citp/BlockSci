@@ -14,11 +14,11 @@ using blocksci::DedupAddressType;
 
 AddressWriter::AddressWriter(const ParserConfigurationBase &config) :
 scriptFiles(blocksci::apply(blocksci::DedupAddressType::all(), [&] (auto tag) {
-    return ScriptFile<tag>((boost::filesystem::path{config.dataConfig.scriptsDirectory()}/std::string{dedupAddressName(tag)}).native());
+    return (boost::filesystem::path{config.dataConfig.scriptsDirectory()}/std::string{dedupAddressName(tag)}).native();
 })) {
 }
 
-size_t AddressWriter::serialize(const AnyScriptOutput &output, uint32_t txNum) {
+blocksci::OffsetType AddressWriter::serialize(const AnyScriptOutput &output, uint32_t txNum) {
     return mpark::visit([&](auto &scriptOutput) { return this->serialize(scriptOutput, txNum); }, output.wrapped);
 }
 

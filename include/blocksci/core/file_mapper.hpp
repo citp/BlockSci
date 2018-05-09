@@ -11,6 +11,8 @@
 
 #include <blocksci/blocksci_export.h>
 
+#include <mio/mmap.hpp>
+
 #include <array>
 #include <cassert>
 #include <cstring>
@@ -19,22 +21,14 @@
 #include <string>
 #include <vector>
 
-namespace boost { namespace iostreams {
-    class mapped_file;
-}}
-
 namespace blocksci {
-    enum class AccessMode {
-        readonly, readwrite
-    };
-    
-    template<AccessMode mode = AccessMode::readonly>
+    template<mio::access_mode mode = mio::access_mode::read>
     struct SimpleFileMapper;
     
-    template <typename T, AccessMode mode = AccessMode::readonly>
+    template <typename T, mio::access_mode mode = mio::access_mode::read>
     struct FixedSizeFileMapper;
     
-    template <AccessMode mode = AccessMode::readonly, typename... T>
+    template <mio::access_mode mode = mio::access_mode::read, typename... T>
     struct IndexedFileMapper;
     
     template<typename U>
@@ -62,49 +56,69 @@ namespace blocksci {
     template<typename... Types>
     using add_ptr_t = typename add_ptr<Types...>::type;
     
-    using OffsetType = uint64_t;
+    using OffsetType = int64_t;
     constexpr OffsetType InvalidFileIndex = std::numeric_limits<OffsetType>::max();
 
-    struct BLOCKSCI_EXPORT SimpleFileMapperBase {
-    private:
-        void openFile(size_t size);
-    protected:
-        std::unique_ptr<boost::iostreams::mapped_file> file;
-        size_t fileEnd;
-        const char *const_data;
-        char *dataPtr;
-    public:
+    struct BLOCKSCI_EXPORT FileInfo {
         std::string path;
-        AccessMode fileMode;
         
-        SimpleFileMapperBase(const std::string &path_, AccessMode mode);
-        SimpleFileMapperBase(SimpleFileMapperBase &&other);
-        ~SimpleFileMapperBase();
+        FileInfo(std::string path_) : path(std::move(path_)) {}
         
-        bool isGood() const;
+        bool exists() const;
         
-        void clearBuffer() {}
+        OffsetType size() const;
+        
+        void resize(OffsetType offset);
+        
+        void create(OffsetType offset);
+    };
+    
+    template <mio::access_mode mode>
+    struct BLOCKSCI_EXPORT SimpleFileMapperBase {
+    protected:
+        mio::basic_mmap<mode, char> file;
+    public:
+        FileInfo fileInfo;
+        
+        SimpleFileMapperBase(const std::string &path_) : fileInfo(path_ + ".dat") {
+            openFile();
+        }
+        
+        void openFile() {
+            std::error_code error;
+            file.map(fileInfo.path, 0, mio::map_entire_file, error);
+            if(error) {
+                throw error;
+            }
+        }
+        
+        bool isGood() const {
+            return file.is_open();
+        }
         
         const char *getDataAtOffset(OffsetType offset) const {
             if (offset == InvalidFileIndex) {
                 return nullptr;
             }
             assert(offset < size());
-            return const_data + offset;
+            return &file[offset];
         }
         
-        size_t size() const {
-            return fileEnd;
+        OffsetType size() const {
+            return file.length();
         }
         
-        size_t fileSize() const;
-        
-        void reload();
-    };
-    
-    template <>
-    struct BLOCKSCI_EXPORT SimpleFileMapper<AccessMode::readonly> : public SimpleFileMapperBase {
-        SimpleFileMapper(std::string path) : SimpleFileMapperBase(std::move(path), AccessMode::readonly) {}
+        void reload() {
+            if (fileInfo.exists()) {
+                if (!file.is_open() || fileInfo.size() != file.size()) {
+                    openFile();
+                }
+            } else {
+                if (file.is_open()) {
+                    file.unmap();
+                }
+            }
+        }
     };
     
     template <typename MainType>
@@ -130,8 +144,8 @@ namespace blocksci {
             }
         }
         
-        size_t size() const {
-            return rawData.size();
+        OffsetType size() const {
+            return static_cast<OffsetType>(rawData.size());
         }
         
         const char *finalize() {
@@ -144,19 +158,19 @@ namespace blocksci {
             return rawData.data();
         }
     };
+
+    template <>
+    struct BLOCKSCI_EXPORT SimpleFileMapper<mio::access_mode::read> : public SimpleFileMapperBase<mio::access_mode::read> {
+        using SimpleFileMapperBase::SimpleFileMapperBase;
+    };
     
     template <>
-    struct BLOCKSCI_EXPORT SimpleFileMapper<AccessMode::readwrite> : public SimpleFileMapperBase {
+    struct BLOCKSCI_EXPORT SimpleFileMapper<mio::access_mode::write> : public SimpleFileMapperBase<mio::access_mode::write> {
         static constexpr size_t maxBufferSize = 50000000;
         std::vector<char> buffer;
-        static constexpr auto mode = AccessMode::readwrite;
+        static constexpr auto mode = mio::access_mode::read;
         
-        explicit SimpleFileMapper(const std::string &path);
-        
-        SimpleFileMapper(const SimpleFileMapper &) = delete;
-        SimpleFileMapper(SimpleFileMapper &&) = default;
-        SimpleFileMapper &operator=(const SimpleFileMapper &) = delete;
-        SimpleFileMapper &operator=(SimpleFileMapper &&) = default;
+        SimpleFileMapper(const std::string &path) : SimpleFileMapperBase(path), writePos(size()) {}
 
         ~SimpleFileMapper() {
             clearBuffer();
@@ -166,20 +180,23 @@ namespace blocksci {
         OffsetType writePos;
         
         char *getWritePos() {
+            auto fileEnd = file.size();
             if (writePos < fileEnd) {
-                return reinterpret_cast<char *>(dataPtr) + writePos;
-            } else if (writePos < fileEnd + buffer.size()) {
+                return &file[writePos];
+            } else if (writePos < fileEnd + static_cast<OffsetType>(buffer.size())) {
                 return reinterpret_cast<char *>(buffer.data()) + (writePos - fileEnd);
             } else {
                 return nullptr;
             }
         }
         
-        size_t writeSpace() const {
+        
+       OffsetType writeSpace() const {
+            auto fileEnd = file.size();
             if (writePos < fileEnd) {
                 return fileEnd - writePos;
-            } else if (writePos < fileEnd + buffer.size()) {
-                return (writePos - fileEnd) - buffer.size();
+            } else if (writePos < fileEnd + static_cast<OffsetType>(buffer.size())) {
+                return (writePos - fileEnd) - static_cast<OffsetType>(buffer.size());
             } else {
                 return 0;
             }
@@ -187,16 +204,21 @@ namespace blocksci {
         
     public:
         
-        void reload();
+        void reload() {
+            // Triggers a reload of the file as well
+            clearBuffer();
+        }
         
         OffsetType getWriteOffset() const {
             return writePos;
         }
         
-        bool write(const char *valuePos, size_t amountToWrite) {
+        bool write(const char *valuePos, OffsetType amountToWrite) {
+            auto fileEnd = file.size();
             if (writePos < fileEnd) {
                 auto writeAmount = std::min(amountToWrite, writeSpace());
-                memcpy(getWritePos(), valuePos, writeAmount);
+                assert(writeAmount > 0);
+                memcpy(getWritePos(), valuePos, static_cast<size_t>(writeAmount));
                 amountToWrite -= writeAmount;
                 writePos += writeAmount;
                 valuePos += writeAmount;
@@ -205,9 +227,9 @@ namespace blocksci {
                 }
             }
             
-            if (writePos >= fileEnd && writePos < buffer.size()) {
+            if (writePos >= fileEnd && writePos < static_cast<OffsetType>(buffer.size())) {
                 auto writeAmount = std::min(amountToWrite, writeSpace());
-                memcpy(getWritePos(), valuePos, writeAmount);
+                memcpy(getWritePos(), valuePos, static_cast<size_t>(writeAmount));
                 amountToWrite -= writeAmount;
                 writePos += writeAmount;
                 valuePos += writeAmount;
@@ -241,48 +263,50 @@ namespace blocksci {
         void clearBuffer();
         
         char *getDataAtOffset(OffsetType offset) {
+            auto fileEnd = file.size();
             assert(offset < fileEnd + buffer.size() || offset == InvalidFileIndex);
             if (offset == InvalidFileIndex) {
                 return nullptr;
             } else if (offset < fileEnd) {
-                return dataPtr + offset;
+                return &file[offset];
             } else {
                 return buffer.data() + (offset - fileEnd);
             }
         }
         
         const char *getDataAtOffset(OffsetType offset) const {
+            auto fileEnd = file.size();
             assert(offset < fileEnd + buffer.size() || offset == InvalidFileIndex);
             if (offset == InvalidFileIndex) {
                 return nullptr;
             } else if (offset < fileEnd) {
-                return const_data + offset;
+                return &file[offset];
             } else {
                 return buffer.data() + (offset - fileEnd);
             }
         }
         
-        size_t size() const {
-            return SimpleFileMapperBase::size() + buffer.size();
+        OffsetType size() const {
+            return SimpleFileMapperBase::size() + static_cast<OffsetType>(buffer.size());
         }
         
         void seekEnd() {
-            writePos = fileEnd + buffer.size();
+            writePos = file.size() + static_cast<OffsetType>(buffer.size());
         }
         
-        void seek(size_t offset) {
+        void seek(OffsetType offset) {
             writePos = offset;
         }
         
         void truncate(OffsetType offset);
     };
     
-    template <typename T, AccessMode mode>
+    template <typename T, mio::access_mode mode>
     struct BLOCKSCI_EXPORT FixedSizeFileMapper {
     private:
         SimpleFileMapper<mode> dataFile;
-        size_t getPos(size_t index) const {
-            return index * sizeof(T);
+        OffsetType getPos(OffsetType index) const {
+            return index * static_cast<OffsetType>(sizeof(T));
         }
         
     public:
@@ -294,24 +318,24 @@ namespace blocksci {
         
         explicit FixedSizeFileMapper(std::string path) : dataFile(std::move(path)) {}
         
-        const_pointer operator[](size_type index) const {
+        const_pointer operator[](OffsetType index) const {
             assert(index < size());
             const char *pos = dataFile.getDataAtOffset(getPos(index));
             return reinterpret_cast<const_pointer>(pos);
         }
         
-        template <typename Dummy = void, typename Dummy2 = std::enable_if_t<mode == AccessMode::readwrite, Dummy>>
-        pointer operator[](size_type index) {
+        template <typename Dummy = void, typename Dummy2 = std::enable_if_t<mode == mio::access_mode::write, Dummy>>
+        pointer operator[](OffsetType index) {
             assert(index < size());
             char *pos = dataFile.getDataAtOffset(getPos(index));
             return reinterpret_cast<pointer>(pos);
         }
 
-        const_pointer getDataAtIndex(size_type index) const {
+        const_pointer getDataAtIndex(OffsetType index) const {
             return (*this)[index];
         }
         
-        pointer getDataAtIndex(size_type index) {
+        pointer getDataAtIndex(OffsetType index) {
             return (*this)[index];
         }
 
@@ -319,7 +343,7 @@ namespace blocksci {
             dataFile.seekEnd();
         }
         
-        void seek(size_type index) {
+        void seek(OffsetType index) {
             dataFile.seek(getPos(index));
         }
         
@@ -335,16 +359,16 @@ namespace blocksci {
             return dataFile.write(t);
         }
         
-        size_t size() const {
-            constexpr size_t unitSize = sizeof(T);
+        OffsetType size() const {
+            constexpr OffsetType unitSize = sizeof(T);
             return dataFile.size() / unitSize;
         }
         
-        size_t fileSize() const {
+        OffsetType fileSize() const {
             return dataFile.fileSize() / sizeof(T);
         }
         
-        void truncate(size_type index) {
+        void truncate(OffsetType index) {
             dataFile.truncate(getPos(index));
         }
         
@@ -385,7 +409,7 @@ namespace blocksci {
         return tuple_cast_helper<add_ptr_t<std::tuple<A...>>>( t1, std::make_index_sequence<N>{} );
     }
     
-    template <AccessMode mode, typename... T>
+    template <mio::access_mode mode, typename... T>
     struct BLOCKSCI_EXPORT IndexedFileMapper {
     private:
         template<size_t indexNum>
@@ -394,7 +418,7 @@ namespace blocksci {
         SimpleFileMapper<mode> dataFile;
         FixedSizeFileMapper<FileIndex<indexCount>, mode> indexFile;
         
-        void writeNewImp(const char *valuePos, size_t amountToWrite) {
+        void writeNewImp(const char *valuePos, OffsetType amountToWrite) {
             assert(amountToWrite % alignof(nth_element<0>) == 0);
             FileIndex<indexCount> fileIndex;
             fileIndex[0] = dataFile.getWriteOffset();
@@ -406,7 +430,7 @@ namespace blocksci {
         }
         
         template<size_t indexNum>
-        void writeUpdateImp(uint32_t addressNum, const char *valuePos, size_t amountToWrite) {
+        void writeUpdateImp(uint32_t addressNum, const char *valuePos, OffsetType amountToWrite) {
             static_assert(indexNum > 0, "Must call write without addressNum for first element");
             static_assert(indexNum < indexCount, "Index out of range");
             assert(amountToWrite % alignof(nth_element<indexNum>) == 0);
@@ -443,11 +467,11 @@ namespace blocksci {
             return *indexFile[index];
         }
         
-        size_t size() const {
+        OffsetType size() const {
             return indexFile.size();
         }
         
-        size_t fileSize() const {
+        OffsetType fileSize() const {
             return indexFile.fileSize();
         }
         
@@ -464,12 +488,12 @@ namespace blocksci {
             dataFile.seekEnd();
         }
         
-        void seek(uint32_t index, size_t dataOffset) {
+        void seek(uint32_t index, OffsetType dataOffset) {
             indexFile.seek(index);
             dataFile.seek(dataOffset);
         }
 
-        void grow(uint32_t indexSize, uint64_t dataSize) {
+        void grow(uint32_t indexSize, OffsetType dataSize) {
             indexFile.truncate(indexFile.size() + indexSize);
             dataFile.truncate(dataFile.size() + dataSize);
         }

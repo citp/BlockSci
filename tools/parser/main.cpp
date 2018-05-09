@@ -50,8 +50,8 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::B
     state.blockCount = static_cast<uint32_t>(static_cast<int>(firstDeletedBlock));
     state.txCount = firstDeletedTxNum;
     
-    blocksci::IndexedFileMapper<blocksci::AccessMode::readwrite, blocksci::RawTransaction> txFile{blocksci::ChainAccess::txFilePath(config.dataConfig.chainDirectory())};
-    blocksci::FixedSizeFileMapper<blocksci::uint256, blocksci::AccessMode::readwrite> txHashesFile{blocksci::ChainAccess::txHashesFilePath(config.dataConfig.chainDirectory())};
+    blocksci::IndexedFileMapper<mio::access_mode::write, blocksci::RawTransaction> txFile{blocksci::ChainAccess::txFilePath(config.dataConfig.chainDirectory())};
+    blocksci::FixedSizeFileMapper<blocksci::uint256, mio::access_mode::write> txHashesFile{blocksci::ChainAccess::txHashesFilePath(config.dataConfig.chainDirectory())};
     blocksci::DataAccess access(config.dataConfig);
     
     UTXOState utxoState;
@@ -112,19 +112,17 @@ blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::B
 }
 
 void rollbackTransactions(blocksci::BlockHeight blockKeepCount, HashIndexCreator &hashDb, const ParserConfigurationBase &config) {
-    using blocksci::AccessMode;
     using blocksci::RawBlock;
     using blocksci::IndexedFileMapper;
     using blocksci::SimpleFileMapper;
     using blocksci::FixedSizeFileMapper;
     
-    constexpr auto readwrite = AccessMode::readwrite;
+    constexpr auto readwrite = mio::access_mode::write;
     blocksci::FixedSizeFileMapper<RawBlock, readwrite> blockFile(blocksci::ChainAccess::blockFilePath(config.dataConfig.chainDirectory()));
     
-    auto blockKeepSize = static_cast<size_t>(static_cast<int>(blockKeepCount));
-    if (blockFile.size() > blockKeepSize) {
+    if (blockFile.size() > blockKeepCount) {
         
-        auto firstDeletedBlock = blockFile[blockKeepSize];
+        auto firstDeletedBlock = blockFile[blockKeepCount];
         auto firstDeletedTxNum = firstDeletedBlock->firstTxIndex;
         
         auto blocksciState = rollbackState(config, blockKeepCount, firstDeletedTxNum);
@@ -134,7 +132,7 @@ void rollbackTransactions(blocksci::BlockHeight blockKeepCount, HashIndexCreator
         FixedSizeFileMapper<blocksci::uint256, readwrite>(blocksci::ChainAccess::txHashesFilePath(config.dataConfig.chainDirectory())).truncate(firstDeletedTxNum);
         IndexedFileMapper<readwrite, uint32_t>(blocksci::ChainAccess::sequenceFilePath(config.dataConfig.chainDirectory())).truncate(firstDeletedTxNum);
         SimpleFileMapper<readwrite>(blocksci::ChainAccess::blockCoinbaseFilePath(config.dataConfig.chainDirectory())).truncate(firstDeletedBlock->coinbaseOffset);
-        blockFile.truncate(blockKeepSize);
+        blockFile.truncate(blockKeepCount);
         AddressWriter(config).rollback(blocksciState);
         
         AddressState addressState{config.addressPath(), hashDb};
@@ -234,7 +232,7 @@ std::vector<blocksci::RawBlock> updateChain(const ParserConfiguration<ParserTag>
     uint64_t startingOutputCount;
     {
         blocksci::ChainAccess chain{config.dataConfig.chainDirectory(), 0, false};
-        startingTxCount = chain.txCount();
+        startingTxCount = static_cast<uint32_t>(chain.txCount());
         startingInputCount = chain.inputCount();
         startingOutputCount = chain.outputCount();
     }
@@ -410,7 +408,7 @@ int main(int argc, char * argv[]) {
 
             // It'd be nice to do this after the indexes are updated, but they currently depend on the chain being fully updated
             {
-                blocksci::FixedSizeFileWriter<blocksci::RawBlock> blockFile{blocksci::ChainAccess::blockFilePath(config.dataConfig.chainDirectory())};
+                FixedSizeFileWriter<blocksci::RawBlock> blockFile{blocksci::ChainAccess::blockFilePath(config.dataConfig.chainDirectory())};
                 for (auto &block : newBlocks) {
                     blockFile.write(block);
                 }

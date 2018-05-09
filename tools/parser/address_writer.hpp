@@ -17,12 +17,12 @@ struct ScriptFileType;
 
 template<typename T>
 struct ScriptFileType<blocksci::FixedSize<T>> {
-    using type = blocksci::FixedSizeFileMapper<T, blocksci::AccessMode::readwrite>;
+    using type = blocksci::FixedSizeFileMapper<T, mio::access_mode::write>;
 };
 
 template<typename ...T>
 struct ScriptFileType<blocksci::Indexed<T...>> {
-    using type = blocksci::IndexedFileMapper<blocksci::AccessMode::readwrite, T...>;
+    using type = blocksci::IndexedFileMapper<mio::access_mode::write, T...>;
 };
 
 template<blocksci::DedupAddressType::Enum type>
@@ -73,7 +73,7 @@ public:
     }
     
     template<blocksci::AddressType::Enum type>
-    size_t serialize(const ScriptOutput<type> &output, uint32_t txNum) {
+    blocksci::OffsetType serialize(const ScriptOutput<type> &output, uint32_t txNum) {
         if (output.isNew) {
             auto &file = std::get<ScriptFile<dedupType(type)>>(scriptFiles);
             auto data = output.data.getData(txNum);
@@ -107,7 +107,7 @@ public:
     
     void rollback(const blocksci::State &state);
     
-    size_t serialize(const AnyScriptOutput &output, uint32_t txNum);
+    blocksci::OffsetType serialize(const AnyScriptOutput &output, uint32_t txNum);
     void serialize(const AnyScriptInput &input, uint32_t txNum, uint32_t outputTxNum);
     
     AddressWriter(const ParserConfigurationBase &config);
