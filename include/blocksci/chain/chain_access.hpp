@@ -26,6 +26,9 @@ namespace blocksci {
         SimpleFileMapper<> blockCoinbaseFile;
         
         IndexedFileMapper<AccessMode::readonly, RawTransaction> txFile;
+        FixedSizeFileMapper<int32_t> txVersionFile;
+        FixedSizeFileMapper<uint64_t> txFirstInputFile;
+        FixedSizeFileMapper<uint64_t> txFirstOutputFile;
         IndexedFileMapper<AccessMode::readonly, uint32_t> sequenceFile;
         
         FixedSizeFileMapper<uint256> txHashesFile;
@@ -52,11 +55,12 @@ namespace blocksci {
         static std::string txHashesFilePath(const std::string &baseDirectory);
         static std::string blockFilePath(const std::string &baseDirectory);
         static std::string blockCoinbaseFilePath(const std::string &baseDirectory);
+        static std::string txVersionFilePath(const std::string &baseDirectory);
+        static std::string firstInputFilePath(const std::string &baseDirectory);
+        static std::string firstOutputFilePath(const std::string &baseDirectory);
         static std::string sequenceFilePath(const std::string &baseDirectory);
-        
-        uint32_t maxLoadedTx() const {
-            return _maxLoadedTx;
-        }
+        static std::string inputSpentOutNumFilePath(const std::string &baseDirectory);
+        static std::string outputSpendingInputNumFilePath(const std::string &baseDirectory);
         
         BlockHeight getBlockHeight(uint32_t txIndex) const {
             reorgCheck();
@@ -86,6 +90,10 @@ namespace blocksci {
             return txFile.getData(index);
         }
         
+        const int32_t *getTxVersion(uint32_t index) const {
+            return txVersionFile[index];
+        }
+        
         const uint32_t *getSequenceNumbers(uint32_t index) const {
             return sequenceFile.getData(index);
         }
@@ -93,6 +101,10 @@ namespace blocksci {
         size_t txCount() const {
             return _maxLoadedTx;
         }
+        
+        uint64_t inputCount() const;
+        
+        uint64_t outputCount() const;
         
         BlockHeight blockCount() const {
             return maxHeight;

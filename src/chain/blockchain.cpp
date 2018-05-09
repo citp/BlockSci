@@ -7,17 +7,14 @@
 //
 
 #include <blocksci/chain/blockchain.hpp>
-#include <blocksci/heuristics/tx_identification.hpp>
+#include <blocksci/scripts/script_access.hpp>
+#include <blocksci/core/address_info.hpp>
 #include <blocksci/index/address_output_range.hpp>
 
 #include <range/v3/action/push_back.hpp>
-#include <range/v3/algorithm/any_of.hpp>
 #include <range/v3/front.hpp>
 #include <range/v3/view/filter.hpp>
 #include <range/v3/view/group_by.hpp>
-
-#include <fstream>
-#include <iostream>
 
 namespace blocksci {
     // [start, end)
@@ -79,6 +76,10 @@ namespace blocksci {
     uint32_t txCount(Blockchain &chain) {
         auto lastBlock = chain[static_cast<int>(chain.size()) - BlockHeight{1}];
         return lastBlock.endTxIndex();
+    }
+    
+    uint32_t Blockchain::addressCount(AddressType::Enum type) const {
+        return access.getScripts().scriptCount(dedupType(type));
     }
     
     std::vector<Block> filter(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, std::function<bool(const Block &tx)> testFunc)  {

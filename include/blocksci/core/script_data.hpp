@@ -37,14 +37,20 @@ namespace blocksci {
     };
     
     struct BLOCKSCI_EXPORT PubkeyData : public ScriptDataBase {
-        CPubKey pubkey;
-        uint160 address;
+        union {
+            uint160 address;
+            CPubKey pubkey;
+        };
+        bool hasPubkey;
         
-        PubkeyData(uint32_t txNum, const CPubKey &pubkey_, uint160 address_) : ScriptDataBase(txNum), pubkey(pubkey_), address(address_) {}
+        PubkeyData(uint32_t txNum, const CPubKey &pubkey_) : ScriptDataBase(txNum), pubkey(pubkey_) {}
+        PubkeyData(uint32_t txNum, const uint160 &address_) : ScriptDataBase(txNum), address(address_) {}
         
         size_t size() {
             return sizeof(PubkeyData);
         }
+        
+        uint160 getPubkeyHash() const;
     };
     
     struct BLOCKSCI_EXPORT ScriptHashData : public ScriptDataBase {

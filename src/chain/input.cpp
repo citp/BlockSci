@@ -11,8 +11,6 @@
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/block.hpp>
 
-#include <sstream>
-
 namespace blocksci {
     Transaction Input::transaction() const {
         return {pointer.txNum, blockHeight, *access};

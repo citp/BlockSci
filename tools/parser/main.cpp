@@ -149,11 +149,26 @@ struct ChainUpdateInfo {
     uint32_t splitPoint;
 };
 
+struct StartingCounts {
+    uint32_t txCount;
+    uint64_t inputCount;
+    uint64_t outputCount;
+};
+
+uint32_t getStartingCounts(const blocksci::DataConfiguration &config) {
+    blocksci::ChainAccess chain{config.chainDirectory(), config.blocksIgnored, config.errorOnReorg};
+    if (chain.blockCount() > 0) {
+        auto lastBlock = chain.getBlock(chain.blockCount() - 1);
+        return lastBlock->firstTxIndex + lastBlock->txCount;
+    } else {
+        return 0;
+    }
+}
 uint32_t getStartingTxCount(const blocksci::DataConfiguration &config) {
     blocksci::ChainAccess chain{config.chainDirectory(), config.blocksIgnored, config.errorOnReorg};
     if (chain.blockCount() > 0) {
         auto lastBlock = chain.getBlock(chain.blockCount() - 1);
-        return lastBlock->firstTxIndex + lastBlock->numTxes;
+        return lastBlock->firstTxIndex + lastBlock->txCount;
     } else {
         return 0;
     }
@@ -214,7 +229,16 @@ std::vector<blocksci::RawBlock> updateChain(const ParserConfiguration<ParserTag>
         return {};
     }
     
-    uint32_t startingTxCount = getStartingTxCount(config.dataConfig);
+    uint32_t startingTxCount;
+    uint64_t startingInputCount;
+    uint64_t startingOutputCount;
+    {
+        blocksci::ChainAccess chain{config.dataConfig.chainDirectory(), 0, false};
+        startingTxCount = chain.txCount();
+        startingInputCount = chain.inputCount();
+        startingOutputCount = chain.outputCount();
+    }
+    
     auto maxBlockHeight = blocksToAdd.back().height;
     
     uint32_t totalTxCount = 0;
@@ -226,7 +250,7 @@ std::vector<blocksci::RawBlock> updateChain(const ParserConfiguration<ParserTag>
         totalOutputCount += block.outputCount;
     }
 
-    BlockProcessor processor{startingTxCount, totalTxCount, maxBlockHeight};
+    BlockProcessor processor{startingTxCount, startingInputCount, startingOutputCount, totalTxCount, maxBlockHeight};
     UTXOState utxoState;
     UTXOAddressState utxoAddressState;
     AddressState addressState{config.addressPath(), hashDb};

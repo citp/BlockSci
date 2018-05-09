@@ -42,7 +42,7 @@ namespace blocksci {
 
         Input(const InputPointer &pointer_, BlockHeight blockHeight_, const Inout &inout_, const uint32_t *sequenceNum_, DataAccess &access_) :
         access(&access_), inout(&inout_), sequenceNum(sequenceNum_), pointer(pointer_), blockHeight(blockHeight_) {
-            assert(pointer.isValid(access_.getChain()));
+            assert(pointer.inoutNum < access_.getChain().getTx(pointer.txNum)->inputCount);
         }
         Input(const InputPointer &pointer_, DataAccess &access_) :
         Input(pointer_, access_.getChain().getBlockHeight(pointer_.txNum), access_.getChain().getTx(pointer_.txNum)->getInput(pointer_.inoutNum), &access_.getChain().getSequenceNumbers(pointer_.txNum)[pointer_.inoutNum], access_) {}

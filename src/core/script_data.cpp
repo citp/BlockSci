@@ -9,6 +9,14 @@
 #include <blocksci/util/hash.hpp>
 
 namespace blocksci {
+    uint160 PubkeyData::getPubkeyHash() const {
+        if (hasPubkey) {
+            return pubkey.GetID();
+        } else {
+            return address;
+        }
+    }
+    
     uint160 ScriptHashData::getHash160() const {
         if (isSegwit) {
             return ripemd160(reinterpret_cast<const char *>(&hash256), sizeof(hash256));

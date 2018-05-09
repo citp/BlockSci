@@ -12,18 +12,7 @@
 #include "block.hpp"
 
 #include <blocksci/blocksci_export.h>
-#include <blocksci/scripts/multisig_script.hpp>
-#include <blocksci/scripts/nonstandard_script.hpp>
-#include <blocksci/scripts/nulldata_script.hpp>
-#include <blocksci/scripts/pubkey_script.hpp>
-#include <blocksci/scripts/multisig_pubkey_script.hpp>
-#include <blocksci/scripts/scripthash_script.hpp>
 #include <blocksci/util/data_access.hpp>
-
-#include <range/v3/view/any_view.hpp>
-#include <range/v3/range_for.hpp>
-
-#include <mpark/variant.hpp>
 
 #include <map>
 #include <type_traits>
@@ -33,16 +22,7 @@ namespace blocksci {
     struct DataConfiguration;
     class DataAccess;
     
-    template <AddressType::Enum type>
-    using ScriptRange = ranges::any_view<ScriptAddress<type>, ranges::category::random_access | ranges::category::sized>;
-    using ScriptRangeVariant = to_variadic_t<to_address_tuple_t<ScriptRange>, mpark::variant>;
-    
     namespace internal {
-        template<AddressType::Enum type>
-        struct ScriptRangeFunctor {
-            static ScriptRangeVariant f(Blockchain &chain);
-        };
-        
         template <typename F, typename... Args>
         struct is_callable {
             template <typename U>
@@ -182,22 +162,7 @@ namespace blocksci {
             return static_cast<uint32_t>(lastBlockHeight);
         }
         
-        uint32_t addressCount(AddressType::Enum type) const {
-            return access.getScripts().scriptCount(dedupType(type));
-        }
-        
-        template <AddressType::Enum type>
-        auto scripts() {
-            return ranges::view::ints(uint32_t{1}, access.getScripts().scriptCount(dedupType(type)) + 1) | ranges::view::transform([&](uint32_t scriptNum) {
-                return ScriptAddress<type>(scriptNum, access);
-            });
-        }
-        
-        ScriptRangeVariant scripts(AddressType::Enum type) {
-            static constexpr auto table = make_dynamic_table<AddressType, internal::ScriptRangeFunctor>();
-            auto index = static_cast<size_t>(type);
-            return table.at(index)(*this);
-        }
+        uint32_t addressCount(AddressType::Enum type) const;
         
         template <typename ResultType, typename MapFunc, typename ReduceFunc>
         std::enable_if_t<internal::is_callable<MapFunc, std::vector<Block>, int>::value, ResultType>
@@ -277,12 +242,6 @@ namespace blocksci {
     
     std::map<int64_t, Address> BLOCKSCI_EXPORT mostValuableAddresses(Blockchain &chain);
     
-    namespace internal {
-        template<AddressType::Enum type>
-        ScriptRangeVariant ScriptRangeFunctor<type>::f(Blockchain &chain) {
-            return chain.scripts<type>();
-        }
-    }
 } // namespace blocksci
 
 

@@ -9,8 +9,6 @@
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/block.hpp>
 
-#include <sstream>
-
 namespace blocksci {
     Transaction Output::transaction() const {
         return {pointer.txNum, blockHeight, *access};

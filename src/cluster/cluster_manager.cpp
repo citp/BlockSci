@@ -14,6 +14,7 @@
 #include <blocksci/core/address_info.hpp>
 #include <blocksci/heuristics/change_address.hpp>
 #include <blocksci/heuristics/tx_identification.hpp>
+#include <blocksci/scripts/scripthash_script.hpp>
 #include <blocksci/util/progress_bar.hpp>
 
 #include <dset/dset.h>

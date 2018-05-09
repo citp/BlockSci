@@ -32,6 +32,7 @@ namespace blocksci {
     private:
         DataAccess *access;
         const RawTransaction *data;
+        const int32_t *version;
         const uint32_t *sequenceNumbers;
         friend TransactionSummary;
     public:
@@ -40,11 +41,17 @@ namespace blocksci {
         
         Transaction() = default;
         
-        Transaction(const RawTransaction *data_, uint32_t txNum_, BlockHeight blockHeight_, DataAccess &access_) : access(&access_), data(data_), sequenceNumbers(access_.getChain().getSequenceNumbers(txNum_)), txNum(txNum_), blockHeight(blockHeight_) {}
+        Transaction(const RawTransaction *data_, const int32_t *version_, const uint32_t *sequenceNumbers_, uint32_t txNum_, BlockHeight blockHeight_, DataAccess &access_) : access(&access_), data(data_), version(version_), sequenceNumbers(sequenceNumbers_), txNum(txNum_), blockHeight(blockHeight_) {}
+        
+        Transaction(uint32_t index, BlockHeight height, DataAccess &access_) :
+        Transaction(
+                    access_.getChain().getTx(index),
+                    access_.getChain().getTxVersion(index),
+                    access_.getChain().getSequenceNumbers(index),
+                    index, height, access_
+                    ) {}
         
         Transaction(uint32_t index, DataAccess &access_) : Transaction(index, access_.getChain().getBlockHeight(index), access_) {}
-        
-        Transaction(uint32_t index, BlockHeight height, DataAccess &access_) : Transaction(access_.getChain().getTx(index), index, height, access_) {}
         
         Transaction(const uint256 &hash, DataAccess &access);
         Transaction(const std::string &hash, DataAccess &access) : Transaction(uint256S(hash), access) {}

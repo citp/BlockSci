@@ -19,14 +19,6 @@
 
 namespace blocksci {
     
-    bool InputPointer::isValid(const ChainAccess &access) const {
-        return inoutNum < access.getTx(txNum)->inputCount;
-    }
-    
-    bool OutputPointer::isValid(const ChainAccess &access) const {
-        return inoutNum < access.getTx(txNum)->outputCount;
-    }
-    
     std::vector<Input> getInputs(const std::vector<OutputPointer> &pointers, DataAccess &access) {
         std::unordered_set<InputPointer> allPointers;
         allPointers.reserve(pointers.size());

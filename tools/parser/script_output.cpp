@@ -211,7 +211,7 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::PUBKEY>::getHash
 }
 
 blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::PUBKEY>::getData(uint32_t txNum) const {
-    return {txNum, pubkey, pubkey.GetID()};
+    return {txNum, pubkey};
 }
 
 // MARK: TX_PUBKEYHASH
@@ -222,7 +222,7 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::PUBKEYHASH>::get
 
 blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::PUBKEYHASH>::getData(uint32_t txNum) const {
     blocksci::CPubKey nullPubkey{};
-    return {txNum, nullPubkey, hash};
+    return {txNum, hash};
 }
 
 // MARK: MULTISIG_PUBKEY
@@ -235,7 +235,7 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY>
 
 blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY>::getData(uint32_t txNum) const {
     blocksci::CPubKey nullPubkey{};
-    return {txNum, pubkey, pubkey.GetID()};
+    return {txNum, pubkey};
 }
 
 // MARK: WITNESS_PUBKEYHASH
@@ -246,7 +246,7 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHA
 
 blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::getData(uint32_t txNum) const {
     blocksci::CPubKey nullPubkey{};
-    return {txNum, nullPubkey, hash};
+    return {txNum, hash};
 }
 
 // MARK: TX_SCRIPTHASH

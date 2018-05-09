@@ -69,7 +69,7 @@ void replayBlock(const ParserConfiguration<FileTag> &config, blocksci::BlockHeig
     auto blockPtr = chainAccess.getBlock(blockNum);
     auto firstTxNum = blockPtr->firstTxIndex;
     auto segwit = isSegwitMarker(*chainAccess.getTx(firstTxNum), scripts);
-    for (uint32_t txNum = firstTxNum; txNum < firstTxNum + blockPtr->numTxes; txNum++) {
+    for (uint32_t txNum = firstTxNum; txNum < firstTxNum + blockPtr->txCount; txNum++) {
         auto realTx = chainAccess.getTx(txNum);
         RawTransaction tx;
         tx.load(reader, txNum, blockNum, segwit);

@@ -48,8 +48,6 @@ namespace blocksci {
             }
         }
         
-        bool isValid(const ChainAccess &access) const;
-        
         std::string toString() const {
             std::stringstream ss;
             ss << "InputPointer(tx_index=" << txNum << ", input_index=" << inoutNum << ")";
@@ -67,8 +65,6 @@ namespace blocksci {
                 return inoutNum < other.inoutNum;
             }
         }
-        
-        bool isValid(const ChainAccess &access) const;
         
         std::string toString() const {
             std::stringstream ss;

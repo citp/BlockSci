@@ -14,7 +14,6 @@
 #include <blocksci/index/hash_index.hpp>
 #include <blocksci/scripts/nulldata_script.hpp>
 
-
 namespace {
     uint32_t getTxIndex(const blocksci::uint256 &hash, blocksci::HashIndex &index) {
         auto txIndex = index.getTxIndex(hash);

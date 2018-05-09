@@ -17,7 +17,7 @@
 
 namespace blocksci {
     
-    static constexpr int dataVersion = 4;
+    static constexpr int dataVersion = 5;
     
     struct BLOCKSCI_EXPORT DataConfiguration {
         DataConfiguration() {}

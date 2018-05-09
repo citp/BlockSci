@@ -18,6 +18,7 @@ namespace blocksci {
         
         DataAccess *access;
         const char *currentTxPos = nullptr;
+        const uint32_t *sequenceNumbers = nullptr;
         uint32_t currentTxIndex = 0;
         uint32_t endTxIndex = 0;
         BlockHeight blockNum = 0;
@@ -31,6 +32,7 @@ namespace blocksci {
             currentTxPos += sizeof(RawTransaction) +
             static_cast<size_t>(tx->inputCount) * sizeof(Inout) +
             static_cast<size_t>(tx->outputCount) * sizeof(Inout);
+            sequenceNumbers += tx->inputCount;
             ++currentTxIndex;
             if (currentTxIndex == nextBlockFirst) {
                 ++blockNum;
@@ -40,7 +42,7 @@ namespace blocksci {
         
         Transaction read() const {
             auto rawTx = reinterpret_cast<const RawTransaction *>(currentTxPos);
-            return {rawTx, currentTxIndex, blockNum, *access};
+            return {rawTx, sequenceNumbers, currentTxIndex, blockNum, *access};
         }
         
         void prev() {
@@ -50,6 +52,7 @@ namespace blocksci {
                 updateNextBlock();
             }
             currentTxPos = reinterpret_cast<const char *>(access->getChain().getTx(currentTxIndex));
+            sequenceNumbers = access->getChain().getSequenceNumbers(currentTxIndex);
         }
         
         void advance(int amount) {
@@ -57,21 +60,28 @@ namespace blocksci {
             blockNum = access->getChain().getBlockHeight(currentTxIndex);
             updateNextBlock();
             currentTxPos = reinterpret_cast<const char *>(access->getChain().getTx(currentTxIndex));
+            sequenceNumbers = access->getChain().getSequenceNumbers(currentTxIndex);
         }
         
-        size_t distance_to(const TransactionRange &other) const {
-            return static_cast<size_t>(other.currentTxIndex) - static_cast<size_t>(currentTxIndex);
+        int64_t distance_to(const TransactionRange &other) const {
+            return static_cast<int64_t>(other.currentTxIndex) - static_cast<int64_t>(currentTxIndex);
         }
         
         void updateNextBlock() {
             auto block = access->getChain().getBlock(blockNum);
             prevBlockLast = block->firstTxIndex - 1;
-            nextBlockFirst = blockNum < access->getChain().blockCount() - BlockHeight{1} ? block->firstTxIndex + static_cast<uint32_t>(block->numTxes) : std::numeric_limits<decltype(nextBlockFirst)>::max();
+            nextBlockFirst = blockNum < access->getChain().blockCount() - BlockHeight{1} ? block->firstTxIndex + static_cast<uint32_t>(block->txCount) : std::numeric_limits<decltype(nextBlockFirst)>::max();
         }
         
     public:
         TransactionRange() = default;
-        TransactionRange(DataAccess &access_, uint32_t begin, uint32_t end) : access(&access_), currentTxPos(reinterpret_cast<const char *>(access->getChain().getTx(begin))), currentTxIndex(begin), endTxIndex(end), blockNum(access->getChain().getBlockHeight(begin)) {
+        TransactionRange(DataAccess &access_, uint32_t begin, uint32_t end) :
+        access(&access_),
+        currentTxPos(reinterpret_cast<const char *>(access->getChain().getTx(begin))),
+        sequenceNumbers(access->getChain().getSequenceNumbers(begin)),
+        currentTxIndex(begin),
+        endTxIndex(end),
+        blockNum(access->getChain().getBlockHeight(begin)) {
             updateNextBlock();
         }
     };

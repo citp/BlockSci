@@ -39,8 +39,8 @@ namespace blocksci {
         
         Output(const OutputPointer &pointer_, BlockHeight blockHeight_, const Inout &inout_, DataAccess &access_) :
         access(&access_), inout(&inout_), blockHeight(blockHeight_), pointer(pointer_) {
-            assert(pointer.isValid(access_.getChain()));
-            if (inout->getLinkedTxNum() < access->getChain().maxLoadedTx()) {
+            assert(pointer.inoutNum < access_.getChain().getTx(pointer.txNum)->outputCount);
+            if (inout->getLinkedTxNum() < access->getChain().txCount()) {
                 spendingTxIndex = inout->getLinkedTxNum();
             } else {
                 spendingTxIndex = 0;

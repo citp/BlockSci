@@ -42,7 +42,7 @@ using blocksci::IndexedFileWriter;
 
 std::vector<unsigned char> ParseHex(const char* psz);
 
-BlockProcessor::BlockProcessor(uint32_t startingTxCount_, uint32_t totalTxCount_, blocksci::BlockHeight maxBlockHeight_) : startingTxCount(startingTxCount_), currentTxNum(startingTxCount_), totalTxCount(totalTxCount_), maxBlockHeight(maxBlockHeight_) {
+BlockProcessor::BlockProcessor(uint32_t startingTxCount_, uint64_t startingInputCount, uint64_t startingOutputCount, uint32_t totalTxCount_, blocksci::BlockHeight maxBlockHeight_) : startingTxCount(startingTxCount_), currentTxNum(startingTxCount_), currentInputNum(startingInputCount), currentOutputNum(startingOutputCount), totalTxCount(totalTxCount_), maxBlockHeight(maxBlockHeight_) {
     
 }
 
@@ -235,7 +235,7 @@ public:
 
 #endif
 
-blocksci::RawBlock readNewBlock(uint32_t firstTxNum, const BlockInfoBase &block, BlockFileReaderBase &fileReader, NewBlocksFiles &files, const std::function<bool(RawTransaction *&tx)> &loadFunc, const std::function<void(RawTransaction *tx)> &outFunc) {
+blocksci::RawBlock readNewBlock(uint32_t firstTxNum, uint64_t firstInputNum, uint64_t firstOutputNum, const BlockInfoBase &block, BlockFileReaderBase &fileReader, NewBlocksFiles &files, const std::function<bool(RawTransaction *&tx)> &loadFunc, const std::function<void(RawTransaction *tx)> &outFunc) {
     std::vector<unsigned char> coinbase;
     bool isSegwit = false;
     blocksci::uint256 nullHash;
@@ -243,6 +243,8 @@ blocksci::RawBlock readNewBlock(uint32_t firstTxNum, const BlockInfoBase &block,
     uint32_t headerSize = 80 + variableLengthIntSize(block.nTx);
     uint32_t baseSize = headerSize;
     uint32_t realSize = headerSize;
+    uint32_t inputCount = 0;
+    uint32_t outputCount = 0;
     for (uint32_t j = 0; j < block.nTx; j++) {
         RawTransaction *tx = nullptr;
         if (!loadFunc(tx)) {
@@ -259,9 +261,12 @@ blocksci::RawBlock readNewBlock(uint32_t firstTxNum, const BlockInfoBase &block,
         
         fileReader.nextTx(tx, isSegwit);
         
-        files.sequenceFile.writeIndexGroup();
+        files.txFirstInput.write(firstInputNum + inputCount);
+        files.txFirstOutput.write(firstOutputNum + outputCount);
+        
         for (auto &input : tx->inputs) {
-            files.sequenceFile.write(input.sequenceNum);
+            files.inputSequenceFile.write(input.sequenceNum);
+            files.inputSpentOutNumFile.write(input.rawOutputPointer.outputNum);
         }
         
         if (tx->inputs.size() == 1 && tx->inputs[0].rawOutputPointer.hash == nullHash) {
@@ -270,12 +275,15 @@ blocksci::RawBlock readNewBlock(uint32_t firstTxNum, const BlockInfoBase &block,
             tx->inputs.clear();
         }
         
+        
+        inputCount += tx->inputs.size();
+        outputCount += tx->outputs.size();
         baseSize += tx->baseSize;
         realSize += tx->realSize;
         
         outFunc(tx);
     }
-    blocksci::RawBlock blocksciBlock{firstTxNum, block.nTx, static_cast<uint32_t>(static_cast<int>(block.height)), block.hash, block.header.nVersion, block.header.nTime, block.header.nBits, block.header.nNonce, realSize, baseSize, files.blockCoinbaseFile.size()};
+    blocksci::RawBlock blocksciBlock{firstTxNum, block.nTx, inputCount, outputCount, static_cast<uint32_t>(static_cast<int>(block.height)), block.hash, block.header.nVersion, block.header.nTime, block.header.nBits, block.header.nNonce, realSize, baseSize, files.blockCoinbaseFile.size()};
     files.blockCoinbaseFile.write(coinbase.begin(), coinbase.end());
     return blocksciBlock;
 }
@@ -391,16 +399,12 @@ void serializeAddressess(RawTransaction &tx, AddressWriter &addressWriter) {
 }
 
 void backUpdateTxes(const ParserConfigurationBase &config) {
+    std::vector<OutputLinkData> updates;
+    
+    std::cout << "Back linking transactions" << std::endl;
+    
     {
-        
-        blocksci::IndexedFileMapper<blocksci::AccessMode::readwrite, blocksci::RawTransaction> txFile(blocksci::ChainAccess::txFilePath(config.dataConfig.chainDirectory()));
-        
-        blocksci::FixedSizeFileMapper<OutputLinkData> linkDataFile_(config.txUpdatesFilePath());
-        const auto &linkDataFile = linkDataFile_;
-        
-        std::cout << "Back linking transactions" << std::endl;
-        
-        std::vector<OutputLinkData> updates;
+        blocksci::FixedSizeFileMapper<OutputLinkData> linkDataFile(config.txUpdatesFilePath());
         updates.reserve(linkDataFile.size());
         
         for (uint32_t i = 0; i < linkDataFile.size(); i++) {
@@ -410,6 +414,22 @@ void backUpdateTxes(const ParserConfigurationBase &config) {
         std::sort(updates.begin(), updates.end(), [](const auto& a, const auto& b) {
             return a.pointer < b.pointer;
         });
+    }
+    
+    {
+        blocksci::IndexedFileMapper<blocksci::AccessMode::readwrite, blocksci::RawTransaction> txFile(blocksci::ChainAccess::txFilePath(config.dataConfig.chainDirectory()));
+        
+        auto maxTxNum = txFile.size() - 1;
+        auto lastOutputCount = txFile[maxTxNum]->outputCount;
+        
+        blocksci::FixedSizeFileMapper<uint64_t> firstOutputFile(blocksci::ChainAccess::firstOutputFilePath(config.dataConfig.chainDirectory()));
+        auto totalOutputCount = *firstOutputFile[maxTxNum] + lastOutputCount;
+        
+        
+        auto outputSpendingInputNumFilePath = blocksci::ChainAccess::outputSpendingInputNumFilePath(config.dataConfig.chainDirectory());
+        
+        blocksci::FixedSizeFileMapper<uint16_t, blocksci::AccessMode::readwrite> outputSpendingInputNumFile(outputSpendingInputNumFilePath);
+        outputSpendingInputNumFile.truncate(totalOutputCount);
         
         auto progressBar = blocksci::makeProgressBar(updates.size(), [=]() {});
         
@@ -418,6 +438,10 @@ void backUpdateTxes(const ParserConfigurationBase &config) {
             auto tx = txFile.getData(update.pointer.txNum);
             auto &output = tx->getOutput(update.pointer.inoutNum);
             output.setLinkedTxNum(update.txNum);
+            
+            auto firstOutputNum = *firstOutputFile[update.pointer.txNum];
+            *outputSpendingInputNumFile[firstOutputNum] = update.pointer.inoutNum;
+            
             count++;
             progressBar.update(count);
         }
@@ -511,7 +535,11 @@ ProcessStep<ProcessFunc, AdvanceFunc> makeProcessStep(std::atomic<bool> &prevDon
 
 NewBlocksFiles::NewBlocksFiles(const ParserConfigurationBase &config) :
     blockCoinbaseFile(blocksci::ChainAccess::blockCoinbaseFilePath(config.dataConfig.chainDirectory())),
-    sequenceFile(blocksci::ChainAccess::sequenceFilePath(config.dataConfig.chainDirectory())) {}
+    txFirstInput(blocksci::ChainAccess::firstInputFilePath(config.dataConfig.chainDirectory())),
+    txFirstOutput(blocksci::ChainAccess::firstOutputFilePath(config.dataConfig.chainDirectory())),
+    txVersionFile(blocksci::ChainAccess::txVersionFilePath((config.dataConfig.chainDirectory()))),
+    inputSequenceFile(blocksci::ChainAccess::sequenceFilePath(config.dataConfig.chainDirectory())),
+    inputSpentOutNumFile(blocksci::ChainAccess::inputSpentOutNumFilePath(config.dataConfig.chainDirectory())) {}
 
 
 template <typename ParseTag>
@@ -610,8 +638,11 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfigu
         
         for (auto &block : blocks) {
             fileReader.nextBlock(block, currentTxNum);
-            blocksAdded.push_back(readNewBlock(currentTxNum, block, fileReader, files, loadFinishedTx, outFunc));
-            currentTxNum += block.nTx;
+            auto newBlock = readNewBlock(currentTxNum, currentInputNum, currentOutputNum, block, fileReader, files, loadFinishedTx, outFunc);
+            blocksAdded.push_back(newBlock);
+            currentTxNum += newBlock.txCount;
+            currentInputNum += newBlock.inputCount;
+            currentOutputNum += newBlock.outputCount;
         }
         
         return fileReader;
@@ -715,8 +746,11 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocksSingle(const ParserC
     std::vector<blocksci::RawBlock> blocksAdded;
     for (auto &block : blocks) {
         fileReader.nextBlock(block, currentTxNum);
-        blocksAdded.push_back(readNewBlock(currentTxNum, block, fileReader, files, loadFinishedTx, outFunc));
-        currentTxNum += block.nTx;
+        auto newBlock = readNewBlock(currentTxNum, currentInputNum, currentOutputNum, block, fileReader, files, loadFinishedTx, outFunc);
+        blocksAdded.push_back(newBlock);
+        currentTxNum += newBlock.txCount;
+        currentInputNum += newBlock.inputCount;
+        currentOutputNum += newBlock.outputCount;
     }
     
     return blocksAdded;

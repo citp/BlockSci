@@ -34,21 +34,25 @@ namespace blocksci {
         struct cursor {
         private:
             const Block *block;
+            const ChainAccess *chain;
             const char *currentTxPos;
+            const uint32_t *sequenceNumbers;
             uint32_t currentTxIndex;
         public:
             cursor() = default;
-            cursor(const Block &block_, uint32_t txNum) : block(&block_), currentTxIndex(txNum) {
-                if (currentTxIndex < block->access->getChain().txCount()) {
-                    currentTxPos = reinterpret_cast<const char *>(block->access->getChain().getTx(currentTxIndex));
+            cursor(const Block &block_, uint32_t txNum) : block(&block_), chain(&block->access->getChain()), currentTxIndex(txNum) {
+                if (currentTxIndex < chain->txCount()) {
+                    currentTxPos = reinterpret_cast<const char *>(chain->getTx(currentTxIndex));
+                    sequenceNumbers = chain->getSequenceNumbers(currentTxIndex);
                 } else {
                     currentTxPos = nullptr;
+                    sequenceNumbers = nullptr;
                 }
             }
             
             Transaction read() const {
                 auto rawTx = reinterpret_cast<const RawTransaction *>(currentTxPos);
-                return {rawTx, currentTxIndex, block->height(), *block->access};
+                return {rawTx, chain->getTxVersion(currentTxIndex), sequenceNumbers, currentTxIndex, block->height(), *block->access};
             }
             
             bool equal(cursor const &that) const {
@@ -64,6 +68,7 @@ namespace blocksci {
                 currentTxPos += sizeof(RawTransaction) +
                 static_cast<size_t>(tx->inputCount) * sizeof(Inout) +
                 static_cast<size_t>(tx->outputCount) * sizeof(Inout);
+                sequenceNumbers += tx->inputCount;
                 currentTxIndex++;
             }
             
@@ -77,15 +82,18 @@ namespace blocksci {
             
             void prev() {
                 currentTxIndex--;
-                currentTxPos = reinterpret_cast<const char *>(block->access->getChain().getTx(currentTxIndex));
+                currentTxPos = reinterpret_cast<const char *>(chain->getTx(currentTxIndex));
+                sequenceNumbers = chain->getSequenceNumbers(currentTxIndex);
             }
             
             void advance(int amount) {
                 currentTxIndex += static_cast<uint32_t>(amount);
-                if (currentTxIndex < block->access->getChain().txCount()) {
-                    currentTxPos = reinterpret_cast<const char *>(block->access->getChain().getTx(currentTxIndex));
+                if (currentTxIndex < chain->txCount()) {
+                    currentTxPos = reinterpret_cast<const char *>(chain->getTx(currentTxIndex));
+                    sequenceNumbers = chain->getSequenceNumbers(currentTxIndex);
                 } else {
                     currentTxPos = nullptr;
+                    sequenceNumbers = nullptr;
                 }
             }
         };
@@ -132,7 +140,7 @@ namespace blocksci {
         }
         
         uint32_t endTxIndex() const {
-            return rawBlock->firstTxIndex + rawBlock->numTxes;
+            return rawBlock->firstTxIndex + rawBlock->txCount;
         }
         
         BlockHeight height() const {
@@ -197,7 +205,7 @@ namespace blocksci {
         
         std::string toString() const {
             std::stringstream ss;
-            ss << "Block(numTxes=" << rawBlock->numTxes <<", height=" << blockNum <<", header_hash=" << rawBlock->hash.GetHex() << ", version=" << rawBlock->version <<", timestamp=" << rawBlock->timestamp << ", bits=" << rawBlock->bits << ", nonce=" << rawBlock->nonce << ")";
+            ss << "Block(tx_count=" << rawBlock->txCount <<", height=" << blockNum <<", header_hash=" << rawBlock->hash.GetHex() << ", version=" << rawBlock->version <<", timestamp=" << rawBlock->timestamp << ", bits=" << rawBlock->bits << ", nonce=" << rawBlock->nonce << ")";
             return ss.str();
         }
         
