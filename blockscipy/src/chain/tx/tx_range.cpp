@@ -13,5 +13,5 @@ namespace py = pybind11;
 using namespace blocksci;
 
 void addTxRangeMethods(RangeClasses<Transaction> &classes) {
-    addRangeMethods(classes);
+    addAllRangeMethods(classes);
 }

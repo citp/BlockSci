@@ -9,6 +9,7 @@
 #define self_py_h
 
 #include "function_traits.hpp"
+#include "func_converter.hpp"
 #include "range_conversion.hpp"
 #include "method_types.hpp"
 
@@ -53,23 +54,6 @@ struct SelfApplyTypeConverterImpl<result_type, SelfApplyTag::Range> {
 template <typename result_type>
 using self_apply_converter_t = SelfApplyTypeConverterImpl<result_type, getSelfApplyTag<result_type>()>;
 
-template <typename T, class Traits, typename F, typename S>
-struct ApplyMethodToSelf;
-
-template <typename T, class Traits, typename F, std::size_t ... Is>
-struct ApplyMethodToSelf<T, Traits, F, std::index_sequence<Is...>> {
-    using converter_type = self_apply_converter_t<typename Traits::result_type>;
-    using return_type = typename converter_type::return_type;
-
-    F func;
-    converter_type converter{};
-
-    ApplyMethodToSelf(F func_) : func(std::move(func_)) {}
-    return_type operator()(T &t, const std::tuple_element_t<Is + 1, typename Traits::arg_tuple> &... args) const {
-        return converter(std::invoke(func, t, args...));
-    }
-};
-
 template <typename Class>
 struct ApplyMethodsToSelfImpl {
     using T = typename Class::type;
@@ -78,31 +62,74 @@ struct ApplyMethodsToSelfImpl {
 
     ApplyMethodsToSelfImpl(Class &cl_) : cl(cl_) {}
 
-    template <typename F, typename... Args>
-    void operator()(property_tag_type, const std::string &propertyName, F func, const std::string &description, Args && ...args) {
-        using traits = function_traits<F>;
-        using arg_sequence = std::make_index_sequence<traits::arity - 1>;
-        using wrapped_func_type = ApplyMethodToSelf<T, traits, F, arg_sequence>;
+    template <typename R, typename... Args, typename... Extra>
+    void applyProperty(const std::string &propertyName, std::function<R(T &, Args...)> func, const std::string &description, Extra && ...extra) {
+        using converter_type = self_apply_converter_t<R>;
+        using return_type = typename converter_type::return_type;
         
-        PYBIND11_DESCR returnTypeDescr = pybind11::detail::make_caster<typename wrapped_func_type::return_type>::name();
-
+        PYBIND11_DESCR returnTypeDescr = pybind11::detail::make_caster<return_type>::name();
         std::stringstream ss;
         ss << description << "\n\n:type: :class:`" << getTypeName(returnTypeDescr.text(), returnTypeDescr.types()) << "`";
 
-        cl.def_property_readonly(strdup(propertyName.c_str()), wrapped_func_type{func}, std::forward<Args>(args)..., strdup(ss.str().c_str()));
+        cl.def_property_readonly(strdup(propertyName.c_str()), [func](T &self, const Args &...args) {
+            converter_type converter{};
+            return converter(std::invoke(func, self, args...));
+        }, std::forward<Extra>(extra)..., strdup(ss.str().c_str()));
     }
 
-    template <typename F, typename... Args>
-    void operator()(method_tag_type, const std::string &propertyName, F func, const std::string &description, Args && ...args) {
-        using traits = function_traits<F>;
-        using arg_sequence = std::make_index_sequence<traits::arity - 1>;
-        using wrapped_func_type = ApplyMethodToSelf<T, traits, F, arg_sequence>;
+    template <typename R, typename... Args, typename... Extra>
+    void applyProperty(const std::string &propertyName, std::function<R(const T &, Args...)> func, const std::string &description, Extra && ...extra) {
+        using converter_type = self_apply_converter_t<R>;
+        using return_type = typename converter_type::return_type;
+        
+        PYBIND11_DESCR returnTypeDescr = pybind11::detail::make_caster<return_type>::name();
+        std::stringstream ss;
+        ss << description << "\n\n:type: :class:`" << getTypeName(returnTypeDescr.text(), returnTypeDescr.types()) << "`";
 
-        PYBIND11_DESCR returnTypeDescr = pybind11::detail::make_caster<typename wrapped_func_type::return_type>::name();
+        cl.def_property_readonly(strdup(propertyName.c_str()), [func](const T &self, const Args &...args) {
+            converter_type converter{};
+            return converter(std::invoke(func, self, args...));
+        }, std::forward<Extra>(extra)..., strdup(ss.str().c_str()));
+    }
+
+    template <typename R, typename... Args, typename... Extra>
+    void applyMethod(const std::string &propertyName, std::function<R(T &, Args...)> func, const std::string &description, Extra && ...extra) {
+        using converter_type = self_apply_converter_t<R>;
+        using return_type = typename converter_type::return_type;
+
+        PYBIND11_DESCR returnTypeDescr = pybind11::detail::make_caster<return_type>::name();
         std::stringstream ss;
         ss << description << "\n\n:rtype: :class:`" << getTypeName(returnTypeDescr.text(), returnTypeDescr.types()) << "`";
 
-        cl.def(strdup(propertyName.c_str()), wrapped_func_type{func}, std::forward<Args>(args)..., strdup(ss.str().c_str()));
+        cl.def(strdup(propertyName.c_str()), [func](T &self, const Args &...args) {
+            converter_type converter{};
+            return converter(std::invoke(func, self, args...));
+        }, std::forward<Extra>(extra)..., strdup(ss.str().c_str()));
+    }
+
+    template <typename R, typename... Args, typename... Extra>
+    void applyMethod(const std::string &propertyName, std::function<R(const T &, Args...)> func, const std::string &description, Extra && ...extra) {
+        using converter_type = self_apply_converter_t<R>;
+        using return_type = typename converter_type::return_type;
+
+        PYBIND11_DESCR returnTypeDescr = pybind11::detail::make_caster<return_type>::name();
+        std::stringstream ss;
+        ss << description << "\n\n:rtype: :class:`" << getTypeName(returnTypeDescr.text(), returnTypeDescr.types()) << "`";
+
+        cl.def(strdup(propertyName.c_str()), [func](const T &self, const Args & ...args) {
+            converter_type converter{};
+            return converter(std::invoke(func, self, args...));
+        }, std::forward<Extra>(extra)..., strdup(ss.str().c_str()));
+    }
+
+    template <typename F, typename... Extra>
+    void operator()(method_tag_type, const std::string &propertyName, F func, const std::string &description, Extra && ...extra) {
+        applyMethod(propertyName, func_adaptor<T>(func), description, extra...);
+    }
+
+    template <typename F, typename... Extra>
+    void operator()(property_tag_type, const std::string &propertyName, F func, const std::string &description, Extra && ...extra) {
+        applyProperty(propertyName, func_adaptor<T>(func), description, extra...);
     }
 };
 

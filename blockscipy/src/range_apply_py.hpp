@@ -8,11 +8,13 @@
 #ifndef range_apply_py_h
 #define range_apply_py_h
 
-#include "function_traits.hpp"
+#include "func_converter.hpp"
 #include "method_types.hpp"
 #include "method_tags.hpp"
 #include "range_conversion.hpp"
 #include "blocksci_range.hpp"
+
+#include <range/v3/view/transform.hpp>
 
 template <typename T>
 struct remove_optional { using type = T; };
@@ -23,126 +25,102 @@ struct remove_optional<ranges::optional<T>> { using type = T; };
 template <typename T>
 using remove_optional_t = typename remove_optional<T>::type;
 
-enum class WrappedRangeTypeTag {
-    Normal, Optional
+// If type is already optional, do nothing. Otherwise make it optional
+template <typename T>
+struct make_optional { using type = ranges::optional<T>; };
+
+template <typename T>
+struct make_optional<ranges::optional<T>> { using type = ranges::optional<T>; };
+
+template <typename T>
+using make_optional_t = typename make_optional<T>::type;
+
+template <typename T, typename R> 
+struct ApplyMethodsToRangeFuncBinder {
+    using Func = std::function<R(T &)>;
+    Func func;
+
+    ApplyMethodsToRangeFuncBinder(Func func_) : func(func_) {}
+
+    R operator()(T && item) const {
+        return func(item);
+    }
+
+    make_optional_t<R> operator()(ranges::optional<T> && item) const {
+        if (item) {
+            return func(*item);
+        } else {
+            return ranges::nullopt;
+        }
+    }
+};
+
+template <typename Range, typename R, typename... Args>
+struct ApplyMethodsToRangeFuncConverter {
+    using T = remove_optional_t<ranges::range_value_type_t<Range>>;
+    using Func = std::function<R(T &, Args...)>;
+    using return_type = decltype(convertRangeToPython(ranges::view::transform(std::declval<Range &>(), ApplyMethodsToRangeFuncBinder<T, R>{std::bind(std::declval<Func>(), std::placeholders::_1, std::declval<const Args &>()...)})));
+    Func func;
+
+    ApplyMethodsToRangeFuncConverter(Func func_ ) : func(func_) {}
+
+    return_type operator()(Range &t, const Args & ...args) const {
+        return convertRangeToPython(ranges::view::transform(t, ApplyMethodsToRangeFuncBinder<T, R>{std::bind(func, std::placeholders::_1, args...)}));
+    }
 };
 
 template <typename T>
-constexpr WrappedRangeTypeTag getWrappedRangeTypeTag() {
-    if constexpr (is_optional<ranges::range_value_type_t<T>>::value) {
-        return WrappedRangeTypeTag::Optional;
-    } else {
-        return WrappedRangeTypeTag::Normal;
-    }
+std::string methodDescription(const std::string description) {
+    PYBIND11_DESCR returnTypeDescr = pybind11::detail::make_caster<T>::name();
+    std::stringstream ss;
+    ss << "For each item: " << description << "\n\n:rtype: :class:`" << getTypeName(returnTypeDescr.text(), returnTypeDescr.types()) << "`";
+    return ss.str();
 }
 
-template <ranges::category range_cat, typename result_type, WrappedRangeTypeTag tag>
-struct WrappedRangeMethodTagImpl;
-
-template <ranges::category range_cat, typename result_type>
-struct WrappedRangeMethodTagImpl<range_cat, result_type, WrappedRangeTypeTag::Normal> {
-    using type = decltype(convertRangeToPython(std::declval<ranges::any_view<result_type, range_cat>>()));
-};
-
-template <ranges::category range_cat, typename result_type>
-struct WrappedRangeMethodTagImpl<range_cat, result_type, WrappedRangeTypeTag::Optional> {
-    using type = decltype(convertRangeToPython(std::declval<ranges::any_view<make_optional_t<result_type>, range_cat>>()));
-};
-
-template <typename Range, typename result_type>
-using wrapped_range_method_t = typename WrappedRangeMethodTagImpl<getBlockSciCategory(ranges::get_categories<Range>()), result_type, getWrappedRangeTypeTag<Range>()>::type;
-
-template <typename Range, class Traits, typename F, typename S>
-struct ApplyMethodToRange;
-
-template <typename Range, class Traits, typename F, std::size_t ... Is>
-struct ApplyMethodToRange<Range, Traits, F, std::index_sequence<Is...>> {
-    using result_type = typename Traits::result_type;
-    using return_type = wrapped_range_method_t<Range, result_type>;
-    F func;
-
-    ApplyMethodToRange(F func_) : func(std::move(func_)) {}
-
-    wrapped_range_method_t<Range, result_type> operator()(Range &t, const std::tuple_element_t<Is + 1, typename Traits::arg_tuple> &... args) const {
-        if constexpr (is_optional<ranges::range_value_type_t<Range>>{}) {
-            using optional_ret = make_optional_t<result_type>;
-            return convertRangeToPython(t | ranges::view::transform([&](auto && item) -> optional_ret {
-                if (item) {
-                    return std::invoke(func, *item, args...);
-                } else {
-                    return ranges::nullopt;
-                }
-            }));
-        } else {
-            return convertRangeToPython(t | ranges::view::transform([&](auto && item) {
-                return std::invoke(func, item, args...);
-            }));
-        }
-    }
-};
-
-template <typename Range, typename result_type>
-struct ApplyPropertyToRange {
-    using value_type = ranges::range_value_type_t<Range>;
-    using return_type = wrapped_range_method_t<Range, result_type>;
-    using FuncType = std::function<result_type(remove_optional_t<value_type> &)>;
-
-    FuncType func;
-
-    ApplyPropertyToRange(FuncType func_) : func(std::move(func_)) {}
-
-    wrapped_range_method_t<Range, result_type> operator()(Range &t) const {
-        if constexpr (is_optional<value_type>{}) {
-            using optional_ret = make_optional_t<result_type>;
-            return convertRangeToPython(t | ranges::view::transform([&](auto && item) -> optional_ret {
-                if (item) {
-                    return std::invoke(func, *item);
-                } else {
-                    return ranges::nullopt;
-                }
-            }));
-        } else {
-            return convertRangeToPython(t | ranges::view::transform([&](auto && item) {
-                return std::invoke(func, item);
-            }));
-        }
-    }
-};
+template <typename T>
+std::string propertyDescription(const std::string description) {
+    PYBIND11_DESCR returnTypeDescr = pybind11::detail::make_caster<T>::name();
+    std::stringstream ss;
+    ss << "For each item: " << description << "\n\n:type: :class:`" << getTypeName(returnTypeDescr.text(), returnTypeDescr.types()) << "`";
+    return ss.str();
+}
 
 template <typename Class>
 struct ApplyMethodsToRangeImpl {
     using Range = typename Class::type;
-    using value_type = ranges::range_value_type_t<Range>;
-
+    using value_type = remove_optional_t<ranges::range_value_type_t<Range>>;
     Class &cl;
 
     ApplyMethodsToRangeImpl(Class &cl_) : cl(cl_) {}
 
-    template <typename F>
-    void operator()(property_tag_type, const std::string &propertyName, F func, const std::string &description) {
-        using traits = function_traits<F>;
-        using result_type = typename traits::result_type;
-        using wrapped_func_type = ApplyPropertyToRange<Range, result_type>;
-        
-        PYBIND11_DESCR returnTypeDescr = pybind11::detail::make_caster<typename wrapped_func_type::return_type>::name();
-
-        std::stringstream ss;
-        ss << "For each item: " << description << "\n\n:type: :class:`" << getTypeName(returnTypeDescr.text(), returnTypeDescr.types()) << "`";
-
-        cl.def_property_readonly(strdup(propertyName.c_str()), wrapped_func_type{func}, strdup(ss.str().c_str()));
+    void applyPropertyImpl(const std::string &propertyName, const pybind11::cpp_function &func, const std::string &fullDescription) {
+        cl.def_property_readonly(strdup(propertyName.c_str()), func, strdup(fullDescription.c_str()));
     }
 
-    template <typename F, typename... Args>
-    void operator()(method_tag_type, const std::string &propertyName, F func, const std::string &description, Args && ...args) {
-        using traits = function_traits<F>;
-        using arg_sequence = std::make_index_sequence<traits::arity - 1>;
-        using wrapped_func_type = ApplyMethodToRange<Range, traits, F, arg_sequence>;
+    template <typename result_type>
+    void applyProperty(const std::string &propertyName, std::function<result_type(value_type &)> func, const std::string &description) {
+        using converted_t = ApplyMethodsToRangeFuncConverter<Range, result_type>;
+        converted_t convertedFunc{func};
+        std::string fullDescription = propertyDescription<typename converted_t::return_type>(description);
+        applyPropertyImpl(propertyName, pybind11::cpp_function(std::move(convertedFunc), pybind11::return_value_policy::reference_internal), fullDescription);
+    }
 
-        PYBIND11_DESCR returnTypeDescr = pybind11::detail::make_caster<typename wrapped_func_type::return_type>::name();
-        std::stringstream ss;
-        ss << "For each item: " << description << "\n\n:rtype: :class:`" << getTypeName(returnTypeDescr.text(), returnTypeDescr.types()) << "`";
+    template <typename result_type, typename... Args, typename... Extra>
+    void applyMethod(const std::string &propertyName, std::function<result_type(value_type &, Args...)> func, const std::string &description, Extra && ...extra) {
+        using converted_t = ApplyMethodsToRangeFuncConverter<Range, result_type, Args...>;
+        converted_t convertedFunc{func};
+        std::string fullDescription = methodDescription<typename converted_t::return_type>(description);
+        cl.def(strdup(propertyName.c_str()), convertedFunc, std::forward<Extra>(extra)..., strdup(fullDescription.c_str()));
+    }
 
-        cl.def(strdup(propertyName.c_str()), wrapped_func_type{func}, std::forward<Args>(args)..., strdup(ss.str().c_str()));
+    template <typename F, typename... Extra>
+    void operator()(method_tag_type, const std::string &propertyName, F func, const std::string &description, Extra && ...extra) {
+        applyMethod(propertyName, func_adaptor<value_type>(func), description, extra...);
+    }
+
+    template <typename F, typename... Extra>
+    void operator()(property_tag_type, const std::string &propertyName, F func, const std::string &description, Extra && ...extra) {
+        applyProperty(propertyName, func_adaptor<value_type>(func), description, extra...);
     }
 };
 
@@ -152,7 +130,7 @@ void applyMethodsToRange(Class &cl, Applier applier) {
 }
 
 template <typename T, typename Applier>
-void applyMethodsToRange(RangeClasses<T> &cls, Applier applier) {
+void applyAllMethodsToRange(T &cls, Applier applier) {
     applyMethodsToRange(cls.iterator, applier);
     applyMethodsToRange(cls.range, applier);
     applyMethodsToRange(cls.optionalIterator, applier);

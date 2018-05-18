@@ -50,10 +50,6 @@ auto addRangeMethods(Class &cl) {
     .def_property_readonly("all", [](Range & range) { 
         return pythonAllType(range);
     }, "Returns a list of all of the objects in the range")
-
-    // .def("where", [](Range &range, std::function<bool(const value_type &)> query) {
-    //     return convertRangeToPython(range | ranges::view::filter(query));
-    // }, "Return an iterator over all the items in the sequence matching the given query")
     ;
 
     if constexpr (ranges::ForwardRange<Range>()) {
@@ -80,19 +76,11 @@ auto addRangeMethods(Class &cl) {
             size_t start, stop, step, slicelength;
             const auto &constRange = range;
             auto chainSize = ranges::size(constRange);
-            // static_assert(std::is_integral<decltype(chainSize)>::value, "Size is not integral");
-            // static_assert(!ranges::disable_sized_range<Range>::value, "Size is disabled");
-            // static_assert(ranges::SizedRange<Range>(), "range is not sized");
-            // static_assert(ranges::SizedRange<const Range>(), "const range is not sized");
             if (!slice.compute(chainSize, &start, &stop, &step, &slicelength))
                 throw pybind11::error_already_set();
             
-            auto subset =  ranges::view::slice(range,
-                                               static_cast<ranges::range_difference_type_t<Range>>(start),
-                                               static_cast<ranges::range_difference_type_t<Range>>(stop));
-            // static_assert(ranges::SizedRange<const decltype(subset)>(), "slice is not sized");
+            auto subset =  range[{static_cast<ranges::range_difference_type_t<Range>>(start), static_cast<ranges::range_difference_type_t<Range>>(stop)}];
             auto strided = subset | ranges::view::stride(step);
-            // static_assert(ranges::SizedRange<const decltype(strided)>(), "strided is not sized");
             return convertRangeToPython(strided);
         }, pybind11::arg("slice"))
         ;
@@ -131,7 +119,7 @@ auto addRangeMethods(Class &cl) {
 }
 
 template <typename T>
-void addRangeMethods(RangeClasses<T> &cls) {
+void addAllRangeMethods(T &cls) {
     addRangeMethods(cls.iterator);
     addRangeMethods(cls.range);
     addRangeMethods(cls.optionalIterator);

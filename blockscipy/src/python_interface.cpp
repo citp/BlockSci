@@ -80,7 +80,7 @@ PYBIND11_MODULE(_blocksci, m) {
     py::class_<TaggedCluster> taggedClusterCl(clusterMod, "TaggedCluster");
     py::class_<TaggedAddress> taggedAddressCl(clusterMod, "TaggedAddress");
 
-    RangeClasses<Block> blockRangeCls(m);
+    BlockRangeClasses blockRangeCls(m);
     RangeClasses<Transaction> txRangeCls(m);
     RangeClasses<Input> inputRangeCls(m);
     RangeClasses<Output> outputRangeCls(m);

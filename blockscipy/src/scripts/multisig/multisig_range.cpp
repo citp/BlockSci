@@ -10,8 +10,11 @@
 #include "caster_py.hpp"
 #include "ranges_py.hpp"
 
+#include <blocksci/chain/input_range.hpp>
+#include <blocksci/chain/output_range.hpp>
+
 using namespace blocksci;
 
 void addMultisigRangeMethods(RangeClasses<script::Multisig> &classes) {
-	addRangeMethods(classes);
+	addAllRangeMethods(classes);
 }

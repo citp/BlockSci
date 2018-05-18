@@ -9,6 +9,7 @@
 #include "caster_py.hpp"
 #include "self_apply_py.hpp"
 
+#include <blocksci/chain/access.hpp>
 #include <blocksci/chain/block.hpp>
 
 #include <pybind11/operators.h>
@@ -22,7 +23,9 @@ void init_input(py::class_<Input> &cl) {
     .def("__repr__", &Input::toString)
     .def(py::self == py::self)
     .def(hash(py::self))
-    .def_property_readonly("_access", &Input::getAccess, py::return_value_policy::reference)
+    .def_property_readonly("_access", [](const Input &input) {
+        return Access{&input.getAccess()};
+    })
     ;
     
     applyMethodsToSelf(cl, AddInputMethods{});

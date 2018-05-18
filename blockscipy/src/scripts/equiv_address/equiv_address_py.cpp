@@ -14,6 +14,8 @@
 
 #include <pybind11/operators.h>
 
+#include <range/v3/view/transform.hpp>
+
 namespace py = pybind11;
 using namespace blocksci;
 

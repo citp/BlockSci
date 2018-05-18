@@ -12,10 +12,13 @@
 #include "caster_py.hpp"
 #include "range_apply_py.hpp"
 
+#include <blocksci/cluster/cluster.hpp>
+#include <blocksci/chain/transaction.hpp>
+
 using namespace blocksci;
 namespace py = pybind11;
 
 void applyMethodsToNulldataRange(RangeClasses<script::OpReturn> &classes) {
-	applyMethodsToRange(classes, AddAddressMethods<ScriptBase>{});
-    applyMethodsToRange(classes, AddOpReturnMethods{});
+	applyAllMethodsToRange(classes, AddAddressMethods<script::OpReturn>{});
+    applyAllMethodsToRange(classes, AddOpReturnMethods{});
 }

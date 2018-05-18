@@ -10,9 +10,12 @@
 #include "range_apply_py.hpp"
 #include "caster_py.hpp"
 
+#include <blocksci/chain/output.hpp>
+#include <blocksci/chain/transaction.hpp>
+
 namespace py = pybind11;
 using namespace blocksci;
 
 void applyMethodsToTaggedClusterRange(RangeClasses<TaggedCluster> &classes) {
-    applyMethodsToRange(classes, AddTaggedClusterMethods{});
+    applyAllMethodsToRange(classes, AddTaggedClusterMethods{});
 }

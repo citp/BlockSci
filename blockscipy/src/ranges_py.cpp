@@ -8,6 +8,9 @@
 #include "ranges_py.hpp"
 #include "caster_py.hpp"
 
+#include <blocksci/chain/transaction.hpp>
+#include <blocksci/cluster/cluster.hpp>
+
 #include <pybind11/chrono.h>
 
 namespace py = pybind11;

@@ -10,10 +10,11 @@
 #include "caster_py.hpp"
 
 #include <blocksci/chain/block.hpp>
+#include <blocksci/cluster/cluster.hpp>
 
 namespace py = pybind11;
 using namespace blocksci;
 
-void addBlockRangeMethods(RangeClasses<Block> &classes) {
-    addRangeMethods(classes);
+void addBlockRangeMethods(BlockRangeClasses &classes) {
+    addAllRangeMethods(classes);
 }

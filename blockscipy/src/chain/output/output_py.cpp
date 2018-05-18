@@ -11,6 +11,7 @@
 
 #include <pybind11/operators.h>
 
+#include <blocksci/chain/access.hpp>
 #include <blocksci/chain/block.hpp>
 
 namespace py = pybind11;
@@ -22,7 +23,9 @@ void init_output(py::class_<Output> &cl) {
     .def("__repr__", &Output::toString)
     .def(py::self == py::self)
     .def(hash(py::self))
-    .def_property_readonly("_access", &Output::getAccess, py::return_value_policy::reference)
+    .def_property_readonly("_access", [](const Output &output) {
+        return Access{&output.getAccess()};
+    })
     ;
     
     applyMethodsToSelf(cl, AddOutputMethods{});

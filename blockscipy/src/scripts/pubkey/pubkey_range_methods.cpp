@@ -12,10 +12,13 @@
 #include "caster_py.hpp"
 #include "range_apply_py.hpp"
 
+#include <blocksci/cluster/cluster.hpp>
+#include <blocksci/chain/transaction.hpp>
+
 using namespace blocksci;
 namespace py = pybind11;
 
 void applyMethodsToPubkeyRange(RangeClasses<script::Pubkey> &classes) {
-	applyMethodsToRange(classes, AddAddressMethods<ScriptBase>{});
-    applyMethodsToRange(classes, AddPubkeyBaseMethods<script::Pubkey>{});
+	applyAllMethodsToRange(classes, AddAddressMethods<script::Pubkey>{});
+    applyAllMethodsToRange(classes, AddPubkeyBaseMethods<script::Pubkey>{});
 }

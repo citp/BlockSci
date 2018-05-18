@@ -16,5 +16,5 @@ namespace py = pybind11;
 using namespace blocksci;
 
 void applyMethodsToClusterRange(RangeClasses<Cluster> &classes) {
-    applyMethodsToRange(classes, AddClusterMethods{});
+    applyAllMethodsToRange(classes, AddClusterMethods{});
 }

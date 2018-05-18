@@ -111,6 +111,13 @@ struct PythonTypeName<blocksci::Block> {
 };
 
 template <>
+struct PythonTypeName<blocksci::BlockRange> {
+	static std::string name() {
+		return "BlockRange";
+	}
+};
+
+template <>
 struct PythonTypeName<blocksci::Transaction> {
 	static std::string name() {
 		return "Tx";

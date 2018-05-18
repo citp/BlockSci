@@ -16,5 +16,5 @@ namespace py = pybind11;
 using namespace blocksci;
 
 void applyMethodsToTaggedAddressRange(RangeClasses<TaggedAddress> &classes) {
-    applyMethodsToRange(classes, AddTaggedAddressMethods{});
+    applyAllMethodsToRange(classes, AddTaggedAddressMethods{});
 }

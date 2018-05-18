@@ -12,10 +12,12 @@
 #include "caster_py.hpp"
 #include "range_apply_py.hpp"
 
+#include <blocksci/cluster/cluster.hpp>
+
 using namespace blocksci;
 namespace py = pybind11;
 
 void applyMethodsToMultisigRange(RangeClasses<script::Multisig> &classes) {
-	applyMethodsToRange(classes, AddAddressMethods<ScriptBase>{});
-    applyMethodsToRange(classes, AddMultisigMethods{});
+	applyAllMethodsToRange(classes, AddAddressMethods<script::Multisig>{});
+    applyAllMethodsToRange(classes, AddMultisigMethods{});
 }

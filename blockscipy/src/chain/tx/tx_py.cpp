@@ -10,6 +10,7 @@
 #include "caster_py.hpp"
 #include "self_apply_py.hpp"
 
+#include <blocksci/chain/access.hpp>
 #include <blocksci/chain/blockchain.hpp>
 
 #include <pybind11/operators.h>
@@ -26,7 +27,9 @@ void init_tx(py::class_<Transaction> &cl) {
     .def("__repr__", &Transaction::toString)
     .def(py::self == py::self)
     .def(hash(py::self))
-    .def_property_readonly("_access", &Transaction::getAccess, py::return_value_policy::reference)
+    .def_property_readonly("_access", [](const Transaction &tx) {
+        return Access{&tx.getAccess()};
+    })
     .def(py::init([](uint32_t index, blocksci::Blockchain &chain) {
         return Transaction{index, chain.getAccess()};
     }), "This functions gets the transaction with given index.")

@@ -10,9 +10,9 @@
 #define blocksci_pubkey_py_h
 
 #include "method_tags.hpp"
-#include "func_converter.hpp"
 
 #include <blocksci/scripts/multisig_script.hpp>
+#include <blocksci/scripts/bitcoin_pubkey.hpp>
 
 #include <pybind11/pybind11.h>
 
@@ -23,17 +23,17 @@ struct AddPubkeyBaseMethods {
     template <typename FuncApplication>
     void operator()(FuncApplication func) {
         using namespace blocksci;
-        func(method_tag, "find_multisigs", toFunc(&T::getIncludingMultisigs), "List of multisigs which include this public key");
-        func(property_tag, "pubkey", toFunc([](const T &script) -> ranges::optional<pybind11::bytes> {
+        func(method_tag, "find_multisigs", &T::getIncludingMultisigs, "List of multisigs which include this public key");
+        func(property_tag, "pubkey", +[](const T &script) -> ranges::optional<pybind11::bytes> {
             auto pubkey = script.getPubkey();
             if (pubkey) {
                 return pybind11::bytes(reinterpret_cast<const char *>(pubkey->begin()), pubkey->size());
             } else {
                 return ranges::nullopt;
             }
-        }), "Public key for this address");
-        func(property_tag, "pubkeyhash", toFunc(&T::getPubkeyHash), "160 bit address hash");
-        func(property_tag, "address_string", toFunc(&T::addressString), "Bitcoin address string");
+        }, "Public key for this address");
+        func(property_tag, "pubkeyhash", &T::getPubkeyHash, "160 bit address hash");
+        func(property_tag, "address_string", &T::addressString, "Bitcoin address string");
     }
 };
 

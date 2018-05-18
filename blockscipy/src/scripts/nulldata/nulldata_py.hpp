@@ -18,7 +18,7 @@ struct AddOpReturnMethods {
     template <typename FuncApplication>
     void operator()(FuncApplication func) {
     	using namespace blocksci;
-	    func(property_tag, "data", [](const script::OpReturn &address) {
+	    func(property_tag, "data", +[](const script::OpReturn &address) {
 	        return pybind11::bytes(address.getData());
 	    }, "Data contained inside this address");
     }

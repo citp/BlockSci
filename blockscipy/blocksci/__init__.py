@@ -50,12 +50,10 @@ def mapreduce_block_ranges(chain, mapFunc, reduceFunc, init=missing_param,  star
         return mapFunc(chain[start:end])
 
     raw_segments = chain._segment_indexes(start, end, cpu_count)
-    config = chain._config
-
-    segments = [(raw_segment, config) for raw_segment in raw_segments]
+    segments = [(raw_segment, chain.data_directory, len(chain)) for raw_segment in raw_segments]
 
     def real_map_func(input):
-        local_chain = Blockchain(input[1])
+        local_chain = Blockchain(input[1], input[2])
         file = io.BytesIO()
         pickler = Pickler(file)
         mapped = mapFunc(local_chain[input[0][0]:input[0][1]])

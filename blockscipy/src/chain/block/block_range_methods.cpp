@@ -15,6 +15,6 @@
 namespace py = pybind11;
 using namespace blocksci;
 
-void applyMethodsToBlockRange(RangeClasses<Block> &classes) {
-    applyMethodsToRange(classes, AddBlockMethods{});
+void applyMethodsToBlockRange(BlockRangeClasses &classes) {
+    applyAllMethodsToRange(classes, AddBlockMethods{});
 }

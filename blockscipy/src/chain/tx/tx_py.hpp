@@ -37,21 +37,21 @@ struct AddTransactionMethods {
         func(property_tag, "virtual_size", &Transaction::virtualSize, "The weight of the transaction divided by 4");
         func(property_tag, "weight", &Transaction::weight, "Three times the base size plus the total size");
         func(property_tag, "locktime", &Transaction::locktime, "The locktime of this transasction");
-        func(property_tag, "block_height", [](const Transaction &tx) { return tx.blockHeight; }, "The height of the block that this transaction was in");
-        func(property_tag, "block_time", [](const Transaction &tx) -> std::chrono::system_clock::time_point {
+        func(property_tag, "block_height", +[](const Transaction &tx) { return tx.blockHeight; }, "The height of the block that this transaction was in");
+        func(property_tag, "block_time", +[](const Transaction &tx) -> std::chrono::system_clock::time_point {
             return tx.block().getTime();
         }, "The time that the block containing this transaction arrived");
         func(property_tag, "observed_in_mempool", &Transaction::observedInMempool, "Returns whether this transaction was seen in the mempool by the recorder");
         func(property_tag, "time_seen", &Transaction::getTimeSeen, "If recorded by the mempool recorder, the time that this transaction was first seen by your node");
         func(property_tag, "block", &Transaction::block, "The block that this transaction was in");
-        func(property_tag, "index", [](const Transaction &tx) { return tx.txNum; }, "The internal index of this transaction");
+        func(property_tag, "index", +[](const Transaction &tx) { return tx.txNum; }, "The internal index of this transaction");
         func(property_tag, "hash", &Transaction::getHash, "The 256-bit hash of this transaction");
         func(property_tag, "input_value", totalInputValue<Transaction &>, "The sum of the value of all of the inputs");
         func(property_tag, "output_value", totalOutputValue<Transaction &>, "The sum of the value of all of the outputs");
-        func(property_tag, "fee", [](const Transaction &tx) -> int64_t {
+        func(property_tag, "fee", +[](const Transaction &tx) -> int64_t {
             return fee(tx);
         }, "The fee paid by this transaction");
-        func(method_tag, "fee_per_byte", [](const Transaction &tx, const std::string &sizeMeasure) -> int64_t {
+        func(method_tag, "fee_per_byte", +[](const Transaction &tx, const std::string &sizeMeasure) -> int64_t {
             auto txFee = fee(tx);
             if (sizeMeasure == "total") {
                 return txFee / tx.totalSize();
@@ -65,12 +65,12 @@ struct AddTransactionMethods {
                 throw std::invalid_argument{"Size measure must be one of total, base, weight, or virtual"};
             }
         }, "The ratio of fee paid to size of this transaction. By default this uses veritual size, but passing total, base, weight, or virtual let's you choose what measure of size you want", pybind11::arg("size_measure") = "virtual");
-        func(property_tag, "op_return", [](const Transaction &tx) -> ranges::optional<Output> {
+        func(property_tag, "op_return", +[](const Transaction &tx) -> ranges::optional<Output> {
             return getOpReturn(tx);
         }, "If this transaction included a null data address, return its output. Otherwise return None");
         func(method_tag, "includes_output_of_type", includesOutputOfType, "Check whether the given transaction includes an output of the given address type", pybind11::arg("address_type"));
         func(property_tag, "is_coinbase", &Transaction::isCoinbase, "Return's true if this transaction is a Coinbase transaction");
-        func(property_tag, "change_output", [](const Transaction &tx) -> ranges::optional<Output> {
+        func(property_tag, "change_output", +[](const Transaction &tx) -> ranges::optional<Output> {
             return heuristics::uniqueChangeByLegacyHeuristic(tx);
         }, "If the change address in this transaction can be determined via the fresh address criteria, return it. Otherwise return None.");
     }

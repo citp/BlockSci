@@ -10,9 +10,12 @@
 #include "ranges_py.hpp"
 #include "caster_py.hpp"
 
+#include <blocksci/chain/input_range.hpp>
+#include <blocksci/chain/output_range.hpp>
+
 namespace py = pybind11;
 using namespace blocksci;
 
 void addAddressRangeMethods(RangeClasses<AnyScript> &classes) {
-    addRangeMethods(classes);
+    addAllRangeMethods(classes);
 }

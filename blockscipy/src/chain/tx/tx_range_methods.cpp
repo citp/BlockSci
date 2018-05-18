@@ -11,10 +11,11 @@
 #include "caster_py.hpp"
 
 #include <blocksci/chain/block.hpp>
+#include <blocksci/cluster/cluster.hpp>
 
 namespace py = pybind11;
 using namespace blocksci;
 
 void applyMethodsToTxRange(RangeClasses<Transaction> &classes) {
-    applyMethodsToRange(classes, AddTransactionMethods{});
+    applyAllMethodsToRange(classes, AddTransactionMethods{});
 }

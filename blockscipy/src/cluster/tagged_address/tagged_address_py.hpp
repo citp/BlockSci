@@ -10,7 +10,6 @@
 #define tagged_address_py_hpp
 
 #include "method_tags.hpp"
-#include "func_converter.hpp"
 
 #include <blocksci/cluster/cluster.hpp>
 
@@ -22,8 +21,8 @@ struct AddTaggedAddressMethods {
     template <typename FuncApplication>
     void operator()(FuncApplication func) {
         using namespace blocksci;
-        func(property_tag, "address", toFunc([](const TaggedAddress &t) { return t.address; }), "Return the address object which has been tagged");
-        func(property_tag, "tag", toFunc([](const TaggedAddress &t) { return t.tag; }), "Return the tag associated with the contained address");
+        func(property_tag, "address", +[](const TaggedAddress &t) { return t.address; }, "Return the address object which has been tagged");
+        func(property_tag, "tag", +[](const TaggedAddress &t) { return t.tag; }, "Return the tag associated with the contained address");
     }
 };
 

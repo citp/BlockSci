@@ -10,10 +10,12 @@
 #include "caster_py.hpp"
 
 #include <blocksci/chain/input.hpp>
+#include <blocksci/chain/input_range.hpp>
+#include <blocksci/chain/output_range.hpp>
 
 namespace py = pybind11;
 using namespace blocksci;
 
 void addInputRangeMethods(RangeClasses<Input> &classes) {
-    addRangeMethods(classes);
+    addAllRangeMethods(classes);
 }

@@ -12,10 +12,13 @@
 #include "caster_py.hpp"
 #include "range_apply_py.hpp"
 
+#include <blocksci/cluster/cluster.hpp>
+#include <blocksci/chain/transaction.hpp>
+
 using namespace blocksci;
 namespace py = pybind11;
 
 void applyMethodsToScriptHashRange(RangeClasses<script::ScriptHash> &classes) {
-	applyMethodsToRange(classes, AddAddressMethods<ScriptBase>{});
-    applyMethodsToRange(classes, AddScriptHashBaseMethods<script::ScriptHash>{});
+	applyAllMethodsToRange(classes, AddAddressMethods<script::ScriptHash>{});
+    applyAllMethodsToRange(classes, AddScriptHashBaseMethods<script::ScriptHash>{});
 }

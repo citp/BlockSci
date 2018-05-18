@@ -10,9 +10,13 @@
 #include "ranges_py.hpp"
 #include "caster_py.hpp"
 
+#include <blocksci/chain/output.hpp>
+#include <blocksci/chain/transaction.hpp>
+#include <blocksci/cluster/cluster.hpp>
+
 namespace py = pybind11;
 using namespace blocksci;
 
 void addEquivAddressRangeMethods(RangeClasses<EquivAddress> &classes) {
-    addRangeMethods(classes);
+    addAllRangeMethods(classes);
 }

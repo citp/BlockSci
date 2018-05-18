@@ -16,6 +16,8 @@
 #include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/block.hpp>
 
+#include <range/v3/range_for.hpp>
+
 #include <pybind11/iostream.h>
 
 namespace py = pybind11;

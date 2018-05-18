@@ -35,11 +35,11 @@ void init_heuristics(py::module &m) {
     ;
 
     s
-    .def("coinjoin_txes", heuristics::getCoinjoinTransactions, py::arg("chain"), py::arg("start"), py::arg("end"), "Returns a list of all transactions in the blockchain that might be JoinMarket coinjoin transactions")
+    .def("coinjoin_txes", heuristics::getCoinjoinTransactions, py::arg("block_range"), "Returns a list of all transactions in the blockchain that might be JoinMarket coinjoin transactions")
     .def("possible_coinjoin_txes", heuristics::getPossibleCoinjoinTransactions, py::arg("chain"), py::arg("min_base_fee"), py::arg("percentage_fee"), py::arg("max_depth") = 0, "Returns a list of all transactions in the blockchain that might be coinjoin transactions")
-    .def("address_deanon_txes", heuristics::getDeanonTxes, py::arg("chain"), py::arg("start"), py::arg("end"), "Return a list of all the transactions in the blockchain for which is_address_deanon returns true")
-    .def("change_over_txes", heuristics::getChangeOverTxes, py::arg("chain"), py::arg("start"), py::arg("end"), "Return a list of transactions in the blockchain for which is_change_over returns true")
-    .def("keyset_change_txes", heuristics::getKeysetChangeTxes, py::arg("chain"), py::arg("start"), py::arg("end"), "Return a list of transaction in the blockchain for which is_keyset_change returns true")
+    .def("address_deanon_txes", heuristics::getDeanonTxes, py::arg("block_range"), "Return a list of all the transactions in the blockchain for which is_address_deanon returns true")
+    .def("change_over_txes", heuristics::getChangeOverTxes, py::arg("block_range"), "Return a list of transactions in the blockchain for which is_change_over returns true")
+    .def("keyset_change_txes", heuristics::getKeysetChangeTxes, py::arg("block_range"), "Return a list of transaction in the blockchain for which is_keyset_change returns true")
     ;
     
     s
