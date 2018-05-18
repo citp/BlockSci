@@ -12,12 +12,12 @@
 
 #include <blocksci/blocksci_export.h>
 #include <blocksci/chain/chain_fwd.hpp>
-#include <blocksci/typedefs.hpp>
 #include <blocksci/address/address.hpp>
+#include <blocksci/core/core_fwd.hpp>
+#include <blocksci/core/typedefs.hpp>
 
 #include <range/v3/view/any_view.hpp>
 
-#include <sstream>
 #include <unordered_set>
 
 namespace blocksci {

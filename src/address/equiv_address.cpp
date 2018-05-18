@@ -6,29 +6,41 @@
 //
 
 #include <blocksci/address/equiv_address.hpp>
-#include <blocksci/address/dedup_address.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/algorithms.hpp>
-#include <blocksci/index/address_index.hpp>
-#include <blocksci/util/data_access.hpp>
+
+#include <internal/address_info.hpp>
+#include <internal/dedup_address.hpp>
+#include <internal/dedup_address_info.hpp>
+#include <internal/address_index.hpp>
+#include <internal/data_access.hpp>
+
+#include <sstream>
 
 namespace blocksci {
     EquivAddress::EquivAddress(uint32_t scriptNum, EquivAddressType::Enum type, bool scriptEquivalent_, DataAccess &access_) : scriptEquivalent(scriptEquivalent_), access(access_) {
         for (auto equivType : equivAddressTypes(type)) {
-            Address address(scriptNum, equivType, access);
+            RawAddress address(scriptNum, equivType);
             if (scriptEquivalent) {
-                auto nested = access.getAddressIndex().getPossibleNestedEquivalent(address);
-                for (auto &nestedAddress : nested) {
-                    if (access.getAddressIndex().checkIfExists(nestedAddress)) {
-                        addresses.insert(nestedAddress);
-                    }
+                auto upAddressesRaw = access_.getAddressIndex().getPossibleNestedEquivalentUp(address);
+                RANGES_FOR(auto &rawAddress, upAddressesRaw) {
+                    addresses.emplace(rawAddress, access_);
                 }
+                auto downAddresses = getScriptNestedEquivalents(Address{address, access});
+                addresses.insert(downAddresses.begin(), downAddresses.end());
             } else {
-                if (access.getAddressIndex().checkIfExists(address)) {
-                    addresses.insert(address);
-                }
+                addresses.emplace(address, access_);
             }
             
+        }
+        
+        auto end = addresses.end();
+        for (auto it = addresses.begin(); it != end;) {
+            if (!access_.getAddressIndex().checkIfExists(*it)) {
+                it = addresses.erase(it);
+            } else {
+                ++it;
+            }
         }
     }
     
@@ -53,9 +65,8 @@ namespace blocksci {
     }
     
     ranges::any_view<OutputPointer> EquivAddress::getOutputPointers() {
-        auto &access_ = access;
         return addresses
-        | ranges::view::transform([&access_](const Address &address) { return access_.getAddressIndex().getOutputPointers(address); })
+        | ranges::view::transform([](const Address &address) { return address.getOutputPointers(); })
         | ranges::view::join
         ;
     }

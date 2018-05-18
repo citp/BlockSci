@@ -14,7 +14,7 @@ using blocksci::DedupAddressType;
 
 AddressWriter::AddressWriter(const ParserConfigurationBase &config) :
 scriptFiles(blocksci::apply(blocksci::DedupAddressType::all(), [&] (auto tag) {
-    return (boost::filesystem::path{config.dataConfig.scriptsDirectory()}/std::string{dedupAddressName(tag)}).native();
+    return (filesystem::path{config.dataConfig.scriptsDirectory()}/std::string{dedupAddressName(tag)}).str();
 })) {
 }
 
@@ -28,7 +28,12 @@ void AddressWriter::serialize(const AnyScriptInput &input, uint32_t txNum, uint3
 
 void AddressWriter::serializeImp(const ScriptOutput<AddressType::PUBKEY> &output, ScriptFile<DedupAddressType::PUBKEY> &file) {
     auto data = file[output.scriptNum - 1];
-    data->pubkey = output.data.pubkey;
+    std::copy(output.data.pubkey.begin(), output.data.pubkey.end(), data->pubkey.begin());
+}
+
+void AddressWriter::serializeImp(const ScriptOutput<AddressType::MULTISIG_PUBKEY> &output, ScriptFile<DedupAddressType::PUBKEY> &file) {
+    auto data = file[output.scriptNum - 1];
+    std::copy(output.data.pubkey.begin(), output.data.pubkey.end(), data->pubkey.begin());
 }
 
 void AddressWriter::serializeImp(const ScriptOutput<AddressType::WITNESS_SCRIPTHASH> &output, ScriptFile<blocksci::DedupAddressType::SCRIPTHASH> &file) {
@@ -39,12 +44,12 @@ void AddressWriter::serializeImp(const ScriptOutput<AddressType::WITNESS_SCRIPTH
 
 void AddressWriter::serializeImp(const ScriptInput<AddressType::PUBKEYHASH> &input, ScriptFile<DedupAddressType::PUBKEY> &file) {
     auto data = file[input.scriptNum - 1];
-    data->pubkey = input.data.pubkey;
+    std::copy(input.data.pubkey.begin(), input.data.pubkey.end(), data->pubkey.begin());
 }
 
 void AddressWriter::serializeImp(const ScriptInput<AddressType::WITNESS_PUBKEYHASH> &input, ScriptFile<DedupAddressType::PUBKEY> &file) {
     auto data = file[input.scriptNum - 1];
-    data->pubkey = input.data.pubkey;
+    std::copy(input.data.pubkey.begin(), input.data.pubkey.end(), data->pubkey.begin());
 }
 
 void AddressWriter::serializeImp(const ScriptInput<AddressType::WITNESS_SCRIPTHASH> &input, ScriptFile<DedupAddressType::SCRIPTHASH> &file) {

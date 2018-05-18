@@ -22,6 +22,15 @@
 [submodule "libs/rocksdb"]
 	path = external/rocksdb
 	url = https://github.com/facebook/rocksdb
+[submodule "external/cereal"]
+	path = external/cereal
+	url = https://github.com/USCiLab/cereal
 [submodule "external/mio"]
 	path = external/mio
 	url = https://github.com/hkalodner/mio
+[submodule "external/filesystem"]
+	path = external/filesystem
+	url = https://github.com/hkalodner/filesystem
+[submodule "external/simpleini"]
+	path = external/simpleini
+	url = https://github.com/brofield/simpleini

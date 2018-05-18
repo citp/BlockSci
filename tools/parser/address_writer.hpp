@@ -52,6 +52,7 @@ class AddressWriter {
     void serializeImp(const ScriptOutput<type> &, ScriptFile<dedupType(type)> &) {}
     
     void serializeImp(const ScriptOutput<blocksci::AddressType::PUBKEY> &input, ScriptFile<blocksci::DedupAddressType::PUBKEY> &file);
+    void serializeImp(const ScriptOutput<blocksci::AddressType::MULTISIG_PUBKEY> &input, ScriptFile<blocksci::DedupAddressType::PUBKEY> &file);
     void serializeImp(const ScriptOutput<blocksci::AddressType::WITNESS_SCRIPTHASH> &input, ScriptFile<blocksci::DedupAddressType::SCRIPTHASH> &file);
     
     template<blocksci::AddressType::Enum type>

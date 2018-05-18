@@ -22,10 +22,6 @@
 namespace blocksci {
 namespace heuristics {
     
-    namespace internal {
-        ranges::optional<Output> BLOCKSCI_EXPORT singleOrNullptr(std::unordered_set<Output> candidates);
-    } // namespace internal
-    
     bool BLOCKSCI_EXPORT isPeelingChain(const Transaction &tx);
     
     struct BLOCKSCI_EXPORT ChangeType {
@@ -40,23 +36,18 @@ namespace heuristics {
         static constexpr size_t size = all.size();
     };
     
-    template <typename T>
-    struct ChangeHeuristicImplParent {
-        ranges::optional<Output> uniqueChange(const Transaction &tx) const {
-            return singleOrNullptr((*static_cast<const T *>(this))(tx));
-        }
-    };
-    
     template <ChangeType::Enum heuristic>
-    struct BLOCKSCI_EXPORT ChangeHeuristicImpl : ChangeHeuristicImplParent<ChangeHeuristicImpl<heuristic>> {
+    struct BLOCKSCI_EXPORT ChangeHeuristicImpl {
         std::unordered_set<Output> operator()(const Transaction &tx) const;
+        ranges::optional<Output> uniqueChange(const Transaction &tx) const;
     };
     
     template<>
-    struct BLOCKSCI_EXPORT ChangeHeuristicImpl<ChangeType::PowerOfTen> : ChangeHeuristicImplParent<ChangeHeuristicImpl<ChangeType::PowerOfTen>> {
+    struct BLOCKSCI_EXPORT ChangeHeuristicImpl<ChangeType::PowerOfTen> {
         int digits;
-        ChangeHeuristicImpl(int digits_ = 5) : ChangeHeuristicImplParent{}, digits(digits_) {}
+        ChangeHeuristicImpl(int digits_ = 5) : digits(digits_) {}
         std::unordered_set<Output> operator()(const Transaction &tx) const;
+        ranges::optional<Output> uniqueChange(const Transaction &tx) const;
     };
     
     using PeelingChainChange = ChangeHeuristicImpl<ChangeType::PeelingChain>;
@@ -83,9 +74,7 @@ namespace heuristics {
             return impl(tx);
         }
         
-        ranges::optional<Output> uniqueChange(const Transaction &tx) const {
-            return internal::singleOrNullptr(impl(tx));
-        }
+        ranges::optional<Output> uniqueChange(const Transaction &tx) const;
         
         static ChangeHeuristic setIntersection(ChangeHeuristic a, ChangeHeuristic b) {
             return ChangeHeuristic{HeuristicFunc{[=](const Transaction &tx) {

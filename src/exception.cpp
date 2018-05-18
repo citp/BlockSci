@@ -8,7 +8,6 @@
 #include <blocksci/exception.hpp>
 
 namespace blocksci {
-    ReorgException::~ReorgException() = default;
     InvalidAddressException::~InvalidAddressException() = default;
     
 } // namespace blocksci

@@ -27,13 +27,7 @@ namespace blocksci {
             return getData()->address;
         }
         
-        ranges::optional<CPubKey> getPubkey() const {
-            if (getData()->pubkey.IsValid()) {
-                return getData()->pubkey;
-            } else {
-                return ranges::nullopt;
-            }
-        }
+        ranges::optional<CPubKey> getPubkey() const;
         
         ranges::any_view<Address> getIncludingMultisigs() const;
     };

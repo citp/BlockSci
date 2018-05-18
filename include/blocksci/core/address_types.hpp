@@ -9,7 +9,11 @@
 #ifndef blocksci_address_address_types_hpp
 #define blocksci_address_address_types_hpp
 
-#include <blocksci/meta.hpp>
+#include <blocksci/blocksci_export.h>
+
+#include <cstddef>
+#include <functional>
+#include <tuple>
 
 #define ADDRESS_TYPE_LIST VAL(NONSTANDARD), VAL(PUBKEY), VAL(PUBKEYHASH), VAL(MULTISIG_PUBKEY), VAL(SCRIPTHASH), VAL(MULTISIG), VAL(NULL_DATA), VAL(WITNESS_PUBKEYHASH), VAL(WITNESS_SCRIPTHASH)
 #define ADDRESS_TYPE_SET VAL(NONSTANDARD) VAL(PUBKEY) VAL(PUBKEYHASH) VAL(MULTISIG_PUBKEY) VAL(SCRIPTHASH) VAL(MULTISIG) VAL(NULL_DATA) VAL(WITNESS_PUBKEYHASH) VAL(WITNESS_SCRIPTHASH)
@@ -18,7 +22,7 @@
 #define EQUIV_ADDRESS_TYPE_SET VAL(NONSTANDARD) VAL(PUBKEY) VAL(SCRIPTHASH) VAL(MULTISIG) VAL(NULL_DATA)
 
 namespace blocksci {
-    struct AddressType {
+    struct BLOCKSCI_EXPORT AddressType {
         
         enum Enum {
             #define VAL(x) x
@@ -32,9 +36,6 @@ namespace blocksci {
         
         static constexpr Enum example = PUBKEY;
     };
-    
-    template <template<AddressType::Enum> class K>
-    using to_address_tuple_t = apply_template_t<AddressType::Enum, K, AddressType::all>;
     
     struct EquivAddressType {
         
@@ -53,13 +54,13 @@ namespace blocksci {
 }
 
 namespace std {
-    template<> struct hash<blocksci::AddressType::Enum> {
+    template<> struct BLOCKSCI_EXPORT hash<blocksci::AddressType::Enum> {
         size_t operator()(blocksci::AddressType::Enum type) const {
             return static_cast<size_t>(type);
         }
     };
     
-    template<> struct hash<blocksci::EquivAddressType::Enum> {
+    template<> struct BLOCKSCI_EXPORT hash<blocksci::EquivAddressType::Enum> {
         size_t operator()(blocksci::EquivAddressType::Enum type) const {
             return static_cast<size_t>(type);
         }

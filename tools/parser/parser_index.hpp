@@ -10,18 +10,20 @@
 #define parser_index_hpp
 
 #include "parser_configuration.hpp"
-#include "block_processor.hpp"
 
 #include <blocksci/core/raw_transaction.hpp>
-#include <blocksci/util/progress_bar.hpp>
-#include <blocksci/util/state.hpp>
+
+#include <internal/chain_access.hpp>
+#include <internal/progress_bar.hpp>
+#include <internal/script_access.hpp>
+#include <internal/state.hpp>
 
 #include <range/v3/range_for.hpp>
 
-#include <boost/filesystem/fstream.hpp>
-#include <boost/filesystem/operations.hpp>
+#include <wjfilesystem/path.h>
 
 #include <iostream>
+#include <fstream>
 
 template <typename T, blocksci::DedupAddressType::Enum type>
 struct ParserIndexScriptInfo;
@@ -30,12 +32,12 @@ template <typename T>
 class ParserIndex {
 protected:
     const ParserConfigurationBase &config;
-    boost::filesystem::path cachePath;
+    filesystem::path cachePath;
     blocksci::State latestState;
 public:
     ParserIndex(const ParserConfigurationBase &config_, const std::string &resultName) : config(config_), cachePath(config_.parserDirectory()/(resultName + ".txt")) {
-        if (boost::filesystem::exists(cachePath)) {
-            boost::filesystem::ifstream inputFile(cachePath);
+        if (cachePath.exists()) {
+            std::ifstream inputFile(cachePath.str());
             inputFile >> latestState;
         }
     }
@@ -44,7 +46,7 @@ public:
     ParserIndex(ParserIndex &&) = delete;
     ParserIndex &operator=(ParserIndex &&) = delete;
     ~ParserIndex() {
-        boost::filesystem::ofstream outputFile(cachePath);
+        std::ofstream outputFile(cachePath.str());
         outputFile << latestState;
     }
     

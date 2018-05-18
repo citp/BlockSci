@@ -8,7 +8,7 @@
 #include "output_spend_data.hpp"
 #include "script_output.hpp"
 
-#include <blocksci/scripts/script_variant.hpp>
+#include <blocksci/core/raw_address.hpp>
 
 #include <type_traits>
 
@@ -18,10 +18,6 @@ struct SpendDataGenerator {
         return SpendData<type>(output);
     }
 };
-
-SpendDataType generateFromScriptAddress(const blocksci::AnyScript &scriptData) {
-    return mpark::visit([](auto &script) -> SpendDataType { return SpendData<std::remove_cv_t<std::remove_reference_t<decltype(script)>>::addressType>{script}; }, scriptData.wrapped);
-}
 
 template<blocksci::AddressType::Enum type>
 struct RawAddressSpendDataFunctor {
@@ -40,23 +36,12 @@ SpendDataType rawAddressSpendData(const blocksci::RawAddress &address, const blo
 
 AnySpendData::AnySpendData(const AnyScriptOutput &output) : wrapped(mpark::visit(SpendDataGenerator(), output.wrapped)) {}
 
-AnySpendData::AnySpendData(const blocksci::AnyScript &scriptData) : wrapped(generateFromScriptAddress(scriptData)) {}
-
 AnySpendData::AnySpendData(const blocksci::RawAddress &address, const blocksci::ScriptAccess &scripts) : wrapped(rawAddressSpendData(address, scripts)) {}
 
 SpendData<blocksci::AddressType::Enum::MULTISIG>::SpendData(const ScriptOutput<blocksci::AddressType::Enum::MULTISIG> &output) {
     uint32_t i = 0;
     for (auto &address : output.data.addresses) {
         addresses.at(i) = address.data.pubkey;
-        i++;
-    }
-    addressCount = i;
-}
-
-SpendData<blocksci::AddressType::Enum::MULTISIG>::SpendData(const blocksci::ScriptAddress<blocksci::AddressType::Enum::MULTISIG> &output) {
-    uint32_t i = 0;
-    for (auto pubkey : output.pubkeyScripts()) {
-        addresses.at(i) = *pubkey.getPubkey();
         i++;
     }
     addressCount = i;
@@ -69,4 +54,5 @@ SpendData<blocksci::AddressType::Enum::MULTISIG>::SpendData(const blocksci::RawA
         addresses.at(i) = scripts.getScriptData<blocksci::DedupAddressType::PUBKEY>(addressNum)->pubkey;
         i++;
     }
+    addressCount = i;
 }

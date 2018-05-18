@@ -8,20 +8,20 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "address_db.hpp"
+#include "raw_address_visitor.hpp"
 
-#include <blocksci/core/address_info.hpp>
-#include <blocksci/scripts/scripts_fwd.hpp>
+#include <blocksci/core/address_type_meta.hpp>
+#include <blocksci/core/inout_pointer.hpp>
 
-using blocksci::Address;
+#include <internal/address_info.hpp>
+
 using blocksci::RawAddress;
 using blocksci::DedupAddress;
-using blocksci::Transaction;
-using blocksci::OutputPointer;
+using blocksci::InoutPointer;
 using blocksci::State;
 using blocksci::DedupAddressType;
-using blocksci::script::ScriptHash;
 
-AddressDB::AddressDB(const ParserConfigurationBase &config_, const std::string &path) : ParserIndex(config_, "addressDB"), db(path, false) {
+AddressDB::AddressDB(const ParserConfigurationBase &config_, const filesystem::path &path) : ParserIndex(config_, "addressDB"), db(path, false) {
     outputCache.reserve(cacheSize);
     nestedCache.reserve(cacheSize);
 }
@@ -51,7 +51,7 @@ void AddressDB::processTx(const blocksci::RawTransaction *tx, uint32_t txNum, co
     
     for (uint16_t i = 0; i < tx->outputCount; i++) {
         auto &output = tx->getOutput(i);
-        auto pointer = OutputPointer{txNum, i};
+        auto pointer = InoutPointer{txNum, i};
         addAddressOutput(blocksci::RawAddress{output.getAddressNum(), output.getType()}, pointer);
     }
 }
@@ -68,7 +68,7 @@ void AddressDB::clearNestedCache() {
     nestedCache.clear();
 }
 
-void AddressDB::addAddressOutput(const blocksci::RawAddress &address, const blocksci::OutputPointer &pointer) {
+void AddressDB::addAddressOutput(const blocksci::RawAddress &address, const blocksci::InoutPointer &pointer) {
     outputCache.emplace_back(address, pointer);
     if (outputCache.size() >= cacheSize) {
         clearOutputCache();

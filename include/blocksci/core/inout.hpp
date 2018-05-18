@@ -9,12 +9,14 @@
 #ifndef inout_hpp
 #define inout_hpp
 
-#include "address_types.hpp"
-#include "core_fwd.hpp"
-#include "hash_combine.hpp"
-
 #include <blocksci/blocksci_export.h>
-#include <blocksci/typedefs.hpp>
+#include <blocksci/core/address_types.hpp>
+#include <blocksci/core/hash_combine.hpp>
+#include <blocksci/core/typedefs.hpp>
+
+namespace blocksci {
+    struct Inout;
+}
 
 namespace std {
     template<> struct BLOCKSCI_EXPORT hash<blocksci::Inout> {

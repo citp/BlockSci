@@ -27,7 +27,6 @@
 #endif
 
 #include <boost/lockfree/spsc_queue.hpp>
-#include <boost/filesystem/operations.hpp>
 
 #include <atomic>
 #include <cmath>
@@ -136,12 +135,12 @@ public:
         auto fileIt = files.find(block.nFile);
         if (fileIt == files.end()) {
             auto blockPath = config.pathForBlockFile(block.nFile);
-            if (!boost::filesystem::exists(blockPath)) {
+            if (!blockPath.exists()) {
                 std::stringstream ss;
                 ss << "Error: Failed to open block file " << blockPath << "\n";
                 throw std::runtime_error(ss.str());
             }
-            files.insert(std::make_pair(block.nFile, std::make_pair(SafeMemReader(blockPath.native()), lastTxRequired[block.nFile])));
+            files.insert(std::make_pair(block.nFile, std::make_pair(SafeMemReader(blockPath.str()), lastTxRequired[block.nFile])));
         }
         reader = &files.at(block.nFile).first;
         reader->reset(block.nDataPos);
@@ -306,7 +305,7 @@ void connectUTXOs(RawTransaction &tx, UTXOState &utxoState) {
         auto &output = tx.outputs[i];
         auto &scriptOutput = tx.scriptOutputs[i];
         auto type = scriptOutput.type();
-        if (isSpendable(type)) {
+        if (isSpendable(dedupType(type))) {
             UTXO utxo{output.value, tx.txNum, type};
             RawOutputPointer pointer{tx.hash, i};
             utxoState.add(pointer, utxo);
@@ -442,8 +441,7 @@ void backUpdateTxes(const ParserConfigurationBase &config) {
             progressBar.update(count);
         }
     }
-    
-    boost::filesystem::remove(config.txUpdatesFilePath() + ".dat");
+    filesystem::path{config.txUpdatesFilePath() + ".dat"}.remove_file();
 }
 
 struct CompletionGuard {
@@ -656,7 +654,6 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfigu
     });
     
     auto generateScriptInputStepFuture = std::async(std::launch::async, [&] {
-        blocksci::ECCVerifyHandle handle;
         generateScriptInputStep();
     });
     
@@ -714,7 +711,6 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocksSingle(const ParserC
     
     FixedSizeFileWriter<blocksci::uint256> hashFile{blocksci::ChainAccess::txHashesFilePath(config.dataConfig.chainDirectory())};
     AddressWriter addressWriter{config};
-    blocksci::ECCVerifyHandle handle;
     
     auto progressBar = blocksci::makeProgressBar(totalTxCount, [=](RawTransaction *tx) {
         auto blockHeight = tx->blockHeight;

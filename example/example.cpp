@@ -16,9 +16,6 @@
 #include <blocksci/address/address.hpp>
 #include <blocksci/chain/transaction_range.hpp>
 
-#include <google/sparse_hash_map>
-#include <google/dense_hash_map>
-
 #include <range/v3/all.hpp>
 
 #include <numeric>
@@ -32,10 +29,6 @@
 using namespace blocksci;
 
 void maxOutput(Blockchain &chain);
-
-google::dense_hash_map<uint32_t, uint32_t> getAddressDistribution(Blockchain &chain, int start, int stop);
-google::dense_hash_map<uint32_t, uint32_t> getMultisigAddressDistribution(Blockchain &chain, int start, int stop);
-
 
 template <class R, class F, class T>
 std::vector<R> mapParallel(const std::vector<T> &input, F fn) {
@@ -65,46 +58,89 @@ std::vector<R> mapParallel(const std::vector<T> &input, F fn) {
     return results;
 }
 
+std::vector<int64_t> getTotalSpentOfAges2(const Block &block, BlockHeight maxAge) {
+    std::vector<int64_t> totals(static_cast<size_t>(maxAge));
+    
+    uint32_t newestTxNum = block.prevBlock().endTxIndex() - 1;
+    auto inputs = block.allInputs()
+    | ranges::view::remove_if([=](const Input &input) { return input.spentTxIndex() > newestTxNum; });
+    RANGES_FOR(auto input, inputs) {
+        std::cout << input.age() << std::endl;
+        BlockHeight age = std::min(maxAge, input.age()) - BlockHeight{1};
+        totals[static_cast<size_t>(age)] += input.getValue();
+    }
+    for (BlockHeight i{1}; i < maxAge; ++i) {
+        auto age = static_cast<size_t>(maxAge - i);
+        totals[age - 1] += totals[age];
+    }
+    return totals;
+}
+
 int main(int argc, const char * argv[]) {
 //    assert(argc == 2);
     
     Blockchain chain(argv[1]);
     
+    TransactionRange txRange{chain.getAccess(), 0, txCount(chain)};
+    
+    int count = 0;
+    RANGES_FOR(auto tx, txRange) {
+        if (tx.fee() > 10000000) {
+            count++;
+        }
+    }
+    
+    std::cout << count << std::endl;
+    return 0;
+
+//
+//    std::unordered_map<Address, std::string> tags;
+//    tags[chain[1000][0].outputs()[0].getAddress()] = "TestTag";
+//
+//    auto tagged = cm.taggedClusters(tags);
+//
+//    for (auto taggedCluster : tagged) {
+//        std::cout << taggedCluster.cluster.getTypeEquivSize() << std::endl;
+//    }
+//
+//    auto test = getTransactionsIncludingOutput(chain, 170, 171, AddressType::MULTISIG);
+//
+    return 0;
 //    auto outs = multi.getEquivAddresses(true);
     std::cout << "test" << std::endl;
 //    chain.access->addressIndex->checkDb();
     
-//    auto a = Transaction(1000);
-//    uint256 hash = a.getHash();
-//    std::cout << "Tx:" << a << std::endl;
-//    std::cout << "Hash:" << hash.GetHex() << std::endl;
-//    auto b = Transaction(hash);
-//    std::cout << "Tx:" << b << std::endl;
-//    auto c = a.outputs()[0].getAddress();
-//    std::cout << "Output: " << a.outputs()[0] << std::endl;
-//    auto d = c.getOutputs();
-//    for (auto &out : d) {
-//        std::cout << out << std::endl;
-//    }
-
-    RANGES_FOR(auto block, chain) {
-        RANGES_FOR(auto tx, block) {
-            std::cout << tx << std::endl;
-            auto timestamp = tx.getTimeSeen();
-            if (timestamp) {
-                std::time_t time = std::chrono::system_clock::to_time_t(*timestamp);
-                std::tm timetm = *std::localtime(&time);
-                std::cout << "output : " << std::put_time(&timetm, "%c %Z") << "+"
-                << std::chrono::duration_cast<std::chrono::milliseconds>(timestamp->time_since_epoch()).count() % 1000 << std::endl;
-            }
-//            RANGES_FOR(auto output, tx.outputs()) {
-//                auto outputs = output.getAddress().getOutputs();
-//                auto it = std::find(outputs.begin(), outputs.end(), output);
-//                assert(it != outputs.end());
-//                std::cout << output << std::endl;
-//            }
-        }
+    auto a = Transaction(1000, chain.getAccess());
+    uint256 hash = a.getHash();
+    std::cout << "Tx:" << a << std::endl;
+    std::cout << "Hash:" << hash.GetHex() << std::endl;
+    auto b = Transaction(hash, chain.getAccess());
+    std::cout << "Tx:" << b << std::endl;
+    auto c = a.outputs()[0].getAddress();
+    std::cout << "Output: " << a.outputs()[0] << std::endl;
+    auto d = c.getOutputs();
+    for (auto out : d) {
+        std::cout << out << std::endl;
     }
+
+//    for(auto block : chain) {
+//        RANGES_FOR(auto tx, block) {
+//            std::cout << tx << std::endl;
+//            auto timestamp = tx.getTimeSeen();
+//            if (timestamp) {
+//                std::time_t time = std::chrono::system_clock::to_time_t(*timestamp);
+//                std::tm timetm = *std::localtime(&time);
+//                std::cout << "output : " << std::put_time(&timetm, "%c %Z") << "+"
+//                << std::chrono::duration_cast<std::chrono::milliseconds>(timestamp->time_since_epoch()).count() % 1000 << std::endl;
+//            }
+////            RANGES_FOR(auto output, tx.outputs()) {
+////                auto outputs = output.getAddress().getOutputs();
+////                auto it = std::find(outputs.begin(), outputs.end(), output);
+////                assert(it != outputs.end());
+////                std::cout << output << std::endl;
+////            }
+//        }
+//    }
 //
     return 0;
 //    uint64_t count = 0;
@@ -438,7 +474,7 @@ void maxOutput(Blockchain &chain) {
     int64_t maxValue = 0;
     uint32_t txNum = 0;
     uint32_t curTx = 0;
-    RANGES_FOR(auto block, chain) {
+    for(auto block : chain) {
         RANGES_FOR(auto tx, block) {
             RANGES_FOR(auto output, tx.outputs()) {
                 if (output.getValue() > maxValue) {

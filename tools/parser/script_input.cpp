@@ -12,8 +12,6 @@
 #include "preproccessed_block.hpp"
 #include "output_spend_data.hpp"
 
-#include <blocksci/scripts/bitcoin_pubkey.hpp>
-
 #include <secp256k1.h>
 
 #include <iostream>
@@ -97,10 +95,10 @@ ScriptInputData<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInputData(const 
         ranges::iterator_range<const unsigned char *> vchSig;
         scriptView.GetOp(pc, opcode, vchSig);
         scriptView.GetOp(pc, opcode, vchSig);
-        pubkey.Set(vchSig.begin(), vchSig.end());
+        std::copy(vchSig.begin(), vchSig.end(), pubkey.begin());
     } else {
         auto &pubkeyWitness = inputView.witnessStack[1];
-        pubkey.Set(reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin), reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin) + pubkeyWitness.length);
+        std::copy(reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin), reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin) + pubkeyWitness.length, pubkey.begin());
     }
 }
 
@@ -166,7 +164,7 @@ ScriptInputData<blocksci::AddressType::Enum::NULL_DATA>::ScriptInputData(const I
 
 ScriptInputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> &) {
     auto &pubkeyWitness = inputView.witnessStack[1];
-    pubkey.Set(reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin), reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin) + pubkeyWitness.length);
+    std::copy(reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin), reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin) + pubkeyWitness.length, pubkey.begin());
 }
 
 std::pair<AnyScriptOutput, std::unique_ptr<AnyScriptInput>> p2shWitnessGenerate(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> &) {

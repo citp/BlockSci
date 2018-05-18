@@ -10,15 +10,10 @@
 #define nulldata_script_hpp
 
 #include "script.hpp"
-#include "script_access.hpp"
 
 #include <blocksci/blocksci_export.h>
-#include <blocksci/core/address_info.hpp>
-#include <blocksci/util/data_access.hpp>
 
-#include <cstring>
 #include <string>
-#include <sstream>
 
 namespace blocksci {
     template <>
@@ -27,31 +22,24 @@ namespace blocksci {
         const RawData *getBackingData() const {
             return reinterpret_cast<const RawData *>(ScriptBase::getData());
         }
+        
     public:
         constexpr static AddressType::Enum addressType = AddressType::NULL_DATA;
         
-        ScriptAddress(uint32_t addressNum_, DataAccess &access_) : ScriptBase(addressNum_, addressType, access_, access_.getScripts().getScriptData<dedupType(addressType)>(addressNum_)) {}
+        ScriptAddress(uint32_t addressNum_, const RawData *data_, DataAccess &access_) : ScriptBase(addressNum_, addressType, access_, data_) {}
+        ScriptAddress(uint32_t addressNum_, DataAccess &access_);
         
         std::string toString() const {
             return "NulldataAddressData()";
         }
         
-        std::string toPrettyString() const {
-            std::stringstream ss;
-            ss << "NulldataAddressData(" << getData() << ")";
-            return ss.str();
-        }
+        std::string toPrettyString() const;
         
         std::string getData() const {
             return getBackingData()->getData();
         }
         
-        bool isSegwitMarker() const {
-            auto data = getData();
-            uint32_t startVal;
-            std::memcpy(&startVal, data.c_str(), sizeof(startVal));
-            return startVal == 0xaa21a9ed;
-        }
+        bool isSegwitMarker() const;
     };
 } // namespace blocksci
 

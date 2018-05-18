@@ -7,29 +7,29 @@
 //
 
 #include "parser_configuration.hpp"
-#include <blocksci/util/hash.hpp>
+#include <internal/hash.hpp>
 
 #ifdef BLOCKSCI_RPC_PARSER
 #include <bitcoinapi/bitcoinapi.h>
 #endif
 
-#include <boost/filesystem/operations.hpp>
+#include <wjfilesystem/path.h>
 
 ParserConfigurationBase::ParserConfigurationBase() : dataConfig() {}
 
 ParserConfigurationBase::ParserConfigurationBase(const std::string &dataDirectory_) : dataConfig(dataDirectory_) {
-    boost::filesystem::path dir(parserDirectory());
+    filesystem::path dir(parserDirectory());
     
-    if(!(boost::filesystem::exists(dir))){
-        boost::filesystem::create_directory(dir);
+    if (!dir.exists()){
+        filesystem::create_directory(dir);
     }
     
-    if(!(boost::filesystem::exists(addressPath()))){
-        boost::filesystem::create_directory(addressPath());
+    if (addressPath().exists()) {
+        filesystem::create_directory(addressPath());
     }
     
-    if(!(boost::filesystem::exists(utxoAddressStatePath()))){
-        boost::filesystem::create_directory(utxoAddressStatePath());
+    if (!utxoAddressStatePath().exists()){
+        filesystem::create_directory(utxoAddressStatePath());
     }
 }
 
@@ -38,8 +38,8 @@ ParserConfiguration<FileTag>::ParserConfiguration() : ParserConfigurationBase() 
 
 }
 
-ParserConfiguration<FileTag>::ParserConfiguration(boost::filesystem::path bitcoinDirectory_, const std::string &dataDirectory_) : ParserConfigurationBase(dataDirectory_), bitcoinDirectory(std::move(bitcoinDirectory_)) {
-    auto bitcoinDirectoryString = bitcoinDirectory.native();
+ParserConfiguration<FileTag>::ParserConfiguration(filesystem::path bitcoinDirectory_, const std::string &dataDirectory_) : ParserConfigurationBase(dataDirectory_), bitcoinDirectory(std::move(bitcoinDirectory_)) {
+    auto bitcoinDirectoryString = bitcoinDirectory.str();
     if (bitcoinDirectoryString.find("litecoin") != std::string::npos || bitcoinDirectoryString.find("Litecoin") != std::string::npos) {
         blockMagic = 0xdbb6c0fb;
         workHashFunction = doubleSha256;
@@ -56,11 +56,12 @@ ParserConfiguration<FileTag>::ParserConfiguration(boost::filesystem::path bitcoi
 }
 
 
-boost::filesystem::path ParserConfiguration<FileTag>::pathForBlockFile(int fileNum) const {
+filesystem::path ParserConfiguration<FileTag>::pathForBlockFile(int fileNum) const {
     std::ostringstream convert;
     convert << fileNum;
     std::string numString = convert.str();
-    return (bitcoinDirectory/"blocks"/"blk").concat(std::string(5 - numString.size(), '0')).concat(numString).concat(".dat");
+    std::string filename = "blk" + std::string(5 - numString.size(), '0') + numString + ".dat";
+    return bitcoinDirectory/"blocks"/filename;
 }
 #endif
 

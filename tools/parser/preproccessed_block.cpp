@@ -13,7 +13,8 @@
 #include "script_input.hpp"
 #include "safe_mem_reader.hpp"
 
-#include <blocksci/util/hash.hpp>
+#include <internal/hash.hpp>
+#include <blocksci/core/inout_pointer.hpp>
 
 #ifdef BLOCKSCI_RPC_PARSER
 #include <bitcoinapi/types.h>
@@ -212,7 +213,7 @@ blocksci::RawTransaction RawTransaction::getRawTransaction() const {
     return {realSize, baseSize, locktime, static_cast<uint16_t>(inputs.size()), static_cast<uint16_t>(outputs.size())};
 }
 
-blocksci::OutputPointer RawInput::getOutputPointer() const {
+blocksci::InoutPointer RawInput::getOutputPointer() const {
     return {utxo.txNum, rawOutputPointer.outputNum};
 }
 

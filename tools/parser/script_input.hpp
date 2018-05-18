@@ -12,7 +12,7 @@
 #include "parser_fwd.hpp"
 #include "script_output.hpp"
 
-#include <blocksci/scripts/script_view.hpp>
+#include <internal/script_view.hpp>
 
 #include <mpark/variant.hpp>
 
@@ -58,7 +58,7 @@ struct ScriptInputData<blocksci::AddressType::Enum::PUBKEY> : public ScriptInput
 
 template<>
 struct ScriptInputData<blocksci::AddressType::Enum::PUBKEYHASH> : public ScriptInputDataBase {
-    blocksci::CPubKey pubkey;
+    blocksci::RawPubkey pubkey;
 
     ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::PUBKEYHASH> &);
 };
@@ -70,7 +70,7 @@ struct ScriptInputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY> : public Sc
 
 template<>
 struct ScriptInputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : public ScriptInputDataBase {
-    blocksci::CPubKey pubkey;
+    blocksci::RawPubkey pubkey;
     
     ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> &);
 };

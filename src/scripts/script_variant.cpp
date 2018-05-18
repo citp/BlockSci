@@ -8,10 +8,30 @@
 
 #include <blocksci/scripts/script_variant.hpp>
 #include <blocksci/chain/transaction.hpp>
+#include <blocksci/chain/input.hpp>
+#include <blocksci/chain/output.hpp>
 #include <blocksci/address/equiv_address.hpp>
+
+#include <internal/address_info.hpp>
+#include <internal/data_access.hpp>
+#include <internal/script_access.hpp>
+
+namespace {
+    template<blocksci::AddressType::Enum type>
+    struct ScriptCreateFunctor {
+        static blocksci::ScriptVariant f(uint32_t scriptNum, blocksci::DataAccess &access) {
+            return blocksci::ScriptAddress<type>(scriptNum, access.getScripts().getScriptData<dedupType(type)>(scriptNum), access);
+        }
+    };
+    
+    static constexpr auto scriptCreator = blocksci::make_dynamic_table<blocksci::AddressType, ScriptCreateFunctor>();
+}
 
 namespace blocksci {
 
+    AnyScript::AnyScript(const Address &address) : wrapped(scriptCreator.at(static_cast<size_t>(address.type))(address.scriptNum, address.getAccess())) {}
+    AnyScript::AnyScript(uint32_t addressNum, AddressType::Enum type, DataAccess &access) : wrapped(scriptCreator.at(static_cast<size_t>(type))(addressNum, access)) {}
+    
 	Transaction AnyScript::getFirstTransaction() const {
 		return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getFirstTransaction(); }, wrapped);
 	}

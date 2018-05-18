@@ -9,17 +9,12 @@
 #ifndef raw_input_hpp
 #define raw_input_hpp
 
-#include "chain_access.hpp"
-#include "inout_pointer.hpp"
-
 #include <blocksci/blocksci_export.h>
+#include <blocksci/address/address_fwd.hpp>
+#include <blocksci/chain/chain_fwd.hpp>
+#include <blocksci/chain/input_pointer.hpp>
 #include <blocksci/core/inout.hpp>
 #include <blocksci/core/raw_transaction.hpp>
-
-#include <blocksci/address/address.hpp>
-#include <blocksci/util/data_access.hpp>
-
-#include <sstream>
 
 namespace std {
     template<> struct BLOCKSCI_EXPORT hash<blocksci::Input> {
@@ -28,6 +23,8 @@ namespace std {
 } // namespace std
 
 namespace blocksci {
+    
+    class DataAccess;
     
     class BLOCKSCI_EXPORT Input {
         DataAccess *access;
@@ -41,11 +38,9 @@ namespace blocksci {
         BlockHeight blockHeight;
 
         Input(const InputPointer &pointer_, BlockHeight blockHeight_, const Inout &inout_, const uint32_t *sequenceNum_, DataAccess &access_) :
-        access(&access_), inout(&inout_), sequenceNum(sequenceNum_), pointer(pointer_), blockHeight(blockHeight_) {
-            assert(pointer.inoutNum < access_.getChain().getTx(pointer.txNum)->inputCount);
-        }
-        Input(const InputPointer &pointer_, DataAccess &access_) :
-        Input(pointer_, access_.getChain().getBlockHeight(pointer_.txNum), access_.getChain().getTx(pointer_.txNum)->getInput(pointer_.inoutNum), &access_.getChain().getSequenceNumbers(pointer_.txNum)[pointer_.inoutNum], access_) {}
+        access(&access_), inout(&inout_), sequenceNum(sequenceNum_), pointer(pointer_), blockHeight(blockHeight_) {}
+        
+        Input(const InputPointer &pointer_, DataAccess &access_);
         
         DataAccess &getAccess() const {
             return *access;
@@ -66,9 +61,7 @@ namespace blocksci {
         Transaction transaction() const;
         Block block() const;
         
-        BlockHeight age() const {
-            return blockHeight - access->getChain().getBlockHeight(inout->getLinkedTxNum());
-        }
+        BlockHeight age() const;
 
         bool operator==(const Inout &other) const {
             return *inout == other;
@@ -90,26 +83,18 @@ namespace blocksci {
             return inout->getValue();
         }
         
-        Address getAddress() const {
-            return {inout->getAddressNum(), inout->getType(), *access};
-        }
+        Address getAddress() const;
         
         uint32_t spentTxIndex() const {
             return inout->getLinkedTxNum();
         }
         
-        std::string toString() const {
-            std::stringstream ss;
-            ss << "TxIn(spent_tx_index=" << inout->getLinkedTxNum() << ", address=" << getAddress().toString() <<", value=" << inout->getValue() << ")";
-            return ss.str();
-        }
+        std::string toString() const;
         
         Transaction getSpentTx() const;
     };
 
-    inline std::ostream BLOCKSCI_EXPORT &operator<<(std::ostream &os, const Input &input) { 
-        return os << input.toString();
-    }
+    std::ostream BLOCKSCI_EXPORT &operator<<(std::ostream &os, const Input &input);
 } // namespace blocksci
 
 namespace std {

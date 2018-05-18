@@ -19,7 +19,6 @@
 
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
-#include <boost/filesystem/operations.hpp>
 
 #include <cmath>
 #include <future>
@@ -45,7 +44,7 @@ BlockInfoBase(
 
 int maxBlockFileNum(int startFile, const ParserConfiguration<FileTag> &config) {
     int fileNum = startFile;
-    while (boost::filesystem::exists(config.pathForBlockFile(fileNum))) {
+    while (config.pathForBlockFile(fileNum).exists()) {
         fileNum++;
     }
     return fileNum - 1;
@@ -99,7 +98,7 @@ namespace {
 
 std::vector<BlockInfo<FileTag>> readBlocksInfo(int fileNum, const ParserConfiguration<FileTag> &config) {
     auto blockFilePath = config.pathForBlockFile(fileNum);
-    SafeMemReader reader{blockFilePath.native()};
+    SafeMemReader reader{blockFilePath.str()};
     return readBlocksImpl(reader, fileNum, config);
 }
 
@@ -137,7 +136,7 @@ void ChainIndex<FileTag>::update(const ConfigType &config) {
                 activeThreads++;
                 // determine block file path
                 auto blockFilePath = localConfig.pathForBlockFile(fileNum);
-                SafeMemReader reader{blockFilePath.native()};
+                SafeMemReader reader{blockFilePath.str()};
                 // logic for resume from last processed block, note blockStartOffset and length below
                 if (fileNum == firstFile) {
                     reader.reset(filePos);

@@ -18,6 +18,7 @@ namespace blocksci {
 	    return  ranges::view::filter([](const auto &optional) { return static_cast<bool>(optional); })
 	    		| ranges::view::transform([](const auto &optional) { return *optional; });
     }
+    
 } // namespace blocksci
 
 #endif // blocksci_range_util_hpp

@@ -25,7 +25,6 @@ struct InputView;
 
 namespace blocksci {
     struct RawTransaction;
-    struct OutputPointer;
 }
 
 std::vector<unsigned char> hexStringToVec(const std::string &scripthex);
@@ -55,7 +54,7 @@ public:
     std::vector<WitnessStackItem> witnessStack;
     UTXO utxo;
     
-    blocksci::OutputPointer getOutputPointer() const;
+    blocksci::InoutPointer getOutputPointer() const;
     
     blocksci::CScriptView getScriptView() const {
         if (scriptLength == 0) {

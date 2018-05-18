@@ -8,12 +8,12 @@
 #ifndef chain_algorithms_hpp
 #define chain_algorithms_hpp
 
-#include "chain_fwd.hpp"
-#include "transaction.hpp"
-#include "range_util.hpp"
-
 #include <blocksci/blocksci_export.h>
-#include <blocksci/core/address_info.hpp>
+#include <blocksci/chain/chain_fwd.hpp>
+#include <blocksci/chain/output.hpp>
+#include <blocksci/chain/input.hpp>
+#include <blocksci/chain/output.hpp>
+#include <blocksci/chain/transaction.hpp>
 
 #include <range/v3/range_for.hpp>
 #include <range/v3/numeric/accumulate.hpp>
@@ -171,18 +171,8 @@ namespace blocksci {
     }
     
     template <typename T>
-    inline auto BLOCKSCI_EXPORT outputsOfDedupType(T && t, DedupAddressType::Enum type) {
-        return outputs(std::forward<T>(t)) | ranges::view::filter([=](const Output &output) { return dedupType(output.getType()) == type; });
-    }
-    
-    template <typename T>
     inline auto BLOCKSCI_EXPORT inputsOfType(T && t, AddressType::Enum type) {
         return inputs(std::forward<T>(t)) | ranges::view::filter([=](const Input &input) { return input.getType() == type; });
-    }
-    
-    template <typename T>
-    inline auto BLOCKSCI_EXPORT inputsOfDedupType(T && t, DedupAddressType::Enum type) {
-        return inputs(std::forward<T>(t)) | ranges::view::filter([=](const Input &input) { return dedupType(input.getType()) == type; });
     }
     
     template <typename T>

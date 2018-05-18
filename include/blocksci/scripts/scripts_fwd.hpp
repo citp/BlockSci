@@ -10,6 +10,7 @@
 #define scriptsfwd_h
 
 #include <blocksci/core/address_types.hpp>
+#include <blocksci/core/address_type_meta.hpp>
 
 namespace mpark {
     template <typename... Types>

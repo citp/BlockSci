@@ -9,10 +9,9 @@
 #ifndef blockchain_hpp
 #define blockchain_hpp
 
-#include "block.hpp"
-
 #include <blocksci/blocksci_export.h>
-#include <blocksci/util/data_access.hpp>
+#include <blocksci/address/address_fwd.hpp>
+#include <blocksci/chain/block_range.hpp>
 
 #include <map>
 #include <type_traits>
@@ -22,223 +21,27 @@ namespace blocksci {
     struct DataConfiguration;
     class DataAccess;
     
-    namespace internal {
-        template <typename F, typename... Args>
-        struct is_callable {
-            template <typename U>
-            static auto test(U* p) -> decltype((*p)(std::declval<Args>()...), void(), std::true_type());
-            
-            template <typename U>
-            static auto test(...) -> decltype(std::false_type());
-            
-            static constexpr bool value = decltype(test<F>(nullptr))::value;
-        };
-        
-        template <typename ResultType, typename It, typename MapFunc, typename ReduceFunc>
-        ResultType mapReduceBlocksImp(It begin, It end, MapFunc mapFunc, ReduceFunc reduceFunc, int segmentBeginNum) {
-            auto segmentCount = static_cast<int>(std::distance(begin, end));
-            if(segmentCount == 1) {
-                ResultType res{};
-                auto ret = mapFunc(*begin, segmentBeginNum);
-                res = reduceFunc(res, ret);
-                return res;
-            } else {
-                auto mid = begin;
-                std::advance(mid, segmentCount / 2);
-                auto handle = std::async(std::launch::async, mapReduceBlocksImp<ResultType, It, MapFunc, ReduceFunc>, begin, mid, mapFunc, reduceFunc, segmentBeginNum);
-                ResultType res{};
-                auto ret2 = mapReduceBlocksImp<ResultType>(mid, end, mapFunc, reduceFunc, segmentBeginNum + segmentCount / 2);
-                auto ret1 = handle.get();
-                res = reduceFunc(res, ret1);
-                res = reduceFunc(res, ret2);
-                return res;
-            }
-        }
-    }
-    
-    std::vector<std::vector<Block>> BLOCKSCI_EXPORT segmentChain(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, unsigned int segmentCount);
-    std::vector<std::pair<int, int>> BLOCKSCI_EXPORT segmentChainIndexes(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, unsigned int segmentCount);
-    
-    template<typename T>
-    std::vector<std::vector<Block>> BLOCKSCI_EXPORT segmentBlocks(T && chain, int segmentCount) {
-        auto lastTx = chain.back().endTxIndex();
-        auto firstTx = chain.front().firstTxIndex();
-        uint32_t segmentSize = (lastTx - firstTx) / segmentCount;
-        
-        std::vector<std::vector<Block>> segments;
-        auto it = chain.begin();
-        auto chainEnd = chain.end();
-        uint32_t startIndex = 0;
-
-        auto blockIndexCmp = [](const Block &block, uint32_t txNum) {
-            return block.firstTxIndex() < txNum;
-        };
-
-        for (int i = 0; i < segmentCount - 1; i++) {
-            auto endIt = std::lower_bound(it, chainEnd, startIndex + segmentSize, blockIndexCmp);
-            startIndex = endIt->firstTxIndex();
-            segments.push_back(std::vector<Block>(it, endIt));
-            it = endIt;
-        }
-        segments.push_back(std::vector<Block>(it, chainEnd));
-        return segments;
-    }
-    
-    class BLOCKSCI_EXPORT Blockchain { 
-        BlockHeight lastBlockHeight;
-
-        DataAccess access;
-        
+    class BLOCKSCI_EXPORT Blockchain : public BlockRange {
+        std::unique_ptr<DataAccess> access;
     public:
         
-        class iterator {
-        public:
-            using self_type = iterator;
-            using value_type = Block;
-            using pointer = Block;
-            using reference = Block;
-            using difference_type = BlockHeight;
-            using iterator_category = std::random_access_iterator_tag;
-
-            iterator() = default;
-            iterator(BlockHeight height_, DataAccess *access_) : height(height_), access(access_) { }
-            self_type &operator+=(difference_type i) { height += i; return *this; }
-            self_type &operator-=(difference_type i) { height -= i; return *this; }
-            self_type &operator++() { ++height; return *this; }
-            self_type &operator--() { --height; return *this; }
-            self_type operator++(int) { self_type tmp = *this; ++height; return tmp; }
-            self_type operator--(int) { self_type tmp = *this; --height; return tmp; }
-            self_type operator+(difference_type i) { self_type tmp = *this; tmp.height += i; return tmp; }
-            self_type operator-(difference_type i) { self_type tmp = *this; tmp.height -= i; return tmp; }
-
-            value_type operator*() { return Block(height, *access); }
-            bool operator==(const self_type& rhs) { return height == rhs.height; }
-            bool operator!=(const self_type& rhs) { return height != rhs.height; }
-            BlockHeight operator-(const self_type& it){return height - it.height;}
-        private:
-            BlockHeight height;
-            DataAccess *access;
-        };
-        
         Blockchain() = default;
-        explicit Blockchain(const DataConfiguration &config) : access(config) {
-            lastBlockHeight = access.getChain().blockCount();
-        }
-        explicit Blockchain(const std::string &dataDirectory) : Blockchain(DataConfiguration{dataDirectory, true, BlockHeight{0}}) {}
+        Blockchain(std::unique_ptr<DataAccess> access_);
+        explicit Blockchain(const DataConfiguration &config);
+        explicit Blockchain(const std::string &dataDirectory);
+        Blockchain(const std::string &dataDirectory, BlockHeight maxBlock);
+        ~Blockchain();
         
-        auto blocks() {
-            auto dataAccess = &getAccess();
-            return ranges::view::ints(BlockHeight{0}, lastBlockHeight) |
-                   ranges::view::transform([dataAccess](BlockHeight height) {return Block(height, *dataAccess); });
-        }
+        std::string dataLocation() const;
 
-        void reload() {
-            access.reload();
-            lastBlockHeight = access.getChain().blockCount();
-        }
-
-        auto begin() {
-            return iterator(0, &getAccess());
-        }
-
-        auto end() {
-            return iterator(lastBlockHeight, &getAccess());
-        }
-
-        auto operator[](BlockHeight height) {
-            return Block(height, getAccess());
-        }
+        void reload();
         
-        DataAccess &getAccess() { return access; }
-        
-        uint32_t firstTxIndex() {
-            return 0;
-        }
-        uint32_t endTxIndex() {
-            return Block(lastBlockHeight - 1, access).endTxIndex();
-        }
-        
-        uint32_t size() const {
-            return static_cast<uint32_t>(lastBlockHeight);
-        }
+        DataAccess &getAccess() { return *access; }
         
         uint32_t addressCount(AddressType::Enum type) const;
-        
-        template <typename ResultType, typename MapFunc, typename ReduceFunc>
-        std::enable_if_t<internal::is_callable<MapFunc, std::vector<Block>, int>::value, ResultType>
-        mapReduce(BlockHeight start, BlockHeight stop, MapFunc mapFunc, ReduceFunc reduceFunc) {
-            auto segments = segmentChain(*this, start, stop, std::thread::hardware_concurrency());
-            return internal::mapReduceBlocksImp<ResultType>(segments.begin(), segments.end(), mapFunc, reduceFunc, 0);
-        }
-        
-        template <typename ResultType, typename MapFunc, typename ReduceFunc>
-        std::enable_if_t<internal::is_callable<MapFunc, std::vector<Block>>::value, ResultType>
-        mapReduce(BlockHeight start, BlockHeight stop, MapFunc mapFunc, ReduceFunc reduceFunc) {
-            auto segments = segmentChain(*this, start, stop, std::thread::hardware_concurrency());
-            return internal::mapReduceBlocksImp<ResultType>(segments.begin(), segments.end(), [&](const std::vector<Block> &blocks, int) { return mapFunc(blocks); }, reduceFunc, 0);
-        }
-
-        template <typename ResultType, typename MapFunc, typename ReduceFunc>
-        std::enable_if_t<internal::is_callable<MapFunc, Block>::value, ResultType>
-        mapReduce(BlockHeight start, BlockHeight stop, MapFunc mapFunc, ReduceFunc reduceFunc) {
-            auto mapF = [&](const std::vector<Block> &segment) {
-                ResultType res{};
-                for (auto &block : segment) {
-                    auto mapped = mapFunc(block);
-                    res = reduceFunc(res, mapped);
-                }
-                return res;
-            };
-            return mapReduce<ResultType>(start, stop, mapF, reduceFunc);
-        }
-
-        template <typename ResultType, typename MapFunc, typename ReduceFunc>
-        std::enable_if_t<internal::is_callable<MapFunc, Transaction>::value, ResultType>
-        mapReduce(BlockHeight start, BlockHeight stop, MapFunc mapFunc, ReduceFunc reduceFunc) {
-            auto mapF = [&](const Block &block) {
-                ResultType res{};
-                RANGES_FOR(auto tx, block) {
-                    auto mapped = mapFunc(tx);
-                    res = reduceFunc(res, mapped);
-                }
-                return res;
-            };
-            
-            return mapReduce<ResultType>(start, stop, mapF, reduceFunc);
-        }
-        
-        template <typename MapType>
-        std::vector<MapType> map(BlockHeight start, BlockHeight stop, const std::function<MapType(const Block &)> &mapFunc) {
-            auto mapF = [&](const std::vector<Block> &segment) {
-                std::vector<MapType> vec;
-                vec.reserve(segment.size());
-                for (auto &block : segment) {
-                    vec.push_back(mapFunc(block));
-                }
-                return vec;
-            };
-            
-            auto reduceFunc = [](std::vector<MapType> &vec1, std::vector<MapType> &vec2) -> std::vector<MapType> & {
-                vec1.reserve(vec1.size() + vec2.size());
-                vec1.insert(vec1.end(), std::make_move_iterator(vec2.begin()), std::make_move_iterator(vec2.end()));
-                return vec1;
-            };
-            
-            return mapReduce<std::vector<MapType>>(start, stop, mapF, reduceFunc);
-        }
     };
     
     uint32_t BLOCKSCI_EXPORT txCount(Blockchain &chain);
-    
-    // filter - Blocks and Txes
-    std::vector<Block> BLOCKSCI_EXPORT filter(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, std::function<bool(const Block &block)> testFunc);
-    std::vector<Transaction> BLOCKSCI_EXPORT filter(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, std::function<bool(const Transaction &tx)> testFunc);
-    
-    inline std::vector<Transaction> BLOCKSCI_EXPORT getTransactionsIncludingOutput(Blockchain &chain, BlockHeight startBlock, BlockHeight endBlock, AddressType::Enum type) {
-        return filter(chain, startBlock, endBlock, [type](const Transaction &tx) {
-            return includesOutputOfType(tx, type);
-        });
-    }
     
     std::map<int64_t, Address> BLOCKSCI_EXPORT mostValuableAddresses(Blockchain &chain);
     

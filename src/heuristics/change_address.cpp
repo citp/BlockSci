@@ -10,7 +10,10 @@
 #include <blocksci/heuristics/change_address.hpp>
 #include <blocksci/heuristics/tx_identification.hpp>
 #include <blocksci/chain/transaction.hpp>
+#include <blocksci/chain/input.hpp>
 #include <blocksci/scripts/script_variant.hpp>
+
+#include <range/v3/range_for.hpp>
 
 #include <unordered_set>
 #include <cmath>
@@ -61,7 +64,7 @@ namespace blocksci { namespace heuristics {
             return true;
         }
         // Check if future transaction is peeling chain
-        for (auto output : tx.outputs()) {
+        RANGES_FOR(auto output, tx.outputs()) {
             if(output.isSpent() && looksLikePeelingChain(*output.getSpendingTx())) {
                 return true;
             }
@@ -96,6 +99,11 @@ namespace blocksci { namespace heuristics {
         return removeOpReturnOutputs(candidates);
     }
     
+    template<>
+    ranges::optional<Output> ChangeHeuristicImpl<ChangeType::PeelingChain>::uniqueChange(const Transaction &tx) const {
+        return internal::singleOrNullptr(this->operator()(tx));
+    }
+    
     // When users transfer bitcoins between wallets, they often do so with values that are powers of ten.
     // On the other hand, it is extremly unlikely that you receive power of ten change due to a wallet's coin selection.
     // Default for digits is 6 (i.e. 0.01 BTC)
@@ -106,12 +114,16 @@ namespace blocksci { namespace heuristics {
         {
             value *= 10;
         }
-        for(auto output : tx.outputs()) {
+        RANGES_FOR(auto output, tx.outputs()) {
             if(output.getValue() % value != 0) {
                 candidates.insert(output);
             }
         }
         return removeOpReturnOutputs(candidates);
+    }
+    
+    ranges::optional<Output> ChangeHeuristicImpl<ChangeType::PowerOfTen>::uniqueChange(const Transaction &tx) const {
+        return internal::singleOrNullptr(this->operator()(tx));
     }
     
     // If there exists an output that is smaller than any of the inputs it is likely the change.
@@ -122,16 +134,21 @@ namespace blocksci { namespace heuristics {
         std::unordered_set<Output> candidates;
         
         auto smallestInputValue = tx.inputs()[0].getValue();
-        for(auto input : tx.inputs()) {
+        RANGES_FOR (auto input, tx.inputs()) {
             smallestInputValue = std::min(smallestInputValue, input.getValue());
         }
         
-        for(Output output : tx.outputs()) {
+        RANGES_FOR(Output output, tx.outputs()) {
             if(output.getValue() < smallestInputValue) {
                 candidates.insert(output);
             }
         }
         return removeOpReturnOutputs(candidates);
+    }
+    
+    template<>
+    ranges::optional<Output> ChangeHeuristicImpl<ChangeType::OptimalChange>::uniqueChange(const Transaction &tx) const {
+        return internal::singleOrNullptr(this->operator()(tx));
     }
     
     // If all inputs are of one address type (e.g., P2PKH or P2SH),
@@ -143,20 +160,25 @@ namespace blocksci { namespace heuristics {
         // check whether all inputs have the same type (e.g., P2SH)
         bool allInputsSameType = true;
         AddressType::Enum inputType = tx.inputs()[0].getType();
-        for(auto input : tx.inputs()) {
+        RANGES_FOR (auto input, tx.inputs()) {
             if(input.getType() != inputType) {
                 allInputsSameType = false;
                 break;
             }
         }
         if(allInputsSameType) {
-            for(auto output : tx.outputs()) {
+            RANGES_FOR (auto output, tx.outputs()) {
                 if(output.getType() == inputType) {
                     candidates.insert(output);
                 }
             }
         }
         return removeOpReturnOutputs(candidates);
+    }
+    
+    template<>
+    ranges::optional<Output> ChangeHeuristicImpl<ChangeType::AddressType>::uniqueChange(const Transaction &tx) const {
+        return internal::singleOrNullptr(this->operator()(tx));
     }
     
     // Bitcoin Core sets the locktime to the current block height to prevent fee sniping.
@@ -169,7 +191,7 @@ namespace blocksci { namespace heuristics {
         // locktime of tx
         bool locktimeGreaterZero = tx.locktime() > 0;
         
-        for(auto output : tx.outputs()) {
+        RANGES_FOR(auto output, tx.outputs()) {
             // output has been spent, check if locktime is consistent
             if(output.isSpent()) {
                 Transaction nextTx = *output.getSpendingTx();
@@ -183,6 +205,11 @@ namespace blocksci { namespace heuristics {
         return removeOpReturnOutputs(candidates);
     }
     
+    template<>
+    ranges::optional<Output> ChangeHeuristicImpl<ChangeType::Locktime>::uniqueChange(const Transaction &tx) const {
+        return internal::singleOrNullptr(this->operator()(tx));
+    }
+    
     // If input addresses appear as an output address,
     // the client might have reused addresses for change.
     template<>
@@ -190,16 +217,21 @@ namespace blocksci { namespace heuristics {
         std::unordered_set<Output> candidates;
         
         std::unordered_set<Address> inputAddresses;
-        for(auto input : tx.inputs()) {
+        RANGES_FOR (auto input, tx.inputs()) {
             inputAddresses.insert(input.getAddress());
         }
         
-        for(auto output : tx.outputs()) {
+        RANGES_FOR (auto output, tx.outputs()) {
             if(inputAddresses.find(output.getAddress()) != inputAddresses.end()) {
                 candidates.insert(output);
             }
         }
         return removeOpReturnOutputs(candidates);
+    }
+    
+    template<>
+    ranges::optional<Output> ChangeHeuristicImpl<ChangeType::AddressReuse>::uniqueChange(const Transaction &tx) const {
+        return internal::singleOrNullptr(this->operator()(tx));
     }
    
     // Most clients will generate a fresh address for the change.
@@ -208,12 +240,17 @@ namespace blocksci { namespace heuristics {
     std::unordered_set<Output> ChangeHeuristicImpl<ChangeType::ClientChangeAddressBehavior>::operator()(const Transaction &tx) const {
         std::unordered_set<Output> candidates;
         
-        for (auto output : tx.outputs()) {
+        RANGES_FOR (auto output, tx.outputs()) {
             if (output.getAddress().isSpendable() && output.getAddress().getBaseScript().getFirstTxIndex() == tx.txNum) {
                 candidates.insert(output);
             }
         }
         return removeOpReturnOutputs(candidates);
+    }
+    
+    template<>
+    ranges::optional<Output> ChangeHeuristicImpl<ChangeType::ClientChangeAddressBehavior>::uniqueChange(const Transaction &tx) const {
+        return internal::singleOrNullptr(this->operator()(tx));
     }
     
     // Legacy heuristic used in previous versions of BlockSci
@@ -223,13 +260,13 @@ namespace blocksci { namespace heuristics {
         }
         
         auto smallestInput = std::numeric_limits<int64_t>::max();
-        for (auto input : tx.inputs()) {
+        RANGES_FOR (auto input, tx.inputs()) {
             smallestInput = std::min(smallestInput, input.getValue());
         }
         
         uint16_t spendableCount = 0;
         ranges::optional<Output> change;
-        for (auto output : tx.outputs()) {
+        RANGES_FOR (auto output, tx.outputs()) {
             if (output.getAddress().isSpendable()) {
                 spendableCount++;
                 if (output.getValue() < smallestInput && output.getAddress().getBaseScript().getFirstTxIndex() == tx.txNum) {
@@ -257,6 +294,11 @@ namespace blocksci { namespace heuristics {
             candidates.insert(*candidate);
         }
         return removeOpReturnOutputs(candidates);
+    }
+    
+    template<>
+    ranges::optional<Output> ChangeHeuristicImpl<ChangeType::Legacy>::uniqueChange(const Transaction &tx) const {
+        return internal::singleOrNullptr(this->operator()(tx));
     }
     
     std::unordered_set<Output> changeByPeelingChain(const Transaction &tx) {
@@ -309,6 +351,10 @@ namespace blocksci { namespace heuristics {
     
     std::unordered_set<Output> changeByLegacyHeuristic(const Transaction &tx) {
         return ChangeHeuristicImpl<ChangeType::Legacy>{}(tx);
+    }
+    
+    ranges::optional<Output> ChangeHeuristic::uniqueChange(const Transaction &tx) const {
+        return internal::singleOrNullptr(impl(tx));
     }
 
 } // namespace heuristics

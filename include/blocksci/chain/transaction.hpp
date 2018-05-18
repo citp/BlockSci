@@ -9,20 +9,22 @@
 #ifndef transaction_hpp
 #define transaction_hpp
 
-#include "output.hpp"
-#include "input.hpp"
-
 #include <blocksci/blocksci_export.h>
-#include <blocksci/core/raw_transaction.hpp>
-#include <blocksci/index/mempool_index.hpp>
 
-#include <range/v3/algorithm/any_of.hpp>
-#include <range/v3/view/iota.hpp>
-#include <range/v3/view/zip_with.hpp>
+#include <blocksci/chain/chain_fwd.hpp>
+#include <blocksci/chain/input_range.hpp>
+#include <blocksci/chain/output_range.hpp>
+#include <blocksci/core/raw_transaction.hpp>
+#include <blocksci/core/bitcoin_uint256.hpp>
+#include <blocksci/core/transaction_data.hpp>
+
+#include <range/v3/utility/optional.hpp>
+
+#include <chrono>
 
 namespace blocksci {
     class uint256;
-    class HashIndex;
+    class DataAccess;
     
     struct BLOCKSCI_EXPORT InvalidHashException : public std::runtime_error {
         InvalidHashException() : std::runtime_error("No Match for hash") {}
@@ -31,62 +33,49 @@ namespace blocksci {
     class BLOCKSCI_EXPORT Transaction {
     private:
         DataAccess *access;
-        const RawTransaction *data;
-        const int32_t *version;
-        const uint32_t *sequenceNumbers;
+        TxData data;
+        uint32_t maxTxCount;
+        
         friend TransactionSummary;
+        friend TransactionRange;
     public:
         uint32_t txNum;
         BlockHeight blockHeight;
         
         Transaction() = default;
         
-        Transaction(const RawTransaction *data_, const int32_t *version_, const uint32_t *sequenceNumbers_, uint32_t txNum_, BlockHeight blockHeight_, DataAccess &access_) : access(&access_), data(data_), version(version_), sequenceNumbers(sequenceNumbers_), txNum(txNum_), blockHeight(blockHeight_) {}
+        Transaction(const TxData &data_, uint32_t txNum_, BlockHeight blockHeight_, uint32_t maxTxCount_, DataAccess &access_) : access(&access_), data(data_), maxTxCount(maxTxCount_), txNum(txNum_), blockHeight(blockHeight_) {}
         
-        Transaction(uint32_t index, BlockHeight height, DataAccess &access_) :
-        Transaction(
-                    access_.getChain().getTx(index),
-                    access_.getChain().getTxVersion(index),
-                    access_.getChain().getSequenceNumbers(index),
-                    index, height, access_
-                    ) {}
+        Transaction(uint32_t index, BlockHeight height, DataAccess &access_);
         
-        Transaction(uint32_t index, DataAccess &access_) : Transaction(index, access_.getChain().getBlockHeight(index), access_) {}
+        Transaction(uint32_t index, DataAccess &access_);
         
         Transaction(const uint256 &hash, DataAccess &access);
-        Transaction(const std::string &hash, DataAccess &access) : Transaction(uint256S(hash), access) {}
+        Transaction(const std::string &hash, DataAccess &access);
         
         DataAccess &getAccess() const {
             return *access;
         }
 
         uint256 getHash() const {
-            return *access->getChain().getTxHash(txNum);
+            return *data.hash;
         }
         
-        ranges::optional<std::chrono::system_clock::time_point> getTimeSeen() const {
-            return access->getMempoolIndex().getTxTimestamp(txNum);
-        }
+        // Mempool data access
+        ranges::optional<std::chrono::system_clock::time_point> getTimeSeen() const;
+        bool observedInMempool() const;
         
-        bool observedInMempool() const {
-            return access->getMempoolIndex().observed(txNum);
-        }
-        
-        std::string toString() const {
-            std::stringstream ss;
-            ss << "Tx(len(txins)=" << inputCount() <<", len(txouts)=" << outputCount() <<", size_bytes=" << sizeBytes() << ", block_height=" << blockHeight <<", tx_index=" << txNum << ")";
-            return ss.str();
-        }
+        std::string toString() const;
         
         std::vector<OutputPointer> getOutputPointers(const InputPointer &pointer) const;
         std::vector<InputPointer> getInputPointers(const OutputPointer &pointer) const;
         
         uint32_t baseSize() const {
-            return data->baseSize;
+            return data.rawTx->baseSize;
         }
         
         uint32_t totalSize() const {
-            return data->realSize;
+            return data.rawTx->realSize;
         }
         
         uint32_t virtualSize() const {
@@ -94,7 +83,7 @@ namespace blocksci {
         }
         
         uint32_t weight() const {
-            return data->realSize + 3 * data->baseSize;
+            return data.rawTx->realSize + 3 * data.rawTx->baseSize;
         }
         
         uint32_t sizeBytes() const {
@@ -106,10 +95,10 @@ namespace blocksci {
                 return 0;
             } else {
                 int64_t total = 0;
-                for (auto &input : rawInputs()) {
+                for (auto input : inputs()) {
                     total += input.getValue();
                 }
-                for (auto &output : rawOutputs()) {
+                for (auto output : outputs()) {
                     total -= output.getValue();
                 }
                 return total;
@@ -117,42 +106,23 @@ namespace blocksci {
         }
         
         uint32_t locktime() const {
-            return data->locktime;
+            return data.rawTx->locktime;
         }
         
         uint16_t inputCount() const {
-            return data->inputCount;
+            return data.rawTx->inputCount;
         }
         
         uint16_t outputCount() const {
-            return data->outputCount;
+            return data.rawTx->outputCount;
         }
         
-        ranges::iterator_range<const Inout *> rawOutputs() const {
-            return ranges::make_iterator_range(data->beginOutputs(), data->endOutputs());
+        OutputRange outputs() const {
+            return {data.rawTx->beginOutputs(), blockHeight, txNum, outputCount(), maxTxCount, access};
         }
         
-        ranges::iterator_range<const Inout *> rawInputs() const {
-            return ranges::make_iterator_range(data->beginInputs(), data->endInputs());
-        }
-
-        auto outputs() const {
-            auto dataAccess = access;
-            uint32_t txIndex = txNum;
-            BlockHeight height = blockHeight;
-            return ranges::view::zip_with([dataAccess, txIndex, height](uint16_t outputNum, const Inout &inout) {
-                return Output({txIndex, outputNum}, height, inout, *dataAccess);
-            }, ranges::view::ints(uint16_t{0}, outputCount()), rawOutputs());
-        }
-        
-        auto inputs() const {
-            auto dataAccess = access;
-            uint32_t txIndex = txNum;
-            BlockHeight height = blockHeight;
-            auto seq = sequenceNumbers;
-            return ranges::view::zip_with([dataAccess, txIndex, height, seq](uint16_t inputNum, const Inout &inout) {
-                return Input({txIndex, inputNum}, height, inout, &seq[inputNum], *dataAccess);
-            }, ranges::view::ints(uint16_t{0}, inputCount()), rawInputs());
+        InputRange inputs() const {
+            return {data.rawTx->beginInputs(), data.sequenceNumbers, blockHeight, txNum, inputCount(), access};
         }
         
         bool isCoinbase() const {
@@ -191,17 +161,11 @@ namespace blocksci {
     
     bool BLOCKSCI_EXPORT hasFeeGreaterThan(Transaction &tx, int64_t txFee);
     
-    inline bool BLOCKSCI_EXPORT includesOutputOfType(const Transaction &tx, AddressType::Enum type) {
-        return ranges::any_of(tx.outputs(), [=](const Output &output) {
-            return output.getType() == type;
-        });
-    }
+    bool BLOCKSCI_EXPORT includesOutputOfType(const Transaction &tx, AddressType::Enum type);
     
     ranges::optional<Output> BLOCKSCI_EXPORT getOpReturn(const Transaction &tx);
 
-    inline std::ostream BLOCKSCI_EXPORT &operator<<(std::ostream &os, const Transaction &tx) {
-        return os << tx.toString();
-    }
+    std::ostream BLOCKSCI_EXPORT &operator<<(std::ostream &os, const Transaction &tx);
     
     bool BLOCKSCI_EXPORT isSegwitMarker(const Transaction &tx);
 } // namespace blocksci

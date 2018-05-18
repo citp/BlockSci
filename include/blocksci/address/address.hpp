@@ -9,23 +9,22 @@
 #ifndef address_hpp
 #define address_hpp
 
-#include "address_fwd.hpp"
-
 #include <blocksci/blocksci_export.h>
-#include <blocksci/typedefs.hpp>
+#include <blocksci/address/address_fwd.hpp>
 #include <blocksci/core/address_types.hpp>
+#include <blocksci/core/raw_address.hpp>
+#include <blocksci/core/typedefs.hpp>
 #include <blocksci/chain/chain_fwd.hpp>
 #include <blocksci/scripts/scripts_fwd.hpp>
 
 #include <range/v3/view/any_view.hpp>
 
 #include <functional>
+#include <unordered_set>
 #include <vector>
 
 namespace blocksci {
     class DataAccess;
-    struct DataConfiguration;
-    class EquivAddress;
     
     class BLOCKSCI_EXPORT Address {
         DataAccess *access;
@@ -36,6 +35,11 @@ namespace blocksci {
         
         Address() : access(nullptr), scriptNum(0), type(AddressType::Enum::NONSTANDARD) {}
         Address(uint32_t addressNum_, AddressType::Enum type_, DataAccess &access_) : access(&access_), scriptNum(addressNum_), type(type_) {}
+        Address(const RawAddress &raw, DataAccess &access_) : Address(raw.scriptNum, raw.type, access_) {}
+        
+        operator RawAddress() const {
+            return RawAddress{scriptNum, type};
+        }
         
         DataAccess &getAccess() const {
             return *access;
@@ -83,6 +87,8 @@ namespace blocksci {
     ranges::optional<Address> BLOCKSCI_EXPORT getAddressFromString(const std::string &addressString, DataAccess &access);
     
     std::vector<Address> BLOCKSCI_EXPORT getAddressesWithPrefix(const std::string &prefix, DataAccess &access);
+    
+    std::unordered_set<Address> BLOCKSCI_EXPORT getScriptNestedEquivalents(const Address &searchAddress);
 }
 
 namespace std {

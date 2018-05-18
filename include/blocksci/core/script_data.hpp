@@ -9,15 +9,58 @@
 #ifndef script_data_hpp
 #define script_data_hpp
 
-#include "bitcoin_uint256.hpp"
-#include "in_place_array.hpp"
-#include "raw_address.hpp"
+#include <blocksci/blocksci_export.h>
+#include <blocksci/core/bitcoin_uint256.hpp>
+#include <blocksci/core/raw_address.hpp>
 
-#include <blocksci/scripts/bitcoin_pubkey.hpp>
-
+#include <array>
 #include <limits>
+#include <string>
+#include <vector>
 
 namespace blocksci {
+    using RawPubkey = std::array<unsigned char, 65>;
+    
+    template <typename T, typename Index = uint32_t>
+    class BLOCKSCI_EXPORT InPlaceArray {
+        Index dataSize;
+        
+    public:
+        explicit InPlaceArray(Index size) : dataSize(size) {}
+        
+        Index size() const {
+            return dataSize;
+        }
+        
+        T &operator[](Index index) {
+            return *(reinterpret_cast<T *>(reinterpret_cast<char *>(this) + sizeof(InPlaceArray)) + index);
+        }
+        
+        const T &operator[](Index index) const {
+            return *(reinterpret_cast<const T *>(reinterpret_cast<const char *>(this) + sizeof(InPlaceArray)) + index);
+        }
+        
+        const T *begin() const {
+            return &operator[](Index{0});
+        }
+        
+        const T *end() const {
+            return &operator[](size());
+        }
+        
+        const T *begin() {
+            return &operator[](Index{0});
+        }
+        
+        const T *end() {
+            return &operator[](size());
+        }
+        
+        size_t extraSize() const {
+            return sizeof(T) * size();
+        }
+        
+    };
     
     struct BLOCKSCI_EXPORT ScriptDataBase {
         uint32_t txFirstSeen;
@@ -39,18 +82,16 @@ namespace blocksci {
     struct BLOCKSCI_EXPORT PubkeyData : public ScriptDataBase {
         union {
             uint160 address;
-            CPubKey pubkey;
+            RawPubkey pubkey;
         };
         bool hasPubkey;
         
-        PubkeyData(uint32_t txNum, const CPubKey &pubkey_) : ScriptDataBase(txNum), pubkey(pubkey_) {}
+        PubkeyData(uint32_t txNum, const RawPubkey &pubkey_) : ScriptDataBase(txNum), pubkey(pubkey_) {}
         PubkeyData(uint32_t txNum, const uint160 &address_) : ScriptDataBase(txNum), address(address_) {}
         
         size_t size() {
             return sizeof(PubkeyData);
         }
-        
-        uint160 getPubkeyHash() const;
     };
     
     struct BLOCKSCI_EXPORT ScriptHashData : public ScriptDataBase {
@@ -78,9 +119,6 @@ namespace blocksci {
                 visitFunc(wrappedAddress);
             }
         }
-        
-        
-        uint160 getHash160() const;
     };
     
     struct BLOCKSCI_EXPORT MultisigData : public ScriptDataBase {

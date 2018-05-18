@@ -12,9 +12,10 @@
 #include "parser_fwd.hpp"
 
 #include <blocksci/core/bitcoin_uint256.hpp>
-#include <blocksci/util/data_configuration.hpp>
 
-#include <boost/filesystem/path.hpp>
+#include <internal/data_configuration.hpp>
+
+#include <wjfilesystem/path.h>
 
 #include <functional>
 
@@ -24,32 +25,32 @@ struct ParserConfigurationBase {
     ParserConfigurationBase();
     ParserConfigurationBase(const std::string &dataDirectory_);
     
-    boost::filesystem::path parserDirectory() const {
-        return boost::filesystem::path{dataConfig.dataDirectory}/"parser";
+    filesystem::path parserDirectory() const {
+        return filesystem::path{dataConfig.dataDirectory}/"parser";
     }
     
-    boost::filesystem::path utxoCacheFile() const {
+    filesystem::path utxoCacheFile() const {
         return parserDirectory()/"utxoCache.dat";
     }
     
-    boost::filesystem::path utxoAddressStatePath() const {
+    filesystem::path utxoAddressStatePath() const {
         return parserDirectory()/"utxoAddressState";
     }
     
-    boost::filesystem::path utxoScriptStatePath() const {
+    filesystem::path utxoScriptStatePath() const {
         return parserDirectory()/"utxoScriptState";
     }
     
-    boost::filesystem::path addressPath() const {
+    filesystem::path addressPath() const {
         return parserDirectory()/"address";
     }
     
-    boost::filesystem::path blockListPath() const {
+    filesystem::path blockListPath() const {
         return parserDirectory()/"blockList.dat";
     }
     
     std::string txUpdatesFilePath() const {
-        return (parserDirectory()/"txUpdates").native();
+        return (parserDirectory()/"txUpdates").str();
     }
     
     bool witnessActivatedAtHeight(uint32_t blockHeight) const;
@@ -59,14 +60,14 @@ struct ParserConfigurationBase {
 template<>
 struct ParserConfiguration<FileTag> : public ParserConfigurationBase {
     ParserConfiguration();
-    ParserConfiguration(boost::filesystem::path bitcoinDirectory_, const std::string &dataDirectory_);
+    ParserConfiguration(filesystem::path bitcoinDirectory_, const std::string &dataDirectory_);
     
-    boost::filesystem::path bitcoinDirectory;
+    filesystem::path bitcoinDirectory;
     uint32_t blockMagic = 0;
     std::function<blocksci::uint256(const char *data, unsigned long len)> workHashFunction;
     
     
-    boost::filesystem::path pathForBlockFile(int fileNum) const;
+    filesystem::path pathForBlockFile(int fileNum) const;
 };
 #endif
 

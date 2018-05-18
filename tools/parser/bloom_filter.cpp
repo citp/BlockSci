@@ -10,7 +10,6 @@
 
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
-#include <boost/filesystem/fstream.hpp>
 
 #include <fstream>
 #include <array>
@@ -64,9 +63,9 @@ BloomFilterData::BloomFilterData() : maxItems(0), fpRate(1), m_numHashes(0), len
 BloomFilterData::BloomFilterData(int64_t maxItems_, double fpRate_) : maxItems(maxItems_), fpRate(fpRate_), m_numHashes(calculateHashes(fpRate_)), length(calculateLength(maxItems_, fpRate_)), addedCount(0) {}
 
 
-BloomFilterData loadData(const boost::filesystem::path &path, int64_t maxItems, double fpRate) {
+BloomFilterData loadData(const filesystem::path &path, int64_t maxItems, double fpRate) {
     BloomFilterData data{maxItems, fpRate};
-    boost::filesystem::ifstream file(path, std::ios::binary);
+    std::ifstream file(path.str(), std::ios::binary);
     if (file.good()) {
         boost::archive::binary_iarchive ia(file);
         ia >> data;
@@ -74,10 +73,10 @@ BloomFilterData loadData(const boost::filesystem::path &path, int64_t maxItems, 
     return data;
 }
 
-BloomFilter::BloomFilter(const std::string &path_, int64_t maxItems, double fpRate) : path(path_), impData(loadData(metaPath(), maxItems, fpRate)), store(storePath().native(), impData.length) {}
+BloomFilter::BloomFilter(const std::string &path_, int64_t maxItems, double fpRate) : path(path_), impData(loadData(metaPath(), maxItems, fpRate)), store(storePath().str(), impData.length) {}
 
 BloomFilter::~BloomFilter() {
-    boost::filesystem::ofstream file(metaPath(), std::ios::binary);
+    std::ofstream file(metaPath().str(), std::ios::binary);
     boost::archive::binary_oarchive oa(file);
     oa << impData;
 }

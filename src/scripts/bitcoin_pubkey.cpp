@@ -3,7 +3,8 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <blocksci/scripts/bitcoin_pubkey.hpp>
-#include <blocksci/util/hash.hpp>
+
+#include <internal/hash.hpp>
 
 #include <secp256k1_recovery.h>
 #include <secp256k1.h>

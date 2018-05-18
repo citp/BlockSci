@@ -7,8 +7,11 @@
 
 #include <blocksci/heuristics/tx_identification.hpp>
 #include <blocksci/chain/transaction.hpp>
-#include <blocksci/util/hash.hpp>
+#include <blocksci/chain/input.hpp>
+#include <blocksci/chain/output.hpp>
 #include <blocksci/scripts/script_variant.hpp>
+
+#include <range/v3/range_for.hpp>
 
 #include <unordered_set>
 #include <unordered_map>
@@ -27,7 +30,7 @@ namespace heuristics {
         }
         
         std::unordered_set<Address> inputAddresses;
-        for (auto input : tx.inputs()) {
+        RANGES_FOR (auto input, tx.inputs()) {
             inputAddresses.insert(input.getAddress());
         }
         
@@ -36,7 +39,7 @@ namespace heuristics {
         }
         
         std::unordered_map<int64_t, uint16_t> outputValues;
-        for (auto output : tx.outputs()) {
+        RANGES_FOR (auto output, tx.outputs()) {
             outputValues[output.getValue()]++;
         }
         
@@ -168,7 +171,7 @@ namespace heuristics {
         }
         
         std::unordered_map<Address, int64_t> inputValues;
-        for (auto input : tx.inputs()) {
+        RANGES_FOR (auto input, tx.inputs()) {
             inputValues[input.getAddress()] += input.getValue();
         }
         
@@ -177,7 +180,7 @@ namespace heuristics {
         }
         
         std::unordered_map<int64_t, std::unordered_set<Address>> outputValues;
-        for (auto output : tx.outputs()) {
+        RANGES_FOR (auto output, tx.outputs()) {
             outputValues[output.getValue()].insert(output.getAddress());
         }
         
@@ -214,7 +217,7 @@ namespace heuristics {
         }
         
         size_t j = 0;
-        for (auto output : tx.outputs()) {
+        RANGES_FOR (auto output, tx.outputs()) {
             if (output.getValue() != goalValue) {
                 bucketGoals[j] += output.getValue();
                 j++;
@@ -239,7 +242,7 @@ namespace heuristics {
         }
         
         std::unordered_map<int64_t, uint16_t> outputValues;
-        for (auto output : tx.outputs()) {
+        RANGES_FOR (auto output, tx.outputs()) {
             outputValues[output.getValue()]++;
         }
         
@@ -256,7 +259,7 @@ namespace heuristics {
         }
         
         std::unordered_map<Address, int64_t> inputValues;
-        for (auto input : tx.inputs()) {
+        RANGES_FOR (auto input, tx.inputs()) {
             inputValues[input.getAddress()] += input.getValue();
         }
         
@@ -265,7 +268,7 @@ namespace heuristics {
         }
         
         std::vector<Output> unknownOutputs;
-        for (auto output : tx.outputs()) {
+        RANGES_FOR (auto output, tx.outputs()) {
             if (inputValues.find(output.getAddress()) == inputValues.end()) {
                 unknownOutputs.push_back(output);
             }
@@ -316,7 +319,7 @@ namespace heuristics {
         }
         
         std::unordered_set<AddressType::Enum> inputCounts;
-        for (auto input : tx.inputs()) {
+        RANGES_FOR (auto input, tx.inputs()) {
             inputCounts.insert(input.getAddress().type);
         }
         
@@ -327,7 +330,7 @@ namespace heuristics {
         AddressType::Enum inputType = *inputCounts.begin();
         
         bool seenType = false;
-        for (auto output : tx.outputs()) {
+        RANGES_FOR (auto output, tx.outputs()) {
             if (output.getType() == inputType) {
                 if (seenType) {
                     return false;
@@ -421,7 +424,7 @@ namespace heuristics {
         }
         
         std::unordered_set<DetailedType, DetailedTypeHasher> outputTypes;
-        for (auto output : tx.outputs()) {
+        RANGES_FOR (auto output, tx.outputs()) {
             outputTypes.insert(DetailedType{output.getAddress(), tx.getAccess()});
         }
         
@@ -430,7 +433,7 @@ namespace heuristics {
         }
         
         std::unordered_set<DetailedType, DetailedTypeHasher> inputTypes;
-        for (auto input : tx.inputs()) {
+        RANGES_FOR (auto input, tx.inputs()) {
             inputTypes.insert(DetailedType{input.getAddress(), tx.getAccess()});
         }
         
@@ -447,7 +450,7 @@ namespace heuristics {
         }
         
         std::unordered_set<Address> multisigOutputs;
-        for (auto output : tx.outputs()) {
+        RANGES_FOR (auto output, tx.outputs()) {
             auto pointer = getInsidePointer(output.getAddress(), tx.getAccess());
             if (pointer && pointer->type == AddressType::Enum::MULTISIG) {
                 multisigOutputs.insert(*pointer);
@@ -459,7 +462,7 @@ namespace heuristics {
         }
         
         std::unordered_set<Address> multisigInputs;
-        for (auto input : tx.inputs()) {
+        RANGES_FOR (auto input, tx.inputs()) {
             auto pointer = getInsidePointer(input.getAddress(), tx.getAccess());
             if (pointer && pointer->type == AddressType::Enum::MULTISIG) {
                 if (multisigOutputs.find(*pointer) == multisigOutputs.end()) {

@@ -12,15 +12,16 @@
 
 #include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/block.hpp>
-#include <blocksci/index/mempool_index.hpp>
+
+#include <internal/bitcoin_uint256_hex.hpp>
+#include <internal/data_access.hpp>
+#include <internal/mempool_index.hpp>
 
 #include <bitcoinapi/bitcoinapi.h>
 
 #include <clipp.h>
 
 #include <range/v3/range_for.hpp>
-
-#include <boost/filesystem/operations.hpp>
 
 #include <chrono>
 #include <iostream>
@@ -41,14 +42,14 @@ void term(int)
 
 int initializeRecordingFile(Blockchain &chain) {
     auto mempoolDir = chain.getAccess().config.mempoolDirectory();
-    if(!(boost::filesystem::exists(mempoolDir))){
-        boost::filesystem::create_directory(mempoolDir);
+    if (!mempoolDir.exists()){
+        filesystem::create_directory(mempoolDir);
     }
     auto mostRecentBlock = chain[static_cast<int>(chain.size()) - 1];
-    FixedSizeFileWriter<uint32_t> txIndexFile((boost::filesystem::path{chain.getAccess().config.mempoolDirectory()}/"tx_index").native());
+    FixedSizeFileWriter<uint32_t> txIndexFile(chain.getAccess().config.mempoolDirectory()/"tx_index");
     auto fileNum = static_cast<int>(txIndexFile.size());
     txIndexFile.write(mostRecentBlock.endTxIndex());
-    FixedSizeFileWriter<int32_t> blockIndexFile((boost::filesystem::path{chain.getAccess().config.mempoolDirectory()}/"block_index").native());
+    FixedSizeFileWriter<int32_t> blockIndexFile(chain.getAccess().config.mempoolDirectory()/"block_index");
     assert(static_cast<int>(blockIndexFile.size()) == fileNum);
     blockIndexFile.write(mostRecentBlock.height() + 1);
     return fileNum;
@@ -58,9 +59,9 @@ struct MempoolFiles {
     FixedSizeFileWriter<MempoolRecord> txTimeFile;
     FixedSizeFileWriter<BlockRecord> blockTimeFile;
     
-    MempoolFiles(const boost::filesystem::path &mempoolPath, int fileNum) :
-    txTimeFile(boost::filesystem::path{mempoolPath/std::to_string(fileNum)}.concat("_tx")),
-    blockTimeFile(boost::filesystem::path{mempoolPath/std::to_string(fileNum)}.concat("_block"))
+    MempoolFiles(const filesystem::path &mempoolPath, int fileNum) :
+    txTimeFile(mempoolPath/(std::to_string(fileNum) + "_tx")),
+    blockTimeFile(mempoolPath/(std::to_string(fileNum) + "_block"))
     {}
 };
 

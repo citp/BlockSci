@@ -20,20 +20,11 @@
 #include <mpark/variant.hpp>
 
 namespace blocksci {
-    namespace internal {
-        template<AddressType::Enum type>
-        struct ScriptCreateFunctor {
-            static ScriptVariant f(uint32_t scriptNum, DataAccess &access);
-        };
-        
-        static constexpr auto scriptCreator = make_dynamic_table<AddressType, ScriptCreateFunctor>();
-    }
-    
     class BLOCKSCI_EXPORT AnyScript {
     public:
         AnyScript() = default;
-        AnyScript(const Address &address) : wrapped(internal::scriptCreator.at(static_cast<size_t>(address.type))(address.scriptNum, address.getAccess())) {}
-        AnyScript(uint32_t addressNum, AddressType::Enum type, DataAccess &access) : wrapped(internal::scriptCreator.at(static_cast<size_t>(type))(addressNum, access)) {}
+        AnyScript(const Address &address);
+        AnyScript(uint32_t addressNum, AddressType::Enum type, DataAccess &access);
         AnyScript(const ScriptVariant &var) : wrapped(var) {}
 
         uint32_t getScriptNum() const {
@@ -86,13 +77,6 @@ namespace blocksci {
         
         ScriptVariant wrapped;
     };
-    
-    namespace internal {
-        template<AddressType::Enum type>
-        ScriptVariant ScriptCreateFunctor<type>::f(uint32_t scriptNum, DataAccess &access) {
-            return ScriptAddress<type>(scriptNum, access);
-        }
-    }
 } // namespace blocksci
 
 #endif /* script_variant_hpp */

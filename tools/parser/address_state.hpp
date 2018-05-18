@@ -14,6 +14,9 @@
 #include "serializable_map.hpp"
 #include "hash_index_creator.hpp"
 
+#include <internal/dedup_address_info.hpp>
+#include <internal/bitcoin_uint256_hex.hpp>
+
 #include <memory>
 
 enum class AddressLocation {
@@ -57,13 +60,13 @@ class AddressState {
     class AddressBloomFilter : public BloomFilter  {
     public:
         static constexpr auto type = scriptType;
-        AddressBloomFilter(const boost::filesystem::path &path) : BloomFilter(boost::filesystem::path(path).concat(dedupAddressName(type)).native(), startingCount<scriptType>, AddressFalsePositiveRate)  {}
+        AddressBloomFilter(const filesystem::path &path) : BloomFilter(filesystem::path(path.str() + dedupAddressName(type)).str(), startingCount<scriptType>, AddressFalsePositiveRate)  {}
     };
 
     template<blocksci::DedupAddressType::Enum scriptType>
     using AddressBloomFilterPointer = std::unique_ptr<AddressBloomFilter<scriptType>>;
     
-    boost::filesystem::path path;
+    filesystem::path path;
     
     HashIndexCreator &db;
     
@@ -85,6 +88,7 @@ class AddressState {
     void reloadBloomFilter() {
         auto &addressBloomFilter = std::get<AddressBloomFilterPointer<dedupType(type)>>(addressBloomFilters);
         addressBloomFilter->reset(addressBloomFilter->getMaxItems(), addressBloomFilter->getFPRate());
+        
         RANGES_FOR(auto item, db.db.getAddressRange<type>()) {
             addressBloomFilter->add(item.second);
         }
@@ -97,7 +101,7 @@ class AddressState {
     }
     
 public:
-    AddressState(boost::filesystem::path path, HashIndexCreator &hashDb);
+    AddressState(filesystem::path path, HashIndexCreator &hashDb);
     AddressState(const AddressState &) = delete;
     AddressState &operator=(const AddressState &) = delete;
     AddressState(AddressState &&) = delete;

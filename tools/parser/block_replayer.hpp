@@ -12,7 +12,7 @@
 #include "config.hpp"
 #include "parser_fwd.hpp"
 
-#include <blocksci/typedefs.hpp>
+#include <blocksci/core/typedefs.hpp>
 
 #include <cstdint>
 

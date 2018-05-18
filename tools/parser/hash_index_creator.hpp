@@ -13,8 +13,10 @@
 #include "parser_index.hpp"
 #include "serializable_map.hpp"
 
-#include <blocksci/core/address_info.hpp>
-#include <blocksci/index/hash_index.hpp>
+#include <blocksci/core/address_type_meta.hpp>
+
+#include <internal/address_info.hpp>
+#include <internal/hash_index.hpp>
 
 #include <tuple>
 
@@ -147,7 +149,7 @@ public:
     
     blocksci::HashIndex db;
     
-    HashIndexCreator(const ParserConfigurationBase &config, const std::string &path);
+    HashIndexCreator(const ParserConfigurationBase &config, const filesystem::path &path);
     ~HashIndexCreator();
     
     void processTx(const blocksci::RawTransaction *tx, uint32_t txNum, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts);

@@ -8,22 +8,22 @@
 #include "utxo_address_state.hpp"
 #include "script_output.hpp"
 
-#include <boost/filesystem/path.hpp>
+#include <wjfilesystem/path.h>
 
-void UTXOAddressState::addOutput(const AnySpendData &spendData, const blocksci::OutputPointer &pointer) {
+void UTXOAddressState::addOutput(const AnySpendData &spendData, const blocksci::InoutPointer &pointer) {
     mpark::visit([&](const auto &spendData) { this->addOutput(spendData, pointer); }, spendData.wrapped);
 }
 
 template<blocksci::AddressType::Enum type>
 struct SpendOutputFunctor {
-    static SpendDataType f(const blocksci::OutputPointer &pointer, UTXOAddressState &state) {
+    static SpendDataType f(const blocksci::InoutPointer &pointer, UTXOAddressState &state) {
         return state.spendOutput<type>(pointer);
     }
 };
 
 static auto spendOutputTable = blocksci::make_dynamic_table<blocksci::AddressType, SpendOutputFunctor>();
 
-AnySpendData UTXOAddressState::spendOutput(const blocksci::OutputPointer &pointer, blocksci::AddressType::Enum type) {
+AnySpendData UTXOAddressState::spendOutput(const blocksci::InoutPointer &pointer, blocksci::AddressType::Enum type) {
     auto index = static_cast<size_t>(type);
     if (index >= blocksci::AddressType::size)
     {
@@ -37,8 +37,8 @@ void UTXOAddressState::unserialize(const std::string &path) {
         std::stringstream ss;
         ss << addressName(addressTypeState.type);
         ss << ".dat";
-        auto fullPath = boost::filesystem::path{path} / ss.str();
-        addressTypeState.unserialize(fullPath.native());
+        auto fullPath = filesystem::path{path} / ss.str();
+        addressTypeState.unserialize(fullPath.str());
     });
 }
 
@@ -47,7 +47,7 @@ void UTXOAddressState::serialize(const std::string &path) {
         std::stringstream ss;
         ss << addressName(addressTypeState.type);
         ss << ".dat";
-        auto fullPath = boost::filesystem::path{path} / ss.str();
-        addressTypeState.serialize(fullPath.native());
+        auto fullPath = filesystem::path{path} / ss.str();
+        addressTypeState.serialize(fullPath.str());
     });
 }

@@ -9,9 +9,9 @@
 #ifndef bloom_filter_hpp
 #define bloom_filter_hpp
 
-#include <blocksci/core/file_mapper.hpp>
+#include <internal/file_mapper.hpp>
 
-#include <boost/filesystem/path.hpp>
+#include <wjfilesystem/path.h>
 #include <boost/serialization/access.hpp>
 
 #include <fstream>
@@ -96,12 +96,12 @@ public:
         return impData.fpRate;
     }
     
-    boost::filesystem::path metaPath() const {
-        return boost::filesystem::path(path).concat("Meta.dat");
+    filesystem::path metaPath() const {
+        return filesystem::path(path + "Meta.dat");
     }
     
-    boost::filesystem::path storePath() const {
-        return boost::filesystem::path(path).concat("Store");
+    filesystem::path storePath() const {
+        return filesystem::path(path + "Store");
     }
     
 private:

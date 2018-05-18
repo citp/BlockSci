@@ -20,7 +20,7 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 
-#include <boost/filesystem/fstream.hpp>
+#include <fstream>
 
 bool isSegwitMarker(const blocksci::RawTransaction &tx, blocksci::ScriptAccess &scripts) {
     for (uint16_t i = 0; i < tx.outputCount; i++) {
@@ -40,9 +40,8 @@ bool isSegwitMarker(const blocksci::RawTransaction &tx, blocksci::ScriptAccess &
 
 #ifdef BLOCKSCI_FILE_PARSER
 void replayBlock(const ParserConfiguration<FileTag> &config, blocksci::BlockHeight blockNum) {
-    blocksci::ECCVerifyHandle handle;
     ChainIndex<FileTag> index;
-    boost::filesystem::ifstream inFile(config.blockListPath(), std::ios::binary);
+    std::ifstream inFile(config.blockListPath().str(), std::ios::binary);
     if (!inFile.good()) {
         throw std::runtime_error("Can only replay block that has already been processed");
     }
@@ -52,7 +51,7 @@ void replayBlock(const ParserConfiguration<FileTag> &config, blocksci::BlockHeig
     auto chain = index.generateChain(blockNum);
     auto block = chain.back();
     auto blockPath = config.pathForBlockFile(block.nFile);
-    SafeMemReader reader{blockPath.native()};
+    SafeMemReader reader{blockPath.str()};
     reader.advance(block.nDataPos);
     reader.advance(sizeof(CBlockHeader));
     reader.readVariableLengthInteger();

@@ -8,83 +8,151 @@
 #ifndef transaction_range_hpp
 #define transaction_range_hpp
 
-#include "transaction.hpp"
-
 #include <blocksci/blocksci_export.h>
+#include <blocksci/chain/transaction.hpp>
 
 namespace blocksci {
-    class BLOCKSCI_EXPORT TransactionRange : public ranges::view_facade<TransactionRange> {
-        friend ranges::range_access;
-        
-        DataAccess *access;
-        const char *currentTxPos = nullptr;
-        const uint32_t *sequenceNumbers = nullptr;
-        uint32_t currentTxIndex = 0;
-        uint32_t endTxIndex = 0;
-        BlockHeight blockNum = 0;
-        uint32_t nextBlockFirst = 0;
-        uint32_t prevBlockLast = 0;
-        
-        bool equal(ranges::default_sentinel) const { return currentTxIndex == endTxIndex; }
-        
-        void next() {
-            auto tx = reinterpret_cast<const RawTransaction *>(currentTxPos);
-            currentTxPos += sizeof(RawTransaction) +
-            static_cast<size_t>(tx->inputCount) * sizeof(Inout) +
-            static_cast<size_t>(tx->outputCount) * sizeof(Inout);
-            sequenceNumbers += tx->inputCount;
-            ++currentTxIndex;
-            if (currentTxIndex == nextBlockFirst) {
-                ++blockNum;
-                updateNextBlock();
-            }
-        }
-        
-        Transaction read() const {
-            auto rawTx = reinterpret_cast<const RawTransaction *>(currentTxPos);
-            return {rawTx, sequenceNumbers, currentTxIndex, blockNum, *access};
-        }
-        
-        void prev() {
-            --currentTxIndex;
-            if (currentTxIndex == prevBlockLast) {
-                --blockNum;
-                updateNextBlock();
-            }
-            currentTxPos = reinterpret_cast<const char *>(access->getChain().getTx(currentTxIndex));
-            sequenceNumbers = access->getChain().getSequenceNumbers(currentTxIndex);
-        }
-        
-        void advance(int amount) {
-            currentTxIndex += static_cast<uint32_t>(amount);
-            blockNum = access->getChain().getBlockHeight(currentTxIndex);
-            updateNextBlock();
-            currentTxPos = reinterpret_cast<const char *>(access->getChain().getTx(currentTxIndex));
-            sequenceNumbers = access->getChain().getSequenceNumbers(currentTxIndex);
-        }
-        
-        int64_t distance_to(const TransactionRange &other) const {
-            return static_cast<int64_t>(other.currentTxIndex) - static_cast<int64_t>(currentTxIndex);
-        }
-        
-        void updateNextBlock() {
-            auto block = access->getChain().getBlock(blockNum);
-            prevBlockLast = block->firstTxIndex - 1;
-            nextBlockFirst = blockNum < access->getChain().blockCount() - BlockHeight{1} ? block->firstTxIndex + static_cast<uint32_t>(block->txCount) : std::numeric_limits<decltype(nextBlockFirst)>::max();
-        }
-        
+    class BLOCKSCI_EXPORT TransactionRange {
     public:
+        class iterator {
+        public:
+            using self_type = iterator;
+            using value_type = Transaction;
+            using pointer = Transaction;
+            using reference = Transaction;
+            using difference_type = uint32_t;
+            using iterator_category = std::random_access_iterator_tag;
+            
+            iterator() = default;
+            
+            iterator(const Transaction &tx_) : tx(tx_) {}
+            
+            self_type &operator+=(difference_type i) {
+                tx.txNum += i;
+                resetTxData();
+                if (tx.txNum >= nextBlockFirst) {
+                    resetHeight();
+                    updateNextBlock();
+                }
+                return *this;
+            }
+            
+            self_type &operator-=(difference_type i) {
+                tx.txNum -= i;
+                resetTxData();
+                if (tx.txNum <= prevBlockLast) {
+                    resetHeight();
+                    updateNextBlock();
+                }
+                return *this;
+            }
+            
+            self_type &operator++() {
+                ++tx.data;
+                ++tx.txNum;
+                if (tx.txNum == nextBlockFirst) {
+                    ++tx.blockHeight;
+                    updateNextBlock();
+                }
+                return *this;
+            }
+            
+            self_type &operator--() {
+                --tx.txNum;
+                if (tx.txNum == prevBlockLast) {
+                    --tx.blockHeight;
+                    updateNextBlock();
+                }
+                resetTx();
+                tx.data.sequenceNumbers -= tx.data.rawTx->inputCount;
+                --tx.data.version;
+                --tx.data.hash;
+                return *this;
+            }
+            
+            self_type operator++(int) { self_type tmp = *this; this->operator++(); return tmp;}
+            self_type operator--(int) { self_type tmp = *this; this->operator--(); return tmp; }
+            self_type operator+(difference_type i) const { self_type tmp = *this; tmp += i; return tmp; }
+            self_type operator-(difference_type i) const { self_type tmp = *this; tmp -= i; return tmp; }
+            
+            value_type operator*() const { return tx; }
+            value_type operator[](difference_type i) const;
+            
+            bool operator==(const self_type& rhs) const { return tx == rhs.tx; }
+            bool operator!=(const self_type& rhs) const { return tx != rhs.tx; }
+            bool operator<(const self_type& rhs) const { return tx < rhs.tx; }
+            bool operator>(const self_type& rhs) const { return tx > rhs.tx; }
+            bool operator<=(const self_type& rhs) const { return tx <= rhs.tx; }
+            bool operator>=(const self_type& rhs) const { return tx >= rhs.tx; }
+            difference_type operator-(const self_type& it) const {return tx.txNum - it.tx.txNum;}
+        private:
+            Transaction tx;
+            uint32_t nextBlockFirst = 0;
+            uint32_t prevBlockLast = 0;
+            
+            // Reset just data.rawTx based on txIndex
+            void resetTx();
+            
+            // Reset data based on txIndex
+            void resetTxData();
+            
+            // Reset nextBlockFirst and prevBlockLast based on height
+            void updateNextBlock();
+            
+            // Reset height based on txIndex
+            void resetHeight();
+        };
+        
+        struct Slice {
+            uint32_t start;
+            uint32_t stop;
+        };
+        
         TransactionRange() = default;
-        TransactionRange(DataAccess &access_, uint32_t begin, uint32_t end) :
-        access(&access_),
-        currentTxPos(reinterpret_cast<const char *>(access->getChain().getTx(begin))),
-        sequenceNumbers(access->getChain().getSequenceNumbers(begin)),
-        currentTxIndex(begin),
-        endTxIndex(end),
-        blockNum(access->getChain().getBlockHeight(begin)) {
-            updateNextBlock();
+        TransactionRange(const Slice &slice_, const Transaction &firstTx_) : slice(slice_), firstTx(firstTx_) {}
+        
+        iterator begin() const {
+            return {firstTx};
         }
+        
+        iterator end() const {
+            return {{TxData{}, slice.stop, 0, firstTx.maxTxCount, firstTx.getAccess()}};
+        }
+        
+        Transaction operator[](uint32_t txIndex) const;
+        
+        TransactionRange operator[](const Slice &sl) const {
+            return {{slice.start + sl.start, slice.start + sl.stop}, this->operator[](sl.start)};
+        }
+        
+        uint32_t size() const {
+            return slice.stop - slice.start;
+        }
+        
+        BlockHeight startHeight() const {
+            return firstTx.blockHeight;
+        }
+        
+        uint32_t firstTxIndex() const {
+            return slice.start;
+        }
+        
+        uint32_t endTxIndex() const {
+            return slice.stop;
+        }
+        
+        DataAccess &getAccess() const {
+            return firstTx.getAccess();
+        }
+        
+    private:
+        Slice slice;
+        Transaction firstTx;
     };
-} // namespace blocksci
+    
+    inline TransactionRange::iterator::self_type BLOCKSCI_EXPORT operator+(TransactionRange::iterator::difference_type i, const TransactionRange::iterator &it) {
+        return it + i;
+    }
+}
 
 #endif /* transaction_range_hpp */

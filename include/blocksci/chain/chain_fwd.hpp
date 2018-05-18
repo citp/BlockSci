@@ -11,12 +11,15 @@
 namespace blocksci {
     class ChainAccess;
     class Blockchain;
+    class BlockRange;
     class Block;
+    class TransactionRange;
     class Transaction;
+    struct OutputRange;
     class Output;
+    struct InputRange;
     class Input;
     
-    class TransactionRange;
     struct TransactionSummary;
     
     struct InoutPointer;

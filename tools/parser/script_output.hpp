@@ -13,8 +13,7 @@
 #include "address_state.hpp"
 #include "parser_fwd.hpp"
 
-#include <blocksci/scripts/bitcoin_pubkey.hpp>
-#include <blocksci/scripts/script_view.hpp>
+#include <internal/script_view.hpp>
 
 #include <mpark/variant.hpp>
 
@@ -62,10 +61,10 @@ template <>
 struct ScriptOutputData<blocksci::AddressType::Enum::PUBKEY> : public ScriptOutputDataBase {
     static constexpr bool maybeUpdate = true;
     
-    blocksci::CPubKey pubkey;
+    blocksci::RawPubkey pubkey;
     
     ScriptOutputData(const ranges::iterator_range<const unsigned char *> &vch1);
-    ScriptOutputData(const blocksci::CPubKey &pub) : pubkey(pub) {}
+    ScriptOutputData(const blocksci::RawPubkey &pub) : pubkey(pub) {}
     ScriptOutputData() = default;
     
     blocksci::uint160 getHash() const;
@@ -76,7 +75,7 @@ struct ScriptOutputData<blocksci::AddressType::Enum::PUBKEY> : public ScriptOutp
 template <>
 struct ScriptOutputData<blocksci::AddressType::Enum::PUBKEYHASH> : public ScriptOutputDataBase {
     
-    blocksci::CKeyID hash;
+    blocksci::uint160 hash;
     
     ScriptOutputData(blocksci::uint160 &pubkeyHash) : hash{pubkeyHash} {}
     
@@ -89,10 +88,10 @@ template <>
 struct ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY> : public ScriptOutputDataBase {
     static constexpr bool maybeUpdate = true;
     
-    blocksci::CPubKey pubkey;
+    blocksci::RawPubkey pubkey;
     
     ScriptOutputData(const ranges::iterator_range<const unsigned char *> &vch1);
-    ScriptOutputData(const blocksci::CPubKey &pub) : pubkey(pub) {}
+    ScriptOutputData(const blocksci::RawPubkey &pub) : pubkey(pub) {}
     ScriptOutputData() = default;
     
     blocksci::uint160 getHash() const;
@@ -103,7 +102,7 @@ struct ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY> : public S
 template <>
 struct ScriptOutputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : public ScriptOutputDataBase {
     
-    blocksci::CKeyID hash;
+    blocksci::uint160 hash;
     
     ScriptOutputData(blocksci::uint160 &&pubkeyHash) : hash{pubkeyHash} {}
     
@@ -114,7 +113,7 @@ struct ScriptOutputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : publi
 
 template <>
 struct ScriptOutputData<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptOutputDataBase {
-    blocksci::CKeyID hash;
+    blocksci::uint160 hash;
     
     ScriptOutputData(blocksci::uint160 hash_) : hash(hash_) {}
     

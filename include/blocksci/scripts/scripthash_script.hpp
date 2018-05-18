@@ -10,13 +10,8 @@
 #define scripthash_script_hpp
 
 #include "script.hpp"
-#include "script_access.hpp"
 
 #include <blocksci/blocksci_export.h>
-#include <blocksci/core/address_info.hpp>
-#include <blocksci/util/data_access.hpp>
-
-#include <sstream>
 
 namespace blocksci {
     class BLOCKSCI_EXPORT ScriptHashBase : public ScriptBase {
@@ -45,9 +40,7 @@ namespace blocksci {
         
         ranges::optional<AnyScript> wrappedScript() const;
         
-        uint160 getUint160Address() const {
-            return getBackingData()->getHash160();
-        }
+        uint160 getUint160Address() const;
         
         uint256 getUint256Address() const {
             return getBackingData()->hash256;
@@ -59,7 +52,8 @@ namespace blocksci {
     public:
         constexpr static AddressType::Enum addressType = AddressType::SCRIPTHASH;
         
-        ScriptAddress(uint32_t addressNum_, DataAccess &access_) : ScriptHashBase(addressNum_, addressType, access_.getScripts().getScriptData<dedupType(addressType)>(addressNum_), access_) {}
+        ScriptAddress(uint32_t addressNum_, const ScriptHashData *data_, DataAccess &access_) : ScriptHashBase(addressNum_, addressType, data_, access_) {}
+        ScriptAddress(uint32_t addressNum_, DataAccess &access_);
         
         uint160 getAddressHash() const {
             return getUint160Address();
@@ -67,11 +61,7 @@ namespace blocksci {
         
         std::string addressString() const;
         
-        std::string toString() const {
-            std::stringstream ss;
-            ss << "ScriptHashAddress(" << addressString()<< ")";
-            return ss.str();
-        }
+        std::string toString() const;
         
         std::string toPrettyString() const;
     };
@@ -81,7 +71,8 @@ namespace blocksci {
     public:
         constexpr static AddressType::Enum addressType = AddressType::WITNESS_SCRIPTHASH;
         
-        ScriptAddress(uint32_t addressNum_, DataAccess &access_) : ScriptHashBase(addressNum_, addressType, access_.getScripts().getScriptData<dedupType(addressType)>(addressNum_), access_) {}
+        ScriptAddress(uint32_t addressNum_, const ScriptHashData *data_, DataAccess &access_) : ScriptHashBase(addressNum_, addressType, data_, access_) {}
+        ScriptAddress(uint32_t addressNum_, DataAccess &access_);
         
         uint256 getAddressHash() const {
             return getUint256Address();
@@ -89,11 +80,7 @@ namespace blocksci {
         
         std::string addressString() const;
         
-        std::string toString() const {
-            std::stringstream ss;
-            ss << "WitnessScriptHashAddress(" << addressString() << ")";
-            return ss.str();
-        }
+        std::string toString() const;
         
         std::string toPrettyString() const;
     };

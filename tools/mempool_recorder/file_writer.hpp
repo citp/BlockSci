@@ -9,33 +9,35 @@
 #ifndef file_writer_hpp
 #define file_writer_hpp
 
-#include <boost/filesystem/fstream.hpp>
+#include <wjfilesystem/path.h>
+
+#include <fstream>
 
 struct SimpleFileWriter {
 protected:
     uint64_t lastDataPos;
-    boost::filesystem::fstream file;
+    std::fstream file;
 public:
     
     uint64_t getLastPos() const { return lastDataPos; }
     
-    SimpleFileWriter(boost::filesystem::path path) {
+    SimpleFileWriter(filesystem::path path) {
         auto mainParams = std::fstream::out | std::fstream::binary;
         auto extraParams = std::fstream::ate | std::fstream::in;
-        path = path.concat(".dat");
+        path = path.str() + ".dat";
         
-        file.open(path, mainParams | extraParams);
+        file.open(path.str(), mainParams | extraParams);
         if (!file.is_open())
         {
             // create
-            file.open(path, mainParams);
+            file.open(path.str(), mainParams);
             
             // close
             if (file.is_open())
                 file.close();
             
             // re-open
-            file.open(path, mainParams | extraParams);
+            file.open(path.str(), mainParams | extraParams);
         }
         lastDataPos = static_cast<size_t>(file.tellp());
     }
@@ -100,7 +102,7 @@ class FixedSizeFileWriter {
     
 public:
     
-    explicit FixedSizeFileWriter(const boost::filesystem::path &path) : dataFile(path) {}
+    explicit FixedSizeFileWriter(const filesystem::path &path) : dataFile(path) {}
     
     void expandToFit(uint32_t size) {
         dataFile.expandToFit(sizeof(T) * size);
@@ -139,7 +141,7 @@ private:
     FixedSizeFileWriter<FileIndex<indexCount>> indexFile;
 public:
     
-    explicit IndexedFileWriter(const boost::filesystem::path &pathPrefix) : dataFile(boost::filesystem::path{pathPrefix}.concat("_data")), indexFile(boost::filesystem::path{pathPrefix}.concat("_index")) {}
+    explicit IndexedFileWriter(const filesystem::path &pathPrefix) : dataFile(pathPrefix.str() + "_data"), indexFile(pathPrefix.str() + "_index") {}
     
     void writeIndexGroup() {
         FileIndex<indexCount> fileIndex;

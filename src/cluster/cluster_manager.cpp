@@ -9,19 +9,26 @@
 #include <blocksci/cluster/cluster_manager.hpp>
 #include <blocksci/cluster/cluster.hpp>
 
-#include <blocksci/address/dedup_address.hpp>
 #include <blocksci/chain/blockchain.hpp>
-#include <blocksci/core/address_info.hpp>
+#include <blocksci/chain/input.hpp>
+#include <blocksci/chain/range_util.hpp>
 #include <blocksci/heuristics/change_address.hpp>
 #include <blocksci/heuristics/tx_identification.hpp>
 #include <blocksci/scripts/scripthash_script.hpp>
-#include <blocksci/util/progress_bar.hpp>
+
+#include <internal/address_info.hpp>
+#include <internal/cluster_access.hpp>
+#include <internal/data_access.hpp>
+#include <internal/dedup_address.hpp>
+#include <internal/progress_bar.hpp>
+#include <internal/script_access.hpp>
 
 #include <dset/dset.h>
 
-#include <boost/filesystem/fstream.hpp>
-#include <boost/filesystem/operations.hpp>
+#include <wjfilesystem/path.h>
 
+#include <range/v3/view/iota.hpp>
+#include <fstream>
 #include <future>
 #include <map>
 
@@ -75,10 +82,27 @@ namespace {
 }
 
 namespace blocksci {
-    ClusterManager::ClusterManager(const std::string &baseDirectory, DataAccess &access_) : access(baseDirectory, access_) {}
+    ClusterManager::ClusterManager(const std::string &baseDirectory, DataAccess &access_) : access(std::make_unique<ClusterAccess>(baseDirectory, access_)), clusterCount(access->clusterCount()) {}
+    
+    ClusterManager::ClusterManager(ClusterManager && other) = default;
+    
+    ClusterManager &ClusterManager::operator=(ClusterManager && other) = default;
+    
+    ClusterManager::~ClusterManager() = default;
     
     Cluster ClusterManager::getCluster(const Address &address) const {
-        return Cluster(access.getClusterNum(RawAddress{address.scriptNum, address.type}), access);
+        return Cluster(access->getClusterNum(RawAddress{address.scriptNum, address.type}), *access);
+    }
+    
+    ranges::any_view<Cluster, ranges::category::random_access | ranges::category::sized> ClusterManager::getClusters() const {
+        return ranges::view::ints(0u, clusterCount)
+        | ranges::view::transform([&](uint32_t clusterNum) { return Cluster(clusterNum, *access); });
+    }
+    
+    ranges::any_view<TaggedCluster> ClusterManager::taggedClusters(const std::unordered_map<Address, std::string> &tags) const {
+        return getClusters() | ranges::view::transform([tags](Cluster && cluster) -> ranges::optional<TaggedCluster> {
+            return cluster.getTaggedUnsafe(tags);
+        }) | flatMapOptionals();
     }
     
     std::vector<std::pair<Address, Address>> processTransaction(const Transaction &tx, const heuristics::ChangeHeuristic &changeHeuristic) {
@@ -144,11 +168,11 @@ namespace blocksci {
         });
         
         
-        auto extract = [&](const std::vector<Block> &blocks, int threadNum) {
+        auto extract = [&](const BlockRange &blocks, int threadNum) {
             uint32_t totalTxCount = 0;
             auto progressThread = static_cast<int>(std::thread::hardware_concurrency()) - 1;
             if (threadNum == progressThread) {
-                for (auto &block : blocks) {
+                for (auto block : blocks) {
                     totalTxCount += block.size();
                 }
             }
@@ -157,8 +181,8 @@ namespace blocksci {
                 progressBar.setSilent();
             }
             uint32_t txNum = 0;
-            for (auto &block : blocks) {
-                RANGES_FOR(auto tx, block) {
+            for (auto block : blocks) {
+                for (auto tx : block) {
                     auto pairs = processTransaction(tx, changeHeuristic);
                     for (auto &pair : pairs) {
                         ds.link_addresses(pair.first, pair.second);
@@ -170,7 +194,7 @@ namespace blocksci {
             return 0;
         };
         
-        chain.mapReduce<int>(0, static_cast<int>(chain.size()), extract, [](int &a,int &) -> int & {return a;});
+        chain.mapReduce<int>(extract, [](int &a,int &) -> int & {return a;});
         
         ds.resolveAll();
         
@@ -198,7 +222,7 @@ namespace blocksci {
         return clusterCount;
     }
     
-    void recordOrderedAddresses(const std::vector<uint32_t> &parent, std::vector<uint32_t> &clusterPositions, const std::unordered_map<DedupAddressType::Enum, uint32_t> &scriptStarts, boost::filesystem::ofstream &clusterAddressesFile) {
+    void recordOrderedAddresses(const std::vector<uint32_t> &parent, std::vector<uint32_t> &clusterPositions, const std::unordered_map<DedupAddressType::Enum, uint32_t> &scriptStarts, std::ofstream &clusterAddressesFile) {
         
         std::map<uint32_t, DedupAddressType::Enum> typeIndexes;
         for (auto &pair : scriptStarts) {
@@ -224,47 +248,49 @@ namespace blocksci {
     
     ClusterManager ClusterManager::createClustering(Blockchain &chain, const heuristics::ChangeHeuristic &changeHeuristic, const std::string &outputPath, bool overwrite) {
         
-        auto outputLocation = boost::filesystem::path{outputPath};
-        boost::filesystem::path offsetFile = outputLocation/"clusterOffsets.dat";
-        boost::filesystem::path addressesFile = outputLocation/"clusterAddresses.dat";
-        std::vector<boost::filesystem::path> clusterIndexPaths;
+        auto outputLocation = filesystem::path{outputPath};
+        
+        std::string offsetFile = ClusterAccess::offsetFilePath(outputPath);
+        std::string addressesFile = ClusterAccess::addressesFilePath(outputPath);
+        std::vector<std::string> clusterIndexPaths;
         clusterIndexPaths.resize(DedupAddressType::size);
         for (auto dedupType : DedupAddressType::allArray()) {
-            std::stringstream ss;
-            ss << dedupAddressName(dedupType) << "_cluster_index.dat";
-            clusterIndexPaths[static_cast<size_t>(dedupType)] = outputLocation/ss.str();
+            clusterIndexPaths[static_cast<size_t>(dedupType)] = ClusterAccess::typeIndexFilePath(outputPath, dedupType);
         }
         
-        std::vector<boost::filesystem::path> allPaths = clusterIndexPaths;
+        std::vector<std::string> allPaths = clusterIndexPaths;
         allPaths.push_back(offsetFile);
         allPaths.push_back(addressesFile);
         
         // Prepare cluster folder or fail
-        if (boost::filesystem::exists(outputLocation)) {
-            if (!boost::filesystem::is_directory(outputLocation)) {
+        auto outputLocationPath = filesystem::path{outputLocation};
+        if (outputLocationPath.exists()) {
+            if (!outputLocationPath.is_directory()) {
                 throw std::runtime_error{"Path must be to a directory, not a file"};
             }
             if (!overwrite) {
-                for (const auto &path : allPaths) {
-                    if (boost::filesystem::exists(path)) {
+                for (auto &path : allPaths) {
+                    auto filePath = filesystem::path{path};
+                    if (filePath.exists()) {
                         std::stringstream ss;
-                        ss << "Overwrite is off, but " << path << " exists already";
+                        ss << "Overwrite is off, but " << filePath << " exists already";
                         throw std::runtime_error{ss.str()};
                     }
                 }
             } else {
-                for (const auto &path : allPaths) {
-                    if (boost::filesystem::exists(path)) {
-                        boost::filesystem::remove(path);
+                for (auto &path : allPaths) {
+                    auto filePath = filesystem::path{path};
+                    if (filePath.exists()) {
+                        filePath.remove_file();
                     }
                 }
             }
         }
-        boost::filesystem::create_directories(outputLocation);
+        filesystem::create_directory(outputLocation);
         
         // Generate cluster files
-        boost::filesystem::ofstream clusterAddressesFile(addressesFile, std::ios::binary);
-        boost::filesystem::ofstream clusterOffsetFile(offsetFile, std::ios::binary);
+        std::ofstream clusterAddressesFile(addressesFile, std::ios::binary);
+        std::ofstream clusterOffsetFile(offsetFile, std::ios::binary);
         // Perform clustering
         
         auto &scripts = chain.getAccess().getScripts();
@@ -299,14 +325,14 @@ namespace blocksci {
             auto type = static_cast<DedupAddressType::Enum>(index);
             uint32_t startIndex = scriptStarts[type];
             uint32_t totalCount = scripts.scriptCount(type);
-            boost::filesystem::ofstream file = {clusterIndexPaths[index], std::ios::binary};
+            std::ofstream file{clusterIndexPaths[index], std::ios::binary};
             file.write(reinterpret_cast<char *>(parent.data() + startIndex), sizeof(uint32_t) * totalCount);
         });
         
         recordOrdered.get();
         
         clusterOffsetFile.write(reinterpret_cast<char *>(clusterPositions.data()), static_cast<long>(sizeof(uint32_t) * clusterPositions.size()));
-        return ClusterManager{outputLocation.native(), chain.getAccess()};
+        return {outputLocation.str(), chain.getAccess()};
     }
 } // namespace blocksci
 

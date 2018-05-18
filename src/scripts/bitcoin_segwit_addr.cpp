@@ -23,7 +23,7 @@
 
 #include "bitcoin_bech32.hpp"
 
-#include <blocksci/util/data_configuration.hpp>
+#include <internal/data_configuration.hpp>
 
 namespace {
 

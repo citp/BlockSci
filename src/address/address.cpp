@@ -11,16 +11,26 @@
 #include <blocksci/address/address.hpp>
 #include <blocksci/address/equiv_address.hpp>
 #include <blocksci/chain/algorithms.hpp>
-#include <blocksci/index/address_index.hpp>
-#include <blocksci/index/hash_index.hpp>
+#include <blocksci/scripts/script_variant.hpp>
+
 #include <scripts/bitcoin_base58.hpp>
 #include <scripts/bitcoin_segwit_addr.hpp>
-#include <blocksci/scripts/script_variant.hpp>
+
+#include <internal/dedup_address_info.hpp>
+#include <internal/data_access.hpp>
+#include <internal/script_access.hpp>
+#include <internal/address_index.hpp>
+#include <internal/hash_index.hpp>
+
+#include <sstream>
 
 namespace blocksci {
     
     ranges::any_view<OutputPointer> Address::getOutputPointers() const {
-        return access->getAddressIndex().getOutputPointers(*this);
+        return access->getAddressIndex().getOutputPointers(*this) |
+        ranges::view::transform([](const InoutPointer &pointer) {
+            return OutputPointer(pointer.txNum, pointer.inoutNum);
+        });
     }
     
     bool Address::isSpendable() const {
@@ -178,6 +188,36 @@ namespace blocksci {
     
     std::vector<Transaction> Address::getInputTransactions() {
         return blocksci::getInputTransactions(getOutputPointers(), *access);
+    }
+    
+    std::unordered_set<Address> getScriptNestedEquivalents(const Address &searchAddress) {
+        std::unordered_set<Address> addressesToSearch{searchAddress};
+        std::unordered_set<Address> searchedAddresses;
+        std::function<bool(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
+            if (dedupType(a.type) == DedupAddressType::SCRIPTHASH) {
+                script::ScriptHash scriptHash(a.scriptNum, searchAddress.getAccess());
+                auto wrapped = scriptHash.getWrappedAddress();
+                if (wrapped) {
+                    for (auto type : equivAddressTypes(equivType(wrapped->type))) {
+                        Address newAddress(wrapped->scriptNum, type, searchAddress.getAccess());
+                        if (searchedAddresses.find(newAddress) == searchedAddresses.end()) {
+                            addressesToSearch.insert(newAddress);
+                        }
+                    }
+                }
+                return true;
+            }
+            return false;
+        };
+        while (addressesToSearch.size() > 0) {
+            auto setIt = addressesToSearch.begin();
+            auto address = *setIt;
+            visit(address, visitFunc);
+            searchedAddresses.insert(address);
+            addressesToSearch.erase(setIt);
+        }
+        
+        return searchedAddresses;
     }
 }
 

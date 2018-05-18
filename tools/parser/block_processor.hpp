@@ -14,7 +14,8 @@
 #include "parser_configuration.hpp"
 #include "file_writer.hpp"
 
-#include <blocksci/chain/inout_pointer.hpp>
+#include <blocksci/core/inout_pointer.hpp>
+#include <blocksci/core/core_fwd.hpp>
 
 class BlockFileReaderBase {
 public:
@@ -39,7 +40,7 @@ struct NewBlocksFiles {
 };
 
 struct OutputLinkData {
-    blocksci::OutputPointer pointer;
+    blocksci::InoutPointer pointer;
     uint32_t txNum;
 };
 

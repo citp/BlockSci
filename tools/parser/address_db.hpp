@@ -12,11 +12,10 @@
 #include "parser_fwd.hpp"
 #include "parser_index.hpp"
 
-#include <blocksci/address/dedup_address.hpp>
-#include <blocksci/index/address_index.hpp>
+#include <internal/dedup_address.hpp>
+#include <internal/address_index.hpp>
 
 class AddressDB;
-
 
 template<blocksci::DedupAddressType::Enum type>
 struct ParserIndexScriptInfo<AddressDB, type> : std::false_type {};
@@ -29,14 +28,14 @@ class AddressDB : public ParserIndex<AddressDB> {
     
     static constexpr int cacheSize = 1000;
     
-    std::vector<std::pair<blocksci::RawAddress, blocksci::OutputPointer>> outputCache;
+    std::vector<std::pair<blocksci::RawAddress, blocksci::InoutPointer>> outputCache;
     std::vector<std::pair<blocksci::RawAddress, blocksci::DedupAddress>> nestedCache;
     
     void clearNestedCache();
     void clearOutputCache();
 public:
     
-    AddressDB(const ParserConfigurationBase &config, const std::string &path);
+    AddressDB(const ParserConfigurationBase &config, const filesystem::path &path);
     ~AddressDB();
     
     void processTx(const blocksci::RawTransaction *tx, uint32_t txNum, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts);
@@ -45,7 +44,7 @@ public:
     void processScript(uint32_t, const blocksci::ScriptAccess &);
     
     void addAddressNested(const blocksci::RawAddress &childAddress, const blocksci::DedupAddress &parentAddress);
-    void addAddressOutput(const blocksci::RawAddress &address, const blocksci::OutputPointer &pointer);
+    void addAddressOutput(const blocksci::RawAddress &address, const blocksci::InoutPointer &pointer);
     
     void compact() {
         db.compactDB();

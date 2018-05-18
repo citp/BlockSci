@@ -8,10 +8,9 @@
 #ifndef raw_transaction_hpp
 #define raw_transaction_hpp
 
-#include "inout.hpp"
-
 #include <blocksci/blocksci_export.h>
-#include <blocksci/typedefs.hpp>
+#include <blocksci/core/inout.hpp>
+#include <blocksci/core/typedefs.hpp>
 
 namespace blocksci {
     struct BLOCKSCI_EXPORT RawTransaction {

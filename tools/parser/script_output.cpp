@@ -10,7 +10,7 @@
 
 #include "script_output.hpp"
 
-#include <blocksci/util/hash.hpp>
+#include <internal/hash.hpp>
 
 bool isValidPubkey(ranges::iterator_range<const unsigned char *> &vch1) {
     if (vch1.size() < 33 || vch1.size() > 65) {
@@ -204,14 +204,18 @@ uint32_t AnyScriptOutput::resolve(AddressState &state) {
 
 // MARK: TX_PUBKEY
 
-ScriptOutputData<blocksci::AddressType::Enum::PUBKEY>::ScriptOutputData(const ranges::iterator_range<const unsigned char *> &vch1) : pubkey(vch1.begin(), vch1.end()) {}
+ScriptOutputData<blocksci::AddressType::Enum::PUBKEY>::ScriptOutputData(const ranges::iterator_range<const unsigned char *> &vch1) {
+    std::copy(vch1.begin(), vch1.end(), pubkey.begin());
+}
 
 blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::PUBKEY>::getHash() const {
-    return pubkey.GetID();
+    return hash160(pubkey.data(), pubkey.size());
 }
 
 blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::PUBKEY>::getData(uint32_t txNum) const {
-    return {txNum, pubkey};
+    blocksci::RawPubkey rawPubkey;
+    std::copy(pubkey.begin(), pubkey.end(), rawPubkey.begin());
+    return {txNum, rawPubkey};
 }
 
 // MARK: TX_PUBKEYHASH
@@ -221,21 +225,23 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::PUBKEYHASH>::get
 }
 
 blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::PUBKEYHASH>::getData(uint32_t txNum) const {
-    blocksci::CPubKey nullPubkey{};
     return {txNum, hash};
 }
 
 // MARK: MULTISIG_PUBKEY
 
-ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY>::ScriptOutputData(const ranges::iterator_range<const unsigned char *> &vch1) : pubkey(vch1.begin(), vch1.end()) {}
+ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY>::ScriptOutputData(const ranges::iterator_range<const unsigned char *> &vch1) {
+    std::copy(vch1.begin(), vch1.end(), pubkey.begin());
+}
 
 blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY>::getHash() const {
-    return pubkey.GetID();
+    return hash160(pubkey.data(), pubkey.size());
 }
 
 blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY>::getData(uint32_t txNum) const {
-    blocksci::CPubKey nullPubkey{};
-    return {txNum, pubkey};
+    blocksci::RawPubkey rawPubkey;
+    std::copy(pubkey.begin(), pubkey.end(), rawPubkey.begin());
+    return {txNum, rawPubkey};
 }
 
 // MARK: WITNESS_PUBKEYHASH
@@ -245,7 +251,6 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHA
 }
 
 blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::getData(uint32_t txNum) const {
-    blocksci::CPubKey nullPubkey{};
     return {txNum, hash};
 }
 
@@ -273,13 +278,13 @@ blocksci::ScriptHashData ScriptOutputData<blocksci::AddressType::Enum::WITNESS_S
 
 blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::MULTISIG>::getHash() const {
     std::vector<char> sigData;
-    sigData.resize(sizeof(numRequired) + sizeof(blocksci::CKeyID) * addressCount);
+    sigData.resize(sizeof(numRequired) + sizeof(blocksci::uint160) * addressCount);
     size_t sigDataPos = 0;
     
     memcpy(&sigData[sigDataPos], reinterpret_cast<const char *>(&numRequired), sizeof(numRequired));
     sigDataPos += sizeof(numRequired);
     
-    std::vector<blocksci::CPubKey> pubkeys;
+    std::vector<blocksci::RawPubkey> pubkeys;
     pubkeys.reserve(addresses.size());
     for (auto &output : addresses) {
         pubkeys.push_back(output.data.pubkey);
@@ -288,7 +293,7 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::MULTISIG>::getHa
     std::sort(pubkeys.begin(), pubkeys.end());
     
     for (auto &pubkey : pubkeys) {
-        auto addressHash = pubkey.GetID();
+        auto addressHash = hash160(pubkey.data(), pubkey.size());
         memcpy(&sigData[sigDataPos], reinterpret_cast<const char *>(&addressHash), sizeof(addressHash));
         sigDataPos += sizeof(addressHash);
     }
@@ -297,7 +302,9 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::MULTISIG>::getHa
 }
 
 void ScriptOutputData<blocksci::AddressType::Enum::MULTISIG>::addAddress(const ranges::iterator_range<const unsigned char *> &vch1) {
-    addresses.emplace_back(blocksci::CPubKey(vch1.begin(), vch1.end()));
+    blocksci::RawPubkey pubkey;
+    std::copy(vch1.begin(), vch1.end(), pubkey.begin());
+    addresses.emplace_back(pubkey);
     addressCount++;
 }
 

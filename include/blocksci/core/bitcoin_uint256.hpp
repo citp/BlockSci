@@ -10,12 +10,10 @@
 
 #include <cassert>
 #include <cstring>
-#include <stdexcept>
+#include <functional>
 #include <string>
 
 namespace blocksci {
-    
-    signed char BLOCKSCI_EXPORT HexDigit(char c);
     
     template<typename T>
     std::string BLOCKSCI_EXPORT HexStr(const T itbegin, const T itend, bool fSpaces=false)
@@ -88,10 +86,6 @@ namespace blocksci {
             return HexStr(data, data + sizeof(data));
         }
         
-        void SetHex(const char* psz);
-        void SetHex(const std::string& str);
-        std::string ToString() const;
-        
         unsigned char* begin()
         {
             return &data[0];
@@ -154,40 +148,12 @@ namespace blocksci {
         template<typename It> uint160(It begin, It end) : base_blob<160>(begin, end) {}
     };
     
-    /* uint256 from const char *.
-     * This is a separate function because the constructor uint256(const char*) can result
-     * in dangerously catching uint256(0).
-     */
-    uint160 BLOCKSCI_EXPORT uint160S(const char *str);
-    /* uint256 from std::string.
-     * This is a separate function because the constructor uint256(const std::string &str) can result
-     * in dangerously catching uint256(0) via std::string(const char*).
-     */
-    uint160 BLOCKSCI_EXPORT uint160S(const std::string& str);
-    
-    /** 256-bit opaque blob.
-     * @note This type is called uint256 for historical reasons only. It is an
-     * opaque blob of 256 bits and has no integer operations. Use arith_uint256 if
-     * those are required.
-     */
     class BLOCKSCI_EXPORT uint256 : public base_blob<256> {
     public:
         uint256() {}
         explicit uint256(const base_blob<256>& b) : base_blob<256>(b) {}
         template<typename It> uint256(It begin, It end) : base_blob<256>(begin, end) {}
     };
-    
-    /* uint256 from const char *.
-     * This is a separate function because the constructor uint256(const char*) can result
-     * in dangerously catching uint256(0).
-     */
-    uint256 BLOCKSCI_EXPORT uint256S(const char *str);
-    
-    /* uint256 from std::string.
-     * This is a separate function because the constructor uint256(const std::string &str) can result
-     * in dangerously catching uint256(0) via std::string(const char*).
-     */
-    uint256 BLOCKSCI_EXPORT uint256S(const std::string& str);
 }
 
 namespace std {

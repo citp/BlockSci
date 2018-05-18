@@ -12,16 +12,6 @@
 #include <stdexcept>
 
 namespace blocksci {
-    class BLOCKSCI_EXPORT ReorgException : public std::runtime_error {
-    public:
-        ReorgException() : std::runtime_error("Blockchain has experienced reorg") {}
-        ReorgException(const ReorgException &) = default;
-        ReorgException(ReorgException &&) = default;
-        ReorgException &operator=(const ReorgException &) = default;
-        ReorgException &operator=(ReorgException &&) = default;
-        virtual ~ReorgException();
-    };
-    
     class BLOCKSCI_EXPORT InvalidAddressException : virtual public std::runtime_error {
     public:
         InvalidAddressException() : std::runtime_error("Tried to construct invalid address") {}

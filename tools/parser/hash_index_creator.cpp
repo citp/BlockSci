@@ -8,10 +8,11 @@
 
 #include "hash_index_creator.hpp"
 #include "parser_configuration.hpp"
+#include "raw_address_visitor.hpp"
 
 #include <blocksci/core/raw_address.hpp>
 
-HashIndexCreator::HashIndexCreator(const ParserConfigurationBase &config_, const std::string &path) : ParserIndex(config_, "hashIndex"), db(path, false) {}
+HashIndexCreator::HashIndexCreator(const ParserConfigurationBase &config_, const filesystem::path &path) : ParserIndex(config_, "hashIndex"), db(path, false) {}
 
 template <bool, blocksci::AddressType::Enum type>
 struct ClearerFunctor;

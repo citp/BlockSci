@@ -8,35 +8,34 @@
 #ifndef script_range_h
 #define script_range_h
 
+#include <blocksci/blocksci_export.h>
+#include <blocksci/scripts/script_variant.hpp>
+
+#include <range/v3/view/any_view.hpp>
+#include <range/v3/view/iota.hpp>
+#include <range/v3/view/transform.hpp>
+
+// 
+
 namespace blocksci {
     
     template <AddressType::Enum type>
     using ScriptRange = ranges::any_view<ScriptAddress<type>, ranges::category::random_access | ranges::category::sized>;
     using ScriptRangeVariant = to_variadic_t<to_address_tuple_t<ScriptRange>, mpark::variant>;
     
-    namespace internal {
-        template<blocksci::AddressType::Enum type>
-        struct ScriptRangeFunctor {
-            static blocksci::ScriptRangeVariant f(blocksci::Blockchain &chain) {
-                return chain.scripts<type>();
-            }
-        };
-    }
-    
-    ScriptRangeVariant Blockchain::scripts(AddressType::Enum type) {
-        static constexpr auto table = make_dynamic_table<AddressType, ScriptRangeFunctor>();
-        auto index = static_cast<size_t>(type);
-        return table.at(index)(*this);
-    }
-    
+    uint32_t BLOCKSCI_EXPORT getScriptCount(AddressType::Enum type, blocksci::DataAccess &access);
+
     template <AddressType::Enum type>
-    ScriptRange<type> scripts(DataAccess &access) {
-        return ranges::view::ints(uint32_t{1}, access.getScripts().scriptCount(dedupType(type)) + 1) | ranges::view::transform([&](uint32_t scriptNum) {
+    ScriptRange<type> BLOCKSCI_EXPORT scriptsRange(DataAccess &access) {
+        auto scriptCount = getScriptCount(type, access);
+        return ranges::view::ints(uint32_t{1}, scriptCount + 1) | ranges::view::transform([&](uint32_t scriptNum) {
             return ScriptAddress<type>(scriptNum, access);
         });
     }
     
-    ScriptRangeVariant scripts(AddressType::Enum type, DataAccess &access);
+    ScriptRangeVariant BLOCKSCI_EXPORT scriptsRange(AddressType::Enum type, DataAccess &access);
+
+    
 }
 
 #endif /* script_range_h */
