@@ -27,7 +27,7 @@ int64_t totalOutWithoutSelfChurn(const blocksci::Block &block, blocksci::Cluster
         std::set<uint32_t> inputClusters;
         RANGES_FOR(auto input, tx.inputs()) {
             auto cluster = manager.getCluster(input.getAddress());
-            if (cluster.getSize() < 30000) {
+            if (cluster.getTypeEquivSize() < 30000) {
                 inputClusters.insert(cluster.clusterNum);
             }
         }
