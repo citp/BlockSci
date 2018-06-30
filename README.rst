@@ -1,3 +1,5 @@
+(Disclaimer: This version of BlockSci is a modified code based on the initial release, specifically tailored for Zcash and the extra features it uses)
+
 BlockSci
 ~~~~~~~~~~~~~~~~~~
 
