@@ -1,7 +1,7 @@
 import blocksci
 import os
 
-chain = blocksci.Blockchain("../../../zcash-testdata")
+chain = blocksci.Blockchain("../../../zcash-testdata") #the directory of your parsed zcash data
 
 in_z_addresses = 0
 num_of_txes = 0
