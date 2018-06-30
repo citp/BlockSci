@@ -6,7 +6,7 @@
 	url = https://github.com/greg7mdp/sparsepp.git
 [submodule "libs/bitcoin-api-cpp"]
 	path = libs/bitcoin-api-cpp
-	url = https://github.com/hkalodner/bitcoin-api-cpp.git
+	url = https://github.com/feddan35/bitcoin-api-cpp.git
 [submodule "libs/dset"]
 	path = libs/dset
 	url = https://github.com/wjakob/dset.git
