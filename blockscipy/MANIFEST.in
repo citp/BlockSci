@@ -1,4 +1,0 @@
-include blocksci/templateMakefile
-include blocksci/filterTxesExtension.cpp
-recursive-include blocksci/Blockchain-Known-Pools *
-recursive-include blocksci/pybind11/ *
