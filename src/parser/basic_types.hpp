@@ -9,28 +9,25 @@
 #ifndef bascic_types_h
 #define bascic_types_h
 
-#include <blocksci/util/bitcoin_uint256.hpp>
+#include <blocksci/bitcoin_uint256.hpp>
 
 #include <functional>
+
 #include <cstdint>
+#include <cstring>
+#include <stdio.h>
 
 struct RawOutputPointer {
     blocksci::uint256 hash;
     uint16_t outputNum;
     
     bool operator==(const RawOutputPointer& other) const {
-        return hash == other.hash && outputNum == other.outputNum;
+        return outputNum == other.outputNum && hash == other.hash;
     }
     
     RawOutputPointer() {}
     RawOutputPointer(const blocksci::uint256 &hash_, uint16_t outputNum_) : hash(hash_), outputNum(outputNum_) {}
 };
-
-namespace std {
-    template<> struct hash<RawOutputPointer> {
-        size_t operator()(const RawOutputPointer &pointer) const;
-    };
-}
 
 std::ostream &operator<<(std::ostream &os, RawOutputPointer const &pointer);
 

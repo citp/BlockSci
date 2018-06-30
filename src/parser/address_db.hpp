@@ -9,37 +9,30 @@
 #ifndef address_db_h
 #define address_db_h
 
-#include "parser_fwd.hpp"
-#include "parser_index.hpp"
-
-#include <blocksci/chain/chain_fwd.hpp>
-#include <blocksci/scripts/scripts_fwd.hpp>
-#include <blocksci/scripts/script_type.hpp>
-
-#include <lmdbxx/lmdb++.h>
+#include "address_traverser.hpp"
 
 #include <unordered_map>
 
-namespace blocksci {
-    struct Address;
-}
+#include <sqlite3.h>
 
-class AddressDB : public ParserIndex {
-    lmdb::env env;
-    lmdb::txn wtxn;
+struct ParserConfiguration;
+
+class AddressDB : public AddressTraverser {
+    sqlite3 *db;
+    bool firstRun;
+    std::unordered_map<int, sqlite3_stmt *> insertStatements;
     
-    std::unordered_map<blocksci::ScriptType::Enum,  lmdb::dbi> scriptDbs;
+    AddressDB(std::pair<sqlite3 *, bool> init);
     
-    void processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &scripts) override;
-    void processScript(const blocksci::Script &, const blocksci::ChainAccess &, const blocksci::ScriptAccess &) override {}
-    void addAddress(const blocksci::Address &address, const blocksci::OutputPointer &pointer);
-    void revealedP2SH(uint32_t scriptNum, const std::vector<blocksci::Address> &addresses);
+    void sawAddress(const blocksci::Address &pointer, uint32_t txNum) override;
+    
+    void linkP2SHAddress(const blocksci::Address &pointer, uint32_t txNum, uint32_t p2shNum) override;
     
 public:
-    AddressDB(const ParserConfigurationBase &config, const std::string &path);
+    AddressDB(const ParserConfiguration &config);
+    ~AddressDB();
     
-    void rollback(const blocksci::State &state) override;
-    void tearDown() override;
+    void rollback(uint32_t maxTxIndex);
 };
 
 #endif /* address_db_h */

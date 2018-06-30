@@ -9,24 +9,28 @@
 #ifndef nulldata_script_hpp
 #define nulldata_script_hpp
 
+#include "scriptsfwd.hpp"
 #include "script.hpp"
-
-#include <string>
+#include "bitcoin_script.hpp"
 
 namespace blocksci {
- 
+    struct RawData;
+    
     template <>
-    class ScriptAddress<ScriptType::Enum::NULL_DATA> : public BaseScript {
+    class ScriptAddress<AddressType::Enum::NULL_DATA> : public Script {
         
     public:
-        constexpr static ScriptType::Enum scriptType = ScriptType::Enum::NULL_DATA;
-        
-        ScriptAddress<scriptType>(uint32_t scriptNum, const RawData *rawData, const ScriptAccess &access);
-        ScriptAddress<scriptType>(const ScriptAccess &access, uint32_t addressNum);
+        ScriptAddress<AddressType::Enum::NULL_DATA>(const RawData *rawData);
+        ScriptAddress<AddressType::Enum::NULL_DATA>(const ScriptAccess &access, uint32_t addressNum);
         std::string data;
         
-        std::string toString() const;
-        std::string toPrettyString() const;
+        std::string toString(const DataConfiguration &config) const override;
+        std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const override;
+        bool operator==(const Script &other) override;
+        
+        #ifndef BLOCKSCI_WITHOUT_SINGLETON
+        ScriptAddress<AddressType::Enum::NULL_DATA>(uint32_t addressNum);
+        #endif
     };
 }
 

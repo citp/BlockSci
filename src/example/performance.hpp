@@ -13,6 +13,8 @@
 
 #include <unordered_map>
 
+#include <stdio.h>
+
 std::vector<uint64_t> unspentSums1(blocksci::Blockchain &chain, uint32_t start, uint32_t stop);
 std::vector<uint64_t> unspentSums2(blocksci::Blockchain &chain, uint32_t start, uint32_t stop);
 

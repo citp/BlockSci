@@ -9,67 +9,118 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "chain_access.hpp"
-#include "util/data_configuration.hpp"
+#include "data_configuration.hpp"
 #include "block.hpp"
+#include "output_pointer.hpp"
 #include "transaction.hpp"
 #include "output.hpp"
 #include "input.hpp"
 
-#include <blocksci/util/file_mapper.hpp>
-
-#include <range/v3/iterator_range.hpp>
-
 namespace blocksci {
-    
-    ReorgException::ReorgException() : std::runtime_error("") {}
-    
-    ReorgException::~ReorgException() = default;
-    
-    void ChainAccess::setup() {
-        maxHeight = static_cast<BlockHeight>(blockFile.size()) - blocksIgnored;
-        if (maxHeight > BlockHeight(0)) {
-            const auto &blockFile_ = blockFile;
-            auto maxLoadedBlock = blockFile_.getData(static_cast<size_t>(static_cast<int>(maxHeight) - 1));
+    ChainAccess::ChainAccess(const DataConfiguration &config, bool errorOnReorg_, uint32_t blocksIgnored) :
+    blockFile(config.blockFilePath()),
+    blockCoinbaseFile(config.blockCoinbaseFilePath()),
+    txFile(config.txFilePath()),
+    txHashesFile(config.txHashesFilePath()),
+    txVpubFile(config.txVpubFilePath()),
+    errorOnReorg(errorOnReorg_) {
+
+        maxHeight = static_cast<uint32_t>(blockFile.size()) - blocksIgnored;
+        auto maxLoadedBlock = getBlockFile().getData(maxHeight - 1);
+        
+        if (errorOnReorg_) {
             lastBlockHash = maxLoadedBlock->hash;
             _maxLoadedTx = maxLoadedBlock->firstTxIndex + maxLoadedBlock->numTxes;
             lastBlockHashDisk = &maxLoadedBlock->hash;
         }
     }
     
-    ChainAccess::ChainAccess(const DataConfiguration &config, bool errorOnReorg_, BlockHeight blocksIgnored_) :
-    blockFile(config.blockFilePath()),
-    blockCoinbaseFile(config.blockCoinbaseFilePath()),
-    txFile(config.txFilePath()),
-    sequenceFile(config.sequenceFilePath()),
-    txHashesFile(config.txHashesFilePath()),
-    blocksIgnored(blocksIgnored_),
-    errorOnReorg(errorOnReorg_) {
-        setup();
+    void ChainAccess::reorgCheck() const {
+        if (errorOnReorg && lastBlockHash != *lastBlockHashDisk) {
+            throw ReorgException();
+        }
     }
     
-    void ChainAccess::reload() {
-        blockFile.reload();
-        blockCoinbaseFile.reload();
-        txFile.reload();
-        txHashesFile.reload();
-        setup();
-    }
-    
-    size_t ChainAccess::txCount() const {
+    uint32_t ChainAccess::maxLoadedTx() const {
         return _maxLoadedTx;
     }
     
-    BlockHeight ChainAccess::getBlockHeight(uint32_t txIndex) const {
+    size_t ChainAccess::txCount() const {
         reorgCheck();
-        if (errorOnReorg && txIndex >= _maxLoadedTx) {
+        return txFile.size();
+    }
+    
+    const char *ChainAccess::getTxPos(uint32_t index) const {
+        reorgCheck();
+        return txFile.getPointerAtIndex(index);
+    }
+    
+    const RawTransaction *ChainAccess::getTx(uint32_t index) const {
+        return txFile.getData(index);
+    }
+    
+    const Output &ChainAccess::getOutput(uint32_t txIndex, uint16_t outputNum) const {
+        auto linkedTxPos = getTxPos(txIndex);
+        linkedTxPos += sizeof(RawTransaction);
+        linkedTxPos += sizeof(Output) * outputNum;
+        return *reinterpret_cast<const Output *>(linkedTxPos);
+    }
+    
+    const Input &ChainAccess::getInput(uint32_t txIndex, uint16_t inputNum) const {
+        auto tx = getTx(txIndex);
+        auto txPos = reinterpret_cast<const char *>(tx);
+        txPos += sizeof(RawTransaction);
+        txPos += sizeof(Output) * tx->outputCount;
+        txPos += sizeof(Input) * inputNum;
+        return *reinterpret_cast<const Input *>(txPos);
+    }
+    
+    std::vector<uint64_t> ChainAccess::getVpubold(uint32_t txIndex, uint16_t vpubNum) const {
+		auto tx = txVpubFile.getData(txIndex);
+        auto txPos = reinterpret_cast<const char *>(tx);
+        std::vector<uint64_t> vpubold;
+        for(int i=0; i < vpubNum; i++) {
+			vpubold.emplace_back(*reinterpret_cast<const uint64_t *>(txPos));
+			txPos += sizeof(uint64_t);
+		}
+		return vpubold;
+	}
+	
+    std::vector<uint64_t> ChainAccess::getVpubnew(uint32_t txIndex, uint16_t vpubNum) const {
+		auto tx = txVpubFile.getData(txIndex);
+        auto txPos = reinterpret_cast<const char *>(tx);
+        txPos += sizeof(uint64_t) * vpubNum;
+        std::vector<uint64_t> vpubnew;
+        for(int i=0; i < vpubNum; i++) {
+			vpubnew.emplace_back(*reinterpret_cast<const uint64_t *>(txPos));
+			txPos += sizeof(uint64_t);
+		}
+		return vpubnew;
+	}
+    
+    uint32_t ChainAccess::getBlockHeight(uint32_t txIndex) const {
+        reorgCheck();
+        if (txIndex >= _maxLoadedTx) {
             throw std::out_of_range("Transaction index out of range");
         }
-        auto blockRange = ranges::make_iterator_range(blockFile.getData(0), blockFile.getData(static_cast<size_t>(static_cast<int>(maxHeight) - 1)) + 1);
-        auto it = std::upper_bound(blockRange.begin(), blockRange.end(), txIndex, [](uint32_t index, const RawBlock &b) {
-            return index < b.firstTxIndex;
+        auto blockRange = getBlocks();
+        auto it = std::upper_bound(blockRange.begin(), blockRange.end(), txIndex, [](uint32_t txIndex, const Block &b) {
+            return txIndex < b.firstTxIndex;
         });
         it--;
-        return static_cast<BlockHeight>(std::distance(blockRange.begin(), it));
+        auto height = static_cast<uint32_t>(std::distance(blockRange.begin(), it));
+        return height;
+    }
+    
+    const Block &ChainAccess::getBlock(uint32_t blockHeight) const {
+        reorgCheck();
+        return *blockFile.getData(blockHeight);
+    }
+    
+    const boost::iterator_range<const Block *> ChainAccess::getBlocks() const {
+        reorgCheck();
+        auto fullRange = blockFile.getRange();
+        return boost::iterator_range<const Block *>(fullRange.begin(), fullRange.begin() + maxHeight);
     }
     
     std::vector<unsigned char> ChainAccess::getCoinbase(uint64_t offset) const {
@@ -79,5 +130,4 @@ namespace blocksci {
         auto range = boost::make_iterator_range_n(reinterpret_cast<const unsigned char *>(pos), length);
         return std::vector<unsigned char>(range.begin(), range.end());
     }
-    
 }

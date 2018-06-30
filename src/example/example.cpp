@@ -9,20 +9,18 @@
 #include "performance.hpp"
 
 #include <blocksci/blocksci.hpp>
-#include <blocksci/chain/algorithms.hpp>
-#include <blocksci/chain/transaction.hpp>
-#include <blocksci/chain/block.hpp>
-#include <blocksci/script.hpp>
-#include <blocksci/index/hash_index.hpp>
-#include <blocksci/address/address.hpp>
-#include <blocksci/chain/transaction_range.hpp>
+#include <blocksci/hash_index.hpp>
+#include <blocksci/chain/utxo_pool.hpp>
+#include <blocksci/scripts/address_pointer.hpp>
 
 //#include <hsql/SQLParser.h>
 
 #include <google/sparse_hash_map>
 #include <google/dense_hash_map>
 
-#include <range/v3/all.hpp>
+#include <boost/optional/optional_io.hpp>
+#include <boost/pending/disjoint_sets.hpp>
+#include <boost/range/counting_range.hpp>
 
 #include <numeric>
 #include <chrono>
@@ -99,24 +97,15 @@ int main(int argc, const char * argv[]) {
     assert(argc == 2);
     
     Blockchain chain(argv[1]);
-    auto a = Transaction(2571650);
-    auto b = a.outputs()[1].getAddress();
-    auto c = b.getOutputs();
-    for (auto &out : c) {
-        std::cout << out << std::endl;
-    }
-
-//    RANGES_FOR(auto block, chain) {
-//        RANGES_FOR(auto tx, block) {
-//            RANGES_FOR(auto output, tx.outputs()) {
-//                std::cout << output << std::endl;
-//            }
-//        }
-//    }
     
-    return 0;
+    
+    UTXOPool pool(5);
+    for (size_t i = 0; i < chain.size(); i++) {
+        pool.advanceBlock();
+    }
+    
 //    uint64_t count = 0;
-//    RANGES_FOR(auto tx, chain.iterateTransactions(0, chain.size())) {
+//    for (auto tx : chain.iterateTransactions(0, chain.size())) {
 //        auto change = getChangeOutput(tx);
 //        if (change != nullptr) {
 //            count++;
@@ -139,8 +128,8 @@ int main(int argc, const char * argv[]) {
 //    }
 //    
 //    HashIndex hashIndex{chain.access.config};
-//    RANGES_FOR(auto block, chain) {
-//        RANGES_FOR(auto tx, block) {
+//    for (auto block : chain) {
+//        for (auto tx : block) {
 //            assert(hashIndex.getTxIndex(tx.getHash()) == tx.txNum);
 //        }
 //        
@@ -151,15 +140,15 @@ int main(int argc, const char * argv[]) {
     auto block = chain[100000];
     auto tx = block[0];
     std::cout << tx.getHash().GetHex() << "\n";
-    auto output = tx.outputs()[0];
-    std::cout << output.getAddress().getScript().toPrettyString() << "\n";
+    auto &output = tx.outputs()[0];
+    std::cout << *output.getAddressPointer().getAddress() << "\n";
     
     return 0;
     
-    auto mapFunc = [&chain](const std::vector<Block> &segment) {
+    auto mapFunc = [&chain](std::vector<Block> &segment) {
         std::vector<Transaction> txes;
         for (auto &block : segment) {
-            RANGES_FOR(auto tx, block) {
+            for (auto tx : block.txes(chain.access.chain)) {
                 if (isCoinjoin(tx)) {
                     txes.push_back(tx);
                 }
@@ -168,12 +157,13 @@ int main(int argc, const char * argv[]) {
         return txes;
     };
     
-    auto reduceFunc = [] (std::vector<Transaction> &vec1, std::vector<Transaction> &vec2) -> std::vector<Transaction> &{
+    auto reduceFunc = [] (std::vector<Transaction> &vec1, std::vector<Transaction> &vec2) {
         vec1.insert( vec1.end(), vec2.begin(), vec2.end() );
         return vec1;
     };
     
-    auto cjtxes = chain.mapReduce<std::vector<Transaction>>(354416, 464270, mapFunc, reduceFunc);
+    std::vector<Transaction> cjvec;
+    auto cjtxes = chain.mapReduceBlockRanges(354416, 464270, mapFunc, reduceFunc, cjvec);
     
     cjtxes.erase(std::remove_if(cjtxes.begin(), cjtxes.end(), [](const Transaction &tx) {
         return tx.inputCount() > 15;
@@ -247,7 +237,7 @@ int main(int argc, const char * argv[]) {
     
     auto begin = std::chrono::steady_clock::now();
 //    int k = 0;
-//    RANGES_FOR(auto tx, chain.iterateTransactions(0, chain.size())) {
+//    for (auto tx : chain.iterateTransactions(0, chain.size())) {
 //        k++;
 //    }
 //    auto endTime = std::chrono::steady_clock::now();
@@ -267,15 +257,15 @@ int main(int argc, const char * argv[]) {
     for (int i = 700000; i < 717961; i++) {
         auto block = chain[i];
         std::cout << block.getString() << std::endl;
-        RANGES_FOR(auto tx, block) {
+        for (auto tx : block) {
             std::cout << tx.getString() << std::endl;
-            for (auto input : tx.inputs()) {
+            for (auto &input : tx.inputs()) {
                 std::cout << input.toString() << std::endl;
-                std::cout << input.getAddress().getScript().toPrettyString() << std::endl;
+                std::cout << input.getAddressPointer().getAddress()->toString() << std::endl;
             }
-            for (auto output : tx.outputs()) {
+            for (auto &output : tx.outputs()) {
                 std::cout << output.toString() << std::endl;
-                std::cout << output.getAddress().getScript().toPrettyString() << std::endl;
+                std::cout << output.getAddressPointer().getAddress()->toString() << std::endl;
             }
         }
     }
@@ -287,10 +277,8 @@ int main(int argc, const char * argv[]) {
     
     
     begin = std::chrono::steady_clock::now();
-    RANGES_FOR(auto block, chain) {
-        RANGES_FOR(auto tx, block) {
-            maxSize = std::max(maxSize, tx.sizeBytes());
-        }
+    for (const auto tx : chain.iterateTransactions(0, chain.size())) {
+        maxSize = std::max(maxSize, tx.sizeBytes());
     }
     
     endTime = std::chrono::steady_clock::now();
@@ -300,7 +288,7 @@ int main(int argc, const char * argv[]) {
 //    begin = std::chrono::steady_clock::now();
 //    unsigned int maxSize = 0;
 //    for (auto &block : chain) {
-//        RANGES_FOR(auto tx, block) {
+//        for (auto tx : block) {
 //            maxSize = std::max(maxSize, tx.sizeBytes());
 //        }
 //    }
@@ -373,9 +361,9 @@ int main(int argc, const char * argv[]) {
 //    }
 //    std::cout << addCount << std::endl;
 //
-//    RANGES_FOR(auto block, chain) {
-//        RANGES_FOR(auto tx, block) {
-//            RANGES_FOR(auto txout, tx.outputs()) {
+//    for (auto &block : chain) {
+//        for (auto tx : block) {
+//            for (auto &txout : tx.outputs) {
 //                auto address = txout.getAddress();
 //                uint32_t index = tx.txNum;
 //                auto outputs = address.getOutputTransactions();
@@ -406,8 +394,8 @@ int main(int argc, const char * argv[]) {
 //    auto dist = timeFunc("outputDist", [&] { return chain.getOutputDistribution(0, 150000);});
     
 //    auto &block = chain[0];
-//    RANGES_FOR(auto tx, block) {
-//        RANGES_FOR(auto output, tx.outputs()) {
+//    for (auto tx : block) {
+//        for (auto &output : tx.outputs) {
 //            std::cout << output.toAddressString() << std::endl;
 //        }
 //    }
@@ -421,8 +409,8 @@ int main(int argc, const char * argv[]) {
 //    }
     
 //    auto txes = add.getOutputTransactions();
-//    RANGES_FOR(auto block, chain) {
-//        RANGES_FOR(auto tx, block) {
+//    for (auto &block : chain) {
+//        for (auto tx : block) {
 ////            std::cout << tx.getHashString() << " " << tx << "\n";
 ////            auto change = tx.getChangeOutput();
 ////            if (change) {
@@ -453,9 +441,9 @@ int main(int argc, const char * argv[]) {
 //    }
     
     
-//    RANGES_FOR(auto block, chain) {
-//        RANGES_FOR(auto tx, block) {
-//            RANGES_FOR(auto output, tx.outputs()) {
+//    for (auto &block : chain) {
+//        for (auto tx : block) {
+//            for (auto &output : tx.outputs) {
 //                std::cout << output << "\n";
 //            }
 //        }
@@ -469,9 +457,9 @@ void maxOutput(Blockchain &chain) {
     uint64_t maxValue = 0;
     uint32_t txNum = 0;
     uint32_t curTx = 0;
-    RANGES_FOR(auto block, chain) {
-        RANGES_FOR(auto tx, block) {
-            RANGES_FOR(auto output, tx.outputs()) {
+    for (auto &block : chain) {
+        for (auto tx : block) {
+            for (auto &output : tx.outputs()) {
                 if (output.getValue() > maxValue) {
                     maxValue = output.getValue();
                     txNum = curTx;
@@ -482,16 +470,16 @@ void maxOutput(Blockchain &chain) {
     }
     std::cout << "Max value is " << maxValue << " in tx " << txNum << std::endl;
     
-    std::cout << "Tx has hash " << Transaction(txNum).getHash().GetHex() << std::endl;
+    std::cout << "Tx has hash " << Transaction::txWithIndex(txNum).getHash().GetHex() << std::endl;
 }
 
 google::dense_hash_map<uint32_t, uint32_t> getAddressDistribution(Blockchain &chain, int start, int stop) {
-    auto mapFunc = [](const std::vector<Block> &segment) {
+    auto mapFunc = [](std::vector<Block> &segment) {
         google::dense_hash_map<uint32_t, uint32_t> distribution;
         distribution.set_empty_key(std::numeric_limits<uint32_t>::max() - 5);
         for (auto &block : segment) {
-            RANGES_FOR(auto tx, block) {
-                RANGES_FOR(auto output, tx.outputs()) {
+            for (auto tx : block) {
+                for(auto &output : tx.outputs()) {
                     auto it = distribution.insert(std::make_pair(output.getSpendingTxIndex(), 0));
                     it.first->second++;
                 }
@@ -500,7 +488,7 @@ google::dense_hash_map<uint32_t, uint32_t> getAddressDistribution(Blockchain &ch
         return distribution;
     };
     
-    auto reduceFunc = [] (google::dense_hash_map<uint32_t, uint32_t> &map1, google::dense_hash_map<uint32_t, uint32_t> &map2) -> google::dense_hash_map<uint32_t, uint32_t> & {
+    auto reduceFunc = [] (google::dense_hash_map<uint32_t, uint32_t> &map1, google::dense_hash_map<uint32_t, uint32_t> &map2) {
         for (auto &pair : map2) {
             auto res = map1.insert(pair);
             if (!res.second) {
@@ -510,7 +498,8 @@ google::dense_hash_map<uint32_t, uint32_t> getAddressDistribution(Blockchain &ch
         return map1;
     };
     
-    return chain.mapReduce<google::dense_hash_map<uint32_t, uint32_t>>(start, stop, mapFunc, reduceFunc);
+    google::dense_hash_map<uint32_t, uint32_t> map;
+    return chain.mapReduceBlockRanges(start, stop, mapFunc, reduceFunc, map);
 }
 
 /*
@@ -533,7 +522,7 @@ google::dense_hash_map<uint32_t, uint32_t> getMultisigAddressDistribution(Blockc
                     }
                 }
             }
-            //            RANGES_FOR(auto tx, block) {
+            //            for (auto tx : block) {
             //                if (tx.containsOutputOfType(txnouttype::TX_MULTISIG)) {
             //                    for(auto output : tx.expandedOutputs()) {
             //                        if (output.getType() == txnouttype::TX_MULTISIG) {

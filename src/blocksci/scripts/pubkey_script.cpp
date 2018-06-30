@@ -13,37 +13,32 @@
 #include "script_access.hpp"
 #include "bitcoin_base58.hpp"
 
-#include <range/v3/utility/optional.hpp>
-
 namespace blocksci {
     using namespace script;
     
     
-    Pubkey::ScriptAddress(uint32_t scriptNum_, const PubkeyData *rawData, const ScriptAccess &access) : BaseScript(scriptNum_, scriptType, *rawData, access), pubkey(rawData->pubkey), pubkeyhash(rawData->address) {}
+    Pubkey::ScriptAddress(const PubkeyData *rawData) : pubkey(rawData->pubkey) {}
     
-    Pubkey::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : Pubkey(addressNum, access.getScriptData<scriptType>(addressNum), access) {}
+    Pubkey::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : Pubkey(access.getScriptData<AddressType::Enum::PUBKEY>(addressNum)) {}
     
-    ranges::optional<CPubKey> Pubkey::getPubkey() const {
-        if (pubkey.IsValid()) {
-            return pubkey;
-        } else {
-            return ranges::nullopt;
-        }
+    bool Pubkey::operator==(const Script &other) {
+        auto otherA = dynamic_cast<const Pubkey *>(&other);
+        return otherA && otherA->pubkey == pubkey;
     }
     
-    std::string Pubkey::addressString() const {
-        return CBitcoinAddress(pubkeyhash, AddressType::Enum::PUBKEYHASH, access->config).ToString();
+    std::string Pubkey::addressString(const DataConfiguration &config) const {
+        return CBitcoinAddress(pubkey.GetID(), AddressType::Enum::PUBKEYHASH, config).ToString();
     }
     
-    std::string Pubkey::toString() const {
+    std::string Pubkey::toString(const DataConfiguration &config) const {
         std::stringstream ss;
         ss << "PubkeyAddress(";
-        ss << "address=" << addressString();
+        ss << "address=" << addressString(config);
         ss << ")";
         return ss.str();
     }
     
-    std::string Pubkey::toPrettyString() const {
-        return addressString();
+    std::string Pubkey::toPrettyString(const DataConfiguration &config, const ScriptAccess &) const {
+        return addressString(config);
     }
 }

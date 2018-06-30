@@ -8,22 +8,23 @@
 
 #include "optional_py.hpp"
 #include "variant_py.hpp"
-#include "input_py.hpp"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/chrono.h>
 
+#include <boost/optional.hpp>
+#include <boost/variant.hpp>
+
 namespace py = pybind11;
 
 void init_address(py::module &m);
+void init_address_index(py::module &m);
 void init_tx(py::module &m);
 void init_tx_summary(py::module &m);
-void init_output(py::module &m);
+void init_inout(py::module &m);
 void init_block(py::module &m);
 void init_blockchain(py::module &m);
-void init_ranges(py::module &m);
-void init_heuristics(py::module &m);
 
 PYBIND11_MODULE(blocksci_interface, m) {
     init_address(m);
@@ -31,8 +32,5 @@ PYBIND11_MODULE(blocksci_interface, m) {
     init_block(m);
     init_tx(m);
     init_tx_summary(m);
-    init_input(m);
-    init_output(m);
-    init_ranges(m);
-    init_heuristics(m);
+    init_inout(m);
 }

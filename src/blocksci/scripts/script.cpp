@@ -8,79 +8,38 @@
 
 #define BLOCKSCI_WITHOUT_SINGLETON
 
-#include "util/util.hpp"
 #include "script.hpp"
-#include "script_data.hpp"
-#include "script_info.hpp"
 
-#include "script_variant.hpp"
-
-#include "address/address.hpp"
-#include "address/address_info.hpp"
-#include "index/address_index.hpp"
-
-#include "chain/transaction.hpp"
-#include "chain/output.hpp"
+#include <blocksci/address/address_info.hpp>
+#include "pubkey_script.hpp"
+#include "pubkeyhash_script.hpp"
+#include "multisig_script.hpp"
+#include "scripthash_script.hpp"
+#include "nulldata_script.hpp"
+#include "nonstandard_script.hpp"
 
 #include <iostream>
 
 
 namespace blocksci {
     
-    Script::Script(const Address &address) : Script(address.scriptNum, scriptType(address.type)) {}
-    
-    BaseScript::BaseScript(uint32_t scriptNum_, ScriptType::Enum type_, const ScriptDataBase &data, const ScriptAccess &scripts_) : Script(scriptNum_, type_), access(&scripts_), firstTxIndex(data.txFirstSeen), txRevealed(data.txFirstSpent) {}
-    
-    BaseScript::BaseScript(const Address &address, const ScriptDataBase &data, const ScriptAccess &scripts) : BaseScript(address.scriptNum, scriptType(address.type), data, scripts) {}
-    
-    
-    Transaction BaseScript::getFirstTransaction(const ChainAccess &chain) const {
-        return Transaction(firstTxIndex, chain);
-    }
-    
-    ranges::optional<Transaction> BaseScript::getTransactionRevealed(const ChainAccess &chain) const {
-        if (txRevealed != 0) {
-            return Transaction(txRevealed, chain);
-        } else {
-            return ranges::nullopt;
+    template<blocksci::AddressType::Enum type>
+    struct ScriptCreateFunctor {
+        static std::unique_ptr<Script> f(const ScriptAccess &access, const Address &address) {
+            return std::make_unique<ScriptAddress<type>>(access, address.addressNum);
         }
-    }
+    };
     
-    std::string Script::toString() const {
-        if (scriptNum == 0) {
-            return "InvalidScript()";
-        } else {
-            std::stringstream ss;
-            ss << "Script(";
-            ss << "scriptNum=" << scriptNum;
-            ss << ", type=" << scriptName(type);
-            ss << ")";
-            return ss.str();
+    std::unique_ptr<Script> Script::create(const ScriptAccess &access, const Address &address) {
+        static constexpr auto table = blocksci::make_dynamic_table<ScriptCreateFunctor>();
+        static constexpr std::size_t size = blocksci::AddressType::all.size();
+        
+        auto index = static_cast<size_t>(address.type);
+        if (index >= size)
+        {
+            throw std::invalid_argument("combination of enum values is not valid");
         }
-    }
-    
-    AnyScript Script::getScript(const ScriptAccess &scripts) const {
-        return AnyScript(*this, scripts);
-    }
-    
-    std::vector<Output> Script::getOutputs(const AddressIndex &index, const ChainAccess &chain) const {
-        return index.getOutputs(*this, chain);
-    }
-    
-    std::vector<Input> Script::getInputs(const AddressIndex &index, const ChainAccess &chain) const {
-        return index.getInputs(*this, chain);
-    }
-    
-    std::vector<Transaction> Script::getTransactions(const AddressIndex &index, const ChainAccess &chain) const {
-        return index.getTransactions(*this, chain);
-    }
-    
-    std::vector<Transaction> Script::getOutputTransactions(const AddressIndex &index, const ChainAccess &chain) const {
-        return index.getOutputTransactions(*this, chain);
-    }
-    
-    std::vector<Transaction> Script::getInputTransactions(const AddressIndex &index, const ChainAccess &chain) const {
-        return index.getInputTransactions(*this, chain);
+        return table[index](access, address);
     }
 
 }

@@ -9,109 +9,69 @@
 #ifndef bloom_filter_hpp
 #define bloom_filter_hpp
 
-#include <blocksci/util/file_mapper.hpp>
-
-#include <boost/serialization/access.hpp>
-
 #include <fstream>
 #include <vector>
+#include <stdio.h>
 
-struct BloomStore {
-    using BlockType = size_t;
-    static constexpr size_t BlockSize = sizeof(BlockType) * 8;
-
-    BloomStore(const boost::filesystem::path &path, uint64_t length);
+template<class Key>
+class BloomFilter {
+public:
+    BloomFilter();
+    BloomFilter(uint64_t maxItems, double fpRate);
     
-    void setBit(uint64_t bitPos);
-    bool isSet(uint64_t bitPos) const;
+    void add(const Key &key);
+    bool isFull() const {
+        return addedCount >= maxItems;
+    }
     
-    void reset(uint64_t length);
+    bool possiblyContains(const Key &key) const;
+    
+    uint32_t size() { return addedCount; }
+    
+    friend std::ostream &operator<<(std::ostream &output, const BloomFilter &b ) {
+        output.write(reinterpret_cast<const char*>(&b.maxItems), sizeof(b.maxItems));
+        output.write(reinterpret_cast<const char*>(&b.fpRate), sizeof(b.fpRate));
+        output.write(reinterpret_cast<const char*>(&b.m_numHashes), sizeof(b.m_numHashes));
+        output.write(reinterpret_cast<const char*>(&b.length), sizeof(b.length));
+        output.write(reinterpret_cast<const char*>(&b.addedCount), sizeof(b.addedCount));
+        
+        size_t sz = b.data.size();
+        output.write(reinterpret_cast<const char*>(&sz), sizeof(sz));
+        output.write(reinterpret_cast<const char*>(&b.data[0]), sz * sizeof(b.data[0]));
+        return output;
+    }
+    
+    friend std::istream &operator>>(std::istream &input, BloomFilter &b ) {
+        input.read(reinterpret_cast<char*>(&b.maxItems), sizeof(b.maxItems));
+        input.read(reinterpret_cast<char*>(&b.fpRate), sizeof(b.fpRate));
+        input.read(reinterpret_cast<char*>(&b.m_numHashes), sizeof(b.m_numHashes));
+        input.read(reinterpret_cast<char*>(&b.length), sizeof(b.length));
+        input.read(reinterpret_cast<char*>(&b.addedCount), sizeof(b.addedCount));
+        
+        size_t sz;
+        input.read(reinterpret_cast<char*>(&sz), sizeof(sz));
+        b.data.resize(sz);
+        input.read(reinterpret_cast<char*>(&b.data[0]), sz * sizeof(b.data[0]));
+        return input;
+    }
+    
+    uint64_t getMaxItems() const {
+        return maxItems;
+    }
+    
+    double getFPRate() const {
+        return fpRate;
+    }
     
 private:
-    std::array<BloomStore::BlockType, BloomStore::BlockSize> bitMasks;
-    
-private:
-    blocksci::FixedSizeFileMapper<BlockType, blocksci::AccessMode::readwrite> backingFile;
-    uint64_t length;
-    
-    uint64_t blockCount() const;
-};
-
-struct BloomFilterData {
     uint64_t maxItems;
     double fpRate;
     uint8_t m_numHashes;
     uint64_t length;
     uint64_t addedCount;
-    
-    BloomFilterData();
-    BloomFilterData(uint64_t maxItems_, double fpRate_);
-    
-    friend class boost::serialization::access;
-    template<class Archive> void serialize(Archive & ar, const unsigned int) {
-        ar & maxItems;
-        ar & fpRate;
-        ar & m_numHashes;
-        ar & length;
-        ar & addedCount;
-    }
+    std::vector<uint8_t> data;
 };
 
-class BloomFilter {
-public:
-    // Load or create
-    BloomFilter(const boost::filesystem::path &path, uint64_t maxItems, double fpRate);
-    BloomFilter(const BloomFilter &) = delete;
-    BloomFilter &operator=(const BloomFilter &) = delete;
-    BloomFilter(BloomFilter &&) = delete;
-    BloomFilter &operator=(BloomFilter &&) = delete;
-    ~BloomFilter();
-    
-    void reset(uint64_t maxItems, double fpRate);
-    
-    template<class Key>
-    void add(const Key &key) {
-        int len = static_cast<int>(sizeof(Key));
-        auto item = reinterpret_cast<const uint8_t *>(&key);
-        add(item, len);
-    }
-    
-    template<class Key>
-    bool possiblyContains(const Key &key) const {
-        auto len = static_cast<int>(sizeof(Key));
-        auto item = reinterpret_cast<const uint8_t *>(&key);
-        return possiblyContains(item, len);
-    }
-    
-    bool isFull() const {
-        return impData.addedCount >= impData.maxItems;
-    }
-    
-    size_t size() { return impData.addedCount; }
-    
-    uint64_t getMaxItems() const {
-        return impData.maxItems;
-    }
-    
-    double getFPRate() const {
-        return impData.fpRate;
-    }
-    
-    boost::filesystem::path metaPath() const {
-        return boost::filesystem::path(path).concat("Meta.dat");
-    }
-    
-    boost::filesystem::path storePath() const {
-        return boost::filesystem::path(path).concat("Store");
-    }
-    
-private:
-    boost::filesystem::path path;
-    BloomFilterData impData;
-    BloomStore store;
-    
-    void add(const uint8_t *item, int length);
-    bool possiblyContains(const uint8_t *item, int length) const;
-};
+
 
 #endif /* bloom_filter_hpp */

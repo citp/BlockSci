@@ -9,31 +9,32 @@
 #ifndef pubkey_script_hpp
 #define pubkey_script_hpp
 
+#include "scriptsfwd.hpp"
 #include "script.hpp"
 #include "bitcoin_pubkey.hpp"
 
-#include <range/v3/utility/optional.hpp>
-
 namespace blocksci {
-
+    struct PubkeyData;
+    
     template <>
-    class ScriptAddress<ScriptType::Enum::PUBKEY> : public BaseScript {
-    private:
-        CPubKey pubkey;
+    class ScriptAddress<AddressType::Enum::PUBKEY> : public Script {
+        
     public:
-        uint160 pubkeyhash;
+        CPubKey pubkey;
         
-        constexpr static ScriptType::Enum scriptType = ScriptType::Enum::PUBKEY;
+        ScriptAddress<AddressType::Enum::PUBKEY>(const PubkeyData *rawData);
+        ScriptAddress<AddressType::Enum::PUBKEY>(const ScriptAccess &access, uint32_t addressNum);
         
-        ScriptAddress<scriptType>(uint32_t scriptNum, const PubkeyData *rawData, const ScriptAccess &access);
-        ScriptAddress<scriptType>(const ScriptAccess &access, uint32_t addressNum);
+        std::string addressString(const DataConfiguration &config) const;
         
+        std::string toString(const DataConfiguration &config) const override;
+        std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const override;
+        bool operator==(const Script &other) override;
+        
+        #ifndef BLOCKSCI_WITHOUT_SINGLETON
+        ScriptAddress<AddressType::Enum::PUBKEY>(uint32_t addressNum);
         std::string addressString() const;
-        
-        std::string toString() const;
-        std::string toPrettyString() const;
-        
-        ranges::optional<CPubKey> getPubkey() const;
+        #endif
     };
 }
 

@@ -14,36 +14,30 @@
 
 namespace blocksci {
     using namespace script;
-    Nonstandard::ScriptAddress(uint32_t scriptNum_, std::tuple<const NonstandardScriptData *, const NonstandardSpendScriptData *> &&rawData, const ScriptAccess &access) : BaseScript(scriptNum_, scriptType, *std::get<0>(rawData), access), outputScript(std::get<0>(rawData)->getScript()) {
-        auto inputPointer = std::get<1>(rawData);
-        if (inputPointer != nullptr) {
-            inputScript = inputPointer->getScript();
-        } else {
-            inputScript = ranges::nullopt;
-        }
+    Nonstandard::ScriptAddress(std::tuple<const NonstandardScriptData *, const NonstandardScriptData *> &&rawData) : inputScript(std::get<1>(rawData)->getScript()), outputScript(std::get<0>(rawData)->getScript()) {}
+    
+    Nonstandard::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : Nonstandard(access.getScriptData<AddressType::Enum::NONSTANDARD>(addressNum)) {}
+    
+    bool Nonstandard::operator==(const Script &other) {
+        auto otherA = dynamic_cast<const Nonstandard *>(&other);
+        return otherA && otherA->inputString() == inputString() && otherA->outputString() == outputString();
     }
     
-    Nonstandard::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : Nonstandard(addressNum, access.getScriptData<scriptType>(addressNum), access) {}
-    
     std::string Nonstandard::inputString() const {
-        if (inputScript) {
-            return ScriptToAsmStr(*inputScript);
-        } else {
-            return "No input script";
-        }
+        return ScriptToAsmStr(inputScript);
     }
     
     std::string Nonstandard::outputString() const {
         return ScriptToAsmStr(outputScript);
     }
     
-    std::string Nonstandard::toString() const {
+    std::string Nonstandard::toString(const DataConfiguration &) const {
         std::stringstream ss;
         ss << "NonStandardScript()";
         return ss.str();
     }
     
-    std::string Nonstandard::toPrettyString() const {
-        return toString();
+    std::string Nonstandard::toPrettyString(const DataConfiguration &config, const ScriptAccess &) const {
+        return toString(config);
     }
 }

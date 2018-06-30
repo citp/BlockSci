@@ -10,25 +10,24 @@
 
 #include "script_access.hpp"
 
+#include "data_configuration.hpp"
+
 namespace blocksci {
-    ScriptAccess::ScriptAccess(const DataConfiguration &config_) :
-    scriptFiles(blocksci::apply(blocksci::ScriptInfoList(), [&] (auto tag) {
-        return std::make_unique<ScriptFile<tag.value>>(config_.scriptsDirectory()/ std::string{scriptName(tag)});
-    })), config(config_) {}
+    ScriptAccess::ScriptAccess(const DataConfiguration &config) :
+    scriptFiles(blocksci::apply(blocksci::AddressInfoList(), [&] (auto tag) {
+        return config.scriptsDirectory()/ blocksci::AddressInfo<decltype(tag)::type>::typeName;
+    })) {}
     
-    void ScriptAccess::reload() {
-        for_each(scriptFiles, [&](auto& file) -> decltype(auto) { file->reload(); });
-    }
     
-    template<ScriptType::Enum type>
-    struct ScriptCountFunctor {
-        static uint32_t f(const ScriptAccess &access) {
-            return static_cast<uint32_t>(access.scriptCount<type>());
+    template<AddressType::Enum type>
+    struct AddressCountFunctor {
+        static size_t f(const ScriptAccess &access) {
+            return access.addressCount<type>();
         }
     };
     
-    uint32_t ScriptAccess::scriptCount(ScriptType::Enum type) const {
-        static constexpr auto table = make_dynamic_table<ScriptType, ScriptCountFunctor>();
+    size_t ScriptAccess::addressCount(AddressType::Enum type) const {
+        static constexpr auto table = make_dynamic_table<AddressCountFunctor>();
         static constexpr std::size_t size = AddressType::all.size();
         
         auto index = static_cast<size_t>(type);
@@ -39,13 +38,9 @@ namespace blocksci {
         return table[index](*this);
     }
     
-    std::array<uint32_t, ScriptType::size> ScriptAccess::scriptCounts() const {
-        return make_static_table<ScriptType, ScriptCountFunctor>(*this);
-    }
-    
     size_t ScriptAccess::totalAddressCount() const {
         uint32_t count = 0;
-        for_each(scriptFiles, [&count](auto& obj) -> decltype(auto) {count += obj->size();});
+        for_each(scriptFiles, [&count](auto& obj) -> decltype(auto) {count += obj.size();});
         return count;
     }
 }

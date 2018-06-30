@@ -9,28 +9,30 @@
 #ifndef nonstandard_script_hpp
 #define nonstandard_script_hpp
 
+#include "scriptsfwd.hpp"
 #include "script.hpp"
-#include "script_view.hpp"
-
-#include <range/v3/utility/optional.hpp>
+#include "bitcoin_script.hpp"
 
 namespace blocksci {
     template <>
-    class ScriptAddress<ScriptType::Enum::NONSTANDARD> : public BaseScript {
-        ranges::optional<CScriptView> inputScript;
-        CScriptView outputScript;
+    class ScriptAddress<AddressType::Enum::NONSTANDARD> : public Script {
+        CScript inputScript;
+        CScript outputScript;
         
     public:
-        constexpr static ScriptType::Enum scriptType = ScriptType::Enum::NONSTANDARD;
-        
-        ScriptAddress<scriptType>(uint32_t scriptNum, std::tuple<const NonstandardScriptData *, const NonstandardSpendScriptData *> &&rawData, const ScriptAccess &access);
-        ScriptAddress<scriptType>(const ScriptAccess &access, uint32_t addressNum);
+        ScriptAddress<AddressType::Enum::NONSTANDARD>(std::tuple<const NonstandardScriptData *, const NonstandardScriptData *> &&rawData);
+        ScriptAddress<AddressType::Enum::NONSTANDARD>(const ScriptAccess &access, uint32_t addressNum);
         
         std::string inputString() const;
         std::string outputString() const;
         
-        std::string toString() const;
-        std::string toPrettyString() const;
+        std::string toString(const DataConfiguration &config) const override;
+        std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const override;
+        bool operator==(const Script &other) override;
+        
+#ifndef BLOCKSCI_WITHOUT_SINGLETON
+        ScriptAddress<AddressType::Enum::NONSTANDARD>(uint32_t addressNum);
+#endif
     };
 }
 

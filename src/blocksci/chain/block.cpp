@@ -9,16 +9,15 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "block.hpp"
+#include "chain_access.hpp"
 #include "transaction.hpp"
 #include "output.hpp"
 #include "input.hpp"
 #include "transaction_summary.hpp"
-#include "address/address.hpp"
-#include "scripts/nulldata_script.hpp"
+#include "transaction_iterator.hpp"
 
-#include <range/v3/view/transform.hpp>
-#include <range/v3/to_container.hpp>
-#include <range/v3/range_for.hpp>
+#include <boost/range/algorithm.hpp>
+#include <boost/range/adaptors.hpp>
 
 #include <numeric>
 #include <fstream>
@@ -26,49 +25,57 @@
 
 namespace blocksci {
     
+    Block::Block(uint32_t firstTxIndex, uint32_t numTxes, uint32_t height, uint256 hash_, int32_t version, uint32_t timestamp, uint32_t bits, uint32_t nonce, uint64_t coinbaseOffset_, double difficulty) : firstTxIndex(firstTxIndex), numTxes(numTxes), height(height), hash(hash_), version(version), timestamp(timestamp), bits(bits), nonce(nonce), coinbaseOffset(coinbaseOffset_), difficulty(difficulty) {}
+    
+    bool Block::operator==(const Block& other) const {
+        return firstTxIndex == other.firstTxIndex
+        && numTxes == other.numTxes
+        && height == other.height
+        && hash == other.hash
+        && version == other.version
+        && timestamp == other.timestamp
+        && bits == other.bits
+        && nonce == other.nonce
+        && coinbaseOffset == other.coinbaseOffset;
+    }
+    
     std::string Block::getString() const {
         std::stringstream ss;
-        ss << "Block(numTxes=" << rawBlock->numTxes <<", height=" << blockNum <<", header_hash=" << rawBlock->hash.GetHex() << ", version=" << rawBlock->version <<", timestamp=" << rawBlock->timestamp << ", bits=" << rawBlock->bits << ", nonce=" << rawBlock->nonce << ")";
+        ss << "Block(numTxes=" << numTxes <<", height=" << height <<", header_hash=" << hash.GetHex() << ", version=" << version <<", timestamp=" << timestamp << ", bits=" << bits << ", nonce=" << nonce << ", difficulty=" << difficulty << ")";
         return ss.str();
     }
-
-    Block Block::nextBlock() const {
-        return Block(blockNum + BlockHeight(1), *access);
-    }
-
-    Block Block::prevBlock() const {
-        return Block(blockNum - BlockHeight(1), *access);
+    
+    const Block &Block::create(const ChainAccess &access, uint32_t height) {
+        return access.getBlock(height);
     }
     
-    const std::string Block::getHeaderHash() const {
-        return rawBlock->hash.GetHex();
-    }
-    
-    std::vector<unsigned char> Block::getCoinbase() const {
-        return access->getCoinbase(rawBlock->coinbaseOffset);
+    std::vector<unsigned char> Block::getCoinbase(const ChainAccess &access) const {
+        return access.getCoinbase(coinbaseOffset);
     }
     
     std::chrono::system_clock::time_point Block::getTime() const {
-        return std::chrono::system_clock::from_time_t(static_cast<time_t>(rawBlock->timestamp));
+        return std::chrono::system_clock::from_time_t(static_cast<time_t>(timestamp));
     }
     
-    Transaction Block::coinbaseTx() const {
-        return (*this)[0];
+    boost::iterator_range<TransactionIterator> Block::txes(const ChainAccess &access) const {
+        return boost::make_iterator_range(begin(access), end(access));
     }
     
-    bool isSegwit(const Block &block, const ScriptAccess &scripts) {
-        auto coinbase = block.coinbaseTx();
-        for (int i = coinbase.outputCount() - 1; i >= 0; i--) {
-            auto output = coinbase.outputs()[i];
-            if (output.getType() == AddressType::Enum::NULL_DATA) {
-                auto nulldata = script::OpReturn(scripts, output.getAddress().scriptNum);
-                uint32_t startVal = *reinterpret_cast<const uint32_t *>(nulldata.data.c_str());
-                if (startVal == 0xaa21a9ed) {
-                    return true;
-                }
-            }
-        }
-        return false;
+    Block::const_iterator Block::begin(const ChainAccess &access) const {
+        return TransactionIterator(&access, firstTxIndex, height);
+    }
+    
+    Block::const_iterator Block::end(const ChainAccess &access) const {
+        return TransactionIterator(&access, firstTxIndex + numTxes, height);
+    }
+    
+    Block::value_type Block::getTx(const ChainAccess &access, uint32_t txNum) const {
+        auto num = firstTxIndex + txNum;
+        return Transaction(access.getTx(num), num, height);
+    }
+    
+    Transaction Block::coinbaseTx(const ChainAccess &access) const {
+        return getTx(access, 0);
     }
     
     /**
@@ -86,53 +93,133 @@ namespace blocksci {
         else                         return sizeof(unsigned char) + sizeof(uint64_t);
     }
     
-    size_t sizeBytes(const Block &block) {
-        size_t size = GetSizeOfCompactSize(block.size()) + 80;
-        return size + ranges::accumulate(block | ranges::view::transform([](const Transaction &tx) { return tx.sizeBytes(); }), size_t{0});
+    size_t sizeBytes(const Block &block, const ChainAccess &access) {
+        size_t size = GetSizeOfCompactSize(block.numTxes) + 80;
+        for (auto tx : block.txes(access)) {
+            size += tx.sizeBytes();
+        }
+        return size;
     }
     
-    TransactionSummary transactionStatistics(const Block &block) {
-        return ranges::accumulate(block, TransactionSummary{});
+    std::vector<uint64_t> fees(const Block &block, const ChainAccess &access) {
+        std::vector<uint64_t> fees;
+        fees.reserve(block.numTxes);
+        boost::copy(block.txes(access) | boost::adaptors::transformed(fee), std::back_inserter(fees));
+        return fees;
     }
     
-    std::unordered_map<AddressType::Enum, int64_t> netAddressTypeValue(const Block &block) {
+    std::vector<double> feesPerByte(const Block &block, const ChainAccess &access) {
+        std::vector<double> feesPerBytes;
+        feesPerBytes.reserve(block.numTxes);
+        boost::copy(block.txes(access) | boost::adaptors::transformed(feePerByte), std::back_inserter(feesPerBytes));
+        return feesPerBytes;
+    }
+    
+    TransactionSummary transactionStatistics(const Block &block, const ChainAccess &access) {
+        return std::accumulate(block.begin(access), block.end(access), TransactionSummary{});
+        
+    }
+    
+    std::vector<const Output *> getUnspentOutputs(const Block &block, const ChainAccess &access) {
+        std::vector<const Output *> outputs;
+        for (auto tx : block.txes(access)) {
+            for (auto &output : tx.outputs()) {
+                if (!output.isSpent(access)) {
+                    outputs.push_back(&output);
+                }
+            }
+        }
+        return outputs;
+    }
+    
+    std::vector<const Output *> getOutputsSpentByHeight(const Block &block, uint32_t height, const ChainAccess &access) {
+        std::vector<const Output *> outputs;
+        auto blocks = access.getBlocks();
+        uint32_t lastTxIndex = 0;
+        if (height < blocks.size()) {
+            lastTxIndex = blocks[height].getTx(access, 0).txNum;
+        } else {
+            lastTxIndex = blocks.back().getTx(access, 0).txNum;
+        }
+        for (auto tx : block.txes(access)) {
+            for (auto &output : tx.outputs()) {
+                auto spentIndex = output.getSpendingTxIndex(access);
+                if (spentIndex > 0 && spentIndex < lastTxIndex) {
+                    outputs.push_back(&output);
+                }
+            }
+        }
+        return outputs;
+    }
+    
+    uint64_t totalOut(const Block &block, const ChainAccess &access) {
+        uint64_t total = 0;
+        for (auto tx : block.txes(access)) {
+            total += totalOut(tx);
+        }
+        return total;
+    }
+    
+    uint64_t totalIn(const Block &block, const ChainAccess &access) {
+        uint64_t total = 0;
+        for (auto tx : block.txes(access)) {
+            total += totalIn(tx);
+        }
+        return total;
+    }
+    
+    uint64_t totalOutAfterHeight(const Block &block, uint32_t height, const ChainAccess &access) {
+        uint64_t total = 0;
+        for (auto tx : block.txes(access)) {
+            for (auto &output : tx.outputs()) {
+                if (!output.isSpent(access) || output.getSpendingTx(access)->blockHeight > height) {
+                    total += output.getValue();
+                }
+            }
+        }
+        return total;
+    }
+    
+    std::unordered_map<AddressType::Enum, int64_t> netAddressTypeValue(const Block &block, const ChainAccess &access) {
         std::unordered_map<AddressType::Enum, int64_t> net;
-        RANGES_FOR(auto tx, block) {
-            RANGES_FOR(auto output, tx.outputs()) {
+        for (auto tx : block.txes(access)) {
+            for (auto &output : tx.outputs()) {
                 net[output.getType()] += output.getValue();
             }
-            RANGES_FOR(auto input, tx.inputs()) {
+            for (auto &input : tx.inputs()) {
                 net[input.getType()] -= input.getValue();
             }
         }
         return net;
     }
-
-    std::unordered_map<std::string, int64_t> netFullTypeValue(const Block &block, const ScriptAccess &scripts) {
-        std::unordered_map<std::string, int64_t> net;
-        RANGES_FOR(auto tx, block) {
-            RANGES_FOR(auto output, tx.outputs()) {
-                net[output.getAddress().fullType(scripts)] += output.getValue();
-            }
-            RANGES_FOR(auto input, tx.inputs()) {
-                net[input.getAddress().fullType(scripts)] -= input.getValue();
+    
+    uint64_t getTotalSpentOfAge(const Block &block, const ChainAccess &access, uint32_t age) {
+        uint64_t total = 0;
+        auto &oldBlock = access.getBlock(block.height - age);
+        uint32_t newestTxNum = oldBlock.txes(access).back().txNum;
+        for (auto tx : block.txes(access)) {
+            for (auto &input : tx.inputs()) {
+                if (input.spentTxIndex() <= newestTxNum) {
+                    total += input.getValue();
+                }
             }
         }
-        return net;
+        return total;
     }
     
-    std::vector<uint64_t> getTotalSpentOfAges(const Block &block, BlockHeight maxAge) {
-        std::vector<uint64_t> totals(static_cast<size_t>(static_cast<int>(maxAge)));
-        uint32_t newestTxNum = block.prevBlock().endTxIndex() - 1;
-        auto inputs = block.allInputs()
-        | ranges::view::remove_if([=](const Input &input) { return input.spentTxIndex() > newestTxNum; });
-        RANGES_FOR(auto input, inputs) {
-            BlockHeight age = std::min(maxAge, block.height() - input.getSpentTx().block().height()) - BlockHeight{1};
-            totals[static_cast<size_t>(static_cast<int>(age))] += input.getValue();
+    std::vector<uint64_t> getTotalSpentOfAges(const Block &block, const ChainAccess &access, uint32_t maxAge) {
+        std::vector<uint64_t> totals(maxAge);
+        uint32_t newestTxNum = access.getBlock(block.height - 1).txes(access).back().txNum;
+        for (auto tx : block.txes(access)) {
+            for (auto &input : tx.inputs()) {
+                if (input.spentTxIndex() <= newestTxNum) {
+                    uint32_t age = std::min(maxAge, block.height - access.getBlockHeight(input.spentTxIndex())) - 1;
+                    totals[age] += input.getValue();
+                }
+            }
         }
-        for (BlockHeight i{1}; i < maxAge; i++) {
-            auto age = static_cast<size_t>(static_cast<int>(maxAge - i));
-            totals[age - 1] += totals[age];
+        for (size_t i = 1; i < maxAge; i++) {
+            totals[maxAge - i - 1] += totals[maxAge - i];
         }
         return totals;
     }

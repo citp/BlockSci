@@ -9,71 +9,53 @@
 #ifndef block_processor_hpp
 #define block_processor_hpp
 
-
-#include "parser_fwd.hpp"
+#include "config.hpp"
 #include "parser_configuration.hpp"
-#include "file_writer.hpp"
 
+#include <blocksci/chain/output_pointer.hpp>
 
-#include <blocksci/util/file_mapper.hpp>
-#include <blocksci/chain/transaction.hpp>
-#include <blocksci/chain/block.hpp>
-#include <blocksci/chain/inout_pointer.hpp>
-#include <blocksci/scripts/scripts_fwd.hpp>
-#include <blocksci/util/bitcoin_uint256.hpp>
+#include <boost/iostreams/device/mapped_file.hpp>
+#include <boost/unordered_map.hpp>
+#include <boost/lockfree/spsc_queue.hpp>
+#include <boost/atomic.hpp>
 
-class BlockFileReaderBase {
-public:
-    BlockFileReaderBase() = default;
-    BlockFileReaderBase(const BlockFileReaderBase &) = default;
-    virtual ~BlockFileReaderBase();
+#include <vector>
+#include <stdio.h>
 
-    virtual void nextTx(RawTransaction *tx, bool isSegwit) = 0;
-    virtual void nextTxNoAdvance(RawTransaction *tx, bool isSegwit) = 0;
-    virtual void receivedFinishedTx(RawTransaction *) = 0;
-};
+struct RawTransaction;
+struct BlockInfo;
+struct blockinfo_t;
+class BitcoinAPI;
 
-struct NewBlocksFiles {
-    ArbitraryFileWriter blockCoinbaseFile;
-    FixedSizeFileWriter<blocksci::RawBlock> blockFile;
-    IndexedFileWriter<1> sequenceFile;
-    
-    NewBlocksFiles(const ParserConfigurationBase &config);
-};
-
-struct OutputLinkData {
+struct TxUpdate {
     blocksci::OutputPointer pointer;
-    uint32_t txNum;
+    uint32_t linkedTxNum;
 };
-
-std::vector<unsigned char> readNewBlock(uint32_t firstTxNum, const BlockInfoBase &block, BlockFileReaderBase &fileReader, NewBlocksFiles &files, const std::function<bool(RawTransaction *&tx)> &loadFunc, const std::function<void(RawTransaction *tx)> &outFunc);
-void calculateHash(RawTransaction *tx, FixedSizeFileWriter<blocksci::uint256> &hashFile);
-void generateScriptOutputs(RawTransaction *tx);
-void connectUTXOs(RawTransaction *tx, UTXOState &utxoState);
-void serializeTransaction(RawTransaction *tx, IndexedFileWriter<1> &txFile, FixedSizeFileWriter<OutputLinkData> &linkDataFile);
-void generateScriptInput(RawTransaction *tx, UTXOAddressState &utxoAddressState);
-void processAddresses(RawTransaction *tx, AddressState &addressState);
-void recordAddresses(RawTransaction *tx, UTXOScriptState &state);
-void serializeAddressess(RawTransaction *tx, AddressWriter &addressWriter);
-void backUpdateTxes(const ParserConfigurationBase &config);
-
 
 class BlockProcessor {
+    boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<50000>> transaction_queue;
     
-    uint32_t startingTxCount;
-    uint32_t currentTxNum;
-    uint32_t totalTxCount;
-    blocksci::BlockHeight maxBlockHeight;
-
+    boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<50000>> used_transaction_queue;
+    
+    boost::unordered_map<int, std::pair<boost::iostreams::mapped_file, uint32_t>> files;
+    
+    #ifdef BLOCKSCI_RPC_PARSER
+    void loadTxRPC(RawTransaction *tx, const blockinfo_t &block, uint32_t txNum, BitcoinAPI & bapi);
+    #endif
+    
 public:
+    boost::atomic<bool> done;
     
-    BlockProcessor(uint32_t startingTxCount, uint32_t totalTxCount, blocksci::BlockHeight maxBlockHeight);
+    BlockProcessor();
+    ~BlockProcessor();
     
-    template <typename ParseTag>
-    void addNewBlocks(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> nextBlocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState);
-
-    template <typename ParseTag>
-    void addNewBlocksSingle(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> nextBlocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState);
+    #ifdef BLOCKSCI_FILE_PARSER
+    void readNewBlocks(FileParserConfiguration config, std::vector<BlockInfo> blocksToAdd, uint32_t startingTxCount);
+    #endif
+    #ifdef BLOCKSCI_RPC_PARSER
+    void readNewBlocks(RPCParserConfiguration config, std::vector<blockinfo_t> blocksToAdd, uint32_t startingTxCount);
+    #endif
+    void processNewBlocks(ParserConfiguration config, uint32_t firstTxNum, uint32_t totalTxCount);
 };
 
 

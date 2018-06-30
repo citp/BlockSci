@@ -9,17 +9,13 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include <blocksci/blocksci.hpp>
-#include <blocksci/util/data_configuration.hpp>
-#include <blocksci/util/data_access.hpp>
-#include <blocksci/util/file_mapper.hpp>
-#include <blocksci/chain/chain_access.hpp>
+#include <blocksci/data_configuration.hpp>
+#include <blocksci/data_access.hpp>
 
 #include <bitcoinapi/bitcoinapi.h>
 
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time.hpp>
-
-#include <range/v3/range_for.hpp>
 
 #include <unordered_map>
 #include <unordered_set>
@@ -31,25 +27,28 @@
 using namespace blocksci;
 // boost::posix_time::hours(24 * 5)
 class MempoolRecorder {
-    blocksci::BlockHeight lastHeight;
-    std::unordered_map<uint256, time_t, std::hash<blocksci::uint256>> mempool;
+    uint32_t lastHeight;
+    std::unordered_map<uint256, time_t> mempool;
     const DataConfiguration &config;
     BitcoinAPI &bitcoinAPI;
-    blocksci::FixedSizeFileMapper<time_t, blocksci::AccessMode::readwrite> txTimeFile;
+    blocksci::FixedSizeFileMapper<time_t, boost::iostreams::mapped_file::readwrite> txTimeFile;
 public:
     MempoolRecorder(const DataConfiguration &config_, BitcoinAPI &bitcoinAPI_) : config(config_), bitcoinAPI(bitcoinAPI_), txTimeFile(config.dataDirectory/"mempool") {
         blocksci::ChainAccess chain(config, false, 0);
-        lastHeight = chain.blockCount();
+        auto blocks = chain.getBlocks();
+        lastHeight = blocks.size();
         
-        auto mostRecentBlock = Block(chain.blockCount() - 1, chain);
-        auto lastTxIndex = mostRecentBlock.endTxIndex() - 1;
         if (txTimeFile.size() == 0) {
             // Record starting txNum in position 0
-            txTimeFile.write(lastTxIndex + 1);
+            auto mostRecentBlock = blocks.back();
+            auto lastTx = mostRecentBlock.txes(chain).back();
+            txTimeFile.write(lastTx.txNum + 1);
         } else {
             // Fill in 0 timestamp where data is missing
             auto firstNum = *txTimeFile.getData(0);
-            auto txesSinceStart = static_cast<size_t>(lastTxIndex - firstNum);
+            auto mostRecentBlock = blocks.back();
+            auto lastTx = mostRecentBlock.txes(chain).back();
+            auto txesSinceStart = static_cast<size_t>(lastTx.txNum - firstNum);
             auto currentTxCount = txTimeFile.size() - 1;
             if (currentTxCount < txesSinceStart) {
                 for (size_t i = currentTxCount; i < txesSinceStart; i++) {
@@ -83,11 +82,12 @@ public:
     
     void recordMempool() {
         blocksci::ChainAccess chain(config, false, 0);
-        auto blockCount = chain.blockCount();
-        for (blocksci::BlockHeight i = lastHeight; i < blockCount; i++) {
-            auto block = Block(i, chain);
-            RANGES_FOR(auto tx, block) {
-                auto it = mempool.find(tx.getHash());
+        auto blocks = chain.getBlocks();
+        auto blockCount = blocks.size();
+        for (uint32_t i = lastHeight; i < blockCount; i++) {
+            auto &block = blocks[i];
+            for (auto tx : block.txes(chain)) {
+                auto it = mempool.find(tx.getHash(chain));
                 if (it != mempool.end()) {
                     auto &txData = it->second;
                     txTimeFile.write(txData);
@@ -121,10 +121,10 @@ public:
 int main(int argc, const char * argv[]) {
     assert(argc == 2);
     
-    std::string user = "dash";
-    std::string password = "dashpass123";
-    std::string host = "localhost";
-    int port = 9998;
+    std::string user = "daniel";
+    std::string password = "thisisthepasswordformynode";
+    std::string host = "127.0.0.1";
+    int port = 8232;
 
     BitcoinAPI bitcoinAPI{user, password, host, port};
     
@@ -145,4 +145,7 @@ int main(int argc, const char * argv[]) {
             updateCount = 0;
         }
     }
+    
+    
+    return 0;
 }

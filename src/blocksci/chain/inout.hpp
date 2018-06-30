@@ -9,8 +9,13 @@
 #ifndef inout_hpp
 #define inout_hpp
 
-#include "chain_fwd.hpp"
 #include <blocksci/address/address_types.hpp>
+#include <stdio.h>
+
+
+namespace blocksci {
+    struct Inout;
+}
 
 namespace std
 {
@@ -20,8 +25,10 @@ namespace std
 }
 
 namespace blocksci {
-    
+    class  ChainAccess;
+    struct Transaction;
     struct Address;
+    struct OutputPointer;
     
     struct Inout {
         uint32_t linkedTxNum;
@@ -40,8 +47,9 @@ namespace blocksci {
             other |= (intType & uint64_t(0b1111)) << 60;
         }
         
+        friend struct std::hash<blocksci::Inout>;
+        
         Inout(uint32_t linkedTxNum, const Address &address, uint64_t value);
-        Inout() : linkedTxNum(0), toAddressNum(0), other(0) {}
         
         uint64_t getValue() const {
             uint64_t valueMask = (uint64_t(1) << 60) - 1;
@@ -52,10 +60,10 @@ namespace blocksci {
             return static_cast<AddressType::Enum>((other >> 60) & 0b1111);
         }
         
-        bool operator==(const Inout& otherInout) const;
+        bool operator==(const Inout& other) const;
         
-        bool operator!=(const Inout& otherInout) const {
-            return ! operator==(otherInout);
+        bool operator!=(const Inout& other) const {
+            return ! operator==(other);
         }
         
         Address getAddress() const;

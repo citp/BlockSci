@@ -9,10 +9,14 @@
 #ifndef transaction_summary_hpp
 #define transaction_summary_hpp
 
-#include "chain_fwd.hpp"
 #include <cstdint>
+#include <stdio.h>
 
 namespace blocksci {
+    
+    struct Transaction;
+    struct RawTransaction;
+    
     struct TransactionSummary {
         uint64_t totalInputs;
         uint64_t totalOutputs;
@@ -25,6 +29,7 @@ namespace blocksci {
         
         TransactionSummary operator+(const TransactionSummary &other) const;
         TransactionSummary operator+(const Transaction &other) const;
+        TransactionSummary operator+(const RawTransaction &other) const;
         TransactionSummary &operator+=(const Transaction &other);
         TransactionSummary &operator+=(const TransactionSummary &other);
         double averageInputs() const;

@@ -11,12 +11,14 @@
 #include "address_types.hpp"
 #include "address_info.hpp"
 #include <iostream>
+#include <stdio.h>
+
 
 namespace blocksci {
     
 }
 
 std::ostream &operator<<(std::ostream &os, blocksci::AddressType::Enum const &type) {
-    os << addressName(type);
+    os << GetTxnOutputType(type);
     return os;
 }

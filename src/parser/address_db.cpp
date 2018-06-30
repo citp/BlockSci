@@ -9,183 +9,150 @@
 
 #include "address_db.hpp"
 
-#include <blocksci/index/address_index.hpp>
-#include <blocksci/scripts/script_info.hpp>
-#include <blocksci/scripts/script_variant.hpp>
-#include <blocksci/chain/output.hpp>
-#include <blocksci/chain/input.hpp>
-#include <blocksci/chain/inout_pointer.hpp>
-#include <blocksci/chain/transaction.hpp>
-#include <blocksci/chain/chain_access.hpp>
-#include <blocksci/address/address.hpp>
-#include <blocksci/address/address_types.hpp>
-#include <blocksci/address/address_info.hpp>
-#include <blocksci/scripts/scripthash_script.hpp>
-#include <blocksci/scripts/script_access.hpp>
+#include "parser_configuration.hpp"
 
-#include <unordered_set>
+#include <blocksci/address/address.hpp>
+#include <blocksci/address/address_index.hpp>
+#include <blocksci/chain/output_pointer.hpp>
+
+#include <boost/filesystem.hpp>
+
 #include <string>
-#include <iostream>
 
 using namespace blocksci;
 
-std::unordered_map<ScriptType::Enum,  lmdb::dbi> setupInsertStatements(lmdb::txn &wtxn) {
-    std::unordered_map<ScriptType::Enum,  lmdb::dbi> scriptDbs;
-    
-    for (auto script : ScriptType::all) {
-        scriptDbs.emplace(std::piecewise_construct, std::forward_as_tuple(script), std::forward_as_tuple(lmdb::dbi::open(wtxn, std::string(scriptName(script)).c_str(), MDB_CREATE | MDB_DUPSORT| MDB_DUPFIXED)));
+static int callback(void *, int argc, char **argv, char **azColName){
+    int i;
+    for(i=0; i<argc; i++){
+        printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
     }
-    return scriptDbs;
+    printf("\n");
+    return 0;
 }
 
-AddressDB::AddressDB(const ParserConfigurationBase &config_, const std::string &path) : ParserIndex(config_, "addressDB"), env(createAddressIndexEnviroment(path, false)), wtxn(lmdb::txn::begin(env)), scriptDbs(setupInsertStatements(wtxn)) {
-}
-
-//namespace {
-//    void printStats(const MDB_stat &stat) {
-//        std::cout << "ms_psize: " << stat.ms_psize << "\n";
-//        std::cout << "ms_depth: " << stat.ms_depth << "\n";
-//        std::cout << "ms_branch_pages: " << stat.ms_branch_pages << "\n";
-//        std::cout << "ms_leaf_pages: " << stat.ms_leaf_pages << "\n";
-//        std::cout << "ms_overflow_pages: " << stat.ms_overflow_pages << "\n";
-//        std::cout << "ms_entries: " << stat.ms_entries << "\n";
-//    }
-//}
-
-
-
-void AddressDB::tearDown() {
+std::pair<sqlite3 *, bool> openAddressDb(boost::filesystem::path addressesDBFilePath) {
     
-//    MDB_stat stats;
-//    dbi_stat(wtxn, scriptDbs.at(ScriptType::Enum::PUBKEY), &stats);
-//    std::cout << "AddressDB\n";
-//    dbi_stat(wtxn, scriptDbs.at(ScriptType::Enum::PUBKEY), &stats);
-//    std::cout << "PUBKEY:\n";
-//    printStats(stats);
-//    dbi_stat(wtxn, scriptDbs.at(ScriptType::Enum::SCRIPTHASH), &stats);
-//    std::cout << "SCRIPTHASH:\n";
-//    printStats(stats);
-//    dbi_stat(wtxn, scriptDbs.at(ScriptType::Enum::MULTISIG), &stats);
-//    std::cout << "MULTISIG:\n";
-//    printStats(stats);
-//    dbi_stat(wtxn, scriptDbs.at(ScriptType::Enum::NONSTANDARD), &stats);
-//    std::cout << "NONSTANDARD:\n";
-//    printStats(stats);
-//    dbi_stat(wtxn, scriptDbs.at(ScriptType::Enum::NULL_DATA), &stats);
-//    std::cout << "NULL_DATA:\n";
-//    printStats(stats);
-//    std::cout << "\n";
-    wtxn.commit();
-}
-
-void AddressDB::processTx(const blocksci::Transaction &tx, const blocksci::ScriptAccess &scripts) {
-    uint16_t outputNum = 0;
-    std::unordered_set<uint32_t> revealedScripts;
+    sqlite3 *addressDb;
     
-    for (auto input : tx.inputs()) {
-        auto address = input.getAddress();
+    bool dbAlreadyExists = boost::filesystem::exists(addressesDBFilePath);
+    
+    /* Open database */
+    int  rc = sqlite3_open_v2(addressesDBFilePath.c_str(), &addressDb, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+    if( rc ){
+        fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(addressDb));
+        exit(1);
+    }
+    
+    if (!dbAlreadyExists) {
+        /* Create SQL statement */
         
-        std::vector<Address> addressesToRecurse;
-        addressesToRecurse.push_back(address);
-        while (addressesToRecurse.size() > 0) {
-            std::vector<Address> addressesToAdd;
-            bool insideP2SH = false;
-            std::function<bool(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
-                if (scriptType(a.type) == blocksci::ScriptType::Enum::SCRIPTHASH) {
-                    auto p2sh = blocksci::script::ScriptHash{scripts, a.scriptNum};
-                    if (!insideP2SH) {
-                        if (p2sh.txRevealed < tx.txNum) {
-                            return false;
-                        } else if (revealedScripts.find(a.scriptNum) == revealedScripts.end()) {
-                            assert(p2sh.txRevealed == tx.txNum);
-                            revealedScripts.insert(a.scriptNum);
-                            insideP2SH = true;
-                            return true;
-                        } else {
-                            return false;
-                        }
-                    } else {
-                        if (p2sh.txRevealed < tx.txNum) {
-                            addressesToAdd.push_back(a);
-                            return true;
-                        } else if (revealedScripts.find(a.scriptNum) == revealedScripts.end()) {
-                            assert(p2sh.txRevealed == tx.txNum);
-                            revealedScripts.insert(a.scriptNum);
-                            addressesToAdd.push_back(a);
-                            addressesToRecurse.push_back(a);
-                            return false;
-                        } else {
-                            return false;
-                        }
-                    }
-                } else {
-                    if (insideP2SH) {
-                        addressesToAdd.push_back(a);
-                    }
-                    return insideP2SH;
-                }
-            };
-            auto a = addressesToRecurse.back();
-            addressesToRecurse.pop_back();
-            visit(a, visitFunc, scripts);
-            if (addressesToAdd.size() > 0) {
-                revealedP2SH(a.scriptNum, addressesToAdd);
+        for (auto &tableName : AddressIndex::addrTables) {
+            std::stringstream ss;
+            ss << "CREATE TABLE ";
+            ss << tableName << "(";
+            ss <<
+            "ADDRESS_NUM     INT     NOT NULL," \
+            "TX_INDEX        INT     NOT NULL);";
+            
+            char *zErrMsg = 0;
+            auto rc = sqlite3_exec(addressDb, ss.str().c_str(), callback, 0, &zErrMsg);
+            if( rc != SQLITE_OK ){
+                fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                sqlite3_free(zErrMsg);
+                exit(1);
             }
         }
+    }
+    return std::make_pair(addressDb, !dbAlreadyExists);
+}
+
+std::unordered_map<int, sqlite3_stmt *> setupInsertStatements(sqlite3 *addressDb) {
+    std::unordered_map<int, sqlite3_stmt *> insertStatements;
+    
+    std::unordered_map<int, std::string> tableNames;
+    tableNames[0] = "SINGLE_ADDRESSES";
+    tableNames[1] = "MULTISIG_ADDRESSES";
+    tableNames[2] = "P2SH_ADDRESSES";
+    
+    for (auto &pair : tableNames) {
+        sqlite3_stmt *stmt;
+        auto rc = sqlite3_prepare_v2(addressDb,  ("INSERT INTO " + pair.second + " VALUES (?, ?)").c_str(), -1, &stmt, nullptr);
+        if (rc != SQLITE_OK) {
+            fprintf(stderr, "Failed to fetch data: %s\n", sqlite3_errmsg(addressDb));
+        }
+        insertStatements[pair.first] = stmt;
+    }
+    return insertStatements;
+}
+
+AddressDB::AddressDB(const ParserConfiguration &config) : AddressDB(openAddressDb(config.addressDBFilePath())) {}
+
+AddressDB::AddressDB(std::pair<sqlite3 *, bool> init) : db(init.first), firstRun(init.second), insertStatements(setupInsertStatements(db)) {
+    sqlite3_exec(db, "PRAGMA synchronous = OFF", NULL, NULL, NULL);
+    sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
+}
+
+AddressDB::~AddressDB() {
+    for (auto &pair : insertStatements) {
+        sqlite3_finalize(pair.second);
     }
     
-    for (auto output : tx.outputs()) {
-        auto address = output.getAddress();
-        blocksci::OutputPointer pointer{tx.txNum, outputNum};
-        std::function<bool(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
-            addAddress(a, pointer);
-            // If address is p2sh then ignore the wrapped address if it was revealed after this transaction
-            if (scriptType(a.type) == blocksci::ScriptType::Enum::SCRIPTHASH) {
-                auto p2sh = blocksci::script::ScriptHash{scripts, a.scriptNum};
-                if (!p2sh.hasBeenSpent() || tx.txNum < p2sh.txRevealed) {
-                    return false;
-                }
-            }
-            return true;
-        };
-        visit(address, visitFunc, scripts);
-        outputNum++;
-    }
-}
-
-void AddressDB::revealedP2SH(uint32_t scriptNum, const std::vector<Address> &addresses) {
-    auto &dbi = scriptDbs.at(blocksci::ScriptType::SCRIPTHASH);
-    auto cursor = lmdb::cursor::open(wtxn, dbi);
-    lmdb::val key{&scriptNum, sizeof(scriptNum)};
-    lmdb::val value;
-    for (bool hasNext = cursor.get(key, value, MDB_SET_RANGE); hasNext; hasNext = cursor.get(key, value, MDB_NEXT)) {
-        Address *address = key.data<Address>();
-        if (address->scriptNum != scriptNum) {
-            break;
-        }
-        OutputPointer *pointer = value.data<OutputPointer>();
-        for (auto &a : addresses) {
-            addAddress(a, *pointer);
-        }
-    }
-}
-
-void AddressDB::addAddress(const blocksci::Address &address, const blocksci::OutputPointer &pointer) {
-    auto script = scriptType(address.type);
-    auto &dbi = scriptDbs.at(script);
-    dbi.put(wtxn, address, pointer);
-}
-
-void AddressDB::rollback(const blocksci::State &state) {
-    for (auto script : ScriptType::all) {
-        auto &dbi = scriptDbs.at(script);
-        auto cursor = lmdb::cursor::open(wtxn, dbi);
-        lmdb::val key, value;
-        while (cursor.get(key, value, MDB_NEXT)) {
-            blocksci::OutputPointer *pointer = value.data<blocksci::OutputPointer>();
-            if (pointer->txNum >= state.txCount) {
-                lmdb::cursor_del(cursor.handle());
+    sqlite3_exec(db, "END TRANSACTION;", NULL, NULL, NULL);
+    
+    if (firstRun) {
+        
+        for (auto &tableName : AddressIndex::addrTables) {
+            std::stringstream ss;
+            ss << "CREATE INDEX ";
+            ss << tableName;
+            ss << "_INDEX ON ";
+            ss << tableName;
+            ss << "(ADDRESS_NUM);";
+            
+            char *zErrMsg = 0;
+            auto rc = sqlite3_exec(db, ss.str().c_str(), callback, 0, &zErrMsg);
+            if( rc != SQLITE_OK ){
+                fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                sqlite3_free(zErrMsg);
+                exit(1);
             }
         }
+        
     }
+    
+    sqlite3_close(db);
+}
+
+void AddressDB::sawAddress(const blocksci::Address &pointer, uint32_t txNum) {
+    auto type = pointer.getDBType();
+
+    if (type >= 0 && type < 3) {
+        auto stmt = insertStatements[type];
+        sqlite3_bind_int(stmt, 1, pointer.addressNum);
+        sqlite3_bind_int(stmt, 2, txNum);
+        
+        auto rc = sqlite3_step(stmt);
+        if (rc != SQLITE_DONE) {
+            printf("ERROR inserting data: %s\n", sqlite3_errmsg(db));
+        }
+        
+        sqlite3_reset(stmt);
+    }
+}
+
+void AddressDB::linkP2SHAddress(const blocksci::Address &, uint32_t, uint32_t) {
+    
+}
+
+void AddressDB::rollback(uint32_t maxTxIndex) {
+    std::stringstream ss;
+    ss << "DELETE FROM SINGLE_ADDRESSES WHERE TX_INDEX >= " << maxTxIndex;
+    sqlite3_exec(db,  ss.str().c_str(), NULL, NULL, NULL);
+    ss.clear();
+    ss << "DELETE FROM MULTISIG_ADDRESSES WHERE TX_INDEX >= " << maxTxIndex;
+    sqlite3_exec(db,  ss.str().c_str(), NULL, NULL, NULL);
+    ss.clear();
+    ss << "DELETE FROM P2SH_ADDRESSES WHERE TX_INDEX >= " << maxTxIndex;
+    sqlite3_exec(db,  ss.str().c_str(), NULL, NULL, NULL);
+    ss.clear();
 }
