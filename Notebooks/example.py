@@ -1,6 +1,7 @@
 import blocksci
+import os
 
-chain = blocksci.Blockchain("../zcash-devdata")
+chain = blocksci.Blockchain("../../../zcash-testdata")
 
 in_z_addresses = 0
 num_of_txes = 0
@@ -25,3 +26,6 @@ print('Of that hidden transactions: ' + str(num_of_jstxes))
 print('Number of transaction inputs: ' + str(num_of_ins))
 print('Number of transaction outputs: ' + str(num_of_outs))
 print('amount of Zatoshis in Z addresses: ' + str(in_z_addresses))
+
+
+os._exit(0) # The os exit is used, because otherwise the python3 crashes on exit
