@@ -178,7 +178,7 @@ void BlockProcessor::readNewBlocks(FileParserConfiguration config, std::vector<B
 #ifdef BLOCKSCI_RPC_PARSER
 
 blocksci::Block getBlock(uint32_t firstTxIndex, uint32_t txCount, size_t coinbasePos, const blockinfo_t &block) {
-    return {firstTxIndex, txCount, static_cast<uint32_t>(block.height), blocksci::uint256S(block.hash), block.version, block.time, static_cast<uint32_t>(std::stoul(block.bits, nullptr, 16)), block.nonce, coinbasePos, block.difficulty};
+    return {firstTxIndex, txCount, static_cast<uint32_t>(block.height), blocksci::uint256S(block.hash), block.version, block.time, static_cast<uint32_t>(std::stoul(block.bits, nullptr, 16)), blocksci::uint256S(block.nonce), coinbasePos, block.difficulty};
 }
 
 void BlockProcessor::loadTxRPC(RawTransaction *tx, const blockinfo_t &block, uint32_t txNum, BitcoinAPI & bapi) {

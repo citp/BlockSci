@@ -50,7 +50,7 @@ struct BlockInfo {
     blocksci::uint256 hashMerkleRoot;
     unsigned int nTime;
     unsigned int nBits;
-    unsigned int nNonce;
+    blocksci::uint256 nNonce;
 	double nDifficulty;
     
     BlockInfo() {};

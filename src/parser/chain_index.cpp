@@ -34,7 +34,7 @@ struct CBlockHeader
     blocksci::uint256 hashMerkleRoot;
     uint32_t nTime;
     uint32_t nBits;
-    uint32_t nNonce;
+    blocksci::uint256 nNonce;
 	double nDifficulty;
 };
 

@@ -35,7 +35,7 @@ namespace blocksci {
         int32_t version;
         uint32_t timestamp;
         uint32_t bits;
-        uint32_t nonce;
+        uint256 nonce;
         uint64_t coinbaseOffset;
 		double difficulty;
         
@@ -45,12 +45,16 @@ namespace blocksci {
         using size_type = size_t;
         using TransactionRange = boost::iterator_range<TransactionIterator>;
         
-        Block(uint32_t firstTxIndex, uint32_t numTxes, uint32_t height, uint256 hash, int32_t version, uint32_t timestamp, uint32_t bits, uint32_t nonce, uint64_t coinbaseOffset, double difficulty);
+        Block(uint32_t firstTxIndex, uint32_t numTxes, uint32_t height, uint256 hash, int32_t version, uint32_t timestamp, uint32_t bits, uint256 nonce, uint64_t coinbaseOffset, double difficulty);
         
         bool operator==(const Block& other) const;
         
         const std::string getHeaderHash() const {
             return hash.GetHex();
+        }
+		
+		const std::string getHeaderNonce() const {
+            return nonce.GetHex();
         }
         
         std::chrono::system_clock::time_point getTime() const;

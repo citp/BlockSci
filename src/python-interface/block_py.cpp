@@ -56,7 +56,7 @@ void init_block(py::module &m) {
     ;
     
     py::class_<Block>(m, "Block", "Class representing a block in the blockchain")
-    .def(py::init<uint32_t, uint32_t, uint32_t, uint256, int32_t, uint32_t, uint32_t, uint32_t, uint64_t, double>())
+    .def(py::init<uint32_t, uint32_t, uint32_t, uint256, int32_t, uint32_t, uint32_t, uint256, uint64_t, double>())
     .def(py::pickle(
         [](const Block &block) {
             return py::make_tuple(block.firstTxIndex, block.numTxes, block.height, block.hash, block.version, block.timestamp, block.bits, block.nonce, block.coinbaseOffset, block.difficulty);
@@ -65,7 +65,7 @@ void init_block(py::module &m) {
             if (t.size() != 9)
                 throw std::runtime_error("Invalid state!");
 
-            return Block(t[0].cast<uint32_t>(), t[1].cast<uint32_t>(), t[2].cast<uint32_t>(), t[3].cast<uint256>(), t[4].cast<uint32_t>(), t[5].cast<uint32_t>(), t[6].cast<uint32_t>(), t[7].cast<uint32_t>(), t[8].cast<uint64_t>(), t[9].cast<double>());
+            return Block(t[0].cast<uint32_t>(), t[1].cast<uint32_t>(), t[2].cast<uint32_t>(), t[3].cast<uint256>(), t[4].cast<uint32_t>(), t[5].cast<uint32_t>(), t[6].cast<uint32_t>(), t[7].cast<uint256>(), t[8].cast<uint64_t>(), t[9].cast<double>());
         }
     ))
     .def("__repr__", &Block::getString)
@@ -98,7 +98,7 @@ void init_block(py::module &m) {
     .def_readonly("timestamp", &Block::timestamp, "Creation timestamp specified in block header")
     .def_property_readonly("time", &Block::getTime, "Datetime object created from creation timestamp")
     .def_readonly("bits", &Block::bits, "Difficulty threshold specified in block header")
-    .def_readonly("nonce", &Block::bits, "Nonce specified in block header")
+    .def_property_readonly("nonce", &Block::getHeaderNonce, "Nonce specified in block header")
     .def_readonly("height", &Block::height, "Height of the block in the blockchain")
     .def_readonly("difficulty", &Block::difficulty, "Difficulty of the block")
     .def_property_readonly("coinbase_param", [](const Block &block) {
