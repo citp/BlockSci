@@ -17,8 +17,8 @@
 
 #include <unordered_set>
 
-#define CHANGE_ADDRESS_TYPE_LIST VAL(PeelingChain), VAL(PowerOfTen), VAL(OptimalChange), VAL(AddressType), VAL(Locktime), VAL(AddressReuse), VAL(ClientChangeAddressBehavior), VAL(Legacy)
-#define CHANGE_ADDRESS_TYPE_SET VAL(PeelingChain) VAL(PowerOfTen) VAL(OptimalChange) VAL(AddressType) VAL(Locktime), VAL(AddressReuse), VAL(ClientChangeAddressBehavior) VAL(Legacy)
+#define CHANGE_ADDRESS_TYPE_LIST VAL(PeelingChain), VAL(PowerOfTen), VAL(OptimalChange), VAL(AddressType), VAL(Locktime), VAL(AddressReuse), VAL(ClientChangeAddressBehavior), VAL(Legacy), VAL(None)
+#define CHANGE_ADDRESS_TYPE_SET VAL(PeelingChain) VAL(PowerOfTen) VAL(OptimalChange) VAL(AddressType) VAL(Locktime), VAL(AddressReuse), VAL(ClientChangeAddressBehavior) VAL(Legacy), VAL(None)
 namespace blocksci {
 namespace heuristics {
     
@@ -35,7 +35,7 @@ namespace heuristics {
         #undef VAL
         };
         #define VAL(x) Enum::x
-        static constexpr std::array<Enum, 8> all = {{CHANGE_ADDRESS_TYPE_LIST}};
+        static constexpr std::array<Enum, 9> all = {{CHANGE_ADDRESS_TYPE_LIST}};
         #undef VAL
         static constexpr size_t size = all.size();
     };
@@ -67,6 +67,7 @@ namespace heuristics {
     using AddressReuseChange = ChangeHeuristicImpl<ChangeType::AddressReuse>;
     using ClientChangeAddressBehaviorChange = ChangeHeuristicImpl<ChangeType::ClientChangeAddressBehavior>;
     using LegacyChange = ChangeHeuristicImpl<ChangeType::Legacy>;
+    using NoChange = ChangeHeuristicImpl<ChangeType::None>;
         
     struct BLOCKSCI_EXPORT ChangeHeuristic {
         
@@ -154,6 +155,8 @@ namespace heuristics {
     
     std::unordered_set<Output> BLOCKSCI_EXPORT changeByLegacyHeuristic(const Transaction &tx);
     ranges::optional<Output> BLOCKSCI_EXPORT uniqueChangeByLegacyHeuristic(const Transaction &tx);
+    
+    std::unordered_set<Output> BLOCKSCI_EXPORT noChange(const Transaction &tx);
 }}
 
 #endif /* change_address_hpp */

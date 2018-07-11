@@ -99,5 +99,10 @@ void init_heuristics(py::module &m) {
         "Return a ChangeHeuristic object implementing the legacy heuristic: The original change address heuristic used in blocksci consisting of the intersection of the optimal change heuristic and the client address behavior heuristic")
     .def("legacy", [](const Transaction &tx) { return LegacyChange{}(tx); }, py::arg("tx"),
         "Apply the legacy heuristic to a transaction and return the set outputs that could be the change address.")
+
+    .def("none", []() { return ChangeHeuristic{NoChange{}}; },
+         "Return a ChangeHeuristic object implementing no change heuristic (effectively disabling it).")
+    .def("none", [](const Transaction &tx) { return NoChange{}(tx); }, py::arg("tx"),
+         "Apply the no change heuristic to a transaction and return no outputs.")
     ;
 }

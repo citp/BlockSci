@@ -45,6 +45,15 @@ namespace blocksci { namespace heuristics {
         return filtered_candidates;
     }
     
+    // No change address detection
+    // This function mostly exists to ensure a consistent API.
+    // The set it returns will never contain more than one output.
+    template<>
+    std::unordered_set<Output> ChangeHeuristicImpl<ChangeType::None>::operator()(const Transaction &tx) const {
+        std::unordered_set<Output> candidates;
+        return candidates;
+    }
+    
     // Peeling chains have one input and two outputs
     bool looksLikePeelingChain(const Transaction &tx) {
         return (tx.outputCount() == 2 && tx.inputCount() == 1);
