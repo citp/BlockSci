@@ -80,10 +80,10 @@ namespace blocksci {
         return Cluster(access.getClusterNum(RawAddress{address.scriptNum, address.type}), access);
     }
     
-    std::vector<std::pair<Address, Address>> processTransaction(const Transaction &tx, const heuristics::ChangeHeuristic &changeHeuristic) {
+    std::vector<std::pair<Address, Address>> processTransaction(const Transaction &tx, const heuristics::ChangeHeuristic &changeHeuristic, bool ignoreCoinjoin) {
         std::vector<std::pair<Address, Address>> pairsToUnion;
         
-        if (!heuristics::isCoinjoin(tx) && !tx.isCoinbase()) {
+        if ((!heuristics::isCoinjoin(tx) || !ignoreCoinjoin) && !tx.isCoinbase()) {
             auto inputs = tx.inputs();
             auto firstAddress = inputs[0].getAddress();
             for (uint16_t i = 1; i < inputs.size(); i++) {
@@ -124,7 +124,7 @@ namespace blocksci {
         }
     };
     
-    std::vector<uint32_t> createClusters(Blockchain &chain, std::unordered_map<DedupAddressType::Enum, uint32_t> addressStarts, uint32_t totalScriptCount, const heuristics::ChangeHeuristic &changeHeuristic) {
+    std::vector<uint32_t> createClusters(Blockchain &chain, std::unordered_map<DedupAddressType::Enum, uint32_t> addressStarts, uint32_t totalScriptCount, const heuristics::ChangeHeuristic &changeHeuristic, bool ignoreCoinjoin) {
         
         AddressDisjointSets ds(totalScriptCount, std::move(addressStarts));
         
@@ -158,7 +158,7 @@ namespace blocksci {
             uint32_t txNum = 0;
             for (auto &block : blocks) {
                 RANGES_FOR(auto tx, block) {
-                    auto pairs = processTransaction(tx, changeHeuristic);
+                    auto pairs = processTransaction(tx, changeHeuristic, ignoreCoinjoin);
                     for (auto &pair : pairs) {
                         ds.link_addresses(pair.first, pair.second);
                     }
@@ -221,7 +221,7 @@ namespace blocksci {
     }
     
     
-    ClusterManager ClusterManager::createClustering(Blockchain &chain, const heuristics::ChangeHeuristic &changeHeuristic, const std::string &outputPath, bool overwrite) {
+    ClusterManager ClusterManager::createClustering(Blockchain &chain, const heuristics::ChangeHeuristic &changeHeuristic, const std::string &outputPath, bool overwrite, bool ignoreCoinjoin) {
         
         auto outputLocation = boost::filesystem::path{outputPath};
         boost::filesystem::path offsetFile = outputLocation/"clusterOffsets.dat";
@@ -280,7 +280,7 @@ namespace blocksci {
             }
         }
         
-        auto parent = createClusters(chain, scriptStarts, static_cast<uint32_t>(totalScriptCount), changeHeuristic);
+        auto parent = createClusters(chain, scriptStarts, static_cast<uint32_t>(totalScriptCount), changeHeuristic, ignoreCoinjoin);
         uint32_t clusterCount = remapClusterIds(parent);
         std::vector<uint32_t> clusterPositions;
         clusterPositions.resize(clusterCount + 1);

@@ -30,7 +30,7 @@ namespace blocksci {
     public:
         ClusterManager(const std::string &baseDirectory, DataAccess &access);
         
-        static ClusterManager createClustering(Blockchain &chain, const heuristics::ChangeHeuristic &heuristic, const std::string &outputPath, bool overwrite = false);
+        static ClusterManager createClustering(Blockchain &chain, const heuristics::ChangeHeuristic &heuristic, const std::string &outputPath, bool overwrite = false, bool ignoreCoinjoin = true);
         
         Cluster getCluster(const Address &address) const;
         
