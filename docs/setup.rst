@@ -49,3 +49,14 @@ Running the mempool recorder is very similar to running the parser in RCP mode.
 ..  code-block:: bash
 
 	mempool_recorder <data location> --username <username> --password <password> [--address <address>] [--port <port>]
+
+Clusterer
+------------------
+
+BlockSci provides a clustering module to apply heuristic based clustering techniques. The easiest way to use it is through the Python :py:mod:`blocksci.cluster` module.
+
+If you prefer to use the standalone tool, you can run it as follows.
+
+..  code-block:: bash
+
+    blocksci_clusterer <data location> <cluster output directory> [--overwrite]
