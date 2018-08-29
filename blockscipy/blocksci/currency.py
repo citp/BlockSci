@@ -1,6 +1,7 @@
 import datetime
 import requests
 import pandas as pd
+from IPython.core.display import display, HTML
 
 class CurrencyConverter(object):
     """
@@ -13,8 +14,9 @@ class CurrencyConverter(object):
     COINDESK_START = pd.to_datetime('2010-07-19').date()
 
     def __init__(self, currency='USD', start=min_start, end=max_end):
+        self._print_coindesk_info()
+        
         self.currency = currency
-
         self.start = self.validate_date(start)
         self.end = self.validate_date(end)
 
@@ -26,6 +28,9 @@ class CurrencyConverter(object):
             raise ValueError("Currency {} is not supported. Please use one of the following options: {}.".format(currency, self.supported_currencies))
 
         self.data = self._get_data()
+
+    def _print_coindesk_info(self):
+        display(HTML('<em>Exchange rates are provided by <a href="https://www.coindesk.com/price/">CoinDesk<a>.</em>'))
 
     def _get_supported_currencies(self):
         r = requests.get('https://api.coindesk.com/v1/bpi/supported-currencies.json')
