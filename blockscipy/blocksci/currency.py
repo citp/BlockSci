@@ -8,7 +8,7 @@ class CurrencyConverter(object):
     """
 
     min_start = pd.to_datetime('2009-01-03').date()
-    max_end = datetime.date.today()
+    max_end = datetime.date.today() - datetime.timedelta(days=1)
     # the API has data starting at 2010-07-19
     COINDESK_START = pd.to_datetime('2010-07-19').date()
 
