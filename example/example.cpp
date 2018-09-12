@@ -62,7 +62,7 @@ std::vector<int64_t> getTotalSpentOfAges2(const Block &block, BlockHeight maxAge
     std::vector<int64_t> totals(static_cast<size_t>(maxAge));
     
     uint32_t newestTxNum = block.prevBlock().endTxIndex() - 1;
-    auto inputs = block.allInputs()
+    auto inputs = blocksci::inputs(block)
     | ranges::view::remove_if([=](const Input &input) { return input.spentTxIndex() > newestTxNum; });
     RANGES_FOR(auto input, inputs) {
         std::cout << input.age() << std::endl;
@@ -81,14 +81,15 @@ int main(int argc, const char * argv[]) {
     
     Blockchain chain(argv[1]);
     
-    TransactionRange txRange{chain.getAccess(), 0, txCount(chain)};
-    
     int count = 0;
-    RANGES_FOR(auto tx, txRange) {
-        if (tx.fee() > 10000000) {
-            count++;
+    RANGES_FOR(auto block, chain) {
+        RANGES_FOR(auto tx, block) {
+            if (tx.fee() > 10000000) {
+                count++;
+            }
         }
     }
+    
     
     std::cout << count << std::endl;
     return 0;
@@ -119,7 +120,7 @@ int main(int argc, const char * argv[]) {
     auto c = a.outputs()[0].getAddress();
     std::cout << "Output: " << a.outputs()[0] << std::endl;
     auto d = c.getOutputs();
-    for (auto out : d) {
+    RANGES_FOR(auto out, d) {
         std::cout << out << std::endl;
     }
 
