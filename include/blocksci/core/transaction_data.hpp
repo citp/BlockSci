@@ -20,10 +20,12 @@ namespace blocksci {
         const RawTransaction *rawTx;
         const int32_t *version;
         const uint256 *hash;
+        const uint16_t *spentOutputNums;
         const uint32_t *sequenceNumbers;
 
         TxData &operator++() {
             sequenceNumbers += rawTx->inputCount;
+            spentOutputNums += rawTx->inputCount;
             version++;
             hash++;
             auto currentTxSize = sizeof(RawTransaction) + static_cast<size_t>(rawTx->inputCount) * sizeof(Inout) + static_cast<size_t>(rawTx->outputCount) * sizeof(Inout);

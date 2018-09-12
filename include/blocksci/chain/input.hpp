@@ -28,7 +28,9 @@ namespace blocksci {
     
     class BLOCKSCI_EXPORT Input {
         DataAccess *access;
+        uint32_t maxTxCount;
         const Inout *inout;
+        const uint16_t *spentOutputNum;
         const uint32_t *sequenceNum;
         InputPointer pointer;
         
@@ -37,8 +39,8 @@ namespace blocksci {
         
         BlockHeight blockHeight;
 
-        Input(const InputPointer &pointer_, BlockHeight blockHeight_, const Inout &inout_, const uint32_t *sequenceNum_, DataAccess &access_) :
-        access(&access_), inout(&inout_), sequenceNum(sequenceNum_), pointer(pointer_), blockHeight(blockHeight_) {}
+        Input(const InputPointer &pointer_, BlockHeight blockHeight_, const Inout &inout_, const uint16_t *spentOutputNum_, const uint32_t *sequenceNum_, uint32_t maxTxCount_, DataAccess &access_) :
+        access(&access_), maxTxCount(maxTxCount_), inout(&inout_), spentOutputNum(spentOutputNum_), sequenceNum(sequenceNum_), pointer(pointer_), blockHeight(blockHeight_) {}
         
         Input(const InputPointer &pointer_, DataAccess &access_);
         
@@ -92,6 +94,8 @@ namespace blocksci {
         std::string toString() const;
         
         Transaction getSpentTx() const;
+        
+        Output getSpentOutput() const;
     };
 
     std::ostream BLOCKSCI_EXPORT &operator<<(std::ostream &os, const Input &input);

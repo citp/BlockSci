@@ -122,7 +122,7 @@ namespace blocksci {
         }
         
         InputRange inputs() const {
-            return {data.rawTx->beginInputs(), data.sequenceNumbers, blockHeight, txNum, inputCount(), access};
+            return {data.rawTx->beginInputs(), data.spentOutputNums, data.sequenceNumbers, blockHeight, txNum, inputCount(), maxTxCount, access};
         }
         
         bool isCoinbase() const {

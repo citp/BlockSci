@@ -33,6 +33,7 @@ namespace blocksci {
         FixedSizeFileMapper<int32_t> txVersionFile;
         FixedSizeFileMapper<uint64_t> txFirstInputFile;
         FixedSizeFileMapper<uint64_t> txFirstOutputFile;
+        FixedSizeFileMapper<uint16_t> inputSpentOutputFile;
         FixedSizeFileMapper<uint32_t> sequenceFile;
         
         FixedSizeFileMapper<uint256> txHashesFile;
@@ -76,6 +77,7 @@ namespace blocksci {
         txVersionFile(txVersionFilePath(baseDirectory)),
         txFirstInputFile(firstInputFilePath(baseDirectory)),
         txFirstOutputFile(firstOutputFilePath(baseDirectory)),
+        inputSpentOutputFile(inputSpentOutNumFilePath(baseDirectory)),
         sequenceFile(sequenceFilePath(baseDirectory)),
         txHashesFile(txHashesFilePath(baseDirectory)),
         blocksIgnored(blocksIgnored),
@@ -158,12 +160,18 @@ namespace blocksci {
             return sequenceFile[static_cast<OffsetType>(*txFirstInputFile[index])];
         }
         
+        const uint16_t *getSpentOutputNumbers(uint32_t index) const {
+            reorgCheck();
+            return inputSpentOutputFile[static_cast<OffsetType>(*txFirstInputFile[index])];
+        }
+        
         TxData getTxData(uint32_t index) const {
             reorgCheck();
             return {
                 txFile.getData(index),
                 nullptr, // txVersionFile[index]
                 txHashesFile[index],
+                inputSpentOutputFile[static_cast<OffsetType>(*txFirstInputFile[index])],
                 sequenceFile[static_cast<OffsetType>(*txFirstInputFile[index])]
             };
         }

@@ -19,7 +19,16 @@
 
 namespace blocksci {
     Input::Input(const InputPointer &pointer_, DataAccess &access_) :
-    Input(pointer_, access_.getChain().getBlockHeight(pointer_.txNum), access_.getChain().getTx(pointer_.txNum)->getInput(pointer_.inoutNum), &access_.getChain().getSequenceNumbers(pointer_.txNum)[pointer_.inoutNum], access_) {}
+    Input(pointer_,
+          access_.getChain().getBlockHeight(pointer_.txNum),
+          access_.getChain().getTx(pointer_.txNum)->getInput(pointer_.inoutNum),
+          &access_.getChain().getSpentOutputNumbers(pointer_.txNum)[pointer_.inoutNum],
+          &access_.getChain().getSequenceNumbers(pointer_.txNum)[pointer_.inoutNum],
+          static_cast<uint32_t>(access_.getChain().txCount()),
+          access_) {
+        
+        
+    }
     
     Transaction Input::transaction() const {
         return {pointer.txNum, blockHeight, *access};
@@ -40,6 +49,15 @@ namespace blocksci {
     Transaction Input::getSpentTx() const {
         auto txNum = inout->getLinkedTxNum();
         return {txNum, access->getChain().getBlockHeight(txNum), *access};
+    }
+    
+    Output Input::getSpentOutput() const {
+        auto newTxNum = inout->getLinkedTxNum();
+        auto height = access->getChain().getBlockHeight(newTxNum);
+        auto outputNum = *spentOutputNum;
+        auto pointer = OutputPointer(newTxNum, *spentOutputNum);
+        auto tx = access->getChain().getTx(newTxNum);
+        return {pointer, height, tx->getOutput(outputNum), maxTxCount, *access};
     }
     
     std::string Input::toString() const {

@@ -165,10 +165,10 @@ namespace blocksci {
         
         template <typename MapType>
         std::vector<MapType> map(const std::function<MapType(const Block &)> &mapFunc) {
-            auto mapF = [&](const std::vector<Block> &segment) {
+            auto mapF = [&](const BlockRange &segment) {
                 std::vector<MapType> vec;
                 vec.reserve(segment.size());
-                for (auto &block : segment) {
+                for (auto block : segment) {
                     vec.push_back(mapFunc(block));
                 }
                 return vec;
