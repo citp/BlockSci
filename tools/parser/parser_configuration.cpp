@@ -31,6 +31,16 @@ ParserConfigurationBase::ParserConfigurationBase(const std::string &dataDirector
     if (!utxoAddressStatePath().exists()){
         filesystem::create_directory(utxoAddressStatePath());
     }
+    
+    if (!utxoAddressStatePath().exists()){
+        filesystem::create_directory(utxoAddressStatePath());
+    }
+    
+    if (!addressPath().exists()){
+        filesystem::create_directory(addressPath());
+    }
+    
+    
 }
 
 #ifdef BLOCKSCI_FILE_PARSER

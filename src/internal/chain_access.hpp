@@ -119,10 +119,6 @@ namespace blocksci {
             return baseDirectory/"input_out_num";
         }
         
-        static filesystem::path outputSpendingInputNumFilePath(const filesystem::path &baseDirectory) {
-            return baseDirectory/"output_in_num";
-        }
-        
         BlockHeight getBlockHeight(uint32_t txIndex) const {
             reorgCheck();
             if (errorOnReorg && txIndex >= _maxLoadedTx) {

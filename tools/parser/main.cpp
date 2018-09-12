@@ -377,7 +377,7 @@ int main(int argc, char * argv[]) {
     }
 
     filesystem::path dataDirectory = {dataDirectoryString};
-    dataDirectory = dataDirectory.make_absolute();
+//    dataDirectory = dataDirectory.make_absolute();
 
     if(!dataDirectory.exists()){
         filesystem::create_directory(dataDirectory);

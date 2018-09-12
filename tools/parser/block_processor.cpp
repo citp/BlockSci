@@ -413,19 +413,6 @@ void backUpdateTxes(const ParserConfigurationBase &config) {
     
     {
         blocksci::IndexedFileMapper<mio::access_mode::write, blocksci::RawTransaction> txFile(blocksci::ChainAccess::txFilePath(config.dataConfig.chainDirectory()));
-        
-        auto maxTxNum = static_cast<uint32_t>(txFile.size() - 1);
-        auto lastOutputCount = txFile[maxTxNum]->outputCount;
-        
-        blocksci::FixedSizeFileMapper<uint64_t> firstOutputFile(blocksci::ChainAccess::firstOutputFilePath(config.dataConfig.chainDirectory()));
-        auto totalOutputCount = static_cast<blocksci::OffsetType>(*firstOutputFile[maxTxNum] + lastOutputCount);
-        
-        
-        auto outputSpendingInputNumFilePath = blocksci::ChainAccess::outputSpendingInputNumFilePath(config.dataConfig.chainDirectory());
-        
-        blocksci::FixedSizeFileMapper<uint16_t, mio::access_mode::write> outputSpendingInputNumFile(outputSpendingInputNumFilePath);
-        outputSpendingInputNumFile.truncate(totalOutputCount);
-        
         auto progressBar = blocksci::makeProgressBar(updates.size(), [=]() {});
         
         uint32_t count = 0;
@@ -433,9 +420,6 @@ void backUpdateTxes(const ParserConfigurationBase &config) {
             auto tx = txFile.getData(update.pointer.txNum);
             auto &output = tx->getOutput(update.pointer.inoutNum);
             output.setLinkedTxNum(update.txNum);
-            
-            auto firstOutputNum = static_cast<blocksci::OffsetType>(*firstOutputFile[update.pointer.txNum]);
-            *outputSpendingInputNumFile[firstOutputNum] = update.pointer.inoutNum;
             
             count++;
             progressBar.update(count);

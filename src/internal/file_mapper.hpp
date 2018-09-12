@@ -179,7 +179,7 @@ namespace blocksci {
     template <>
     struct SimpleFileMapper<mio::access_mode::write> : public SimpleFileMapperBase<mio::access_mode::write> {
     private:
-        mio::basic_mmap<mio::access_mode::read, char> file;
+        mio::basic_mmap<mio::access_mode::write, char> file;
         FileInfo fileInfo;
         OffsetType writePos;
         static constexpr OffsetType maxBufferSize = 50000000;
@@ -299,15 +299,15 @@ namespace blocksci {
         
         void clearBuffer() {
             if (buffer.size() > 0) {
-                auto oldEnd = size();
+                auto oldEnd = fileSize();
                 if (!fileInfo.exists()) {
                     fileInfo.create(static_cast<OffsetType>(buffer.size()));
                 } else {
                     fileInfo.resize(oldEnd + static_cast<OffsetType>(buffer.size()));
                 }
+                reload();
                 memcpy(&file[oldEnd], buffer.data(), buffer.size());
                 buffer.clear();
-                reload();
             }
         }
         
@@ -317,6 +317,8 @@ namespace blocksci {
             if (offset == InvalidFileIndex) {
                 return nullptr;
             } else if (offset < fileEnd) {
+                auto val1 = file[offset];
+                file[offset] = val1;
                 return &file[offset];
             } else {
                 return buffer.data() + (offset - fileEnd);
@@ -398,6 +400,7 @@ namespace blocksci {
         pointer operator[](OffsetType index) {
             assert(index < size());
             char *pos = dataFile.getDataAtOffset(getPos(index));
+            *pos = *pos;
             return reinterpret_cast<pointer>(pos);
         }
 

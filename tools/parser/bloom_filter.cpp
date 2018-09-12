@@ -39,7 +39,11 @@ int64_t BloomStore::blockCount() const {
 }
 
 void BloomStore::setBit(int64_t bitPos) {
-    (*backingFile[bitPos / BlockSize]) |= bitMasks[bitPos % BlockSize];
+    assert(bitPos < length);
+    BlockType mask = bitMasks[bitPos % BlockSize];
+    int64_t filePos = bitPos / BlockSize;
+    BlockType *fileEntry = backingFile[filePos];
+    *fileEntry |= mask;
 }
 
 bool BloomStore::isSet(int64_t bitPos) const {
