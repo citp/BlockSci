@@ -11,13 +11,15 @@
 #include <range/v3/action/push_back.hpp>
 #include <range/v3/view/filter.hpp>
 
+#include <algorithm>
+
 namespace blocksci {
     
     std::vector<BlockRange> BlockRange::segment(unsigned int segmentCount) const {
         auto lastTx = endTxIndex();
         auto firstTx = firstTxIndex();
         auto totalTxCount = lastTx - firstTx;
-        double segmentSize = static_cast<double>(totalTxCount) / segmentCount;
+        uint32_t segmentSize = totalTxCount / segmentCount;
         
         std::vector<BlockRange> segments;
         auto it = begin();

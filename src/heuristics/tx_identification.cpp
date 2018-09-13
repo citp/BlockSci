@@ -13,6 +13,7 @@
 
 #include <range/v3/range_for.hpp>
 
+#include <algorithm>
 #include <unordered_set>
 #include <unordered_map>
 

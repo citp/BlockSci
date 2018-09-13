@@ -167,12 +167,19 @@ namespace blocksci {
         
         TxData getTxData(uint32_t index) const {
             reorgCheck();
+            auto firstInputNum = static_cast<OffsetType>(*txFirstInputFile[index]);
+            const uint16_t *inputsSpent = nullptr;
+            const uint32_t *sequenceNumbers = nullptr;
+            if (firstInputNum < inputSpentOutputFile.size()) {
+                inputsSpent = inputSpentOutputFile[firstInputNum];
+                sequenceNumbers = sequenceFile[firstInputNum];
+            }
             return {
                 txFile.getData(index),
                 nullptr, // txVersionFile[index]
                 txHashesFile[index],
-                inputSpentOutputFile[static_cast<OffsetType>(*txFirstInputFile[index])],
-                sequenceFile[static_cast<OffsetType>(*txFirstInputFile[index])]
+                inputsSpent,
+                sequenceNumbers
             };
         }
         
@@ -191,7 +198,7 @@ namespace blocksci {
         
         uint64_t outputCount() const {
             if (_maxLoadedTx > 0) {
-                auto lastTx = getTx(_maxLoadedTx);
+                auto lastTx = getTx(_maxLoadedTx - 1);
                 return *txFirstOutputFile[_maxLoadedTx - 1] + lastTx->outputCount;
             } else {
                 return 0;

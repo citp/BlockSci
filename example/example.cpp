@@ -82,10 +82,21 @@ int main(int argc, const char * argv[]) {
     Blockchain chain(argv[1]);
     
     int count = 0;
+    
+    
+    size_t inputCount = 0;
     RANGES_FOR(auto block, chain) {
         RANGES_FOR(auto tx, block) {
-            if (tx.fee() > 10000000) {
-                count++;
+            inputCount += tx.inputCount();
+        }
+    }
+    std::cout << "Input count: " << inputCount << "\n";
+    
+    RANGES_FOR(auto block, chain) {
+        RANGES_FOR(auto tx, block) {
+            RANGES_FOR(auto input, tx.inputs()) {
+                auto spentOutput = input.getSpentOutput();
+                assert(input == spentOutput.getSpendingInput());
             }
         }
     }

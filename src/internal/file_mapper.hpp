@@ -20,6 +20,7 @@
 #include <limits>
 #include <string>
 #include <vector>
+#include <tuple>
 
 namespace blocksci {
     template<mio::access_mode mode = mio::access_mode::read>

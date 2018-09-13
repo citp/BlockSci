@@ -41,7 +41,8 @@ std::vector<unsigned char> hexStringToVec(const std::string &scripthex) {
 #ifdef BLOCKSCI_FILE_PARSER
 RawInput::RawInput(SafeMemReader &reader) : utxo{} {
     rawOutputPointer.hash = reader.readNext<blocksci::uint256>();
-    rawOutputPointer.outputNum = static_cast<uint16_t>(reader.readNext<uint32_t>());
+    uint32_t rawOutputNum = reader.readNext<uint32_t>();
+    rawOutputPointer.outputNum = static_cast<uint16_t>(rawOutputNum);
     scriptLength = reader.readVariableLengthInteger();
     scriptBegin = reinterpret_cast<const unsigned char*>(reader.unsafePos());
     reader.advance(scriptLength);

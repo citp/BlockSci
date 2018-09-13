@@ -95,6 +95,7 @@ namespace blocksci {
         std::string toString() const;
         
         ranges::optional<Transaction> getSpendingTx() const;
+        ranges::optional<Input> getSpendingInput() const;
     };
 
     std::ostream BLOCKSCI_EXPORT &operator<<(std::ostream &os, const Output &output);

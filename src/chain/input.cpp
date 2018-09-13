@@ -55,7 +55,7 @@ namespace blocksci {
         auto newTxNum = inout->getLinkedTxNum();
         auto height = access->getChain().getBlockHeight(newTxNum);
         auto outputNum = *spentOutputNum;
-        auto pointer = OutputPointer(newTxNum, *spentOutputNum);
+        auto pointer = OutputPointer(newTxNum, outputNum);
         auto tx = access->getChain().getTx(newTxNum);
         return {pointer, height, tx->getOutput(outputNum), maxTxCount, *access};
     }

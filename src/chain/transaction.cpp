@@ -40,7 +40,7 @@ namespace {
 namespace blocksci {
 
     Transaction::Transaction(uint32_t index, BlockHeight height, DataAccess &access_) :
-    Transaction(access_.getChain().getTxData(index), index, height, static_cast<uint32_t>(access->getChain().txCount()), access_) {}
+    Transaction(access_.getChain().getTxData(index), index, height, static_cast<uint32_t>(access_.getChain().txCount()), access_) {}
     
     Transaction::Transaction(uint32_t index, DataAccess &access_) : Transaction(index, access_.getChain().getBlockHeight(index), access_) {}
     
@@ -59,8 +59,8 @@ namespace blocksci {
     }
     
     bool isSegwitMarker(const Transaction &tx) {
-        for (uint16_t i = tx.outputCount() - 1; i >= 0; i--) {
-            auto output = tx.outputs()[i];
+        for (uint16_t i = 0; i < tx.outputCount(); i++) {
+            auto output = tx.outputs()[tx.outputCount() - 1 - i];
             if (output.getType() == AddressType::Enum::NULL_DATA) {
                 auto nulldata = script::OpReturn(output.getAddress().scriptNum, tx.getAccess());
                 if (nulldata.isSegwitMarker()) {

@@ -12,6 +12,7 @@
 
 #include <internal/chain_access.hpp>
 #include <internal/data_access.hpp>
+#include <range/v3/range_for.hpp>
 
 #include <sstream>
 
@@ -35,6 +36,20 @@ namespace blocksci {
         auto index = getSpendingTxIndex();
         if (index) {
             return ranges::optional<Transaction>{Transaction(*index, access->getChain().getBlockHeight(*index), *access)};
+        } else {
+            return ranges::nullopt;
+        }
+    }
+    
+    ranges::optional<Input> Output::getSpendingInput() const {
+        auto spendingTx = getSpendingTx();
+        if (spendingTx) {
+            RANGES_FOR(auto input, spendingTx->inputs()) {
+                if (input.getSpentOutput() == *this) {
+                    return input;
+                }
+            }
+            throw std::runtime_error("Whoopsie. Something went terribly wrong");
         } else {
             return ranges::nullopt;
         }

@@ -91,10 +91,15 @@ void ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH>::check(AddressStat
 ScriptInputData<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::PUBKEYHASH> &) {
     if (scriptView.size() > 0) {
         auto pc = scriptView.begin();
-        blocksci::opcodetype opcode;
+        blocksci::opcodetype opcode = blocksci::OP_0;
         ranges::iterator_range<const unsigned char *> vchSig;
+        
+        // tx 1b008139698117162a9539295ada34fc745f06f733b5f400674f15bf47e720a5 contains a OP_0 before the signature
+        while (opcode == blocksci::OP_0) {
+            scriptView.GetOp(pc, opcode, vchSig);
+        }
         scriptView.GetOp(pc, opcode, vchSig);
-        scriptView.GetOp(pc, opcode, vchSig);
+        assert(vchSig.size() == 65 || vchSig.size() == 33);
         std::copy(vchSig.begin(), vchSig.end(), pubkey.begin());
     } else {
         auto &pubkeyWitness = inputView.witnessStack[1];
