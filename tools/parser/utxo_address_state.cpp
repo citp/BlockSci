@@ -27,7 +27,7 @@ AnySpendData UTXOAddressState::spendOutput(const blocksci::InoutPointer &pointer
     auto index = static_cast<size_t>(type);
     if (index >= blocksci::AddressType::size)
     {
-        throw std::invalid_argument("combination of enum values is not valid");
+        throw std::invalid_argument("address type enum values is not valid");
     }
     return AnySpendData{spendOutputTable.at(index)(pointer, *this)};
 }

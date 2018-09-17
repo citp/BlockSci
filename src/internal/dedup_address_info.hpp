@@ -82,7 +82,7 @@ namespace blocksci {
     };
     
     constexpr void dedupTypeCheckThrow(size_t index) {
-        index >= DedupAddressType::size ? throw std::invalid_argument("combination of enum values is not valid") : 0;
+        index >= DedupAddressType::size ? throw std::invalid_argument("dedup address type enum value is not valid") : 0;
     }
     
     static constexpr auto spendableTable = blocksci::make_static_table<DedupAddressType, SpendableFunctor>();

@@ -145,7 +145,7 @@ namespace blocksci {
     };
     
     constexpr void addressTypeCheckThrow(size_t index) {  
-        index >= AddressType::size ? throw std::invalid_argument("combination of enum values is not valid") : 0;
+        index >= AddressType::size ? throw std::invalid_argument("address type enum value is not valid") : 0;
     }
 
     constexpr DedupAddressType::Enum dedupType(AddressType::Enum t) {
