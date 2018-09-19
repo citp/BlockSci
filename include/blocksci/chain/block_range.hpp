@@ -77,8 +77,15 @@ namespace blocksci {
             self_type operator-(difference_type i) const { self_type tmp = *this; tmp.height -= i; return tmp; }
             
             value_type operator*() const { return Block(height, *access); }
+            value_type operator[](difference_type i) const { return Block(height + i, *access); }
+            
             bool operator==(const self_type& rhs) const { return height == rhs.height; }
             bool operator!=(const self_type& rhs) const { return height != rhs.height; }
+            bool operator<(const self_type& rhs) const { return height < rhs.height; }
+            bool operator>(const self_type& rhs) const { return height > rhs.height; }
+            bool operator<=(const self_type& rhs) const { return height <= rhs.height; }
+            bool operator>=(const self_type& rhs) const { return height >= rhs.height; }
+            
             BlockHeight operator-(const self_type& it) const {return height - it.height;}
         private:
             BlockHeight height;
@@ -199,6 +206,18 @@ namespace blocksci {
             return includesOutputOfType(tx, type);
         });
     }
+    
+    inline BlockRange::iterator::self_type BLOCKSCI_EXPORT operator+(BlockRange::iterator::difference_type i, const BlockRange::iterator &it) {
+        return it + i;
+    }
+    
+    CONCEPT_ASSERT(ranges::BidirectionalRange<BlockRange>());
+    CONCEPT_ASSERT(ranges::BidirectionalIterator<BlockRange::iterator>());
+    CONCEPT_ASSERT(ranges::SizedSentinel<BlockRange::iterator, BlockRange::iterator>());
+    CONCEPT_ASSERT(ranges::TotallyOrdered<BlockRange::iterator>());
+    CONCEPT_ASSERT(ranges::RandomAccessIterator<BlockRange::iterator>());
+    CONCEPT_ASSERT(ranges::RandomAccessRange<BlockRange>());
+    CONCEPT_ASSERT(ranges::SizedRange<BlockRange>());
 } // namespace blocksci
 
 

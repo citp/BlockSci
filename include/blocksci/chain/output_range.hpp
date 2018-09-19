@@ -12,6 +12,8 @@
 #include <blocksci/blocksci_export.h>
 #include <blocksci/chain/output.hpp>
 
+#include <range/v3/range_concepts.hpp>
+
 namespace blocksci {
     class ChainAccess;
     class DataAccess;
@@ -38,6 +40,9 @@ namespace blocksci {
             uint16_t outputNum;
             uint32_t maxTxLoaded;
             DataAccess *access = nullptr;
+            
+            iterator() = default;
+            iterator(const Inout *inouts_, BlockHeight height_, uint32_t txIndex_, uint16_t outputNum_, uint32_t maxTxLoaded_, DataAccess *access_) : inouts(inouts_), height(height_), txIndex(txIndex_), outputNum(outputNum_), maxTxLoaded(maxTxLoaded_), access(access_) {}
 
             self_type &operator+=(difference_type i) { outputNum += i; return *this; }
             self_type &operator-=(difference_type i) { outputNum -= i; return *this; }
@@ -47,10 +52,18 @@ namespace blocksci {
             self_type operator--(int) { self_type tmp = *this; this->operator--(); return tmp; }
             self_type operator+(difference_type i) const {  self_type tmp = *this; tmp += i; return tmp; }
             self_type operator-(difference_type i) const { self_type tmp = *this; tmp -= i; return tmp; }
+            
             value_type operator*() const { return {{txIndex, outputNum}, height, inouts[outputNum], maxTxLoaded, *access}; }
-            bool operator==(const self_type& rhs) const {  return outputNum == rhs.outputNum; }
+            value_type operator[](difference_type i) const { return {{txIndex, static_cast<uint16_t>(static_cast<int>(outputNum) + i)}, height, inouts[outputNum], maxTxLoaded, *access}; }
+            
+            bool operator==(const self_type& rhs) const { return outputNum == rhs.outputNum; }
             bool operator!=(const self_type& rhs) const { return outputNum != rhs.outputNum; }
-            difference_type operator-(const self_type& it) const { return static_cast<int>(outputNum - it.outputNum); }
+            bool operator<(const self_type& rhs) const { return outputNum < rhs.outputNum; }
+            bool operator>(const self_type& rhs) const { return outputNum > rhs.outputNum; }
+            bool operator<=(const self_type& rhs) const { return outputNum <= rhs.outputNum; }
+            bool operator>=(const self_type& rhs) const { return outputNum >= rhs.outputNum; }
+            
+            difference_type operator-(const self_type& it) const { return static_cast<int>(outputNum) - static_cast<int>(it.outputNum); }
         };
 
         iterator begin() const {
@@ -69,6 +82,18 @@ namespace blocksci {
             return {{txIndex, outputNum}, height, inouts[outputNum], maxTxLoaded, *access};
         }
     };
+    
+    inline OutputRange::iterator::self_type BLOCKSCI_EXPORT operator+(OutputRange::iterator::difference_type i, const OutputRange::iterator &it) {
+        return it + i;
+    }
+    
+    CONCEPT_ASSERT(ranges::BidirectionalRange<OutputRange>());
+    CONCEPT_ASSERT(ranges::BidirectionalIterator<OutputRange::iterator>());
+    CONCEPT_ASSERT(ranges::SizedSentinel<OutputRange::iterator, OutputRange::iterator>());
+    CONCEPT_ASSERT(ranges::TotallyOrdered<OutputRange::iterator>());
+    CONCEPT_ASSERT(ranges::RandomAccessIterator<OutputRange::iterator>());
+    CONCEPT_ASSERT(ranges::RandomAccessRange<OutputRange>());
+    CONCEPT_ASSERT(ranges::SizedRange<OutputRange>());
 }
 
 #endif /* blocksci_output_range_hpp */

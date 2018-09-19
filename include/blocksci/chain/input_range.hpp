@@ -12,6 +12,8 @@
 #include <blocksci/blocksci_export.h>
 #include <blocksci/chain/input.hpp>
 
+#include <range/v3/range_concepts.hpp>
+
 namespace blocksci {
     class ChainAccess;
     class DataAccess;
@@ -51,9 +53,20 @@ namespace blocksci {
             self_type operator--(int) { self_type tmp = *this; this->operator--(); return tmp; }
             self_type operator+(difference_type i) const {  self_type tmp = *this; tmp += i; return tmp; }
             self_type operator-(difference_type i) const { self_type tmp = *this; tmp -= i; return tmp; }
+            
             value_type operator*() const { return {{txIndex, inputNum}, height, inouts[inputNum], &spentOutputNums[inputNum], &sequenceNumbers[inputNum], maxTxCount, *access}; }
-            bool operator==(const self_type& rhs) const {  return inputNum == rhs.inputNum; }
+            value_type operator[](difference_type i) const {
+                auto index = static_cast<uint16_t>(static_cast<int>(inputNum) + i);
+                return {{txIndex, index}, height, inouts[index], &spentOutputNums[inputNum], &sequenceNumbers[index], maxTxCount, *access};
+            }
+            
+            bool operator==(const self_type& rhs) const { return inputNum == rhs.inputNum; }
             bool operator!=(const self_type& rhs) const { return inputNum != rhs.inputNum; }
+            bool operator<(const self_type& rhs) const { return inputNum < rhs.inputNum; }
+            bool operator>(const self_type& rhs) const { return inputNum > rhs.inputNum; }
+            bool operator<=(const self_type& rhs) const { return inputNum <= rhs.inputNum; }
+            bool operator>=(const self_type& rhs) const { return inputNum >= rhs.inputNum; }
+            
             difference_type operator-(const self_type& it) const { return static_cast<int>(inputNum - it.inputNum); }
         };
 
@@ -73,6 +86,18 @@ namespace blocksci {
             return {{txIndex, inputNum}, height, inouts[inputNum], &spentOutputNums[inputNum], &sequenceNumbers[inputNum], maxTxCount, *access};
         }
     };
+    
+    inline InputRange::iterator::self_type BLOCKSCI_EXPORT operator+(InputRange::iterator::difference_type i, const InputRange::iterator &it) {
+        return it + i;
+    }
+    
+    CONCEPT_ASSERT(ranges::BidirectionalRange<InputRange>());
+    CONCEPT_ASSERT(ranges::BidirectionalIterator<InputRange::iterator>());
+    CONCEPT_ASSERT(ranges::SizedSentinel<InputRange::iterator, InputRange::iterator>());
+    CONCEPT_ASSERT(ranges::TotallyOrdered<InputRange::iterator>());
+    CONCEPT_ASSERT(ranges::RandomAccessIterator<InputRange::iterator>());
+    CONCEPT_ASSERT(ranges::RandomAccessRange<InputRange>());
+    CONCEPT_ASSERT(ranges::SizedRange<InputRange>());
 }
 
 #endif /* blocksci_input_range_hpp */
