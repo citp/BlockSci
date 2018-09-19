@@ -16,12 +16,20 @@
 namespace blocksci {
     
     ranges::optional<CPubKey> PubkeyAddressBase::getPubkey() const {
-        auto &rawPubkey = getData()->pubkey;
-        CPubKey pubkey{rawPubkey.begin(), rawPubkey.end()};
-        if (pubkey.IsValid()) {
-            return pubkey;
+        if (getData()->hasPubkey) {
+            auto &rawPubkey = getData()->pubkey;
+            return CPubKey{rawPubkey.begin(), rawPubkey.end()};
         } else {
             return ranges::nullopt;
+        }
+    }
+    
+    uint160 PubkeyAddressBase::getPubkeyHash() const {
+        auto pubkey = getPubkey();
+        if (pubkey) {
+            return pubkey->GetID();
+        } else {
+            return getData()->address;
         }
     }
     

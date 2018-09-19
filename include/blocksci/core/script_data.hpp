@@ -86,8 +86,8 @@ namespace blocksci {
         };
         bool hasPubkey;
         
-        PubkeyData(uint32_t txNum, const RawPubkey &pubkey_) : ScriptDataBase(txNum), pubkey(pubkey_) {}
-        PubkeyData(uint32_t txNum, const uint160 &address_) : ScriptDataBase(txNum), address(address_) {}
+        PubkeyData(uint32_t txNum, const RawPubkey &pubkey_) : ScriptDataBase(txNum), pubkey(pubkey_), hasPubkey(true) {}
+        PubkeyData(uint32_t txNum, const uint160 &address_) : ScriptDataBase(txNum), address(address_), hasPubkey(false) {}
         
         size_t size() {
             return sizeof(PubkeyData);

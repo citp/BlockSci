@@ -10,6 +10,7 @@
 
 #include "script.hpp"
 
+
 #include <blocksci/blocksci_export.h>
 #include <blocksci/core/bitcoin_uint256.hpp>
 
@@ -23,9 +24,7 @@ namespace blocksci {
         }
         
     public:
-        uint160 getPubkeyHash() const {
-            return getData()->address;
-        }
+        uint160 getPubkeyHash() const;
         
         ranges::optional<CPubKey> getPubkey() const;
         
