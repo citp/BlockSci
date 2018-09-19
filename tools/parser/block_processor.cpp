@@ -258,6 +258,7 @@ blocksci::RawBlock readNewBlock(uint32_t firstTxNum, uint64_t firstInputNum, uin
         
         files.txFirstInput.write(firstInputNum + inputCount);
         files.txFirstOutput.write(firstOutputNum + outputCount);
+        files.txVersionFile.write(tx->version);
         
         if (tx->inputs.size() == 1 && tx->inputs[0].rawOutputPointer.hash == nullHash) {
             auto scriptView = tx->inputs[0].getScriptView();
