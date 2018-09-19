@@ -36,16 +36,18 @@ void init_heuristics(py::module &m) {
 
     s
     .def("coinjoin_txes", heuristics::getCoinjoinTransactions, py::arg("block_range"), "Returns a list of all transactions in the blockchain that might be JoinMarket coinjoin transactions")
-    .def("possible_coinjoin_txes", heuristics::getPossibleCoinjoinTransactions, py::arg("chain"), py::arg("min_base_fee"), py::arg("percentage_fee"), py::arg("max_depth") = 0, "Returns a list of all transactions in the blockchain that might be coinjoin transactions")
+    .def("possible_coinjoin_txes", heuristics::getPossibleCoinjoinTransactions, py::arg("block_range"), py::arg("min_base_fee"), py::arg("percentage_fee"), py::arg("max_depth") = 0, "Returns a list of all transactions in the blockchain that might be coinjoin transactions")
     .def("address_deanon_txes", heuristics::getDeanonTxes, py::arg("block_range"), "Return a list of all the transactions in the blockchain for which is_address_deanon returns true")
     .def("change_over_txes", heuristics::getChangeOverTxes, py::arg("block_range"), "Return a list of transactions in the blockchain for which is_change_over returns true")
     .def("keyset_change_txes", heuristics::getKeysetChangeTxes, py::arg("block_range"), "Return a list of transaction in the blockchain for which is_keyset_change returns true")
     ;
     
     s
-    .def("poison_tainted_outputs", heuristics::getPoisonTainted, py::arg("output"), py::arg("tainted_value"), "Returns the list of current UTXOs poison tainted by this output")
-    .def("haircut_tainted_outputs", heuristics::getHaircutTainted, py::arg("output"), py::arg("tainted_value"), "Returns the list of current UTXOs haircut tainted by this output")
-    .def("fifo_tainted_outputs", heuristics::getFifoTainted, py::arg("output"), py::arg("tainted_value"), "Returns the list of current UTXOs FIFO tainted by this output")
+    .def("poison_tainted_outputs", heuristics::getPoisonTainted, py::arg("output"), py::arg("max_block_height") = -1, py::arg("taint_fee") = true, "Returns the list of current UTXOs poison tainted by this output")
+    .def("haircut_tainted_outputs", heuristics::getHaircutTainted, py::arg("output"), py::arg("max_block_height") = -1, py::arg("taint_fee") = true, "Returns the list of current UTXOs haircut tainted by this output")
+    .def("fifo_tainted_outputs", heuristics::getFifoTainted, py::arg("output"), py::arg("max_block_height") = -1, py::arg("taint_fee") = true, "Returns the list of current UTXOs FIFO tainted by this output")
+    .def("fifo_seniority_tainted_outputs", heuristics::getFifoSeniorityTainted, py::arg("output"), py::arg("max_block_height") = -1, py::arg("taint_fee") = true, "Returns the list of current UTXOs FIFO with Seniority tainted by this output")
+    .def("seniority_tainted_outputs", heuristics::getSeniorityTainted, py::arg("output"), py::arg("max_block_height") = -1, py::arg("taint_fee") = true, "Returns the list of current UTXOs Seniority tainted by this output")
     ;
 
     auto s2 = s.def_submodule("change");
