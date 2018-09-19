@@ -45,8 +45,26 @@ namespace blocksci {
         auto spendingTx = getSpendingTx();
         if (spendingTx) {
             RANGES_FOR(auto input, spendingTx->inputs()) {
-                if (input.getSpentOutput() == *this) {
+                if (input.getSpentOutputPointer() == pointer) {
                     return input;
+                }
+            }
+            throw std::runtime_error("Whoopsie. Something went terribly wrong");
+        } else {
+            return ranges::nullopt;
+        }
+    }
+    
+    ranges::optional<InputPointer> Output::getSpendingInputPointer() const {
+        auto index = getSpendingTxIndex();
+        if (index) {
+            auto rawTx = access->getChain().getTx(*index);
+            auto spentOutNums = access->getChain().getSpentOutputNumbers(*index);
+            for (uint16_t i = 0; i < rawTx->inputCount; i++) {
+                const auto &input = rawTx->getInput(i);
+                auto spentOutNum = spentOutNums[i];
+                if (OutputPointer{input.getLinkedTxNum(), spentOutNum} == pointer) {
+                    return InputPointer{*index, i};
                 }
             }
             throw std::runtime_error("Whoopsie. Something went terribly wrong");

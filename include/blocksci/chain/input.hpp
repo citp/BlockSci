@@ -32,10 +32,11 @@ namespace blocksci {
         const Inout *inout;
         const uint16_t *spentOutputNum;
         const uint32_t *sequenceNum;
-        InputPointer pointer;
+        
         
         friend size_t std::hash<Input>::operator()(const Input &) const;
     public:
+        InputPointer pointer;
         
         BlockHeight blockHeight;
 
@@ -95,6 +96,7 @@ namespace blocksci {
         
         Transaction getSpentTx() const;
         
+        OutputPointer getSpentOutputPointer() const;
         Output getSpentOutput() const;
     };
 
