@@ -32,11 +32,19 @@ namespace blocksci {
         }
         
         bool operator<(const InoutPointer& other) const {
-            if (txNum != other.txNum) {
-                return txNum < other.txNum;
-            } else {
-                return inoutNum < other.inoutNum;
-            }
+            return std::tie(txNum, inoutNum) < std::tie(other.txNum, other.inoutNum);
+        }
+        
+        bool operator<=(const InoutPointer& other) const {
+            return std::tie(txNum, inoutNum) <= std::tie(other.txNum, other.inoutNum);
+        }
+        
+        bool operator>(const InoutPointer& other) const {
+            return std::tie(txNum, inoutNum) > std::tie(other.txNum, other.inoutNum);
+        }
+        
+        bool operator>=(const InoutPointer& other) const {
+            return std::tie(txNum, inoutNum) >= std::tie(other.txNum, other.inoutNum);
         }
     };
 } // namespace blocksci

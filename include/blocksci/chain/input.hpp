@@ -70,14 +70,6 @@ namespace blocksci {
             return *inout == other;
         }
         
-        bool operator==(const Input &other) const {
-            return *inout == *other.inout;
-        }
-
-        bool operator!=(const Input &other) const {
-            return !(*inout == *other.inout);
-        }
-        
         AddressType::Enum getType() const {
             return inout->getType();
         }
@@ -99,6 +91,30 @@ namespace blocksci {
         OutputPointer getSpentOutputPointer() const;
         Output getSpentOutput() const;
     };
+    
+    inline bool BLOCKSCI_EXPORT operator==(const Input& a, const Input& b) {
+        return a.pointer == b.pointer;
+    }
+    
+    inline bool BLOCKSCI_EXPORT operator!=(const Input& a, const Input& b) {
+        return a.pointer != b.pointer;
+    }
+    
+    inline bool BLOCKSCI_EXPORT operator<(const Input& a, const Input& b) {
+        return a.pointer < b.pointer;
+    }
+    
+    inline bool BLOCKSCI_EXPORT operator<=(const Input& a, const Input& b) {
+        return a.pointer <= b.pointer;
+    }
+    
+    inline bool BLOCKSCI_EXPORT operator>(const Input& a, const Input& b) {
+        return a.pointer > b.pointer;
+    }
+    
+    inline bool BLOCKSCI_EXPORT operator>=(const Input& a, const Input& b) {
+        return a.pointer >= b.pointer;
+    }
 
     std::ostream BLOCKSCI_EXPORT &operator<<(std::ostream &os, const Input &input);
 } // namespace blocksci

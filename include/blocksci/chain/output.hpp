@@ -70,14 +70,6 @@ namespace blocksci {
             return spendingTxIndex > 0u;
         }
         
-        bool operator==(const Output &other) const {
-            return pointer == other.pointer;
-        }
-
-        bool operator!=(const Output &other) const {
-            return pointer != other.pointer;
-        }
-        
         bool operator==(const Inout &other) const {
             return *inout == other;
         }
@@ -98,6 +90,30 @@ namespace blocksci {
         ranges::optional<Input> getSpendingInput() const;
         ranges::optional<InputPointer> getSpendingInputPointer() const;
     };
+    
+    inline bool BLOCKSCI_EXPORT operator==(const Output& a, const Output& b) {
+        return a.pointer == b.pointer;
+    }
+    
+    inline bool BLOCKSCI_EXPORT operator!=(const Output& a, const Output& b) {
+        return a.pointer != b.pointer;
+    }
+    
+    inline bool BLOCKSCI_EXPORT operator<(const Output& a, const Output& b) {
+        return a.pointer < b.pointer;
+    }
+    
+    inline bool BLOCKSCI_EXPORT operator<=(const Output& a, const Output& b) {
+        return a.pointer <= b.pointer;
+    }
+    
+    inline bool BLOCKSCI_EXPORT operator>(const Output& a, const Output& b) {
+        return a.pointer > b.pointer;
+    }
+    
+    inline bool BLOCKSCI_EXPORT operator>=(const Output& a, const Output& b) {
+        return a.pointer >= b.pointer;
+    }
 
     std::ostream BLOCKSCI_EXPORT &operator<<(std::ostream &os, const Output &output);
 } // namespace blocksci

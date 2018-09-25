@@ -35,6 +35,14 @@ namespace blocksci {
             return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getType(); }, wrapped);
         }
         
+        bool operator==(const AnyScript& other) const {
+            return getType() == other.getType() && getScriptNum() == other.getScriptNum();
+        }
+        
+        bool operator!=(const AnyScript& other) const {
+            return !operator==(other);
+        }
+        
         std::string toString() const {
             return mpark::visit([&](auto &scriptAddress) { return scriptAddress.toString(); }, wrapped);
         }
@@ -78,5 +86,16 @@ namespace blocksci {
         ScriptVariant wrapped;
     };
 } // namespace blocksci
+
+namespace std {
+    template <>
+    struct hash<blocksci::AnyScript> {
+        typedef blocksci::AnyScript argument_type;
+        typedef size_t  result_type;
+        result_type operator()(const argument_type &b) const {
+            return blocksci::hashAddress(b.getScriptNum(), b.getType());
+        }
+    };
+}
 
 #endif /* script_variant_hpp */
