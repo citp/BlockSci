@@ -11,6 +11,8 @@
 #include "proxy/equality.hpp"
 #include "proxy/comparison.hpp"
 #include "proxy/arithmetic.hpp"
+#include "proxy/arithmetic_range.hpp"
+#include "proxy/basic.hpp"
 #include "proxy/boolean.hpp"
 #include "proxy/optional.hpp"
 #include "proxy/optional_arithmetic.hpp"
@@ -19,16 +21,19 @@
 #include <blocksci/cluster/cluster.hpp>
 
 void addIntProxyMethods(AllProxyClasses<int64_t> &cls) {
-	cls.setupSimplProxy();
+	cls.setupSimpleProxy(AddProxyMethods{});
 	cls.base.applyToAll(AddProxyEqualityMethods{});
 	cls.base.applyToAll(AddProxyComparisonMethods{});
 	cls.base.applyToAll(AddProxyArithMethods{});
 	cls.optional.applyToAll(AddProxyOptionalArithMethods{});
 	cls.optional.applyToAll(AddProxyOptionalMethods{});
+
+	cls.iterator.applyToAll(AddProxyArithRangeMethods{});
+	cls.range.applyToAll(AddProxyArithRangeMethods{});
 }
 
 void addBoolProxyMethods(AllProxyClasses<bool> &cls) {
-	cls.setupSimplProxy();
+	cls.setupSimpleProxy(AddProxyMethods{});
 	cls.base.applyToAll(AddProxyEqualityMethods{});
 	cls.base.applyToAll(AddProxyComparisonMethods{});
 	cls.base.applyToAll(AddProxyBooleanMethods{});
@@ -36,32 +41,32 @@ void addBoolProxyMethods(AllProxyClasses<bool> &cls) {
 }
 
 void addAddressTypeProxyMethods(AllProxyClasses<blocksci::AddressType::Enum> &cls) {
-	cls.setupSimplProxy();
+	cls.setupSimpleProxy(AddProxyMethods{});
 	cls.base.applyToAll(AddProxyEqualityMethods{});
 	cls.base.applyToAll(AddProxyComparisonMethods{});
 	cls.optional.applyToAll(AddProxyOptionalMethods{});
 }
 
 void addTimeProxyMethods(AllProxyClasses<std::chrono::system_clock::time_point> &cls) {
-	cls.setupSimplProxy();
+	cls.setupSimpleProxy(AddProxyMethods{});
 	cls.base.applyToAll(AddProxyEqualityMethods{});
 	cls.base.applyToAll(AddProxyComparisonMethods{});
 	cls.optional.applyToAll(AddProxyOptionalMethods{});
 }
 
 void addUint256ProxyMethods(AllProxyClasses<blocksci::uint256> &cls) {
-	cls.setupSimplProxy();
+	cls.setupSimpleProxy(AddProxyMethods{});
 	cls.base.applyToAll(AddProxyEqualityMethods{});
 	cls.optional.applyToAll(AddProxyOptionalMethods{});
 }
 
 void addUint160ProxyMethods(AllProxyClasses<blocksci::uint160> &cls) {
-	cls.setupSimplProxy();
+	cls.setupSimpleProxy(AddProxyMethods{});
 	cls.base.applyToAll(AddProxyEqualityMethods{});
 	cls.optional.applyToAll(AddProxyOptionalMethods{});
 }
 
 void addBytesProxyMethods(AllProxyClasses<pybind11::bytes> &cls) {
-	cls.setupSimplProxy();
+	cls.setupSimpleProxy(AddProxyMethods{});
 	cls.optional.applyToAll(AddProxyOptionalMethods{});
 }

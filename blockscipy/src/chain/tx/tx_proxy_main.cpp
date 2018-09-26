@@ -8,10 +8,11 @@
 
 #include "tx_proxy_py.hpp"
 #include "proxy_py.hpp"
+#include "proxy/basic.hpp"
 
 #include <blocksci/cluster/cluster.hpp>
 #include <blocksci/chain/block.hpp>
 
 void addTxProxyMethodsMain(AllProxyClasses<blocksci::Transaction> &cls) {
-	cls.setupBasicProxy();
+	cls.setupBasicProxy(AddProxyMethods{});
 }

@@ -17,4 +17,5 @@ using namespace blocksci;
 
 void addOutputRangeMethods(RangeClasses<Output> &classes) {
     addAllRangeMethods(classes);
+    addOutputOptionalRangeMethods(classes);
 }

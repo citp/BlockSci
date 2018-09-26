@@ -13,7 +13,8 @@
 #include <blocksci/chain/transaction.hpp>
 
 void addTxProxyMethodsMain(AllProxyClasses<blocksci::Transaction> &cls);
-
+void addTxProxyMethodsRange(AllProxyClasses<blocksci::Transaction> &cls);
+void addTxProxyMethodsOptionalRange(AllProxyClasses<blocksci::Transaction> &cls);
 void addTxProxyMethods(AllProxyClasses<blocksci::Transaction> &cls);
 
 #endif /* tx_proxy_py_h */

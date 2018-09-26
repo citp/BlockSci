@@ -26,7 +26,8 @@ struct AddTxProxyMethods {
 
 void addTxProxyMethods(AllProxyClasses<blocksci::Transaction> &cls) {
 	addTxProxyMethodsMain(cls);
-	setupRangesProxy(cls);
+	addTxProxyMethodsRange(cls);
+	addTxProxyMethodsOptionalRange(cls);
 	cls.optional.applyToAll(AddProxyOptionalMethods{});
 	cls.optional.applyToAll(AddProxyOptionalMapMethods{});
 

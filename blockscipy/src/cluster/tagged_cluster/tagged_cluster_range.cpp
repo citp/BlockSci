@@ -17,4 +17,5 @@ using namespace blocksci;
 
 void addTaggedClusterRangeMethods(RangeClasses<TaggedCluster> &classes) {
     addAllRangeMethods(classes);
+    addTaggedClusterOptionalRangeMethods(classes);
 }

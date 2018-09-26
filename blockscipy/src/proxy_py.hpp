@@ -9,76 +9,39 @@
 #define proxy_py_hpp
 
 #include "proxy.hpp"
+#include "proxy_utils.hpp"
+#include "range_utils.hpp"
 #include "method_types.hpp"
-#include "range_conversion.hpp"
 
-#include <blocksci/chain/transaction.hpp>
-#include <blocksci/chain/input.hpp>
-#include <blocksci/chain/output.hpp>
+#include <blocksci/chain/block.hpp>
 #include <blocksci/scripts/script_variant.hpp>
 
 #include <pybind11/pybind11.h>
 
-#include <range/v3/view/transform.hpp>
-
 #include <functional>
-
-template<typename input_t, typename output_t>
-Proxy<ranges::optional<input_t>, ranges::optional<output_t>> liftProxyOptional(Proxy<input_t, output_t> &p) {
-	return [=](ranges::optional<input_t> &opt) -> ranges::optional<output_t> {
-        if (opt) {
-            return p(*opt);
-        } else {
-            return ranges::nullopt;
-        }
-	};
-}
-
-template<typename input_t, typename output_t>
-Proxy<ranges::optional<input_t>, ranges::optional<output_t>> liftProxyOptional(Proxy<input_t, ranges::optional<output_t>> &p) {
-	return [=](ranges::optional<input_t> &optional) -> ranges::optional<output_t> {
-        if (optional) {
-            return p(*optional);
-        } else {
-            return ranges::nullopt;
-        }
-	};
-}
-
-struct AddProxyMethods {
-	template<typename input_t, typename output_t>
-	void operator()(pybind11::class_<Proxy<input_t, output_t>> &cl) {
-		using P = Proxy<input_t, output_t>;
-		cl
-		.def("__call__", [](P &p, input_t &input) -> output_t {
-			return p(input);
-		})
-		// .def("__call__", [](P &p, ranges::any_view<input_t> &r) {
-		// 	return convertRangeToPython(r | ranges::view::transform(p));
-		// })
-		// .def("__call__", [](P &p, ranges::any_view<input_t, ranges::category::random_access | ranges::category::sized> &r) {
-		// 	return convertRangeToPython(r | ranges::view::transform(p));
-		// })
-		// .def("__call__", [](P &p, ranges::any_view<ranges::optional<input_t>> &r) {
-		// 	return convertRangeToPython(r | ranges::view::transform(liftProxyOptional(p)));
-		// })
-		// .def("__call__", [](P &p, ranges::any_view<ranges::optional<input_t>, ranges::category::random_access | ranges::category::sized> &r) {
-		// 	return convertRangeToPython(r | ranges::view::transform(liftProxyOptional(p)));
-		// })
-		;
-	}
-};
 
 template <typename From, typename To>
 std::string proxyName() {
 	return PythonTypeName<From>::name() + "To" + PythonTypeName<To>::name() + "Proxy";
 }
 
-template<typename T>
-using Iterator = ranges::any_view<T>;
-
-template<typename T>
-using Range = ranges::any_view<T, ranges::category::random_access | ranges::category::sized>;
+template <typename T1, typename T2>
+void addProxyConditional(pybind11::module &m) {
+    m
+    .def("conditional", [](const Proxy<T1, bool> &cond, const Proxy<T1, T2> &p1, const Proxy<T1, T2> &p2) -> Proxy<T1, T2> {
+        return std::function<T2(T1 &)>{[=](T1 &t) -> T2 {
+            if(cond(t)) {
+                return p1(t);
+            } else {
+                return p2(t);
+            }
+        }};
+    })
+    .def(("make" + PythonTypeName<T1>::name() + "Constant").c_str(), [](const T2 &val) -> Proxy<T1, T2> {
+        return makeConstantProxy<T1>(val);
+    })
+    ;
+}
 
 template <typename T>
 struct ProxyClasses {
@@ -86,14 +49,21 @@ struct ProxyClasses {
     pybind11::class_<Proxy<blocksci::Transaction, T>> fromTx;
     pybind11::class_<Proxy<blocksci::Input, T>> fromInput;
     pybind11::class_<Proxy<blocksci::Output, T>> fromOutput;
-    pybind11::class_<Proxy<blocksci::Address, T>> fromAddress;
+    pybind11::class_<Proxy<blocksci::AnyScript, T>> fromAddress;
 
     ProxyClasses(pybind11::module &m) : 
     fromBlock(m, strdup(proxyName<blocksci::Block, T>().c_str())),
     fromTx(m, strdup(proxyName<blocksci::Transaction, T>().c_str())),
     fromInput(m, strdup(proxyName<blocksci::Input, T>().c_str())),
     fromOutput(m, strdup(proxyName<blocksci::Output, T>().c_str())),
-    fromAddress(m, strdup(proxyName<blocksci::Address, T>().c_str())) {}
+    fromAddress(m, strdup(proxyName<blocksci::AnyScript, T>().c_str())) {
+
+        addProxyConditional<blocksci::Block, T>(m);
+        addProxyConditional<blocksci::Transaction, T>(m);
+        addProxyConditional<blocksci::Input, T>(m);
+        addProxyConditional<blocksci::Output, T>(m);
+        addProxyConditional<blocksci::AnyScript, T>(m);
+    }
 
     template<typename Func>
     void applyToAll(Func func) {
@@ -143,18 +113,20 @@ struct AllProxyClasses {
     	optionalRange.applyToAll(func);
     }
 
-    void setupBasicProxy() {
-    	base.applyToAll(AddProxyMethods{});
-    	optional.applyToAll(AddProxyMethods{});
-    	iterator.applyToAll(AddProxyMethods{});
-    	range.applyToAll(AddProxyMethods{});
-    	optionalIterator.applyToAll(AddProxyMethods{});
-    	optionalRange.applyToAll(AddProxyMethods{});
+    template<typename Func>
+    void setupBasicProxy(Func func) {
+    	base.applyToAll(func);
+    	optional.applyToAll(func);
+    	iterator.applyToAll(func);
+    	range.applyToAll(func);
+    	optionalIterator.applyToAll(func);
+    	optionalRange.applyToAll(func);
     }
 
-    void setupSimplProxy() {
-    	base.applyToAll(AddProxyMethods{});
-    	optional.applyToAll(AddProxyMethods{});
+    template<typename Func>
+    void setupSimpleProxy(Func func) {
+    	base.applyToAll(func);
+    	optional.applyToAll(func);
     }
 };
 

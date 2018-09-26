@@ -18,4 +18,5 @@ namespace py = pybind11;
 
 void addMultisigPubkeyRangeMethods(RangeClasses<script::MultisigPubkey> &classes) {
 	addAllRangeMethods(classes);
+	addMultisigPubkeyOptionalRangeMethods(classes);
 }

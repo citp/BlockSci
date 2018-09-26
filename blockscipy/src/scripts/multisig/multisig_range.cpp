@@ -17,4 +17,5 @@ using namespace blocksci;
 
 void addMultisigRangeMethods(RangeClasses<script::Multisig> &classes) {
 	addAllRangeMethods(classes);
+	addMultisigOptionalRangeMethods(classes);
 }

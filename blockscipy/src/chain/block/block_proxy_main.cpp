@@ -8,9 +8,10 @@
 
 #include "block_proxy_py.hpp"
 #include "proxy_py.hpp"
+#include "proxy/basic.hpp"
 
 #include <blocksci/cluster/cluster.hpp>
 
 void addBlockProxyMethodsMain(AllProxyClasses<blocksci::Block> &cls) {
-	cls.setupBasicProxy();
+	cls.setupBasicProxy(AddProxyMethods{});
 }

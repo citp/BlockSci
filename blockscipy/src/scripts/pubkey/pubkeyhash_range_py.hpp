@@ -16,6 +16,7 @@
 #include <blocksci/scripts/pubkey_script.hpp>
 
 void addPubkeyHashRangeMethods(RangeClasses<blocksci::script::PubkeyHash> &classes);
+void addPubkeyHashOptionalRangeMethods(RangeClasses<blocksci::script::PubkeyHash> &classes);
 void applyMethodsToPubkeyHashRange(RangeClasses<blocksci::script::PubkeyHash> &classes);
 
 

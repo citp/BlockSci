@@ -33,5 +33,24 @@ struct Proxy {
 	}
 };
 
+template <typename Func, typename T>
+auto curry(Func func, T && t) {
+	return std::bind(func, std::placeholders::_1, std::forward<T>(t));
+}
+
+template <typename F1, typename F2>
+auto compose(F1 && f1, F2 && f2) {
+	return [f1, f2](auto &&... args) {
+		return f2(f1(std::forward<decltype(args)>(args)...));
+	};
+}
+
+template <typename F1, typename F2, typename F3>
+auto compose2(F1 && f1, F2 && f2, F3 && f3) {
+	return [f1, f2, f3](auto &&... args) {
+		return f3(f1(args...), f2(args...));
+	};
+}
+
 
 #endif /* proxy_hpp */

@@ -261,14 +261,14 @@ InputRange.with_address_type = inputs_with_address_type
 def outputs_unspent(outputs, height):
     return outputs.where(~proxy.output.is_spent)
 def outputs_spent_before_height(outputs, height):
-    return outputs.where(proxy.output.is_spent).where(blocksci.proxy.output.spending_tx.map(blocksci.proxy.tx.block_height).or_value(0) < height)
+    return outputs.where(proxy.output.is_spent).where(proxy.output.spending_tx.map(proxy.tx.block_height).or_value(0) < height)
 def outputs_spent_after_height(outputs, age):
-    return outputs.where(proxy.output.is_spent).where(blocksci.proxy.output.spending_tx.map(blocksci.proxy.tx.block_height).or_value(0) >= height)
+    return outputs.where(proxy.output.is_spent).where(proxy.output.spending_tx.map(proxy.tx.block_height).or_value(0) >= height)
 def outputs_spent_with_age_less_than(outputs, age):
-    output_age = blocksci.proxy.output.spending_tx.map(blocksci.proxy.tx.block_height) - blocksci.proxy.output.tx.block_height
+    output_age = proxy.output.spending_tx.map(proxy.tx.block_height) - proxy.output.tx.block_height
     return outputs.where(proxy.output.is_spent).where(output_age.or_value(0) < age)
 def outputs_spent_with_age_greater_than(outputs, age):
-    output_age = blocksci.proxy.output.spending_tx.map(blocksci.proxy.tx.block_height) - blocksci.proxy.output.tx.block_height
+    output_age = proxy.output.spending_tx.map(proxy.tx.block_height) - proxy.output.tx.block_height
     return outputs.where(proxy.output.is_spent).where(output_age.or_value(0) >= age)
 def outputs_with_address_type(outputs, typ):
     return outputs.where(proxy.output.address_type == typ)

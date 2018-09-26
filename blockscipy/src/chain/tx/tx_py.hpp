@@ -20,6 +20,7 @@
 #include <pybind11/chrono.h>
 
 void init_tx(pybind11::class_<blocksci::Transaction> &cl);
+void addTxOptionalRangeMethods(RangeClasses<blocksci::Transaction> &classes);
 void addTxRangeMethods(RangeClasses<blocksci::Transaction> &classes);
 
 struct AddTransactionMethods {

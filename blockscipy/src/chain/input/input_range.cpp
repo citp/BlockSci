@@ -18,4 +18,5 @@ using namespace blocksci;
 
 void addInputRangeMethods(RangeClasses<Input> &classes) {
     addAllRangeMethods(classes);
+    addInputOptionalRangeMethods(classes);
 }

@@ -8,12 +8,11 @@
 
 #include "input_proxy_py.hpp"
 #include "proxy_py.hpp"
+#include "proxy/basic.hpp"
 
 #include <blocksci/chain/block.hpp>
 #include <blocksci/cluster/cluster.hpp>
 
-
-
 void addInputProxyMethodsMain(AllProxyClasses<blocksci::Input> &cls) {
-	cls.setupBasicProxy();
+	cls.setupBasicProxy(AddProxyMethods{});
 }

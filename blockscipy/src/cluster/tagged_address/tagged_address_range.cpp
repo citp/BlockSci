@@ -16,4 +16,5 @@ using namespace blocksci;
 
 void addTaggedAddressRangeMethods(RangeClasses<TaggedAddress> &classes) {
     addAllRangeMethods(classes);
+    addTaggedAddressOptionalRangeMethods(classes);
 }

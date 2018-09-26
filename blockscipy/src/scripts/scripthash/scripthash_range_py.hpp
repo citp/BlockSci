@@ -16,6 +16,7 @@
 #include <blocksci/scripts/scripthash_script.hpp>
 
 void addScriptHashRangeMethods(RangeClasses<blocksci::script::ScriptHash> &classes);
+void addScripthashOptionalRangeMethods(RangeClasses<blocksci::script::ScriptHash> &classes);
 void applyMethodsToScriptHashRange(RangeClasses<blocksci::script::ScriptHash> &classes);
 
 

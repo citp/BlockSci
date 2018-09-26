@@ -18,4 +18,5 @@ namespace py = pybind11;
 
 void addPubkeyRangeMethods(RangeClasses<script::Pubkey> &classes) {
 	addAllRangeMethods(classes);
+	addPubkeyOptionalRangeMethods(classes);
 }

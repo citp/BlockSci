@@ -9,6 +9,8 @@
 #ifndef proxy_optional_hpp
 #define proxy_optional_hpp
 
+#include "proxy.hpp"
+
 template<typename T1, typename T2, typename T3>
 auto mapOptional(Proxy<T1, ranges::optional<T2>> &p1, Proxy<T2, T3> &p2) -> Proxy<T1, ranges::optional<T3>> {
 	return std::function<ranges::optional<T3>(T1 &)>{

@@ -18,4 +18,5 @@ namespace py = pybind11;
 
 void addNonstandardRangeMethods(RangeClasses<script::Nonstandard> &classes) {
 	addAllRangeMethods(classes);
+	addNonstandardOptionalRangeMethods(classes);
 }

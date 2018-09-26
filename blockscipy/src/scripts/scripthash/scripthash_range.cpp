@@ -18,4 +18,5 @@ namespace py = pybind11;
 
 void addScriptHashRangeMethods(RangeClasses<script::ScriptHash> &classes) {
 	addAllRangeMethods(classes);
+	addScripthashOptionalRangeMethods(classes);
 }

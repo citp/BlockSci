@@ -14,4 +14,5 @@ using namespace blocksci;
 
 void addTxRangeMethods(RangeClasses<Transaction> &classes) {
     addAllRangeMethods(classes);
+    addTxOptionalRangeMethods(classes);
 }

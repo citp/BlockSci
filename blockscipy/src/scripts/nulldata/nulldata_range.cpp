@@ -18,4 +18,5 @@ namespace py = pybind11;
 
 void addNulldataRangeMethods(RangeClasses<script::OpReturn> &classes) {
 	addAllRangeMethods(classes);
+	addNulldataOptionalRangeMethods(classes);
 }

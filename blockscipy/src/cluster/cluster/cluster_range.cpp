@@ -17,4 +17,5 @@ using namespace blocksci;
 
 void addClusterRangeMethods(RangeClasses<Cluster> &classes) {
     addAllRangeMethods(classes);
+    addClusterOptionalRangeMethods(classes);
 }

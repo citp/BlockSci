@@ -8,10 +8,11 @@
 
 #include "output_proxy_py.hpp"
 #include "proxy_py.hpp"
+#include "proxy/basic.hpp"
 
 #include <blocksci/cluster/cluster.hpp>
 #include <blocksci/chain/block.hpp>
 
 void addOutputProxyMethodsMain(AllProxyClasses<blocksci::Output> &cls) {
-	cls.setupBasicProxy();
+	cls.setupBasicProxy(AddProxyMethods{});
 }

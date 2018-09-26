@@ -117,18 +117,18 @@ PYBIND11_MODULE(_blocksci, m) {
     RangeClasses<TaggedAddress> taggedAddressRangeCls(m);
 
     auto proxyMod = m.def_submodule("proxy");
-    AllProxyClasses<Block> blockProxyCls(m);
-    AllProxyClasses<Transaction> txProxyCls(m);
-    AllProxyClasses<Input> inputProxyCls(m);
-    AllProxyClasses<Output> outputProxyCls(m);
-    AllProxyClasses<AnyScript> addressProxyCls(m);
-    AllProxyClasses<AddressType::Enum> addressTypeProxyCls(m);
-    AllProxyClasses<int64_t> intProxyCls(m);
-    AllProxyClasses<bool> boolProxyCls(m);
-    AllProxyClasses<std::chrono::system_clock::time_point> timeProxyCls(m);
-    AllProxyClasses<uint256> uint256ProxyCls(m);
-    AllProxyClasses<uint160> uint160ProxyCls(m);
-    AllProxyClasses<py::bytes> bytesProxyCls(m);
+    AllProxyClasses<Block> blockProxyCls(proxyMod);
+    AllProxyClasses<Transaction> txProxyCls(proxyMod);
+    AllProxyClasses<Input> inputProxyCls(proxyMod);
+    AllProxyClasses<Output> outputProxyCls(proxyMod);
+    AllProxyClasses<AnyScript> addressProxyCls(proxyMod);
+    AllProxyClasses<AddressType::Enum> addressTypeProxyCls(proxyMod);
+    AllProxyClasses<int64_t> intProxyCls(proxyMod);
+    AllProxyClasses<bool> boolProxyCls(proxyMod);
+    AllProxyClasses<std::chrono::system_clock::time_point> timeProxyCls(proxyMod);
+    AllProxyClasses<uint256> uint256ProxyCls(proxyMod);
+    AllProxyClasses<uint160> uint160ProxyCls(proxyMod);
+    AllProxyClasses<py::bytes> bytesProxyCls(proxyMod);
 
     addBlockProxyMethods(blockProxyCls);
     addTxProxyMethods(txProxyCls);

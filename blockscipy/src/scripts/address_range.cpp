@@ -18,4 +18,5 @@ using namespace blocksci;
 
 void addAddressRangeMethods(RangeClasses<AnyScript> &classes) {
     addAllRangeMethods(classes);
+    addAddressOptionalRangeMethods(classes);
 }

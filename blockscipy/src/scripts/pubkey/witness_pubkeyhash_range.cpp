@@ -18,4 +18,5 @@ namespace py = pybind11;
 
 void addWitnessPubkeyHashRangeMethods(RangeClasses<script::WitnessPubkeyHash> &classes) {
 	addAllRangeMethods(classes);
+	addWitnessPubkeyHashOptionalRangeMethods(classes);
 }

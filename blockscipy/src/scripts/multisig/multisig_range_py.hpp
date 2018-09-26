@@ -14,6 +14,7 @@
 #include <blocksci/scripts/multisig_script.hpp>
 
 void addMultisigRangeMethods(RangeClasses<blocksci::script::Multisig> &classes);
+void addMultisigOptionalRangeMethods(RangeClasses<blocksci::script::Multisig> &classes);
 void applyMethodsToMultisigRange(RangeClasses<blocksci::script::Multisig> &classes);
 
 

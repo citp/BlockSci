@@ -9,6 +9,8 @@
 #ifndef proxy_optional_arithmetic_hpp
 #define proxy_optional_arithmetic_hpp
 
+#include "proxy.hpp"
+
 struct AddProxyOptionalArithMethods {
 	template<typename T>
 	void operator()(pybind11::class_<Proxy<T, ranges::optional<int64_t>>> &cl) {

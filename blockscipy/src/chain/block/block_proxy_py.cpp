@@ -9,7 +9,6 @@
 #include "block_proxy_py.hpp"
 #include "block_py.hpp"
 #include "proxy_apply_py.hpp"
-#include "proxy/range.hpp"
 #include "proxy/equality.hpp"
 #include "proxy/optional.hpp"
 
@@ -25,7 +24,8 @@ struct AddBlockProxyMethods {
 
 void addBlockProxyMethods(AllProxyClasses<blocksci::Block> &cls) {
 	addBlockProxyMethodsMain(cls);
-	setupRangesProxy(cls);
+	addBlockProxyMethodsRange(cls);
+	addBlockProxyMethodsOptionalRange(cls);
 	cls.optional.applyToAll(AddProxyOptionalMethods{});
 	cls.optional.applyToAll(AddProxyOptionalMapMethods{});
 

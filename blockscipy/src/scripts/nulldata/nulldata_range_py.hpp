@@ -14,6 +14,7 @@
 #include <blocksci/scripts/nulldata_script.hpp>
 
 void addNulldataRangeMethods(RangeClasses<blocksci::script::OpReturn> &classes);
+void addNulldataOptionalRangeMethods(RangeClasses<blocksci::script::OpReturn> &classes);
 void applyMethodsToNulldataRange(RangeClasses<blocksci::script::OpReturn> &classes);
 
 

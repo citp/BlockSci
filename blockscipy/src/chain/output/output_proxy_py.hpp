@@ -13,6 +13,8 @@
 #include <blocksci/chain/input.hpp>
 
 void addOutputProxyMethodsMain(AllProxyClasses<blocksci::Output> &cls);
+void addOutputProxyMethodsRange(AllProxyClasses<blocksci::Output> &cls);
+void addOutputProxyMethodsOptionalRange(AllProxyClasses<blocksci::Output> &cls);
 
 void addOutputProxyMethods(AllProxyClasses<blocksci::Output> &cls);
 

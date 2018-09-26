@@ -17,4 +17,5 @@ using namespace blocksci;
 
 void addBlockRangeMethods(RangeClasses<blocksci::Block> &classes) {
     addAllRangeMethods(classes);
+    addBlockOptionalRangeMethods(classes);
 }

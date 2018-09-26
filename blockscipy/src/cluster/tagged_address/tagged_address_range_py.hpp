@@ -14,6 +14,7 @@
 #include <blocksci/cluster/cluster.hpp>
 
 void addTaggedAddressRangeMethods(RangeClasses<blocksci::TaggedAddress> &classes);
+void addTaggedAddressOptionalRangeMethods(RangeClasses<blocksci::TaggedAddress> &classes);
 void applyMethodsToTaggedAddressRange(RangeClasses<blocksci::TaggedAddress> &classes);
 
 #endif /* tagged_address_range_py_hpp */

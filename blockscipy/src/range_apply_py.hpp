@@ -13,27 +13,9 @@
 #include "method_tags.hpp"
 #include "range_conversion.hpp"
 #include "blocksci_range.hpp"
+#include "optional_utils.hpp"
 
 #include <range/v3/view/transform.hpp>
-
-template <typename T>
-struct remove_optional { using type = T; };
-
-template <typename T>
-struct remove_optional<ranges::optional<T>> { using type = T; };
-
-template <typename T>
-using remove_optional_t = typename remove_optional<T>::type;
-
-// If type is already optional, do nothing. Otherwise make it optional
-template <typename T>
-struct make_optional { using type = ranges::optional<T>; };
-
-template <typename T>
-struct make_optional<ranges::optional<T>> { using type = ranges::optional<T>; };
-
-template <typename T>
-using make_optional_t = typename make_optional<T>::type;
 
 template <typename T, typename R> 
 struct ApplyMethodsToRangeFuncBinder {

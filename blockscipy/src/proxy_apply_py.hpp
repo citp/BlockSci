@@ -40,8 +40,8 @@ struct ApplyMethodsToProxyFuncBinder<P, R, SelfApplyTag::Range> {
 
     ApplyMethodsToProxyFuncBinder(Func func_) : func(func_) {}
 
-    auto operator()(output_t && item) const -> decltype(convertRangeToPython(func(item))) {
-        return convertRangeToPython(func(item));
+    auto operator()(output_t && item) const -> decltype(simplifyRange(func(item))) {
+        return simplifyRange(func(item));
     }
 };
 

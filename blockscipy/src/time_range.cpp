@@ -5,10 +5,10 @@
 //  Created by Harry Kalodner on 11/19/17.
 //
 
-#include "ranges_py.hpp"
+#include "optional_ranges_py.hpp"
 #include "caster_py.hpp"
 
-#include <blocksci/chain/transaction.hpp>
+#include <blocksci/chain/block.hpp>
 #include <blocksci/cluster/cluster.hpp>
 
 #include <pybind11/chrono.h>
