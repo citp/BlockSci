@@ -24,6 +24,8 @@ import io
 
 version = "0.5.0"
 
+
+sys.modules['blocksci.proxy'] = proxy
 sys.modules['blocksci.cluster'] = cluster
 sys.modules['blocksci.heuristics'] = heuristics
 sys.modules['blocksci.heuristics.change'] = heuristics.change
@@ -185,6 +187,105 @@ def new_init(self, loc):
 Blockchain.__init__ = new_init
 Blockchain.range = block_range
 Blockchain.heights_to_dates = heights_to_dates
+
+def _getFuncs(obj):
+    return [x for x in dir(obj) if x[:2] != '__']
+
+def _get_functions_methods(obj):
+    results = []
+    for attr in dir(obj):
+        if not attr[:2] == '__' and not isinstance(getattr(type(obj), attr, None), property):
+            results.append(attr)
+    return results
+
+def _get_properties_methods(obj):
+    results = []
+    for attr in dir(obj):
+        if isinstance(getattr(type(obj), attr, None), property):
+            results.append(attr)
+    return results
+
+for tx_proxy_func in _get_properties_methods(proxy.tx):
+    self_method_creator = lambda name: lambda tx, *args: getattr(proxy.tx, name)(tx)
+    method_creator = lambda name: lambda txes: txes.map(getattr(proxy.tx, name))
+    self_method = property(self_method_creator(tx_proxy_func))
+    method = property(method_creator(tx_proxy_func))
+    setattr(Tx, tx_proxy_func, self_method)
+    setattr(TxIterator, tx_proxy_func, method)
+    setattr(TxRange, tx_proxy_func, method)
+    setattr(TxOptionalIterator, tx_proxy_func, method)
+    setattr(TxOptionalRange, tx_proxy_func, method)
+
+for tx_proxy_func in _get_functions_methods(proxy.tx):
+    self_method_creator = lambda name: lambda tx, *args: getattr(proxy.tx, name)(*args)(tx)
+    method_creator = lambda name: lambda txes, *args: txes.map(getattr(proxy.tx, name)(*args))
+    self_method = self_method_creator(tx_proxy_func)
+    method = method_creator(tx_proxy_func)
+    setattr(Tx, tx_proxy_func, self_method)
+    setattr(TxIterator, tx_proxy_func, method)
+    setattr(TxRange, tx_proxy_func , method)
+    setattr(TxOptionalIterator, tx_proxy_func, method)
+    setattr(TxOptionalRange, tx_proxy_func, method)
+
+
+def txes_including_output_of_type(txes, typ):
+    return txes.where(proxy.tx.outputs.any(proxy.output.address_type == typ))
+
+TxIterator.including_output_of_type = txes_including_output_of_type
+
+TxRange.including_output_of_type = txes_including_output_of_type
+
+def inputs_sent_before_height(inputs, height):
+    return inputs.where(proxy.input.spent_tx.block.height < height)
+def inputs_sent_after_height(inputs, height):
+    return inputs.where(proxy.input.spent_tx.block.height >= height)
+def inputs_with_age_less_than(inputs, age):
+    return inputs.where(proxy.input.tx.block_height - proxy.input.spent_tx.block.height < age)
+def inputs_with_age_greater_than(inputs, age):
+    return inputs.where(proxy.input.tx.block_height - proxy.input.spent_tx.block.height >= age)
+def inputs_with_address_type(inputs, typ):
+    return inputs.where(proxy.input.address_type == typ)
+
+InputIterator.sent_before_height = inputs_sent_before_height
+InputIterator.sent_after_height = inputs_sent_after_height
+InputIterator.with_age_less_than = inputs_with_age_less_than
+InputIterator.with_age_greater_than = inputs_with_age_greater_than
+InputIterator.with_address_type = inputs_with_address_type
+
+InputRange.sent_before_height = inputs_sent_before_height
+InputRange.sent_after_height = inputs_sent_after_height
+InputRange.with_age_less_than = inputs_with_age_less_than
+InputRange.with_age_greater_than = inputs_with_age_greater_than
+InputRange.with_address_type = inputs_with_address_type
+
+def outputs_unspent(outputs, height):
+    return outputs.where(~proxy.output.is_spent)
+def outputs_spent_before_height(outputs, height):
+    return outputs.where(proxy.output.is_spent).where(blocksci.proxy.output.spending_tx.map(blocksci.proxy.tx.block_height).or_value(0) < height)
+def outputs_spent_after_height(outputs, age):
+    return outputs.where(proxy.output.is_spent).where(blocksci.proxy.output.spending_tx.map(blocksci.proxy.tx.block_height).or_value(0) >= height)
+def outputs_spent_with_age_less_than(outputs, age):
+    output_age = blocksci.proxy.output.spending_tx.map(blocksci.proxy.tx.block_height) - blocksci.proxy.output.tx.block_height
+    return outputs.where(proxy.output.is_spent).where(output_age.or_value(0) < age)
+def outputs_spent_with_age_greater_than(outputs, age):
+    output_age = blocksci.proxy.output.spending_tx.map(blocksci.proxy.tx.block_height) - blocksci.proxy.output.tx.block_height
+    return outputs.where(proxy.output.is_spent).where(output_age.or_value(0) >= age)
+def outputs_with_address_type(outputs, typ):
+    return outputs.where(proxy.output.address_type == typ)
+
+OutputIterator.unspent = outputs_unspent
+OutputIterator.spent_before_height = outputs_spent_before_height
+OutputIterator.spent_after_height = outputs_spent_after_height
+OutputIterator.spent_with_age_less_than = outputs_spent_with_age_less_than
+OutputIterator.outputs_spent_with_age_greater_than = outputs_spent_with_age_greater_than
+OutputIterator.with_address_type = outputs_with_address_type
+
+OutputRange.unspent = outputs_unspent
+OutputRange.spent_before_height = outputs_spent_before_height
+OutputRange.spent_after_height = outputs_spent_after_height
+OutputRange.spent_with_age_less_than = outputs_spent_with_age_less_than
+OutputRange.outputs_spent_with_age_greater_than = outputs_spent_with_age_greater_than
+OutputRange.with_address_type = outputs_with_address_type
 
 first_miner_run = True
 

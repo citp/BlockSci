@@ -10,7 +10,8 @@
 #include "caster_py.hpp"
 #include "self_apply_py.hpp"
 
-#include <blocksci/chain/transaction.hpp>
+#include <blocksci/chain/block.hpp>
+#include <blocksci/cluster/cluster.hpp>
 
 #include <pybind11/operators.h>
 

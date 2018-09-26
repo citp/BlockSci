@@ -10,6 +10,7 @@
 #include "range_apply_py.hpp"
 #include "caster_py.hpp"
 
+#include <blocksci/chain/block.hpp>
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/transaction.hpp>
 

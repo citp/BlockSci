@@ -12,6 +12,8 @@
 
 #include <blocksci/chain/input_range.hpp>
 #include <blocksci/chain/output_range.hpp>
+#include <blocksci/chain/block.hpp>
+#include <blocksci/cluster/cluster.hpp>
 #include <blocksci/scripts/pubkey_script.hpp>
 #include <blocksci/scripts/multisig_pubkey_script.hpp>
 

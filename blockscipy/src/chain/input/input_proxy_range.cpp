@@ -1,0 +1,19 @@
+//
+//  input_proxy_range.cpp
+//  blocksci
+//
+//  Created by Harry Kalodner on 9/22/18.
+//
+//
+
+#include "input_proxy_py.hpp"
+#include "proxy/range.hpp"
+
+#include <blocksci/chain/block.hpp>
+#include <blocksci/cluster/cluster.hpp>
+
+
+
+void addInputProxyMethodsRange(AllProxyClasses<blocksci::Input> &cls) {
+	setupRangesProxy(cls);
+}

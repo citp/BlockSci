@@ -35,7 +35,7 @@ void init_blockchain(py::class_<Blockchain> &cl) {
         }
         return chain[posIndex];
     }, py::arg("index"))
-    .def("__getitem__", [](Blockchain &chain, pybind11::slice slice) -> BlockRange {
+    .def("__getitem__", [](Blockchain &chain, pybind11::slice slice) -> ranges::any_view<Block, ranges::category::random_access | ranges::category::sized> {
         size_t start, stop, step, slicelength;
         if (!slice.compute(chain.size(), &start, &stop, &step, &slicelength))
             throw pybind11::error_already_set();
@@ -43,8 +43,6 @@ void init_blockchain(py::class_<Blockchain> &cl) {
         if (step != 1) {
             throw std::runtime_error{"Cannot slice blockchain with step size not equal to one"};
         }
-
-
 
         return chain[{static_cast<BlockHeight>(start), static_cast<BlockHeight>(stop)}];
     }, py::arg("slice"))

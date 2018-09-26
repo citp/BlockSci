@@ -26,8 +26,8 @@ struct AddBlockchainMethods {
     void operator()(FuncApplication func) {
         using namespace blocksci;
         func(method_tag, "address_count", &Blockchain::addressCount, "Get an upper bound of the number of address of a given type (This reflects the number of type equivlant addresses of that type).", pybind11::arg("address_type"));
-        func(property_tag, "blocks", +[](Blockchain &chain) {
-            return chain[{0, chain.size()}];
+        func(property_tag, "blocks", +[](Blockchain &chain) -> ranges::any_view<Block, ranges::category::random_access | ranges::category::sized> {
+            return chain;
         }, "Returns a range of all the blocks in the chain");
         func(method_tag, "tx_with_index", +[](Blockchain &chain, uint32_t index) {
             return Transaction{index, chain.getAccess()};

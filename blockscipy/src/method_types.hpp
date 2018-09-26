@@ -34,6 +34,13 @@ struct PythonTypeName<blocksci::AnyScript> {
 };
 
 template <>
+struct PythonTypeName<blocksci::Address> {
+	static std::string name() {
+		return "Address";
+	}
+};
+
+template <>
 struct PythonTypeName<blocksci::script::Pubkey> {
 	static std::string name() {
 		return "PubkeyAddress";
@@ -107,13 +114,6 @@ template <>
 struct PythonTypeName<blocksci::Block> {
 	static std::string name() {
 		return "Block";
-	}
-};
-
-template <>
-struct PythonTypeName<blocksci::BlockRange> {
-	static std::string name() {
-		return "BlockRange";
 	}
 };
 

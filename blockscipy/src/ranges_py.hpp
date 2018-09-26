@@ -11,6 +11,15 @@
 #include "python_fwd.hpp"
 #include "range_conversion.hpp"
 #include "blocksci_range.hpp"
+#include "proxy.hpp"
+
+#include <blocksci/chain/block.hpp>
+#include <blocksci/chain/transaction.hpp>
+#include <blocksci/chain/input.hpp>
+#include <blocksci/chain/output.hpp>
+#include <blocksci/scripts/script_variant.hpp>
+#include <blocksci/scripts/script_variant.hpp>
+#include <blocksci/cluster/cluster.hpp>
 
 #include <pybind11/functional.h>
 
@@ -36,13 +45,98 @@ auto pythonAllType(T && t) {
     return list;
 }
 
+template <typename T, typename Class>
+void addMapFunc(Class &cl) {
+    using Range = typename Class::type;
+    using value_type = ranges::range_value_type_t<Range>;
+    cl
+    .def("map", [](Range &range, Proxy<value_type, T> &proxy) {
+        return convertRangeToPython(range | ranges::view::transform(proxy));
+    })
+    .def("map", [](Range &range, Proxy<value_type, ranges::optional<T>> &proxy) {
+        return convertRangeToPython(range | ranges::view::transform(proxy));
+    })
+    ;
+}
 
-
-template<typename Class>
-auto addRangeMethods(Class &cl) {
+template <typename T, typename Class>
+void addMapAnyRangeFunc(Class &cl) {
     using Range = typename Class::type;
     using value_type = ranges::range_value_type_t<Range>;
 
+    addMapFunc<T>(cl);
+    cl
+    .def("map", [](Range &range, Proxy<value_type, ranges::any_view<T>> &proxy) {
+        return convertRangeToPython(range | ranges::view::transform(proxy));
+    })
+    .def("map", [](Range &range, Proxy<value_type, ranges::any_view<T, ranges::category::random_access | ranges::category::sized>> &proxy) {
+        return convertRangeToPython(range | ranges::view::transform(proxy));
+    })
+    // .def("map", [](Range &range, Proxy<value_type, ranges::any_view<ranges::optional<T>>> &proxy) {
+    //     return convertRangeToPython(range | ranges::view::transform(proxy));
+    // })
+    // .def("map", [](Range &range, Proxy<value_type, ranges::any_view<ranges::optional<T>, ranges::category::random_access | ranges::category::sized>> &proxy) {
+    //     return convertRangeToPython(range | ranges::view::transform(proxy));
+    // })
+    ;
+}
+
+template <typename T, typename Class>
+void addOptionalMapFunc(Class &cl) {
+    using Range = typename Class::type;
+    using value_type = typename ranges::range_value_type_t<Range>::value_type;
+    cl
+    .def("map", [](Range &range, Proxy<value_type, T> &proxy) {
+        return convertRangeToPython(range | ranges::view::transform([=](auto && optional) -> ranges::optional<decltype(proxy(*optional))> {
+            if (optional) {
+                return proxy(*optional);
+            } else {
+                return ranges::nullopt;
+            }
+        }));
+    })
+    .def("map", [](Range &range, Proxy<value_type, ranges::optional<T>> &proxy) {
+        return convertRangeToPython(range | ranges::view::transform([=](auto && optional) -> decltype(proxy(*optional)) {
+            if (optional) {
+                return proxy(*optional);
+            } else {
+                return ranges::nullopt;
+            }
+        }));
+    })
+    ;
+}
+
+template <typename T, typename Class>
+void addOptionalMapAnyRangeFunc(Class &cl) {
+    using Range = typename Class::type;
+    using value_type = typename ranges::range_value_type_t<Range>::value_type;
+    addOptionalMapFunc<T>(cl);
+    cl
+    .def("map", [](Range &range, Proxy<value_type, ranges::any_view<T>> &proxy) {
+        return convertRangeToPython(range | ranges::view::transform([=](ranges::optional<value_type> &&optional) -> ranges::optional<ranges::any_view<T>> {
+            if (optional) {
+                return proxy(*optional);
+            } else {
+                return ranges::nullopt;
+            }
+        }));
+    })
+    .def("map", [](Range &range, Proxy<value_type, ranges::any_view<T, ranges::category::random_access | ranges::category::sized>> &proxy) {
+        return convertRangeToPython(range | ranges::view::transform([=](ranges::optional<value_type> &&optional) -> ranges::optional<ranges::any_view<T, ranges::category::random_access | ranges::category::sized>> {
+            if (optional) {
+                return proxy(*optional);
+            } else {
+                return ranges::nullopt;
+            }
+        }));
+    })
+    ;
+}
+
+template<typename Class>
+auto addGenericRangeMethods(Class &cl) {
+    using Range = typename Class::type;
     cl
     .def("__iter__", [](Range &range) { 
         return pybind11::make_iterator(range.begin(), range.end()); 
@@ -85,36 +179,80 @@ auto addRangeMethods(Class &cl) {
         }, pybind11::arg("slice"))
         ;
     }
-    
-    
+}
 
-    if constexpr(is_optional<value_type>{}) {
-        using WrappedType = typename value_type::value_type;
+template<typename Class>
+auto addRangeMethods(Class &cl) {
+    using Range = typename Class::type;
+    using value_type = ranges::range_value_type_t<Range>;
 
-        std::stringstream ss;
-        ss << "\n\n:type: :class:`" << PythonTypeName<ranges::any_view<WrappedType, getBlockSciCategory(ranges::get_categories<Range>())>>::name() << "`";
-        
-        std::stringstream ss2;
-        ss2 << "\n\n:type: :class:`numpy.ndarray[bool]`";
-        cl
-        .def_property_readonly("has_value", [](Range &range) {
-            return convertRangeToPython(range | ranges::view::transform([](auto && val) { return val.has_value(); }));
-        }, strdup((std::string("Return a array of bools denoting whether a item in the sequence has a value or is none") + ss2.str()).c_str()))
-        .def_property_readonly("with_value", [](Range &range) {
-            return convertRangeToPython(range | ranges::view::filter([](const auto &optional) { return static_cast<bool>(optional); })
-            | ranges::view::transform([](const auto &optional) { return *optional; }));
-        }, strdup((std::string("Returns a sequence containing only non-None items in the sequence") + ss.str()).c_str()))
-        .def("with_default_value", [](Range &range, const WrappedType &defVal) {
-            return convertRangeToPython(range | ranges::view::transform([=](const auto &optional) {
-                if (optional) {
-                    return *optional;
-                } else {
-                    return defVal;
-                }
-            }));
-        }, pybind11::arg("default_value"), strdup((std::string("Replace all none values in the sequence with the provided default value and return the resulting sequence") + ss.str()).c_str()))
-        ;
-    }
+    addGenericRangeMethods(cl);
+
+    cl
+    .def("where", [](Range &range, Proxy<value_type, bool> &proxy) {
+        return convertRangeToPython(range | ranges::view::filter(proxy));
+    })
+    ;
+
+    addMapAnyRangeFunc<blocksci::Block>(cl);
+    addMapAnyRangeFunc<blocksci::Transaction>(cl);
+    addMapAnyRangeFunc<blocksci::Input>(cl);
+    addMapAnyRangeFunc<blocksci::Output>(cl);
+    addMapFunc<blocksci::AnyScript>(cl);
+    addMapFunc<blocksci::AddressType::Enum>(cl);
+    addMapFunc<int64_t>(cl);
+    addMapFunc<bool>(cl);
+    addMapFunc<std::chrono::system_clock::time_point>(cl);
+    addMapFunc<blocksci::uint256>(cl);
+    addMapFunc<blocksci::uint160>(cl);
+    addMapFunc<pybind11::bytes>(cl);
+    return cl;
+}
+
+template<typename Class>
+auto addOptionalRangeMethods(Class &cl) {
+    using Range = typename Class::type;
+    using value_type = ranges::range_value_type_t<Range>;
+    using WrappedType = typename value_type::value_type;
+
+    addGenericRangeMethods(cl);
+
+    std::stringstream ss;
+    ss << "\n\n:type: :class:`" << PythonTypeName<ranges::any_view<WrappedType, getBlockSciCategory(ranges::get_categories<Range>())>>::name() << "`";
+    
+    std::stringstream ss2;
+    ss2 << "\n\n:type: :class:`numpy.ndarray[bool]`";    
+    cl
+    .def_property_readonly("has_value", [](Range &range) {
+        return convertRangeToPython(range | ranges::view::transform([](auto && val) { return val.has_value(); }));
+    }, strdup((std::string("Return a array of bools denoting whether a item in the sequence has a value or is none") + ss2.str()).c_str()))
+    .def_property_readonly("with_value", [](Range &range) {
+        return convertRangeToPython(range | ranges::view::filter([](const auto &optional) { return static_cast<bool>(optional); })
+        | ranges::view::transform([](const auto &optional) { return *optional; }));
+    }, strdup((std::string("Returns a sequence containing only non-None items in the sequence") + ss.str()).c_str()))
+    .def("with_default_value", [](Range &range, const WrappedType &defVal) {
+        return convertRangeToPython(range | ranges::view::transform([=](const auto &optional) {
+            if (optional) {
+                return *optional;
+            } else {
+                return defVal;
+            }
+        }));
+    }, pybind11::arg("default_value"), strdup((std::string("Replace all none values in the sequence with the provided default value and return the resulting sequence") + ss.str()).c_str()))
+    ;
+
+    addOptionalMapAnyRangeFunc<blocksci::Block>(cl);
+    addOptionalMapAnyRangeFunc<blocksci::Transaction>(cl);
+    addOptionalMapAnyRangeFunc<blocksci::Input>(cl);
+    addOptionalMapAnyRangeFunc<blocksci::Output>(cl);
+    addOptionalMapFunc<blocksci::AnyScript>(cl);
+    addOptionalMapFunc<blocksci::AddressType::Enum>(cl);
+    addOptionalMapFunc<int64_t>(cl);
+    addOptionalMapFunc<bool>(cl);
+    addOptionalMapFunc<std::chrono::system_clock::time_point>(cl);
+    addOptionalMapFunc<blocksci::uint256>(cl);
+    addOptionalMapFunc<blocksci::uint160>(cl);
+    addOptionalMapFunc<pybind11::bytes>(cl);
     return cl;
 }
 
@@ -122,8 +260,8 @@ template <typename T>
 void addAllRangeMethods(T &cls) {
     addRangeMethods(cls.iterator);
     addRangeMethods(cls.range);
-    addRangeMethods(cls.optionalIterator);
-    addRangeMethods(cls.optionalRange);
+    addOptionalRangeMethods(cls.optionalIterator);
+    addOptionalRangeMethods(cls.optionalRange);
 }
 
 #endif /* ranges_py_hpp */

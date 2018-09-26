@@ -14,6 +14,7 @@
 
 #include <blocksci/cluster/cluster.hpp>
 #include <blocksci/chain/transaction.hpp>
+#include <blocksci/chain/block.hpp>
 
 using namespace blocksci;
 namespace py = pybind11;

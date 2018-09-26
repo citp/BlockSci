@@ -8,6 +8,7 @@
 #ifndef output_py_h
 #define output_py_h
 
+#include "python_fwd.hpp"
 #include "method_tags.hpp"
 
 #include <blocksci/chain/output.hpp>
@@ -15,6 +16,8 @@
 #include <pybind11/pybind11.h>
 
 void init_output(pybind11::class_<blocksci::Output> &cl);
+void addOutputRangeMethods(RangeClasses<blocksci::Output> &classes);
+void applyMethodsToOutputRange(RangeClasses<blocksci::Output> &classes);
 
 struct AddOutputMethods {
     template <typename FuncApplication>

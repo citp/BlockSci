@@ -12,6 +12,7 @@
 
 #include <blocksci/chain/access.hpp>
 #include <blocksci/chain/blockchain.hpp>
+#include <blocksci/cluster/cluster.hpp>
 
 #include <pybind11/operators.h>
 

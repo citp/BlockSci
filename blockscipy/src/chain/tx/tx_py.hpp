@@ -9,6 +9,7 @@
 #define tx_py_h
 
 #include "method_tags.hpp"
+#include "python_fwd.hpp"
 
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/block.hpp>
@@ -19,6 +20,7 @@
 #include <pybind11/chrono.h>
 
 void init_tx(pybind11::class_<blocksci::Transaction> &cl);
+void addTxRangeMethods(RangeClasses<blocksci::Transaction> &classes);
 
 struct AddTransactionMethods {
     template <typename FuncApplication>

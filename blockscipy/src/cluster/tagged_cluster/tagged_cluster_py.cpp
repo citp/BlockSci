@@ -10,6 +10,7 @@
 #include "caster_py.hpp"
 #include "self_apply_py.hpp"
 
+#include <blocksci/chain/block.hpp>
 #include <blocksci/chain/input_range.hpp>
 #include <blocksci/chain/output_range.hpp>
 

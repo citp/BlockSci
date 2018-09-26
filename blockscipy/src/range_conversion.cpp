@@ -6,6 +6,7 @@
 //
 
 #include "range_conversion.hpp"
+#include "blocksci_type_converter.hpp"
 
 #include <blocksci/chain/block.hpp>
 #include <blocksci/core/bitcoin_uint256.hpp>
@@ -51,42 +52,6 @@ struct NumpyConverter {
 
     NumpyBool operator()(const bool &val) {
         return {val};
-    }
-};
-
-struct BlockSciTypeConverter {
-    blocksci::AnyScript operator()(const blocksci::Address &address) {
-        return address.getScript();
-    }
-
-    int64_t operator()(uint16_t val) {
-        return static_cast<int64_t>(val);
-    }
-
-    int64_t operator()(int16_t val) {
-        return static_cast<int64_t>(val);
-    }
-
-    int64_t operator()(uint32_t val) {
-        return static_cast<int64_t>(val);
-    }
-
-    int64_t operator()(int32_t val) {
-        return static_cast<int64_t>(val);
-    }
-
-    // Potential overflow
-    int64_t operator()(uint64_t val) {
-        return static_cast<int64_t>(val);
-    }
-
-    template <typename T>
-    auto operator()(const ranges::optional<T> &val) -> ranges::optional<decltype(this->operator()(*val))> {
-        if (val) {
-            return this->operator()(*val);
-        } else {
-            return ranges::nullopt;
-        }
     }
 };
 
@@ -209,10 +174,20 @@ ranges::any_view<blocksci::Transaction> ConvertedRangeTypeTagConverter::operator
 ranges::any_view<blocksci::Transaction> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<blocksci::Transaction, random_access_sized>> && t) { return {ranges::view::join(std::move(t))}; }
 ranges::any_view<blocksci::Transaction> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<blocksci::Transaction>> && t) { return {ranges::view::join(std::move(t))}; }
 
+ranges::any_view<blocksci::Block> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<blocksci::Block, random_access_sized>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<blocksci::Block> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<blocksci::Block>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<blocksci::Block> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<blocksci::Block, random_access_sized>> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<blocksci::Block> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<blocksci::Block>> && t) { return {ranges::view::join(std::move(t))}; }
+
 ranges::any_view<blocksci::Address> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<blocksci::Address, random_access_sized>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
 ranges::any_view<blocksci::Address> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<blocksci::Address>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
 ranges::any_view<blocksci::Address> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<blocksci::Address, random_access_sized>> && t) { return {ranges::view::join(std::move(t))}; }
 ranges::any_view<blocksci::Address> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<blocksci::Address>> && t) { return {ranges::view::join(std::move(t))}; }
+
+ranges::any_view<blocksci::AnyScript> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<blocksci::AnyScript, random_access_sized>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<blocksci::AnyScript> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<blocksci::AnyScript>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<blocksci::AnyScript> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<blocksci::AnyScript, random_access_sized>> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<blocksci::AnyScript> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<blocksci::AnyScript>> && t) { return {ranges::view::join(std::move(t))}; }
 
 ranges::any_view<blocksci::TaggedAddress> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<blocksci::TaggedAddress, random_access_sized>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
 ranges::any_view<blocksci::TaggedAddress> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<blocksci::TaggedAddress>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
@@ -224,6 +199,11 @@ ranges::any_view<blocksci::Output> ConvertedRangeTypeTagConverter::operator()(ra
 
 ranges::any_view<blocksci::Input> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<blocksci::InputRange, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
 ranges::any_view<blocksci::Input> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<blocksci::InputRange> && t) { return {ranges::view::join(std::move(t))}; }
+
+ranges::any_view<int64_t> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<int64_t, random_access_sized>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<int64_t> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<int64_t>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<int64_t> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<int64_t, random_access_sized>> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<int64_t> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<int64_t>> && t) { return {ranges::view::join(std::move(t))}; }
 
 
 ranges::any_view<blocksci::Input> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Input, random_access_sized>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
@@ -241,16 +221,25 @@ ranges::any_view<blocksci::Transaction> ConvertedRangeTypeTagConverter::operator
 ranges::any_view<blocksci::Transaction> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Transaction, random_access_sized>>> && t) { return flattenNestedOptional(std::move(t)); }
 ranges::any_view<blocksci::Transaction> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Transaction>>> && t) { return flattenNestedOptional(std::move(t)); }
 
+ranges::any_view<blocksci::Block> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Block, random_access_sized>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<blocksci::Block> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Block>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<blocksci::Block> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Block, random_access_sized>>> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<blocksci::Block> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Block>>> && t) { return flattenNestedOptional(std::move(t)); }
+
 ranges::any_view<blocksci::Address> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Address, random_access_sized>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
 ranges::any_view<blocksci::Address> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Address>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
 ranges::any_view<blocksci::Address> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Address, random_access_sized>>> && t) { return flattenNestedOptional(std::move(t)); }
 ranges::any_view<blocksci::Address> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Address>>> && t) { return flattenNestedOptional(std::move(t)); }
 
+ranges::any_view<blocksci::AnyScript> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::AnyScript, random_access_sized>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<blocksci::AnyScript> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::AnyScript>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<blocksci::AnyScript> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::AnyScript, random_access_sized>>> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<blocksci::AnyScript> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::AnyScript>>> && t) { return flattenNestedOptional(std::move(t)); }
+
 ranges::any_view<blocksci::TaggedAddress> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::TaggedAddress, random_access_sized>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
 ranges::any_view<blocksci::TaggedAddress> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::TaggedAddress>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
 ranges::any_view<blocksci::TaggedAddress> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::TaggedAddress, random_access_sized>>> && t) { return flattenNestedOptional(std::move(t)); }
 ranges::any_view<blocksci::TaggedAddress> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::TaggedAddress>>> && t) { return flattenNestedOptional(std::move(t)); }
-
 
 ranges::any_view<blocksci::Output> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<blocksci::OutputRange>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
 ranges::any_view<blocksci::Output> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<blocksci::OutputRange>> && t) { return flattenNestedOptional(std::move(t)); }
@@ -258,57 +247,89 @@ ranges::any_view<blocksci::Output> ConvertedRangeTypeTagConverter::operator()(ra
 ranges::any_view<blocksci::Input> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<blocksci::InputRange>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
 ranges::any_view<blocksci::Input> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<blocksci::InputRange>> && t) { return flattenNestedOptional(std::move(t)); }
 
+ranges::any_view<int64_t> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<int64_t, random_access_sized>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<int64_t> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<int64_t>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<int64_t> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<int64_t, random_access_sized>>> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<int64_t> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<int64_t>>> && t) { return flattenNestedOptional(std::move(t)); }
 
-template <typename T>
-using random_range = ranges::any_view<T, random_access_sized>;
 
-// #define createNumpyConvertedRange(functype) \
-//     template pybind11::array_t<decltype(NumpyConverter{}(std::declval<ranges::range_value_type_t<functype>>()))> \
-//     PythonConversionTypeConverter::template operator()<functype>(numpy_tag, functype && t);
+ranges::any_view<ranges::optional<blocksci::Input>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Input>, random_access_sized>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<ranges::optional<blocksci::Input>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Input>>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<ranges::optional<blocksci::Input>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Input>, random_access_sized>> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<ranges::optional<blocksci::Input>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Input>>> && t) { return {ranges::view::join(std::move(t))}; }
 
-// #define createNumpyRangeFuncs(functype) \
-//     createNumpyConvertedRange(ranges::any_view<functype>) \
-//     createNumpyConvertedRange(random_range<functype>) \
+ranges::any_view<ranges::optional<blocksci::Output>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Output>, random_access_sized>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<ranges::optional<blocksci::Output>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Output>>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<ranges::optional<blocksci::Output>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Output>, random_access_sized>> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<ranges::optional<blocksci::Output>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Output>>> && t) { return {ranges::view::join(std::move(t))}; }
 
-// createNumpyRangeFuncs(uint160)
-// createNumpyRangeFuncs(uint256)
-// createNumpyRangeFuncs(uint16_t)
-// createNumpyRangeFuncs(int16_t)
-// createNumpyRangeFuncs(uint32_t)
-// createNumpyRangeFuncs(int32_t)
-// createNumpyRangeFuncs(uint64_t)
-// createNumpyRangeFuncs(int64_t)
-// createRangeFuncs(bool)
+ranges::any_view<ranges::optional<blocksci::Transaction>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Transaction>, random_access_sized>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<ranges::optional<blocksci::Transaction>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Transaction>>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<ranges::optional<blocksci::Transaction>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Transaction>, random_access_sized>> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<ranges::optional<blocksci::Transaction>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Transaction>>> && t) { return {ranges::view::join(std::move(t))}; }
 
-// #define createRangeFuncs(functype) \
-//     createRangeFuncsImpl(functype) \
-//     createRangeFuncsImpl(ranges::optional<functype>) \
+ranges::any_view<ranges::optional<blocksci::Block>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Block>, random_access_sized>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<ranges::optional<blocksci::Block>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Block>>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<ranges::optional<blocksci::Block>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Block>, random_access_sized>> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<ranges::optional<blocksci::Block>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Block>>> && t) { return {ranges::view::join(std::move(t))}; }
 
-// createRangeFuncs(AddressType::Enum)
-// createRangeFuncs(Input)
-// createRangeFuncs(Output)
-// createRangeFuncs(Transaction)
-// createRangeFuncs(Block)
-// createRangeFuncs(Address)
-// createRangeFuncs(AnyScript)
-// createRangeFuncs(EquivAddress)
-// createRangeFuncs(script::Pubkey)
-// createRangeFuncs(script::PubkeyHash)
-// createRangeFuncs(script::WitnessPubkeyHash)
-// createRangeFuncs(script::MultisigPubkey)
-// createRangeFuncs(script::Multisig)
-// createRangeFuncs(script::OpReturn)
-// createRangeFuncs(script::Nonstandard)
-// createRangeFuncs(script::ScriptHash)
-// createRangeFuncs(script::WitnessScriptHash)
-// createRangeFuncs(Cluster)
-// createRangeFuncs(TaggedCluster)
-// createRangeFuncs(TaggedAddress)
-// createRangeFuncs(std::string)
-// createRangeFuncs(std::chrono::system_clock::time_point)
-// createRangeFuncs(py::list)
-// createRangeFuncs(py::bytes)
-// using intAddressPair = std::pair<int64_t, Address>;
-// using addressIntPair = std::pair<Address, int64_t>;
-// createRangeFuncs(intAddressPair)
-// createRangeFuncs(addressIntPair)
+ranges::any_view<ranges::optional<blocksci::Address>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Address>, random_access_sized>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<ranges::optional<blocksci::Address>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Address>>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<ranges::optional<blocksci::Address>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Address>, random_access_sized>> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<ranges::optional<blocksci::Address>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Address>>> && t) { return {ranges::view::join(std::move(t))}; }
+
+ranges::any_view<ranges::optional<blocksci::AnyScript>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::AnyScript>, random_access_sized>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<ranges::optional<blocksci::AnyScript>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::AnyScript>>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<ranges::optional<blocksci::AnyScript>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::AnyScript>, random_access_sized>> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<ranges::optional<blocksci::AnyScript>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::AnyScript>>> && t) { return {ranges::view::join(std::move(t))}; }
+
+ranges::any_view<ranges::optional<blocksci::TaggedAddress>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::TaggedAddress>, random_access_sized>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<ranges::optional<blocksci::TaggedAddress>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::TaggedAddress>>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<ranges::optional<blocksci::TaggedAddress>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::TaggedAddress>, random_access_sized>> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<ranges::optional<blocksci::TaggedAddress>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::TaggedAddress>>> && t) { return {ranges::view::join(std::move(t))}; }
+
+ranges::any_view<ranges::optional<int64_t>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<int64_t>, random_access_sized>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<ranges::optional<int64_t>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<int64_t>>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<ranges::optional<int64_t>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<int64_t>, random_access_sized>> && t) { return {ranges::view::join(std::move(t))}; }
+ranges::any_view<ranges::optional<int64_t>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<int64_t>>> && t) { return {ranges::view::join(std::move(t))}; }
+
+
+ranges::any_view<ranges::optional<blocksci::Input>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Input>, random_access_sized>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<ranges::optional<blocksci::Input>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Input>>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<ranges::optional<blocksci::Input>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Input>, random_access_sized>>> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<ranges::optional<blocksci::Input>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Input>>>> && t) { return flattenNestedOptional(std::move(t)); }
+
+ranges::any_view<ranges::optional<blocksci::Output>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Output>, random_access_sized>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<ranges::optional<blocksci::Output>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Output>>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<ranges::optional<blocksci::Output>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Output>, random_access_sized>>> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<ranges::optional<blocksci::Output>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Output>>>> && t) { return flattenNestedOptional(std::move(t)); }
+
+ranges::any_view<ranges::optional<blocksci::Transaction>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Transaction>, random_access_sized>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<ranges::optional<blocksci::Transaction>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Transaction>>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<ranges::optional<blocksci::Transaction>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Transaction>, random_access_sized>>> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<ranges::optional<blocksci::Transaction>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Transaction>>>> && t) { return flattenNestedOptional(std::move(t)); }
+
+ranges::any_view<ranges::optional<blocksci::Block>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Block>, random_access_sized>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<ranges::optional<blocksci::Block>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Block>>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<ranges::optional<blocksci::Block>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Block>, random_access_sized>>> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<ranges::optional<blocksci::Block>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Block>>>> && t) { return flattenNestedOptional(std::move(t)); }
+
+ranges::any_view<ranges::optional<blocksci::Address>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Address>, random_access_sized>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<ranges::optional<blocksci::Address>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Address>>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<ranges::optional<blocksci::Address>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Address>, random_access_sized>>> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<ranges::optional<blocksci::Address>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Address>>>> && t) { return flattenNestedOptional(std::move(t)); }
+
+ranges::any_view<ranges::optional<blocksci::AnyScript>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::AnyScript>, random_access_sized>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<ranges::optional<blocksci::AnyScript>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::AnyScript>>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<ranges::optional<blocksci::AnyScript>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::AnyScript>, random_access_sized>>> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<ranges::optional<blocksci::AnyScript>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::AnyScript>>>> && t) { return flattenNestedOptional(std::move(t)); }
+
+ranges::any_view<ranges::optional<blocksci::TaggedAddress>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::TaggedAddress>, random_access_sized>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<ranges::optional<blocksci::TaggedAddress>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::TaggedAddress>>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<ranges::optional<blocksci::TaggedAddress>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::TaggedAddress>, random_access_sized>>> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<ranges::optional<blocksci::TaggedAddress>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::TaggedAddress>>>> && t) { return flattenNestedOptional(std::move(t)); }
+
+ranges::any_view<ranges::optional<int64_t>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<int64_t>, random_access_sized>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<ranges::optional<int64_t>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<int64_t>>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<ranges::optional<int64_t>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<int64_t>, random_access_sized>>> && t) { return flattenNestedOptional(std::move(t)); }
+ranges::any_view<ranges::optional<int64_t>> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<int64_t>>>> && t) { return flattenNestedOptional(std::move(t)); }
