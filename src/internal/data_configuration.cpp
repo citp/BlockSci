@@ -86,6 +86,10 @@ namespace blocksci {
             pubkeyPrefix = {52};
             scriptPrefix = {13};
             segwitPrefix = "nc";
+        } else if(dataDirectoryStr.find("bitcoin_regtest") != std::string::npos) {
+            pubkeyPrefix = std::vector<unsigned char>(1,111);
+            scriptPrefix = std::vector<unsigned char>(1,196);
+            segwitPrefix = "bcrt";
         } else {
             pubkeyPrefix = std::vector<unsigned char>(1,0);
             scriptPrefix = std::vector<unsigned char>(1,5);
