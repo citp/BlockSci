@@ -35,16 +35,15 @@ namespace blocksci {
         DataAccess *access;
         TxData data;
         uint32_t maxTxCount;
-        
-        friend TransactionSummary;
+        mutable BlockHeight blockHeight;
         friend TransactionRange;
     public:
         uint32_t txNum;
-        BlockHeight blockHeight;
+        
         
         Transaction() = default;
         
-        Transaction(const TxData &data_, uint32_t txNum_, BlockHeight blockHeight_, uint32_t maxTxCount_, DataAccess &access_) : access(&access_), data(data_), maxTxCount(maxTxCount_), txNum(txNum_), blockHeight(blockHeight_) {}
+        Transaction(const TxData &data_, uint32_t txNum_, BlockHeight blockHeight_, uint32_t maxTxCount_, DataAccess &access_) : access(&access_), data(data_), maxTxCount(maxTxCount_), blockHeight(blockHeight_), txNum(txNum_) {}
         
         Transaction(uint32_t index, BlockHeight height, DataAccess &access_);
         
@@ -60,6 +59,8 @@ namespace blocksci {
         uint256 getHash() const {
             return *data.hash;
         }
+        
+        BlockHeight getBlockHeight() const;
         
         // Mempool data access
         ranges::optional<std::chrono::system_clock::time_point> getTimeSeen() const;

@@ -71,6 +71,13 @@ namespace blocksci {
         return false;
     }
     
+    BlockHeight Transaction::getBlockHeight() const {
+        if (blockHeight == -1) {
+            blockHeight = access->getChain().getBlockHeight(txNum);
+        }
+        return blockHeight;
+    }
+    
     ranges::optional<std::chrono::system_clock::time_point> Transaction::getTimeSeen() const {
         return access->getMempoolIndex().getTxTimestamp(txNum);
     }

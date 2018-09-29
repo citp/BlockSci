@@ -119,49 +119,49 @@ namespace blocksci {
     
     template <typename T>
     inline auto BLOCKSCI_EXPORT outputsSpentBeforeHeight(T && t, blocksci::BlockHeight blockHeight) {
-        return outputs(std::forward<T>(t)) | ranges::view::filter([=](const Output &output) { return output.isSpent() && output.getSpendingTx()->blockHeight < blockHeight; });
+        return outputs(std::forward<T>(t)) | ranges::view::filter([=](const Output &output) { return output.isSpent() && output.getSpendingTx()->getBlockHeight() < blockHeight; });
     }
     
     template <typename T>
     inline auto BLOCKSCI_EXPORT outputsSpentAfterHeight(T && t, blocksci::BlockHeight blockHeight) {
-        return outputs(std::forward<T>(t)) | ranges::view::filter([=](const Output &output) { return output.isSpent() && output.getSpendingTx()->blockHeight >= blockHeight; });
+        return outputs(std::forward<T>(t)) | ranges::view::filter([=](const Output &output) { return output.isSpent() && output.getSpendingTx()->getBlockHeight() >= blockHeight; });
     }
     
     template <typename T>
     inline auto BLOCKSCI_EXPORT inputsCreatedAfterHeight(T && t, blocksci::BlockHeight blockHeight) {
-        return inputs(std::forward<T>(t)) | ranges::view::filter([=](const Input &input) { return input.getSpentTx().blockHeight >= blockHeight; });
+        return inputs(std::forward<T>(t)) | ranges::view::filter([=](const Input &input) { return input.getSpentTx().getBlockHeight() >= blockHeight; });
     }
     
     template <typename T>
     inline auto BLOCKSCI_EXPORT inputsCreatedBeforeHeight(T && t, blocksci::BlockHeight blockHeight) {
-        return inputs(std::forward<T>(t)) | ranges::view::filter([=](const Input &input) { return input.getSpentTx().blockHeight < blockHeight; });
+        return inputs(std::forward<T>(t)) | ranges::view::filter([=](const Input &input) { return input.getSpentTx().getBlockHeight() < blockHeight; });
     }
 
     template <typename T>
     inline auto BLOCKSCI_EXPORT outputsSpentWithinRelativeHeight(T && t, blocksci::BlockHeight difference) {
         return outputs(std::forward<T>(t)) | ranges::view::filter([=](const Output &output) { 
-            return output.isSpent() && output.getSpendingTx()->blockHeight - output.getBlockHeight() < difference;
+            return output.isSpent() && output.getSpendingTx()->getBlockHeight() - output.getBlockHeight() < difference;
         });
     }
     
     template <typename T>
     inline auto BLOCKSCI_EXPORT outputsSpentOutsideRelativeHeight(T && t, blocksci::BlockHeight difference) {
         return outputs(std::forward<T>(t)) | ranges::view::filter([=](const Output &output) { 
-            return output.isSpent() && output.getSpendingTx()->blockHeight - output.getBlockHeight() >= difference; 
+            return output.isSpent() && output.getSpendingTx()->getBlockHeight() - output.getBlockHeight() >= difference;
         });
     }
     
     template <typename T>
     inline auto BLOCKSCI_EXPORT inputsCreatedWithinRelativeHeight(T && t, blocksci::BlockHeight difference) {
         return inputs(std::forward<T>(t)) | ranges::view::filter([=](const Input &input) {
-            return input.blockHeight - input.getSpentTx().blockHeight < difference; 
+            return input.blockHeight - input.getSpentTx().getBlockHeight() < difference;
         });
     }
     
     template <typename T>
     inline auto BLOCKSCI_EXPORT inputsCreatedOutsideRelativeHeight(T && t, blocksci::BlockHeight difference) {
         return inputs(std::forward<T>(t)) | ranges::view::filter([=](const Input &input) {
-            return input.blockHeight - input.getSpentTx().blockHeight >= difference;
+            return input.blockHeight - input.getSpentTx().getBlockHeight() >= difference;
         });
     }
     
@@ -214,7 +214,7 @@ namespace blocksci {
             }
         } else {
             RANGES_FOR(auto output, t) {
-                if (output.getBlockHeight() <= height && (!output.isSpent() || output.getSpendingTx()->blockHeight > height)) {
+                if (output.getBlockHeight() <= height && (!output.isSpent() || output.getSpendingTx()->getBlockHeight() > height)) {
                     value += output.getValue();
                 }
             }
