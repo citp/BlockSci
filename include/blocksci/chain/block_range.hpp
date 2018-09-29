@@ -193,12 +193,14 @@ namespace blocksci {
         std::vector<Block> filter(std::function<bool(const Block &block)> testFunc);
         std::vector<Transaction> filter(std::function<bool(const Transaction &tx)> testFunc);
         
+        // Returns a vector of [start, stop) intervals spliting the chain into segemnts with approximately the same number of segments
+        std::vector<BlockRange> segment(unsigned int segmentCount) const;
+        
         Slice sl;
     private:
         DataAccess *access;
         
-        // Returns a vector of [start, stop) intervals spliting the chain into segemnts with approximately the same number of segments
-        std::vector<BlockRange> segment(unsigned int segmentCount) const;
+        
     };
     
     inline std::vector<Transaction> BLOCKSCI_EXPORT getTransactionsIncludingOutput(BlockRange &chain, AddressType::Enum type) {
