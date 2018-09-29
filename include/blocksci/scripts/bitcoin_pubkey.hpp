@@ -76,7 +76,7 @@ namespace blocksci {
         void Set(const T pbegin, const T pend)
         {
             unsigned int len = pend == pbegin ? 0 : GetLen(pbegin[0]);
-            if (len && len == (pend - pbegin))
+            if (len && len <= (pend - pbegin))
                 memcpy(vch.data(), reinterpret_cast<const unsigned char*>(&pbegin[0]), len);
             else
                 Invalidate();
