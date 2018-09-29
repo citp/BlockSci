@@ -20,8 +20,6 @@ namespace blocksci {
     struct InputRange;
     class Input;
     
-    struct TransactionSummary;
-    
     struct InoutPointer;
     struct OutputPointer;
     struct InputPointer;

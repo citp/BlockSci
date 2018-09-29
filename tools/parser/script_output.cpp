@@ -237,9 +237,7 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY>
 }
 
 blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY>::getData(uint32_t txNum) const {
-    blocksci::RawPubkey rawPubkey;
-    std::copy(pubkey.begin(), pubkey.end(), rawPubkey.begin());
-    return {txNum, rawPubkey};
+    return {txNum, pubkey};
 }
 
 // MARK: WITNESS_PUBKEYHASH
