@@ -20,7 +20,8 @@ namespace blocksci {
             using value_type = Transaction;
             using pointer = Transaction;
             using reference = Transaction;
-            using difference_type = uint32_t;
+            using size_type = uint32_t;
+            using difference_type = int;
             using iterator_category = std::random_access_iterator_tag;
             
             iterator() = default;
@@ -28,7 +29,11 @@ namespace blocksci {
             iterator(const Transaction &tx_) : tx(tx_) {}
             
             self_type &operator+=(difference_type i) {
-                tx.txNum += i;
+                if (i > 0) {
+                    tx.txNum += static_cast<uint32_t>(i);
+                } else {
+                    tx.txNum -= static_cast<uint32_t>(-i);
+                }
                 resetTxData();
                 if (tx.txNum >= nextBlockFirst) {
                     resetHeight();
@@ -38,7 +43,11 @@ namespace blocksci {
             }
             
             self_type &operator-=(difference_type i) {
-                tx.txNum -= i;
+                if (i > 0) {
+                    tx.txNum -= static_cast<uint32_t>(i);
+                } else {
+                    tx.txNum += static_cast<uint32_t>(-i);
+                }
                 resetTxData();
                 if (tx.txNum <= prevBlockLast) {
                     resetHeight();
@@ -76,7 +85,7 @@ namespace blocksci {
             self_type operator-(difference_type i) const { self_type tmp = *this; tmp -= i; return tmp; }
             
             value_type operator*() const { return tx; }
-            value_type operator[](difference_type i) const;
+            value_type operator[](size_type i) const;
             
             bool operator==(const self_type& rhs) const { return tx == rhs.tx; }
             bool operator!=(const self_type& rhs) const { return tx != rhs.tx; }
@@ -84,7 +93,7 @@ namespace blocksci {
             bool operator>(const self_type& rhs) const { return tx > rhs.tx; }
             bool operator<=(const self_type& rhs) const { return tx <= rhs.tx; }
             bool operator>=(const self_type& rhs) const { return tx >= rhs.tx; }
-            difference_type operator-(const self_type& it) const {return tx.txNum - it.tx.txNum;}
+            difference_type operator-(const self_type& it) const {return static_cast<difference_type>(tx.txNum - it.tx.txNum);}
         private:
             Transaction tx;
             uint32_t nextBlockFirst = 0;
@@ -103,9 +112,12 @@ namespace blocksci {
             void resetHeight();
         };
         
+        using size_type = typename iterator::size_type;
+        using difference_type = typename iterator::difference_type;
+        
         struct Slice {
-            uint32_t start;
-            uint32_t stop;
+            size_type start;
+            size_type stop;
         };
         
         TransactionRange() = default;

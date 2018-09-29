@@ -32,7 +32,7 @@ namespace blocksci {
         nextBlockFirst = tx.blockHeight < tx.access->getChain().blockCount() - BlockHeight{1} ? block->firstTxIndex + static_cast<uint32_t>(block->txCount) : std::numeric_limits<decltype(nextBlockFirst)>::max();
     }
     
-    TransactionRange::iterator::value_type TransactionRange::iterator::operator[](difference_type i) const {
+    TransactionRange::iterator::value_type TransactionRange::iterator::operator[](size_type i) const {
         auto index = tx.txNum + i;
         auto data = tx.getAccess().getChain().getTxData(index);
         auto height = tx.getAccess().getChain().getBlockHeight(index);
