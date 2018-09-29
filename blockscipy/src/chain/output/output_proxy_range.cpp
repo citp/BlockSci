@@ -11,6 +11,7 @@
 
 #include <blocksci/chain/block.hpp>
 #include <blocksci/cluster/cluster.hpp>
+#include <blocksci/address/equiv_address.hpp>
 
 void addOutputProxyMethodsRange(AllProxyClasses<blocksci::Output> &cls) {
 	setupRangesProxy(cls);

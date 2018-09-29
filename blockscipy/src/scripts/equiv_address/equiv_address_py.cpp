@@ -37,6 +37,9 @@ void init_equiv_address(py::class_<EquivAddress> &cl) {
     .def("txes", &EquivAddress::getTransactions, "Returns a list of all transactions involving these equivalent addresses")
     .def("out_txes", &EquivAddress::getOutputTransactions, "Returns a range of all transaction where these equivalent addresses were an output")
     .def("in_txes", &EquivAddress::getInputTransactions, "Returns a list of all transaction where these equivalent addresses were an input")
+    .def_property_readonly("addresses", +[](EquivAddress &address) -> std::unordered_set<Address> {
+        return {address.begin(), address.end()};
+    }, "Returns an iterator over the addresses that make up this equivalent address");
     ;
 
     applyMethodsToSelf(cl, AddEquivAddressMethods{});

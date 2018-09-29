@@ -8,7 +8,12 @@
 #ifndef blocksci_type_converter_h
 #define blocksci_type_converter_h
 
+#include "range_utils.hpp"
+#include <blocksci/chain/block_range.hpp>
 #include <blocksci/scripts/script_variant.hpp>
+
+#include <range/v3/view/any_view.hpp>
+#include <range/v3/view/transform.hpp>
 
 struct BlockSciTypeConverter {
 
@@ -42,6 +47,18 @@ struct BlockSciTypeConverter {
         return static_cast<int64_t>(val);
     }
 
+    Range<blocksci::Input> operator()(const blocksci::InputRange &val) {
+        return val;
+    }
+
+    Range<blocksci::Output> operator()(const blocksci::OutputRange &val) {
+        return val;
+    }
+
+    Range<blocksci::Block> operator()(const blocksci::BlockRange &val) {
+        return val;
+    }
+
     template <typename T>
     auto operator()(const ranges::optional<T> &val) -> ranges::optional<decltype(this->operator()(*val))> {
         if (val) {
@@ -49,6 +66,16 @@ struct BlockSciTypeConverter {
         } else {
             return ranges::nullopt;
         }
+    }
+
+    template <typename T>
+    auto operator()(Iterator<T> &val) -> Iterator<decltype(this->operator()(*val))> {
+        return val | ranges::view::transform(this);
+    }
+
+    template <typename T>
+    auto operator()(Range<T> &val) -> Range<decltype(this->operator()(*val))> {
+        return val | ranges::view::transform(this);
     }
 };
 

@@ -16,7 +16,6 @@
 #include <blocksci/scripts/scripthash_script.hpp>
 
 void addWitnessScriptHashRangeMethods(RangeClasses<blocksci::script::WitnessScriptHash> &classes);
-void addWitnessScriptHashOptionalRangeMethods(RangeClasses<blocksci::script::WitnessScriptHash> &classes);
 void applyMethodsToWitnessScriptHashRange(RangeClasses<blocksci::script::WitnessScriptHash> &classes);
 
 

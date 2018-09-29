@@ -27,7 +27,6 @@ struct AddOutputProxyMethods {
 void addOutputProxyMethods(AllProxyClasses<blocksci::Output> &cls) {
 	addOutputProxyMethodsMain(cls);
 	addOutputProxyMethodsRange(cls);
-	addOutputProxyMethodsOptionalRange(cls);
 	cls.optional.applyToAll(AddProxyOptionalMethods{});
 	cls.optional.applyToAll(AddProxyOptionalMapMethods{});
 

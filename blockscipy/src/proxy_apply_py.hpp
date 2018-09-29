@@ -16,11 +16,8 @@
 
 #include <pybind11/pybind11.h>
 
-template <typename P, typename R, SelfApplyTag tag> 
-struct ApplyMethodsToProxyFuncBinder;
-
 template <typename P, typename R> 
-struct ApplyMethodsToProxyFuncBinder<P, R, SelfApplyTag::Normal> {
+struct ApplyMethodsToProxyFuncBinder {
 	using output_t = typename P::output_t;
     using Func = std::function<R(output_t &)>;
     Func func;
@@ -32,21 +29,8 @@ struct ApplyMethodsToProxyFuncBinder<P, R, SelfApplyTag::Normal> {
     }
 };
 
-template <typename P, typename R> 
-struct ApplyMethodsToProxyFuncBinder<P, R, SelfApplyTag::Range> {
-    using output_t = typename P::output_t;
-    using Func = std::function<R(output_t &)>;
-    Func func;
-
-    ApplyMethodsToProxyFuncBinder(Func func_) : func(func_) {}
-
-    auto operator()(output_t && item) const -> decltype(simplifyRange(func(item))) {
-        return simplifyRange(func(item));
-    }
-};
-
 template <typename P, typename R>
-using proxy_apply_converter_t = ApplyMethodsToProxyFuncBinder<P, R, getSelfApplyTag<R>()>;
+using proxy_apply_converter_t = ApplyMethodsToProxyFuncBinder<P, R>;
 
 
 template <typename P, typename R, typename... Args>

@@ -26,7 +26,6 @@ struct AddInputProxyMethods {
 void addInputProxyMethods(AllProxyClasses<blocksci::Input> &cls) {
 	addInputProxyMethodsMain(cls);
 	addInputProxyMethodsRange(cls);
-	addInputProxyMethodsOptionalRange(cls);
 	cls.optional.applyToAll(AddProxyOptionalMethods{});
 	cls.optional.applyToAll(AddProxyOptionalMapMethods{});
 

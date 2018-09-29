@@ -20,7 +20,6 @@
 #include <pybind11/chrono.h>
 
 void init_tx(pybind11::class_<blocksci::Transaction> &cl);
-void addTxOptionalRangeMethods(RangeClasses<blocksci::Transaction> &classes);
 void addTxRangeMethods(RangeClasses<blocksci::Transaction> &classes);
 
 struct AddTransactionMethods {
@@ -40,7 +39,7 @@ struct AddTransactionMethods {
         func(property_tag, "virtual_size", &Transaction::virtualSize, "The weight of the transaction divided by 4");
         func(property_tag, "weight", &Transaction::weight, "Three times the base size plus the total size");
         func(property_tag, "locktime", &Transaction::locktime, "The locktime of this transasction");
-        func(property_tag, "block_height", +[](const Transaction &tx) { return tx.blockHeight; }, "The height of the block that this transaction was in");
+        func(property_tag, "block_height", &Transaction::getBlockHeight, "The height of the block that this transaction was in");
         func(property_tag, "block_time", +[](const Transaction &tx) -> std::chrono::system_clock::time_point {
             return tx.block().getTime();
         }, "The time that the block containing this transaction arrived");

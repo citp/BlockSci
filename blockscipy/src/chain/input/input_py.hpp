@@ -19,7 +19,6 @@
 
 void init_input(pybind11::class_<blocksci::Input> &cl);
 void addInputRangeMethods(RangeClasses<blocksci::Input> &classes);
-void addInputOptionalRangeMethods(RangeClasses<blocksci::Input> &classes);
 void applyMethodsToInputRange(RangeClasses<blocksci::Input> &classes);
 
 struct AddInputMethods {

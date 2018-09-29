@@ -63,7 +63,7 @@ void init_uint160(py::class_<uint160> &cl) {
 }
 
 void init_block(py::class_<Block> &cl) {
-    addRangeMethods(cl);
+    // addGenericRangeMethods(cl);
     cl
     .def("__repr__", &Block::toString)
     .def(py::self == py::self)

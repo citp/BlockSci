@@ -16,7 +16,6 @@
 #include <blocksci/scripts/pubkey_script.hpp>
 
 void addWitnessPubkeyHashRangeMethods(RangeClasses<blocksci::script::WitnessPubkeyHash> &classes);
-void addWitnessPubkeyHashOptionalRangeMethods(RangeClasses<blocksci::script::WitnessPubkeyHash> &classes);
 void applyMethodsToWitnessPubkeyHashRange(RangeClasses<blocksci::script::WitnessPubkeyHash> &classes);
 
 

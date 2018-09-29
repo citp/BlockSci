@@ -13,7 +13,6 @@
 #include <blocksci/scripts/scripts_fwd.hpp>
 
 void addAddressRangeMethods(RangeClasses<blocksci::AnyScript> &classes);
-void addAddressOptionalRangeMethods(RangeClasses<blocksci::AnyScript> &classes);
 void applyMethodsToAddressRange(RangeClasses<blocksci::AnyScript> &classes);
 void applyRangeFiltersToAddressRange(RangeClasses<blocksci::AnyScript> &classes);
 

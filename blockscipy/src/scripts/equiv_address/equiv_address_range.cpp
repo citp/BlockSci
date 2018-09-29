@@ -19,5 +19,4 @@ using namespace blocksci;
 
 void addEquivAddressRangeMethods(RangeClasses<EquivAddress> &classes) {
     addAllRangeMethods(classes);
-    addEquivAddressOptionalRangeMethods(classes);
 }

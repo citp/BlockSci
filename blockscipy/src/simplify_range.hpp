@@ -81,192 +81,212 @@ constexpr bool isNonTaggedRange() {
 }
 
 struct ConvertedRangeTypeTagConverter {
-    ranges::any_view<blocksci::Input> operator()(ranges::any_view<ranges::any_view<blocksci::Input, random_access_sized>, random_access_sized> && t);
-    ranges::any_view<blocksci::Input> operator()(ranges::any_view<ranges::any_view<blocksci::Input>, random_access_sized> && t);
-    ranges::any_view<blocksci::Input> operator()(ranges::any_view<ranges::any_view<blocksci::Input, random_access_sized>> && t);
-    ranges::any_view<blocksci::Input> operator()(ranges::any_view<ranges::any_view<blocksci::Input>> && t);
+    Range<blocksci::Input> operator()(Range<blocksci::Input> && t);
+    Iterator<blocksci::Input> operator()(Iterator<blocksci::Input> && t);
 
-    ranges::any_view<blocksci::Output> operator()(ranges::any_view<ranges::any_view<blocksci::Output, random_access_sized>, random_access_sized> && t);
-    ranges::any_view<blocksci::Output> operator()(ranges::any_view<ranges::any_view<blocksci::Output>, random_access_sized> && t);
-    ranges::any_view<blocksci::Output> operator()(ranges::any_view<ranges::any_view<blocksci::Output, random_access_sized>> && t);
-    ranges::any_view<blocksci::Output> operator()(ranges::any_view<ranges::any_view<blocksci::Output>> && t);
+    Range<blocksci::Output> operator()(Range<blocksci::Output> && t);
+    Iterator<blocksci::Output> operator()(Iterator<blocksci::Output> && t);
 
-    ranges::any_view<blocksci::Transaction> operator()(ranges::any_view<ranges::any_view<blocksci::Transaction, random_access_sized>, random_access_sized> && t);
-    ranges::any_view<blocksci::Transaction> operator()(ranges::any_view<ranges::any_view<blocksci::Transaction>, random_access_sized> && t);
-    ranges::any_view<blocksci::Transaction> operator()(ranges::any_view<ranges::any_view<blocksci::Transaction, random_access_sized>> && t);
-    ranges::any_view<blocksci::Transaction> operator()(ranges::any_view<ranges::any_view<blocksci::Transaction>> && t);
+    Range<blocksci::Transaction> operator()(Range<blocksci::Transaction> && t);
+    Iterator<blocksci::Transaction> operator()(Iterator<blocksci::Transaction> && t);
 
-    ranges::any_view<blocksci::Block> operator()(ranges::any_view<ranges::any_view<blocksci::Block, random_access_sized>, random_access_sized> && t);
-    ranges::any_view<blocksci::Block> operator()(ranges::any_view<ranges::any_view<blocksci::Block>, random_access_sized> && t);
-    ranges::any_view<blocksci::Block> operator()(ranges::any_view<ranges::any_view<blocksci::Block, random_access_sized>> && t);
-    ranges::any_view<blocksci::Block> operator()(ranges::any_view<ranges::any_view<blocksci::Block>> && t);
+    Range<blocksci::Block> operator()(Range<blocksci::Block> && t);
+    Iterator<blocksci::Block> operator()(Iterator<blocksci::Block> && t);
 
-    ranges::any_view<blocksci::Address> operator()(ranges::any_view<ranges::any_view<blocksci::Address, random_access_sized>, random_access_sized> && t);
-    ranges::any_view<blocksci::Address> operator()(ranges::any_view<ranges::any_view<blocksci::Address>, random_access_sized> && t);
-    ranges::any_view<blocksci::Address> operator()(ranges::any_view<ranges::any_view<blocksci::Address, random_access_sized>> && t);
-    ranges::any_view<blocksci::Address> operator()(ranges::any_view<ranges::any_view<blocksci::Address>> && t);
+    Range<blocksci::Address> operator()(Range<blocksci::Address> && t);
+    Iterator<blocksci::Address> operator()(Iterator<blocksci::Address> && t);
 
-    ranges::any_view<blocksci::AnyScript> operator()(ranges::any_view<ranges::any_view<blocksci::AnyScript, random_access_sized>, random_access_sized> && t);
-    ranges::any_view<blocksci::AnyScript> operator()(ranges::any_view<ranges::any_view<blocksci::AnyScript>, random_access_sized> && t);
-    ranges::any_view<blocksci::AnyScript> operator()(ranges::any_view<ranges::any_view<blocksci::AnyScript, random_access_sized>> && t);
-    ranges::any_view<blocksci::AnyScript> operator()(ranges::any_view<ranges::any_view<blocksci::AnyScript>> && t);
+    Range<blocksci::EquivAddress> operator()(Range<blocksci::EquivAddress> && t);
+    Iterator<blocksci::EquivAddress> operator()(Iterator<blocksci::EquivAddress> && t);
 
-    ranges::any_view<blocksci::TaggedAddress> operator()(ranges::any_view<ranges::any_view<blocksci::TaggedAddress, random_access_sized>, random_access_sized> && t);
-    ranges::any_view<blocksci::TaggedAddress> operator()(ranges::any_view<ranges::any_view<blocksci::TaggedAddress>, random_access_sized> && t);
-    ranges::any_view<blocksci::TaggedAddress> operator()(ranges::any_view<ranges::any_view<blocksci::TaggedAddress, random_access_sized>> && t);
-    ranges::any_view<blocksci::TaggedAddress> operator()(ranges::any_view<ranges::any_view<blocksci::TaggedAddress>> && t);
+    Range<blocksci::AnyScript> operator()(Range<blocksci::AnyScript> && t);
+    Iterator<blocksci::AnyScript> operator()(Iterator<blocksci::AnyScript> && t);
+
+    Range<blocksci::TaggedAddress> operator()(Range<blocksci::TaggedAddress> && t);
+    Iterator<blocksci::TaggedAddress> operator()(Iterator<blocksci::TaggedAddress> && t);
+
+    Range<blocksci::Cluster> operator()(Range<blocksci::Cluster> && t);
+    Iterator<blocksci::Cluster> operator()(Iterator<blocksci::Cluster> && t);
+
+    Range<blocksci::TaggedCluster> operator()(Range<blocksci::TaggedCluster> && t);
+    Iterator<blocksci::TaggedCluster> operator()(Iterator<blocksci::TaggedCluster> && t);
+
+    Range<int64_t> operator()(Range<int64_t> && t);
+    Iterator<int64_t> operator()(Iterator<int64_t> && t);
+
+    Range<bool> operator()(Range<bool> && t);
+    Iterator<bool> operator()(Iterator<bool> && t);
+
+    Range<blocksci::AddressType::Enum> operator()(Range<blocksci::AddressType::Enum> && t);
+    Iterator<blocksci::AddressType::Enum> operator()(Iterator<blocksci::AddressType::Enum> && t);
+
+    Range<blocksci::uint160> operator()(Range<blocksci::uint160> && t);
+    Iterator<blocksci::uint160> operator()(Iterator<blocksci::uint160> && t);
+
+    Range<blocksci::uint256> operator()(Range<blocksci::uint256> && t);
+    Iterator<blocksci::uint256> operator()(Iterator<blocksci::uint256> && t);
+
+    Range<pybind11::bytes> operator()(Range<pybind11::bytes> && t);
+    Iterator<pybind11::bytes> operator()(Iterator<pybind11::bytes> && t);
+
+    Range<pybind11::list> operator()(Range<pybind11::list> && t);
+    Iterator<pybind11::list> operator()(Iterator<pybind11::list> && t);
+
+    Range<std::chrono::system_clock::time_point> operator()(Range<std::chrono::system_clock::time_point> && t);
+    Iterator<std::chrono::system_clock::time_point> operator()(Iterator<std::chrono::system_clock::time_point> && t);
+
+    Range<std::string> operator()(Range<std::string> && t);
+    Iterator<std::string> operator()(Iterator<std::string> && t);
+
+
+
+
+    Iterator<blocksci::Input> operator()(Range<ranges::optional<blocksci::Input>> && t);
+    Iterator<blocksci::Input> operator()(Iterator<ranges::optional<blocksci::Input>> && t);
+
+    Iterator<blocksci::Output> operator()(Range<ranges::optional<blocksci::Output>> && t);
+    Iterator<blocksci::Output> operator()(Iterator<ranges::optional<blocksci::Output>> && t);
+
+    Iterator<blocksci::Transaction> operator()(Range<ranges::optional<blocksci::Transaction>> && t);
+    Iterator<blocksci::Transaction> operator()(Iterator<ranges::optional<blocksci::Transaction>> && t);
+
+    Iterator<blocksci::Block> operator()(Range<ranges::optional<blocksci::Block>> && t);
+    Iterator<blocksci::Block> operator()(Iterator<ranges::optional<blocksci::Block>> && t);
+
+    Iterator<blocksci::Address> operator()(Range<ranges::optional<blocksci::Address>> && t);
+    Iterator<blocksci::Address> operator()(Iterator<ranges::optional<blocksci::Address>> && t);
+
+    Iterator<blocksci::EquivAddress> operator()(Range<ranges::optional<blocksci::EquivAddress>> && t);
+    Iterator<blocksci::EquivAddress> operator()(Iterator<ranges::optional<blocksci::EquivAddress>> && t);
+
+    Iterator<blocksci::AnyScript> operator()(Range<ranges::optional<blocksci::AnyScript>> && t);
+    Iterator<blocksci::AnyScript> operator()(Iterator<ranges::optional<blocksci::AnyScript>> && t);
+
+    Iterator<blocksci::TaggedAddress> operator()(Range<ranges::optional<blocksci::TaggedAddress>> && t);
+    Iterator<blocksci::TaggedAddress> operator()(Iterator<ranges::optional<blocksci::TaggedAddress>> && t);
+
+    Iterator<blocksci::Cluster> operator()(Range<ranges::optional<blocksci::Cluster>> && t);
+    Iterator<blocksci::Cluster> operator()(Iterator<ranges::optional<blocksci::Cluster>> && t);
+
+    Iterator<blocksci::TaggedCluster> operator()(Range<ranges::optional<blocksci::TaggedCluster>> && t);
+    Iterator<blocksci::TaggedCluster> operator()(Iterator<ranges::optional<blocksci::TaggedCluster>> && t);
+
+    Iterator<int64_t> operator()(Range<ranges::optional<int64_t>> && t);
+    Iterator<int64_t> operator()(Iterator<ranges::optional<int64_t>> && t);
+
+    Iterator<bool> operator()(Range<ranges::optional<bool>> && t);
+    Iterator<bool> operator()(Iterator<ranges::optional<bool>> && t);
+
+    Iterator<blocksci::AddressType::Enum> operator()(Range<ranges::optional<blocksci::AddressType::Enum>> && t);
+    Iterator<blocksci::AddressType::Enum> operator()(Iterator<ranges::optional<blocksci::AddressType::Enum>> && t);
+
+    Iterator<blocksci::uint160> operator()(Range<ranges::optional<blocksci::uint160>> && t);
+    Iterator<blocksci::uint160> operator()(Iterator<ranges::optional<blocksci::uint160>> && t);
+
+    Iterator<blocksci::uint256> operator()(Range<ranges::optional<blocksci::uint256>> && t);
+    Iterator<blocksci::uint256> operator()(Iterator<ranges::optional<blocksci::uint256>> && t);
+
+    Iterator<pybind11::bytes> operator()(Range<ranges::optional<pybind11::bytes>> && t);
+    Iterator<pybind11::bytes> operator()(Iterator<ranges::optional<pybind11::bytes>> && t);
+
+    Iterator<pybind11::list> operator()(Range<ranges::optional<pybind11::list>> && t);
+    Iterator<pybind11::list> operator()(Iterator<ranges::optional<pybind11::list>> && t);
+
+    Iterator<std::chrono::system_clock::time_point> operator()(Range<ranges::optional<std::chrono::system_clock::time_point>> && t);
+    Iterator<std::chrono::system_clock::time_point> operator()(Iterator<ranges::optional<std::chrono::system_clock::time_point>> && t);
+
+    Iterator<std::string> operator()(Range<ranges::optional<std::string>> && t);
+    Iterator<std::string> operator()(Iterator<ranges::optional<std::string>> && t);
+
+
+
+
+    Iterator<blocksci::Input> operator()(Iterator<Iterator<blocksci::Input>> && t);
+    Iterator<blocksci::Input> operator()(Iterator<Range<blocksci::Input>> && t);
+    Iterator<blocksci::Input> operator()(Range<Range<blocksci::Input>> && t);
+    Iterator<blocksci::Input> operator()(Range<Iterator<blocksci::Input>> && t);
+
+    Iterator<blocksci::Output> operator()(Iterator<Iterator<blocksci::Output>> && t);
+    Iterator<blocksci::Output> operator()(Iterator<Range<blocksci::Output>> && t);
+    Iterator<blocksci::Output> operator()(Range<Range<blocksci::Output>> && t);
+    Iterator<blocksci::Output> operator()(Range<Iterator<blocksci::Output>> && t);
+
+    Iterator<blocksci::Transaction> operator()(Iterator<Iterator<blocksci::Transaction>> && t);
+    Iterator<blocksci::Transaction> operator()(Iterator<Range<blocksci::Transaction>> && t);
+    Iterator<blocksci::Transaction> operator()(Range<Range<blocksci::Transaction>> && t);
+    Iterator<blocksci::Transaction> operator()(Range<Iterator<blocksci::Transaction>> && t);
+
+    Iterator<blocksci::Block> operator()(Iterator<Iterator<blocksci::Block>> && t);
+    Iterator<blocksci::Block> operator()(Iterator<Range<blocksci::Block>> && t);
+    Iterator<blocksci::Block> operator()(Range<Range<blocksci::Block>> && t);
+    Iterator<blocksci::Block> operator()(Range<Iterator<blocksci::Block>> && t);
+
+    Iterator<blocksci::Address> operator()(Iterator<Iterator<blocksci::Address>> && t);
+    Iterator<blocksci::Address> operator()(Iterator<Range<blocksci::Address>> && t);
+    Iterator<blocksci::Address> operator()(Range<Range<blocksci::Address>> && t);
+    Iterator<blocksci::Address> operator()(Range<Iterator<blocksci::Address>> && t);
+
+    Iterator<blocksci::AnyScript> operator()(Iterator<Iterator<blocksci::AnyScript>> && t);
+    Iterator<blocksci::AnyScript> operator()(Iterator<Range<blocksci::AnyScript>> && t);
+    Iterator<blocksci::AnyScript> operator()(Range<Range<blocksci::AnyScript>> && t);
+    Iterator<blocksci::AnyScript> operator()(Range<Iterator<blocksci::AnyScript>> && t);
+
+    Iterator<blocksci::TaggedAddress> operator()(Iterator<Iterator<blocksci::TaggedAddress>> && t);
+    Iterator<blocksci::TaggedAddress> operator()(Iterator<Range<blocksci::TaggedAddress>> && t);
+    Iterator<blocksci::TaggedAddress> operator()(Range<Range<blocksci::TaggedAddress>> && t);
+    Iterator<blocksci::TaggedAddress> operator()(Range<Iterator<blocksci::TaggedAddress>> && t);
+
+    Iterator<blocksci::Output> operator()(Iterator<blocksci::OutputRange> && t);
+    Iterator<blocksci::Output> operator()(Range<blocksci::OutputRange> && t);
     
-    ranges::any_view<blocksci::Output> operator()(ranges::any_view<blocksci::OutputRange, random_access_sized> && t);
-    ranges::any_view<blocksci::Output> operator()(ranges::any_view<blocksci::OutputRange> && t);
-    
-    ranges::any_view<blocksci::Input> operator()(ranges::any_view<blocksci::InputRange, random_access_sized> && t);
-    ranges::any_view<blocksci::Input> operator()(ranges::any_view<blocksci::InputRange> && t);
+    Iterator<blocksci::Input> operator()(Iterator<blocksci::InputRange> && t);
+    Iterator<blocksci::Input> operator()(Range<blocksci::InputRange> && t);
 
-    ranges::any_view<int64_t> operator()(ranges::any_view<ranges::any_view<int64_t, random_access_sized>, random_access_sized> && t);
-    ranges::any_view<int64_t> operator()(ranges::any_view<ranges::any_view<int64_t>, random_access_sized> && t);
-    ranges::any_view<int64_t> operator()(ranges::any_view<ranges::any_view<int64_t, random_access_sized>> && t);
-    ranges::any_view<int64_t> operator()(ranges::any_view<ranges::any_view<int64_t>> && t);
+    Iterator<int64_t> operator()(Iterator<Iterator<int64_t>> && t);
+    Iterator<int64_t> operator()(Iterator<Range<int64_t>> && t);
+    Iterator<int64_t> operator()(Range<Range<int64_t>> && t);
+    Iterator<int64_t> operator()(Range<Iterator<int64_t>> && t);
 
 
-    ranges::any_view<blocksci::Input> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Input, random_access_sized>>, random_access_sized> && t);
-    ranges::any_view<blocksci::Input> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Input>>, random_access_sized> && t);
-    ranges::any_view<blocksci::Input> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Input, random_access_sized>>> && t);
-    ranges::any_view<blocksci::Input> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Input>>> && t);
+    Iterator<blocksci::Input> operator()(Iterator<Iterator<ranges::optional<blocksci::Input>>> && t);
+    Iterator<blocksci::Input> operator()(Iterator<Range<ranges::optional<blocksci::Input>>> && t);
+    Iterator<blocksci::Input> operator()(Range<Range<ranges::optional<blocksci::Input>>> && t);
+    Iterator<blocksci::Input> operator()(Range<Iterator<ranges::optional<blocksci::Input>>> && t);
 
-    ranges::any_view<blocksci::Output> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Output, random_access_sized>>, random_access_sized> && t);
-    ranges::any_view<blocksci::Output> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Output>>, random_access_sized> && t);
-    ranges::any_view<blocksci::Output> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Output, random_access_sized>>> && t);
-    ranges::any_view<blocksci::Output> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Output>>> && t);
+    Iterator<blocksci::Output> operator()(Iterator<Iterator<ranges::optional<blocksci::Output>>> && t);
+    Iterator<blocksci::Output> operator()(Iterator<Range<ranges::optional<blocksci::Output>>> && t);
+    Iterator<blocksci::Output> operator()(Range<Range<ranges::optional<blocksci::Output>>> && t);
+    Iterator<blocksci::Output> operator()(Range<Iterator<ranges::optional<blocksci::Output>>> && t);
 
-    ranges::any_view<blocksci::Transaction> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Transaction, random_access_sized>>, random_access_sized> && t);
-    ranges::any_view<blocksci::Transaction> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Transaction>>, random_access_sized> && t);
-    ranges::any_view<blocksci::Transaction> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Transaction, random_access_sized>>> && t);
-    ranges::any_view<blocksci::Transaction> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Transaction>>> && t);
+    Iterator<blocksci::Transaction> operator()(Iterator<Iterator<ranges::optional<blocksci::Transaction>>> && t);
+    Iterator<blocksci::Transaction> operator()(Iterator<Range<ranges::optional<blocksci::Transaction>>> && t);
+    Iterator<blocksci::Transaction> operator()(Range<Range<ranges::optional<blocksci::Transaction>>> && t);
+    Iterator<blocksci::Transaction> operator()(Range<Iterator<ranges::optional<blocksci::Transaction>>> && t);
 
-    ranges::any_view<blocksci::Block> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Block, random_access_sized>>, random_access_sized> && t);
-    ranges::any_view<blocksci::Block> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Block>>, random_access_sized> && t);
-    ranges::any_view<blocksci::Block> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Block, random_access_sized>>> && t);
-    ranges::any_view<blocksci::Block> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Block>>> && t);
+    Iterator<blocksci::Block> operator()(Iterator<Iterator<ranges::optional<blocksci::Block>>> && t);
+    Iterator<blocksci::Block> operator()(Iterator<Range<ranges::optional<blocksci::Block>>> && t);
+    Iterator<blocksci::Block> operator()(Range<Range<ranges::optional<blocksci::Block>>> && t);
+    Iterator<blocksci::Block> operator()(Range<Iterator<ranges::optional<blocksci::Block>>> && t);
 
-    ranges::any_view<blocksci::Address> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Address, random_access_sized>>, random_access_sized> && t);
-    ranges::any_view<blocksci::Address> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Address>>, random_access_sized> && t);
-    ranges::any_view<blocksci::Address> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Address, random_access_sized>>> && t);
-    ranges::any_view<blocksci::Address> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::Address>>> && t);
+    Iterator<blocksci::Address> operator()(Iterator<Iterator<ranges::optional<blocksci::Address>>> && t);
+    Iterator<blocksci::Address> operator()(Iterator<Range<ranges::optional<blocksci::Address>>> && t);
+    Iterator<blocksci::Address> operator()(Range<Range<ranges::optional<blocksci::Address>>> && t);
+    Iterator<blocksci::Address> operator()(Range<Iterator<ranges::optional<blocksci::Address>>> && t);
 
-    ranges::any_view<blocksci::AnyScript> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::AnyScript, random_access_sized>>, random_access_sized> && t);
-    ranges::any_view<blocksci::AnyScript> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::AnyScript>>, random_access_sized> && t);
-    ranges::any_view<blocksci::AnyScript> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::AnyScript, random_access_sized>>> && t);
-    ranges::any_view<blocksci::AnyScript> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::AnyScript>>> && t);
+    Iterator<blocksci::AnyScript> operator()(Iterator<Iterator<ranges::optional<blocksci::AnyScript>>> && t);
+    Iterator<blocksci::AnyScript> operator()(Iterator<Range<ranges::optional<blocksci::AnyScript>>> && t);
+    Iterator<blocksci::AnyScript> operator()(Range<Range<ranges::optional<blocksci::AnyScript>>> && t);
+    Iterator<blocksci::AnyScript> operator()(Range<Iterator<ranges::optional<blocksci::AnyScript>>> && t);
 
-    ranges::any_view<blocksci::TaggedAddress> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::TaggedAddress, random_access_sized>>, random_access_sized> && t);
-    ranges::any_view<blocksci::TaggedAddress> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::TaggedAddress>>, random_access_sized> && t);
-    ranges::any_view<blocksci::TaggedAddress> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::TaggedAddress, random_access_sized>>> && t);
-    ranges::any_view<blocksci::TaggedAddress> operator()(ranges::any_view<ranges::optional<ranges::any_view<blocksci::TaggedAddress>>> && t);
+    Iterator<blocksci::TaggedAddress> operator()(Iterator<Iterator<ranges::optional<blocksci::TaggedAddress>>> && t);
+    Iterator<blocksci::TaggedAddress> operator()(Iterator<Range<ranges::optional<blocksci::TaggedAddress>>> && t);
+    Iterator<blocksci::TaggedAddress> operator()(Range<Range<ranges::optional<blocksci::TaggedAddress>>> && t);
+    Iterator<blocksci::TaggedAddress> operator()(Range<Iterator<ranges::optional<blocksci::TaggedAddress>>> && t);
 
-    ranges::any_view<blocksci::Output> operator()(ranges::any_view<ranges::optional<blocksci::OutputRange>, random_access_sized> && t);
-    ranges::any_view<blocksci::Output> operator()(ranges::any_view<ranges::optional<blocksci::OutputRange>> && t);
-
-    ranges::any_view<blocksci::Input> operator()(ranges::any_view<ranges::optional<blocksci::InputRange>, random_access_sized> && t);
-    ranges::any_view<blocksci::Input> operator()(ranges::any_view<ranges::optional<blocksci::InputRange>> && t);
-
-    ranges::any_view<int64_t> operator()(ranges::any_view<ranges::optional<ranges::any_view<int64_t, random_access_sized>>, random_access_sized> && t);
-    ranges::any_view<int64_t> operator()(ranges::any_view<ranges::optional<ranges::any_view<int64_t>>, random_access_sized> && t);
-    ranges::any_view<int64_t> operator()(ranges::any_view<ranges::optional<ranges::any_view<int64_t, random_access_sized>>> && t);
-    ranges::any_view<int64_t> operator()(ranges::any_view<ranges::optional<ranges::any_view<int64_t>>> && t);
-
-
-
-    ranges::any_view<ranges::optional<blocksci::Input>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Input>, random_access_sized>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::Input>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Input>>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::Input>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Input>, random_access_sized>> && t);
-    ranges::any_view<ranges::optional<blocksci::Input>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Input>>> && t);
-
-    ranges::any_view<ranges::optional<blocksci::Output>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Output>, random_access_sized>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::Output>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Output>>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::Output>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Output>, random_access_sized>> && t);
-    ranges::any_view<ranges::optional<blocksci::Output>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Output>>> && t);
-
-    ranges::any_view<ranges::optional<blocksci::Transaction>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Transaction>, random_access_sized>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::Transaction>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Transaction>>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::Transaction>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Transaction>, random_access_sized>> && t);
-    ranges::any_view<ranges::optional<blocksci::Transaction>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Transaction>>> && t);
-
-    ranges::any_view<ranges::optional<blocksci::Block>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Block>, random_access_sized>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::Block>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Block>>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::Block>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Block>, random_access_sized>> && t);
-    ranges::any_view<ranges::optional<blocksci::Block>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Block>>> && t);
-
-    ranges::any_view<ranges::optional<blocksci::Address>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Address>, random_access_sized>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::Address>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Address>>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::Address>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Address>, random_access_sized>> && t);
-    ranges::any_view<ranges::optional<blocksci::Address>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Address>>> && t);
-
-    ranges::any_view<ranges::optional<blocksci::AnyScript>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::AnyScript>, random_access_sized>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::AnyScript>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::AnyScript>>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::AnyScript>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::AnyScript>, random_access_sized>> && t);
-    ranges::any_view<ranges::optional<blocksci::AnyScript>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::AnyScript>>> && t);
-
-    ranges::any_view<ranges::optional<blocksci::TaggedAddress>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::TaggedAddress>, random_access_sized>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::TaggedAddress>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::TaggedAddress>>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::TaggedAddress>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::TaggedAddress>, random_access_sized>> && t);
-    ranges::any_view<ranges::optional<blocksci::TaggedAddress>> operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::TaggedAddress>>> && t);
-
-    ranges::any_view<ranges::optional<int64_t>> operator()(ranges::any_view<ranges::any_view<ranges::optional<int64_t>, random_access_sized>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<int64_t>> operator()(ranges::any_view<ranges::any_view<ranges::optional<int64_t>>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<int64_t>> operator()(ranges::any_view<ranges::any_view<ranges::optional<int64_t>, random_access_sized>> && t);
-    ranges::any_view<ranges::optional<int64_t>> operator()(ranges::any_view<ranges::any_view<ranges::optional<int64_t>>> && t);
-
-
-    ranges::any_view<ranges::optional<blocksci::Input>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Input>, random_access_sized>>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::Input>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Input>>>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::Input>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Input>, random_access_sized>>> && t);
-    ranges::any_view<ranges::optional<blocksci::Input>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Input>>>> && t);
-
-    ranges::any_view<ranges::optional<blocksci::Output>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Output>, random_access_sized>>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::Output>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Output>>>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::Output>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Output>, random_access_sized>>> && t);
-    ranges::any_view<ranges::optional<blocksci::Output>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Output>>>> && t);
-
-    ranges::any_view<ranges::optional<blocksci::Transaction>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Transaction>, random_access_sized>>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::Transaction>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Transaction>>>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::Transaction>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Transaction>, random_access_sized>>> && t);
-    ranges::any_view<ranges::optional<blocksci::Transaction>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Transaction>>>> && t);
-
-    ranges::any_view<ranges::optional<blocksci::Block>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Block>, random_access_sized>>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::Block>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Block>>>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::Block>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Block>, random_access_sized>>> && t);
-    ranges::any_view<ranges::optional<blocksci::Block>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Block>>>> && t);
-
-    ranges::any_view<ranges::optional<blocksci::Address>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Address>, random_access_sized>>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::Address>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Address>>>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::Address>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Address>, random_access_sized>>> && t);
-    ranges::any_view<ranges::optional<blocksci::Address>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::Address>>>> && t);
-
-    ranges::any_view<ranges::optional<blocksci::AnyScript>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::AnyScript>, random_access_sized>>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::AnyScript>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::AnyScript>>>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::AnyScript>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::AnyScript>, random_access_sized>>> && t);
-    ranges::any_view<ranges::optional<blocksci::AnyScript>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::AnyScript>>>> && t);
-
-    ranges::any_view<ranges::optional<blocksci::TaggedAddress>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::TaggedAddress>, random_access_sized>>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::TaggedAddress>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::TaggedAddress>>>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<blocksci::TaggedAddress>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::TaggedAddress>, random_access_sized>>> && t);
-    ranges::any_view<ranges::optional<blocksci::TaggedAddress>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<blocksci::TaggedAddress>>>> && t);
-
-    ranges::any_view<ranges::optional<int64_t>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<int64_t>, random_access_sized>>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<int64_t>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<int64_t>>>, random_access_sized> && t);
-    ranges::any_view<ranges::optional<int64_t>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<int64_t>, random_access_sized>>> && t);
-    ranges::any_view<ranges::optional<int64_t>> operator()(ranges::any_view<ranges::optional<ranges::any_view<ranges::optional<int64_t>>>> && t);
-
-
-    template <typename T, typename = std::enable_if_t<is_tagged<T>::value>>
-    ranges::any_view<T, random_access_sized> operator()(ranges::any_view<T, random_access_sized> && t) {
-        return t;
-    }
-
-    template <typename T, typename = std::enable_if_t<is_tagged<T>::value>>
-    ranges::any_view<T> operator()(ranges::any_view<T> && t) {
-        return t;
-    }
+    Iterator<int64_t> operator()(Iterator<Iterator<ranges::optional<int64_t>>> && t);
+    Iterator<int64_t> operator()(Iterator<Range<ranges::optional<int64_t>>> && t);
+    Iterator<int64_t> operator()(Range<Range<ranges::optional<int64_t>>> && t);
+    Iterator<int64_t> operator()(Range<Iterator<ranges::optional<int64_t>>> && t);
 };
 
 constexpr ranges::category getBlockSciCategory(ranges::category cat) {

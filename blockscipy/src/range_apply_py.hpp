@@ -13,7 +13,7 @@
 #include "method_tags.hpp"
 #include "range_conversion.hpp"
 #include "blocksci_range.hpp"
-#include "optional_utils.hpp"
+#include "blocksci_type_converter.hpp"
 
 #include <range/v3/view/transform.hpp>
 
@@ -24,22 +24,14 @@ struct ApplyMethodsToRangeFuncBinder {
 
     ApplyMethodsToRangeFuncBinder(Func func_) : func(func_) {}
 
-    R operator()(T && item) const {
-        return func(item);
-    }
-
-    make_optional_t<R> operator()(ranges::optional<T> && item) const {
-        if (item) {
-            return func(*item);
-        } else {
-            return ranges::nullopt;
-        }
+    auto operator()(T && item) const -> decltype(BlockSciTypeConverter{}(func(item))) {
+        return BlockSciTypeConverter{}(func(item));
     }
 };
 
 template <typename Range, typename R, typename... Args>
 struct ApplyMethodsToRangeFuncConverter {
-    using T = remove_optional_t<ranges::range_value_type_t<Range>>;
+    using T = ranges::range_value_type_t<Range>;
     using Func = std::function<R(T &, Args...)>;
     using return_type = decltype(convertRangeToPython(ranges::view::transform(std::declval<Range &>(), ApplyMethodsToRangeFuncBinder<T, R>{std::bind(std::declval<Func>(), std::placeholders::_1, std::declval<const Args &>()...)})));
     Func func;
@@ -70,7 +62,7 @@ std::string propertyDescription(const std::string description) {
 template <typename Class>
 struct ApplyMethodsToRangeImpl {
     using Range = typename Class::type;
-    using value_type = remove_optional_t<ranges::range_value_type_t<Range>>;
+    using value_type = ranges::range_value_type_t<Range>;
     Class &cl;
 
     ApplyMethodsToRangeImpl(Class &cl_) : cl(cl_) {}
@@ -115,8 +107,6 @@ template <typename T, typename Applier>
 void applyAllMethodsToRange(T &cls, Applier applier) {
     applyMethodsToRange(cls.iterator, applier);
     applyMethodsToRange(cls.range, applier);
-    applyMethodsToRange(cls.optionalIterator, applier);
-    applyMethodsToRange(cls.optionalRange, applier);
 }
 
 #endif /* range_apply_py_h */

@@ -29,21 +29,5 @@ struct make_optional<ranges::optional<T>> { using type = ranges::optional<T>; };
 template <typename T>
 using make_optional_t = typename make_optional<T>::type;
 
-template<typename Proxy>
-struct MakeOptionalFunctor {
-	using ResultType = make_optional_t<typename Proxy::output_t>;
-	Proxy p1;
-
-	MakeOptionalFunctor(Proxy &p1_) : p1(p1_) {}
-
-	ResultType operator()(const ranges::optional<typename Proxy::input_t> &val) const {
-		if (val) {
-			auto v = *val;
-			return p1(v);
-		} else {
-			return ranges::nullopt;
-		}
-	}
-};
 
 #endif /* optional_utils_h */

@@ -14,6 +14,8 @@
 
 #include <blocksci/cluster/cluster.hpp>
 #include <blocksci/chain/block.hpp>
+#include <blocksci/address/equiv_address.hpp>
+
 
 using namespace blocksci;
 namespace py = pybind11;

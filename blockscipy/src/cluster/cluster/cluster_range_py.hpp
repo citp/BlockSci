@@ -14,7 +14,6 @@
 #include <blocksci/cluster/cluster.hpp>
 
 void addClusterRangeMethods(RangeClasses<blocksci::Cluster> &classes);
-void addClusterOptionalRangeMethods(RangeClasses<blocksci::Cluster> &classes);
 void applyMethodsToClusterRange(RangeClasses<blocksci::Cluster> &classes);
 
 #endif /* cluster_range_py_hpp */

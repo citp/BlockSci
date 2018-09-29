@@ -12,47 +12,24 @@
 #include "func_converter.hpp"
 #include "range_conversion.hpp"
 #include "method_types.hpp"
+#include "blocksci_type_converter.hpp"
 
 #include <blocksci/address/address_fwd.hpp>
 #include <blocksci/scripts/scripts_fwd.hpp>
 
 #include <functional>
 
-enum class SelfApplyTag {
-    Range, Normal
-};
-
-template <typename T>
-constexpr SelfApplyTag getSelfApplyTag() {
-    if constexpr (isNonTaggedRange<T>()) {
-        return SelfApplyTag::Range;
-    } else {
-        return SelfApplyTag::Normal;
-    }
-}
-
-template <typename result_type, SelfApplyTag tag>
-struct SelfApplyTypeConverterImpl;
-
 template <typename result_type>
-struct SelfApplyTypeConverterImpl<result_type, SelfApplyTag::Normal> {
-    using return_type = result_type;
+struct SelfApplyTypeConverterImpl {
+    using return_type = decltype(BlockSciTypeConverter{}(std::declval<result_type>()));
     return_type operator()(result_type && result) const {
-        return std::move(result);
+        return BlockSciTypeConverter{}(std::move(result));
     }
 };
 
-template <typename result_type>
-struct SelfApplyTypeConverterImpl<result_type, SelfApplyTag::Range> {
-    using return_type = decltype(convertRangeToPython(std::declval<result_type>()));
-
-    return_type operator()(result_type && result) const {
-        return convertRangeToPython(result);
-    }
-};
 
 template <typename result_type>
-using self_apply_converter_t = SelfApplyTypeConverterImpl<result_type, getSelfApplyTag<result_type>()>;
+using self_apply_converter_t = SelfApplyTypeConverterImpl<result_type>;
 
 template <typename Class>
 struct ApplyMethodsToSelfImpl {

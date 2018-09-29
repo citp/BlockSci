@@ -12,10 +12,11 @@
 
 #include <blocksci/chain/input_range.hpp>
 #include <blocksci/chain/output_range.hpp>
+#include <blocksci/address/equiv_address.hpp>
+
 
 using namespace blocksci;
 
 void addMultisigRangeMethods(RangeClasses<script::Multisig> &classes) {
 	addAllRangeMethods(classes);
-	addMultisigOptionalRangeMethods(classes);
 }

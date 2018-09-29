@@ -13,6 +13,7 @@
 #include <blocksci/chain/block.hpp>
 #include <blocksci/chain/output.hpp>
 #include <blocksci/chain/transaction.hpp>
+#include <blocksci/address/equiv_address.hpp>
 
 namespace py = pybind11;
 using namespace blocksci;

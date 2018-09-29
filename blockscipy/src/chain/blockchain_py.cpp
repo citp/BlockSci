@@ -57,6 +57,15 @@ void init_blockchain(py::class_<Blockchain> &cl) {
         return scriptsRange(type, chain.getAccess());
     }, py::arg("address_type"), "Return a range of all addresses of the given type")
     .def("most_valuable_addresses", mostValuableAddresses, "Get a list of the top 100 most valuable addresses")
+    .def("_segment_indexes", [](Blockchain &chain, BlockHeight start, BlockHeight stop, unsigned int cpuCount) {
+        auto segments = chain[{start, stop}].segment(cpuCount);
+        std::vector<std::pair<BlockHeight, BlockHeight>> ret;
+        ret.reserve(segments.size());
+        for (auto segment : segments) {
+            ret.emplace_back(segment.sl.start, segment.sl.stop);
+        }
+        return ret;
+    })
     ;
 
     applyMethodsToSelf(cl, AddBlockchainMethods{});

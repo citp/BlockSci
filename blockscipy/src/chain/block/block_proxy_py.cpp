@@ -25,7 +25,6 @@ struct AddBlockProxyMethods {
 void addBlockProxyMethods(AllProxyClasses<blocksci::Block> &cls) {
 	addBlockProxyMethodsMain(cls);
 	addBlockProxyMethodsRange(cls);
-	addBlockProxyMethodsOptionalRange(cls);
 	cls.optional.applyToAll(AddProxyOptionalMethods{});
 	cls.optional.applyToAll(AddProxyOptionalMapMethods{});
 

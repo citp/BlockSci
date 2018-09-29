@@ -26,7 +26,6 @@ struct AddAddressProxyMethods {
 void addAddressProxyMethods(AllProxyClasses<blocksci::AnyScript> &cls) {
 	addAddressProxyMethodsMain(cls);
 	addAddressProxyMethodsRange(cls);
-	addAddressProxyMethodsOptionalRange(cls);
 	cls.optional.applyToAll(AddProxyOptionalMethods{});
 	cls.optional.applyToAll(AddProxyOptionalMapMethods{});
 

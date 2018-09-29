@@ -51,26 +51,75 @@ struct ProxyClasses {
     pybind11::class_<Proxy<blocksci::Output, T>> fromOutput;
     pybind11::class_<Proxy<blocksci::AnyScript, T>> fromAddress;
 
+    pybind11::class_<Proxy<Iterator<blocksci::Block>, T>> fromBlockIterator;
+    pybind11::class_<Proxy<Iterator<blocksci::Transaction>, T>> fromTxIterator;
+    pybind11::class_<Proxy<Iterator<blocksci::Input>, T>> fromInputIterator;
+    pybind11::class_<Proxy<Iterator<blocksci::Output>, T>> fromOutputIterator;
+    pybind11::class_<Proxy<Iterator<blocksci::AnyScript>, T>> fromAddressIterator;
+
+    // pybind11::class_<Proxy<Range<blocksci::Block>, T>> fromBlockRange;
+    // pybind11::class_<Proxy<Range<blocksci::Transaction>, T>> fromTxRange;
+    // pybind11::class_<Proxy<Range<blocksci::Input>, T>> fromInputRange;
+    // pybind11::class_<Proxy<Range<blocksci::Output>, T>> fromOutputRange;
+    // pybind11::class_<Proxy<Range<blocksci::AnyScript>, T>> fromAddressRange;
+
     ProxyClasses(pybind11::module &m) : 
-    fromBlock(m, strdup(proxyName<blocksci::Block, T>().c_str())),
-    fromTx(m, strdup(proxyName<blocksci::Transaction, T>().c_str())),
-    fromInput(m, strdup(proxyName<blocksci::Input, T>().c_str())),
-    fromOutput(m, strdup(proxyName<blocksci::Output, T>().c_str())),
-    fromAddress(m, strdup(proxyName<blocksci::AnyScript, T>().c_str())) {
+    fromBlock(m, strdup(proxyName<blocksci::Block, T>().c_str()), pybind11::dynamic_attr()),
+    fromTx(m, strdup(proxyName<blocksci::Transaction, T>().c_str()), pybind11::dynamic_attr()),
+    fromInput(m, strdup(proxyName<blocksci::Input, T>().c_str()), pybind11::dynamic_attr()),
+    fromOutput(m, strdup(proxyName<blocksci::Output, T>().c_str()), pybind11::dynamic_attr()),
+    fromAddress(m, strdup(proxyName<blocksci::AnyScript, T>().c_str()), pybind11::dynamic_attr()),
+
+    fromBlockIterator(m, strdup(proxyName<Iterator<blocksci::Block>, T>().c_str()), pybind11::dynamic_attr()),
+    fromTxIterator(m, strdup(proxyName<Iterator<blocksci::Transaction>, T>().c_str()), pybind11::dynamic_attr()),
+    fromInputIterator(m, strdup(proxyName<Iterator<blocksci::Input>, T>().c_str()), pybind11::dynamic_attr()),
+    fromOutputIterator(m, strdup(proxyName<Iterator<blocksci::Output>, T>().c_str()), pybind11::dynamic_attr()),
+    fromAddressIterator(m, strdup(proxyName<Iterator<blocksci::AnyScript>, T>().c_str()), pybind11::dynamic_attr()) {
+
+    // fromBlockRange(m, strdup(proxyName<Range<blocksci::Block>, T>().c_str())),
+    // fromTxRange(m, strdup(proxyName<Range<blocksci::Transaction>, T>().c_str())),
+    // fromInputRange(m, strdup(proxyName<Range<blocksci::Input>, T>().c_str())),
+    // fromOutputRange(m, strdup(proxyName<Range<blocksci::Output>, T>().c_str())),
+    // fromAddressRange(m, strdup(proxyName<Range<blocksci::AnyScript>, T>().c_str())) {
 
         addProxyConditional<blocksci::Block, T>(m);
         addProxyConditional<blocksci::Transaction, T>(m);
         addProxyConditional<blocksci::Input, T>(m);
         addProxyConditional<blocksci::Output, T>(m);
         addProxyConditional<blocksci::AnyScript, T>(m);
+
+        addProxyConditional<Iterator<blocksci::Block>, T>(m);
+        addProxyConditional<Iterator<blocksci::Transaction>, T>(m);
+        addProxyConditional<Iterator<blocksci::Input>, T>(m);
+        addProxyConditional<Iterator<blocksci::Output>, T>(m);
+        addProxyConditional<Iterator<blocksci::AnyScript>, T>(m);
+
+        // addProxyConditional<Range<blocksci::Block>, T>(m);
+        // addProxyConditional<Range<blocksci::Transaction>, T>(m);
+        // addProxyConditional<Range<blocksci::Input>, T>(m);
+        // addProxyConditional<Range<blocksci::Output>, T>(m);
+        // addProxyConditional<Range<blocksci::AnyScript>, T>(m);
     }
 
     template<typename Func>
     void applyToAll(Func func) {
+        func(fromBlock);
     	func(fromTx);
     	func(fromInput);
     	func(fromOutput);
     	func(fromAddress);
+
+        func(fromBlockIterator);
+        func(fromTxIterator);
+        func(fromInputIterator);
+        func(fromOutputIterator);
+        func(fromAddressIterator);
+
+        // func(fromBlockRange);
+        // func(fromTxRange);
+        // func(fromInputRange);
+        // func(fromOutputRange);
+        // func(fromAddressRange);
     }
 };
 
@@ -80,16 +129,12 @@ struct AllProxyClasses {
 	ProxyClasses<ranges::optional<T>> optional;
 	ProxyClasses<Iterator<T>> iterator;
 	ProxyClasses<Range<T>> range;
-	ProxyClasses<Iterator<ranges::optional<T>>> optionalIterator;
-	ProxyClasses<Range<ranges::optional<T>>> optionalRange;
 
 	AllProxyClasses(pybind11::module &m) : 
 	base(m),
 	optional(m),
 	iterator(m),
-	range(m),
-	optionalIterator(m),
-	optionalRange(m) {}
+	range(m) {}
 
 	template<typename Func>
     void applyToAll(Func func) {
@@ -97,8 +142,6 @@ struct AllProxyClasses {
     	optional.applyToAll(func);
     	iterator.applyToAll(func);
     	range.applyToAll(func);
-    	optionalIterator.applyToAll(func);
-    	optionalRange.applyToAll(func);
     }
 
     template<typename Func>
@@ -106,21 +149,13 @@ struct AllProxyClasses {
     	iterator.applyToAll(func);
     	range.applyToAll(func);
     }
-
-    template<typename Func>
-    void applyToOptionalRanges(Func func) {
-    	optionalIterator.applyToAll(func);
-    	optionalRange.applyToAll(func);
-    }
-
+    
     template<typename Func>
     void setupBasicProxy(Func func) {
     	base.applyToAll(func);
     	optional.applyToAll(func);
     	iterator.applyToAll(func);
     	range.applyToAll(func);
-    	optionalIterator.applyToAll(func);
-    	optionalRange.applyToAll(func);
     }
 
     template<typename Func>

@@ -12,11 +12,11 @@
 
 #include <blocksci/chain/input_range.hpp>
 #include <blocksci/chain/output_range.hpp>
+#include <blocksci/address/equiv_address.hpp>
 
 using namespace blocksci;
 namespace py = pybind11;
 
 void addWitnessScriptHashRangeMethods(RangeClasses<script::WitnessScriptHash> &classes) {
 	addAllRangeMethods(classes);
-	addWitnessScriptHashOptionalRangeMethods(classes);
 }

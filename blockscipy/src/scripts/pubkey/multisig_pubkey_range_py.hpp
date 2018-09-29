@@ -16,7 +16,6 @@
 #include <blocksci/scripts/multisig_pubkey_script.hpp>
 
 void addMultisigPubkeyRangeMethods(RangeClasses<blocksci::script::MultisigPubkey> &classes);
-void addMultisigPubkeyOptionalRangeMethods(RangeClasses<blocksci::script::MultisigPubkey> &classes);
 void applyMethodsToMultisigPubkeyRange(RangeClasses<blocksci::script::MultisigPubkey> &classes);
 
 

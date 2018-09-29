@@ -10,6 +10,7 @@
 #include "proxy/range.hpp"
 
 #include <blocksci/cluster/cluster.hpp>
+#include <blocksci/address/equiv_address.hpp>
 
 void addBlockProxyMethodsRange(AllProxyClasses<blocksci::Block> &cls) {
 	setupRangesProxy(cls);

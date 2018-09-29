@@ -52,7 +52,7 @@ def mapreduce_block_ranges(chain, mapFunc, reduceFunc, init=missing_param,  star
         return mapFunc(chain[start:end])
 
     raw_segments = chain._segment_indexes(start, end, cpu_count)
-    segments = [(raw_segment, chain.data_directory, len(chain)) for raw_segment in raw_segments]
+    segments = [(raw_segment, chain.data_location, len(chain)) for raw_segment in raw_segments]
 
     def real_map_func(input):
         local_chain = Blockchain(input[1], input[2])
@@ -168,8 +168,11 @@ def block_range(self, start, end=None) -> BlockRange:
     return self[oldest:newest]
 
 old_init = Blockchain.__init__
-def new_init(self, loc):
-    old_init(self, loc)
+def new_init(self, loc, max_block=0):
+    if max_block == 0:
+        old_init(self, loc)
+    else:
+        old_init(self, loc, max_block)
     self.block_times = None
     self.cpp = CPP(self)
     ec2_instance_path = "/home/ubuntu/BlockSci/IS_EC2"
@@ -213,8 +216,6 @@ for tx_proxy_func in _get_properties_methods(proxy.tx):
     setattr(Tx, tx_proxy_func, self_method)
     setattr(TxIterator, tx_proxy_func, method)
     setattr(TxRange, tx_proxy_func, method)
-    setattr(TxOptionalIterator, tx_proxy_func, method)
-    setattr(TxOptionalRange, tx_proxy_func, method)
 
 for tx_proxy_func in _get_functions_methods(proxy.tx):
     self_method_creator = lambda name: lambda tx, *args: getattr(proxy.tx, name)(*args)(tx)
@@ -224,8 +225,6 @@ for tx_proxy_func in _get_functions_methods(proxy.tx):
     setattr(Tx, tx_proxy_func, self_method)
     setattr(TxIterator, tx_proxy_func, method)
     setattr(TxRange, tx_proxy_func , method)
-    setattr(TxOptionalIterator, tx_proxy_func, method)
-    setattr(TxOptionalRange, tx_proxy_func, method)
 
 
 def txes_including_output_of_type(txes, typ):

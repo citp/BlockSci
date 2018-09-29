@@ -11,11 +11,11 @@
 
 #include <blocksci/chain/input_range.hpp>
 #include <blocksci/chain/output_range.hpp>
+#include <blocksci/address/equiv_address.hpp>
 
 namespace py = pybind11;
 using namespace blocksci;
 
 void addTaggedClusterRangeMethods(RangeClasses<TaggedCluster> &classes) {
     addAllRangeMethods(classes);
-    addTaggedClusterOptionalRangeMethods(classes);
 }

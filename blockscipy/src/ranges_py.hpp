@@ -10,6 +10,7 @@
 
 #include "python_fwd.hpp"
 #include "proxy.hpp"
+#include "proxy_utils.hpp"
 #include "ranges_common_py.hpp"
 
 #include <blocksci/chain/block.hpp>
@@ -29,52 +30,69 @@
 #include <range/v3/view/transform.hpp>
 
 
-template <typename T, typename Class>
-void addMapFunc(Class &cl) {
-    using Range = typename Class::type;
-    using value_type = ranges::range_value_type_t<Range>;
+template<typename T, typename V, ranges::category range_cat>
+void addMapFunc(pybind11::class_<ranges::any_view<V, range_cat>> &cl) {
+    using R = ranges::any_view<V, range_cat>;
     cl
-    .def("map", [](Range &range, Proxy<value_type, T> &proxy) {
-        return convertRangeToPython(range | ranges::view::transform(proxy));
+    .def("_map", [](R &range, Proxy<V, T> &proxy) {
+        return convertPythonRange(ranges::any_view<T, range_cat>{ranges::view::transform(range, proxy)});
     })
-    .def("map", [](Range &range, Proxy<value_type, ranges::optional<T>> &proxy) {
-        return convertRangeToPython(range | ranges::view::transform(proxy));
+    .def("_map", [](R &range, Proxy<V, ranges::optional<T>> &proxy) {
+        return convertRangeToPython(ranges::view::transform(range, proxy));
     })
     ;
 }
 
-template <typename T, typename Class>
-void addMapAnyRangeFunc(Class &cl) {
-    using Range = typename Class::type;
-    using value_type = ranges::range_value_type_t<Range>;
-
+template<typename T, typename V, ranges::category range_cat>
+void addMapAnyRangeFunc(pybind11::class_<ranges::any_view<V, range_cat>> &cl) {
+    using R = ranges::any_view<V, range_cat>;
     addMapFunc<T>(cl);
     cl
-    .def("map", [](Range &range, Proxy<value_type, ranges::any_view<T>> &proxy) {
+    .def("_map", [](R &range, Proxy<V, ranges::any_view<T>> &proxy) {
         return convertRangeToPython(range | ranges::view::transform(proxy));
     })
-    .def("map", [](Range &range, Proxy<value_type, ranges::any_view<T, ranges::category::random_access | ranges::category::sized>> &proxy) {
+    .def("_map", [](R &range, Proxy<V, ranges::any_view<T, ranges::category::random_access | ranges::category::sized>> &proxy) {
         return convertRangeToPython(range | ranges::view::transform(proxy));
     })
-    // .def("map", [](Range &range, Proxy<value_type, ranges::any_view<ranges::optional<T>>> &proxy) {
-    //     return convertRangeToPython(range | ranges::view::transform(proxy));
-    // })
-    // .def("map", [](Range &range, Proxy<value_type, ranges::any_view<ranges::optional<T>, ranges::category::random_access | ranges::category::sized>> &proxy) {
-    //     return convertRangeToPython(range | ranges::view::transform(proxy));
-    // })
     ;
 }
 
-template<typename Class>
-auto addRangeMethods(Class &cl) {
-    using Range = typename Class::type;
-    using value_type = ranges::range_value_type_t<Range>;
+template<typename GroupType, typename ResultType, typename V, ranges::category range_cat>
+void addGroupByFunc(pybind11::class_<ranges::any_view<V, range_cat>> &cl) {
+    using Range = ranges::any_view<V, range_cat>;
+    cl.def("group_by", [](Range &range, Proxy<V, GroupType> &grouper, Proxy<Iterator<V>, ResultType> &eval) -> std::unordered_map<GroupType, ResultType> {
+        std::unordered_map<GroupType, std::vector<V>> grouped;
+        RANGES_FOR(auto && item, range) {
+            grouped[grouper(item)].push_back(item);
+        }
+        std::unordered_map<GroupType, ResultType> results;
+        for (auto group : grouped) {
+            results[group.first] = eval(group.second);
+        }
+        return results;
+    });
+}
+
+template<typename T, typename V, ranges::category range_cat>
+void addGroupByFuncs(pybind11::class_<ranges::any_view<V, range_cat>> &cl) {
+    addGroupByFunc<int64_t, T>(cl);
+    addGroupByFunc<blocksci::AddressType::Enum, T>(cl);
+    addGroupByFunc<bool, T>(cl);
+    addGroupByFunc<blocksci::AnyScript, T>(cl);
+}
+
+template<typename V, ranges::category range_cat>
+auto addRangeMethods(pybind11::class_<ranges::any_view<V, range_cat>> &cl) {
+    using Range = ranges::any_view<V, range_cat>;
 
     addGenericRangeMethods(cl);
 
     cl
-    .def("where", [](Range &range, Proxy<value_type, bool> &proxy) {
-        return convertRangeToPython(range | ranges::view::filter(proxy));
+    .def("where", [](Range &range, Proxy<V, bool> &proxy) -> Iterator<V> {
+        return ranges::view::filter(range, proxy);
+    })
+    .def_property_readonly_static("nested_proxy", [](pybind11::object &) -> Proxy<V, V> {
+        return makeProxy<V>();
     })
     ;
 
@@ -90,6 +108,12 @@ auto addRangeMethods(Class &cl) {
     addMapFunc<blocksci::uint256>(cl);
     addMapFunc<blocksci::uint160>(cl);
     addMapFunc<pybind11::bytes>(cl);
+
+    addGroupByFuncs<int64_t>(cl);
+    addGroupByFuncs<bool>(cl);
+    addGroupByFuncs<std::chrono::system_clock::time_point>(cl);
+    addGroupByFuncs<blocksci::AddressType::Enum>(cl);
+
     return cl;
 }
 

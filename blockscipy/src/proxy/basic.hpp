@@ -10,6 +10,7 @@
 #define proxy_basic_hpp
 
 #include "proxy.hpp"
+#include "caster_py.hpp"
 #include "range_utils.hpp"
 #include "python_range_conversion.hpp"
 

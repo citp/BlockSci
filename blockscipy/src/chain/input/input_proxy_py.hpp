@@ -14,7 +14,6 @@
 
 void addInputProxyMethodsMain(AllProxyClasses<blocksci::Input> &cls);
 void addInputProxyMethodsRange(AllProxyClasses<blocksci::Input> &cls);
-void addInputProxyMethodsOptionalRange(AllProxyClasses<blocksci::Input> &cls);
 void addInputProxyMethods(AllProxyClasses<blocksci::Input> &cls);
 
 #endif /* input_proxy_py_h */

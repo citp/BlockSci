@@ -12,11 +12,12 @@
 
 #include <blocksci/chain/input_range.hpp>
 #include <blocksci/chain/output_range.hpp>
+#include <blocksci/address/equiv_address.hpp>
+
 
 using namespace blocksci;
 namespace py = pybind11;
 
 void addNonstandardRangeMethods(RangeClasses<script::Nonstandard> &classes) {
 	addAllRangeMethods(classes);
-	addNonstandardOptionalRangeMethods(classes);
 }

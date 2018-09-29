@@ -9,10 +9,11 @@
 #include "ranges_py.hpp"
 #include "caster_py.hpp"
 
+#include <blocksci/address/equiv_address.hpp>
+
 namespace py = pybind11;
 using namespace blocksci;
 
 void addTxRangeMethods(RangeClasses<Transaction> &classes) {
     addAllRangeMethods(classes);
-    addTxOptionalRangeMethods(classes);
 }

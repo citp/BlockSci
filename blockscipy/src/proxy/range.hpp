@@ -13,6 +13,7 @@
 #include "proxy_utils.hpp"
 #include "simplify_range.hpp"
 
+#include <range/v3/view/filter.hpp>
 #include <range/v3/view/transform.hpp>
 #include <range/v3/algorithm/any_of.hpp>
 #include <range/v3/algorithm/all_of.hpp>
@@ -45,8 +46,8 @@ auto mapProxy(Proxy<T1, T2> &p1, map_proxy_type<T2, T3> &p2) -> Proxy<T1, declty
 template<typename R, typename T, typename V>
 void addProxyMapFunc(pybind11::class_<Proxy<T, V>> &cl) {
     cl
-    .def("map", mapProxy<T, V, R>)
-    .def("map", mapProxy<T, V, ranges::optional<R>>)
+    .def("_map", mapProxy<T, V, R>)
+    .def("_map", mapProxy<T, V, ranges::optional<R>>)
     ;
 }
 
@@ -75,6 +76,14 @@ struct AddProxyRangeMethods {
 				return ranges::distance(r);
 			});
 		})
+		.def("where", [](P &p, Proxy<V, bool> &p2) -> Proxy<T, ranges::any_view<V>> {
+			return lift(p, [=](ranges::any_view<V, range_cat> && range) -> ranges::any_view<V> {
+				return range | ranges::view::filter(p2);
+			});
+		})
+		.def_property_readonly_static("nested_proxy", [](pybind11::object &) -> Proxy<V, V> {
+	        return makeProxy<V>();
+	    })
 		;
 
 		addProxyMapFunc<blocksci::Block>(cl);

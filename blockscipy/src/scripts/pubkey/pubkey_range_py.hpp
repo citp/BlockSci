@@ -14,7 +14,6 @@
 #include <blocksci/scripts/pubkey_script.hpp>
 
 void addPubkeyRangeMethods(RangeClasses<blocksci::script::Pubkey> &classes);
-void addPubkeyOptionalRangeMethods(RangeClasses<blocksci::script::Pubkey> &classes);
 void applyMethodsToPubkeyRange(RangeClasses<blocksci::script::Pubkey> &classes);
 
 

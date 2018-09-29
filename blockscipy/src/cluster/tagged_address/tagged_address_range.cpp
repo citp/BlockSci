@@ -10,11 +10,11 @@
 #include "caster_py.hpp"
 
 #include <blocksci/chain/block.hpp>
+#include <blocksci/address/equiv_address.hpp>
 
 namespace py = pybind11;
 using namespace blocksci;
 
 void addTaggedAddressRangeMethods(RangeClasses<TaggedAddress> &classes) {
     addAllRangeMethods(classes);
-    addTaggedAddressOptionalRangeMethods(classes);
 }

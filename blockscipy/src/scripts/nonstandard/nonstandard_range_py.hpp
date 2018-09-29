@@ -14,7 +14,6 @@
 #include <blocksci/scripts/multisig_script.hpp>
 
 void addNonstandardRangeMethods(RangeClasses<blocksci::script::Nonstandard> &classes);
-void addNonstandardOptionalRangeMethods(RangeClasses<blocksci::script::Nonstandard> &classes);
 void applyMethodsToNonstandardRange(RangeClasses<blocksci::script::Nonstandard> &classes);
 
 #endif /* blocksci_nonstandard_range_py_h */
