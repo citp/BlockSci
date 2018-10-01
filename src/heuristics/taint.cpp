@@ -14,13 +14,13 @@
 
 namespace blocksci { namespace heuristics {
     template <typename Func>
-    std::vector<std::pair<Output, int64_t>> getTaintedImpl(Func func, const Output &output, int64_t taintedValue) {
+    std::vector<std::pair<Output, int64_t>> getTaintedImpl(Func func, const Output &output, int64_t taintedValue, int64_t maxBlockHeight) {
         std::map<uint32_t, std::vector<std::pair<Inout, int64_t>>> taintedTxesToCheck;
         std::vector<std::pair<Output, int64_t>> taintedOutputs;
         auto processOutput = [&](const Output &spendingOut, int64_t newTaintedValue) {
             if (newTaintedValue > 0) {
                 auto index = spendingOut.getSpendingTxIndex();
-                if (index) {
+                if (index && (maxBlockHeight == -1 || (*spendingOut.getSpendingTx()).blockHeight <= maxBlockHeight)) {
                     auto &txData = taintedTxesToCheck[*index];
                     auto address = spendingOut.getAddress();
                     auto newTaintedInput = Inout{spendingOut.pointer.txNum, address.scriptNum, address.type, spendingOut.getValue()};
@@ -45,7 +45,7 @@ namespace blocksci { namespace heuristics {
         return taintedOutputs;
     }
     
-    std::vector<std::pair<Output, int64_t>> getPoisonTainted(const Output &output, int64_t taintedValue) {
+    std::vector<std::pair<Output, int64_t>> getPoisonTainted(const Output &output, int64_t taintedValue, int64_t maxBlockHeight) {
         auto poisonTaint = [](const Transaction &tx, std::vector<std::pair<Inout, int64_t>> &) {
             std::vector<std::pair<Output, int64_t>> outs;
             for (auto spendingOut : tx.outputs()) {
@@ -53,10 +53,10 @@ namespace blocksci { namespace heuristics {
             }
             return outs;
         };
-        return getTaintedImpl(poisonTaint, output, taintedValue);
+        return getTaintedImpl(poisonTaint, output, taintedValue, maxBlockHeight);
     }
     
-    std::vector<std::pair<Output, int64_t>> getHaircutTainted(const Output &output, int64_t taintedValue) {
+    std::vector<std::pair<Output, int64_t>> getHaircutTainted(const Output &output, int64_t taintedValue, int64_t maxBlockHeight) {
         auto haircutTaint = [](const Transaction &tx, std::vector<std::pair<Inout, int64_t>> &taintedInputs) {
             std::vector<std::pair<Output, int64_t>> outs;
             int64_t taintedValue = 0;
@@ -71,10 +71,10 @@ namespace blocksci { namespace heuristics {
             }
             return outs;
         };
-        return getTaintedImpl(haircutTaint, output, taintedValue);
+        return getTaintedImpl(haircutTaint, output, taintedValue, maxBlockHeight);
     }
     
-    std::vector<std::pair<Output, int64_t>> getFifoTainted(const Output &output, int64_t taintedValue) {
+    std::vector<std::pair<Output, int64_t>> getFifoTainted(const Output &output, int64_t taintedValue, int64_t maxBlockHeight) {
         auto fifoTaint = [](const Transaction &tx, std::vector<std::pair<Inout, int64_t>> &taintedInputs) {
             std::vector<std::pair<Output, int64_t>> outs;
             uint16_t currentOutputNum = 0;
@@ -127,6 +127,6 @@ namespace blocksci { namespace heuristics {
             }
             return outs;
         };
-        return getTaintedImpl(fifoTaint, output, taintedValue);
+        return getTaintedImpl(fifoTaint, output, taintedValue, maxBlockHeight);
     }
 }}
