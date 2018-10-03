@@ -11,6 +11,16 @@
 #include <functional>
 
 template<typename T1, typename T2>
+struct Proxy;
+
+template<typename T>
+Proxy<T, T> makeProxy() {
+	return std::function<T(T &)>{[](T &t) -> T {
+		return t;
+	}};
+}
+
+template<typename T1, typename T2>
 struct Proxy {
 	using output_t = T2;
 	using input_t = T1;

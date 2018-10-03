@@ -10,13 +10,6 @@
 
 #include "proxy.hpp"
 
-template<typename T>
-Proxy<T, T> makeProxy() {
-	return std::function<T(T &)>{[](T &t) -> T {
-		return t;
-	}};
-}
-
 template<typename T, typename V>
 Proxy<T, V> makeConstantProxy(const V &val) {
 	return std::function<V(T &)>{[=](T &) -> V {
