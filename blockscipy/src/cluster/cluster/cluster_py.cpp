@@ -34,7 +34,7 @@ int64_t totalOutWithoutSelfChurn(const blocksci::Block &block, blocksci::Cluster
             }
         }
         RANGES_FOR(auto output, tx.outputs()) {
-            if ((!output.isSpent() || output.getSpendingTx()->blockHeight - block.height() > 3) && inputClusters.find(manager.getCluster(output.getAddress()).clusterNum) == inputClusters.end()) {
+            if ((!output.isSpent() || output.getSpendingTx()->getBlockHeight() - block.height() > 3) && inputClusters.find(manager.getCluster(output.getAddress()).clusterNum) == inputClusters.end()) {
                 total += output.getValue();
             }
         }
