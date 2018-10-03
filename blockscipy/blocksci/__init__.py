@@ -1,18 +1,10 @@
-from ._blocksci import *
-from .currency import *
-from .blockchain_info import *
-from .blocktrail import *
-from .opreturn import *
-from .pickler import *
+# -*- coding: utf-8 -*-
+"""BlockSci Module
 
-from multiprocess import Pool
-from functools import reduce
-import operator
-import datetime
-import dateparser
-from dateutil.relativedelta import relativedelta
-import pandas as pd
-import psutil
+BlockSci enables fast and expressive analysis of Bitcoin’s and many
+other blockchains.
+"""
+
 import tempfile
 import importlib
 import subprocess
@@ -21,8 +13,23 @@ import os
 import inspect
 import copy
 import io
+import re
+from functools import reduce
 
-version = "0.5.0"
+import psutil
+from multiprocess import Pool
+import dateparser
+from dateutil.relativedelta import relativedelta
+import pandas as pd
+
+from ._blocksci import *
+from .currency import *
+from .blockchain_info import *
+from .blocktrail import *
+from .opreturn import label_application
+from .pickler import *
+
+VERSION = "0.5.0"
 
 
 sys.modules['blocksci.proxy'] = proxy
@@ -30,13 +37,16 @@ sys.modules['blocksci.cluster'] = cluster
 sys.modules['blocksci.heuristics'] = heuristics
 sys.modules['blocksci.heuristics.change'] = heuristics.change
 
-class _NoDefault(object):
+
+class _NoDefault:
     def __repr__(self):
         return '(no default)'
 
-missing_param = _NoDefault()
 
-def mapreduce_block_ranges(chain, mapFunc, reduceFunc, init=missing_param,  start=None, end=None, cpu_count=psutil.cpu_count()):
+MISSING_PARAM = _NoDefault()
+
+
+def mapreduce_block_ranges(chain, map_func, reduce_func, init=MISSING_PARAM, start=None, end=None, cpu_count=psutil.cpu_count()):
     """Initialized multithreaded map reduce function over a stream of block ranges
     """
     if start is None:
@@ -58,74 +68,132 @@ def mapreduce_block_ranges(chain, mapFunc, reduceFunc, init=missing_param,  star
         local_chain = Blockchain(input[1], input[2])
         file = io.BytesIO()
         pickler = Pickler(file)
-        mapped = mapFunc(local_chain[input[0][0]:input[0][1]])
+        mapped = map_func(local_chain[input[0][0]:input[0][1]])
         pickler.dump(mapped)
         file.seek(0)
         return file
 
     with Pool(cpu_count - 1) as p:
         results_future = p.map_async(real_map_func, segments[1:])
-        first = mapFunc(chain[raw_segments[0][0]:raw_segments[0][1]])
+        first = map_func(chain[raw_segments[0][0]:raw_segments[0][1]])
         results = results_future.get()
         results = [Unpickler(res, chain).load() for res in results]
     results.insert(0, first)
-    if type(init) == type(missing_param): 
-        return reduce(reduceFunc, results)
+    if isinstance(init, type(MISSING_PARAM)):
+        return reduce(reduce_func, results)
     else:
-        return reduce(reduceFunc, results, init)
+        return reduce(reduce_func, results, init)
 
 
-def mapreduce_blocks(chain, mapFunc, reduceFunc, init=missing_param, start=None, end=None, cpu_count=psutil.cpu_count()):
+def mapreduce_blocks(chain, map_func, reduce_func, init=MISSING_PARAM, start=None, end=None, cpu_count=psutil.cpu_count()):
     """Initialized multithreaded map reduce function over a stream of blocks
     """
-    def mapRangeFunc(blocks):
-        if type(init) == type(missing_param):
-            return reduce(reduceFunc, (mapFunc(block) for block in blocks))
+    def map_range_func(blocks):
+        if isinstance(init, type(MISSING_PARAM)):
+            return reduce(reduce_func, (map_func(block) for block in blocks))
         else:
-            return reduce(reduceFunc, (mapFunc(block) for block in blocks), copy.deepcopy(init))
-    return mapreduce_block_ranges(chain, mapRangeFunc, reduceFunc, init, start, end, cpu_count)
+            return reduce(
+                reduce_func,
+                (map_func(block) for block in blocks),
+                copy.deepcopy(init)
+            )
+    return mapreduce_block_ranges(
+        chain,
+        map_range_func,
+        reduce_func,
+        init,
+        start,
+        end,
+        cpu_count
+    )
 
-def mapreduce_txes(chain, mapFunc, reduceFunc, init=missing_param,  start=None, end=None, cpu_count=psutil.cpu_count()):
+
+def mapreduce_txes(chain, map_func, reduce_func, init=MISSING_PARAM, start=None, end=None, cpu_count=psutil.cpu_count()):
     """Initialized multithreaded map reduce function over a stream of transactions
     """
-    def mapRangeFunc(blocks):
-        if type(init) == type(missing_param):
-            return reduce(reduceFunc, (mapFunc(tx) for block in blocks for tx in block))
+    def map_range_func(blocks):
+        if isinstance(init, type(MISSING_PARAM)):
+            return reduce(
+                reduce_func,
+                (map_func(tx) for block in blocks for tx in block)
+            )
         else:
-            return reduce(reduceFunc, (mapFunc(tx) for block in blocks for tx in block), copy.deepcopy(init))
-    return mapreduce_block_ranges(chain, mapRangeFunc, reduceFunc, init, start, end, cpu_count)
+            return reduce(
+                reduce_func,
+                (map_func(tx) for block in blocks for tx in block),
+                copy.deepcopy(init)
+            )
+    return mapreduce_block_ranges(
+        chain,
+        map_range_func,
+        reduce_func,
+        init,
+        start,
+        end,
+        cpu_count
+    )
 
-def map_blocks(self, blockFunc, start = None, end = None, cpu_count=psutil.cpu_count()):
+
+def map_blocks(self, block_func, start=None, end=None, cpu_count=psutil.cpu_count()):
     """Runs the given function over each block in range and returns a list of the results
     """
     def mapFunc(blocks):
-        return [blockFunc(block) for block in blocks]
+        return [block_func(block) for block in blocks]
 
     def reduceFunc(accum, new_val):
         accum.extend(new_val)
         return accum
 
-    return mapreduce_block_ranges(self, mapFunc, reduceFunc, missing_param, start, end, cpu_count)
+    return mapreduce_block_ranges(
+        self,
+        map_func,
+        reduceFunc,
+        MISSING_PARAM,
+        start,
+        end,
+        cpu_count
+    )
 
-def filter_blocks(self, filterFunc, start = None, end = None, cpu_count=psutil.cpu_count()):
+
+def filter_blocks(self, filter_func, start=None, end=None, cpu_count=psutil.cpu_count()):
     """Return all blocks in range which match the given criteria
     """
-    def mapFunc(blocks):
-        return [block for block in blocks if filterFunc(block)]
-    def reduceFunc(accum, new_val):
+    def map_func(blocks):
+        return [block for block in blocks if filter_func(block)]
+
+    def reduce_func(accum, new_val):
         accum.extend(new_val)
         return accum
-    return  mapreduce_block_ranges(self, mapFunc, reduceFunc, missing_param, start, end, cpu_count=cpu_count)
+    return mapreduce_block_ranges(
+        self,
+        map_func,
+        reduce_func,
+        MISSING_PARAM,
+        start,
+        end,
+        cpu_count=cpu_count
+    )
 
-def filter_txes(self, filterFunc, start = None, end = None, cpu_count=psutil.cpu_count()):
+
+def filter_txes(self, filter_func, start=None, end=None, cpu_count=psutil.cpu_count()):
     """Return all transactions in range which match the given criteria
     """
-    def mapFunc(blocks):
-        return [tx for block in blocks for tx in block if filterFunc(tx)]
-    def reduceFunc(accum, new_val):
+    def map_func(blocks):
+        return [tx for block in blocks for tx in block if filter_func(tx)]
+
+    def reduce_func(accum, new_val):
         accum.extend(new_val)
         return accum
-    return mapreduce_block_ranges(self, mapFunc, reduceFunc, missing_param, start, end, cpu_count)
+    return mapreduce_block_ranges(
+        self,
+        map_func,
+        reduce_func,
+        MISSING_PARAM,
+        start,
+        end,
+        cpu_count
+    )
+
 
 Blockchain.map_blocks = map_blocks
 Blockchain.filter_blocks = filter_blocks
@@ -134,11 +202,13 @@ Blockchain.mapreduce_block_ranges = mapreduce_block_ranges
 Blockchain.mapreduce_blocks = mapreduce_blocks
 Blockchain.mapreduce_txes = mapreduce_txes
 
+
 def heights_to_dates(self, df):
     """
     Convert a pandas data frame with a block height index into a frame with a block time index
     """
     return df.set_index(df.index.to_series().apply(lambda x: self[x].time))
+
 
 def block_range(self, start, end=None) -> BlockRange:
     """
@@ -167,7 +237,10 @@ def block_range(self, start, end=None) -> BlockRange:
 
     return self[oldest:newest]
 
+
 old_init = Blockchain.__init__
+
+
 def new_init(self, loc, max_block=0):
     if max_block == 0:
         old_init(self, loc)
@@ -187,12 +260,12 @@ def new_init(self, loc, max_block=0):
             print("Note: this appears to be a fresh instance. Script data has not yet been cached locally. Some queries might be slow. Caching is currently ongoing in the background, and usually takes 1.5 hours.")
         elif not os.path.exists(index_heated_path):
             print("Note: this appears to be a fresh instance. Index data has not yet been cached locally. A few queries might be slow. Caching is currently ongoing in the background, and usually takes 3.5 hours.")
+
+
 Blockchain.__init__ = new_init
 Blockchain.range = block_range
 Blockchain.heights_to_dates = heights_to_dates
 
-def _getFuncs(obj):
-    return [x for x in dir(obj) if x[:2] != '__']
 
 def _get_functions_methods(obj):
     results = []
@@ -201,6 +274,7 @@ def _get_functions_methods(obj):
             results.append(attr)
     return results
 
+
 def _get_properties_methods(obj):
     results = []
     for attr in dir(obj):
@@ -208,23 +282,32 @@ def _get_properties_methods(obj):
             results.append(attr)
     return results
 
+
 for tx_proxy_func in _get_properties_methods(proxy.tx):
-    self_method_creator = lambda name: lambda tx, *args: getattr(proxy.tx, name)(tx)
-    method_creator = lambda name: lambda txes: txes.map(getattr(proxy.tx, name))
-    self_method = property(self_method_creator(tx_proxy_func))
-    method = property(method_creator(tx_proxy_func))
+    def self_property_creator(name):
+        return property(getattr(proxy.tx, name))
+
+    def property_creator(name):
+        return property(lambda txes: txes._map(getattr(proxy.tx, name)))
+
+    self_method = self_property_creator(tx_proxy_func)
+    method = property_creator(tx_proxy_func)
     setattr(Tx, tx_proxy_func, self_method)
     setattr(TxIterator, tx_proxy_func, method)
     setattr(TxRange, tx_proxy_func, method)
 
 for tx_proxy_func in _get_functions_methods(proxy.tx):
-    self_method_creator = lambda name: lambda tx, *args: getattr(proxy.tx, name)(*args)(tx)
-    method_creator = lambda name: lambda txes, *args: txes.map(getattr(proxy.tx, name)(*args))
+    def self_method_creator(name):
+        return lambda tx, *args: getattr(proxy.tx, name)(*args)(tx)
+
+    def method_creator(name):
+        return lambda txes, *args: txes.map(getattr(proxy.tx, name)(*args))
+
     self_method = self_method_creator(tx_proxy_func)
     method = method_creator(tx_proxy_func)
     setattr(Tx, tx_proxy_func, self_method)
     setattr(TxIterator, tx_proxy_func, method)
-    setattr(TxRange, tx_proxy_func , method)
+    setattr(TxRange, tx_proxy_func, method)
 
 
 def txes_including_output_of_type(txes, typ):
@@ -234,16 +317,26 @@ TxIterator.including_output_of_type = txes_including_output_of_type
 
 TxRange.including_output_of_type = txes_including_output_of_type
 
+
 def inputs_sent_before_height(inputs, height):
     return inputs.where(proxy.input.spent_tx.block.height < height)
+
+
 def inputs_sent_after_height(inputs, height):
     return inputs.where(proxy.input.spent_tx.block.height >= height)
+
+
 def inputs_with_age_less_than(inputs, age):
     return inputs.where(proxy.input.tx.block_height - proxy.input.spent_tx.block.height < age)
+
+
 def inputs_with_age_greater_than(inputs, age):
     return inputs.where(proxy.input.tx.block_height - proxy.input.spent_tx.block.height >= age)
+
+
 def inputs_with_address_type(inputs, typ):
     return inputs.where(proxy.input.address_type == typ)
+
 
 InputIterator.sent_before_height = inputs_sent_before_height
 InputIterator.sent_after_height = inputs_sent_after_height
@@ -257,20 +350,32 @@ InputRange.with_age_less_than = inputs_with_age_less_than
 InputRange.with_age_greater_than = inputs_with_age_greater_than
 InputRange.with_address_type = inputs_with_address_type
 
+
 def outputs_unspent(outputs, height):
     return outputs.where(~proxy.output.is_spent)
+
+
 def outputs_spent_before_height(outputs, height):
     return outputs.where(proxy.output.is_spent).where(proxy.output.spending_tx.map(proxy.tx.block_height).or_value(0) < height)
+
+
 def outputs_spent_after_height(outputs, age):
     return outputs.where(proxy.output.is_spent).where(proxy.output.spending_tx.map(proxy.tx.block_height).or_value(0) >= height)
+
+
 def outputs_spent_with_age_less_than(outputs, age):
     output_age = proxy.output.spending_tx.map(proxy.tx.block_height) - proxy.output.tx.block_height
     return outputs.where(proxy.output.is_spent).where(output_age.or_value(0) < age)
+
+
 def outputs_spent_with_age_greater_than(outputs, age):
     output_age = proxy.output.spending_tx.map(proxy.tx.block_height) - proxy.output.tx.block_height
     return outputs.where(proxy.output.is_spent).where(output_age.or_value(0) >= age)
+
+
 def outputs_with_address_type(outputs, typ):
     return outputs.where(proxy.output.address_type == typ)
+
 
 OutputIterator.unspent = outputs_unspent
 OutputIterator.spent_before_height = outputs_spent_before_height
@@ -288,10 +393,14 @@ OutputRange.with_address_type = outputs_with_address_type
 
 first_miner_run = True
 
+
 class DummyClass:
     pass
 
+
 loaderDirectory = os.path.dirname(os.path.abspath(inspect.getsourcefile(DummyClass)))
+
+
 def get_miner(block) -> str:
     """
     Get the miner of the block based on the text in the coinbase transaction
@@ -310,34 +419,36 @@ def get_miner(block) -> str:
         first_miner_run = False
     coinbase = block.coinbase_param.decode("utf_8", "replace")
     tag_matches = re.findall(coinbase_tag_re, coinbase)
-    if len(tag_matches) > 0:
+    if tag_matches:
         return pool_data["coinbase_tags"][tag_matches[0]]["name"]
     for txout in block.coinbase_tx.outs:
         if txout.address in tagged_addresses:
             return tagged_addresses[txout.address]["name"]
     
     additional_miners = {
-        "EclipseMC" : "EclipseMC",
-        "poolserverj" : "poolserverj",
-        "/stratumPool/" : "stratumPool",
-        "/stratum/" : "stratum",
-        "/nodeStratum/" : "nodeStratum",
-        "BitLC" : "BitLC",
-        "/TangPool/" : "TangPool",
-        "/Tangpool/" : "TangPool",
-        "pool.mkalinin.ru" : "pool.mkalinin.ru",
-        "For Pierce and Paul" : "Pierce and Paul",
-        "50btc.com" : "50btc.com",
-        "七彩神仙鱼" : "F2Pool"
+        "EclipseMC": "EclipseMC",
+        "poolserverj": "poolserverj",
+        "/stratumPool/": "stratumPool",
+        "/stratum/": "stratum",
+        "/nodeStratum/": "nodeStratum",
+        "BitLC": "BitLC",
+        "/TangPool/": "TangPool",
+        "/Tangpool/": "TangPool",
+        "pool.mkalinin.ru": "pool.mkalinin.ru",
+        "For Pierce and Paul": "Pierce and Paul",
+        "50btc.com": "50btc.com",
+        "七彩神仙鱼": "F2Pool"
     }
-    
+
     for miner in additional_miners:
         if miner in coinbase:
             return additional_miners[miner]
-    
+
     return "Unknown"
 
+
 Block.miner = get_miner
+
 
 class CPP(object):
     def __init__(self, chain):
@@ -362,7 +473,10 @@ class CPP(object):
             filein = open(loaderDirectory + '/filterTxesExtension.cpp')
             template = Template(filein.read())
             module_name = self.generate_module_name()
-            filled_template = template.safe_substitute({"module_name":module_name, "func_def" : code})
+            filled_template = template.safe_substitute({
+                "module_name": module_name,
+                "func_def": code
+            })
             makefile = self.create_makefile(module_name)
             func = self.build_function(filled_template, makefile, module_name)
             self.saved_tx_filters[code] = func
@@ -370,14 +484,13 @@ class CPP(object):
 
     def create_makefile(self, module_name):
         from string import Template
-        import os
         filein = open(loaderDirectory + '/templateMakefile')
         template = Template(filein.read())
         subs = {
-            "module_name" : module_name,
-            "install_location" : self.module_directory.name,
-            "srcname" : module_name + ".cpp",
-            "python_blocksci_dir":loaderDirectory
+            "module_name": module_name,
+            "install_location": self.module_directory.name,
+            "srcname": module_name + ".cpp",
+            "python_blocksci_dir": loaderDirectory
         }
         return template.safe_substitute(subs)
 
