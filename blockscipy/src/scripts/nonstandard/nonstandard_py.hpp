@@ -10,6 +10,7 @@
 #define blocksci_nonstandard_py_h
 
 #include "method_tags.hpp"
+#include "blocksci_range.hpp"
 
 #include <blocksci/scripts/nonstandard_script.hpp>
 #include <pybind11/pybind11.h>
@@ -24,7 +25,6 @@ struct AddNonstandardMethods {
 };
 
 void init_nonstandard(pybind11::class_<blocksci::script::Nonstandard> &cl);
-
-
+void addNonstandardRangeMethods(RangeClasses<blocksci::script::Nonstandard> &classes);
 
 #endif /* blocksci_nonstandard_py_h */

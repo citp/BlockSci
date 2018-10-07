@@ -6,7 +6,7 @@
 //
 //
 
-#include "multisig_range_py.hpp"
+#include "multisig_py.hpp"
 #include "caster_py.hpp"
 #include "ranges_py.hpp"
 

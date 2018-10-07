@@ -16,9 +16,7 @@
 #include <pybind11/pybind11.h>
 
 void init_output(pybind11::class_<blocksci::Output> &cl);
-void addOutputOptionalRangeMethods(RangeClasses<blocksci::Output> &classes);
 void addOutputRangeMethods(RangeClasses<blocksci::Output> &classes);
-void applyMethodsToOutputRange(RangeClasses<blocksci::Output> &classes);
 
 struct AddOutputMethods {
     template <typename FuncApplication>

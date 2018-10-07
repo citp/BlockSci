@@ -10,6 +10,7 @@
 #define blocksci_multisig_py_h
 
 #include "method_tags.hpp"
+#include "blocksci_range.hpp"
 
 #include <blocksci/scripts/multisig_script.hpp>
 
@@ -27,5 +28,6 @@ struct AddMultisigMethods {
 };
 
 void init_multisig(pybind11::class_<blocksci::script::Multisig> &cl);
+void addMultisigRangeMethods(RangeClasses<blocksci::script::Multisig> &classes);
 
 #endif /* blocksci_multisig_py_h */

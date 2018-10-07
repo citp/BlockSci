@@ -15,6 +15,10 @@
 
 void addAddressProxyMethodsMain(AllProxyClasses<blocksci::AnyScript> &cls);
 void addAddressProxyMethodsRange(AllProxyClasses<blocksci::AnyScript> &cls);
+void addAddressProxyMethodsRangeMap(AllProxyClasses<blocksci::AnyScript> &cls);
+void addAddressProxyMethodsRangeMapOptional(AllProxyClasses<blocksci::AnyScript> &cls);
+void addAddressProxyMethodsRangeMapSequence(AllProxyClasses<blocksci::AnyScript> &cls);
+
 void addAddressProxyMethods(AllProxyClasses<blocksci::AnyScript> &cls);
 
 #endif /* address_proxy_py_h */

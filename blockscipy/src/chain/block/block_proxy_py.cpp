@@ -16,8 +16,7 @@
 
 
 struct AddBlockProxyMethods {
-	template<typename T>
-	void operator()(pybind11::class_<Proxy<T, blocksci::Block>> &cl) {
+	void operator()(pybind11::class_<Proxy<blocksci::Block>> &cl) {
 		applyMethodsToProxy(cl, AddBlockMethods{});
 	}
 };
@@ -25,6 +24,9 @@ struct AddBlockProxyMethods {
 void addBlockProxyMethods(AllProxyClasses<blocksci::Block> &cls) {
 	addBlockProxyMethodsMain(cls);
 	addBlockProxyMethodsRange(cls);
+	addBlockProxyMethodsRangeMap(cls);
+	addBlockProxyMethodsRangeMapOptional(cls);
+	addBlockProxyMethodsRangeMapSequence(cls);
 	cls.optional.applyToAll(AddProxyOptionalMethods{});
 	cls.optional.applyToAll(AddProxyOptionalMapMethods{});
 

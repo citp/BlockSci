@@ -7,7 +7,6 @@
 
 #include "input_py.hpp"
 #include "caster_py.hpp"
-#include "self_apply_py.hpp"
 
 #include <blocksci/chain/access.hpp>
 #include <blocksci/chain/block.hpp>
@@ -27,6 +26,4 @@ void init_input(py::class_<Input> &cl) {
         return Access{&input.getAccess()};
     })
     ;
-    
-    applyMethodsToSelf(cl, AddInputMethods{});
 }

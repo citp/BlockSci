@@ -21,6 +21,5 @@
 
 
 void addBlockRangeMethods(RangeClasses<blocksci::Block> &classes);
-void applyMethodsToBlockRange(RangeClasses<blocksci::Block> &classes);
 
 #endif /* block_py_h */

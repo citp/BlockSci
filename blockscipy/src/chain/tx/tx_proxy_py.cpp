@@ -18,8 +18,7 @@
 #include <blocksci/cluster/cluster.hpp>
 
 struct AddTxProxyMethods {
-	template<typename T>
-	void operator()(pybind11::class_<Proxy<T, blocksci::Transaction>> &cl) {
+	void operator()(pybind11::class_<Proxy<blocksci::Transaction>> &cl) {
 		applyMethodsToProxy(cl, AddTransactionMethods{});
 	}
 };
@@ -27,6 +26,9 @@ struct AddTxProxyMethods {
 void addTxProxyMethods(AllProxyClasses<blocksci::Transaction> &cls) {
 	addTxProxyMethodsMain(cls);
 	addTxProxyMethodsRange(cls);
+	addTxProxyMethodsRangeMap(cls);
+	addTxProxyMethodsRangeMapOptional(cls);
+	addTxProxyMethodsRangeMapSequence(cls);
 	cls.optional.applyToAll(AddProxyOptionalMethods{});
 	cls.optional.applyToAll(AddProxyOptionalMapMethods{});
 

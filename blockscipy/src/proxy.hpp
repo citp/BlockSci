@@ -8,45 +8,41 @@
 #ifndef proxy_hpp
 #define proxy_hpp
 
+#include "range_utils.hpp"
+
+#include <any>
 #include <functional>
 
-template<typename T1, typename T2>
+template<typename T>
 struct Proxy;
 
 template<typename T>
-Proxy<T, T> makeProxy() {
-	return std::function<T(T &)>{[](T &t) -> T {
-		return t;
+Proxy<T> makeProxy() {
+	return std::function<T(std::any &)>{[](std::any &t) -> T {
+		return std::any_cast<T>(t);
 	}};
 }
 
-template<typename T1, typename T2>
+template<typename T>
 struct Proxy {
-	using output_t = T2;
-	using input_t = T1;
+	using output_t = T;
 
-	std::function<T2(T1 &)> func;
-
+	std::function<T(std::any &)> func;
 	
-	Proxy(const std::function<T2(T1 &)> &func_) : func(func_) {}
+	Proxy(const std::function<T(std::any &)> &func_) : func(func_) {}
 
-	Proxy(const Proxy<T1, T2> & proxy) : func(proxy.func) {}
+	Proxy(const Proxy<T> & proxy) : func(proxy.func) {}
 
-	Proxy(Proxy<T1, T2> && proxy) : func(std::move(proxy.func)) {}
+	Proxy(Proxy<T> && proxy) : func(std::move(proxy.func)) {}
 
-	T2 operator()(T1 &t) const {
+	T operator()(std::any &t) const {
 		return func(t);
 	}
 
-	T2 operator()(T1 && t) const {
+	T operator()(std::any && t) const {
 		return func(t);
 	}
 };
-
-template <typename Func, typename T>
-auto curry(Func func, T && t) {
-	return std::bind(func, std::placeholders::_1, std::forward<T>(t));
-}
 
 template <typename F1, typename F2>
 auto compose(F1 && f1, F2 && f2) {

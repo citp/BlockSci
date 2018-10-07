@@ -10,16 +10,16 @@
 
 #include "proxy.hpp"
 
-template<typename T, typename V>
-Proxy<T, V> makeConstantProxy(const V &val) {
-	return std::function<V(T &)>{[=](T &) -> V {
+template<typename V>
+Proxy<V> makeConstantProxy(const V &val) {
+	return std::function<V(std::any &)>{[=](std::any &) -> V {
 		return val;
 	}};
 }
 
-template <typename T1, typename T2, typename F>
-auto lift(const Proxy<T1, T2> &p, F && f) -> Proxy<T1, decltype(f(std::declval<T2>()))> {
-	return std::function<decltype(f(std::declval<T2>()))(T1 &)>{compose(p.func, std::forward<F>(f))};
+template <typename T, typename F>
+auto lift(const Proxy<T> &p, F && f) -> Proxy<decltype(f(std::declval<T>()))> {
+	return std::function<decltype(f(std::declval<T>()))(std::any &)>{compose(p.func, std::forward<F>(f))};
 }
 
 #endif /* proxy_utils_hpp */

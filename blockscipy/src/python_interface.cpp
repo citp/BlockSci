@@ -10,7 +10,7 @@
 #include "blocksci_range.hpp"
 #include "proxy_py.hpp"
 #include "proxy_utils.hpp"
-#include "other_proxy_py.hpp"
+#include "simple/simple_proxies.hpp"
 
 #include "chain/blockchain_py.hpp"
 #include "chain/input/input_py.hpp"
@@ -31,24 +31,29 @@
 #include "cluster/tagged_address/tagged_address_range_py.hpp"
 
 #include "scripts/address_py.hpp"
-#include "scripts/address_range_py.hpp"
 #include "scripts/address_proxy_py.hpp"
 #include "scripts/equiv_address/equiv_address_py.hpp"
 #include "scripts/equiv_address/equiv_address_range_py.hpp"
 #include "scripts/pubkey/pubkey_py.hpp"
-#include "scripts/pubkey/pubkey_range_py.hpp"
-#include "scripts/pubkey/pubkeyhash_range_py.hpp"
-#include "scripts/pubkey/witness_pubkeyhash_range_py.hpp"
-#include "scripts/pubkey/multisig_pubkey_range_py.hpp"
+#include "scripts/pubkey/pubkey/pubkey_range_py.hpp"
+#include "scripts/pubkey/pubkey/pubkey_proxy_py.hpp"
+#include "scripts/pubkey/pubkeyhash/pubkeyhash_range_py.hpp"
+#include "scripts/pubkey/pubkeyhash/pubkeyhash_proxy_py.hpp"
+#include "scripts/pubkey/witness_pubkeyhash/witness_pubkeyhash_range_py.hpp"
+#include "scripts/pubkey/witness_pubkeyhash/witness_pubkeyhash_proxy_py.hpp"
+#include "scripts/pubkey/multisig_pubkey/multisig_pubkey_range_py.hpp"
+#include "scripts/pubkey/multisig_pubkey/multisig_pubkey_proxy_py.hpp"
 #include "scripts/multisig/multisig_py.hpp"
-#include "scripts/multisig/multisig_range_py.hpp"
+#include "scripts/multisig/multisig_proxy_py.hpp"
 #include "scripts/scripthash/scripthash_py.hpp"
-#include "scripts/scripthash/scripthash_range_py.hpp"
-#include "scripts/scripthash/witness_scripthash_range_py.hpp"
+#include "scripts/scripthash/scripthash/scripthash_range_py.hpp"
+#include "scripts/scripthash/scripthash/scripthash_proxy_py.hpp"
+#include "scripts/scripthash/witness_scripthash/witness_scripthash_range_py.hpp"
+#include "scripts/scripthash/witness_scripthash/witness_scripthash_proxy_py.hpp"
 #include "scripts/nulldata/nulldata_py.hpp"
-#include "scripts/nulldata/nulldata_range_py.hpp"
+#include "scripts/nulldata/nulldata_proxy_py.hpp"
 #include "scripts/nonstandard/nonstandard_py.hpp"
-#include "scripts/nonstandard/nonstandard_range_py.hpp"
+#include "scripts/nonstandard/nonstandard_proxy_py.hpp"
 
 #include <pybind11/functional.h>
 
@@ -58,6 +63,14 @@ using namespace blocksci;
 
 void init_blockchain(py::module &m);
 void init_heuristics(py::module &m);
+
+template <typename Class>
+void addSelfProxy(Class &cl) {
+    using T = typename Class::type;
+    cl.def_property_readonly_static("self_proxy", [](pybind11::object &) -> Proxy<T> {
+        return makeProxy<T>();
+    });
+}
 
 PYBIND11_MODULE(_blocksci, m) {
     m.attr("__name__") = PYBIND11_STR_TYPE("blocksci");
@@ -81,10 +94,33 @@ PYBIND11_MODULE(_blocksci, m) {
     py::class_<script::Nonstandard> nonstandardCl(m, "NonStandardAddress", addressCl, "Extra data about non-standard address");
     py::class_<script::OpReturn> opReturnCl(m, "OpReturn", addressCl, "Extra data about op_return address");
 
+    // addSelfProxy(blockchainCl);
+    addSelfProxy(uint160Cl);
+    addSelfProxy(uint256Cl);
+    addSelfProxy(blockCl);
+    addSelfProxy(txCl);
+    addSelfProxy(inputCl);
+    addSelfProxy(outputCl);
+    addSelfProxy(equivAddressCl);
+    addSelfProxy(addressCl);
+    addSelfProxy(pubkeyAddressCl);
+    addSelfProxy(pubkeyHashAddressCl);
+    addSelfProxy(witnessPubkeyHashAddressCl);
+    addSelfProxy(multisigPubkeyCl);
+    addSelfProxy(scriptHashCl);
+    addSelfProxy(witnessScriptHashCl);
+    addSelfProxy(multisigCl);
+    addSelfProxy(nonstandardCl);
+    addSelfProxy(opReturnCl);
+
     auto clusterMod = m.def_submodule("cluster");
     py::class_<Cluster> clusterCl(clusterMod, "Cluster", "Class representing a cluster");
     py::class_<TaggedCluster> taggedClusterCl(clusterMod, "TaggedCluster");
     py::class_<TaggedAddress> taggedAddressCl(clusterMod, "TaggedAddress");
+
+    addSelfProxy(clusterCl);
+    addSelfProxy(taggedClusterCl);
+    addSelfProxy(taggedAddressCl);
 
     RangeClasses<Block> blockRangeCls(m);
     RangeClasses<Transaction> txRangeCls(m);
@@ -95,7 +131,7 @@ PYBIND11_MODULE(_blocksci, m) {
     RangeClasses<script::Pubkey> pubkeyRangeCls(m);
     RangeClasses<script::PubkeyHash> pubkeyHashRangeCls(m);
     RangeClasses<script::WitnessPubkeyHash> witnessPubkeyHashRangeCls(m);
-    RangeClasses<script::MultisigPubkey> multisigSubkeyRangeCls(m);
+    RangeClasses<script::MultisigPubkey> multisigPubkeyRangeCls(m);
     RangeClasses<script::Multisig> multisigRangeCls(m);
     RangeClasses<script::ScriptHash> scripthashRangeCls(m);
     RangeClasses<script::WitnessScriptHash> witnessScripthashRangeCls(m);
@@ -111,13 +147,27 @@ PYBIND11_MODULE(_blocksci, m) {
     AllProxyClasses<Input> inputProxyCls(proxyMod);
     AllProxyClasses<Output> outputProxyCls(proxyMod);
     AllProxyClasses<AnyScript> addressProxyCls(proxyMod);
+    AllProxyClasses<EquivAddress> equivAddressProxyCls(proxyMod);
+
+    AllProxyClasses<script::Pubkey> pubkeyProxyCls(proxyMod);
+    AllProxyClasses<script::PubkeyHash> pubkeyHashProxyCls(proxyMod);
+    AllProxyClasses<script::WitnessPubkeyHash> witnessPubkeyHashProxyCls(proxyMod);
+    AllProxyClasses<script::MultisigPubkey> multisigPubkeyProxyCls(proxyMod);
+    AllProxyClasses<script::Multisig> multisigProxyCls(proxyMod);
+    AllProxyClasses<script::ScriptHash> scripthashProxyCls(proxyMod);
+    AllProxyClasses<script::WitnessScriptHash> witnessScripthashProxyCls(proxyMod);
+    AllProxyClasses<script::OpReturn> nulldataProxyCls(proxyMod);
+    AllProxyClasses<script::Nonstandard> nonstandardProxyCls(proxyMod);
+
     AllProxyClasses<AddressType::Enum> addressTypeProxyCls(proxyMod);
     AllProxyClasses<int64_t> intProxyCls(proxyMod);
     AllProxyClasses<bool> boolProxyCls(proxyMod);
     AllProxyClasses<std::chrono::system_clock::time_point> timeProxyCls(proxyMod);
     AllProxyClasses<uint256> uint256ProxyCls(proxyMod);
     AllProxyClasses<uint160> uint160ProxyCls(proxyMod);
+    AllProxyClasses<std::string> stringProxyCls(proxyMod);
     AllProxyClasses<py::bytes> bytesProxyCls(proxyMod);
+    AllProxyClasses<py::list> listProxyCls(proxyMod);
 
     addBlockProxyMethods(blockProxyCls);
     addTxProxyMethods(txProxyCls);
@@ -131,6 +181,18 @@ PYBIND11_MODULE(_blocksci, m) {
     addUint256ProxyMethods(uint256ProxyCls);
     addUint160ProxyMethods(uint160ProxyCls);
     addBytesProxyMethods(bytesProxyCls);
+    addStringProxyMethods(stringProxyCls);
+    addListProxyMethods(listProxyCls);
+
+    addPubkeyProxyMethods(pubkeyProxyCls);
+    addPubkeyHashProxyMethods(pubkeyHashProxyCls);
+    addWitnessPubkeyHashProxyMethods(witnessPubkeyHashProxyCls);
+    addMultisigPubkeyProxyMethods(multisigPubkeyProxyCls);
+    addMultisigProxyMethods(multisigProxyCls);
+    addScriptHashProxyMethods(scripthashProxyCls);
+    addWitnessScriptHashProxyMethods(witnessScripthashProxyCls);
+    addNonstandardProxyMethods(nonstandardProxyCls);
+    addNulldataProxyMethods(nulldataProxyCls);
 
     proxyMod.attr("block") = makeProxy<Block>();
     proxyMod.attr("tx") = makeProxy<Transaction>();
@@ -138,11 +200,17 @@ PYBIND11_MODULE(_blocksci, m) {
     proxyMod.attr("output") = makeProxy<Output>();
     proxyMod.attr("address") = makeProxy<AnyScript>();
 
-    proxyMod.attr("blocks") = makeProxy<Iterator<Block>>();
-    proxyMod.attr("txes") = makeProxy<Iterator<Transaction>>();
-    proxyMod.attr("inputs") = makeProxy<Iterator<Input>>();
-    proxyMod.attr("outputs") = makeProxy<Iterator<Output>>();
-    proxyMod.attr("addresses") = makeProxy<AnyScript>();
+    proxyMod.attr("block_iterator") = makeProxy<Iterator<Block>>();
+    proxyMod.attr("tx_iterator") = makeProxy<Iterator<Transaction>>();
+    proxyMod.attr("input_iterator") = makeProxy<Iterator<Input>>();
+    proxyMod.attr("output_iterator") = makeProxy<Iterator<Output>>();
+    proxyMod.attr("address_iterator") = makeProxy<Iterator<AnyScript>>();
+
+    proxyMod.attr("block_range") = makeProxy<Range<Block>>();
+    proxyMod.attr("tx_range") = makeProxy<Range<Transaction>>();
+    proxyMod.attr("input_range") = makeProxy<Range<Input>>();
+    proxyMod.attr("output_range") = makeProxy<Range<Output>>();
+    proxyMod.attr("address_range") = makeProxy<Range<AnyScript>>();
 
     init_address_type(m);
     init_heuristics(m);
@@ -158,7 +226,6 @@ PYBIND11_MODULE(_blocksci, m) {
     {
         init_block(blockCl);
         addBlockRangeMethods(blockRangeCls);
-        applyMethodsToBlockRange(blockRangeCls);
     }
     {
         init_tx(txCl);
@@ -167,63 +234,50 @@ PYBIND11_MODULE(_blocksci, m) {
     {
         init_input(inputCl);
         addInputRangeMethods(inputRangeCls);
-        applyMethodsToInputRange(inputRangeCls);
     }
     {
         init_output(outputCl);
         addOutputRangeMethods(outputRangeCls);
-        applyMethodsToOutputRange(outputRangeCls);
     }
     {
         {   
             addAddressRangeMethods(addressRangeCls);
-            applyMethodsToAddressRange(addressRangeCls);
-            applyRangeFiltersToAddressRange(addressRangeCls);
         }
         {
             init_pubkey(pubkeyAddressCl);
             addPubkeyRangeMethods(pubkeyRangeCls);
-            applyMethodsToPubkeyRange(pubkeyRangeCls);
         }
         {
             init_pubkeyhash(pubkeyHashAddressCl);
             addPubkeyHashRangeMethods(pubkeyHashRangeCls);
-            applyMethodsToPubkeyHashRange(pubkeyHashRangeCls);
         }
         {
             init_witness_pubkeyhash(witnessPubkeyHashAddressCl);
-            addWitnessPubkeyHashRangeMethods(witnessPubkeyHashRangeCls);
-            applyMethodsToWitnessPubkeyHashRange(witnessPubkeyHashRangeCls);
+            addWitnessPubkeyHashRangeMethods(witnessPubkeyHashRangeCls);\
         }
         {
             init_multisig_pubkey(multisigPubkeyCl);
-            addMultisigPubkeyRangeMethods(multisigSubkeyRangeCls);
-            applyMethodsToMultisigPubkeyRange(multisigSubkeyRangeCls);
+            addMultisigPubkeyRangeMethods(multisigPubkeyRangeCls);
         }
         {
             init_multisig(multisigCl);
             addMultisigRangeMethods(multisigRangeCls);
-            applyMethodsToMultisigRange(multisigRangeCls);
         }
         {
             init_scripthash(scriptHashCl);
             addScriptHashRangeMethods(scripthashRangeCls);
-            applyMethodsToScriptHashRange(scripthashRangeCls);
         }
         {
             init_witness_scripthash(witnessScriptHashCl);
             addWitnessScriptHashRangeMethods(witnessScripthashRangeCls);
-            applyMethodsToWitnessScriptHashRange(witnessScripthashRangeCls);
         }
         {
             init_nulldata(opReturnCl);
             addNulldataRangeMethods(nulldataRangeCls);
-            applyMethodsToNulldataRange(nulldataRangeCls);
         }
         {
             init_nonstandard(nonstandardCl);
             addNonstandardRangeMethods(nonstandardRangeCls);
-            applyMethodsToNonstandardRange(nonstandardRangeCls);
         }
     }
     {

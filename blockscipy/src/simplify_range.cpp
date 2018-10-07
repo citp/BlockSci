@@ -35,12 +35,6 @@ Iterator<typename ranges::range_value_t<T>::value_type> flattenOptional(T && t) 
     return {ranges::view::transform(ranges::view::filter(std::forward<T>(t), isOptional), derefOptional)};
 }
 
-template <typename T>
-Iterator<typename ranges::range_value_t<ranges::range_value_t<T>>::value_type> flattenNestedOptional(T && t) {
-	return flattenOptional(ranges::view::join(std::forward<T>(t)));
-}
-
-
 Range<blocksci::Input> ConvertedRangeTypeTagConverter::operator()(Range<blocksci::Input> && t) { return std::move(t); }
 Iterator<blocksci::Input> ConvertedRangeTypeTagConverter::operator()(Iterator<blocksci::Input> && t) { return std::move(t); }
 
@@ -61,6 +55,33 @@ Iterator<blocksci::EquivAddress> ConvertedRangeTypeTagConverter::operator()(Iter
 
 Range<blocksci::AnyScript> ConvertedRangeTypeTagConverter::operator()(Range<blocksci::AnyScript> && t) { return std::move(t); }
 Iterator<blocksci::AnyScript> ConvertedRangeTypeTagConverter::operator()(Iterator<blocksci::AnyScript> && t) { return std::move(t); }
+
+Range<blocksci::script::Pubkey> ConvertedRangeTypeTagConverter::operator()(Range<blocksci::script::Pubkey> && t) { return std::move(t); }
+Iterator<blocksci::script::Pubkey> ConvertedRangeTypeTagConverter::operator()(Iterator<blocksci::script::Pubkey> && t) { return std::move(t); }
+
+Range<blocksci::script::PubkeyHash> ConvertedRangeTypeTagConverter::operator()(Range<blocksci::script::PubkeyHash> && t) { return std::move(t); }
+Iterator<blocksci::script::PubkeyHash> ConvertedRangeTypeTagConverter::operator()(Iterator<blocksci::script::PubkeyHash> && t) { return std::move(t); }
+
+Range<blocksci::script::WitnessPubkeyHash> ConvertedRangeTypeTagConverter::operator()(Range<blocksci::script::WitnessPubkeyHash> && t) { return std::move(t); }
+Iterator<blocksci::script::WitnessPubkeyHash> ConvertedRangeTypeTagConverter::operator()(Iterator<blocksci::script::WitnessPubkeyHash> && t) { return std::move(t); }
+
+Range<blocksci::script::MultisigPubkey> ConvertedRangeTypeTagConverter::operator()(Range<blocksci::script::MultisigPubkey> && t) { return std::move(t); }
+Iterator<blocksci::script::MultisigPubkey> ConvertedRangeTypeTagConverter::operator()(Iterator<blocksci::script::MultisigPubkey> && t) { return std::move(t); }
+
+Range<blocksci::script::Multisig> ConvertedRangeTypeTagConverter::operator()(Range<blocksci::script::Multisig> && t) { return std::move(t); }
+Iterator<blocksci::script::Multisig> ConvertedRangeTypeTagConverter::operator()(Iterator<blocksci::script::Multisig> && t) { return std::move(t); }
+
+Range<blocksci::script::ScriptHash> ConvertedRangeTypeTagConverter::operator()(Range<blocksci::script::ScriptHash> && t) { return std::move(t); }
+Iterator<blocksci::script::ScriptHash> ConvertedRangeTypeTagConverter::operator()(Iterator<blocksci::script::ScriptHash> && t) { return std::move(t); }
+
+Range<blocksci::script::WitnessScriptHash> ConvertedRangeTypeTagConverter::operator()(Range<blocksci::script::WitnessScriptHash> && t) { return std::move(t); }
+Iterator<blocksci::script::WitnessScriptHash> ConvertedRangeTypeTagConverter::operator()(Iterator<blocksci::script::WitnessScriptHash> && t) { return std::move(t); }
+
+Range<blocksci::script::OpReturn> ConvertedRangeTypeTagConverter::operator()(Range<blocksci::script::OpReturn> && t) { return std::move(t); }
+Iterator<blocksci::script::OpReturn> ConvertedRangeTypeTagConverter::operator()(Iterator<blocksci::script::OpReturn> && t) { return std::move(t); }
+
+Range<blocksci::script::Nonstandard> ConvertedRangeTypeTagConverter::operator()(Range<blocksci::script::Nonstandard> && t) { return std::move(t); }
+Iterator<blocksci::script::Nonstandard> ConvertedRangeTypeTagConverter::operator()(Iterator<blocksci::script::Nonstandard> && t) { return std::move(t); }
 
 Range<blocksci::TaggedAddress> ConvertedRangeTypeTagConverter::operator()(Range<blocksci::TaggedAddress> && t) { return std::move(t); }
 Iterator<blocksci::TaggedAddress> ConvertedRangeTypeTagConverter::operator()(Iterator<blocksci::TaggedAddress> && t) { return std::move(t); }
@@ -121,6 +142,33 @@ Iterator<blocksci::EquivAddress> ConvertedRangeTypeTagConverter::operator()(Iter
 
 Iterator<blocksci::AnyScript> ConvertedRangeTypeTagConverter::operator()(Range<ranges::optional<blocksci::AnyScript>> && t) { return flattenOptional(std::move(t)); }
 Iterator<blocksci::AnyScript> ConvertedRangeTypeTagConverter::operator()(Iterator<ranges::optional<blocksci::AnyScript>> && t) { return flattenOptional(std::move(t)); }
+
+Iterator<blocksci::script::Pubkey> ConvertedRangeTypeTagConverter::operator()(Range<ranges::optional<blocksci::script::Pubkey>> && t) { return flattenOptional(std::move(t)); }
+Iterator<blocksci::script::Pubkey> ConvertedRangeTypeTagConverter::operator()(Iterator<ranges::optional<blocksci::script::Pubkey>> && t) { return flattenOptional(std::move(t)); }
+
+Iterator<blocksci::script::PubkeyHash> ConvertedRangeTypeTagConverter::operator()(Range<ranges::optional<blocksci::script::PubkeyHash>> && t) { return flattenOptional(std::move(t)); }
+Iterator<blocksci::script::PubkeyHash> ConvertedRangeTypeTagConverter::operator()(Iterator<ranges::optional<blocksci::script::PubkeyHash>> && t) { return flattenOptional(std::move(t)); }
+
+Iterator<blocksci::script::WitnessPubkeyHash> ConvertedRangeTypeTagConverter::operator()(Range<ranges::optional<blocksci::script::WitnessPubkeyHash>> && t) { return flattenOptional(std::move(t)); }
+Iterator<blocksci::script::WitnessPubkeyHash> ConvertedRangeTypeTagConverter::operator()(Iterator<ranges::optional<blocksci::script::WitnessPubkeyHash>> && t) { return flattenOptional(std::move(t)); }
+
+Iterator<blocksci::script::MultisigPubkey> ConvertedRangeTypeTagConverter::operator()(Range<ranges::optional<blocksci::script::MultisigPubkey>> && t) { return flattenOptional(std::move(t)); }
+Iterator<blocksci::script::MultisigPubkey> ConvertedRangeTypeTagConverter::operator()(Iterator<ranges::optional<blocksci::script::MultisigPubkey>> && t) { return flattenOptional(std::move(t)); }
+
+Iterator<blocksci::script::Multisig> ConvertedRangeTypeTagConverter::operator()(Range<ranges::optional<blocksci::script::Multisig>> && t) { return flattenOptional(std::move(t)); }
+Iterator<blocksci::script::Multisig> ConvertedRangeTypeTagConverter::operator()(Iterator<ranges::optional<blocksci::script::Multisig>> && t) { return flattenOptional(std::move(t)); }
+
+Iterator<blocksci::script::ScriptHash> ConvertedRangeTypeTagConverter::operator()(Range<ranges::optional<blocksci::script::ScriptHash>> && t) { return flattenOptional(std::move(t)); }
+Iterator<blocksci::script::ScriptHash> ConvertedRangeTypeTagConverter::operator()(Iterator<ranges::optional<blocksci::script::ScriptHash>> && t) { return flattenOptional(std::move(t)); }
+
+Iterator<blocksci::script::WitnessScriptHash> ConvertedRangeTypeTagConverter::operator()(Range<ranges::optional<blocksci::script::WitnessScriptHash>> && t) { return flattenOptional(std::move(t)); }
+Iterator<blocksci::script::WitnessScriptHash> ConvertedRangeTypeTagConverter::operator()(Iterator<ranges::optional<blocksci::script::WitnessScriptHash>> && t) { return flattenOptional(std::move(t)); }
+
+Iterator<blocksci::script::OpReturn> ConvertedRangeTypeTagConverter::operator()(Range<ranges::optional<blocksci::script::OpReturn>> && t) { return flattenOptional(std::move(t)); }
+Iterator<blocksci::script::OpReturn> ConvertedRangeTypeTagConverter::operator()(Iterator<ranges::optional<blocksci::script::OpReturn>> && t) { return flattenOptional(std::move(t)); }
+
+Iterator<blocksci::script::Nonstandard> ConvertedRangeTypeTagConverter::operator()(Range<ranges::optional<blocksci::script::Nonstandard>> && t) { return flattenOptional(std::move(t)); }
+Iterator<blocksci::script::Nonstandard> ConvertedRangeTypeTagConverter::operator()(Iterator<ranges::optional<blocksci::script::Nonstandard>> && t) { return flattenOptional(std::move(t)); }
 
 Iterator<blocksci::TaggedAddress> ConvertedRangeTypeTagConverter::operator()(Range<ranges::optional<blocksci::TaggedAddress>> && t) { return flattenOptional(std::move(t)); }
 Iterator<blocksci::TaggedAddress> ConvertedRangeTypeTagConverter::operator()(Iterator<ranges::optional<blocksci::TaggedAddress>> && t) { return flattenOptional(std::move(t)); }
@@ -191,6 +239,56 @@ Iterator<blocksci::AnyScript> ConvertedRangeTypeTagConverter::operator()(ranges:
 Iterator<blocksci::AnyScript> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<blocksci::AnyScript, random_access_sized>> && t) { return {ranges::view::join(std::move(t))}; }
 Iterator<blocksci::AnyScript> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<blocksci::AnyScript>> && t) { return {ranges::view::join(std::move(t))}; }
 
+Iterator<blocksci::script::Pubkey> ConvertedRangeTypeTagConverter::operator()(Iterator<Iterator<blocksci::script::Pubkey>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::Pubkey> ConvertedRangeTypeTagConverter::operator()(Iterator<Range<blocksci::script::Pubkey>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::Pubkey> ConvertedRangeTypeTagConverter::operator()(Range<Range<blocksci::script::Pubkey>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::Pubkey> ConvertedRangeTypeTagConverter::operator()(Range<Iterator<blocksci::script::Pubkey>> && t) { return {ranges::view::join(std::move(t))}; }
+
+Iterator<blocksci::script::PubkeyHash> ConvertedRangeTypeTagConverter::operator()(Iterator<Iterator<blocksci::script::PubkeyHash>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::PubkeyHash> ConvertedRangeTypeTagConverter::operator()(Iterator<Range<blocksci::script::PubkeyHash>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::PubkeyHash> ConvertedRangeTypeTagConverter::operator()(Range<Range<blocksci::script::PubkeyHash>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::PubkeyHash> ConvertedRangeTypeTagConverter::operator()(Range<Iterator<blocksci::script::PubkeyHash>> && t) { return {ranges::view::join(std::move(t))}; }
+
+Iterator<blocksci::script::WitnessPubkeyHash> ConvertedRangeTypeTagConverter::operator()(Iterator<Iterator<blocksci::script::WitnessPubkeyHash>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::WitnessPubkeyHash> ConvertedRangeTypeTagConverter::operator()(Iterator<Range<blocksci::script::WitnessPubkeyHash>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::WitnessPubkeyHash> ConvertedRangeTypeTagConverter::operator()(Range<Range<blocksci::script::WitnessPubkeyHash>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::WitnessPubkeyHash> ConvertedRangeTypeTagConverter::operator()(Range<Iterator<blocksci::script::WitnessPubkeyHash>> && t) { return {ranges::view::join(std::move(t))}; }
+
+Iterator<blocksci::script::MultisigPubkey> ConvertedRangeTypeTagConverter::operator()(Iterator<Iterator<blocksci::script::MultisigPubkey>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::MultisigPubkey> ConvertedRangeTypeTagConverter::operator()(Iterator<Range<blocksci::script::MultisigPubkey>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::MultisigPubkey> ConvertedRangeTypeTagConverter::operator()(Range<Range<blocksci::script::MultisigPubkey>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::MultisigPubkey> ConvertedRangeTypeTagConverter::operator()(Range<Iterator<blocksci::script::MultisigPubkey>> && t) { return {ranges::view::join(std::move(t))}; }
+
+Iterator<blocksci::script::Multisig> ConvertedRangeTypeTagConverter::operator()(Iterator<Iterator<blocksci::script::Multisig>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::Multisig> ConvertedRangeTypeTagConverter::operator()(Iterator<Range<blocksci::script::Multisig>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::Multisig> ConvertedRangeTypeTagConverter::operator()(Range<Range<blocksci::script::Multisig>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::Multisig> ConvertedRangeTypeTagConverter::operator()(Range<Iterator<blocksci::script::Multisig>> && t) { return {ranges::view::join(std::move(t))}; }
+
+Iterator<blocksci::script::ScriptHash> ConvertedRangeTypeTagConverter::operator()(Iterator<Iterator<blocksci::script::ScriptHash>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::ScriptHash> ConvertedRangeTypeTagConverter::operator()(Iterator<Range<blocksci::script::ScriptHash>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::ScriptHash> ConvertedRangeTypeTagConverter::operator()(Range<Range<blocksci::script::ScriptHash>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::ScriptHash> ConvertedRangeTypeTagConverter::operator()(Range<Iterator<blocksci::script::ScriptHash>> && t) { return {ranges::view::join(std::move(t))}; }
+
+Iterator<blocksci::script::WitnessScriptHash> ConvertedRangeTypeTagConverter::operator()(Iterator<Iterator<blocksci::script::WitnessScriptHash>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::WitnessScriptHash> ConvertedRangeTypeTagConverter::operator()(Iterator<Range<blocksci::script::WitnessScriptHash>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::WitnessScriptHash> ConvertedRangeTypeTagConverter::operator()(Range<Range<blocksci::script::WitnessScriptHash>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::WitnessScriptHash> ConvertedRangeTypeTagConverter::operator()(Range<Iterator<blocksci::script::WitnessScriptHash>> && t) { return {ranges::view::join(std::move(t))}; }
+
+Iterator<blocksci::script::OpReturn> ConvertedRangeTypeTagConverter::operator()(Iterator<Iterator<blocksci::script::OpReturn>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::OpReturn> ConvertedRangeTypeTagConverter::operator()(Iterator<Range<blocksci::script::OpReturn>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::OpReturn> ConvertedRangeTypeTagConverter::operator()(Range<Range<blocksci::script::OpReturn>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::OpReturn> ConvertedRangeTypeTagConverter::operator()(Range<Iterator<blocksci::script::OpReturn>> && t) { return {ranges::view::join(std::move(t))}; }
+
+Iterator<blocksci::script::Nonstandard> ConvertedRangeTypeTagConverter::operator()(Iterator<Iterator<blocksci::script::Nonstandard>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::Nonstandard> ConvertedRangeTypeTagConverter::operator()(Iterator<Range<blocksci::script::Nonstandard>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::Nonstandard> ConvertedRangeTypeTagConverter::operator()(Range<Range<blocksci::script::Nonstandard>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::script::Nonstandard> ConvertedRangeTypeTagConverter::operator()(Range<Iterator<blocksci::script::Nonstandard>> && t) { return {ranges::view::join(std::move(t))}; }
+
+Iterator<blocksci::EquivAddress> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<blocksci::EquivAddress, random_access_sized>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::EquivAddress> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<blocksci::EquivAddress>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::EquivAddress> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<blocksci::EquivAddress, random_access_sized>> && t) { return {ranges::view::join(std::move(t))}; }
+Iterator<blocksci::EquivAddress> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<blocksci::EquivAddress>> && t) { return {ranges::view::join(std::move(t))}; }
+
 Iterator<blocksci::TaggedAddress> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<blocksci::TaggedAddress, random_access_sized>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
 Iterator<blocksci::TaggedAddress> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<blocksci::TaggedAddress>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
 Iterator<blocksci::TaggedAddress> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<blocksci::TaggedAddress, random_access_sized>> && t) { return {ranges::view::join(std::move(t))}; }
@@ -206,45 +304,3 @@ Iterator<int64_t> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ra
 Iterator<int64_t> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<int64_t>, random_access_sized> && t) { return {ranges::view::join(std::move(t))}; }
 Iterator<int64_t> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<int64_t, random_access_sized>> && t) { return {ranges::view::join(std::move(t))}; }
 Iterator<int64_t> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<int64_t>> && t) { return {ranges::view::join(std::move(t))}; }
-
-
-
-Iterator<blocksci::Input> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Input>, random_access_sized>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
-Iterator<blocksci::Input> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Input>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
-Iterator<blocksci::Input> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Input>, random_access_sized>> && t) { return flattenNestedOptional(std::move(t)); }
-Iterator<blocksci::Input> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Input>>> && t) { return flattenNestedOptional(std::move(t)); }
-
-Iterator<blocksci::Output> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Output>, random_access_sized>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
-Iterator<blocksci::Output> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Output>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
-Iterator<blocksci::Output> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Output>, random_access_sized>> && t) { return flattenNestedOptional(std::move(t)); }
-Iterator<blocksci::Output> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Output>>> && t) { return flattenNestedOptional(std::move(t)); }
-
-Iterator<blocksci::Transaction> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Transaction>, random_access_sized>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
-Iterator<blocksci::Transaction> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Transaction>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
-Iterator<blocksci::Transaction> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Transaction>, random_access_sized>> && t) { return flattenNestedOptional(std::move(t)); }
-Iterator<blocksci::Transaction> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Transaction>>> && t) { return flattenNestedOptional(std::move(t)); }
-
-Iterator<blocksci::Block> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Block>, random_access_sized>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
-Iterator<blocksci::Block> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Block>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
-Iterator<blocksci::Block> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Block>, random_access_sized>> && t) { return flattenNestedOptional(std::move(t)); }
-Iterator<blocksci::Block> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Block>>> && t) { return flattenNestedOptional(std::move(t)); }
-
-Iterator<blocksci::Address> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Address>, random_access_sized>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
-Iterator<blocksci::Address> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Address>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
-Iterator<blocksci::Address> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Address>, random_access_sized>> && t) { return flattenNestedOptional(std::move(t)); }
-Iterator<blocksci::Address> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::Address>>> && t) { return flattenNestedOptional(std::move(t)); }
-
-Iterator<blocksci::AnyScript> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::AnyScript>, random_access_sized>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
-Iterator<blocksci::AnyScript> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::AnyScript>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
-Iterator<blocksci::AnyScript> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::AnyScript>, random_access_sized>> && t) { return flattenNestedOptional(std::move(t)); }
-Iterator<blocksci::AnyScript> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::AnyScript>>> && t) { return flattenNestedOptional(std::move(t)); }
-
-Iterator<blocksci::TaggedAddress> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::TaggedAddress>, random_access_sized>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
-Iterator<blocksci::TaggedAddress> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::TaggedAddress>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
-Iterator<blocksci::TaggedAddress> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::TaggedAddress>, random_access_sized>> && t) { return flattenNestedOptional(std::move(t)); }
-Iterator<blocksci::TaggedAddress> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<blocksci::TaggedAddress>>> && t) { return flattenNestedOptional(std::move(t)); }
-
-Iterator<int64_t> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<int64_t>, random_access_sized>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
-Iterator<int64_t> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<int64_t>>, random_access_sized> && t) { return flattenNestedOptional(std::move(t)); }
-Iterator<int64_t> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<int64_t>, random_access_sized>> && t) { return flattenNestedOptional(std::move(t)); }
-Iterator<int64_t> ConvertedRangeTypeTagConverter::operator()(ranges::any_view<ranges::any_view<ranges::optional<int64_t>>> && t) { return flattenNestedOptional(std::move(t)); }

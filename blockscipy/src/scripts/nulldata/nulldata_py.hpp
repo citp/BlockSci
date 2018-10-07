@@ -10,6 +10,7 @@
 #define blocksci_nulldata_py_h
 
 #include "method_tags.hpp"
+#include "blocksci_range.hpp"
 
 #include <blocksci/scripts/nulldata_script.hpp>
 #include <pybind11/pybind11.h>
@@ -25,6 +26,6 @@ struct AddOpReturnMethods {
 };
 
 void init_nulldata(pybind11::class_<blocksci::script::OpReturn> &cl);
-
+void addNulldataRangeMethods(RangeClasses<blocksci::script::OpReturn> &classes);
 
 #endif /* blocksci_nulldata_py_h */

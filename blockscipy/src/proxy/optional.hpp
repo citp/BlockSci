@@ -11,10 +11,10 @@
 
 #include "proxy.hpp"
 
-template<typename T1, typename T2, typename T3>
-auto mapOptional(Proxy<T1, ranges::optional<T2>> &p1, Proxy<T2, T3> &p2) -> Proxy<T1, ranges::optional<T3>> {
-	return std::function<ranges::optional<T3>(T1 &)>{
-		[=](T1 &val) -> ranges::optional<T3> {
+template<typename T1, typename T2>
+auto mapOptional(Proxy<ranges::optional<T1>> &p1, Proxy<T2> &p2) -> Proxy<ranges::optional<T2>> {
+	return std::function<ranges::optional<T2>(std::any &)>{
+		[=](std::any &val) -> ranges::optional<T2> {
 			auto v = p1(val);
 			if (v) {
 				return p2(*v);
@@ -28,13 +28,13 @@ auto mapOptional(Proxy<T1, ranges::optional<T2>> &p1, Proxy<T2, T3> &p2) -> Prox
 
 
 struct AddProxyOptionalMethods {
-	template<typename T, typename V>
-	void operator()(pybind11::class_<Proxy<T, ranges::optional<V>>> &cl) {
-		using P = Proxy<T, ranges::optional<V>>;
+	template<typename T>
+	void operator()(pybind11::class_<Proxy<ranges::optional<T>>> &cl) {
+		using P = Proxy<ranges::optional<T>>;
 
 		cl
-		.def("or_value", [](P &p, V &v) -> Proxy<T, V> {
-			return std::function<V(T &)>{[=](T &t) {
+		.def("or_value", [](P &p, T &v) -> Proxy<T> {
+			return std::function<T(std::any &)>{[=](std::any &t) {
 				auto opt = p(t);
 				if (opt) {
 					return *opt;
@@ -43,8 +43,8 @@ struct AddProxyOptionalMethods {
 				}
 			}};
 		})
-		.def("has_value", [](P &p) -> Proxy<T, bool> {
-			return std::function<bool(T &)>{[=](T &t) -> bool {
+		.def("has_value", [](P &p) -> Proxy<bool> {
+			return std::function<bool(std::any &)>{[=](std::any &t) -> bool {
 				return p(t).has_value();
 			}};
 		})
@@ -53,45 +53,45 @@ struct AddProxyOptionalMethods {
 };
 
 struct AddProxyOptionalMapMethods {
-	template<typename T, typename V>
-	void operator()(pybind11::class_<Proxy<T, ranges::optional<V>>> &cl) {
-		using P = Proxy<T, ranges::optional<V>>;
+	template<typename T>
+	void operator()(pybind11::class_<Proxy<ranges::optional<T>>> &cl) {
+		using P = Proxy<ranges::optional<T>>;
 
 		cl
-		.def("map", [](P &p, Proxy<V, blocksci::Block> &p2) {
+		.def("map", [](P &p, Proxy<blocksci::Block> &p2) {
 			return mapOptional(p, p2);
 		})
-		.def("map", [](P &p, Proxy<V, blocksci::Transaction> &p2) {
+		.def("map", [](P &p, Proxy<blocksci::Transaction> &p2) {
 			return mapOptional(p, p2);
 		})
-		.def("map", [](P &p, Proxy<V, blocksci::Input> &p2) {
+		.def("map", [](P &p, Proxy<blocksci::Input> &p2) {
 			return mapOptional(p, p2);
 		})
-		.def("map", [](P &p, Proxy<V, blocksci::Output> &p2) {
+		.def("map", [](P &p, Proxy<blocksci::Output> &p2) {
 			return mapOptional(p, p2);
 		})
-		.def("map", [](P &p, Proxy<V, blocksci::AnyScript> &p2) {
+		.def("map", [](P &p, Proxy<blocksci::AnyScript> &p2) {
 			return mapOptional(p, p2);
 		})
-		.def("map", [](P &p, Proxy<V, blocksci::AddressType::Enum> &p2) {
+		.def("map", [](P &p, Proxy<blocksci::AddressType::Enum> &p2) {
 			return mapOptional(p, p2);
 		})
-		.def("map", [](P &p, Proxy<V, int64_t> &p2) {
+		.def("map", [](P &p, Proxy<int64_t> &p2) {
 			return mapOptional(p, p2);
 		})
-		.def("map", [](P &p, Proxy<V, bool> &p2) {
+		.def("map", [](P &p, Proxy<bool> &p2) {
 			return mapOptional(p, p2);
 		})
-		.def("map", [](P &p, Proxy<V, std::chrono::system_clock::time_point> &p2) {
+		.def("map", [](P &p, Proxy<std::chrono::system_clock::time_point> &p2) {
 			return mapOptional(p, p2);
 		})
-		.def("map", [](P &p, Proxy<V, blocksci::uint256> &p2) {
+		.def("map", [](P &p, Proxy<blocksci::uint256> &p2) {
 			return mapOptional(p, p2);
 		})
-		.def("map", [](P &p, Proxy<V, blocksci::uint160> &p2) {
+		.def("map", [](P &p, Proxy<blocksci::uint160> &p2) {
 			return mapOptional(p, p2);
 		})
-		.def("map", [](P &p, Proxy<V, pybind11::bytes> &p2) {
+		.def("map", [](P &p, Proxy<pybind11::bytes> &p2) {
 			return mapOptional(p, p2);
 		})
 		;

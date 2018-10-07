@@ -27,26 +27,25 @@ namespace internal {
 	};
 }
 
-template <typename T1, typename T2>
-Proxy<T1, T2> operator&&(const Proxy<T1, T2> &p1, const Proxy<T1, T2> &p2) {
-	return std::function<T2(T1 &)>{compose2(p1.func, p2.func, internal::_and{})};
+template <typename T>
+Proxy<T> operator&&(const Proxy<T> &p1, const Proxy<T> &p2) {
+	return std::function<T(std::any &)>{compose2(p1.func, p2.func, internal::_and{})};
 }
 
-template <typename T1, typename T2>
-Proxy<T1, T2> operator||(const Proxy<T1, T2> &p1, const Proxy<T1, T2> &p2) {
-	return std::function<T2(T1 &)>{compose2(p1.func, p2.func, internal::_or{})};
+template <typename T>
+Proxy<T> operator||(const Proxy<T> &p1, const Proxy<T> &p2) {
+	return std::function<T(std::any &)>{compose2(p1.func, p2.func, internal::_or{})};
 }
 
 struct AddProxyBooleanMethods {
-	template<typename T>
-	void operator()(pybind11::class_<Proxy<T, bool>> &cl) {
-		using P = Proxy<T, bool>;
+	void operator()(pybind11::class_<Proxy<bool>> &cl) {
+		using P = Proxy<bool>;
 		cl
 		.def("__and__", [](P &p, bool val) {
-			return p && makeConstantProxy<T>(val);
+			return p && makeConstantProxy(val);
 		})
 		.def("__or__", [](P &p, bool val) {
-			return p || makeConstantProxy<T>(val);
+			return p || makeConstantProxy(val);
 		})
 		.def("__and__", [](P &p1, P &p2) {
 			return p1 && p2;
@@ -54,8 +53,8 @@ struct AddProxyBooleanMethods {
 		.def("__or__", [](P &p1, P &p2) {
 			return p1 || p2;
 		})
-		.def("__invert__", [](P &p) -> Proxy<T, bool> {
-			return std::function<bool(T &)>{[=](T &t) {
+		.def("__invert__", [](P &p) -> Proxy<bool> {
+			return std::function<bool(std::any &)>{[=](std::any &t) {
 				return !p(t);
 			}};
 		})

@@ -7,7 +7,6 @@
 
 #include "output_py.hpp"
 #include "caster_py.hpp"
-#include "self_apply_py.hpp"
 
 #include <pybind11/operators.h>
 
@@ -27,6 +26,4 @@ void init_output(py::class_<Output> &cl) {
         return Access{&output.getAccess()};
     })
     ;
-    
-    applyMethodsToSelf(cl, AddOutputMethods{});
 }

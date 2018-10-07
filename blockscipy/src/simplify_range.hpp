@@ -102,6 +102,33 @@ struct ConvertedRangeTypeTagConverter {
     Range<blocksci::AnyScript> operator()(Range<blocksci::AnyScript> && t);
     Iterator<blocksci::AnyScript> operator()(Iterator<blocksci::AnyScript> && t);
 
+    Range<blocksci::script::Pubkey> operator()(Range<blocksci::script::Pubkey> && t);
+    Iterator<blocksci::script::Pubkey> operator()(Iterator<blocksci::script::Pubkey> && t);
+
+    Range<blocksci::script::PubkeyHash> operator()(Range<blocksci::script::PubkeyHash> && t);
+    Iterator<blocksci::script::PubkeyHash> operator()(Iterator<blocksci::script::PubkeyHash> && t);
+
+    Range<blocksci::script::WitnessPubkeyHash> operator()(Range<blocksci::script::WitnessPubkeyHash> && t);
+    Iterator<blocksci::script::WitnessPubkeyHash> operator()(Iterator<blocksci::script::WitnessPubkeyHash> && t);
+
+    Range<blocksci::script::MultisigPubkey> operator()(Range<blocksci::script::MultisigPubkey> && t);
+    Iterator<blocksci::script::MultisigPubkey> operator()(Iterator<blocksci::script::MultisigPubkey> && t);
+
+    Range<blocksci::script::Multisig> operator()(Range<blocksci::script::Multisig> && t);
+    Iterator<blocksci::script::Multisig> operator()(Iterator<blocksci::script::Multisig> && t);
+
+    Range<blocksci::script::ScriptHash> operator()(Range<blocksci::script::ScriptHash> && t);
+    Iterator<blocksci::script::ScriptHash> operator()(Iterator<blocksci::script::ScriptHash> && t);
+
+    Range<blocksci::script::WitnessScriptHash> operator()(Range<blocksci::script::WitnessScriptHash> && t);
+    Iterator<blocksci::script::WitnessScriptHash> operator()(Iterator<blocksci::script::WitnessScriptHash> && t);
+
+    Range<blocksci::script::OpReturn> operator()(Range<blocksci::script::OpReturn> && t);
+    Iterator<blocksci::script::OpReturn> operator()(Iterator<blocksci::script::OpReturn> && t);
+
+    Range<blocksci::script::Nonstandard> operator()(Range<blocksci::script::Nonstandard> && t);
+    Iterator<blocksci::script::Nonstandard> operator()(Iterator<blocksci::script::Nonstandard> && t);
+
     Range<blocksci::TaggedAddress> operator()(Range<blocksci::TaggedAddress> && t);
     Iterator<blocksci::TaggedAddress> operator()(Iterator<blocksci::TaggedAddress> && t);
 
@@ -161,6 +188,33 @@ struct ConvertedRangeTypeTagConverter {
 
     Iterator<blocksci::AnyScript> operator()(Range<ranges::optional<blocksci::AnyScript>> && t);
     Iterator<blocksci::AnyScript> operator()(Iterator<ranges::optional<blocksci::AnyScript>> && t);
+
+    Iterator<blocksci::script::Pubkey> operator()(Range<ranges::optional<blocksci::script::Pubkey>> && t);
+    Iterator<blocksci::script::Pubkey> operator()(Iterator<ranges::optional<blocksci::script::Pubkey>> && t);
+
+    Iterator<blocksci::script::PubkeyHash> operator()(Range<ranges::optional<blocksci::script::PubkeyHash>> && t);
+    Iterator<blocksci::script::PubkeyHash> operator()(Iterator<ranges::optional<blocksci::script::PubkeyHash>> && t);
+
+    Iterator<blocksci::script::WitnessPubkeyHash> operator()(Range<ranges::optional<blocksci::script::WitnessPubkeyHash>> && t);
+    Iterator<blocksci::script::WitnessPubkeyHash> operator()(Iterator<ranges::optional<blocksci::script::WitnessPubkeyHash>> && t);
+
+    Iterator<blocksci::script::MultisigPubkey> operator()(Range<ranges::optional<blocksci::script::MultisigPubkey>> && t);
+    Iterator<blocksci::script::MultisigPubkey> operator()(Iterator<ranges::optional<blocksci::script::MultisigPubkey>> && t);
+
+    Iterator<blocksci::script::Multisig> operator()(Range<ranges::optional<blocksci::script::Multisig>> && t);
+    Iterator<blocksci::script::Multisig> operator()(Iterator<ranges::optional<blocksci::script::Multisig>> && t);
+
+    Iterator<blocksci::script::ScriptHash> operator()(Range<ranges::optional<blocksci::script::ScriptHash>> && t);
+    Iterator<blocksci::script::ScriptHash> operator()(Iterator<ranges::optional<blocksci::script::ScriptHash>> && t);
+
+    Iterator<blocksci::script::WitnessScriptHash> operator()(Range<ranges::optional<blocksci::script::WitnessScriptHash>> && t);
+    Iterator<blocksci::script::WitnessScriptHash> operator()(Iterator<ranges::optional<blocksci::script::WitnessScriptHash>> && t);
+
+    Iterator<blocksci::script::OpReturn> operator()(Range<ranges::optional<blocksci::script::OpReturn>> && t);
+    Iterator<blocksci::script::OpReturn> operator()(Iterator<ranges::optional<blocksci::script::OpReturn>> && t);
+
+    Iterator<blocksci::script::Nonstandard> operator()(Range<ranges::optional<blocksci::script::Nonstandard>> && t);
+    Iterator<blocksci::script::Nonstandard> operator()(Iterator<ranges::optional<blocksci::script::Nonstandard>> && t);
 
     Iterator<blocksci::TaggedAddress> operator()(Range<ranges::optional<blocksci::TaggedAddress>> && t);
     Iterator<blocksci::TaggedAddress> operator()(Iterator<ranges::optional<blocksci::TaggedAddress>> && t);
@@ -226,10 +280,60 @@ struct ConvertedRangeTypeTagConverter {
     Iterator<blocksci::Address> operator()(Range<Range<blocksci::Address>> && t);
     Iterator<blocksci::Address> operator()(Range<Iterator<blocksci::Address>> && t);
 
+    Iterator<blocksci::EquivAddress> operator()(Iterator<Iterator<blocksci::EquivAddress>> && t);
+    Iterator<blocksci::EquivAddress> operator()(Iterator<Range<blocksci::EquivAddress>> && t);
+    Iterator<blocksci::EquivAddress> operator()(Range<Range<blocksci::EquivAddress>> && t);
+    Iterator<blocksci::EquivAddress> operator()(Range<Iterator<blocksci::EquivAddress>> && t);
+
     Iterator<blocksci::AnyScript> operator()(Iterator<Iterator<blocksci::AnyScript>> && t);
     Iterator<blocksci::AnyScript> operator()(Iterator<Range<blocksci::AnyScript>> && t);
     Iterator<blocksci::AnyScript> operator()(Range<Range<blocksci::AnyScript>> && t);
     Iterator<blocksci::AnyScript> operator()(Range<Iterator<blocksci::AnyScript>> && t);
+
+    Iterator<blocksci::script::Pubkey> operator()(Iterator<Iterator<blocksci::script::Pubkey>> && t);
+    Iterator<blocksci::script::Pubkey> operator()(Iterator<Range<blocksci::script::Pubkey>> && t);
+    Iterator<blocksci::script::Pubkey> operator()(Range<Range<blocksci::script::Pubkey>> && t);
+    Iterator<blocksci::script::Pubkey> operator()(Range<Iterator<blocksci::script::Pubkey>> && t);
+
+    Iterator<blocksci::script::PubkeyHash> operator()(Iterator<Iterator<blocksci::script::PubkeyHash>> && t);
+    Iterator<blocksci::script::PubkeyHash> operator()(Iterator<Range<blocksci::script::PubkeyHash>> && t);
+    Iterator<blocksci::script::PubkeyHash> operator()(Range<Range<blocksci::script::PubkeyHash>> && t);
+    Iterator<blocksci::script::PubkeyHash> operator()(Range<Iterator<blocksci::script::PubkeyHash>> && t);
+
+    Iterator<blocksci::script::WitnessPubkeyHash> operator()(Iterator<Iterator<blocksci::script::WitnessPubkeyHash>> && t);
+    Iterator<blocksci::script::WitnessPubkeyHash> operator()(Iterator<Range<blocksci::script::WitnessPubkeyHash>> && t);
+    Iterator<blocksci::script::WitnessPubkeyHash> operator()(Range<Range<blocksci::script::WitnessPubkeyHash>> && t);
+    Iterator<blocksci::script::WitnessPubkeyHash> operator()(Range<Iterator<blocksci::script::WitnessPubkeyHash>> && t);
+
+    Iterator<blocksci::script::MultisigPubkey> operator()(Iterator<Iterator<blocksci::script::MultisigPubkey>> && t);
+    Iterator<blocksci::script::MultisigPubkey> operator()(Iterator<Range<blocksci::script::MultisigPubkey>> && t);
+    Iterator<blocksci::script::MultisigPubkey> operator()(Range<Range<blocksci::script::MultisigPubkey>> && t);
+    Iterator<blocksci::script::MultisigPubkey> operator()(Range<Iterator<blocksci::script::MultisigPubkey>> && t);
+
+    Iterator<blocksci::script::Multisig> operator()(Iterator<Iterator<blocksci::script::Multisig>> && t);
+    Iterator<blocksci::script::Multisig> operator()(Iterator<Range<blocksci::script::Multisig>> && t);
+    Iterator<blocksci::script::Multisig> operator()(Range<Range<blocksci::script::Multisig>> && t);
+    Iterator<blocksci::script::Multisig> operator()(Range<Iterator<blocksci::script::Multisig>> && t);
+
+    Iterator<blocksci::script::ScriptHash> operator()(Iterator<Iterator<blocksci::script::ScriptHash>> && t);
+    Iterator<blocksci::script::ScriptHash> operator()(Iterator<Range<blocksci::script::ScriptHash>> && t);
+    Iterator<blocksci::script::ScriptHash> operator()(Range<Range<blocksci::script::ScriptHash>> && t);
+    Iterator<blocksci::script::ScriptHash> operator()(Range<Iterator<blocksci::script::ScriptHash>> && t);
+
+    Iterator<blocksci::script::WitnessScriptHash> operator()(Iterator<Iterator<blocksci::script::WitnessScriptHash>> && t);
+    Iterator<blocksci::script::WitnessScriptHash> operator()(Iterator<Range<blocksci::script::WitnessScriptHash>> && t);
+    Iterator<blocksci::script::WitnessScriptHash> operator()(Range<Range<blocksci::script::WitnessScriptHash>> && t);
+    Iterator<blocksci::script::WitnessScriptHash> operator()(Range<Iterator<blocksci::script::WitnessScriptHash>> && t);
+
+    Iterator<blocksci::script::OpReturn> operator()(Iterator<Iterator<blocksci::script::OpReturn>> && t);
+    Iterator<blocksci::script::OpReturn> operator()(Iterator<Range<blocksci::script::OpReturn>> && t);
+    Iterator<blocksci::script::OpReturn> operator()(Range<Range<blocksci::script::OpReturn>> && t);
+    Iterator<blocksci::script::OpReturn> operator()(Range<Iterator<blocksci::script::OpReturn>> && t);
+
+    Iterator<blocksci::script::Nonstandard> operator()(Iterator<Iterator<blocksci::script::Nonstandard>> && t);
+    Iterator<blocksci::script::Nonstandard> operator()(Iterator<Range<blocksci::script::Nonstandard>> && t);
+    Iterator<blocksci::script::Nonstandard> operator()(Range<Range<blocksci::script::Nonstandard>> && t);
+    Iterator<blocksci::script::Nonstandard> operator()(Range<Iterator<blocksci::script::Nonstandard>> && t);
 
     Iterator<blocksci::TaggedAddress> operator()(Iterator<Iterator<blocksci::TaggedAddress>> && t);
     Iterator<blocksci::TaggedAddress> operator()(Iterator<Range<blocksci::TaggedAddress>> && t);
@@ -246,47 +350,6 @@ struct ConvertedRangeTypeTagConverter {
     Iterator<int64_t> operator()(Iterator<Range<int64_t>> && t);
     Iterator<int64_t> operator()(Range<Range<int64_t>> && t);
     Iterator<int64_t> operator()(Range<Iterator<int64_t>> && t);
-
-
-    Iterator<blocksci::Input> operator()(Iterator<Iterator<ranges::optional<blocksci::Input>>> && t);
-    Iterator<blocksci::Input> operator()(Iterator<Range<ranges::optional<blocksci::Input>>> && t);
-    Iterator<blocksci::Input> operator()(Range<Range<ranges::optional<blocksci::Input>>> && t);
-    Iterator<blocksci::Input> operator()(Range<Iterator<ranges::optional<blocksci::Input>>> && t);
-
-    Iterator<blocksci::Output> operator()(Iterator<Iterator<ranges::optional<blocksci::Output>>> && t);
-    Iterator<blocksci::Output> operator()(Iterator<Range<ranges::optional<blocksci::Output>>> && t);
-    Iterator<blocksci::Output> operator()(Range<Range<ranges::optional<blocksci::Output>>> && t);
-    Iterator<blocksci::Output> operator()(Range<Iterator<ranges::optional<blocksci::Output>>> && t);
-
-    Iterator<blocksci::Transaction> operator()(Iterator<Iterator<ranges::optional<blocksci::Transaction>>> && t);
-    Iterator<blocksci::Transaction> operator()(Iterator<Range<ranges::optional<blocksci::Transaction>>> && t);
-    Iterator<blocksci::Transaction> operator()(Range<Range<ranges::optional<blocksci::Transaction>>> && t);
-    Iterator<blocksci::Transaction> operator()(Range<Iterator<ranges::optional<blocksci::Transaction>>> && t);
-
-    Iterator<blocksci::Block> operator()(Iterator<Iterator<ranges::optional<blocksci::Block>>> && t);
-    Iterator<blocksci::Block> operator()(Iterator<Range<ranges::optional<blocksci::Block>>> && t);
-    Iterator<blocksci::Block> operator()(Range<Range<ranges::optional<blocksci::Block>>> && t);
-    Iterator<blocksci::Block> operator()(Range<Iterator<ranges::optional<blocksci::Block>>> && t);
-
-    Iterator<blocksci::Address> operator()(Iterator<Iterator<ranges::optional<blocksci::Address>>> && t);
-    Iterator<blocksci::Address> operator()(Iterator<Range<ranges::optional<blocksci::Address>>> && t);
-    Iterator<blocksci::Address> operator()(Range<Range<ranges::optional<blocksci::Address>>> && t);
-    Iterator<blocksci::Address> operator()(Range<Iterator<ranges::optional<blocksci::Address>>> && t);
-
-    Iterator<blocksci::AnyScript> operator()(Iterator<Iterator<ranges::optional<blocksci::AnyScript>>> && t);
-    Iterator<blocksci::AnyScript> operator()(Iterator<Range<ranges::optional<blocksci::AnyScript>>> && t);
-    Iterator<blocksci::AnyScript> operator()(Range<Range<ranges::optional<blocksci::AnyScript>>> && t);
-    Iterator<blocksci::AnyScript> operator()(Range<Iterator<ranges::optional<blocksci::AnyScript>>> && t);
-
-    Iterator<blocksci::TaggedAddress> operator()(Iterator<Iterator<ranges::optional<blocksci::TaggedAddress>>> && t);
-    Iterator<blocksci::TaggedAddress> operator()(Iterator<Range<ranges::optional<blocksci::TaggedAddress>>> && t);
-    Iterator<blocksci::TaggedAddress> operator()(Range<Range<ranges::optional<blocksci::TaggedAddress>>> && t);
-    Iterator<blocksci::TaggedAddress> operator()(Range<Iterator<ranges::optional<blocksci::TaggedAddress>>> && t);
-
-    Iterator<int64_t> operator()(Iterator<Iterator<ranges::optional<int64_t>>> && t);
-    Iterator<int64_t> operator()(Iterator<Range<ranges::optional<int64_t>>> && t);
-    Iterator<int64_t> operator()(Range<Range<ranges::optional<int64_t>>> && t);
-    Iterator<int64_t> operator()(Range<Iterator<ranges::optional<int64_t>>> && t);
 };
 
 constexpr ranges::category getBlockSciCategory(ranges::category cat) {

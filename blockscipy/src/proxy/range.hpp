@@ -11,100 +11,101 @@
 
 #include "proxy_py.hpp"
 #include "proxy_utils.hpp"
-#include "simplify_range.hpp"
 
 #include <range/v3/view/filter.hpp>
-#include <range/v3/view/transform.hpp>
+#include <range/v3/view/stride.hpp>
+#include <range/v3/view/slice.hpp>
 #include <range/v3/algorithm/any_of.hpp>
 #include <range/v3/algorithm/all_of.hpp>
+#include <range/v3/size.hpp>
 #include <range/v3/distance.hpp>
 
-template<typename Range, typename OutType>
-using map_proxy_type = Proxy<ranges::range_value_type_t<Range>, OutType>;
-
-template<typename Range, typename ProxyType>
-using map_result_type = decltype(simplifyRange(ranges::view::transform(std::declval<Range>(), std::declval<ProxyType>())));
-
-template<typename T2, typename T3>
-struct MapProxyFunctor {
-	using Func2 = map_proxy_type<T2, T3>;
-	using ResultType = map_result_type<T2, Func2>;
-	Func2 p2;
-
-	MapProxyFunctor(Func2 &p2_) : p2(p2_) {}
-
-	ResultType operator()(T2 && val) const {
-		return simplifyRange(ranges::view::transform(std::move(val), p2));
-	}
-};
-
-template<typename T1, typename T2, typename T3>
-auto mapProxy(Proxy<T1, T2> &p1, map_proxy_type<T2, T3> &p2) -> Proxy<T1, decltype(MapProxyFunctor<T2, T3>{p2}(std::declval<T2>()))> {
-	return lift(p1, MapProxyFunctor<T2, T3>{p2});
-}
-
-template<typename R, typename T, typename V>
-void addProxyMapFunc(pybind11::class_<Proxy<T, V>> &cl) {
-    cl
-    .def("_map", mapProxy<T, V, R>)
-    .def("_map", mapProxy<T, V, ranges::optional<R>>)
-    ;
-}
-
-struct AddProxyRangeMethods {
-	template<typename T, typename V, ranges::category range_cat>
-	void operator()(pybind11::class_<Proxy<T, ranges::any_view<V, range_cat>>> &cl) {
-		using P = Proxy<T, ranges::any_view<V, range_cat>>;
+struct AddProxySequenceMethods {
+	template<typename T, ranges::category range_cat>
+	void operator()(pybind11::class_<Proxy<ranges::any_view<T, range_cat>>> &cl) {
+		using R = ranges::any_view<T, range_cat>;
+		using P = Proxy<R>;
 
 		cl
-		.def("any", [](P &p, Proxy<V, bool> &p2) -> Proxy<T, bool> {
-			return lift(p, [=](ranges::any_view<V, range_cat> && val) -> bool {
-				return ranges::any_of(val, [=](V item) {
+		.def("any", [](P &p, Proxy<bool> &p2) -> Proxy<bool> {
+			return lift(p, [=](ranges::any_view<T, range_cat> && val) -> bool {
+				return ranges::any_of(val, [=](std::any item) {
 					return p2(item);
 				});
 			});
 		})
-		.def("all", [](P &p, Proxy<V, bool> &p2) -> Proxy<T, bool> {
-			return lift(p, [=](ranges::any_view<V, range_cat> && val) -> bool {
-				return ranges::all_of(val, [=](V item) {
+		.def("all", [](P &p, Proxy<bool> &p2) -> Proxy<bool> {
+			return lift(p, [=](ranges::any_view<T, range_cat> && val) -> bool {
+				return ranges::all_of(val, [=](std::any item) {
 					return p2(item);
 				});
 			});
 		})
-		.def_property_readonly("size", [](P &p) -> Proxy<T, int64_t> {
-			return lift(p, [](ranges::any_view<ranges::optional<V>, range_cat> &&r) -> int64_t {
+		.def_property_readonly("size", [](P &p) -> Proxy<int64_t> {
+			return lift(p, [](ranges::any_view<ranges::optional<T>, range_cat> &&r) -> int64_t {
 				return ranges::distance(r);
 			});
 		})
-		.def("where", [](P &p, Proxy<V, bool> &p2) -> Proxy<T, ranges::any_view<V>> {
-			return lift(p, [=](ranges::any_view<V, range_cat> && range) -> ranges::any_view<V> {
-				return range | ranges::view::filter(p2);
+		.def("where", [](P &p, Proxy<bool> &p2) -> Proxy<ranges::any_view<T>> {
+			return lift(p, [=](ranges::any_view<T, range_cat> && range) -> ranges::any_view<T> {
+				return range | ranges::view::filter([=](T item) {
+					return p2(std::move(item));
+				});
 			});
 		})
-		.def_property_readonly_static("nested_proxy", [](pybind11::object &) -> Proxy<V, V> {
-	        return makeProxy<V>();
+	    .def_property_readonly_static("nested_proxy", [](pybind11::object &) -> Proxy<T> {
+	        return makeProxy<T>();
+	    })
+	    .def_property_readonly_static("self_proxy", [](pybind11::object &) -> Proxy<R> {
+	        return makeProxy<R>();
 	    })
 		;
+	}
+};
 
-		addProxyMapFunc<blocksci::Block>(cl);
-		addProxyMapFunc<blocksci::Transaction>(cl);
-		addProxyMapFunc<blocksci::Input>(cl);
-		addProxyMapFunc<blocksci::Output>(cl);
-		addProxyMapFunc<blocksci::AnyScript>(cl);
-		addProxyMapFunc<blocksci::AddressType::Enum>(cl);
-		addProxyMapFunc<int64_t>(cl);
-		addProxyMapFunc<bool>(cl);
-		addProxyMapFunc<std::chrono::system_clock::time_point>(cl);
-		addProxyMapFunc<blocksci::uint256>(cl);
-		addProxyMapFunc<blocksci::uint160>(cl);
-		addProxyMapFunc<pybind11::bytes>(cl);
+struct AddProxyRangeMethods {
+	template<typename T>
+	void operator()(pybind11::class_<Proxy<Range<T>>> &cl) {
+		using R = Range<T>;
+		using P = Proxy<R>;
+
+		cl
+	    .def("__getitem__", [](P &p, int64_t posIndex) -> Proxy<T> {
+	    	return lift(p, [=](Range<T> && range) -> T {
+				auto chainSize = static_cast<int64_t>(range.size());
+				auto pos = posIndex;
+		        if (pos < 0) {
+		            pos += chainSize;
+		        }
+		        if (pos < 0 || pos >= chainSize) {
+		            throw pybind11::index_error();
+		        }
+		        return range[pos];
+			});
+	    }, pybind11::arg("index"))
+	    .def("__getitem__", [](P &p, pybind11::slice slice) -> Proxy<Range<T>> {
+	    	return lift(p, [=](Range<T> && range) -> Range<T> {
+		        size_t start, stop, step, slicelength;
+		        const auto &constRange = range;
+		        auto chainSize = ranges::size(constRange);
+		        if (!slice.compute(chainSize, &start, &stop, &step, &slicelength))
+		            throw pybind11::error_already_set();
+		        
+		        auto subset =  range[{static_cast<ranges::range_size_type_t<R>>(start), static_cast<ranges::range_size_type_t<R>>(stop)}];
+		        return subset | ranges::view::stride(step);
+		    });
+	    }, pybind11::arg("slice"))
+		;
+
 	}
 };
 
 template <typename T>
 void setupRangesProxy(AllProxyClasses<T> &cls) {
-	cls.iterator.applyToAll(AddProxyRangeMethods{});
+	cls.iterator.applyToAll(AddProxySequenceMethods{});
+	cls.range.applyToAll(AddProxySequenceMethods{});
 	cls.range.applyToAll(AddProxyRangeMethods{});
 }
+
 
 #endif /* proxy_range_hpp */

@@ -17,8 +17,7 @@
 #include <blocksci/cluster/cluster.hpp>
 
 struct AddInputProxyMethods {
-	template<typename T>
-	void operator()(pybind11::class_<Proxy<T, blocksci::Input>> &cl) {
+	void operator()(pybind11::class_<Proxy<blocksci::Input>> &cl) {
 		applyMethodsToProxy(cl, AddInputMethods{});
 	}
 };
@@ -26,6 +25,9 @@ struct AddInputProxyMethods {
 void addInputProxyMethods(AllProxyClasses<blocksci::Input> &cls) {
 	addInputProxyMethodsMain(cls);
 	addInputProxyMethodsRange(cls);
+	addInputProxyMethodsRangeMap(cls);
+	addInputProxyMethodsRangeMapOptional(cls);
+	addInputProxyMethodsRangeMapSequence(cls);
 	cls.optional.applyToAll(AddProxyOptionalMethods{});
 	cls.optional.applyToAll(AddProxyOptionalMapMethods{});
 

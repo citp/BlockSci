@@ -267,47 +267,127 @@ Blockchain.range = block_range
 Blockchain.heights_to_dates = heights_to_dates
 
 
+
+def setup_map_funcs():
+    def range_map_func(r, func):
+        p = func(r.nested_proxy)
+        return r.self_proxy.map(p)(r)
+
+    iterator_and_range_cls = [x for x in globals() if ('Iterator' in x or 'Range' in x) and x[0].isupper()]
+
+    for cl in iterator_and_range_cls:
+        globals()[cl].map = range_map_func
+
+
+setup_map_funcs()
+
+
 def _get_functions_methods(obj):
-    results = []
-    for attr in dir(obj):
-        if not attr[:2] == '__' and not isinstance(getattr(type(obj), attr, None), property):
-            results.append(attr)
-    return results
+    return (attr for attr in dir(obj) if
+            not attr[:2] == '__' and
+            not isinstance(getattr(type(obj), attr, None), property))
 
 
 def _get_properties_methods(obj):
-    results = []
-    for attr in dir(obj):
-        if isinstance(getattr(type(obj), attr, None), property):
-            results.append(attr)
-    return results
+    return (attr for attr in dir(obj) if
+            isinstance(getattr(type(obj), attr, None), property))
 
 
-for tx_proxy_func in _get_properties_methods(proxy.tx):
+def setup_self_methods(main):
+    proxy_obj = main.self_proxy
+
     def self_property_creator(name):
-        return property(getattr(proxy.tx, name))
+        return property(getattr(proxy_obj, name))
 
-    def property_creator(name):
-        return property(lambda txes: txes._map(getattr(proxy.tx, name)))
-
-    self_method = self_property_creator(tx_proxy_func)
-    method = property_creator(tx_proxy_func)
-    setattr(Tx, tx_proxy_func, self_method)
-    setattr(TxIterator, tx_proxy_func, method)
-    setattr(TxRange, tx_proxy_func, method)
-
-for tx_proxy_func in _get_functions_methods(proxy.tx):
     def self_method_creator(name):
-        return lambda tx, *args: getattr(proxy.tx, name)(*args)(tx)
+        return lambda main, *args: getattr(proxy_obj, name)(*args)(main)
 
-    def method_creator(name):
-        return lambda txes, *args: txes.map(getattr(proxy.tx, name)(*args))
+    for proxy_func in _get_properties_methods(proxy_obj):
+        setattr(main, proxy_func, self_property_creator(proxy_func))
 
-    self_method = self_method_creator(tx_proxy_func)
-    method = method_creator(tx_proxy_func)
-    setattr(Tx, tx_proxy_func, self_method)
-    setattr(TxIterator, tx_proxy_func, method)
-    setattr(TxRange, tx_proxy_func, method)
+    for proxy_func in _get_functions_methods(proxy_obj):
+        setattr(main, proxy_func, self_method_creator(proxy_func))
+
+
+def setup_iterator_methods(iterator):
+    proxy_obj = iterator.nested_proxy
+    proxy_self = iterator.self_proxy
+
+    def iterator_creator(name):
+        return property(proxy_self.map(getattr(proxy_obj, name)))
+
+    def iterator_method_creator(name):
+        return lambda rng, *args: proxy_self.map(getattr(proxy_obj, name)(*args))(rng)
+
+    for proxy_func in _get_properties_methods(proxy_obj):
+        setattr(iterator, proxy_func, iterator_creator(proxy_func))
+
+    for proxy_func in _get_functions_methods(proxy_obj):
+        setattr(iterator, proxy_func, iterator_method_creator(proxy_func))
+
+
+def setup_range_methods(blocksci_range):
+    proxy_obj = blocksci_range.nested_proxy
+    proxy_self = blocksci_range.self_proxy
+
+    def range_creator(name):
+        return property(proxy_self.map(getattr(proxy_obj, name)))
+
+    def range_method_creator(name):
+        return lambda rng, *args: proxy_self.map(getattr(proxy_obj, name)(*args))(rng)
+
+    for proxy_func in _get_properties_methods(proxy_obj):
+        setattr(blocksci_range, proxy_func, range_creator(proxy_func))
+
+    for proxy_func in _get_functions_methods(proxy_obj):
+        setattr(blocksci_range, proxy_func, range_method_creator(proxy_func))
+
+    blocksci_range.__getitem__ = lambda rng, index: proxy_self[index](rng)
+
+
+setup_self_methods(Block)
+setup_self_methods(Tx)
+setup_self_methods(Output)
+setup_self_methods(Input)
+setup_self_methods(PubkeyAddress)
+setup_self_methods(PubkeyHashAddress)
+setup_self_methods(WitnessPubkeyHashAddress)
+setup_self_methods(MultisigPubkey)
+setup_self_methods(ScriptHashAddress)
+setup_self_methods(WitnessScriptHashAddress)
+setup_self_methods(MultisigAddress)
+setup_self_methods(NonStandardAddress)
+setup_self_methods(OpReturn)
+
+setup_iterator_methods(BlockIterator)
+setup_iterator_methods(TxIterator)
+setup_iterator_methods(OutputIterator)
+setup_iterator_methods(InputIterator)
+setup_iterator_methods(AddressIterator)
+setup_iterator_methods(PubkeyAddressIterator)
+setup_iterator_methods(PubkeyHashAddressIterator)
+setup_iterator_methods(WitnessPubkeyHashAddressIterator)
+setup_iterator_methods(MultisigPubkeyIterator)
+setup_iterator_methods(ScriptHashAddressIterator)
+setup_iterator_methods(WitnessScriptHashAddressIterator)
+setup_iterator_methods(MultisigAddressIterator)
+setup_iterator_methods(NonstandardAddressIterator)
+setup_iterator_methods(OpReturnIterator)
+
+setup_range_methods(BlockRange)
+setup_range_methods(TxRange)
+setup_range_methods(OutputRange)
+setup_range_methods(InputRange)
+setup_range_methods(AddressRange)
+setup_range_methods(PubkeyAddressRange)
+setup_range_methods(PubkeyHashAddressRange)
+setup_range_methods(WitnessPubkeyHashAddressRange)
+setup_range_methods(MultisigPubkeyRange)
+setup_range_methods(ScriptHashAddressRange)
+setup_range_methods(WitnessScriptHashAddressRange)
+setup_range_methods(MultisigAddressRange)
+setup_range_methods(NonstandardAddressRange)
+setup_range_methods(OpReturnRange)
 
 
 def txes_including_output_of_type(txes, typ):

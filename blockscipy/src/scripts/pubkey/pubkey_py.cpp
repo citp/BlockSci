@@ -8,7 +8,6 @@
 
 #include "pubkey_py.hpp"
 #include "caster_py.hpp"
-#include "self_apply_py.hpp"
 
 #include <blocksci/chain/input_range.hpp>
 #include <blocksci/chain/output_range.hpp>
@@ -25,7 +24,6 @@ void init_pubkey(py::class_<script::Pubkey> &cl) {
     .def("__repr__", &script::Pubkey::toString)
     .def("__str__", &script::Pubkey::toPrettyString)
     ;
-    applyMethodsToSelf(cl, AddPubkeyBaseMethods<script::Pubkey>{});
 }
 
 void init_pubkeyhash(py::class_<script::PubkeyHash> &cl) {
@@ -33,7 +31,6 @@ void init_pubkeyhash(py::class_<script::PubkeyHash> &cl) {
     .def("__repr__", &script::PubkeyHash::toString)
     .def("__str__", &script::PubkeyHash::toPrettyString)
     ;
-    applyMethodsToSelf(cl, AddPubkeyBaseMethods<script::PubkeyHash>{});
 }
 
 void init_witness_pubkeyhash(py::class_<script::WitnessPubkeyHash> &cl) {
@@ -41,7 +38,6 @@ void init_witness_pubkeyhash(py::class_<script::WitnessPubkeyHash> &cl) {
     .def("__repr__", &script::WitnessPubkeyHash::toString)
     .def("__str__", &script::WitnessPubkeyHash::toPrettyString)
     ;
-    applyMethodsToSelf(cl, AddPubkeyBaseMethods<script::WitnessPubkeyHash>{});
 }
 
 void init_multisig_pubkey(py::class_<script::MultisigPubkey> &cl) {    
@@ -49,5 +45,4 @@ void init_multisig_pubkey(py::class_<script::MultisigPubkey> &cl) {
     .def("__repr__", &script::MultisigPubkey::toString)
     .def("__str__", &script::MultisigPubkey::toPrettyString)
     ;
-    applyMethodsToSelf(cl, AddPubkeyBaseMethods<script::MultisigPubkey>{});
 }

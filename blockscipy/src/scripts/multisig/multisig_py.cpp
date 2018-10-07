@@ -26,6 +26,4 @@ void init_multisig(py::class_<script::Multisig> &cl) {
     .def("__repr__", &script::Multisig::toString)
     .def("__str__", &script::Multisig::toPrettyString)
     ;
-
-    applyMethodsToSelf(cl, AddMultisigMethods{});
 }

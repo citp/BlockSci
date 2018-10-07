@@ -14,6 +14,9 @@
 
 void addBlockProxyMethodsMain(AllProxyClasses<blocksci::Block> &cls);
 void addBlockProxyMethodsRange(AllProxyClasses<blocksci::Block> &cls);
+void addBlockProxyMethodsRangeMap(AllProxyClasses<blocksci::Block> &cls);
+void addBlockProxyMethodsRangeMapOptional(AllProxyClasses<blocksci::Block> &cls);
+void addBlockProxyMethodsRangeMapSequence(AllProxyClasses<blocksci::Block> &cls);
 
 void addBlockProxyMethods(AllProxyClasses<blocksci::Block> &cls);
 
