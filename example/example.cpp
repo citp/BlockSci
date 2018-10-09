@@ -15,6 +15,7 @@
 #include <blocksci/script.hpp>
 #include <blocksci/address/address.hpp>
 #include <blocksci/chain/transaction_range.hpp>
+#include <blocksci/heuristics/taint.hpp>
 
 #include <range/v3/all.hpp>
 
@@ -83,24 +84,51 @@ int main(int argc, const char * argv[]) {
     
     int count = 0;
     
-    
-    size_t inputCount = 0;
-    RANGES_FOR(auto block, chain) {
-        RANGES_FOR(auto tx, block) {
-            inputCount += tx.inputCount();
-        }
-    }
-    std::cout << "Input count: " << inputCount << "\n";
-    
-    RANGES_FOR(auto block, chain) {
-        RANGES_FOR(auto tx, block) {
-            RANGES_FOR(auto input, tx.inputs()) {
-                auto spentOutput = input.getSpentOutput();
-                assert(input == spentOutput.getSpendingInput());
-            }
-        }
-    }
-    
+    Transaction tx(7521270, chain.getAccess());
+    auto address = tx.outputs()[0].getAddress();
+    auto multisig = mpark::get<script::Multisig>(address.getScript().wrapped);
+
+    std::cout << multisig.toPrettyString() << "\n";
+//    std::cout << "Start tx: " << chain[149936][1].getHash().GetHex() << "\n\n";
+//    std::cout << "Start output: " << chain[149936][1].outputs()[0].toString() << "\n\n";
+//    auto taintedOutputs = heuristics::getFifoSeniorityTainted(chain[149936][1].outputs()[0], 149960, true);
+//    for (auto &output : taintedOutputs) {
+//        std::cout << output.first.toString() << "\n";
+//        std::cout << output.first.transaction().getHash().GetHex() << "\n";
+//        std::cout << "Tainted: " << output.second.first << "\n";
+//        std::cout << "Untainted: " << output.second.second << "\n\n";
+//    }
+//
+//    auto taintedOutputs2 = heuristics::getFifoTainted(chain[149936][1].outputs()[0], 149960, true);
+//    for (auto &output : taintedOutputs2) {
+//        std::cout << output.first.toString() << "\n";
+//        std::cout << output.first.transaction().getHash().GetHex() << "\n";
+//        for (const auto &taint : output.second) {
+//            if (taint.second) {
+//                std::cout << "Tainted: " << taint.first << "\n";
+//            } else {
+//                std::cout << "Untainted: " << taint.first << "\n";
+//            }
+//        }
+//        std::cout << "\n";
+//    }
+//    size_t inputCount = 0;
+//    RANGES_FOR(auto block, chain) {
+//        RANGES_FOR(auto tx, block) {
+//            inputCount += tx.inputCount();
+//        }
+//    }
+//    std::cout << "Input count: " << inputCount << "\n";
+//
+//    RANGES_FOR(auto block, chain) {
+//        RANGES_FOR(auto tx, block) {
+//            RANGES_FOR(auto input, tx.inputs()) {
+//                auto spentOutput = input.getSpentOutput();
+//                assert(input == spentOutput.getSpendingInput());
+//            }
+//        }
+//    }
+//
     
     std::cout << count << std::endl;
     return 0;
