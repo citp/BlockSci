@@ -17,7 +17,7 @@
 #include <blocksci/address/equiv_address.hpp>
 
 void addUint160ProxyMethods(AllProxyClasses<blocksci::uint160> &cls) {
-	cls.setupBasicProxy(AddProxyMethods{});
-	cls.base.applyToAll(AddProxyEqualityMethods{});
-	cls.optional.applyToAll(AddProxyOptionalMethods{});
+	cls.applyToAll(AddProxyMethods{});
+	addProxyEqualityMethods(cls.base);
+	addProxyOptionalMethods(cls.optional);
 }

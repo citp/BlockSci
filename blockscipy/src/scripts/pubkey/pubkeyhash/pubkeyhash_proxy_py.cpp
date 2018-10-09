@@ -10,28 +10,20 @@
 #include "scripts/pubkey/pubkey_py.hpp"
 #include "scripts/address_py.hpp"
 #include "proxy_apply_py.hpp"
+#include "proxy/basic.hpp"
 #include "proxy/equality.hpp"
 #include "proxy/optional.hpp"
+#include "proxy/range.hpp"
 
 #include <blocksci/chain/block.hpp>
 #include <blocksci/cluster/cluster.hpp>
 
-struct AddPubkeyHashProxyMethods {
-	void operator()(pybind11::class_<Proxy<blocksci::script::PubkeyHash>> &cl) {
-		applyMethodsToProxy(cl, AddAddressMethods<blocksci::script::PubkeyHash>{});
-		applyMethodsToProxy(cl, AddPubkeyBaseMethods<blocksci::script::PubkeyHash>{});
-	}
-};
-
 void addPubkeyHashProxyMethods(AllProxyClasses<blocksci::script::PubkeyHash> &cls) {
-	addPubkeyHashProxyMethodsMain(cls);
-	addPubkeyHashProxyMethodsRange(cls);
-	addPubkeyHashProxyMethodsRangeMap(cls);
-	addPubkeyHashProxyMethodsRangeMapOptional(cls);
-	addPubkeyHashProxyMethodsRangeMapSequence(cls);
-	cls.optional.applyToAll(AddProxyOptionalMethods{});
-	cls.optional.applyToAll(AddProxyOptionalMapMethods{});
+	cls.applyToAll(AddProxyMethods{});
+    setupRangesProxy(cls);
+    addProxyOptionalMethods(cls.optional);
+    addProxyOptionalMapMethods(cls.optional);
 
-	cls.base.applyToAll(AddPubkeyHashProxyMethods{});
-	cls.base.applyToAll(AddProxyEqualityMethods{});
+	applyMethodsToProxy(cls.base, AddPubkeyBaseMethods<blocksci::script::PubkeyHash>{});
+    addProxyEqualityMethods(cls.base);
 }

@@ -270,7 +270,7 @@ Blockchain.heights_to_dates = heights_to_dates
 
 def setup_map_funcs():
     def range_map_func(r, func):
-        p = func(r.nested_proxy)
+        p = func(r.self_proxy.nested_proxy)
         return r.self_proxy.map(p)(r)
 
     iterator_and_range_cls = [x for x in globals() if ('Iterator' in x or 'Range' in x) and x[0].isupper()]
@@ -310,8 +310,9 @@ def setup_self_methods(main):
 
 
 def setup_iterator_methods(iterator):
-    proxy_obj = iterator.nested_proxy
     proxy_self = iterator.self_proxy
+    proxy_obj = proxy_self.nested_proxy
+    
 
     def iterator_creator(name):
         return property(proxy_self.map(getattr(proxy_obj, name)))
@@ -327,8 +328,8 @@ def setup_iterator_methods(iterator):
 
 
 def setup_range_methods(blocksci_range):
-    proxy_obj = blocksci_range.nested_proxy
     proxy_self = blocksci_range.self_proxy
+    proxy_obj = proxy_self.nested_proxy
 
     def range_creator(name):
         return property(proxy_self.map(getattr(proxy_obj, name)))
@@ -349,6 +350,8 @@ setup_self_methods(Block)
 setup_self_methods(Tx)
 setup_self_methods(Output)
 setup_self_methods(Input)
+setup_self_methods(EquivAddress)
+
 setup_self_methods(PubkeyAddress)
 setup_self_methods(PubkeyHashAddress)
 setup_self_methods(WitnessPubkeyHashAddress)
@@ -359,11 +362,17 @@ setup_self_methods(MultisigAddress)
 setup_self_methods(NonStandardAddress)
 setup_self_methods(OpReturn)
 
+setup_self_methods(cluster.Cluster)
+setup_self_methods(cluster.TaggedCluster)
+setup_self_methods(cluster.TaggedAddress)
+
 setup_iterator_methods(BlockIterator)
 setup_iterator_methods(TxIterator)
 setup_iterator_methods(OutputIterator)
 setup_iterator_methods(InputIterator)
 setup_iterator_methods(AddressIterator)
+setup_iterator_methods(EquivAddressIterator)
+
 setup_iterator_methods(PubkeyAddressIterator)
 setup_iterator_methods(PubkeyHashAddressIterator)
 setup_iterator_methods(WitnessPubkeyHashAddressIterator)
@@ -374,11 +383,17 @@ setup_iterator_methods(MultisigAddressIterator)
 setup_iterator_methods(NonstandardAddressIterator)
 setup_iterator_methods(OpReturnIterator)
 
+setup_iterator_methods(cluster.ClusterIterator)
+setup_iterator_methods(cluster.TaggedClusterIterator)
+setup_iterator_methods(cluster.TaggedAddressIterator)
+
 setup_range_methods(BlockRange)
 setup_range_methods(TxRange)
 setup_range_methods(OutputRange)
 setup_range_methods(InputRange)
 setup_range_methods(AddressRange)
+setup_range_methods(EquivAddressRange)
+
 setup_range_methods(PubkeyAddressRange)
 setup_range_methods(PubkeyHashAddressRange)
 setup_range_methods(WitnessPubkeyHashAddressRange)
@@ -388,6 +403,10 @@ setup_range_methods(WitnessScriptHashAddressRange)
 setup_range_methods(MultisigAddressRange)
 setup_range_methods(NonstandardAddressRange)
 setup_range_methods(OpReturnRange)
+
+setup_range_methods(cluster.ClusterRange)
+setup_range_methods(cluster.TaggedClusterRange)
+setup_range_methods(cluster.TaggedAddressRange)
 
 
 def txes_including_output_of_type(txes, typ):

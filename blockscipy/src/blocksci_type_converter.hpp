@@ -8,7 +8,7 @@
 #ifndef blocksci_type_converter_h
 #define blocksci_type_converter_h
 
-#include "range_utils.hpp"
+#include "generic_sequence.hpp"
 #include <blocksci/chain/block_range.hpp>
 #include <blocksci/scripts/script_variant.hpp>
 

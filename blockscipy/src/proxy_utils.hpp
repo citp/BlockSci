@@ -17,9 +17,23 @@ Proxy<V> makeConstantProxy(const V &val) {
 	}};
 }
 
-template <typename T, typename F>
-auto lift(const Proxy<T> &p, F && f) -> Proxy<decltype(f(std::declval<T>()))> {
-	return std::function<decltype(f(std::declval<T>()))(std::any &)>{compose(p.func, std::forward<F>(f))};
+template <typename F1, typename F2>
+auto lift(F1 &f1, F2 && f2) -> Proxy<decltype(f2(f1(std::declval<std::any &>())))> {
+	return std::function<decltype(f2(f1(std::declval<std::any &>())))(std::any &)>{
+		[=](std::any &v) {
+			return f2(f1(v));
+		}
+	};
+}
+
+template <typename F1, typename F2>
+auto liftGeneric(F1 &f1, F2 && f2) -> Proxy<decltype(f2(f1.getGeneric()(std::declval<std::any &>())))> {
+	auto genericF1 = f1.getGeneric();
+	return std::function<decltype(f2(genericF1(std::declval<std::any &>())))(std::any &)>{
+		[=](std::any &v) {
+			return f2(genericF1(v));
+		}
+	};
 }
 
 #endif /* proxy_utils_hpp */

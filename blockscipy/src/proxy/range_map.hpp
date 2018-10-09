@@ -10,59 +10,51 @@
 #define proxy_range_map_hpp
 
 #include "proxy_py.hpp"
-#include "proxy_utils.hpp"
 
-#include <blocksci/address/equiv_address.hpp>
+void applyProxyMapOptionalFuncsCore(pybind11::class_<ProxySequence<ranges::category::input>> &cl);
+void applyProxyMapOptionalFuncsScripts(pybind11::class_<ProxySequence<ranges::category::input>> &cl);
+void applyProxyMapOptionalFuncsOther(pybind11::class_<ProxySequence<ranges::category::input>> &cl);
 
-#include <range/v3/view/transform.hpp>
+void applyProxyMapOptionalFuncsCore(pybind11::class_<ProxySequence<random_access_sized>> &cl);
+void applyProxyMapOptionalFuncsScripts(pybind11::class_<ProxySequence<random_access_sized>> &cl);
+void applyProxyMapOptionalFuncsOther(pybind11::class_<ProxySequence<random_access_sized>> &cl);
 
-template<typename T, ranges::category range_cat, typename R>
-Proxy<ranges::any_view<R, range_cat>> mapSimpleProxy(Proxy<ranges::any_view<T, range_cat>> &p1, Proxy<R> &p2) {
-	return lift(p1, [=](ranges::any_view<T, range_cat> && val) -> ranges::any_view<R, range_cat> {
-		return ranges::view::transform(std::move(val), p2);
-	});
+
+void applyProxyMapFuncsCore(pybind11::class_<ProxySequence<ranges::category::input>> &cl);
+void applyProxyMapFuncsScripts(pybind11::class_<ProxySequence<ranges::category::input>> &cl);
+void applyProxyMapFuncsOther(pybind11::class_<ProxySequence<ranges::category::input>> &cl);
+
+void applyProxyMapFuncsCore(pybind11::class_<ProxySequence<random_access_sized>> &cl);
+void applyProxyMapFuncsScripts(pybind11::class_<ProxySequence<random_access_sized>> &cl);
+void applyProxyMapFuncsOther(pybind11::class_<ProxySequence<random_access_sized>> &cl);
+
+
+inline void applyProxyMapFuncs(pybind11::class_<ProxySequence<random_access_sized>> &cl) {
+	applyProxyMapFuncsCore(cl);
+	applyProxyMapFuncsScripts(cl);
+	applyProxyMapFuncsOther(cl);
 }
 
-struct AddProxyMapFuncsMethods {
-	template<typename T, ranges::category range_cat>
-	void operator()(pybind11::class_<Proxy<ranges::any_view<T, range_cat>>> &cl) {
-		using namespace blocksci;
-		cl
-		.def("map", mapSimpleProxy<T, range_cat, Block>)
-		.def("map", mapSimpleProxy<T, range_cat, Transaction>)
-		.def("map", mapSimpleProxy<T, range_cat, Input>)
-		.def("map", mapSimpleProxy<T, range_cat, Output>)
-		.def("map", mapSimpleProxy<T, range_cat, AnyScript>)
-		.def("map", mapSimpleProxy<T, range_cat, EquivAddress>)
-
-		.def("map", mapSimpleProxy<T, range_cat, script::Pubkey>)
-		.def("map", mapSimpleProxy<T, range_cat, script::PubkeyHash>)
-		.def("map", mapSimpleProxy<T, range_cat, script::WitnessPubkeyHash>)
-		.def("map", mapSimpleProxy<T, range_cat, script::MultisigPubkey>)
-		.def("map", mapSimpleProxy<T, range_cat, script::Multisig>)
-		.def("map", mapSimpleProxy<T, range_cat, script::ScriptHash>)
-		.def("map", mapSimpleProxy<T, range_cat, script::WitnessScriptHash>)
-		.def("map", mapSimpleProxy<T, range_cat, script::OpReturn>)
-		.def("map", mapSimpleProxy<T, range_cat, script::Nonstandard>)
-
-		.def("map", mapSimpleProxy<T, range_cat, AddressType::Enum>)
-		.def("map", mapSimpleProxy<T, range_cat, int64_t>)
-		.def("map", mapSimpleProxy<T, range_cat, bool>)
-		.def("map", mapSimpleProxy<T, range_cat, std::chrono::system_clock::time_point>)
-		.def("map", mapSimpleProxy<T, range_cat, uint256>)
-		.def("map", mapSimpleProxy<T, range_cat, uint160>)
-		.def("map", mapSimpleProxy<T, range_cat, pybind11::bytes>)
-		.def("map", mapSimpleProxy<T, range_cat, pybind11::list>)
-		.def("map", mapSimpleProxy<T, range_cat, std::string>)
-		;
-	}
-};
-
-template <typename T>
-void setupRangesMapProxy(AllProxyClasses<T> &cls) {
-	cls.iterator.applyToAll(AddProxyMapFuncsMethods{});
-	cls.range.applyToAll(AddProxyMapFuncsMethods{});
+inline void applyProxyMapFuncs(pybind11::class_<ProxySequence<ranges::category::input>> &cl) {
+	applyProxyMapFuncsCore(cl);
+	applyProxyMapFuncsScripts(cl);
+	applyProxyMapFuncsOther(cl);
 }
+
+inline void applyProxyMapOptionalFuncs(pybind11::class_<ProxySequence<random_access_sized>> &cl) {
+	applyProxyMapOptionalFuncsCore(cl);
+	applyProxyMapOptionalFuncsScripts(cl);
+	applyProxyMapOptionalFuncsOther(cl);
+}
+
+inline void applyProxyMapOptionalFuncs(pybind11::class_<ProxySequence<ranges::category::input>> &cl) {
+	applyProxyMapOptionalFuncsCore(cl);
+	applyProxyMapOptionalFuncsScripts(cl);
+	applyProxyMapOptionalFuncsOther(cl);
+}
+
+void applyProxyMapSequenceFuncs(pybind11::class_<ProxySequence<random_access_sized>> &cl);
+void applyProxyMapSequenceFuncs(pybind11::class_<ProxySequence<ranges::category::input>> &cl);
 
 
 #endif /* proxy_range_map_hpp */

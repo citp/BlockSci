@@ -17,12 +17,12 @@
 
 template <typename T>
 struct RangeClasses {
-    pybind11::class_<ranges::any_view<T>> iterator;
-    pybind11::class_<ranges::any_view<T, ranges::category::random_access | ranges::category::sized>> range;
+    pybind11::class_<Iterator<T>> iterator;
+    pybind11::class_<Range<T>> range;
 
     RangeClasses(pybind11::module &m) : 
-    iterator(m, strdup(PythonTypeName<ranges::any_view<T>>::name().c_str()), pybind11::dynamic_attr()),
-    range(m, strdup(PythonTypeName<ranges::any_view<T, ranges::category::random_access | ranges::category::sized>>::name().c_str()), pybind11::dynamic_attr()) {}
+    iterator(m, strdup(PythonTypeName<Iterator<T>>::name().c_str()), pybind11::dynamic_attr()),
+    range(m, strdup(PythonTypeName<Range<T>>::name().c_str()), pybind11::dynamic_attr()) {}
 };
 
 #endif /* blocksci_blocksci_range_h */

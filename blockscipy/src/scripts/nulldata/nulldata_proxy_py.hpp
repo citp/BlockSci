@@ -10,13 +10,10 @@
 
 #include "proxy_py.hpp"
 
-#include <blocksci/chain/input.hpp>
+#include <blocksci/scripts/nulldata_script.hpp>
 
 void addNulldataProxyMethodsMain(AllProxyClasses<blocksci::script::OpReturn> &cls);
 void addNulldataProxyMethodsRange(AllProxyClasses<blocksci::script::OpReturn> &cls);
-void addNulldataProxyMethodsRangeMap(AllProxyClasses<blocksci::script::OpReturn> &cls);
-void addNulldataProxyMethodsRangeMapOptional(AllProxyClasses<blocksci::script::OpReturn> &cls);
-void addNulldataProxyMethodsRangeMapSequence(AllProxyClasses<blocksci::script::OpReturn> &cls);
 
 void addNulldataProxyMethods(AllProxyClasses<blocksci::script::OpReturn> &cls);
 

@@ -8,7 +8,7 @@
 
 #include "address_py.hpp"
 #include "caster_py.hpp"
-#include "self_apply_py.hpp"
+#include "ranges_py.hpp"
 
 #include <blocksci/chain/algorithms.hpp>
 #include <blocksci/chain/access.hpp>
@@ -79,6 +79,8 @@ void init_address(py::class_<blocksci::ScriptBase> &cl) {
     .def("in_txes",&ScriptBase::getInputTransactions, "Returns a list of all transaction where this address was an input")
     .def("out_txes", &ScriptBase::getOutputTransactions, "Returns a list of all transaction where this address was an output")
     ;
+}
 
-    applyMethodsToSelf(cl, AddAddressMethods<ScriptBase>{});
+void addAddressRangeMethods(RangeClasses<AnyScript> &classes) {
+    addAllRangeMethods(classes);
 }

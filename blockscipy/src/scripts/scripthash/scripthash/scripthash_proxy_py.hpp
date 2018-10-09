@@ -10,13 +10,10 @@
 
 #include "proxy_py.hpp"
 
-#include <blocksci/chain/input.hpp>
+#include <blocksci/scripts/scripthash_script.hpp>
 
 void addScriptHashProxyMethodsMain(AllProxyClasses<blocksci::script::ScriptHash> &cls);
 void addScriptHashProxyMethodsRange(AllProxyClasses<blocksci::script::ScriptHash> &cls);
-void addScriptHashProxyMethodsRangeMap(AllProxyClasses<blocksci::script::ScriptHash> &cls);
-void addScriptHashProxyMethodsRangeMapOptional(AllProxyClasses<blocksci::script::ScriptHash> &cls);
-void addScriptHashProxyMethodsRangeMapSequence(AllProxyClasses<blocksci::script::ScriptHash> &cls);
 
 void addScriptHashProxyMethods(AllProxyClasses<blocksci::script::ScriptHash> &cls);
 

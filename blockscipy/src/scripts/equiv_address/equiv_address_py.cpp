@@ -8,7 +8,7 @@
 
 #include "equiv_address_py.hpp"
 #include "caster_py.hpp"
-#include "self_apply_py.hpp"
+#include "ranges_py.hpp"
 
 #include <blocksci/chain/block.hpp>
 #include <blocksci/cluster/cluster.hpp>
@@ -41,6 +41,8 @@ void init_equiv_address(py::class_<EquivAddress> &cl) {
         return {address.begin(), address.end()};
     }, "Returns an iterator over the addresses that make up this equivalent address");
     ;
+}
 
-    applyMethodsToSelf(cl, AddEquivAddressMethods{});
+void addEquivAddressRangeMethods(RangeClasses<EquivAddress> &classes) {
+    addAllRangeMethods(classes);
 }

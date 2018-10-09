@@ -6,6 +6,7 @@
 //
 
 #include "output_py.hpp"
+#include "ranges_py.hpp"
 #include "caster_py.hpp"
 
 #include <pybind11/operators.h>
@@ -26,4 +27,8 @@ void init_output(py::class_<Output> &cl) {
         return Access{&output.getAccess()};
     })
     ;
+}
+
+void addOutputRangeMethods(RangeClasses<Output> &classes) {
+    addAllRangeMethods(classes);
 }

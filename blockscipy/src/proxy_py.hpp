@@ -9,16 +9,10 @@
 #define proxy_py_hpp
 
 #include "proxy.hpp"
-#include "proxy_utils.hpp"
-#include "range_utils.hpp"
+#include "generic_sequence.hpp"
 #include "method_types.hpp"
 
-#include <blocksci/chain/block.hpp>
-#include <blocksci/scripts/script_variant.hpp>
-
 #include <pybind11/pybind11.h>
-
-#include <functional>
 
 template <typename To>
 std::string proxyName() {
@@ -41,60 +35,85 @@ void addProxyConditional(pybind11::module &m) {
 }
 
 template <typename T>
-struct ProxyClasses {
-	pybind11::class_<Proxy<T>> proxy;
+struct AllProxyClasses {
+    pybind11::class_<Proxy<T>> base;
+    pybind11::class_<Proxy<ranges::optional<T>>> optional;
+    pybind11::class_<Proxy<Iterator<T>>> iterator;
+    pybind11::class_<Proxy<Range<T>>> range;
 
-    ProxyClasses(pybind11::module &m) : 
-    proxy(m, strdup(proxyName<T>().c_str())) {
+	AllProxyClasses(
+        pybind11::module &m,
+        pybind11::class_<ProxySequence<ranges::category::input>> proxyIteratorCl,
+        pybind11::class_<ProxySequence<random_access_sized>> proxyRangeCl) : 
+    	base(m, strdup(proxyName<T>().c_str())),
+    	optional(m, strdup(proxyName<ranges::optional<T>>().c_str())),
+    	iterator(m, strdup(proxyName<Iterator<T>>().c_str()), proxyIteratorCl),
+    	range(m, strdup(proxyName<Range<T>>().c_str()), proxyRangeCl
+    ) {
+        base.def(pybind11::init<T>());
+        optional.def(pybind11::init<T>());
+        optional.def(pybind11::init<Proxy<T>>());
+        iterator.def(pybind11::init<Iterator<T>>());
+        range.def(pybind11::init<Range<T>>());
+
+        pybind11::implicitly_convertible<T, Proxy<T>>();
+        pybind11::implicitly_convertible<T, Proxy<ranges::optional<T>>>();
+        pybind11::implicitly_convertible<Proxy<T>, Proxy<ranges::optional<T>>>();
+        pybind11::implicitly_convertible<Iterator<T>, Proxy<Iterator<T>>>();
+        pybind11::implicitly_convertible<Range<T>, Proxy<Range<T>>>();
 
         addProxyConditional<T>(m);
+        addProxyConditional<ranges::optional<T>>(m);
+        addProxyConditional<Iterator<T>>(m);
+        addProxyConditional<Range<T>>(m);
     }
 
-    template<typename Func>
-    void applyToAll(Func func) {
-        func(proxy);
+    AllProxyClasses(
+        pybind11::module &m,
+        pybind11::class_<ProxyAddress> proxyAddressCl,
+        pybind11::class_<ProxySequence<ranges::category::input>> proxyIteratorCl,
+        pybind11::class_<ProxySequence<random_access_sized>> proxyRangeCl) : 
+        base(m, strdup(proxyName<T>().c_str()), proxyAddressCl),
+        optional(m, strdup(proxyName<ranges::optional<T>>().c_str())),
+        iterator(m, strdup(proxyName<Iterator<T>>().c_str()), proxyIteratorCl),
+        range(m, strdup(proxyName<Range<T>>().c_str()), proxyRangeCl
+    ) {
+        base.def(pybind11::init<T>());
+        optional.def(pybind11::init<T>());
+        optional.def(pybind11::init<Proxy<T>>());
+        iterator.def(pybind11::init<Iterator<T>>());
+        range.def(pybind11::init<Range<T>>());
+
+        pybind11::implicitly_convertible<T, Proxy<T>>();
+        pybind11::implicitly_convertible<T, Proxy<ranges::optional<T>>>();
+        pybind11::implicitly_convertible<Proxy<T>, Proxy<ranges::optional<T>>>();
+        pybind11::implicitly_convertible<Iterator<T>, Proxy<Iterator<T>>>();
+        pybind11::implicitly_convertible<Range<T>, Proxy<Range<T>>>();
+
+        addProxyConditional<T>(m);
+        addProxyConditional<ranges::optional<T>>(m);
+        addProxyConditional<Iterator<T>>(m);
+        addProxyConditional<Range<T>>(m);
     }
-};
-
-template <typename T>
-struct AllProxyClasses {
-	ProxyClasses<T> base;
-	ProxyClasses<ranges::optional<T>> optional;
-	ProxyClasses<Iterator<T>> iterator;
-	ProxyClasses<Range<T>> range;
-
-	AllProxyClasses(pybind11::module &m) : 
-	base(m),
-	optional(m),
-	iterator(m),
-	range(m) {}
 
 	template<typename Func>
     void applyToAll(Func func) {
-    	base.applyToAll(func);
-    	optional.applyToAll(func);
-    	iterator.applyToAll(func);
-    	range.applyToAll(func);
+    	func(base);
+        func(optional);
+        func(iterator);
+        func(range);
     }
 
     template<typename Func>
     void applyToRanges(Func func) {
-    	iterator.applyToAll(func);
-    	range.applyToAll(func);
-    }
-    
-    template<typename Func>
-    void setupBasicProxy(Func func) {
-    	base.applyToAll(func);
-    	optional.applyToAll(func);
-    	iterator.applyToAll(func);
-    	range.applyToAll(func);
+    	func(iterator);
+    	func(range);
     }
 
     template<typename Func>
     void setupSimpleProxy(Func func) {
-    	base.applyToAll(func);
-    	optional.applyToAll(func);
+    	func(base);
+    	func(optional);
     }
 };
 

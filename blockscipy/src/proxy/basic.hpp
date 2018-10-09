@@ -11,7 +11,7 @@
 
 #include "proxy.hpp"
 #include "caster_py.hpp"
-#include "range_utils.hpp"
+#include "generic_sequence.hpp"
 #include "python_range_conversion.hpp"
 
 #include <blocksci/address/equiv_address.hpp>
@@ -76,12 +76,12 @@ struct AddProxyMethods {
 	}
 
 	template<typename T>
-	void operator()(pybind11::class_<Proxy<ranges::any_view<T>>> &cl) {
+	void operator()(pybind11::class_<Proxy<Iterator<T>>> &cl) {
 		addCallMethods(cl, IteratorCallFunc{});
 	}
 
 	template<typename T>
-	void operator()(pybind11::class_<Proxy<ranges::any_view<T, random_access_sized>>> &cl) {
+	void operator()(pybind11::class_<Proxy<Range<T>>> &cl) {
 		addCallMethods(cl, RangeCallFunc{});
 	}
 };

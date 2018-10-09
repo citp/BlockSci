@@ -10,13 +10,7 @@
 
 #include "proxy_py.hpp"
 
-#include <blocksci/chain/input.hpp>
-
-void addOutputProxyMethodsMain(AllProxyClasses<blocksci::Output> &cls);
-void addOutputProxyMethodsRange(AllProxyClasses<blocksci::Output> &cls);
-void addOutputProxyMethodsRangeMap(AllProxyClasses<blocksci::Output> &cls);
-void addOutputProxyMethodsRangeMapOptional(AllProxyClasses<blocksci::Output> &cls);
-void addOutputProxyMethodsRangeMapSequence(AllProxyClasses<blocksci::Output> &cls);
+#include <blocksci/chain/output.hpp>
 
 void addOutputProxyMethods(AllProxyClasses<blocksci::Output> &cls);
 

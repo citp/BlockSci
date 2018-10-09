@@ -10,28 +10,20 @@
 #include "scripts/pubkey/pubkey_py.hpp"
 #include "scripts/address_py.hpp"
 #include "proxy_apply_py.hpp"
+#include "proxy/basic.hpp"
 #include "proxy/equality.hpp"
 #include "proxy/optional.hpp"
+#include "proxy/range.hpp"
 
 #include <blocksci/chain/block.hpp>
 #include <blocksci/cluster/cluster.hpp>
 
-struct AddMultisigPubkeyProxyMethods {
-	void operator()(pybind11::class_<Proxy<blocksci::script::MultisigPubkey>> &cl) {
-		applyMethodsToProxy(cl, AddAddressMethods<blocksci::script::MultisigPubkey>{});
-		applyMethodsToProxy(cl, AddPubkeyBaseMethods<blocksci::script::MultisigPubkey>{});
-	}
-};
-
 void addMultisigPubkeyProxyMethods(AllProxyClasses<blocksci::script::MultisigPubkey> &cls) {
-	addMultisigPubkeyProxyMethodsMain(cls);
-	addMultisigPubkeyProxyMethodsRange(cls);
-	addMultisigPubkeyProxyMethodsRangeMap(cls);
-	addMultisigPubkeyProxyMethodsRangeMapOptional(cls);
-	addMultisigPubkeyProxyMethodsRangeMapSequence(cls);
-	cls.optional.applyToAll(AddProxyOptionalMethods{});
-	cls.optional.applyToAll(AddProxyOptionalMapMethods{});
+	cls.applyToAll(AddProxyMethods{});
+    setupRangesProxy(cls);
+    addProxyOptionalMethods(cls.optional);
+    addProxyOptionalMapMethods(cls.optional);
 
-	cls.base.applyToAll(AddMultisigPubkeyProxyMethods{});
-	cls.base.applyToAll(AddProxyEqualityMethods{});
+	applyMethodsToProxy(cls.base, AddPubkeyBaseMethods<blocksci::script::MultisigPubkey>{});
+    addProxyEqualityMethods(cls.base);
 }

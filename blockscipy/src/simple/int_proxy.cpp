@@ -21,13 +21,12 @@
 #include <blocksci/address/equiv_address.hpp>
 
 void addIntProxyMethods(AllProxyClasses<int64_t> &cls) {
-	cls.setupBasicProxy(AddProxyMethods{});
-	cls.base.applyToAll(AddProxyEqualityMethods{});
-	cls.base.applyToAll(AddProxyComparisonMethods{});
-	cls.base.applyToAll(AddProxyArithMethods{});
-	cls.optional.applyToAll(AddProxyOptionalArithMethods{});
-	cls.optional.applyToAll(AddProxyOptionalMethods{});
-
-	cls.iterator.applyToAll(AddProxyArithRangeMethods{});
-	cls.range.applyToAll(AddProxyArithRangeMethods{});
+	cls.applyToAll(AddProxyMethods{});
+	addProxyEqualityMethods(cls.base);
+	addProxyComparisonMethods(cls.base);
+	addProxyArithMethods(cls.base);
+	addProxyOptionalMethods(cls.optional);
+	addProxyOptionalArithMethods(cls.optional);
+	addProxyArithRangeMethods<ranges::category::input>(cls.iterator);
+	addProxyArithRangeMethods<random_access_sized>(cls.range);
 }

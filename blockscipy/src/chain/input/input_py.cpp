@@ -6,6 +6,7 @@
 //
 
 #include "input_py.hpp"
+#include "ranges_py.hpp"
 #include "caster_py.hpp"
 
 #include <blocksci/chain/access.hpp>
@@ -26,4 +27,8 @@ void init_input(py::class_<Input> &cl) {
         return Access{&input.getAccess()};
     })
     ;
+}
+
+void addInputRangeMethods(RangeClasses<Input> &classes) {
+    addAllRangeMethods(classes);
 }

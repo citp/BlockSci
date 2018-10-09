@@ -10,28 +10,29 @@
 #include "nonstandard_py.hpp"
 #include "scripts/address_py.hpp"
 #include "proxy_apply_py.hpp"
+#include "proxy/basic.hpp"
 #include "proxy/equality.hpp"
 #include "proxy/optional.hpp"
+#include "proxy/range.hpp"
 
 #include <blocksci/chain/block.hpp>
 #include <blocksci/cluster/cluster.hpp>
 
-struct AddNonstandardProxyMethods {
-	void operator()(pybind11::class_<Proxy<blocksci::script::Nonstandard>> &cl) {
-		applyMethodsToProxy(cl, AddAddressMethods<blocksci::script::Nonstandard>{});
-		applyMethodsToProxy(cl, AddNonstandardMethods{});
-	}
+struct AddNonstandardMethods {
+    template <typename FuncApplication>
+    void operator()(FuncApplication func) {
+    	using namespace blocksci;
+        func(property_tag, "in_script", &blocksci::script::Nonstandard::inputString, "Nonstandard input script");
+        func(property_tag, "out_script", &blocksci::script::Nonstandard::outputString, "Nonstandard output script");
+    }
 };
 
 void addNonstandardProxyMethods(AllProxyClasses<blocksci::script::Nonstandard> &cls) {
-	addNonstandardProxyMethodsMain(cls);
-	addNonstandardProxyMethodsRange(cls);
-	addNonstandardProxyMethodsRangeMap(cls);
-	addNonstandardProxyMethodsRangeMapOptional(cls);
-	addNonstandardProxyMethodsRangeMapSequence(cls);
-	cls.optional.applyToAll(AddProxyOptionalMethods{});
-	cls.optional.applyToAll(AddProxyOptionalMapMethods{});
+	cls.applyToAll(AddProxyMethods{});
+    setupRangesProxy(cls);
+    addProxyOptionalMethods(cls.optional);
+    addProxyOptionalMapMethods(cls.optional);
 
-	cls.base.applyToAll(AddNonstandardProxyMethods{});
-	cls.base.applyToAll(AddProxyEqualityMethods{});
+	applyMethodsToProxy(cls.base, AddNonstandardMethods{});
+    addProxyEqualityMethods(cls.base);
 }

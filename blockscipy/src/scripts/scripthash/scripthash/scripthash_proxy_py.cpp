@@ -10,28 +10,20 @@
 #include "scripts/scripthash/scripthash_py.hpp"
 #include "scripts/address_py.hpp"
 #include "proxy_apply_py.hpp"
+#include "proxy/basic.hpp"
 #include "proxy/equality.hpp"
 #include "proxy/optional.hpp"
+#include "proxy/range.hpp"
 
 #include <blocksci/chain/block.hpp>
 #include <blocksci/cluster/cluster.hpp>
 
-struct AddScriptHashProxyMethods {
-	void operator()(pybind11::class_<Proxy<blocksci::script::ScriptHash>> &cl) {
-		applyMethodsToProxy(cl, AddAddressMethods<blocksci::script::ScriptHash>{});
-		applyMethodsToProxy(cl, AddScriptHashBaseMethods<blocksci::script::ScriptHash>{});
-	}
-};
-
 void addScriptHashProxyMethods(AllProxyClasses<blocksci::script::ScriptHash> &cls) {
-	addScriptHashProxyMethodsMain(cls);
-	addScriptHashProxyMethodsRange(cls);
-	addScriptHashProxyMethodsRangeMap(cls);
-	addScriptHashProxyMethodsRangeMapOptional(cls);
-	addScriptHashProxyMethodsRangeMapSequence(cls);
-	cls.optional.applyToAll(AddProxyOptionalMethods{});
-	cls.optional.applyToAll(AddProxyOptionalMapMethods{});
+	cls.applyToAll(AddProxyMethods{});
+    setupRangesProxy(cls);
+    addProxyOptionalMethods(cls.optional);
+    addProxyOptionalMapMethods(cls.optional);
 
-	cls.base.applyToAll(AddScriptHashProxyMethods{});
-	cls.base.applyToAll(AddProxyEqualityMethods{});
+	applyMethodsToProxy(cls.base, AddScriptHashBaseMethods<blocksci::script::ScriptHash>{});
+    addProxyEqualityMethods(cls.base);
 }

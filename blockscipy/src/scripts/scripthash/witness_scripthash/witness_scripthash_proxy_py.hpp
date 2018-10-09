@@ -10,13 +10,10 @@
 
 #include "proxy_py.hpp"
 
-#include <blocksci/chain/input.hpp>
+#include <blocksci/scripts/scripthash_script.hpp>
 
 void addWitnessScriptHashProxyMethodsMain(AllProxyClasses<blocksci::script::WitnessScriptHash> &cls);
 void addWitnessScriptHashProxyMethodsRange(AllProxyClasses<blocksci::script::WitnessScriptHash> &cls);
-void addWitnessScriptHashProxyMethodsRangeMap(AllProxyClasses<blocksci::script::WitnessScriptHash> &cls);
-void addWitnessScriptHashProxyMethodsRangeMapOptional(AllProxyClasses<blocksci::script::WitnessScriptHash> &cls);
-void addWitnessScriptHashProxyMethodsRangeMapSequence(AllProxyClasses<blocksci::script::WitnessScriptHash> &cls);
 
 void addWitnessScriptHashProxyMethods(AllProxyClasses<blocksci::script::WitnessScriptHash> &cls);
 

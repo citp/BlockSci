@@ -7,6 +7,7 @@
 //
 
 #include "tx_py.hpp"
+#include "ranges_py.hpp"
 #include "caster_py.hpp"
 
 #include <blocksci/chain/access.hpp>
@@ -35,4 +36,8 @@ void init_tx(py::class_<Transaction> &cl) {
         return Transaction{hash, chain.getAccess()};
     }), "This functions gets the transaction with given hash.")
     ;
+}
+
+void addTxRangeMethods(RangeClasses<Transaction> &classes) {
+    addAllRangeMethods(classes);
 }

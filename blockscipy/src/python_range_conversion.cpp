@@ -93,61 +93,61 @@ py::list convertInputPy(T && t) {
 }
 
 template <typename T>
-ranges::any_view<decltype(BlockSciTypeConverter{}(std::declval<ranges::range_value_type_t<T>>()))>
+Iterator<decltype(BlockSciTypeConverter{}(std::declval<ranges::range_value_type_t<T>>()))>
 convertInputBlockSci(T && t) {
     return {ranges::view::transform(std::forward<T>(t), BlockSciTypeConverter{})};
 }
 
 template <typename T>
-ranges::any_view<decltype(BlockSciTypeConverter{}(std::declval<ranges::range_value_type_t<T>>())), random_access_sized>
+Range<decltype(BlockSciTypeConverter{}(std::declval<ranges::range_value_type_t<T>>()))>
 convertRandomSizedBlockSci(T && t) {
     return {ranges::view::transform(std::forward<T>(t), BlockSciTypeConverter{})};
 }
 
-ranges::any_view<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(ranges::any_view<ranges::optional<int16_t>> && t) { return convertInputBlockSci(std::move(t)); }
-ranges::any_view<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(ranges::any_view<ranges::optional<uint16_t>> && t) { return convertInputBlockSci(std::move(t)); }
-ranges::any_view<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(ranges::any_view<ranges::optional<int32_t>> && t) { return convertInputBlockSci(std::move(t)); }
-ranges::any_view<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(ranges::any_view<ranges::optional<uint32_t>> && t) { return convertInputBlockSci(std::move(t)); }
-ranges::any_view<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(ranges::any_view<ranges::optional<uint64_t>> && t) { return convertInputBlockSci(std::move(t)); }
-ranges::any_view<blocksci::AnyScript> PythonConversionTypeConverter::operator()(ranges::any_view<blocksci::Address> && t) { return convertInputBlockSci(std::move(t)); }
-ranges::any_view<ranges::optional<blocksci::AnyScript>> PythonConversionTypeConverter::operator()(ranges::any_view<ranges::optional<blocksci::Address>> && t) { return convertInputBlockSci(std::move(t)); }
+Iterator<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(Iterator<ranges::optional<int16_t>> && t) { return convertInputBlockSci(std::move(t)); }
+Iterator<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(Iterator<ranges::optional<uint16_t>> && t) { return convertInputBlockSci(std::move(t)); }
+Iterator<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(Iterator<ranges::optional<int32_t>> && t) { return convertInputBlockSci(std::move(t)); }
+Iterator<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(Iterator<ranges::optional<uint32_t>> && t) { return convertInputBlockSci(std::move(t)); }
+Iterator<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(Iterator<ranges::optional<uint64_t>> && t) { return convertInputBlockSci(std::move(t)); }
+Iterator<blocksci::AnyScript> PythonConversionTypeConverter::operator()(Iterator<blocksci::Address> && t) { return convertInputBlockSci(std::move(t)); }
+Iterator<ranges::optional<blocksci::AnyScript>> PythonConversionTypeConverter::operator()(Iterator<ranges::optional<blocksci::Address>> && t) { return convertInputBlockSci(std::move(t)); }
 
-ranges::any_view<ranges::optional<int64_t>, random_access_sized> PythonConversionTypeConverter::operator()(ranges::any_view<ranges::optional<int16_t>, random_access_sized> && t) { return convertRandomSizedBlockSci(std::move(t)); }
-ranges::any_view<ranges::optional<int64_t>, random_access_sized> PythonConversionTypeConverter::operator()(ranges::any_view<ranges::optional<uint16_t>, random_access_sized> && t) { return convertRandomSizedBlockSci(std::move(t)); }
-ranges::any_view<ranges::optional<int64_t>, random_access_sized> PythonConversionTypeConverter::operator()(ranges::any_view<ranges::optional<int32_t>, random_access_sized> && t) { return convertRandomSizedBlockSci(std::move(t)); }
-ranges::any_view<ranges::optional<int64_t>, random_access_sized> PythonConversionTypeConverter::operator()(ranges::any_view<ranges::optional<uint32_t>, random_access_sized> && t) { return convertRandomSizedBlockSci(std::move(t)); }
-ranges::any_view<ranges::optional<int64_t>, random_access_sized> PythonConversionTypeConverter::operator()(ranges::any_view<ranges::optional<uint64_t>, random_access_sized> && t) { return convertRandomSizedBlockSci(std::move(t)); }
-ranges::any_view<blocksci::AnyScript, random_access_sized> PythonConversionTypeConverter::operator()(ranges::any_view<blocksci::Address, random_access_sized> && t) { return convertRandomSizedBlockSci(std::move(t)); }
-ranges::any_view<ranges::optional<blocksci::AnyScript>, random_access_sized> PythonConversionTypeConverter::operator()(ranges::any_view<ranges::optional<blocksci::Address>, random_access_sized> && t) { return convertRandomSizedBlockSci(std::move(t)); }
+Range<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(Range<ranges::optional<int16_t>> && t) { return convertRandomSizedBlockSci(std::move(t)); }
+Range<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(Range<ranges::optional<uint16_t>> && t) { return convertRandomSizedBlockSci(std::move(t)); }
+Range<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(Range<ranges::optional<int32_t>> && t) { return convertRandomSizedBlockSci(std::move(t)); }
+Range<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(Range<ranges::optional<uint32_t>> && t) { return convertRandomSizedBlockSci(std::move(t)); }
+Range<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(Range<ranges::optional<uint64_t>> && t) { return convertRandomSizedBlockSci(std::move(t)); }
+Range<blocksci::AnyScript> PythonConversionTypeConverter::operator()(Range<blocksci::Address> && t) { return convertRandomSizedBlockSci(std::move(t)); }
+Range<ranges::optional<blocksci::AnyScript>> PythonConversionTypeConverter::operator()(Range<ranges::optional<blocksci::Address>> && t) { return convertRandomSizedBlockSci(std::move(t)); }
 
-pybind11::list PythonConversionTypeConverter::operator()(ranges::any_view<pybind11::bytes> && t) { return convertInputPy(std::move(t)); }
-pybind11::list PythonConversionTypeConverter::operator()(ranges::any_view<pybind11::list> && t) { return convertInputPy(std::move(t)); }
-pybind11::list PythonConversionTypeConverter::operator()(ranges::any_view<std::string> && t) { return convertInputPy(std::move(t)); }
-pybind11::list PythonConversionTypeConverter::operator()(ranges::any_view<blocksci::AddressType::Enum> && t) { return convertInputPy(std::move(t)); }
+pybind11::list PythonConversionTypeConverter::operator()(Iterator<pybind11::bytes> && t) { return convertInputPy(std::move(t)); }
+pybind11::list PythonConversionTypeConverter::operator()(Iterator<pybind11::list> && t) { return convertInputPy(std::move(t)); }
+pybind11::list PythonConversionTypeConverter::operator()(Iterator<std::string> && t) { return convertInputPy(std::move(t)); }
+pybind11::list PythonConversionTypeConverter::operator()(Iterator<blocksci::AddressType::Enum> && t) { return convertInputPy(std::move(t)); }
 
-pybind11::list PythonConversionTypeConverter::operator()(ranges::any_view<pybind11::bytes, random_access_sized> && t) { return convertRandomSizedPy(std::move(t)); }
-pybind11::list PythonConversionTypeConverter::operator()(ranges::any_view<pybind11::list, random_access_sized> && t) { return convertRandomSizedPy(std::move(t)); }
-pybind11::list PythonConversionTypeConverter::operator()(ranges::any_view<std::string, random_access_sized> && t) { return convertRandomSizedPy(std::move(t)); }
-pybind11::list PythonConversionTypeConverter::operator()(ranges::any_view<blocksci::AddressType::Enum, random_access_sized> && t) { return convertRandomSizedPy(std::move(t)); }
+pybind11::list PythonConversionTypeConverter::operator()(Range<pybind11::bytes> && t) { return convertRandomSizedPy(std::move(t)); }
+pybind11::list PythonConversionTypeConverter::operator()(Range<pybind11::list> && t) { return convertRandomSizedPy(std::move(t)); }
+pybind11::list PythonConversionTypeConverter::operator()(Range<std::string> && t) { return convertRandomSizedPy(std::move(t)); }
+pybind11::list PythonConversionTypeConverter::operator()(Range<blocksci::AddressType::Enum> && t) { return convertRandomSizedPy(std::move(t)); }
 
-pybind11::array_t<int64_t> PythonConversionTypeConverter::operator()(ranges::any_view<int64_t> && t) { return convertInputNumpy(std::move(t)); }
-pybind11::array_t<uint64_t> PythonConversionTypeConverter::operator()(ranges::any_view<uint64_t> && t) { return convertInputNumpy(std::move(t)); }
-pybind11::array_t<int32_t> PythonConversionTypeConverter::operator()(ranges::any_view<int32_t> && t) { return convertInputNumpy(std::move(t)); }
-pybind11::array_t<uint32_t> PythonConversionTypeConverter::operator()(ranges::any_view<uint32_t> && t) { return convertInputNumpy(std::move(t)); }
-pybind11::array_t<int16_t> PythonConversionTypeConverter::operator()(ranges::any_view<int16_t> && t) { return convertInputNumpy(std::move(t)); }
-pybind11::array_t<uint16_t> PythonConversionTypeConverter::operator()(ranges::any_view<uint16_t> && t) { return convertInputNumpy(std::move(t)); }
-pybind11::array_t<NumpyBool> PythonConversionTypeConverter::operator()(ranges::any_view<bool> && t) { return convertInputNumpy(std::move(t)); }
-pybind11::array_t<NumpyDatetime> PythonConversionTypeConverter::operator()(ranges::any_view<std::chrono::system_clock::time_point> && t) { return convertInputNumpy(std::move(t)); }
-pybind11::array_t<std::array<char, 40>> PythonConversionTypeConverter::operator()(ranges::any_view<uint160> && t) { return convertInputNumpy(std::move(t)); }
-pybind11::array_t<std::array<char, 64>> PythonConversionTypeConverter::operator()(ranges::any_view<uint256> && t) { return convertInputNumpy(std::move(t)); }
+pybind11::array_t<int64_t> PythonConversionTypeConverter::operator()(Iterator<int64_t> && t) { return convertInputNumpy(std::move(t)); }
+pybind11::array_t<uint64_t> PythonConversionTypeConverter::operator()(Iterator<uint64_t> && t) { return convertInputNumpy(std::move(t)); }
+pybind11::array_t<int32_t> PythonConversionTypeConverter::operator()(Iterator<int32_t> && t) { return convertInputNumpy(std::move(t)); }
+pybind11::array_t<uint32_t> PythonConversionTypeConverter::operator()(Iterator<uint32_t> && t) { return convertInputNumpy(std::move(t)); }
+pybind11::array_t<int16_t> PythonConversionTypeConverter::operator()(Iterator<int16_t> && t) { return convertInputNumpy(std::move(t)); }
+pybind11::array_t<uint16_t> PythonConversionTypeConverter::operator()(Iterator<uint16_t> && t) { return convertInputNumpy(std::move(t)); }
+pybind11::array_t<NumpyBool> PythonConversionTypeConverter::operator()(Iterator<bool> && t) { return convertInputNumpy(std::move(t)); }
+pybind11::array_t<NumpyDatetime> PythonConversionTypeConverter::operator()(Iterator<std::chrono::system_clock::time_point> && t) { return convertInputNumpy(std::move(t)); }
+pybind11::array_t<std::array<char, 40>> PythonConversionTypeConverter::operator()(Iterator<uint160> && t) { return convertInputNumpy(std::move(t)); }
+pybind11::array_t<std::array<char, 64>> PythonConversionTypeConverter::operator()(Iterator<uint256> && t) { return convertInputNumpy(std::move(t)); }
 
-pybind11::array_t<int64_t> PythonConversionTypeConverter::operator()(ranges::any_view<int64_t, random_access_sized> && t) { return convertRandomSizedNumpy(std::move(t)); }
-pybind11::array_t<uint64_t> PythonConversionTypeConverter::operator()(ranges::any_view<uint64_t, random_access_sized> && t) { return convertRandomSizedNumpy(std::move(t)); }
-pybind11::array_t<int32_t> PythonConversionTypeConverter::operator()(ranges::any_view<int32_t, random_access_sized> && t) { return convertRandomSizedNumpy(std::move(t)); }
-pybind11::array_t<uint32_t> PythonConversionTypeConverter::operator()(ranges::any_view<uint32_t, random_access_sized> && t) { return convertRandomSizedNumpy(std::move(t)); }
-pybind11::array_t<int16_t> PythonConversionTypeConverter::operator()(ranges::any_view<int16_t, random_access_sized> && t) { return convertRandomSizedNumpy(std::move(t)); }
-pybind11::array_t<uint16_t> PythonConversionTypeConverter::operator()(ranges::any_view<uint16_t, random_access_sized> && t) { return convertRandomSizedNumpy(std::move(t)); }
-pybind11::array_t<NumpyBool> PythonConversionTypeConverter::operator()(ranges::any_view<bool, random_access_sized> && t) { return convertRandomSizedNumpy(std::move(t)); }
-pybind11::array_t<NumpyDatetime> PythonConversionTypeConverter::operator()(ranges::any_view<std::chrono::system_clock::time_point, random_access_sized> && t) { return convertInputNumpy(std::move(t)); }
-pybind11::array_t<std::array<char, 40>> PythonConversionTypeConverter::operator()(ranges::any_view<uint160, random_access_sized> && t) { return convertRandomSizedNumpy(std::move(t)); }
-pybind11::array_t<std::array<char, 64>> PythonConversionTypeConverter::operator()(ranges::any_view<uint256, random_access_sized> && t) { return convertRandomSizedNumpy(std::move(t)); }
+pybind11::array_t<int64_t> PythonConversionTypeConverter::operator()(Range<int64_t> && t) { return convertRandomSizedNumpy(std::move(t)); }
+pybind11::array_t<uint64_t> PythonConversionTypeConverter::operator()(Range<uint64_t> && t) { return convertRandomSizedNumpy(std::move(t)); }
+pybind11::array_t<int32_t> PythonConversionTypeConverter::operator()(Range<int32_t> && t) { return convertRandomSizedNumpy(std::move(t)); }
+pybind11::array_t<uint32_t> PythonConversionTypeConverter::operator()(Range<uint32_t> && t) { return convertRandomSizedNumpy(std::move(t)); }
+pybind11::array_t<int16_t> PythonConversionTypeConverter::operator()(Range<int16_t> && t) { return convertRandomSizedNumpy(std::move(t)); }
+pybind11::array_t<uint16_t> PythonConversionTypeConverter::operator()(Range<uint16_t> && t) { return convertRandomSizedNumpy(std::move(t)); }
+pybind11::array_t<NumpyBool> PythonConversionTypeConverter::operator()(Range<bool> && t) { return convertRandomSizedNumpy(std::move(t)); }
+pybind11::array_t<NumpyDatetime> PythonConversionTypeConverter::operator()(Range<std::chrono::system_clock::time_point> && t) { return convertInputNumpy(std::move(t)); }
+pybind11::array_t<std::array<char, 40>> PythonConversionTypeConverter::operator()(Range<uint160> && t) { return convertRandomSizedNumpy(std::move(t)); }
+pybind11::array_t<std::array<char, 64>> PythonConversionTypeConverter::operator()(Range<uint256> && t) { return convertRandomSizedNumpy(std::move(t)); }

@@ -7,8 +7,8 @@
 //
 
 #include "cluster_py.hpp"
+#include "ranges_py.hpp"
 #include "caster_py.hpp"
-#include "self_apply_py.hpp"
 
 #include <blocksci/cluster/cluster_manager.hpp>
 #include <blocksci/heuristics/change_address.hpp>
@@ -19,6 +19,7 @@
 #include <range/v3/range_for.hpp>
 
 #include <pybind11/iostream.h>
+#include <pybind11/operators.h>
 
 namespace py = pybind11;
 using namespace blocksci;
@@ -62,10 +63,10 @@ void init_cluster_manager(pybind11::module &s) {
     .def("cluster_with_address", [](const ClusterManager &cm, const Address &address) -> Cluster {
        return cm.getCluster(address);
     }, py::arg("address"), "Return the cluster containing the given address")
-    .def("clusters", [](ClusterManager &cm) -> ranges::any_view<Cluster, ranges::category::random_access | ranges::category::sized> {
-        return cm.getClusters();
+    .def("clusters", [](ClusterManager &cm) -> Range<Cluster> {
+        return {cm.getClusters()};
     }, "Get a list of all clusters (The list is lazy so there is no cost to calling this method)")
-    .def("tagged_clusters", [](ClusterManager &cm, const std::unordered_map<blocksci::Address, std::string> &tags) -> ranges::any_view<TaggedCluster> {
+    .def("tagged_clusters", [](ClusterManager &cm, const std::unordered_map<blocksci::Address, std::string> &tags) -> Iterator<TaggedCluster> {
         return cm.taggedClusters(tags);
     }, py::arg("tagged_addresses"), "Given a dictionary of tags, return a list of TaggedCluster objects for any clusters containing tagged scripts")
     ;
@@ -75,7 +76,6 @@ void init_cluster(py::class_<Cluster> &cl) {
     cl
     .def_readonly("cluster_num", &Cluster::clusterNum)
     .def("__len__", &Cluster::getSize)
-    .def("__eq__", &Cluster::operator==)
     .def("__hash__", [] (const Cluster &cluster) {
         return cluster.clusterNum;
     })
@@ -84,5 +84,8 @@ void init_cluster(py::class_<Cluster> &cl) {
     .def("in_txes",&Cluster::getInputTransactions, "Returns a list of all transaction where this cluster was an input")
     .def("out_txes", &Cluster::getOutputTransactions, "Returns a list of all transaction where this cluster was an output")
     ;
-    applyMethodsToSelf(cl, AddClusterMethods{});
+}
+
+void addClusterRangeMethods(RangeClasses<Cluster> &classes) {
+    addAllRangeMethods(classes);
 }

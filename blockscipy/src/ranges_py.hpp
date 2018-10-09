@@ -10,15 +10,16 @@
 
 #include "python_fwd.hpp"
 #include "blocksci_range.hpp"
-#include "range_utils.hpp"
+#include "proxy.hpp"
+#include "generic_sequence.hpp"
 
 #include <range/v3/view/any_view.hpp>
 #include <range/v3/range_for.hpp>
 
 
 template<typename GroupType, typename ResultType, typename V, ranges::category range_cat>
-void addGroupByFunc(pybind11::class_<ranges::any_view<V, range_cat>> &cl) {
-    using Range = ranges::any_view<V, range_cat>;
+void addGroupByFunc(pybind11::class_<any_view<V, range_cat>> &cl) {
+    using Range = any_view<V, range_cat>;
     cl.def("group_by", [](Range &range, Proxy<GroupType> &grouper, Proxy<ResultType> &eval) -> std::unordered_map<GroupType, ResultType> {
         std::unordered_map<GroupType, std::vector<V>> grouped;
         RANGES_FOR(auto && item, range) {
@@ -33,11 +34,11 @@ void addGroupByFunc(pybind11::class_<ranges::any_view<V, range_cat>> &cl) {
 }
 
 template<typename T, typename V, ranges::category range_cat>
-void addGroupByFuncs(pybind11::class_<ranges::any_view<V, range_cat>> &cl) {
-    addGroupByFunc<int64_t, T>(cl);
-    addGroupByFunc<blocksci::AddressType::Enum, T>(cl);
-    addGroupByFunc<bool, T>(cl);
-    addGroupByFunc<blocksci::AnyScript, T>(cl);
+void addGroupByFuncs(pybind11::class_<any_view<V, range_cat>> &cl) {
+    addGroupByFunc<int64_t, T, V, range_cat>(cl);
+    addGroupByFunc<blocksci::AddressType::Enum, T, V, range_cat>(cl);
+    addGroupByFunc<bool, T, V, range_cat>(cl);
+    addGroupByFunc<blocksci::AnyScript, T, V, range_cat>(cl);
 }
 
 template <typename T, CONCEPT_REQUIRES_(!ranges::Range<T>())>
@@ -82,35 +83,29 @@ auto addCommonRangeMethods(Class &cl) {
     ;
 }
 
-template<typename Class>
-auto addSequenceMethods(Class &cl) {
-    using Range = typename Class::type;
-    using V = ranges::range_value_type_t<Range>;
-
+template<typename T, ranges::category range_cat>
+auto addSequenceMethods(pybind11::class_<any_view<T, range_cat>> &cl) {
     cl
-    .def_property_readonly_static("nested_proxy", [](pybind11::object &) -> Proxy<V> {
-        return makeProxy<V>();
-    })
-    .def_property_readonly_static("self_proxy", [](pybind11::object &) -> Proxy<Range> {
-        return makeProxy<Range>();
+    .def_property_readonly_static("self_proxy", [](pybind11::object &) -> Proxy<any_view<T, range_cat>> {
+        return makeProxy<any_view<T, range_cat>>();
     })
     ;
 
-    addGroupByFuncs<int64_t>(cl);
-    addGroupByFuncs<bool>(cl);
-    addGroupByFuncs<std::chrono::system_clock::time_point>(cl);
-    addGroupByFuncs<blocksci::AddressType::Enum>(cl);
+    addGroupByFuncs<int64_t, T, range_cat>(cl);
+    addGroupByFuncs<bool, T, range_cat>(cl);
+    addGroupByFuncs<std::chrono::system_clock::time_point, T, range_cat>(cl);
+    addGroupByFuncs<blocksci::AddressType::Enum, T, range_cat>(cl);
 
     return cl;
 }
 
 template <typename T>
-void addAllRangeMethods(T &cls) {
+void addAllRangeMethods(RangeClasses<T> &cls) {
     addCommonIteratorMethods(cls.iterator);
     addCommonIteratorMethods(cls.range);
     addCommonRangeMethods(cls.range);
-    addSequenceMethods(cls.iterator);
-    addSequenceMethods(cls.range);
+    addSequenceMethods<T, ranges::category::input>(cls.iterator);
+    addSequenceMethods<T, random_access_sized>(cls.range);
 }
 
 #endif /* ranges_py_hpp */

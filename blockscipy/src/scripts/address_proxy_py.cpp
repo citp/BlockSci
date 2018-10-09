@@ -9,18 +9,16 @@
 #include "address_proxy_py.hpp"
 #include "address_py.hpp"
 #include "proxy_apply_py.hpp"
+#include "proxy/basic.hpp"
 #include "proxy/equality.hpp"
 #include "proxy/optional.hpp"
+#include "proxy/range.hpp"
 #include "caster_py.hpp"
 
 #include <blocksci/chain/block.hpp>
 #include <blocksci/cluster/cluster.hpp>
 
-struct AddAddressProxyMethods {
-	void operator()(pybind11::class_<Proxy<blocksci::AnyScript>> &cl) {
-		applyMethodsToProxy(cl, AddAddressMethods<blocksci::AnyScript>{});
-	}
-};
+using namespace blocksci;
 
 template <blocksci::AddressType::Enum type>
 using OptionalScript = ranges::optional<blocksci::ScriptAddress<type>>;
@@ -44,22 +42,47 @@ struct ProxyScriptWithTypeFunctor {
     }
 };
 
+struct AddAddressMethods {
+    template <typename FuncApplication>
+    void operator()(FuncApplication func) {
+        func(property_tag, "address_num", &AnyScript::getScriptNum, "The internal identifier of the address");
+        func(property_tag, "type", &AnyScript::getType, "The type of address");
+        func(property_tag, "raw_type", +[](AnyScript &address) {
+            return static_cast<int64_t>(address.getType());
+        }, "The type of address");
+        func(method_tag, "equiv", &AnyScript::getEquivAddresses, "Returns a list of all addresses equivalent to this address", pybind11::arg("equiv_script") = true);
+        func(method_tag, "balance", &AnyScript::calculateBalance, "Calculates the balance held by this address at the height (Defaults to the full chain)", pybind11::arg("height") = -1);
+        func(method_tag, "out_txes_count", +[](AnyScript &address) -> int64_t {
+            return ranges::distance(address.getOutputTransactions());
+        }, "Return the number of transactions where this address was an output");
+        func(method_tag, "in_txes_count", +[](AnyScript &address) -> int64_t {
+            return ranges::distance(address.getInputTransactions());
+        }, "Return the number of transactions where this address was an input");
+        func(property_tag, "first_tx", &AnyScript::getFirstTransaction, "Get the first transaction that was sent to a type equivalent address");
+        func(property_tag, "revealed_tx", &AnyScript::getTransactionRevealed, "The transaction where a type equivalent address was first revealed");
+        func(property_tag, "has_been_spent", &AnyScript::hasBeenSpent, "Check if a type equivalent address has ever been spent");
+        func(property_tag, "outs", +[](AnyScript &address) -> Iterator<Output> {
+            return address.getOutputs();
+        }, "Returns a range of all outputs sent to this address");
+        ;
+    }
+};
+
+void init_proxy_address(pybind11::class_<ProxyAddress> &addressCl) {
+	applyMethodsToProxyGeneric(addressCl, AddAddressMethods{});
+}
 
 void addAddressProxyMethods(AllProxyClasses<blocksci::AnyScript> &cls) {
-	cls.base.proxy.def("with_type",  [](Proxy<blocksci::AnyScript> &p , blocksci::AddressType::Enum type) {
+	cls.base.def("with_type",  [](Proxy<blocksci::AnyScript> &p , blocksci::AddressType::Enum type) {
 		static auto table = blocksci::make_dynamic_table<blocksci::AddressType, ProxyScriptWithTypeFunctor>();
         auto index = static_cast<size_t>(type);
         return table.at(index)(p);
 	});
 
-	addAddressProxyMethodsMain(cls);
-	addAddressProxyMethodsRange(cls);
-	addAddressProxyMethodsRangeMap(cls);
-	addAddressProxyMethodsRangeMapOptional(cls);
-	addAddressProxyMethodsRangeMapSequence(cls);
-	cls.optional.applyToAll(AddProxyOptionalMethods{});
-	cls.optional.applyToAll(AddProxyOptionalMapMethods{});
+	cls.applyToAll(AddProxyMethods{});
+    setupRangesProxy(cls);
+    addProxyOptionalMethods(cls.optional);
+    addProxyOptionalMapMethods(cls.optional);
 
-	cls.base.applyToAll(AddAddressProxyMethods{});
-	cls.base.applyToAll(AddProxyEqualityMethods{});
+    addProxyEqualityMethods(cls.base);
 }

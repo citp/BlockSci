@@ -16,6 +16,6 @@
 #include <blocksci/address/equiv_address.hpp>
 
 void addBytesProxyMethods(AllProxyClasses<pybind11::bytes> &cls) {
-	cls.setupBasicProxy(AddProxyMethods{});
-	cls.optional.applyToAll(AddProxyOptionalMethods{});
+	cls.applyToAll(AddProxyMethods{});
+	addProxyOptionalMethods(cls.optional);
 }

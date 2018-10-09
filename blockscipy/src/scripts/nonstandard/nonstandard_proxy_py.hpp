@@ -10,13 +10,7 @@
 
 #include "proxy_py.hpp"
 
-#include <blocksci/chain/input.hpp>
-
-void addNonstandardProxyMethodsMain(AllProxyClasses<blocksci::script::Nonstandard> &cls);
-void addNonstandardProxyMethodsRange(AllProxyClasses<blocksci::script::Nonstandard> &cls);
-void addNonstandardProxyMethodsRangeMap(AllProxyClasses<blocksci::script::Nonstandard> &cls);
-void addNonstandardProxyMethodsRangeMapOptional(AllProxyClasses<blocksci::script::Nonstandard> &cls);
-void addNonstandardProxyMethodsRangeMapSequence(AllProxyClasses<blocksci::script::Nonstandard> &cls);
+#include <blocksci/scripts/nonstandard_script.hpp>
 
 void addNonstandardProxyMethods(AllProxyClasses<blocksci::script::Nonstandard> &cls);
 

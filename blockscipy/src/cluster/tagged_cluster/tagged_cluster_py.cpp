@@ -8,7 +8,7 @@
 
 #include "tagged_cluster_py.hpp"
 #include "caster_py.hpp"
-#include "self_apply_py.hpp"
+#include "ranges_py.hpp"
 
 #include <blocksci/chain/block.hpp>
 #include <blocksci/chain/input_range.hpp>
@@ -17,6 +17,10 @@
 namespace py = pybind11;
 using namespace blocksci;
 
-void init_tagged_cluster(py::class_<TaggedCluster> &cl) {
-    applyMethodsToSelf(cl, AddTaggedClusterMethods{});
+void init_tagged_cluster(py::class_<TaggedCluster> &) {
+	
+}
+
+void addTaggedClusterRangeMethods(RangeClasses<TaggedCluster> &classes) {
+    addAllRangeMethods(classes);
 }

@@ -12,12 +12,6 @@
 
 #include <blocksci/chain/transaction.hpp>
 
-void addTxProxyMethodsMain(AllProxyClasses<blocksci::Transaction> &cls);
-void addTxProxyMethodsRange(AllProxyClasses<blocksci::Transaction> &cls);
-void addTxProxyMethodsRangeMap(AllProxyClasses<blocksci::Transaction> &cls);
-void addTxProxyMethodsRangeMapOptional(AllProxyClasses<blocksci::Transaction> &cls);
-void addTxProxyMethodsRangeMapSequence(AllProxyClasses<blocksci::Transaction> &cls);
-
 void addTxProxyMethods(AllProxyClasses<blocksci::Transaction> &cls);
 
 #endif /* tx_proxy_py_h */

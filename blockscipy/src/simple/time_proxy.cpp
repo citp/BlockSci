@@ -18,8 +18,8 @@
 #include <blocksci/address/equiv_address.hpp>
 
 void addTimeProxyMethods(AllProxyClasses<std::chrono::system_clock::time_point> &cls) {
-	cls.setupBasicProxy(AddProxyMethods{});
-	cls.base.applyToAll(AddProxyEqualityMethods{});
-	cls.base.applyToAll(AddProxyComparisonMethods{});
-	cls.optional.applyToAll(AddProxyOptionalMethods{});
+	cls.applyToAll(AddProxyMethods{});
+	addProxyEqualityMethods(cls.base);
+	addProxyComparisonMethods(cls.base);
+	addProxyOptionalMethods(cls.optional);
 }

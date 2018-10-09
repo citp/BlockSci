@@ -7,31 +7,44 @@
 //
 
 #include "input_proxy_py.hpp"
-#include "input_py.hpp"
 #include "proxy_apply_py.hpp"
+#include "proxy/basic.hpp"
 #include "proxy/equality.hpp"
 #include "proxy/comparison.hpp"
 #include "proxy/optional.hpp"
+#include "proxy/range.hpp"
 
 #include <blocksci/chain/block.hpp>
 #include <blocksci/cluster/cluster.hpp>
 
-struct AddInputProxyMethods {
-	void operator()(pybind11::class_<Proxy<blocksci::Input>> &cl) {
-		applyMethodsToProxy(cl, AddInputMethods{});
-	}
+
+struct AddInputMethods {
+    template <typename FuncApplication>
+    void operator()(FuncApplication func) {
+        namespace py = pybind11;
+        using namespace blocksci;
+        func(property_tag, "address", &Input::getAddress, "The address linked to this input");
+        func(property_tag, "value", &Input::getValue, "The value in base currency attached to this input");
+        func(property_tag, "address_type", &Input::getType, "The address type of the input");
+        func(property_tag, "sequence_num", &Input::sequenceNumber, "The sequence number of the input");
+        func(property_tag, "spent_tx_index", &Input::spentTxIndex, "The index of the transaction that this input spent");
+        func(property_tag, "spent_tx", &Input::getSpentTx, "The transaction that this input spent");
+        func(property_tag, "age", &Input::age, "The number of blocks between the spent output and this input");
+        func(property_tag, "tx", &Input::transaction, "The transaction that contains this input");
+        func(property_tag, "block", &Input::block, "The block that contains this input");
+        func(property_tag, "index", &Input::inputIndex, "The index index inside this input's transaction");
+        func(property_tag, "tx_index", &Input::txIndex, "The tx index of this input's transaction");
+        ;
+    }
 };
 
 void addInputProxyMethods(AllProxyClasses<blocksci::Input> &cls) {
-	addInputProxyMethodsMain(cls);
-	addInputProxyMethodsRange(cls);
-	addInputProxyMethodsRangeMap(cls);
-	addInputProxyMethodsRangeMapOptional(cls);
-	addInputProxyMethodsRangeMapSequence(cls);
-	cls.optional.applyToAll(AddProxyOptionalMethods{});
-	cls.optional.applyToAll(AddProxyOptionalMapMethods{});
+    cls.applyToAll(AddProxyMethods{});
+    setupRangesProxy(cls);
+    addProxyOptionalMethods(cls.optional);
+    addProxyOptionalMapMethods(cls.optional);
 
-	cls.base.applyToAll(AddInputProxyMethods{});
-	cls.base.applyToAll(AddProxyEqualityMethods{});
-	cls.base.applyToAll(AddProxyComparisonMethods{});
+    applyMethodsToProxy(cls.base, AddInputMethods{});
+    addProxyEqualityMethods(cls.base);
+    addProxyComparisonMethods(cls.base);
 }

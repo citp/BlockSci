@@ -8,6 +8,7 @@
 
 #include "scripthash_py.hpp"
 #include "caster_py.hpp"
+#include "ranges_py.hpp"
 
 using namespace blocksci;
 namespace py = pybind11;
@@ -25,4 +26,12 @@ void init_witness_scripthash(py::class_<script::WitnessScriptHash> &cl) {
     .def("__repr__", &script::WitnessScriptHash::toString)
     .def("__str__", &script::WitnessScriptHash::toPrettyString)
     ;
+}
+
+void addScriptHashRangeMethods(RangeClasses<script::ScriptHash> &classes) {
+	addAllRangeMethods(classes);
+}
+
+void addWitnessScriptHashRangeMethods(RangeClasses<script::WitnessScriptHash> &classes) {
+	addAllRangeMethods(classes);
 }

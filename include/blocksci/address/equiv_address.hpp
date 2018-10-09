@@ -67,6 +67,14 @@ namespace blocksci {
         std::vector<Transaction> getTransactions();
         std::vector<Transaction> getOutputTransactions();
         std::vector<Transaction> getInputTransactions();
+        
+        bool operator==(const EquivAddress& b) {
+            return addresses == b.addresses;
+        }
+        
+        bool operator!=(const EquivAddress& b) {
+            return addresses != b.addresses;
+        }
     };
 }
 

@@ -28,6 +28,14 @@ namespace blocksci {
         TaggedAddress(const blocksci::Address &address_, const std::string &tag_) : address(address_), tag(tag_) {}
     };
     
+    inline bool BLOCKSCI_EXPORT operator==(const TaggedAddress& a, const TaggedAddress& b) {
+        return a.address == b.address;
+    }
+    
+    inline bool BLOCKSCI_EXPORT operator!=(const TaggedAddress& a, const TaggedAddress& b) {
+        return a.address != b.address;
+    }
+    
     struct TaggedCluster;
     
     class BLOCKSCI_EXPORT Cluster {
@@ -68,11 +76,15 @@ namespace blocksci {
         std::vector<Transaction> getTransactions() const;
         std::vector<Transaction> getOutputTransactions() const;
         std::vector<Transaction> getInputTransactions() const;
-        
-        bool operator==(const Cluster &other) {
-            return clusterNum == other.clusterNum;
-        }
     };
+    
+    inline bool BLOCKSCI_EXPORT operator==(const Cluster& a, const Cluster& b) {
+        return a.clusterNum == b.clusterNum;
+    }
+    
+    inline bool BLOCKSCI_EXPORT operator!=(const Cluster& a, const Cluster& b) {
+        return a.clusterNum != b.clusterNum;
+    }
     
     struct BLOCKSCI_EXPORT TaggedCluster {
         Cluster cluster;
@@ -84,6 +96,14 @@ namespace blocksci {
         
         TaggedCluster(const Cluster &cluster_, TaggedRange &&taggedAddresses_) : cluster(cluster_), taggedAddresses(std::move(taggedAddresses_)) {}
     };
+    
+    inline bool BLOCKSCI_EXPORT operator==(const TaggedCluster& a, const TaggedCluster& b) {
+        return a.cluster == b.cluster;
+    }
+    
+    inline bool BLOCKSCI_EXPORT operator!=(const TaggedCluster& a, const TaggedCluster& b) {
+        return a.cluster != b.cluster;
+    }
     
 } // namespace blocksci
 

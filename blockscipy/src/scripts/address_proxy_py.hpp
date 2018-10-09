@@ -11,13 +11,9 @@
 #include "proxy_py.hpp"
 #include "python_fwd.hpp"
 
-#include <blocksci/scripts/scripts_fwd.hpp>
+#include <blocksci/scripts/script_variant.hpp>
 
-void addAddressProxyMethodsMain(AllProxyClasses<blocksci::AnyScript> &cls);
-void addAddressProxyMethodsRange(AllProxyClasses<blocksci::AnyScript> &cls);
-void addAddressProxyMethodsRangeMap(AllProxyClasses<blocksci::AnyScript> &cls);
-void addAddressProxyMethodsRangeMapOptional(AllProxyClasses<blocksci::AnyScript> &cls);
-void addAddressProxyMethodsRangeMapSequence(AllProxyClasses<blocksci::AnyScript> &cls);
+void init_proxy_address(pybind11::class_<ProxyAddress> &addressCl);
 
 void addAddressProxyMethods(AllProxyClasses<blocksci::AnyScript> &cls);
 

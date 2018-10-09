@@ -32,7 +32,7 @@ struct NewBlocksFiles {
     ArbitraryFileWriter blockCoinbaseFile;
     FixedSizeFileWriter<uint64_t> txFirstInput;
     FixedSizeFileWriter<uint64_t> txFirstOutput;
-    FixedSizeFileWriter<uint32_t> txVersionFile;
+    FixedSizeFileWriter<int32_t> txVersionFile;
     FixedSizeFileWriter<uint16_t> inputSpentOutNumFile;
     FixedSizeFileWriter<uint32_t> inputSequenceFile;
     

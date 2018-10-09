@@ -8,9 +8,9 @@
 #ifndef method_types_h
 #define method_types_h
 
-#include <blocksci/blocksci_fwd.hpp>
+#include "generic_sequence.hpp"
 
-#include <range/v3/view/any_view.hpp>
+#include <blocksci/blocksci_fwd.hpp>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
@@ -230,28 +230,28 @@ struct PythonTypeName<ranges::optional<T>> {
 };
 
 template <typename T>
-struct PythonTypeName<ranges::any_view<T, ranges::category::random_access | ranges::category::sized>> {
+struct PythonTypeName<Range<T>> {
 	static std::string name() {
 		return PythonTypeName<T>::name() + "Range";
 	}
 };
 
 template <typename T>
-struct PythonTypeName<ranges::any_view<T>> {
+struct PythonTypeName<Iterator<T>> {
 	static std::string name() {
 		return PythonTypeName<T>::name() + "Iterator";
 	}
 };
 
 template <typename T>
-struct PythonTypeName<ranges::any_view<ranges::optional<T>, ranges::category::random_access | ranges::category::sized>> {
+struct PythonTypeName<Range<ranges::optional<T>>> {
 	static std::string name() {
 		return PythonTypeName<T>::name() + "OptionalRange";
 	}
 };
 
 template <typename T>
-struct PythonTypeName<ranges::any_view<ranges::optional<T>>> {
+struct PythonTypeName<Iterator<ranges::optional<T>>> {
 	static std::string name() {
 		return PythonTypeName<T>::name() + "OptionalIterator";
 	}

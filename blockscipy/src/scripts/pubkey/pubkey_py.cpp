@@ -8,6 +8,7 @@
 
 #include "pubkey_py.hpp"
 #include "caster_py.hpp"
+#include "ranges_py.hpp"
 
 #include <blocksci/chain/input_range.hpp>
 #include <blocksci/chain/output_range.hpp>
@@ -46,3 +47,20 @@ void init_multisig_pubkey(py::class_<script::MultisigPubkey> &cl) {
     .def("__str__", &script::MultisigPubkey::toPrettyString)
     ;
 }
+
+void addMultisigPubkeyRangeMethods(RangeClasses<script::MultisigPubkey> &classes) {
+    addAllRangeMethods(classes);
+}
+
+void addPubkeyRangeMethods(RangeClasses<script::Pubkey> &classes) {
+    addAllRangeMethods(classes);
+}
+
+void addPubkeyHashRangeMethods(RangeClasses<script::PubkeyHash> &classes) {
+    addAllRangeMethods(classes);
+}
+
+void addWitnessPubkeyHashRangeMethods(RangeClasses<script::WitnessPubkeyHash> &classes) {
+    addAllRangeMethods(classes);
+}
+

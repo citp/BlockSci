@@ -10,6 +10,7 @@
 #define blocksci_scripthash_py_h
 
 #include "method_tags.hpp"
+#include "blocksci_range.hpp"
 
 #include <blocksci/scripts/scripts_fwd.hpp>
 
@@ -28,5 +29,7 @@ struct AddScriptHashBaseMethods {
 void init_scripthash(pybind11::class_<blocksci::script::ScriptHash> &cl);
 void init_witness_scripthash(pybind11::class_<blocksci::script::WitnessScriptHash> &cl);
 
+void addScriptHashRangeMethods(RangeClasses<blocksci::script::ScriptHash> &classes);
+void addWitnessScriptHashRangeMethods(RangeClasses<blocksci::script::WitnessScriptHash> &classes);
 
 #endif /* blocksci_scripthash_py_h */

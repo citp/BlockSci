@@ -19,9 +19,9 @@
 #include <blocksci/address/equiv_address.hpp>
 
 void addBoolProxyMethods(AllProxyClasses<bool> &cls) {
-	cls.setupBasicProxy(AddProxyMethods{});
-	cls.base.applyToAll(AddProxyEqualityMethods{});
-	cls.base.applyToAll(AddProxyComparisonMethods{});
-	cls.base.applyToAll(AddProxyBooleanMethods{});
-	cls.optional.applyToAll(AddProxyOptionalMethods{});
+	cls.applyToAll(AddProxyMethods{});
+	addProxyEqualityMethods(cls.base);
+	addProxyComparisonMethods(cls.base);
+	addProxyBooleanMethods(cls.base);
+	addProxyOptionalMethods(cls.optional);
 }

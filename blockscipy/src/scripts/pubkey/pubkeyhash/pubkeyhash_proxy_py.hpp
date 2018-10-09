@@ -10,13 +10,7 @@
 
 #include "proxy_py.hpp"
 
-#include <blocksci/chain/input.hpp>
-
-void addPubkeyHashProxyMethodsMain(AllProxyClasses<blocksci::script::PubkeyHash> &cls);
-void addPubkeyHashProxyMethodsRange(AllProxyClasses<blocksci::script::PubkeyHash> &cls);
-void addPubkeyHashProxyMethodsRangeMap(AllProxyClasses<blocksci::script::PubkeyHash> &cls);
-void addPubkeyHashProxyMethodsRangeMapOptional(AllProxyClasses<blocksci::script::PubkeyHash> &cls);
-void addPubkeyHashProxyMethodsRangeMapSequence(AllProxyClasses<blocksci::script::PubkeyHash> &cls);
+#include <blocksci/scripts/pubkey_script.hpp>
 
 void addPubkeyHashProxyMethods(AllProxyClasses<blocksci::script::PubkeyHash> &cls);
 

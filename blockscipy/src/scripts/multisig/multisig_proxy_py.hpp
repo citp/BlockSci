@@ -10,13 +10,7 @@
 
 #include "proxy_py.hpp"
 
-#include <blocksci/chain/input.hpp>
-
-void addMultisigProxyMethodsMain(AllProxyClasses<blocksci::script::Multisig> &cls);
-void addMultisigProxyMethodsRange(AllProxyClasses<blocksci::script::Multisig> &cls);
-void addMultisigProxyMethodsRangeMap(AllProxyClasses<blocksci::script::Multisig> &cls);
-void addMultisigProxyMethodsRangeMapOptional(AllProxyClasses<blocksci::script::Multisig> &cls);
-void addMultisigProxyMethodsRangeMapSequence(AllProxyClasses<blocksci::script::Multisig> &cls);
+#include <blocksci/scripts/multisig_script.hpp>
 
 void addMultisigProxyMethods(AllProxyClasses<blocksci::script::Multisig> &cls);
 

@@ -10,28 +10,30 @@
 #include "nulldata_py.hpp"
 #include "scripts/address_py.hpp"
 #include "proxy_apply_py.hpp"
+#include "proxy/basic.hpp"
 #include "proxy/equality.hpp"
 #include "proxy/optional.hpp"
+#include "proxy/range.hpp"
 
 #include <blocksci/chain/block.hpp>
 #include <blocksci/cluster/cluster.hpp>
 
-struct AddNulldataProxyMethods {
-	void operator()(pybind11::class_<Proxy<blocksci::script::OpReturn>> &cl) {
-		applyMethodsToProxy(cl, AddAddressMethods<blocksci::script::OpReturn>{});
-		applyMethodsToProxy(cl, AddOpReturnMethods{});
-	}
+struct AddOpReturnMethods {
+    template <typename FuncApplication>
+    void operator()(FuncApplication func) {
+    	using namespace blocksci;
+	    func(property_tag, "data", +[](const script::OpReturn &address) {
+	        return pybind11::bytes(address.getData());
+	    }, "Data contained inside this address");
+    }
 };
 
 void addNulldataProxyMethods(AllProxyClasses<blocksci::script::OpReturn> &cls) {
-	addNulldataProxyMethodsMain(cls);
-	addNulldataProxyMethodsRange(cls);
-	addNulldataProxyMethodsRangeMap(cls);
-	addNulldataProxyMethodsRangeMapOptional(cls);
-	addNulldataProxyMethodsRangeMapSequence(cls);
-	cls.optional.applyToAll(AddProxyOptionalMethods{});
-	cls.optional.applyToAll(AddProxyOptionalMapMethods{});
+	cls.applyToAll(AddProxyMethods{});
+    setupRangesProxy(cls);
+    addProxyOptionalMethods(cls.optional);
+    addProxyOptionalMapMethods(cls.optional);
 
-	cls.base.applyToAll(AddNulldataProxyMethods{});
-	cls.base.applyToAll(AddProxyEqualityMethods{});
+	applyMethodsToProxy(cls.base, AddOpReturnMethods{});
+    addProxyEqualityMethods(cls.base);
 }
