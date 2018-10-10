@@ -45,9 +45,6 @@ void init_heuristics(py::module &m) {
     s
     .def("poison_tainted_outputs", heuristics::getPoisonTainted, py::arg("outputs"), py::arg("max_block_height") = -1, py::arg("taint_fee") = true, "Returns the list of current UTXOs poison tainted by this output")
     .def("haircut_tainted_outputs", heuristics::getHaircutTainted, py::arg("outputs"), py::arg("max_block_height") = -1, py::arg("taint_fee") = true, "Returns the list of current UTXOs haircut tainted by this output")
-    .def("fifo_tainted_outputs", heuristics::getFifoTainted, py::arg("outputs"), py::arg("max_block_height") = -1, py::arg("taint_fee") = true, "Returns the list of current UTXOs FIFO tainted by this output")
-    .def("fifo_seniority_tainted_outputs", heuristics::getFifoSeniorityTainted, py::arg("outputs"), py::arg("max_block_height") = -1, py::arg("taint_fee") = true, "Returns the list of current UTXOs FIFO with Seniority tainted by this output")
-    .def("seniority_tainted_outputs", heuristics::getSeniorityTainted, py::arg("outputs"), py::arg("max_block_height") = -1, py::arg("taint_fee") = true, "Returns the list of current UTXOs Seniority tainted by this output")
     ;
 
     auto s2 = s.def_submodule("change");
