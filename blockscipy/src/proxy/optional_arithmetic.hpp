@@ -13,7 +13,6 @@
 
 void addProxyOptionalArithMethods(pybind11::class_<Proxy<ranges::optional<int64_t>>> &cl) {
 	using P = Proxy<ranges::optional<int64_t>>;
-	using P2 = Proxy<int64_t>;
 	cl
 	.def("__add__", [](P &p1, P &p2) -> P {
 		return std::function<ranges::optional<int64_t>(std::any &)>{[=](std::any &t) -> ranges::optional<int64_t> {
