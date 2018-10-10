@@ -134,7 +134,12 @@ namespace blocksci {
         Transaction operator[](uint32_t txIndex) const;
         
         TransactionRange operator[](const Slice &sl) const {
-            return {{slice.start + sl.start, slice.start + sl.stop}, this->operator[](sl.start)};
+            if (sl.start == sl.stop) {
+                auto fakeTx = Transaction{TxData{}, slice.stop, 0, firstTx.maxTxCount, firstTx.getAccess()};
+                return {{slice.start + sl.start, slice.start + sl.stop}, fakeTx};
+            } else {
+                return {{slice.start + sl.start, slice.start + sl.stop}, this->operator[](sl.start)};
+            }
         }
         
         uint32_t size() const {
