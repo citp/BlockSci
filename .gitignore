@@ -11,3 +11,5 @@ include/blocksci/external
 python/blocksci/pybind11
 *.egg-info
 blockscipy/dist/*
+.pytest_cache
+.idea

@@ -1,0 +1,11 @@
+PubkeyHashAddress(mjTkW3DjgyZck4KbiRusZsqTgaYTxdSz6z)
+Pay to pubkey hash
+108
+Block(numTxes=2, height=117, header_hash=6889afab7e867a8231b847347474cda72e983d4c524e5fdd2cd9f6e5fdb822db, version=536870912, timestamp=1535764800, bits=545259519, nonce=0)
+0
+4294967295
+Tx(len(txins)=0, len(txouts)=2, size_bytes=144, block_height=9, tx_index=9)
+9
+Tx(len(txins)=1, len(txouts)=2, size_bytes=223, block_height=117, tx_index=132)
+132
+5000000000

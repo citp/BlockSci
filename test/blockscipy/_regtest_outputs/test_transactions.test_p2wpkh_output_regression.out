@@ -1,0 +1,20 @@
+bcrt1qxxhhtzpwdfnvckc5w6p89ulje744wfdjdv3k3m
+Pay to witness pubkey hash
+Block(numTxes=3, height=118, header_hash=2f70ab6a7dde036cf377be7dced0887fe19598f261b7113aa81782be51befd50, version=536870912, timestamp=1535765400, bits=545259519, nonce=1)
+0
+True
+Tx(len(txins)=1, len(txouts)=1, size_bytes=113, block_height=118, tx_index=135)
+135
+Tx(len(txins)=1, len(txouts)=2, size_bytes=222, block_height=118, tx_index=134)
+134
+100000000
+PubkeyHashAddress(mjTkW3DjgyZck4KbiRusZsqTgaYTxdSz6z)
+Pay to pubkey hash
+Block(numTxes=3, height=118, header_hash=2f70ab6a7dde036cf377be7dced0887fe19598f261b7113aa81782be51befd50, version=536870912, timestamp=1535765400, bits=545259519, nonce=1)
+1
+False
+None
+None
+Tx(len(txins)=1, len(txouts)=2, size_bytes=222, block_height=118, tx_index=134)
+134
+4899990000
