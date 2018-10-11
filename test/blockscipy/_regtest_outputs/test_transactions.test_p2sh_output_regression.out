@@ -1,6 +1,6 @@
 ScriptHashAddress(2Mshjw3i5VcfqCm6FaJLxLSdSQhShKJYk6d, wrapped_address=unknown)
 Pay to script hash
-Block(numTxes=2, height=114, header_hash=6f8c6d71a08bd0f58eac171169d86265dede09a73ab5f8457d9354bb46b5fbb2, version=536870912, timestamp=1535763000, bits=545259519, nonce=2)
+Block(tx_count=2, height=114, header_hash=6f8c6d71a08bd0f58eac171169d86265dede09a73ab5f8457d9354bb46b5fbb2, version=536870912, timestamp=1535763000, bits=545259519, nonce=2)
 0
 False
 None
@@ -10,7 +10,7 @@ Tx(len(txins)=1, len(txouts)=2, size_bytes=223, block_height=114, tx_index=122)
 100000000
 PubkeyHashAddress(mjTkW3DjgyZck4KbiRusZsqTgaYTxdSz6z)
 Pay to pubkey hash
-Block(numTxes=2, height=114, header_hash=6f8c6d71a08bd0f58eac171169d86265dede09a73ab5f8457d9354bb46b5fbb2, version=536870912, timestamp=1535763000, bits=545259519, nonce=2)
+Block(tx_count=2, height=114, header_hash=6f8c6d71a08bd0f58eac171169d86265dede09a73ab5f8457d9354bb46b5fbb2, version=536870912, timestamp=1535763000, bits=545259519, nonce=2)
 1
 False
 None

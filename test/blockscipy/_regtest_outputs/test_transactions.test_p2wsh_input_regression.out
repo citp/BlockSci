@@ -1,7 +1,7 @@
 PubkeyHashAddress(mjTkW3DjgyZck4KbiRusZsqTgaYTxdSz6z)
 Pay to pubkey hash
 107
-Block(numTxes=3, height=121, header_hash=6b4c87d26c48371ebb9a5561e226bb722c9263fc6c9c9f072ef67a8c3d0e5104, version=536870912, timestamp=1535767200, bits=545259519, nonce=0)
+Block(tx_count=3, height=121, header_hash=6b4c87d26c48371ebb9a5561e226bb722c9263fc6c9c9f072ef67a8c3d0e5104, version=536870912, timestamp=1535767200, bits=545259519, nonce=0)
 0
 4294967295
 Tx(len(txins)=0, len(txouts)=2, size_bytes=144, block_height=14, tx_index=14)
