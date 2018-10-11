@@ -73,6 +73,7 @@ setup(
         'psutil>=5.4.2',
         'pycrypto>=2.6.1',
         'pandas>=0.22.0',
-        'dateparser>=0.6.0'
+        'dateparser>=0.6.0',
+        'requests>=2.19.1'
     ]
 )
