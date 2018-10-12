@@ -3,7 +3,7 @@ Local setup
 
 BlockSci is composed of two major components, the parser, and the analysis library. The parser is used to generate the backing blocksci database format. The analysis library can then be pointed at the generated data.
 
-Note that BlockSci runs best with 64GB of RAM or above though 32 GB is feasable although much slower.
+Note that BlockSci runs best with 64GB of RAM or above though 32 GB is feasible although much slower.
 
 BlockSci Parser
 -----------------
@@ -23,6 +23,17 @@ RPC mode uses the RPC interface of a cryptocurrency to extract data regarding th
 ..  code-block:: bash
 
 	blocksci_parser --output-directory bitcoin-data update rpc --username [user] --password [pass] --address [ip] --port [port]
+
+BlockSci uses the name of the data directory to infer the underlying cryptocurrency and to select the correct prefixes for addresses.
+If you are parsing one of the following blockchains, make sure that your data directory contains the correct identifier (otherwise it will use Bitcoin's parameters).
+
+- Bitcoin Regtest: ``bitcoin_regtest``
+- Dash: ``dash``
+- Dash Testnet: ``dash_testnet``  
+- Litecoin: ``litecoin``
+- Namecoin: ``namecoin``
+- Zcash: ``zcash``
+
 
 Incremental updates
 --------------------
