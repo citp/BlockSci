@@ -73,6 +73,9 @@ void init_block(py::class_<Block> &cl) {
     .def("net_address_type_value", py::overload_cast<const Block &>(netAddressTypeValue), "Returns a set of the net change in the utxo pool after this block split up by address type")
     .def("net_full_type_value", py::overload_cast<const Block &>(netFullTypeValue), "Returns a set of the net change in the utxo pool after this block split up by full type")
     ;
+
+    addCommonIteratorMethods(cl);
+    addCommonRangeMethods(cl);
 }
 
 void addBlockRangeMethods(RangeClasses<blocksci::Block> &classes) {

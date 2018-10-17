@@ -45,7 +45,7 @@ void addProxySequenceMethods(pybind11::class_<Proxy<any_view<T, range_cat>>> &cl
 			return ranges::distance(r);
 		});
 	})
-	.def("where", [](P &p, Proxy<bool> &p2) -> Proxy<Iterator<T>> {
+	.def("_where", [](P &p, Proxy<bool> &p2) -> Proxy<Iterator<T>> {
 		return lift(p, [=](any_view<T, range_cat> && range) -> Iterator<T> {
 			return range | ranges::view::filter([=](T item) {
 				return p2(std::move(item));

@@ -8,46 +8,26 @@
 
 #include "caster_py.hpp"
 #include "blocksci_range.hpp"
-#include "proxy_py.hpp"
-#include "proxy_utils.hpp"
-#include "simple/simple_proxies.hpp"
-#include "proxy/range_map.hpp"
+#include "proxy.hpp"
+#include "python_proxies.hpp"
 
 #include "chain/blockchain_py.hpp"
 #include "chain/input/input_py.hpp"
-#include "chain/input/input_proxy_py.hpp"
 #include "chain/output/output_py.hpp"
-#include "chain/output/output_proxy_py.hpp"
 #include "chain/tx/tx_py.hpp"
-#include "chain/tx/tx_proxy_py.hpp"
 #include "chain/block/block_py.hpp"
-#include "chain/block/block_proxy_py.hpp"
 
 #include "cluster/cluster/cluster_py.hpp"
-#include "cluster/cluster/cluster_proxy_py.hpp"
 #include "cluster/tagged_cluster/tagged_cluster_py.hpp"
-#include "cluster/tagged_cluster/tagged_cluster_proxy_py.hpp"
 #include "cluster/tagged_address/tagged_address_py.hpp"
-#include "cluster/tagged_address/tagged_address_proxy_py.hpp"
 
 #include "scripts/address_py.hpp"
-#include "scripts/address_proxy_py.hpp"
 #include "scripts/equiv_address/equiv_address_py.hpp"
-#include "scripts/equiv_address/equiv_address_proxy_py.hpp"
 #include "scripts/pubkey/pubkey_py.hpp"
-#include "scripts/pubkey/pubkey/pubkey_proxy_py.hpp"
-#include "scripts/pubkey/pubkeyhash/pubkeyhash_proxy_py.hpp"
-#include "scripts/pubkey/witness_pubkeyhash/witness_pubkeyhash_proxy_py.hpp"
-#include "scripts/pubkey/multisig_pubkey/multisig_pubkey_proxy_py.hpp"
 #include "scripts/multisig/multisig_py.hpp"
-#include "scripts/multisig/multisig_proxy_py.hpp"
 #include "scripts/scripthash/scripthash_py.hpp"
-#include "scripts/scripthash/scripthash/scripthash_proxy_py.hpp"
-#include "scripts/scripthash/witness_scripthash/witness_scripthash_proxy_py.hpp"
 #include "scripts/nulldata/nulldata_py.hpp"
-#include "scripts/nulldata/nulldata_proxy_py.hpp"
 #include "scripts/nonstandard/nonstandard_py.hpp"
-#include "scripts/nonstandard/nonstandard_proxy_py.hpp"
 
 #include <pybind11/functional.h>
 
@@ -88,33 +68,10 @@ PYBIND11_MODULE(_blocksci, m) {
     py::class_<script::Nonstandard> nonstandardCl(m, "NonStandardAddress", addressCl, "Extra data about non-standard address");
     py::class_<script::OpReturn> opReturnCl(m, "OpReturn", addressCl, "Extra data about op_return address");
 
-    // addSelfProxy(blockchainCl);
-    addSelfProxy(uint160Cl);
-    addSelfProxy(uint256Cl);
-    addSelfProxy(blockCl);
-    addSelfProxy(txCl);
-    addSelfProxy(inputCl);
-    addSelfProxy(outputCl);
-    addSelfProxy(equivAddressCl);
-    addSelfProxy(addressCl);
-    addSelfProxy(pubkeyAddressCl);
-    addSelfProxy(pubkeyHashAddressCl);
-    addSelfProxy(witnessPubkeyHashAddressCl);
-    addSelfProxy(multisigPubkeyCl);
-    addSelfProxy(scriptHashCl);
-    addSelfProxy(witnessScriptHashCl);
-    addSelfProxy(multisigCl);
-    addSelfProxy(nonstandardCl);
-    addSelfProxy(opReturnCl);
-
     auto clusterMod = m.def_submodule("cluster");
     py::class_<Cluster> clusterCl(clusterMod, "Cluster", "Class representing a cluster");
     py::class_<TaggedCluster> taggedClusterCl(clusterMod, "TaggedCluster");
     py::class_<TaggedAddress> taggedAddressCl(clusterMod, "TaggedAddress");
-
-    addSelfProxy(clusterCl);
-    addSelfProxy(taggedClusterCl);
-    addSelfProxy(taggedAddressCl);
 
     RangeClasses<Block> blockRangeCls(m);
     RangeClasses<Transaction> txRangeCls(m);
@@ -136,101 +93,32 @@ PYBIND11_MODULE(_blocksci, m) {
     RangeClasses<TaggedCluster> taggedClusterRangeCls(clusterMod);
     RangeClasses<TaggedAddress> taggedAddressRangeCls(clusterMod);
 
-    auto proxyMod = m.def_submodule("proxy");
-    py::class_<ProxySequence<ranges::category::input>> proxyIteratorCl(proxyMod, "ProxyIterator");
-    py::class_<ProxySequence<random_access_sized>> proxyRangeCl(proxyMod, "ProxyRange");
+    setupProxies(m);
 
-    applyProxyMapFuncs(proxyIteratorCl);
-    applyProxyMapFuncs(proxyRangeCl);
+    // addSelfProxy(blockchainCl);
+    addSelfProxy(uint160Cl);
+    addSelfProxy(uint256Cl);
+    addSelfProxy(blockCl);
+    addSelfProxy(txCl);
+    addSelfProxy(inputCl);
+    addSelfProxy(outputCl);
+    addSelfProxy(equivAddressCl);
+    addSelfProxy(addressCl);
+    
+    addSelfProxy(pubkeyAddressCl);
+    addSelfProxy(pubkeyHashAddressCl);
+    addSelfProxy(witnessPubkeyHashAddressCl);
+    addSelfProxy(multisigPubkeyCl);
+    addSelfProxy(scriptHashCl);
+    addSelfProxy(witnessScriptHashCl);
+    addSelfProxy(multisigCl);
+    addSelfProxy(nonstandardCl);
+    addSelfProxy(opReturnCl);
 
-    applyProxyMapOptionalFuncs(proxyIteratorCl);
-    applyProxyMapOptionalFuncs(proxyRangeCl);
 
-    applyProxyMapSequenceFuncs(proxyIteratorCl);
-    applyProxyMapSequenceFuncs(proxyRangeCl);
-
-
-    py::class_<ProxyAddress> proxyAddressCl(proxyMod, "ProxyAddress");
-    init_proxy_address(proxyAddressCl);
-
-    AllProxyClasses<Block> blockProxyCls(proxyMod, proxyIteratorCl, proxyRangeCl);
-    AllProxyClasses<Transaction> txProxyCls(proxyMod, proxyIteratorCl, proxyRangeCl);
-    AllProxyClasses<Input> inputProxyCls(proxyMod, proxyIteratorCl, proxyRangeCl);
-    AllProxyClasses<Output> outputProxyCls(proxyMod, proxyIteratorCl, proxyRangeCl);
-    AllProxyClasses<AnyScript> addressProxyCls(proxyMod, proxyAddressCl, proxyIteratorCl, proxyRangeCl);
-    AllProxyClasses<EquivAddress> equivAddressProxyCls(proxyMod, proxyIteratorCl, proxyRangeCl);
-
-    AllProxyClasses<Cluster> clusterProxyCls(proxyMod, proxyIteratorCl, proxyRangeCl);
-    AllProxyClasses<TaggedCluster> taggedClusterProxyCls(proxyMod, proxyIteratorCl, proxyRangeCl);
-    AllProxyClasses<TaggedAddress> taggedAddressProxyCls(proxyMod, proxyIteratorCl, proxyRangeCl);
-
-    AllProxyClasses<script::Pubkey> pubkeyProxyCls(proxyMod, proxyAddressCl, proxyIteratorCl, proxyRangeCl);
-    AllProxyClasses<script::PubkeyHash> pubkeyHashProxyCls(proxyMod, proxyAddressCl, proxyIteratorCl, proxyRangeCl);
-    AllProxyClasses<script::WitnessPubkeyHash> witnessPubkeyHashProxyCls(proxyMod, proxyAddressCl, proxyIteratorCl, proxyRangeCl);
-    AllProxyClasses<script::MultisigPubkey> multisigPubkeyProxyCls(proxyMod, proxyAddressCl, proxyIteratorCl, proxyRangeCl);
-    AllProxyClasses<script::Multisig> multisigProxyCls(proxyMod, proxyAddressCl, proxyIteratorCl, proxyRangeCl);
-    AllProxyClasses<script::ScriptHash> scripthashProxyCls(proxyMod, proxyAddressCl, proxyIteratorCl, proxyRangeCl);
-    AllProxyClasses<script::WitnessScriptHash> witnessScripthashProxyCls(proxyMod, proxyAddressCl, proxyIteratorCl, proxyRangeCl);
-    AllProxyClasses<script::OpReturn> nulldataProxyCls(proxyMod, proxyAddressCl, proxyIteratorCl, proxyRangeCl);
-    AllProxyClasses<script::Nonstandard> nonstandardProxyCls(proxyMod, proxyAddressCl, proxyIteratorCl, proxyRangeCl);
-
-    AllProxyClasses<AddressType::Enum> addressTypeProxyCls(proxyMod, proxyIteratorCl, proxyRangeCl);
-    AllProxyClasses<int64_t> intProxyCls(proxyMod, proxyIteratorCl, proxyRangeCl);
-    AllProxyClasses<bool> boolProxyCls(proxyMod, proxyIteratorCl, proxyRangeCl);
-    AllProxyClasses<std::chrono::system_clock::time_point> timeProxyCls(proxyMod, proxyIteratorCl, proxyRangeCl);
-    AllProxyClasses<uint256> uint256ProxyCls(proxyMod, proxyIteratorCl, proxyRangeCl);
-    AllProxyClasses<uint160> uint160ProxyCls(proxyMod, proxyIteratorCl, proxyRangeCl);
-    AllProxyClasses<std::string> stringProxyCls(proxyMod, proxyIteratorCl, proxyRangeCl);
-    AllProxyClasses<py::bytes> bytesProxyCls(proxyMod, proxyIteratorCl, proxyRangeCl);
-    AllProxyClasses<py::list> listProxyCls(proxyMod, proxyIteratorCl, proxyRangeCl);
-
-    addBlockProxyMethods(blockProxyCls);
-    addTxProxyMethods(txProxyCls);
-    addInputProxyMethods(inputProxyCls);
-    addOutputProxyMethods(outputProxyCls);
-    addAddressProxyMethods(addressProxyCls);
-    addAddressTypeProxyMethods(addressTypeProxyCls);
-    addEquivAddressProxyMethods(equivAddressProxyCls);
-    addIntProxyMethods(intProxyCls);
-    addBoolProxyMethods(boolProxyCls);
-    addTimeProxyMethods(timeProxyCls);
-    addUint256ProxyMethods(uint256ProxyCls);
-    addUint160ProxyMethods(uint160ProxyCls);
-    addBytesProxyMethods(bytesProxyCls);
-    addStringProxyMethods(stringProxyCls);
-    addListProxyMethods(listProxyCls);
-
-    addPubkeyProxyMethods(pubkeyProxyCls);
-    addPubkeyHashProxyMethods(pubkeyHashProxyCls);
-    addWitnessPubkeyHashProxyMethods(witnessPubkeyHashProxyCls);
-    addMultisigPubkeyProxyMethods(multisigPubkeyProxyCls);
-    addMultisigProxyMethods(multisigProxyCls);
-    addScriptHashProxyMethods(scripthashProxyCls);
-    addWitnessScriptHashProxyMethods(witnessScripthashProxyCls);
-    addNonstandardProxyMethods(nonstandardProxyCls);
-    addNulldataProxyMethods(nulldataProxyCls);
-
-    addClusterProxyMethods(clusterProxyCls);
-    addTaggedClusterProxyMethods(taggedClusterProxyCls);
-    addTaggedAddressProxyMethods(taggedAddressProxyCls);
-
-    proxyMod.attr("block") = makeProxy<Block>();
-    proxyMod.attr("tx") = makeProxy<Transaction>();
-    proxyMod.attr("input") = makeProxy<Input>();
-    proxyMod.attr("output") = makeProxy<Output>();
-    proxyMod.attr("address") = makeProxy<AnyScript>();
-
-    proxyMod.attr("block_iterator") = makeProxy<Iterator<Block>>();
-    proxyMod.attr("tx_iterator") = makeProxy<Iterator<Transaction>>();
-    proxyMod.attr("input_iterator") = makeProxy<Iterator<Input>>();
-    proxyMod.attr("output_iterator") = makeProxy<Iterator<Output>>();
-    proxyMod.attr("address_iterator") = makeProxy<Iterator<AnyScript>>();
-
-    proxyMod.attr("block_range") = makeProxy<Range<Block>>();
-    proxyMod.attr("tx_range") = makeProxy<Range<Transaction>>();
-    proxyMod.attr("input_range") = makeProxy<Range<Input>>();
-    proxyMod.attr("output_range") = makeProxy<Range<Output>>();
-    proxyMod.attr("address_range") = makeProxy<Range<AnyScript>>();
+    addSelfProxy(clusterCl);
+    addSelfProxy(taggedClusterCl);
+    addSelfProxy(taggedAddressCl);
 
     init_address_type(m);
     init_heuristics(m);

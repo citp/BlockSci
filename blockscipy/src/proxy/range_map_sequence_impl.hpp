@@ -37,16 +37,16 @@ template <ranges::category range_cat>
 void addProxyMapIteratorFuncsMethods(pybind11::class_<ProxySequence<range_cat>> &cl) {
 	using namespace blocksci;
 	cl
-	.def("map", mapIterator<range_cat, Block>)
-	.def("map", mapIterator<range_cat, Transaction>)
-	.def("map", mapIterator<range_cat, Input>)
-	.def("map", mapIterator<range_cat, Output>)
-	.def("map", mapIterator<range_cat, AnyScript>)
-	.def("map", mapIterator<range_cat, EquivAddress>)
+	.def("_map", mapIterator<range_cat, Block>)
+	.def("_map", mapIterator<range_cat, Transaction>)
+	.def("_map", mapIterator<range_cat, Input>)
+	.def("_map", mapIterator<range_cat, Output>)
+	.def("_map", mapIterator<range_cat, AnyScript>)
+	.def("_map", mapIterator<range_cat, EquivAddress>)
 
-	.def("map", mapIterator<range_cat, Cluster>)
-	.def("map", mapIterator<range_cat, TaggedCluster>)
-	.def("map", mapIterator<range_cat, TaggedAddress>)
+	.def("_map", mapIterator<range_cat, Cluster>)
+	.def("_map", mapIterator<range_cat, TaggedCluster>)
+	.def("_map", mapIterator<range_cat, TaggedAddress>)
 	;
 }
 
@@ -54,16 +54,16 @@ template <ranges::category range_cat>
 void addProxyMapRangeFuncsMethods(pybind11::class_<ProxySequence<range_cat>> &cl) {
 	using namespace blocksci;
 	cl
-	.def("map", mapRange<range_cat, Block>)
-	.def("map", mapRange<range_cat, Transaction>)
-	.def("map", mapRange<range_cat, Input>)
-	.def("map", mapRange<range_cat, Output>)
-	.def("map", mapRange<range_cat, AnyScript>)
-	.def("map", mapRange<range_cat, EquivAddress>)
+	.def("_map", mapRange<range_cat, Block>)
+	.def("_map", mapRange<range_cat, Transaction>)
+	.def("_map", mapRange<range_cat, Input>)
+	.def("_map", mapRange<range_cat, Output>)
+	.def("_map", mapRange<range_cat, AnyScript>)
+	.def("_map", mapRange<range_cat, EquivAddress>)
 
-	.def("map", mapRange<range_cat, Cluster>)
-	.def("map", mapRange<range_cat, TaggedCluster>)
-	.def("map", mapRange<range_cat, TaggedAddress>)
+	.def("_map", mapRange<range_cat, Cluster>)
+	.def("_map", mapRange<range_cat, TaggedCluster>)
+	.def("_map", mapRange<range_cat, TaggedAddress>)
 	;
 }
 

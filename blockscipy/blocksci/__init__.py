@@ -25,7 +25,6 @@ import pandas as pd
 from ._blocksci import *
 from .currency import *
 from .blockchain_info import *
-from .blocktrail import *
 from .opreturn import label_application
 from .pickler import *
 
@@ -271,14 +270,34 @@ Blockchain.heights_to_dates = heights_to_dates
 def setup_map_funcs():
     def range_map_func(r, func):
         p = func(r.self_proxy.nested_proxy)
-        return r.self_proxy.map(p)(r)
+        return r.self_proxy._map(p)(r)
+
+    def range_where_func(r, func):
+        p = func(r.self_proxy.nested_proxy)
+        return r.self_proxy._where(p)(r)
 
     iterator_and_range_cls = [x for x in globals() if ('Iterator' in x or 'Range' in x) and x[0].isupper()]
 
     for cl in iterator_and_range_cls:
         globals()[cl].map = range_map_func
+        globals()[cl].where = range_where_func
 
+def setup_proxy_map_funcs():
+    def range_map_func(r, func):
+        p = func(r.nested_proxy)
+        return r._map(p)
 
+    def range_where_func(r, func):
+        p = func(r.nested_proxy)
+        return r._where(p)
+
+    iterator_and_range_cls = [x for x in dir(proxy) if ('Iterator' in x or 'Range' in x) and x[0].isupper()]
+
+    for cl in iterator_and_range_cls:
+        getattr(proxy, cl).map = range_map_func
+        getattr(proxy, cl).where = range_where_func
+
+setup_proxy_map_funcs()
 setup_map_funcs()
 
 
@@ -315,10 +334,10 @@ def setup_iterator_methods(iterator):
     
 
     def iterator_creator(name):
-        return property(proxy_self.map(getattr(proxy_obj, name)))
+        return property(proxy_self._map(getattr(proxy_obj, name)))
 
     def iterator_method_creator(name):
-        return lambda rng, *args: proxy_self.map(getattr(proxy_obj, name)(*args))(rng)
+        return lambda rng, *args: proxy_self._map(getattr(proxy_obj, name)(*args))(rng)
 
     for proxy_func in _get_properties_methods(proxy_obj):
         setattr(iterator, proxy_func, iterator_creator(proxy_func))
@@ -332,10 +351,10 @@ def setup_range_methods(blocksci_range):
     proxy_obj = proxy_self.nested_proxy
 
     def range_creator(name):
-        return property(proxy_self.map(getattr(proxy_obj, name)))
+        return property(proxy_self._map(getattr(proxy_obj, name)))
 
     def range_method_creator(name):
-        return lambda rng, *args: proxy_self.map(getattr(proxy_obj, name)(*args))(rng)
+        return lambda rng, *args: proxy_self._map(getattr(proxy_obj, name)(*args))(rng)
 
     for proxy_func in _get_properties_methods(proxy_obj):
         setattr(blocksci_range, proxy_func, range_creator(proxy_func))
@@ -344,7 +363,6 @@ def setup_range_methods(blocksci_range):
         setattr(blocksci_range, proxy_func, range_method_creator(proxy_func))
 
     blocksci_range.__getitem__ = lambda rng, index: proxy_self[index](rng)
-
 
 setup_self_methods(Block)
 setup_self_methods(Tx)
@@ -418,23 +436,23 @@ TxRange.including_output_of_type = txes_including_output_of_type
 
 
 def inputs_sent_before_height(inputs, height):
-    return inputs.where(proxy.input.spent_tx.block.height < height)
+    return inputs.where(lambda inp: inp.spent_tx.block.height < height)
 
 
 def inputs_sent_after_height(inputs, height):
-    return inputs.where(proxy.input.spent_tx.block.height >= height)
+    return inputs.where(lambda inp: inp.spent_tx.block.height >= height)
 
 
 def inputs_with_age_less_than(inputs, age):
-    return inputs.where(proxy.input.tx.block_height - proxy.input.spent_tx.block.height < age)
+    return inputs.where(lambda inp: inp.tx.block_height - inp.spent_tx.block.height < age)
 
 
 def inputs_with_age_greater_than(inputs, age):
-    return inputs.where(proxy.input.tx.block_height - proxy.input.spent_tx.block.height >= age)
+    return inputs.where(lambda inp: inp.tx.block_height - inp.spent_tx.block.height >= age)
 
 
 def inputs_with_address_type(inputs, typ):
-    return inputs.where(proxy.input.address_type == typ)
+    return inputs.where(lambda inp: inp.address_type == typ)
 
 
 InputIterator.sent_before_height = inputs_sent_before_height
@@ -449,31 +467,32 @@ InputRange.with_age_less_than = inputs_with_age_less_than
 InputRange.with_age_greater_than = inputs_with_age_greater_than
 InputRange.with_address_type = inputs_with_address_type
 
+def _outputAge(output):
+    return output.spending_tx.map(lambda tx: tx.block_height) - output.tx.block_height
 
-def outputs_unspent(outputs, height):
-    return outputs.where(~proxy.output.is_spent)
+def outputs_unspent(outputs, height = -1):
+    if height == -1:
+        return outputs.where(lambda output: ~output.is_spent)
+    else:
+        return outputs.where(lambda output: (~output.is_spent) | (output.spending_tx.block_height.or_value(0) > height))
 
 
 def outputs_spent_before_height(outputs, height):
-    return outputs.where(proxy.output.is_spent).where(proxy.output.spending_tx.map(proxy.tx.block_height).or_value(0) < height)
+    return outputs.where(lambda output: output.is_spent).where(lambda output: output.spending_tx.map(lambda tx: tx.block_height).or_value(0) < height)
 
 
 def outputs_spent_after_height(outputs, age):
-    return outputs.where(proxy.output.is_spent).where(proxy.output.spending_tx.map(proxy.tx.block_height).or_value(0) >= height)
+    return outputs.where(lambda output: output.is_spent).where(lambda output: output.spending_tx.map(lambda tx: tx.block_height).or_value(0) >= height)
 
 
 def outputs_spent_with_age_less_than(outputs, age):
-    output_age = proxy.output.spending_tx.map(proxy.tx.block_height) - proxy.output.tx.block_height
-    return outputs.where(proxy.output.is_spent).where(output_age.or_value(0) < age)
-
+    return outputs.where(lambda output: output.is_spent).where(lambda output: _outputAge(output).or_value(0) < age)
 
 def outputs_spent_with_age_greater_than(outputs, age):
-    output_age = proxy.output.spending_tx.map(proxy.tx.block_height) - proxy.output.tx.block_height
-    return outputs.where(proxy.output.is_spent).where(output_age.or_value(0) >= age)
-
+    return outputs.where(lambda output: output.is_spent).where(lambda output: _outputAge(output).or_value(0) >= age)
 
 def outputs_with_address_type(outputs, typ):
-    return outputs.where(proxy.output.address_type == typ)
+    return outputs.where(lambda output: output.address_type == typ)
 
 
 OutputIterator.unspent = outputs_unspent
