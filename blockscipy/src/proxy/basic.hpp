@@ -16,6 +16,7 @@
 
 #include <blocksci/address/equiv_address.hpp>
 
+#include <pybind11/chrono.h>
 
 struct CallFunc {
 	template <typename T1, typename T2>
