@@ -52,9 +52,6 @@ void addProxySequenceMethods(pybind11::class_<Proxy<any_view<T, range_cat>>> &cl
 			});
 		});
 	})
-    .def_property_readonly_static("nested_proxy", [](pybind11::object &) -> Proxy<T> {
-        return makeProxy<T>();
-    })
 	;
 }
 

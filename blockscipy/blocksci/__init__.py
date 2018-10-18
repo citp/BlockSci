@@ -276,11 +276,17 @@ def setup_map_funcs():
         p = func(r.self_proxy.nested_proxy)
         return r.self_proxy._where(p)(r)
 
+    def range_group_by_func(r, grouper_func, evaler_func):
+        grouper = grouper_func(r.self_proxy.nested_proxy)
+        evaler = evaler_func(r.self_proxy.nested_proxy.range_proxy)
+        return r._group_by(grouper, evaler)
+
     iterator_and_range_cls = [x for x in globals() if ('Iterator' in x or 'Range' in x) and x[0].isupper()]
 
     for cl in iterator_and_range_cls:
         globals()[cl].map = range_map_func
         globals()[cl].where = range_where_func
+        globals()[cl].group_by = range_group_by_func
 
 def setup_proxy_map_funcs():
     def range_map_func(r, func):

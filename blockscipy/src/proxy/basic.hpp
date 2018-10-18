@@ -25,6 +25,13 @@ struct CallFunc {
 	}
 };
 
+struct OptionalCallFunc {
+	template <typename T1, typename T2>
+	static T2 apply(Proxy<T2> &p, T1 &val) {
+		return p(val);
+	}
+};
+
 struct IteratorCallFunc {
 	template <typename T1, typename T2>
 	static auto apply(Proxy<T2> &p, T1 &val) -> decltype(convertPythonRange(p(val))) {
@@ -73,18 +80,44 @@ struct AddProxyMethods {
 	template<typename T>
 	void operator()(pybind11::class_<Proxy<T>> &cl) {
 		addCallMethods(cl, CallFunc{});
+
+		cl
+		.def_property_readonly_static("range_proxy", [](pybind11::object &) -> Proxy<Range<T>> {
+	        return makeProxy<Range<T>>();
+	    })
+	    .def_property_readonly_static("iterator_proxy", [](pybind11::object &) -> Proxy<Iterator<T>> {
+	        return makeProxy<Iterator<T>>();
+	    })
+	    ;
+	}
+
+	template<typename T>
+	void operator()(pybind11::class_<Proxy<ranges::optional<T>>> &cl) {
+		addCallMethods(cl, OptionalCallFunc{});
 	}
 
 	template<typename T>
 	void operator()(pybind11::class_<Proxy<Iterator<T>>> &cl) {
 		addCallMethods(cl, IteratorCallFunc{});
 		addCallMethod<blocksci::AnyScript>(cl, IteratorCallFunc{});
+
+		cl
+		.def_property_readonly_static("nested_proxy", [](pybind11::object &) -> Proxy<T> {
+	        return makeProxy<T>();
+	    })
+	    ;
 	}
 
 	template<typename T>
 	void operator()(pybind11::class_<Proxy<Range<T>>> &cl) {
 		addCallMethods(cl, RangeCallFunc{});
 		addCallMethod<blocksci::AnyScript>(cl, RangeCallFunc{});
+
+		cl
+		.def_property_readonly_static("nested_proxy", [](pybind11::object &) -> Proxy<T> {
+	        return makeProxy<T>();
+	    })
+	    ;
 	}
 };
 
