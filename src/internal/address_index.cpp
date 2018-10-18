@@ -20,6 +20,8 @@
 #include <range/v3/view/transform.hpp>
 #include <range/v3/range_for.hpp>
 
+#include <endian/big_endian.hpp>
+
 #include <sstream>
 
 namespace blocksci {
@@ -87,10 +89,17 @@ namespace blocksci {
         std::vector<char> prefix(prefixData, prefixData + sizeof(address.scriptNum));
         auto rawOutputPointerRange = ColumnIterator(db.get(), getOutputColumn(address.type).get(), prefix);
         return rawOutputPointerRange | ranges::view::transform([](std::pair<MemoryView, MemoryView> pair) -> InoutPointer {
+            InoutPointer outPoint;
+            uint8_t txNumData[4];
+            uint8_t outputNumData[2];
+            
             auto &key = pair.first;
             key.data += sizeof(uint32_t);
-            InoutPointer outPoint;
-            memcpy(&outPoint, key.data, sizeof(outPoint));
+            memcpy(txNumData, key.data, 4);
+            key.data += sizeof(txNumData);
+            memcpy(outputNumData, key.data, 2);
+            endian::big_endian::get(outPoint.txNum, txNumData);
+            endian::big_endian::get(outPoint.inoutNum, outputNumData);
             return outPoint;
         });
     }
@@ -134,9 +143,14 @@ namespace blocksci {
         for (auto &pair : outputCache) {
             const RawAddress &address = pair.first;
             const InoutPointer &pointer = pair.second;
-            std::array<rocksdb::Slice, 2> keyParts = {{
+            uint8_t txNumData[4];
+            uint8_t outputNumData[2];
+            endian::big_endian::put(pointer.txNum, txNumData);
+            endian::big_endian::put(pointer.inoutNum, outputNumData);
+            std::array<rocksdb::Slice, 3> keyParts = {{
                 rocksdb::Slice(reinterpret_cast<const char *>(&address.scriptNum), sizeof(address.scriptNum)),
-                rocksdb::Slice(reinterpret_cast<const char *>(&pointer), sizeof(pointer))
+                rocksdb::Slice(reinterpret_cast<const char *>(&txNumData[0]), 4),
+                rocksdb::Slice(reinterpret_cast<const char *>(&outputNumData[0]), 2)
             }};
             std::string sliceStr;
             rocksdb::Slice key{rocksdb::SliceParts{keyParts.data(), keyParts.size()}, &sliceStr};

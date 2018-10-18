@@ -64,6 +64,7 @@ PUBLIC
 PRIVATE
   simpleini
   OpenSSL::Crypto
+  endian
 )
 
 target_include_directories(blocksci_internal PUBLIC
