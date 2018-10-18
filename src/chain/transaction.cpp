@@ -50,7 +50,7 @@ namespace blocksci {
     
     std::string Transaction::toString() const {
         std::stringstream ss;
-        ss << "Tx(len(txins)=" << inputCount() <<", len(txouts)=" << outputCount() <<", size_bytes=" << sizeBytes() << ", block_height=" << blockHeight <<", tx_index=" << txNum << ")";
+        ss << "Tx(len(txins)=" << inputCount() <<", len(txouts)=" << outputCount() <<", size_bytes=" << sizeBytes() << ", block_height=" << getBlockHeight() <<", tx_index=" << txNum << ")";
         return ss.str();
     }
     
@@ -71,11 +71,8 @@ namespace blocksci {
         return false;
     }
     
-    BlockHeight Transaction::getBlockHeight() const {
-        if (blockHeight == -1) {
-            blockHeight = access->getChain().getBlockHeight(txNum);
-        }
-        return blockHeight;
+    BlockHeight Transaction::calculateBlockHeight() const {
+        return access->getChain().getBlockHeight(txNum);
     }
     
     ranges::optional<std::chrono::system_clock::time_point> Transaction::getTimeSeen() const {
@@ -87,7 +84,7 @@ namespace blocksci {
     }
     
     Block Transaction::block() const {
-        return {blockHeight, *access};
+        return {getBlockHeight(), *access};
     }
     
     std::vector<OutputPointer> Transaction::getOutputPointers(const InputPointer &pointer) const {

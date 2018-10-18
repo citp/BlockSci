@@ -60,7 +60,14 @@ namespace blocksci {
             return *data.hash;
         }
         
-        BlockHeight getBlockHeight() const;
+        BlockHeight calculateBlockHeight() const;
+        
+        BlockHeight getBlockHeight() const {
+            if (blockHeight == -1) {
+                blockHeight = calculateBlockHeight();
+            }
+            return blockHeight;
+        }
         
         // Mempool data access
         ranges::optional<std::chrono::system_clock::time_point> getTimeSeen() const;
@@ -119,11 +126,11 @@ namespace blocksci {
         }
         
         OutputRange outputs() const {
-            return {data.rawTx->beginOutputs(), blockHeight, txNum, outputCount(), maxTxCount, access};
+            return {data.rawTx->beginOutputs(), getBlockHeight(), txNum, outputCount(), maxTxCount, access};
         }
         
         InputRange inputs() const {
-            return {data.rawTx->beginInputs(), data.spentOutputNums, data.sequenceNumbers, blockHeight, txNum, inputCount(), maxTxCount, access};
+            return {data.rawTx->beginInputs(), data.spentOutputNums, data.sequenceNumbers, getBlockHeight(), txNum, inputCount(), maxTxCount, access};
         }
         
         bool isCoinbase() const {
