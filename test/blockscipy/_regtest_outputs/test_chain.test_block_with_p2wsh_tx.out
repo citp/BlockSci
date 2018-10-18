@@ -11,11 +11,11 @@ Tx(len(txins)=0, len(txouts)=2, size_bytes=145, block_height=122, tx_index=146)
 Unknown
 [(address_type.pubkeyhash, 5000000000), (address_type.nulldata, 0), (address_type.witness_scripthash, 0)]
 [('nulldata', 0), ('pubkeyhash', 5000000000), ('witness_scripthash/pubkey', 0)]
-Block(numTxes=2, height=123, header_hash=18ab42dda7c21ecdbef3bb8af1537b42612efc0daec81c10b11e8438b306249b, version=536870912, timestamp=1535768400, bits=545259519, nonce=0)
+Block(tx_count=2, height=123, header_hash=18ab42dda7c21ecdbef3bb8af1537b42612efc0daec81c10b11e8438b306249b, version=536870912, timestamp=1535768400, bits=545259519, nonce=0)
 0
 8
 15300000000
-Block(numTxes=3, height=121, header_hash=6b4c87d26c48371ebb9a5561e226bb722c9263fc6c9c9f072ef67a8c3d0e5104, version=536870912, timestamp=1535767200, bits=545259519, nonce=0)
+Block(tx_count=3, height=121, header_hash=6b4c87d26c48371ebb9a5561e226bb722c9263fc6c9c9f072ef67a8c3d0e5104, version=536870912, timestamp=1535767200, bits=545259519, nonce=0)
 5000040000
 1116
 2018-08-31 22:10:00
