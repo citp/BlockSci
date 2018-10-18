@@ -33,7 +33,6 @@ void init_equiv_address(py::class_<EquivAddress> &cl) {
         });
         return py::make_iterator(transformed.begin(), transformed.end());
     },py::keep_alive<0, 1>())
-    .def("ins", &EquivAddress::getInputs, "Returns a list of all inputs spent from these equivalent addresses")
     .def("txes", &EquivAddress::getTransactions, "Returns a list of all transactions involving these equivalent addresses")
     .def("out_txes", &EquivAddress::getOutputTransactions, "Returns a range of all transaction where these equivalent addresses were an output")
     .def("in_txes", &EquivAddress::getInputTransactions, "Returns a list of all transaction where these equivalent addresses were an input")

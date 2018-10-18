@@ -60,13 +60,13 @@ namespace blocksci {
             return scriptEquivalent;
         }
         
-        ranges::any_view<OutputPointer> getOutputPointers();
-        int64_t calculateBalance(BlockHeight height);
-        ranges::any_view<Output> getOutputs();
-        std::vector<Input> getInputs();
-        std::vector<Transaction> getTransactions();
-        std::vector<Transaction> getOutputTransactions();
-        std::vector<Transaction> getInputTransactions();
+        ranges::any_view<OutputPointer> getOutputPointers() const;
+        int64_t calculateBalance(BlockHeight height) const;
+        ranges::any_view<Output> getOutputs() const;
+        ranges::any_view<Input> getInputs() const;
+        std::vector<Transaction> getTransactions() const;
+        std::vector<Transaction> getOutputTransactions() const;
+        std::vector<Transaction> getInputTransactions() const;
         
         bool operator==(const EquivAddress& b) {
             return addresses == b.addresses;

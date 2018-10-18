@@ -58,7 +58,7 @@ namespace blocksci {
         bool checkIfExists(const RawAddress &address) const;
         bool checkIfTopLevel(const RawAddress &address) const;
         
-        ranges::any_view<InoutPointer> getOutputPointers(const RawAddress &address) const;
+        ranges::any_view<InoutPointer, ranges::category::forward> getOutputPointers(const RawAddress &address) const;
         
         std::unordered_set<RawAddress> getPossibleNestedEquivalentUp(const RawAddress &searchAddress) const;
         ranges::any_view<RawAddress> getIncludingMultisigs(const RawAddress &searchAddress) const;

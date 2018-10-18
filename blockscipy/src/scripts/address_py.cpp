@@ -74,10 +74,8 @@ void init_address(py::class_<blocksci::ScriptBase> &cl) {
     .def_property_readonly("_access", [](const ScriptBase &script) {
         return Access{&script.getAccess()};
     })
-    .def("ins", &ScriptBase::getInputs, "Returns a list of all inputs spent from this address")
     .def("txes", &ScriptBase::getTransactions, "Returns a list of all transactions involving this address")
     .def("in_txes",&ScriptBase::getInputTransactions, "Returns a list of all transaction where this address was an input")
-    .def("out_txes", &ScriptBase::getOutputTransactions, "Returns a list of all transaction where this address was an output")
     ;
 }
 

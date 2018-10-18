@@ -11,6 +11,7 @@
 #include <blocksci/address/address.hpp>
 #include <blocksci/address/equiv_address.hpp>
 #include <blocksci/chain/algorithms.hpp>
+#include <blocksci/chain/range_util.hpp>
 #include <blocksci/scripts/script_variant.hpp>
 
 #include <scripts/bitcoin_base58.hpp>
@@ -18,19 +19,48 @@
 
 #include <internal/dedup_address_info.hpp>
 #include <internal/data_access.hpp>
+#include <internal/chain_access.hpp>
 #include <internal/script_access.hpp>
 #include <internal/address_index.hpp>
 #include <internal/hash_index.hpp>
+
+#include <range/v3/view/transform.hpp>
+#include <range/v3/view/unique.hpp>
 
 #include <sstream>
 
 namespace blocksci {
     
     ranges::any_view<OutputPointer> Address::getOutputPointers() const {
-        return access->getAddressIndex().getOutputPointers(*this) |
-        ranges::view::transform([](const InoutPointer &pointer) {
-            return OutputPointer(pointer.txNum, pointer.inoutNum);
-        });
+        return access->getAddressIndex().getOutputPointers(*this)
+        | ranges::view::transform([](const InoutPointer &pointer) { return OutputPointer(pointer.txNum, pointer.inoutNum); });
+    }
+    
+    ranges::any_view<Output> Address::getOutputs() const {
+        return outputs(getOutputPointers(), *access);
+    }
+    
+    ranges::any_view<Input> Address::getInputs() const {
+        auto _access = access;
+        return getOutputPointers()
+        | ranges::view::transform([_access](const OutputPointer &pointer) { return Output(pointer, *_access).getSpendingInput(); })
+        | flatMapOptionals();
+    }
+    
+    std::vector<Transaction> Address::getTransactions() const {
+        return blocksci::getTransactions(getOutputPointers(), *access);
+    }
+    
+    ranges::any_view<Transaction> Address::getOutputTransactions() const {
+        auto _access = access;
+        auto uniqueTxNums = _access->getAddressIndex().getOutputPointers(*this)
+        | ranges::view::transform([](const InoutPointer &pointer) -> uint32_t { return pointer.txNum; })
+        | ranges::view::unique;
+        return ranges::view::transform(uniqueTxNums, [_access](uint32_t txNum) { return Transaction(txNum, _access->getChain().getBlockHeight(txNum), *_access); });
+    }
+    
+    std::vector<Transaction> Address::getInputTransactions() const {
+        return blocksci::getInputTransactions(getOutputPointers(), *access);
     }
     
     bool Address::isSpendable() const {
@@ -166,28 +196,8 @@ namespace blocksci {
         return EquivAddress{*this, nestedEquivalent};
     }
     
-    int64_t Address::calculateBalance(BlockHeight height) {
+    int64_t Address::calculateBalance(BlockHeight height) const {
         return balance(height, outputs(getOutputPointers(), *access));
-    }
-    
-    ranges::any_view<Output> Address::getOutputs() {
-        return outputs(getOutputPointers(), *access);
-    }
-    
-    std::vector<Input> Address::getInputs() {
-        return blocksci::getInputs(getOutputPointers(), *access);
-    }
-    
-    std::vector<Transaction> Address::getTransactions() {
-        return blocksci::getTransactions(getOutputPointers(), *access);
-    }
-    
-    std::vector<Transaction> Address::getOutputTransactions() {
-        return blocksci::getOutputTransactions(getOutputPointers(), *access);
-    }
-    
-    std::vector<Transaction> Address::getInputTransactions() {
-        return blocksci::getInputTransactions(getOutputPointers(), *access);
     }
     
     std::unordered_set<Address> getScriptNestedEquivalents(const Address &searchAddress) {

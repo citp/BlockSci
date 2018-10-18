@@ -19,15 +19,15 @@
 
 template<typename GroupType, typename ResultType, typename V, ranges::category range_cat>
 void addGroupByFunc(pybind11::class_<any_view<V, range_cat>> &cl) {
-    using Range = any_view<V, range_cat>;
-    cl.def("group_by", [](Range &range, Proxy<GroupType> &grouper, Proxy<ResultType> &eval) -> std::unordered_map<GroupType, ResultType> {
+    cl.def("_group_by", [](any_view<V, range_cat> &range, Proxy<GroupType> &grouper, Proxy<ResultType> &eval) -> std::unordered_map<GroupType, ResultType> {
         std::unordered_map<GroupType, std::vector<V>> grouped;
         RANGES_FOR(auto && item, range) {
             grouped[grouper(item)].push_back(item);
         }
         std::unordered_map<GroupType, ResultType> results;
         for (auto group : grouped) {
-            results[group.first] = eval(group.second);
+            auto range = Range<V>{group.second};
+            results[group.first] = eval(range);
         }
         return results;
     });

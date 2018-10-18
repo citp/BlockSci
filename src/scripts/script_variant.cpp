@@ -44,27 +44,27 @@ namespace blocksci {
         return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getEquivAddresses(nestedEquivalent); }, wrapped);
     }
 
-	int64_t AnyScript::calculateBalance(BlockHeight height) {
+	int64_t AnyScript::calculateBalance(BlockHeight height) const {
 		return mpark::visit([&](auto &scriptAddress) { return scriptAddress.calculateBalance(height); }, wrapped);
 	}
     
-    ranges::any_view<Output> AnyScript::getOutputs() {
+    ranges::any_view<Output> AnyScript::getOutputs() const {
     	return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getOutputs(); }, wrapped);
     }
 
-    std::vector<Input> AnyScript::getInputs() {
+    ranges::any_view<Input> AnyScript::getInputs() const {
     	return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getInputs(); }, wrapped);
     }
 
-    std::vector<Transaction> AnyScript::getTransactions() {
+    std::vector<Transaction> AnyScript::getTransactions() const {
     	return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getTransactions(); }, wrapped);
     }
 
-    std::vector<Transaction> AnyScript::getOutputTransactions() {
+    ranges::any_view<Transaction> AnyScript::getOutputTransactions() const {
     	return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getOutputTransactions(); }, wrapped);
     }
 
-    std::vector<Transaction> AnyScript::getInputTransactions() {
+    std::vector<Transaction> AnyScript::getInputTransactions() const {
     	return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getInputTransactions(); }, wrapped);
     }
 }

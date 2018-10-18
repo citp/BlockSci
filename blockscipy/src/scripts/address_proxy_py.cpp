@@ -63,8 +63,13 @@ struct AddAddressMethods {
         func(property_tag, "has_been_spent", &AnyScript::hasBeenSpent, "Check if a type equivalent address has ever been spent");
         func(property_tag, "outs", +[](AnyScript &address) -> Iterator<Output> {
             return address.getOutputs();
-        }, "Returns a range of all outputs sent to this address");
-        ;
+        }, "Returns a iterator over all outputs sent to this address");
+        func(property_tag, "ins", +[](AnyScript &address) -> Iterator<Input> {
+            return address.getInputs();
+        }, "Returns an iterator over all inputs spent from this address");
+        func(property_tag, "out_txes", +[](AnyScript &address) -> Iterator<Transaction> {
+            return address.getOutputTransactions();
+        }, "Returns an iterator over all transaction where this address was an output");
     }
 };
 

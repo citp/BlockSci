@@ -76,12 +76,12 @@ namespace blocksci {
             return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getOutputPointers(); }, wrapped);
         }
         
-        int64_t calculateBalance(BlockHeight height);
-        ranges::any_view<Output> getOutputs();
-        std::vector<Input> getInputs();
-        std::vector<Transaction> getTransactions();
-        std::vector<Transaction> getOutputTransactions();
-        std::vector<Transaction> getInputTransactions();
+        int64_t calculateBalance(BlockHeight height) const;
+        ranges::any_view<Output> getOutputs() const;
+        ranges::any_view<Input> getInputs() const;
+        std::vector<Transaction> getTransactions() const;
+        ranges::any_view<Transaction> getOutputTransactions() const;
+        std::vector<Transaction> getInputTransactions() const;
         
         ScriptVariant wrapped;
     };

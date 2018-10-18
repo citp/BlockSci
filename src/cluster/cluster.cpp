@@ -151,12 +151,11 @@ namespace blocksci {
     }
 
     ranges::any_view<Output> Cluster::getOutputs() const {
-        return blocksci::outputs(getOutputPointers(), clusterAccess.access);
+        return getPossibleAddresses() | ranges::view::transform([](auto && address) { return address.getOutputs(); }) | ranges::view::join;
     }
     
-    std::vector<blocksci::Input> Cluster::getInputs() const {
-        auto pointers = getOutputPointers() | ranges::to_vector;
-        return blocksci::getInputs(pointers, clusterAccess.access);
+    ranges::any_view<blocksci::Input> Cluster::getInputs() const {
+        return getPossibleAddresses() | ranges::view::transform([](auto && address) { return address.getInputs(); }) | ranges::view::join;
     }
     
     std::vector<blocksci::Transaction> Cluster::getTransactions() const {

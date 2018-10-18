@@ -64,34 +64,40 @@ namespace blocksci {
         return ss.str();
     }
     
-    ranges::any_view<OutputPointer> EquivAddress::getOutputPointers() {
+    ranges::any_view<OutputPointer> EquivAddress::getOutputPointers() const {
         return addresses
         | ranges::view::transform([](const Address &address) { return address.getOutputPointers(); })
         | ranges::view::join
         ;
     }
     
-    int64_t EquivAddress::calculateBalance(BlockHeight height) {
+    int64_t EquivAddress::calculateBalance(BlockHeight height) const {
         return balance(height, getOutputs());
     }
     
-    ranges::any_view<Output> EquivAddress::getOutputs() {
-        return outputs(getOutputPointers(), access);
+    ranges::any_view<Output> EquivAddress::getOutputs() const {
+        return addresses
+        | ranges::view::transform([](const Address &address) { return address.getOutputs(); })
+        | ranges::view::join
+        ;
     }
     
-    std::vector<Input> EquivAddress::getInputs() {
-        return blocksci::getInputs(getOutputPointers(), access);
+    ranges::any_view<Input> EquivAddress::getInputs() const {
+        return addresses
+        | ranges::view::transform([](const Address &address) { return address.getInputs(); })
+        | ranges::view::join
+        ;
     }
     
-    std::vector<Transaction> EquivAddress::getTransactions() {
+    std::vector<Transaction> EquivAddress::getTransactions() const {
         return blocksci::getTransactions(getOutputPointers(), access);
     }
     
-    std::vector<Transaction> EquivAddress::getOutputTransactions() {
+    std::vector<Transaction> EquivAddress::getOutputTransactions() const {
         return blocksci::getOutputTransactions(getOutputPointers(), access);
     }
     
-    std::vector<Transaction> EquivAddress::getInputTransactions() {
+    std::vector<Transaction> EquivAddress::getInputTransactions() const {
         return blocksci::getInputTransactions(getOutputPointers(), access);
     }
 }

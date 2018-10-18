@@ -30,7 +30,7 @@ int64_t totalOutWithoutSelfChurn(const blocksci::Block &block, blocksci::Cluster
         std::set<uint32_t> inputClusters;
         RANGES_FOR(auto input, tx.inputs()) {
             auto cluster = manager.getCluster(input.getAddress());
-            if (cluster.getSize() < 30000) {
+            if (cluster.getTypeEquivSize() < 30000) {
                 inputClusters.insert(cluster.clusterNum);
             }
         }
@@ -79,7 +79,6 @@ void init_cluster(py::class_<Cluster> &cl) {
     .def("__hash__", [] (const Cluster &cluster) {
         return cluster.clusterNum;
     })
-    .def("ins", &Cluster::getInputs, "Returns a list of all inputs spent from this cluster")
     .def("txes", &Cluster::getTransactions, "Returns a list of all transactions involving this cluster")
     .def("in_txes",&Cluster::getInputTransactions, "Returns a list of all transaction where this cluster was an input")
     .def("out_txes", &Cluster::getOutputTransactions, "Returns a list of all transaction where this cluster was an output")

@@ -84,7 +84,7 @@ namespace blocksci {
         return columnHandles[AddressType::size + static_cast<size_t>(type)];
     }
     
-    ranges::any_view<InoutPointer> AddressIndex::getOutputPointers(const RawAddress &address) const {
+    ranges::any_view<InoutPointer, ranges::category::forward> AddressIndex::getOutputPointers(const RawAddress &address) const {
         auto prefixData = reinterpret_cast<const char *>(&address.scriptNum);
         std::vector<char> prefix(prefixData, prefixData + sizeof(address.scriptNum));
         auto rawOutputPointerRange = ColumnIterator(db.get(), getOutputColumn(address.type).get(), prefix);

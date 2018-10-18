@@ -59,6 +59,10 @@ namespace blocksci {
                 return !it->Valid() || !it->key().starts_with(key);
             }
             
+            bool equal(const cursor &other) const {
+                return it->key().ToString() == other.it->key().ToString();
+            }
+            
             void next() {
                 if (it.use_count() > 1) {
                     auto newIt = std::shared_ptr<rocksdb::Iterator>{db->NewIterator(rocksdb::ReadOptions(), column)};

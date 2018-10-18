@@ -21,7 +21,12 @@ struct AddEquivAddressMethods {
         namespace py = pybind11;
         func(property_tag, "is_script_equiv", &EquivAddress::isScriptEquiv, "Returns whether this equiv address is script equivalent or not");
         func(method_tag, "balance", &EquivAddress::calculateBalance, "Calculates the balance held by these equivalent addresses at the height (Defaults to the full chain)", py::arg("height") = -1);
-        func(method_tag, "outs", &EquivAddress::getOutputs, "Returns a list of all outputs sent to these equivalent addresses");
+        func(method_tag, "outs", +[](EquivAddress &address) -> Iterator<Output> {
+            return address.getOutputs();
+        }, "Returns an iterator over all outputs sent to these equivalent addresses");
+        func(method_tag, "ins", +[](EquivAddress &address) -> Iterator<Input> {
+            return address.getInputs();
+        }, "Returns an iterator over all inputs spent from these equivalent addresses");
         func(method_tag, "out_txes_count", +[](EquivAddress &address) -> int64_t {
             return address.getOutputTransactions().size();
         }, "Return the number of transactions where these equivalent addresses were an output");

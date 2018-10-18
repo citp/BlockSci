@@ -28,7 +28,12 @@ struct AddClusterMethods {
         func(method_tag, "in_txes_count", +[](Cluster &cluster) -> int64_t {
             return cluster.getInputTransactions().size();
         }, "Return the number of transactions where this cluster was an input");
-        func(method_tag, "outs", &Cluster::getOutputs, "Returns a list of all outputs sent to this cluster");
+        func(method_tag, "outs", +[](Cluster &cluster) -> Iterator<Output> {
+            return cluster.getOutputs();
+        }, "Returns an iterator over all outputs sent to this cluster");
+        func(method_tag, "ins", +[](Cluster &cluster) -> Iterator<Input> {
+            return cluster.getInputs();
+        }, "Returns an iterator over all inputs spent from this cluster");
         func(property_tag, "addresses", +[](const Cluster &cluster) -> Iterator<AnyScript> {
             return ranges::view::transform(cluster.getAddresses(), [](Address && address) -> AnyScript {
                 return address.getScript();
