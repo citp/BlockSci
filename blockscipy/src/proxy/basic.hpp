@@ -56,7 +56,6 @@ void addCallMethods(pybind11::class_<Proxy<T>> &cl, Func callFunc) {
 	addCallMethod<Transaction>(cl, callFunc);
 	addCallMethod<Input>(cl, callFunc);
 	addCallMethod<Output>(cl, callFunc);
-	addCallMethod<AnyScript>(cl, callFunc);
 	addCallMethod<EquivAddress>(cl, callFunc);
 
 	addCallMethod<script::Pubkey>(cl, callFunc);
@@ -79,11 +78,13 @@ struct AddProxyMethods {
 	template<typename T>
 	void operator()(pybind11::class_<Proxy<Iterator<T>>> &cl) {
 		addCallMethods(cl, IteratorCallFunc{});
+		addCallMethod<blocksci::AnyScript>(cl, IteratorCallFunc{});
 	}
 
 	template<typename T>
 	void operator()(pybind11::class_<Proxy<Range<T>>> &cl) {
 		addCallMethods(cl, RangeCallFunc{});
+		addCallMethod<blocksci::AnyScript>(cl, RangeCallFunc{});
 	}
 };
 
