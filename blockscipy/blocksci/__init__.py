@@ -136,17 +136,17 @@ def mapreduce_txes(chain, map_func, reduce_func, init=MISSING_PARAM, start=None,
 def map_blocks(self, block_func, start=None, end=None, cpu_count=psutil.cpu_count()):
     """Runs the given function over each block in range and returns a list of the results
     """
-    def mapFunc(blocks):
+    def map_func(blocks):
         return [block_func(block) for block in blocks]
 
-    def reduceFunc(accum, new_val):
+    def reduce_func(accum, new_val):
         accum.extend(new_val)
         return accum
 
     return mapreduce_block_ranges(
         self,
         map_func,
-        reduceFunc,
+        reduce_func,
         MISSING_PARAM,
         start,
         end,
