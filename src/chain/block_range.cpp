@@ -16,12 +16,19 @@
 namespace blocksci {
     
     std::vector<BlockRange> BlockRange::segment(unsigned int segmentCount) const {
+        std::vector<BlockRange> segments;
+        
+        if (size() < static_cast<BlockHeight>(segmentCount)) {
+            segments.push_back(*this);
+            return segments;
+        }
+        
         auto lastTx = endTxIndex();
         auto firstTx = firstTxIndex();
         auto totalTxCount = lastTx - firstTx;
         uint32_t segmentSize = totalTxCount / segmentCount;
         
-        std::vector<BlockRange> segments;
+        
         auto it = begin();
         auto chainEnd = end();
         while(lastTx - (*it).firstTxIndex() > segmentSize) {
