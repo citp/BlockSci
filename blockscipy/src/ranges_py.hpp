@@ -25,7 +25,8 @@ void addGroupByFunc(pybind11::class_<any_view<V, range_cat>> &cl) {
             grouped[grouper(item)].push_back(item);
         }
         std::unordered_map<GroupType, ResultType> results;
-        for (auto group : grouped) {
+        results.reserve(grouped.size());
+        for (auto &group : grouped) {
             auto range = Range<V>{group.second};
             results[group.first] = eval(range);
         }
