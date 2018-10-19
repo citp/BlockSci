@@ -37,3 +37,6 @@
 [submodule "external/endian"]
 	path = external/endian
 	url = https://github.com/steinwurf/endian
+[submodule "blockscipy/external/date"]
+	path = blockscipy/external/date
+	url = https://github.com/HowardHinnant/date

@@ -30,12 +30,18 @@ pybind11_add_module(_blocksci ${PYTHON_INTERFACE_PROXY_HEADERS} ${PYTHON_INTERFA
 set_target_properties(_blocksci PROPERTIES CXX_VISIBILITY_PRESET hidden)
 set_target_properties(_blocksci PROPERTIES VISIBILITY_INLINES_HIDDEN 1)
 
+add_subdirectory(external)
 
 target_compile_options(_blocksci PRIVATE -Wall -Wextra -Wpedantic)
 
-target_link_libraries( _blocksci PUBLIC blocksci)
+target_link_libraries(
+	_blocksci
+	
+	PUBLIC
+	blocksci
+	date
+)
 
-target_include_directories (_blocksci PRIVATE external)
 target_include_directories (_blocksci PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 get_property(PYBIND11_PACKAGE_LOCATION GLOBAL PROPERTY pybind11_package_location)
