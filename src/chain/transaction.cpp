@@ -46,7 +46,7 @@ namespace blocksci {
     
     Transaction::Transaction(const uint256 &hash, DataAccess &access_) : Transaction(getTxIndex(hash, access_.getHashIndex()), access_) {}
 
-    Transaction::Transaction(const std::string &hash, DataAccess &access) : Transaction(uint256S(hash), access) {}
+    Transaction::Transaction(const std::string &hash, DataAccess &access_) : Transaction(uint256S(hash), access_) {}
     
     std::string Transaction::toString() const {
         std::stringstream ss;
