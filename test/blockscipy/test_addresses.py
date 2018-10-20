@@ -1,7 +1,6 @@
 import blocksci
 from util import Coin
 
-FEE = 0.0001
 ADDR_TYPES = ['p2pkh', 'p2sh', 'p2wpkh', 'p2wsh']
 
 

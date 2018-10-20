@@ -134,5 +134,8 @@
     "change-client-behavior-position-1": 1,
     "change-client-behavior-tx-2": "0a88f328e4c4acf8b811a3996c87fbff6867b4d90c84891e7ee9b622df7560d3",
     "change-client-behavior-position-2": 2,
-    "taint-nofee-block-height": 185
+    "block-fee-unclaimed-height": 185,
+    "block-partial-reward-height": 186,
+    "nsequence-fffffffe-tx": "a3db0b33959bac24eb35f62c2723317c0b1ad62aec015f76a19ae768ee1cc72c",
+    "op-return-tx": "00e6d71843a98df76f27329c37a3fe6d130d6f453ad40d884fa52459ea6ca1ad"
 }
