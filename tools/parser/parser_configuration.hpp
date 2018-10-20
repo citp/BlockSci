@@ -52,20 +52,27 @@ struct ParserConfigurationBase {
     std::string txUpdatesFilePath() const {
         return (parserDirectory()/"txUpdates").str();
     }
-    
-    bool witnessActivatedAtHeight(uint32_t blockHeight) const;
 };
 
 #ifdef BLOCKSCI_FILE_PARSER
+struct ChainDiskConfiguration {
+    uint32_t blockMagic;
+    std::function<blocksci::uint256(const char *data, unsigned long len)> workHashFunction;
+    
+    static ChainDiskConfiguration litecoin();
+    static ChainDiskConfiguration bitcoinRegtest();
+    static ChainDiskConfiguration bitcoinTestnet();
+    static ChainDiskConfiguration bitcoin();
+};
+
 template<>
 struct ParserConfiguration<FileTag> : public ParserConfigurationBase {
     ParserConfiguration();
     ParserConfiguration(filesystem::path bitcoinDirectory_, const std::string &dataDirectory_);
     
-    filesystem::path bitcoinDirectory;
-    uint32_t blockMagic = 0;
-    std::function<blocksci::uint256(const char *data, unsigned long len)> workHashFunction;
+    ChainDiskConfiguration config;
     
+    filesystem::path bitcoinDirectory;
     
     filesystem::path pathForBlockFile(int fileNum) const;
 };

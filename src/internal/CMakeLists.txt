@@ -84,6 +84,7 @@ set(DATA_ACCESS_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/cluster_access.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/data_access.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/data_configuration.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/chain_configuration.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/dedup_address.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/dedup_address_info.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/dedup_address_type.hpp
@@ -112,6 +113,7 @@ set(DATA_ACCESS_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/column_iterator.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/data_access.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/data_configuration.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/chain_configuration.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/hash_index.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/state.cpp
 )

@@ -107,7 +107,7 @@ struct BlockInfo<FileTag> : BlockInfoBase {
     unsigned int nDataPos;
     
     BlockInfo() : BlockInfoBase() {}
-    BlockInfo(const CBlockHeader &h, uint32_t length, unsigned int numTxes, uint32_t inputCount, uint32_t outputCount, const ParserConfiguration<FileTag> &config, int fileNum, unsigned int dataPos);
+    BlockInfo(const CBlockHeader &h, uint32_t length, unsigned int numTxes, uint32_t inputCount, uint32_t outputCount, const ChainDiskConfiguration &config, int fileNum, unsigned int dataPos);
     
     friend class boost::serialization::access;
     template<class Archive> void serialize(Archive & ar, const unsigned int) {

@@ -29,7 +29,7 @@
 
 BlockInfoBase::BlockInfoBase(const blocksci::uint256 &hash_, const CBlockHeader &h, uint32_t size_, unsigned int numTxes, uint32_t inputCount_, uint32_t outputCount_) : hash(hash_), header(h), height(-1), size(size_), nTx(numTxes), inputCount(inputCount_), outputCount(outputCount_) {}
 
-BlockInfo<FileTag>::BlockInfo(const CBlockHeader &h, uint32_t size_, unsigned int numTxes, uint32_t inputCount_, uint32_t outputCount_, const ParserConfiguration<FileTag> &config, int fileNum, unsigned int dataPos) : BlockInfoBase(config.workHashFunction(reinterpret_cast<const char *>(&h), sizeof(CBlockHeader)), h, size_, numTxes, inputCount_, outputCount_), nFile(fileNum), nDataPos(dataPos) {}
+BlockInfo<FileTag>::BlockInfo(const CBlockHeader &h, uint32_t size_, unsigned int numTxes, uint32_t inputCount_, uint32_t outputCount_, const ChainDiskConfiguration &config, int fileNum, unsigned int dataPos) : BlockInfoBase(config.workHashFunction(reinterpret_cast<const char *>(&h), sizeof(CBlockHeader)), h, size_, numTxes, inputCount_, outputCount_), nFile(fileNum), nDataPos(dataPos) {}
 
 // The 0 should be replaced with info.bits converted to string
 BlockInfo<RPCTag>::BlockInfo(const blockinfo_t &info, blocksci::BlockHeight height_) : 
@@ -51,7 +51,7 @@ int maxBlockFileNum(int startFile, const ParserConfiguration<FileTag> &config) {
 }
 
 namespace {
-    std::vector<BlockInfo<FileTag>> readBlocksImpl(SafeMemReader &reader, int fileNum, const ParserConfiguration<FileTag> &config) {
+    std::vector<BlockInfo<FileTag>> readBlocksImpl(SafeMemReader &reader, int fileNum, const ChainDiskConfiguration &config) {
         try {
             std::vector<BlockInfo<FileTag>> blocks;
             // read blocks in loop while we can...
@@ -99,7 +99,7 @@ namespace {
 std::vector<BlockInfo<FileTag>> readBlocksInfo(int fileNum, const ParserConfiguration<FileTag> &config) {
     auto blockFilePath = config.pathForBlockFile(fileNum);
     SafeMemReader reader{blockFilePath.str()};
-    return readBlocksImpl(reader, fileNum, config);
+    return readBlocksImpl(reader, fileNum, config.config);
 }
 
 template <>
@@ -141,7 +141,7 @@ void ChainIndex<FileTag>::update(const ConfigType &config) {
                 if (fileNum == firstFile) {
                     reader.reset(filePos);
                 }
-                auto blocks = readBlocksImpl(reader, fileNum, localConfig);
+                auto blocks = readBlocksImpl(reader, fileNum, localConfig.config);
                 
                 if (fileNum == maxFileNum && blocks.size() > 0) {
                     newestBlock = blocks.back();

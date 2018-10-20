@@ -80,7 +80,7 @@ std::string encode(const std::string& hrp, int witver, const segwit_data& witpro
     return ret;
 }
     
-std::string encode(const blocksci::DataConfiguration &config, int witver, const segwit_data& witprog) {
+std::string encode(const blocksci::ChainConfiguration &config, int witver, const segwit_data& witprog) {
     segwit_data enc;
     enc.push_back(static_cast<unsigned char>(witver));
     convertbits<8, 5, true>(enc, witprog);

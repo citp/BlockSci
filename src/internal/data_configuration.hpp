@@ -9,6 +9,8 @@
 #ifndef data_configuration_h
 #define data_configuration_h
 
+#include "chain_configuration.hpp"
+
 #include <blocksci/core/typedefs.hpp>
 
 #include <wjfilesystem/path.h>
@@ -31,9 +33,7 @@ namespace blocksci {
         bool errorOnReorg;
         BlockHeight blocksIgnored;
         
-        std::vector<unsigned char> pubkeyPrefix;
-        std::vector<unsigned char> scriptPrefix;
-        std::string segwitPrefix;
+        ChainConfiguration chainConfig;
         
         filesystem::path dataDirectory;
         

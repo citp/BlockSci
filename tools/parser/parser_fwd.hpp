@@ -14,6 +14,7 @@
 
 #ifdef BLOCKSCI_FILE_PARSER
 struct FileTag{};
+struct ChainDiskConfiguration;
 #endif
 
 #ifdef BLOCKSCI_RPC_PARSER

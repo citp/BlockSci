@@ -207,7 +207,7 @@ namespace blocksci {
     }
 
 
-    CBitcoinAddress::CBitcoinAddress(const uint160 &dest, AddressType::Enum type, const DataConfiguration &config) {
+    CBitcoinAddress::CBitcoinAddress(const uint160 &dest, AddressType::Enum type, const ChainConfiguration &config) {
         if (type == AddressType::Enum::PUBKEYHASH || type == AddressType::Enum::PUBKEY || type == AddressType::Enum::MULTISIG_PUBKEY) {
             SetData(config.pubkeyPrefix, &dest, sizeof(dest));
         } else if (type == AddressType::Enum::SCRIPTHASH) {
@@ -219,7 +219,7 @@ namespace blocksci {
         SetData(version, &dest, sizeof(dest));
     }
 
-    std::pair<uint160, AddressType::Enum> CBitcoinAddress::Get(const DataConfiguration &config) const {
+    std::pair<uint160, AddressType::Enum> CBitcoinAddress::Get(const ChainConfiguration &config) const {
         uint160 id;
         memcpy(&id, vchData.data(), sizeof(id));
         if (vchVersion == config.pubkeyPrefix)

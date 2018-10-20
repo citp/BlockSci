@@ -24,7 +24,7 @@
 #include <vector>
 
 namespace blocksci {
-    struct DataConfiguration;
+    struct ChainConfiguration;
 } // namespace blocksci
 
 namespace segwit_addr {
@@ -34,6 +34,6 @@ std::pair<int, std::vector<uint8_t> > decode(const std::string& hrp, const std::
 
 /** Encode a SegWit address. Empty string means failure. */
 std::string encode(const std::string& hrp, int witver, const std::vector<uint8_t>& witprog);
-std::string encode(const blocksci::DataConfiguration &config, int witver, const std::vector<uint8_t>& witprog);
+std::string encode(const blocksci::ChainConfiguration &config, int witver, const std::vector<uint8_t>& witprog);
     
 } // namespace segwit_addr

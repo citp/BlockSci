@@ -22,7 +22,7 @@
 
 namespace blocksci {
     
-    struct DataConfiguration;
+    struct ChainConfiguration;
     class uint160;
     
     /**
@@ -104,12 +104,12 @@ namespace blocksci {
      */
     class CBitcoinAddress : public CBase58Data {
     public:
-        CBitcoinAddress(const uint160 &dest, AddressType::Enum type, const DataConfiguration &config);
+        CBitcoinAddress(const uint160 &dest, AddressType::Enum type, const ChainConfiguration &config);
         CBitcoinAddress(const uint160 &dest, const std::vector<unsigned char>& version);
         CBitcoinAddress(const std::string& strAddress) { SetString(strAddress); }
         CBitcoinAddress(const char* pszAddress) { SetString(pszAddress); }
         
-        std::pair<uint160, AddressType::Enum> Get(const DataConfiguration &config) const;
+        std::pair<uint160, AddressType::Enum> Get(const ChainConfiguration &config) const;
     };
 } // namespace blocksci
 

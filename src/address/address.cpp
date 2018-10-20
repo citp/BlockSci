@@ -94,8 +94,8 @@ namespace blocksci {
     }
     
     ranges::optional<Address> getAddressFromString(const std::string &addressString, DataAccess &access) {
-        if (addressString.compare(0, access.config.segwitPrefix.size(), access.config.segwitPrefix) == 0) {
-            std::pair<int, std::vector<uint8_t> > decoded = segwit_addr::decode(access.config.segwitPrefix, addressString);
+        if (addressString.compare(0, access.config.chainConfig.segwitPrefix.size(), access.config.chainConfig.segwitPrefix) == 0) {
+            std::pair<int, std::vector<uint8_t> > decoded = segwit_addr::decode(access.config.chainConfig.segwitPrefix, addressString);
             if (decoded.first == 0) {
                 if (decoded.second.size() == 20) {
                     uint160 pubkeyHash(decoded.second.begin(), decoded.second.end());
@@ -116,7 +116,7 @@ namespace blocksci {
         CBitcoinAddress address{addressString};
         uint160 hash;
         blocksci::AddressType::Enum type;
-        std::tie(hash, type) = address.Get(access.config);
+        std::tie(hash, type) = address.Get(access.config.chainConfig);
         if (type == AddressType::Enum::NONSTANDARD) {
             return ranges::nullopt;
         }

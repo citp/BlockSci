@@ -51,17 +51,13 @@ ParserConfiguration<FileTag>::ParserConfiguration() : ParserConfigurationBase() 
 ParserConfiguration<FileTag>::ParserConfiguration(filesystem::path bitcoinDirectory_, const std::string &dataDirectory_) : ParserConfigurationBase(dataDirectory_), bitcoinDirectory(std::move(bitcoinDirectory_)) {
     auto bitcoinDirectoryString = bitcoinDirectory.str();
     if (bitcoinDirectoryString.find("litecoin") != std::string::npos || bitcoinDirectoryString.find("Litecoin") != std::string::npos) {
-        blockMagic = 0xdbb6c0fb;
-        workHashFunction = doubleSha256;
+        config = ChainDiskConfiguration::litecoin();
     } else if (bitcoinDirectoryString.find("regtest") != std::string::npos) {
-        blockMagic = 0xdab5bffa;
-        workHashFunction = doubleSha256;
+        config = ChainDiskConfiguration::bitcoinRegtest();
     } else if (bitcoinDirectoryString.find("testnet") != std::string::npos) {
-        blockMagic = 0x0709110b;
-        workHashFunction = doubleSha256;
+        config = ChainDiskConfiguration::bitcoinTestnet();
     } else {
-        blockMagic = 0xd9b4bef9;
-        workHashFunction = doubleSha256;
+        config = ChainDiskConfiguration::bitcoin();
     }
 }
 
@@ -72,6 +68,34 @@ filesystem::path ParserConfiguration<FileTag>::pathForBlockFile(int fileNum) con
     std::string numString = convert.str();
     std::string filename = "blk" + std::string(5 - numString.size(), '0') + numString + ".dat";
     return bitcoinDirectory/"blocks"/filename;
+}
+
+ChainDiskConfiguration ChainDiskConfiguration::litecoin() {
+    return {
+        0xdbb6c0fb,
+        doubleSha256
+    };
+}
+
+ChainDiskConfiguration ChainDiskConfiguration::bitcoinRegtest() {
+    return {
+        0xdab5bffa,
+        doubleSha256
+    };
+}
+
+ChainDiskConfiguration ChainDiskConfiguration::bitcoinTestnet() {
+    return {
+        0x0709110b,
+        doubleSha256
+    };
+}
+
+ChainDiskConfiguration ChainDiskConfiguration::bitcoin() {
+    return {
+        0xd9b4bef9,
+        doubleSha256
+    };
 }
 #endif
 
