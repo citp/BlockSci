@@ -61,7 +61,7 @@ PUBLIC
   rocksdb
   rocksdb_headers
   ranges
-  nlohmann_json::nlohmann_json
+  json
 PRIVATE
   simpleini
   OpenSSL::Crypto

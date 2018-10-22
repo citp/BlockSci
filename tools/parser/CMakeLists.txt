@@ -33,7 +33,8 @@ target_link_libraries( blocksci_parser secp256k1)
 target_link_libraries( blocksci_parser sparsehash)
 target_link_libraries( blocksci_parser filesystem)
 target_link_libraries( blocksci_parser variant)
-target_link_libraries( blocksci_parser nlohmann_json::nlohmann_json)
+target_link_libraries( blocksci_parser json)
+target_link_libraries( blocksci_parser cereal)
 
 
 install(TARGETS blocksci_parser DESTINATION bin)

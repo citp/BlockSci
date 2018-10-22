@@ -12,7 +12,6 @@
 #include <internal/file_mapper.hpp>
 
 #include <wjfilesystem/path.h>
-#include <boost/serialization/access.hpp>
 
 #include <fstream>
 #include <vector>
@@ -48,13 +47,16 @@ struct BloomFilterData {
     BloomFilterData();
     BloomFilterData(int64_t maxItems_, double fpRate_);
     
-    friend class boost::serialization::access;
-    template<class Archive> void serialize(Archive & ar, const unsigned int) {
-        ar & maxItems;
-        ar & fpRate;
-        ar & m_numHashes;
-        ar & length;
-        ar & addedCount;
+    template<class Archive>
+    void serialize(Archive & archive)
+    {
+        archive(
+                maxItems,
+                fpRate,
+                m_numHashes,
+                length,
+                addedCount
+        );
     }
 };
 

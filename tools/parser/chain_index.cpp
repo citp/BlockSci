@@ -17,8 +17,7 @@
 #include <bitcoinapi/bitcoinapi.h>
 #endif
 
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
+#include <cereal/archives/binary.hpp>
 
 #include <cmath>
 #include <future>

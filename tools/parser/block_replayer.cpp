@@ -17,8 +17,7 @@
 #include "safe_mem_reader.hpp"
 #include "output_spend_data.hpp"
 
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
+#include <cereal/archives/binary.hpp>
 
 #include <fstream>
 
@@ -46,8 +45,8 @@ void replayBlock(const ParserConfiguration<FileTag> &config, blocksci::BlockHeig
         throw std::runtime_error("Can only replay block that has already been processed");
     }
     
-    boost::archive::binary_iarchive ia(inFile);
-    ia >> index;
+    cereal::BinaryInputArchive ia(inFile);
+    ia(index);
     auto chain = index.generateChain(blockNum);
     auto block = chain.back();
     auto blockPath = config.pathForBlockFile(block.nFile);

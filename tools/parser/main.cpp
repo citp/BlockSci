@@ -33,10 +33,7 @@
 
 #include <wjfilesystem/path.h>
 
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/property_tree/ini_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
+#include <cereal/archives/binary.hpp>
 
 #include <nlohmann/json.hpp>
 
@@ -187,8 +184,8 @@ std::vector<blocksci::RawBlock> updateChain(const ParserConfiguration<ParserTag>
         std::ifstream inFile(config.blockListPath().str(), std::ios::binary);
         if (inFile.good()) {
             try {
-                boost::archive::binary_iarchive ia(inFile);
-                ia >> index;
+                cereal::BinaryInputArchive ia(inFile);
+                ia(index);
             } catch (const std::exception &) {
                 std::cout << "Error loading chain index. Reparsing from scratch\n";
                 index = ChainIndex<ParserTag>{};
@@ -198,8 +195,8 @@ std::vector<blocksci::RawBlock> updateChain(const ParserConfiguration<ParserTag>
         index.update(config);
         auto blocks = index.generateChain(maxBlockNum);
         std::ofstream of(config.blockListPath().str(), std::ios::binary);
-        boost::archive::binary_oarchive oa(of);
-        oa << index;
+        cereal::BinaryOutputArchive oa(of);
+        oa(index);
         return blocks;
     }();
 

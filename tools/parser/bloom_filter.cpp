@@ -8,8 +8,7 @@
 
 #include "bloom_filter.hpp"
 
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
+#include <cereal/archives/binary.hpp>
 
 #include <fstream>
 #include <array>
@@ -71,8 +70,8 @@ BloomFilterData loadData(const filesystem::path &path, int64_t maxItems, double 
     BloomFilterData data{maxItems, fpRate};
     std::ifstream file(path.str(), std::ios::binary);
     if (file.good()) {
-        boost::archive::binary_iarchive ia(file);
-        ia >> data;
+        cereal::BinaryInputArchive ia(file);
+        ia(data);
     }
     return data;
 }
@@ -81,8 +80,8 @@ BloomFilter::BloomFilter(const std::string &path_, int64_t maxItems, double fpRa
 
 BloomFilter::~BloomFilter() {
     std::ofstream file(metaPath().str(), std::ios::binary);
-    boost::archive::binary_oarchive oa(file);
-    oa << impData;
+    cereal::BinaryOutputArchive oa(file);
+    oa(impData);
 }
 
 void BloomFilter::reset(int64_t maxItems, double fpRate) {

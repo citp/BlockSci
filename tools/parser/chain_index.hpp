@@ -15,9 +15,10 @@
 #include <blocksci/core/typedefs.hpp>
 #include <blocksci/core/bitcoin_uint256.hpp>
 
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/unordered_map.hpp>
-#include <boost/serialization/vector.hpp>
+#include <cereal/types/base_class.hpp>
+#include <cereal/types/unordered_map.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/string.hpp>
 
 #include <unordered_map>
 #include <algorithm>
@@ -28,26 +29,27 @@
 class CBlockIndex;
 struct blockinfo_t;
 
-namespace boost {
-namespace serialization {
-
-template<class Archive>
-void serialize(Archive & ar, blocksci::uint256 & g, const unsigned int) {
-    ar & g.data;
+namespace blocksci {
+    template<class Archive>
+    void serialize(Archive & archive, uint256 & m)
+    {
+        archive(m.data);
+    }
 }
 
-} // namespace serialization
-} // namespace boost
 
 struct CBlockHeader {
-    friend class boost::serialization::access;
-    template<class Archive> void serialize(Archive & ar, const unsigned int) {
-        ar & nVersion;
-        ar & hashPrevBlock;
-        ar & hashMerkleRoot;
-        ar & nTime;
-        ar & nBits;
-        ar & nNonce;
+    template<class Archive>
+    void serialize(Archive & archive)
+    {
+        archive(
+                nVersion,
+                hashPrevBlock,
+                hashMerkleRoot,
+                nTime,
+                nBits,
+                nNonce
+        );
     }
     
     // header
@@ -80,18 +82,19 @@ struct BlockInfoBase {
     BlockInfoBase() {}
     BlockInfoBase(const blocksci::uint256 &hash, const CBlockHeader &h, uint32_t size, unsigned int numTxes, uint32_t inputCount, uint32_t outputCount);
     
-    friend class boost::serialization::access;
-    template<class Archive> void serialize(Archive & ar, const unsigned int) {
-        ar & hash;
-        ar & header;
-        ar & height;
-        ar & size;
-        ar & nTx;
-        ar & inputCount;
-        ar & outputCount;
+    template<class Archive>
+    void serialize(Archive & archive)
+    {
+        archive(
+                hash,
+                header,
+                height,
+                size,
+                nTx,
+                inputCount,
+                outputCount
+        );
     }
-    
-    
 };
 
 template <typename ParseType>
@@ -109,11 +112,14 @@ struct BlockInfo<FileTag> : BlockInfoBase {
     BlockInfo() : BlockInfoBase() {}
     BlockInfo(const CBlockHeader &h, uint32_t length, unsigned int numTxes, uint32_t inputCount, uint32_t outputCount, const ChainDiskConfiguration &config, int fileNum, unsigned int dataPos);
     
-    friend class boost::serialization::access;
-    template<class Archive> void serialize(Archive & ar, const unsigned int) {
-        ar & boost::serialization::base_object<BlockInfoBase>(*this);
-        ar & nFile;
-        ar & nDataPos;
+    template<class Archive>
+    void serialize(Archive & archive)
+    {
+        archive(
+                cereal::base_class<BlockInfoBase>(this),
+                nFile,
+                nDataPos
+        );
     }
 };
 
@@ -124,10 +130,13 @@ struct BlockInfo<RPCTag> : BlockInfoBase {
     BlockInfo() : BlockInfoBase() {}
     BlockInfo(const blockinfo_t &info, blocksci::BlockHeight height);
     
-    friend class boost::serialization::access;
-    template<class Archive> void serialize(Archive & ar, const unsigned int) {
-        ar & boost::serialization::base_object<BlockInfoBase>(*this);
-        ar & tx;
+    template<class Archive>
+    void serialize(Archive & archive)
+    {
+        archive(
+                cereal::base_class<BlockInfoBase>(this),
+                tx
+        );
     }
 };
 
@@ -194,12 +203,15 @@ struct ChainIndex {
     }
     
 private:
-    friend class boost::serialization::access;
+    friend class cereal::access;
     
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int) {
-        ar & blockList;
-        ar & newestBlock;
+    void serialize(Archive & archive)
+    {
+        archive(
+                blockList,
+                newestBlock
+        );
     }
     
     int updateHeight(size_t blockNum, const std::unordered_map<blocksci::uint256, size_t> &indexMap);

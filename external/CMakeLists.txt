@@ -26,12 +26,13 @@ add_library(simpleini INTERFACE)
 target_include_directories(simpleini SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(endian INTERFACE)
-target_include_directories(endian INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/endian/src/)
+target_include_directories(endian SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/endian/src/)
 
-set(JSON_BuildTests OFF CACHE INTERNAL "")
-set(JSON_MultipleHeaders ON CACHE INTERNAL "")
+add_library(json INTERFACE)
+target_include_directories(json SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/json/include/)
 
-add_subdirectory(json)
+add_library(cereal INTERFACE)
+target_include_directories(cereal SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/cereal/include/)
 
 include(ExternalProject)
 ExternalProject_Add(project_secp256k1

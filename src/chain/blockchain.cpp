@@ -36,7 +36,7 @@ namespace blocksci {
     Blockchain::~Blockchain() = default;
     
     std::string Blockchain::dataLocation() const {
-        return access->config.dataDirectory.str();
+        return access->config.chainConfig.dataDirectory.str();
     }
     
     void Blockchain::reload() {
