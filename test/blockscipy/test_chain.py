@@ -1,3 +1,6 @@
+from util import tz_offset
+
+
 def test_chain_sanity(chain):
     assert 110 < len(chain)
 
@@ -38,7 +41,7 @@ def block_regression(block, regtest):
     print(block.prev_block, file=regtest)
     print(block.revenue, file=regtest)
     print(block.size_bytes, file=regtest)
-    print(block.time, file=regtest)
+    print(block.time - tz_offset(block.time), file=regtest)
     print(block.time_seen, file=regtest)
     print(block.timestamp, file=regtest)
     print(block.total_size, file=regtest)
