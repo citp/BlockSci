@@ -431,6 +431,8 @@ int main(int argc, char * argv[]) {
     if (!configFilePath.parent_path().exists()) {
         filesystem::create_directory(configFilePath.parent_path());
     }
+    
+    
     configFilePath = configFilePath.make_absolute();
 
     switch (selected) {
@@ -438,6 +440,13 @@ int main(int argc, char * argv[]) {
             blocksci::ChainConfiguration chainConfig;
             ChainDiskConfiguration diskConfig;
             blocksci::ChainRPCConfiguration rpcConfig;
+            
+            filesystem::path dataDirectoryPath{dataDirectory};
+            if (!dataDirectoryPath.exists()) {
+                filesystem::create_directory(dataDirectoryPath);
+            }
+            
+            dataDirectory = dataDirectoryPath.make_absolute().str();
             
             if (enableDisk) {
                 coinDirectoryString = filesystem::path{coinDirectoryString}.make_absolute().str();
