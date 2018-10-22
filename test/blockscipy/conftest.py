@@ -9,12 +9,16 @@ def chain(tmpdir_factory):
     chain_dir = str(temp_dir)
     if not os.path.exists(chain_dir):
         os.mkdir(chain_dir)
-    parse_cmd = ["blocksci_parser", "--output-directory", chain_dir, "update", "disk", "--coin-directory",
-                 "../files/regtest/"]
+    create_config_cmd = "blocksci_parser " + chain_dir \
+                        + "/config.json generate-config bitcoin_regtest " + chain_dir \
+                        + " --disk ../files/regtest/"
+    subprocess.run(create_config_cmd, shell=True, check=True)
+
+    parse_cmd = ["blocksci_parser", chain_dir + "/config.json", "update"]
     subprocess.run(parse_cmd)
 
     import blocksci
-    chain = blocksci.Blockchain(chain_dir)
+    chain = blocksci.Blockchain(chain_dir + "/config.json")
     return chain
 
 
