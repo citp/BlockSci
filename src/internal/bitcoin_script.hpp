@@ -176,13 +176,6 @@ namespace blocksci {
         OP_NOP9 = 0xb8,
         OP_NOP10 = 0xb9,
         
-        
-        // template matching params
-        OP_SMALLINTEGER = 0xfa,
-        OP_PUBKEYS = 0xfb,
-        OP_PUBKEYHASH = 0xfd,
-        OP_PUBKEY = 0xfe,
-        
         OP_INVALIDOPCODE = 0xff
     };
     
@@ -574,12 +567,12 @@ namespace blocksci {
         }
         
         /** Encode/decode small integers: */
-        static int DecodeOP_N(opcodetype opcode)
+        static uint8_t DecodeOP_N(opcodetype opcode)
         {
             if (opcode == OP_0)
                 return 0;
             assert(opcode >= OP_1 && opcode <= OP_16);
-            return static_cast<int>(opcode) - static_cast<int>(OP_1 - 1);
+            return static_cast<uint8_t>(opcode) - static_cast<uint8_t>(OP_1 - 1);
         }
         static opcodetype EncodeOP_N(int n)
         {
@@ -643,7 +636,7 @@ namespace blocksci {
         
         bool IsPayToScriptHash() const;
         bool IsPayToWitnessScriptHash() const;
-        bool IsWitnessProgram(int& version, std::vector<unsigned char>& program) const;
+        bool IsWitnessProgram(uint8_t& version, std::vector<unsigned char>& program) const;
         bool IsWitnessProgram() const;
         
         /** Called by IsStandardTx and P2SH/BIP62 VerifyScript (which makes it consensus-critical). */

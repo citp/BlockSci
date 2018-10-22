@@ -178,6 +178,9 @@ namespace blocksci {
             case DedupAddressType::NONSTANDARD: {
                 break;
             }
+            case DedupAddressType::WITNESS_UNKNOWN: {
+                break;
+            }
             case DedupAddressType::NULL_DATA: {
                 break;
             }

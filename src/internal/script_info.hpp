@@ -10,6 +10,7 @@
 #define script_info_hpp
 
 #include "dedup_address_type.hpp"
+#include <blocksci/core/core_fwd.hpp>
 
 namespace blocksci {
     
@@ -50,6 +51,12 @@ namespace blocksci {
     struct BLOCKSCI_EXPORT ScriptInfo<DedupAddressType::NULL_DATA> {
         using outputType = RawData;
         using storage = Indexed<RawData>;
+    };
+    
+    template <>
+    struct BLOCKSCI_EXPORT ScriptInfo<DedupAddressType::WITNESS_UNKNOWN> {
+        using outputType = WitnessUnknownScriptData;
+        using storage = Indexed<WitnessUnknownScriptData,WitnessUnknownSpendScriptData>;
     };
 } // namespace blocksci
 

@@ -12,6 +12,10 @@
 
 #include <internal/hash.hpp>
 
+#include <blocksci/scripts/bitcoin_pubkey.hpp>
+
+using namespace blocksci;
+
 bool isValidPubkey(ranges::iterator_range<const unsigned char *> &vch1) {
     if (vch1.size() < 33 || vch1.size() > 65) {
         return false;
@@ -28,6 +32,53 @@ bool isValidPubkey(ranges::iterator_range<const unsigned char *> &vch1) {
 }
 
 using ScriptOutputDataType = blocksci::to_variadic_t<blocksci::to_address_tuple_t<ScriptOutputData>, mpark::variant>;
+using valtype = ranges::iterator_range<const unsigned char *>;
+
+static bool MatchPayToPubkey(const CScriptView& script, valtype& pubkey)
+{
+    if (script.size() == CPubKey::PUBLIC_KEY_SIZE + 2 && script[0] == CPubKey::PUBLIC_KEY_SIZE && script.back() == OP_CHECKSIG) {
+        pubkey = valtype(script.begin() + 1, script.begin() + blocksci::CPubKey::PUBLIC_KEY_SIZE + 1);
+        return CPubKey::ValidSize(pubkey);
+    }
+    if (script.size() == CPubKey::COMPRESSED_PUBLIC_KEY_SIZE + 2 && script[0] == CPubKey::COMPRESSED_PUBLIC_KEY_SIZE && script.back() == OP_CHECKSIG) {
+        pubkey = valtype(script.begin() + 1, script.begin() + CPubKey::COMPRESSED_PUBLIC_KEY_SIZE + 1);
+        return CPubKey::ValidSize(pubkey);
+    }
+    return false;
+}
+
+static bool MatchPayToPubkeyHash(const CScriptView& script, valtype& pubkeyhash)
+{
+    if (script.size() == 25 && script[0] == OP_DUP && script[1] == OP_HASH160 && script[2] == 20 && script[23] == OP_EQUALVERIFY && script[24] == OP_CHECKSIG) {
+        pubkeyhash = valtype(script.begin () + 3, script.begin() + 23);
+        return true;
+    }
+    return false;
+}
+
+/** Test for "small positive integer" script opcodes - OP_1 through OP_16. */
+static constexpr bool IsSmallInteger(opcodetype opcode)
+{
+    return opcode >= OP_1 && opcode <= OP_16;
+}
+
+static bool MatchMultisig(const CScriptView& script, ScriptOutputData<blocksci::AddressType::Enum::MULTISIG> &multisig)
+{
+    opcodetype opcode;
+    valtype data;
+    CScriptView::const_iterator it = script.begin();
+    if (script.size() < 1 || script.back() != OP_CHECKMULTISIG) return false;
+    
+    if (!script.GetOp(it, opcode, data) || !IsSmallInteger(opcode)) return false;
+    multisig.numRequired = CScript::DecodeOP_N(opcode);
+    while (script.GetOp(it, opcode, data) && CPubKey::ValidSize(data)) {
+        multisig.addAddress(data);
+    }
+    if (!IsSmallInteger(opcode)) return false;
+    multisig.numTotal = CScript::DecodeOP_N(opcode);
+    return (it + 1 == script.end());
+}
+
 
 ScriptOutputDataType extractScriptData(const blocksci::CScriptView &scriptPubKey, bool witnessActivated) {
     using blocksci::AddressType;
@@ -35,23 +86,6 @@ ScriptOutputDataType extractScriptData(const blocksci::CScriptView &scriptPubKey
     using blocksci::CScriptView;
     using blocksci::uint160;
     using blocksci::uint256;
-    
-    // Templates
-    static std::vector<std::pair<AddressType::Enum, CScript>> &mTemplates = *[]() {
-        auto templates = new std::vector<std::pair<AddressType::Enum, CScript>>{};
-        // Standard tx, sender provides pubkey, receiver adds signature
-        auto pubkey = std::make_pair(AddressType::Enum::PUBKEY, CScript() << blocksci::OP_PUBKEY << blocksci::OP_CHECKSIG);
-        templates->push_back(pubkey);
-        
-        // Bitcoin address tx, sender provides hash of pubkey, receiver provides signature and pubkey
-        auto pubkeyHash = std::make_pair(AddressType::Enum::PUBKEYHASH, CScript() << blocksci::OP_DUP << blocksci::OP_HASH160 << blocksci::OP_PUBKEYHASH << blocksci::OP_EQUALVERIFY << blocksci::OP_CHECKSIG);
-        templates->push_back(pubkeyHash);
-        
-        // Sender provides N pubkeys, receivers provides M signatures
-        auto multisig = std::make_pair(AddressType::Enum::MULTISIG, CScript() << blocksci::OP_SMALLINTEGER << blocksci::OP_PUBKEYS << blocksci::OP_SMALLINTEGER << blocksci::OP_CHECKMULTISIG);
-        templates->push_back(multisig);
-        return templates;
-    }();
     
     // Shortcut for pay-to-script-hash, which are more constrained than the other types:
     // it is always OP_HASH160 20 [20 byte hash] OP_EQUAL
@@ -61,17 +95,19 @@ ScriptOutputDataType extractScriptData(const blocksci::CScriptView &scriptPubKey
         return ScriptOutputData<AddressType::Enum::SCRIPTHASH>{{hash}};
     }
     
-    if (witnessActivated && scriptPubKey.IsWitnessProgram()) {
-        auto pc = scriptPubKey.begin();
-        blocksci::opcodetype opcode;
-        ranges::iterator_range<const unsigned char *> vchSig;
-        scriptPubKey.GetOp(pc, opcode, vchSig);
-        auto version = static_cast<uint8_t>(CScript::DecodeOP_N(opcode));
-        scriptPubKey.GetOp(pc, opcode, vchSig);
-        if (version == 0 && vchSig.size() == 20) {
-            return ScriptOutputData<AddressType::Enum::WITNESS_PUBKEYHASH>(uint160{vchSig.begin(), vchSig.end()});
-        } else if (version == 0 && vchSig.size() == 32) {
-            return ScriptOutputData<AddressType::Enum::WITNESS_SCRIPTHASH>(uint256{vchSig.begin(), vchSig.end()});
+    uint8_t witnessversion;
+    ranges::iterator_range<const unsigned char *> witnessprogram;
+    if (witnessActivated && scriptPubKey.IsWitnessProgram(witnessversion, witnessprogram)) {
+        if (witnessversion == 0) {
+            if (witnessprogram.size() == 20) {
+                return ScriptOutputData<AddressType::Enum::WITNESS_PUBKEYHASH>(uint160{witnessprogram.begin(), witnessprogram.end()});
+            } else if (witnessprogram.size() == 32) {
+                return ScriptOutputData<AddressType::Enum::WITNESS_SCRIPTHASH>(uint256{witnessprogram.begin(), witnessprogram.end()});
+            } else {
+                throw std::runtime_error("Parsed witness v0 script with length != 20 or 32");
+            }
+        } else {
+             return ScriptOutputData<AddressType::Enum::WITNESS_UNKNOWN>(witnessversion, witnessprogram);
         }
     }
     
@@ -81,91 +117,25 @@ ScriptOutputDataType extractScriptData(const blocksci::CScriptView &scriptPubKey
     // byte passes the IsPushOnly() test we don't care what exactly is in the
     // script.
     
-    if (scriptPubKey.size() >= 1 && scriptPubKey[0] == blocksci::OP_RETURN && scriptPubKey.IsPushOnly(scriptPubKey.begin()+1)) {
+    if (scriptPubKey.size() >= 1 && scriptPubKey[0] == OP_RETURN && scriptPubKey.IsPushOnly(scriptPubKey.begin()+1)) {
         return ScriptOutputData<AddressType::Enum::NULL_DATA>{scriptPubKey};
     }
     
-    // Scan templates
-    const CScriptView& script1 = scriptPubKey;
-    
-    
-    ranges::optional<ScriptOutputDataType> type;
-    for (auto &tplate : mTemplates) {
-        uint8_t numRequired = 0;
-        bool isFirstSmallInt = true;
-        
-        const CScript& script2 = tplate.second;
-        
-        blocksci::opcodetype opcode1, opcode2;
-        ranges::iterator_range<const unsigned char *> vch1;
-        std::vector<unsigned char> vch2;
-        
-        // Compare
-        auto pc1 = script1.begin();
-        auto pc2 = script2.begin();
-        while (true)
-        {
-            if (pc1 == script1.end() && pc2 == script2.end()) {
-                if (!type || !mpark::visit([&](auto &data) { return data.isValid(); }, *type)) {
-                    break;
-                }
-                return *type;
-            }
-            if (!script1.GetOp(pc1, opcode1, vch1)) {
-                break;
-            }
-            if (!script2.GetOp(pc2, opcode2, vch2)) {
-                break;
-            }
-            
-            // Template matching opcodes:
-            if (opcode2 == blocksci::OP_PUBKEYS) {
-                ScriptOutputData<AddressType::Enum::MULTISIG> output;
-                output.numRequired = numRequired;
-                
-                while (vch1.size() >= 33 && vch1.size() <= 65) {
-                    output.addAddress(vch1);
-                    
-                    if (!script1.GetOp(pc1, opcode1, vch1)) {
-                        break;
-                    }
-                }
-                if (!script2.GetOp(pc2, opcode2, vch2)) {
-                    break;
-                }
-                
-                type = output;
-            }
-            
-            if (opcode2 == blocksci::OP_PUBKEY) {
-                if (!isValidPubkey(vch1)) {
-                    break;
-                }
-                type = ScriptOutputData<AddressType::Enum::PUBKEY>{vch1};
-            } else if (opcode2 == blocksci::OP_PUBKEYHASH) {
-                if (vch1.size() != sizeof(uint160)) {
-                    break;
-                }
-                auto address = uint160{vch1.begin(), vch1.end()};
-                type = ScriptOutputData<AddressType::Enum::PUBKEYHASH>{address};
-            } else if (opcode2 == blocksci::OP_SMALLINTEGER) {   // Single-byte small integer pushed onto vSolutions
-                if (opcode1 == blocksci::OP_0 || (opcode1 >= blocksci::OP_1 && opcode1 <= blocksci::OP_16)) {
-                    if (isFirstSmallInt) {
-                        numRequired = static_cast<uint8_t>(CScript::DecodeOP_N(opcode1));
-                        isFirstSmallInt = false;
-                    } else {
-                        auto &out = mpark::get<ScriptOutputData<AddressType::Enum::MULTISIG>>(*type);
-                        out.numTotal = static_cast<uint8_t>(CScript::DecodeOP_N(opcode1));
-                    }
-                } else {
-                    break;
-                }
-            } else if (opcode1 != opcode2 || !std::equal(vch1.begin(), vch1.end(), vch2.begin())) {
-                // Others must match exactly
-                break;
-            }
-        }
+    ranges::iterator_range<const unsigned char *> data;
+    if (MatchPayToPubkey(scriptPubKey, data)) {
+        return ScriptOutputData<AddressType::Enum::PUBKEY>{data};
     }
+    
+    if (MatchPayToPubkeyHash(scriptPubKey, data)) {
+        auto address = uint160{data.begin(), data.end()};
+        return ScriptOutputData<AddressType::Enum::PUBKEYHASH>{address};
+    }
+    
+    ScriptOutputData<blocksci::AddressType::Enum::MULTISIG> multisigOutput;
+    if (MatchMultisig(scriptPubKey, multisigOutput)) {
+        return multisigOutput;
+    }
+    
     return ScriptOutputData<AddressType::Enum::NONSTANDARD>{scriptPubKey};
 }
 
@@ -342,5 +312,18 @@ blocksci::ArbitraryLengthData<blocksci::RawData> ScriptOutputData<blocksci::Addr
     blocksci::RawData scriptData(txNum, fullData);
     blocksci::ArbitraryLengthData<blocksci::RawData> data(scriptData);
     data.add(fullData.begin(), fullData.end());
+    return data;
+}
+
+// MARK: WITNESS_UNKNOWN
+
+ScriptOutputData<blocksci::AddressType::Enum::WITNESS_UNKNOWN>::ScriptOutputData(uint8_t witnessVersion_, const ranges::iterator_range<const unsigned char *> &witnessData_) : witnessVersion(witnessVersion_) {
+    witnessData.assign(witnessData_.begin(), witnessData_.end());
+}
+
+blocksci::ArbitraryLengthData<blocksci::WitnessUnknownScriptData> ScriptOutputData<blocksci::AddressType::Enum::WITNESS_UNKNOWN>::getData(uint32_t txNum) const {
+    blocksci::WitnessUnknownScriptData scriptData(txNum, witnessVersion, static_cast<uint32_t>(witnessData.size()));
+    blocksci::ArbitraryLengthData<blocksci::WitnessUnknownScriptData> data(scriptData);
+    data.add(witnessData.begin(), witnessData.end());
     return data;
 }

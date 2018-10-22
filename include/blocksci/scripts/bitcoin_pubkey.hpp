@@ -17,9 +17,7 @@
 namespace blocksci {
     /**
      * secp256k1:
-     * const unsigned int PRIVATE_KEY_SIZE = 279;
-     * const unsigned int PUBLIC_KEY_SIZE  = 65;
-     * const unsigned int SIGNATURE_SIZE   = 72;
+     *
      *
      * see www.keylength.com
      * script supports up to 75 for single byte push
@@ -40,6 +38,11 @@ namespace blocksci {
     /** An encapsulated public key. */
     class BLOCKSCI_EXPORT CPubKey
     {
+    public:
+        static constexpr unsigned int PUBLIC_KEY_SIZE             = 65;
+        static constexpr unsigned int COMPRESSED_PUBLIC_KEY_SIZE  = 33;
+        static constexpr unsigned int SIGNATURE_SIZE              = 72;
+        static constexpr unsigned int COMPACT_SIGNATURE_SIZE      = 65;
     private:
         
         /**
@@ -65,6 +68,10 @@ namespace blocksci {
         }
         
     public:
+        bool static ValidSize(const std::vector<unsigned char> &vch) {
+            return vch.size() > 0 && GetLen(vch[0]) == vch.size();
+        }
+        
         //! Construct an invalid public key.
         CPubKey() : vch{{0}}
         {

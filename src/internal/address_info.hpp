@@ -104,6 +104,15 @@ namespace blocksci {
         using IDType = void;
     };
     
+    template <>
+    struct AddressInfo<AddressType::WITNESS_UNKNOWN> {
+        static constexpr char name[] = "witness_unknown";
+        static constexpr EquivAddressType::Enum equivType = EquivAddressType::WITNESS_UNKNOWN;
+        static constexpr DedupAddressType::Enum dedupType = DedupAddressType::WITNESS_UNKNOWN;
+        static constexpr AddressType::Enum exampleType = AddressType::WITNESS_UNKNOWN;
+        using IDType = void;
+    };
+    
     template <EquivAddressType::Enum>
     struct EquivAddressInfo;
     
@@ -135,6 +144,12 @@ namespace blocksci {
     struct EquivAddressInfo<EquivAddressType::NULL_DATA> {
         static constexpr std::array<AddressType::Enum, 1> equivTypes = {{AddressType::NULL_DATA}};
         static constexpr DedupAddressType::Enum dedupType = DedupAddressType::NULL_DATA;
+    };
+    
+    template <>
+    struct EquivAddressInfo<EquivAddressType::WITNESS_UNKNOWN> {
+        static constexpr std::array<AddressType::Enum, 1> equivTypes = {{AddressType::WITNESS_UNKNOWN}};
+        static constexpr DedupAddressType::Enum dedupType = DedupAddressType::WITNESS_UNKNOWN;
     };
     
     template<AddressType::Enum type>

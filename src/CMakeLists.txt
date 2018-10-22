@@ -196,6 +196,7 @@ set(SCRIPT_HEADERS
   ${BLOCKSCI_HEADER_PREFIX}/scripts/multisig_script.hpp
   ${BLOCKSCI_HEADER_PREFIX}/scripts/multisig_pubkey_script.hpp
   ${BLOCKSCI_HEADER_PREFIX}/scripts/nonstandard_script.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/scripts/witness_unknown_script.hpp
   ${BLOCKSCI_HEADER_PREFIX}/scripts/nulldata_script.hpp
   ${BLOCKSCI_HEADER_PREFIX}/scripts/pubkey_script.hpp
   ${BLOCKSCI_HEADER_PREFIX}/scripts/pubkey_base_script.hpp
@@ -221,6 +222,7 @@ set(SCRIPT_SOURCES
   ${BLOCKSCI_SOURCE_PREFIX}/scripts/pubkey_base_script.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/scripts/pubkey_script.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/scripts/nonstandard_script.cpp
+  ${BLOCKSCI_SOURCE_PREFIX}/scripts/witness_unknown_script.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/scripts/nulldata_script.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/scripts/script.cpp
   ${BLOCKSCI_SOURCE_PREFIX}/scripts/script_range.cpp

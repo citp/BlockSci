@@ -431,9 +431,6 @@ int main(int argc, char * argv[]) {
     if (!configFilePath.parent_path().exists()) {
         filesystem::create_directory(configFilePath.parent_path());
     }
-    
-    
-    configFilePath = configFilePath.make_absolute();
 
     switch (selected) {
         case mode::generateConfig: {

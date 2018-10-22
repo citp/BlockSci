@@ -195,3 +195,12 @@ void ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::check(Add
     wrappedScriptOutput.check(state);
     wrappedScriptInput->check(state);
 }
+
+ScriptInputData<blocksci::AddressType::Enum::WITNESS_UNKNOWN>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::WITNESS_UNKNOWN> &) {
+    for (size_t i = 0; i < inputView.witnessStack.size(); i++) {
+        auto &stackItem = inputView.witnessStack[i];
+        auto itemBegin = reinterpret_cast<const unsigned char *>(stackItem.itemBegin);
+        script << std::vector<unsigned char>{itemBegin, itemBegin + stackItem.length};
+        script << 0xfe;
+    }
+}

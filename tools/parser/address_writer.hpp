@@ -47,6 +47,7 @@ class AddressWriter {
     void serializeImp(const ScriptInput<blocksci::AddressType::SCRIPTHASH> &input, ScriptFile<blocksci::DedupAddressType::SCRIPTHASH> &file);
     void serializeImp(const ScriptInput<blocksci::AddressType::WITNESS_SCRIPTHASH> &input, ScriptFile<blocksci::DedupAddressType::SCRIPTHASH> &file);
     void serializeImp(const ScriptInput<blocksci::AddressType::NONSTANDARD> &input, ScriptFile<blocksci::DedupAddressType::NONSTANDARD> &file);
+    void serializeImp(const ScriptInput<blocksci::AddressType::WITNESS_UNKNOWN> &input, ScriptFile<blocksci::DedupAddressType::WITNESS_UNKNOWN> &file);
     
     template<blocksci::AddressType::Enum type>
     void serializeImp(const ScriptOutput<type> &, ScriptFile<dedupType(type)> &) {}

@@ -12,8 +12,8 @@
 
 #include <blocksci/core/meta.hpp>
 
-#define DEDUP_ADDRESS_TYPE_LIST VAL(NONSTANDARD), VAL(PUBKEY), VAL(SCRIPTHASH), VAL(MULTISIG), VAL(NULL_DATA)
-#define DEDUP_ADDRESS_TYPE_SET VAL(NONSTANDARD) VAL(PUBKEY) VAL(SCRIPTHASH) VAL(MULTISIG) VAL(NULL_DATA)
+#define DEDUP_ADDRESS_TYPE_LIST VAL(NONSTANDARD), VAL(PUBKEY), VAL(SCRIPTHASH), VAL(MULTISIG), VAL(NULL_DATA), VAL(WITNESS_UNKNOWN)
+#define DEDUP_ADDRESS_TYPE_SET VAL(NONSTANDARD) VAL(PUBKEY) VAL(SCRIPTHASH) VAL(MULTISIG) VAL(NULL_DATA) VAL(WITNESS_UNKNOWN)
 namespace blocksci {
     
     
@@ -24,7 +24,7 @@ namespace blocksci {
             DEDUP_ADDRESS_TYPE_LIST
 #undef VAL
         };
-        static constexpr size_t size = 5;
+        static constexpr size_t size = 6;
         
         #define VAL(x) std::integral_constant<Enum, x>
         using all = std::tuple<DEDUP_ADDRESS_TYPE_LIST>;

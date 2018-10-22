@@ -19,6 +19,7 @@
 #include "scripts/scripthash/witness_scripthash/witness_scripthash_proxy_py.hpp"
 #include "scripts/nulldata/nulldata_proxy_py.hpp"
 #include "scripts/nonstandard/nonstandard_proxy_py.hpp"
+#include "scripts/witness_unknown/witness_unknown_proxy_py.hpp"
 
 namespace py = pybind11;
 using namespace blocksci;
@@ -35,6 +36,7 @@ void setupScriptProxies(py::module &m, py::class_<ProxySequence<ranges::category
     AllProxyClasses<script::WitnessScriptHash> witnessScripthashProxyCls(m, proxyAddressCl, proxyIteratorCl, proxyRangeCl);
     AllProxyClasses<script::OpReturn> nulldataProxyCls(m, proxyAddressCl, proxyIteratorCl, proxyRangeCl);
     AllProxyClasses<script::Nonstandard> nonstandardProxyCls(m, proxyAddressCl, proxyIteratorCl, proxyRangeCl);
+    AllProxyClasses<script::WitnessUnknown> witnessUnknownProxyCls(m, proxyAddressCl, proxyIteratorCl, proxyRangeCl);
 
     init_proxy_address(proxyAddressCl);
     addAddressProxyMethods(addressProxyCls);
@@ -47,4 +49,5 @@ void setupScriptProxies(py::module &m, py::class_<ProxySequence<ranges::category
     addWitnessScriptHashProxyMethods(witnessScripthashProxyCls);
     addNonstandardProxyMethods(nonstandardProxyCls);
     addNulldataProxyMethods(nulldataProxyCls);
+    addWitnessUnknownProxyMethods(witnessUnknownProxyCls);
 }

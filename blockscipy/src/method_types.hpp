@@ -104,6 +104,13 @@ struct PythonTypeName<blocksci::script::WitnessScriptHash> {
 };
 
 template <>
+struct PythonTypeName<blocksci::script::WitnessUnknown> {
+	static std::string name() {
+		return "WitnessUnknownAddress";
+	}
+};
+
+template <>
 struct PythonTypeName<blocksci::EquivAddress> {
 	static std::string name() {
 		return "EquivAddress";

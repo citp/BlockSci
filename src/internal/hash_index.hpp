@@ -84,6 +84,8 @@ namespace blocksci {
                     return getColumn(AddressType::NULL_DATA);
                 case DedupAddressType::NONSTANDARD:
                     return getColumn(AddressType::NONSTANDARD);
+                case DedupAddressType::WITNESS_UNKNOWN:
+                    return getColumn(AddressType::WITNESS_UNKNOWN);
             }
             assert(false);
             return getColumn(AddressType::NONSTANDARD);

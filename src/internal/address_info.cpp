@@ -22,12 +22,14 @@ namespace blocksci {
     constexpr char AddressInfo<AddressType::MULTISIG>::name[];
     constexpr char AddressInfo<AddressType::NULL_DATA>::name[];
     constexpr char AddressInfo<AddressType::NONSTANDARD>::name[];
+    constexpr char AddressInfo<AddressType::WITNESS_UNKNOWN>::name[];
     
     constexpr std::array<AddressType::Enum, 4> EquivAddressInfo<EquivAddressType::PUBKEY>::equivTypes;
     constexpr std::array<AddressType::Enum, 2> EquivAddressInfo<EquivAddressType::SCRIPTHASH>::equivTypes;
     constexpr std::array<AddressType::Enum, 1> EquivAddressInfo<EquivAddressType::MULTISIG>::equivTypes;
     constexpr std::array<AddressType::Enum, 1> EquivAddressInfo<EquivAddressType::NULL_DATA>::equivTypes;
     constexpr std::array<AddressType::Enum, 1> EquivAddressInfo<EquivAddressType::NONSTANDARD>::equivTypes;
+    constexpr std::array<AddressType::Enum, 1> EquivAddressInfo<EquivAddressType::WITNESS_UNKNOWN>::equivTypes;
     
     template<AddressType::Enum type>
     struct AddressNameFunctor {

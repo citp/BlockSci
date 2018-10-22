@@ -190,6 +190,17 @@ struct ScriptOutputData<blocksci::AddressType::Enum::NULL_DATA> : public ScriptO
     blocksci::ArbitraryLengthData<blocksci::RawData> getData(uint32_t txNum) const;
 };
 
+template <>
+struct ScriptOutputData<blocksci::AddressType::Enum::WITNESS_UNKNOWN> : public ScriptOutputDataBase {
+    uint8_t witnessVersion;
+    std::vector<unsigned char> witnessData;
+    
+    ScriptOutputData() {}
+    ScriptOutputData(uint8_t witnessVersion, const ranges::iterator_range<const unsigned char *> &witnessData);
+    
+    blocksci::ArbitraryLengthData<blocksci::WitnessUnknownScriptData> getData(uint32_t txNum) const;
+};
+
 using ScriptOutputType = blocksci::to_variadic_t<blocksci::to_address_tuple_t<ScriptOutput>, mpark::variant>;
 
 class AnyScriptOutput {

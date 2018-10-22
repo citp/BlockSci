@@ -142,12 +142,6 @@ namespace blocksci {
             case OP_NOP10                  : return "OP_NOP10";
                 
             case OP_INVALIDOPCODE          : return "OP_INVALIDOPCODE";
-                
-                
-            case OP_SMALLINTEGER: return "OP_UNKNOWN";
-            case OP_PUBKEYS: return "OP_UNKNOWN";
-            case OP_PUBKEYHASH: return "OP_UNKNOWN";
-            case OP_PUBKEY: return "OP_UNKNOWN";
         }
         // All ops should be covered by the switch statement
         assert(false);
@@ -224,7 +218,7 @@ namespace blocksci {
     
     // A witness program is any valid CScript that consists of a 1-byte push opcode
     // followed by a data push between 2 and 40 bytes.
-    bool CScript::IsWitnessProgram(int& version, std::vector<unsigned char>& program) const
+    bool CScript::IsWitnessProgram(uint8_t& version, std::vector<unsigned char>& program) const
     {
         if (this->size() < 4 || this->size() > 42) {
             return false;

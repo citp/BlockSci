@@ -96,6 +96,14 @@ struct ScriptInputData<blocksci::AddressType::Enum::MULTISIG> : public ScriptInp
     ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::MULTISIG> &spendData);
 };
 
+template<>
+struct ScriptInputData<blocksci::AddressType::Enum::WITNESS_UNKNOWN> : public ScriptInputDataBase {
+    blocksci::CScript script;
+    
+    ScriptInputData() = default;
+    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::WITNESS_UNKNOWN> &);
+};
+
 class AnyScriptInput;
 
 template<>

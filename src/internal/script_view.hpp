@@ -119,7 +119,7 @@ namespace blocksci {
         
         bool IsPayToScriptHash() const;
         bool IsPayToWitnessScriptHash() const;
-        bool IsWitnessProgram(int& version, std::vector<unsigned char>& program) const;
+        bool IsWitnessProgram(uint8_t& version, ranges::iterator_range<const unsigned char *>& program) const;
         bool IsWitnessProgram() const;
         
         /** Called by IsStandardTx and P2SH/BIP62 VerifyScript (which makes it consensus-critical). */

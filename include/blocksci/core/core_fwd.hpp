@@ -22,6 +22,8 @@ namespace blocksci {
     struct RawData;
     struct NonstandardScriptData;
     struct NonstandardSpendScriptData;
+    struct WitnessUnknownScriptData;
+    struct WitnessUnknownSpendScriptData;
 
     struct RawAddress;
     struct DedupAddress;

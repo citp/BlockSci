@@ -80,7 +80,7 @@ namespace blocksci {
     
     // A witness program is any valid CScript that consists of a 1-byte push opcode
     // followed by a data push between 2 and 40 bytes.
-    bool CScriptView::IsWitnessProgram(int& version, std::vector<unsigned char>& program) const {
+    bool CScriptView::IsWitnessProgram(uint8_t& version, ranges::iterator_range<const unsigned char *>& program) const {
         if (this->size() < 4 || this->size() > 42) {
             return false;
         }
@@ -89,7 +89,7 @@ namespace blocksci {
         }
         if (static_cast<size_t>((*this)[1] + 2) == this->size()) {
             version = CScript::DecodeOP_N(static_cast<opcodetype>((*this)[0]));
-            program = std::vector<unsigned char>(this->begin() + 2, this->end());
+            program = {this->begin() + 2, this->end()};
             return true;
         }
         return false;

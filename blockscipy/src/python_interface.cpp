@@ -28,6 +28,7 @@
 #include "scripts/scripthash/scripthash_py.hpp"
 #include "scripts/nulldata/nulldata_py.hpp"
 #include "scripts/nonstandard/nonstandard_py.hpp"
+#include "scripts/witness_unknown/witness_unknown_py.hpp"
 
 #include <pybind11/functional.h>
 
@@ -67,6 +68,7 @@ PYBIND11_MODULE(_blocksci, m) {
     py::class_<script::Multisig> multisigCl(m, "MultisigAddress", addressCl, "Extra data about multi-signature address");
     py::class_<script::Nonstandard> nonstandardCl(m, "NonStandardAddress", addressCl, "Extra data about non-standard address");
     py::class_<script::OpReturn> opReturnCl(m, "OpReturn", addressCl, "Extra data about op_return address");
+    py::class_<script::WitnessUnknown> witnessUnknownCl(m, "WitnessUnknownAddress", addressCl, "Data about an unknown witness address");
 
     auto clusterMod = m.def_submodule("cluster");
     py::class_<Cluster> clusterCl(clusterMod, "Cluster", "Class representing a cluster");
@@ -88,6 +90,7 @@ PYBIND11_MODULE(_blocksci, m) {
     RangeClasses<script::WitnessScriptHash> witnessScripthashRangeCls(m);
     RangeClasses<script::OpReturn> nulldataRangeCls(m);
     RangeClasses<script::Nonstandard> nonstandardRangeCls(m);
+    RangeClasses<script::WitnessUnknown> witnessUnknownRangeCls(m);
     
     RangeClasses<Cluster> clusterRangeCls(clusterMod);
     RangeClasses<TaggedCluster> taggedClusterRangeCls(clusterMod);
@@ -114,6 +117,7 @@ PYBIND11_MODULE(_blocksci, m) {
     addSelfProxy(multisigCl);
     addSelfProxy(nonstandardCl);
     addSelfProxy(opReturnCl);
+    addSelfProxy(witnessUnknownCl);
 
 
     addSelfProxy(clusterCl);
@@ -185,6 +189,10 @@ PYBIND11_MODULE(_blocksci, m) {
         {
             init_nonstandard(nonstandardCl);
             addNonstandardRangeMethods(nonstandardRangeCls);
+        }
+        {
+            init_witness_unknown(witnessUnknownCl);
+            addWitnessUnknownRangeMethods(witnessUnknownRangeCls);
         }
     }
     {

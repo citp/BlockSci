@@ -87,6 +87,13 @@ void AddressWriter::serializeImp(const ScriptInput<AddressType::NONSTANDARD> &in
     file.write<1>(input.scriptNum - 1, data);
 }
 
+void AddressWriter::serializeImp(const ScriptInput<AddressType::WITNESS_UNKNOWN> &input, ScriptFile<DedupAddressType::WITNESS_UNKNOWN> &file) {
+    blocksci::WitnessUnknownSpendScriptData scriptData(static_cast<uint32_t>(input.data.script.size()));
+    blocksci::ArbitraryLengthData<blocksci::WitnessUnknownSpendScriptData> data(scriptData);
+    data.add(input.data.script.begin(), input.data.script.end());
+    file.write<1>(input.scriptNum - 1, data);
+}
+
 void AddressWriter::rollback(const blocksci::State &state) {
     blocksci::for_each(blocksci::DedupAddressType::all(), [&](auto tag) {
         auto &file = std::get<ScriptFile<tag()>>(scriptFiles);

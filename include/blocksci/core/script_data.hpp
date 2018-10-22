@@ -178,6 +178,27 @@ namespace blocksci {
         RawData(uint32_t txNum, const std::vector<unsigned char> &fullData) : ScriptDataBase(txNum), rawData(static_cast<uint32_t>(fullData.size())) {}
     };
     
+    struct BLOCKSCI_EXPORT WitnessUnknownScriptData : public ScriptDataBase {
+        uint8_t witnessVersion;
+        InPlaceArray<unsigned char> scriptData;
+        
+        size_t realSize() const {
+            return sizeof(WitnessUnknownScriptData) + scriptData.extraSize();
+        }
+        
+        WitnessUnknownScriptData(uint32_t txNum, uint8_t witnessVersion_, uint32_t scriptLength) : ScriptDataBase(txNum), witnessVersion(witnessVersion_), scriptData(scriptLength) {}
+    };
+    
+    struct BLOCKSCI_EXPORT WitnessUnknownSpendScriptData {
+        InPlaceArray<unsigned char> scriptData;
+        
+        size_t realSize() const {
+            return sizeof(WitnessUnknownSpendScriptData) + scriptData.extraSize();
+        }
+        
+        explicit WitnessUnknownSpendScriptData(uint32_t scriptLength) : scriptData(scriptLength) {}
+    };
+    
 } // namespace blocksci
 
 #endif /* script_data_hpp */

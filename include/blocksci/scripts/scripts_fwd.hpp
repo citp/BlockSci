@@ -45,6 +45,7 @@ namespace blocksci {
         using Multisig = ScriptAddress<AddressType::MULTISIG>;
         using OpReturn = ScriptAddress<AddressType::NULL_DATA>;
         using Nonstandard = ScriptAddress<AddressType::NONSTANDARD>;
+        using WitnessUnknown = ScriptAddress<AddressType::WITNESS_UNKNOWN>;
     }
 } // namespace blocksci
 
