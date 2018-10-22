@@ -12,30 +12,51 @@
 #include <blocksci/core/bitcoin_uint256.hpp>
 #include <blocksci/core/typedefs.hpp>
 
+#include <nlohmann/json_fwd.hpp>
+
+#include <wjfilesystem/path.h>
+
 #include <string>
 #include <vector>
 
 namespace blocksci {
     
     struct ChainConfiguration {
+        std::string coinName;
+        filesystem::path dataDirectory;
+        
         std::vector<unsigned char> pubkeyPrefix;
         std::vector<unsigned char> scriptPrefix;
         
         std::string segwitPrefix;
         
-        static ChainConfiguration bitcoin();
-        static ChainConfiguration bitcoinRegtest();
+        BlockHeight segwitActivationHeight;
         
-        static ChainConfiguration litecoin();
+        static ChainConfiguration bitcoin(const std::string &chainDir);
+        static ChainConfiguration bitcoinTestnet(const std::string &chainDir);
+        static ChainConfiguration bitcoinRegtest(const std::string &chainDir);
         
-        static ChainConfiguration zcash();
+        static ChainConfiguration bitcoinCash(const std::string &chainDir);
+        static ChainConfiguration bitcoinCashTestnet(const std::string &chainDir);
+        static ChainConfiguration bitcoinCashRegtest(const std::string &chainDir);
         
-        static ChainConfiguration namecoin();
+        static ChainConfiguration litecoin(const std::string &chainDir);
+        static ChainConfiguration litecoinTestnet(const std::string &chainDir);
+        static ChainConfiguration litecoinRegtest(const std::string &chainDir);
         
-        static ChainConfiguration dash();
-        static ChainConfiguration dashTestNet();
+        static ChainConfiguration namecoin(const std::string &chainDir);
+        static ChainConfiguration namecoinTestnet(const std::string &chainDir);
+        
+        static ChainConfiguration dash(const std::string &chainDir);
+        static ChainConfiguration dashTestnet(const std::string &chainDir);
+        
+        static ChainConfiguration zcash(const std::string &chainDir);
+        static ChainConfiguration zcashTestnet(const std::string &chainDir);
         
     };
+    
+    void to_json(nlohmann::json& j, const ChainConfiguration& p);
+    void from_json(const nlohmann::json& j, ChainConfiguration& p);
 }
 
 #endif /* chain_configuration_h */

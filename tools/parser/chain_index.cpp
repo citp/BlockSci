@@ -26,7 +26,6 @@
 
 #ifdef BLOCKSCI_FILE_PARSER
 
-
 BlockInfoBase::BlockInfoBase(const blocksci::uint256 &hash_, const CBlockHeader &h, uint32_t size_, unsigned int numTxes, uint32_t inputCount_, uint32_t outputCount_) : hash(hash_), header(h), height(-1), size(size_), nTx(numTxes), inputCount(inputCount_), outputCount(outputCount_) {}
 
 BlockInfo<FileTag>::BlockInfo(const CBlockHeader &h, uint32_t size_, unsigned int numTxes, uint32_t inputCount_, uint32_t outputCount_, const ChainDiskConfiguration &config, int fileNum, unsigned int dataPos) : BlockInfoBase(config.workHashFunction(reinterpret_cast<const char *>(&h), sizeof(CBlockHeader)), h, size_, numTxes, inputCount_, outputCount_), nFile(fileNum), nDataPos(dataPos) {}
@@ -99,7 +98,7 @@ namespace {
 std::vector<BlockInfo<FileTag>> readBlocksInfo(int fileNum, const ParserConfiguration<FileTag> &config) {
     auto blockFilePath = config.pathForBlockFile(fileNum);
     SafeMemReader reader{blockFilePath.str()};
-    return readBlocksImpl(reader, fileNum, config.config);
+    return readBlocksImpl(reader, fileNum, config.diskConfig);
 }
 
 template <>
@@ -141,7 +140,7 @@ void ChainIndex<FileTag>::update(const ConfigType &config) {
                 if (fileNum == firstFile) {
                     reader.reset(filePos);
                 }
-                auto blocks = readBlocksImpl(reader, fileNum, localConfig.config);
+                auto blocks = readBlocksImpl(reader, fileNum, localConfig.diskConfig);
                 
                 if (fileNum == maxFileNum && blocks.size() > 0) {
                     newestBlock = blocks.back();

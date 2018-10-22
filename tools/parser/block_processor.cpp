@@ -230,9 +230,8 @@ public:
 
 #endif
 
-blocksci::RawBlock readNewBlock(uint32_t firstTxNum, uint64_t firstInputNum, uint64_t firstOutputNum, const BlockInfoBase &block, BlockFileReaderBase &fileReader, NewBlocksFiles &files, const std::function<bool(RawTransaction *&tx)> &loadFunc, const std::function<void(RawTransaction *tx)> &outFunc) {
+blocksci::RawBlock readNewBlock(uint32_t firstTxNum, uint64_t firstInputNum, uint64_t firstOutputNum, const BlockInfoBase &block, BlockFileReaderBase &fileReader, NewBlocksFiles &files, const std::function<bool(RawTransaction *&tx)> &loadFunc, const std::function<void(RawTransaction *tx)> &outFunc, bool isSegwit) {
     std::vector<unsigned char> coinbase;
-    bool isSegwit = false;
     blocksci::uint256 nullHash;
     nullHash.SetNull();
     uint32_t headerSize = 80 + variableLengthIntSize(block.nTx);
@@ -247,11 +246,6 @@ blocksci::RawBlock readNewBlock(uint32_t firstTxNum, uint64_t firstInputNum, uin
         } else {
             assert(tx);
             fileReader.receivedFinishedTx(tx);
-        }
-        
-        if (j == 0) {
-            fileReader.nextTxNoAdvance(tx, false);
-            isSegwit = checkSegwit(tx);
         }
         
         fileReader.nextTx(tx, isSegwit);
@@ -615,7 +609,7 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfigu
         
         for (auto &block : blocks) {
             fileReader.nextBlock(block, currentTxNum);
-            auto newBlock = readNewBlock(currentTxNum, currentInputNum, currentOutputNum, block, fileReader, files, loadFinishedTx, outFunc);
+            auto newBlock = readNewBlock(currentTxNum, currentInputNum, currentOutputNum, block, fileReader, files, loadFinishedTx, outFunc, block.height >= config.dataConfig.chainConfig.segwitActivationHeight);
             blocksAdded.push_back(newBlock);
             currentTxNum += newBlock.txCount;
             currentInputNum += newBlock.inputCount;
@@ -721,7 +715,7 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocksSingle(const ParserC
     std::vector<blocksci::RawBlock> blocksAdded;
     for (auto &block : blocks) {
         fileReader.nextBlock(block, currentTxNum);
-        auto newBlock = readNewBlock(currentTxNum, currentInputNum, currentOutputNum, block, fileReader, files, loadFinishedTx, outFunc);
+        auto newBlock = readNewBlock(currentTxNum, currentInputNum, currentOutputNum, block, fileReader, files, loadFinishedTx, outFunc, block.height >= config.dataConfig.chainConfig.segwitActivationHeight);
         blocksAdded.push_back(newBlock);
         currentTxNum += newBlock.txCount;
         currentInputNum += newBlock.inputCount;

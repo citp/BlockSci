@@ -40,3 +40,6 @@
 [submodule "blockscipy/external/date"]
 	path = blockscipy/external/date
 	url = https://github.com/HowardHinnant/date
+[submodule "external/json"]
+	path = external/json
+	url = https://github.com/nlohmann/json

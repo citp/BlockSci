@@ -23,6 +23,7 @@
 #include "utxo_address_state.hpp"
 
 #include <internal/bitcoin_uint256_hex.hpp>
+#include <internal/data_configuration.hpp>
 
 #ifdef BLOCKSCI_RPC_PARSER
 #include <bitcoinapi/bitcoinapi.h>
@@ -37,11 +38,15 @@
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
+#include <nlohmann/json.hpp>
+
 #include <fstream>
 #include <future>
 #include <iostream>
 #include <iomanip>
 #include <cassert>
+
+using json = nlohmann::json;
 
 blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::BlockHeight firstDeletedBlock, uint32_t firstDeletedTxNum) {
     blocksci::State state{
@@ -306,49 +311,102 @@ void updateAddressDB(const ParserConfigurationBase &config) {
     db.runUpdate(updateState);
 }
 
-void updateConfig(filesystem::path &dataDirectory) {
-    auto configFile = dataDirectory/"config.ini";
+ParserConfigurationBase getBaseConfig(const filesystem::path &configPath) {
+    if (!configPath.exists()) {
+        throw std::runtime_error("Config path does not exist");
+    }
+    return {blocksci::loadBlockchainConfig(configPath.str(), true, 0)};
+}
+
+void updateChain(const filesystem::path &configFilePath, bool fullParse) {
+    auto jsonConf = blocksci::loadConfig(configFilePath.str());
+    blocksci::checkVersion(jsonConf);
     
-    boost::property_tree::ptree rootPTree;
-    rootPTree.put("version", blocksci::dataVersion);
+    blocksci::ChainConfiguration chainConfig = jsonConf.at("chainConfig");
+    blocksci::DataConfiguration dataConfig{chainConfig, true, 0};
     
-    std::ofstream configStream{configFile.str()};
-    boost::property_tree::write_ini(configStream, rootPTree);
+    ParserConfigurationBase config{dataConfig};
+    HashIndexCreator hashDb(config, config.dataConfig.hashIndexFilePath());
+    
+    auto parserConf = jsonConf.at("parser");
+    blocksci::BlockHeight maxBlock = parserConf.at("maxBlockNum");
+    
+    std::vector<blocksci::RawBlock> newBlocks;
+    if (parserConf.find("disk") != parserConf.end()) {
+        ChainDiskConfiguration diskConfig = parserConf.at("disk");
+        ParserConfiguration<FileTag> config{dataConfig, diskConfig};
+        newBlocks = updateChain(config, blocksci::BlockHeight{maxBlock}, hashDb);
+    } else if (parserConf.find("rpc") != parserConf.end()) {
+        ChainRPCConfiguration rpcConfig = parserConf.at("rpc");
+        ParserConfiguration<RPCTag> config(dataConfig, rpcConfig);
+        newBlocks = updateChain(config, blocksci::BlockHeight{maxBlock}, hashDb);
+    } else {
+        throw std::runtime_error("Must provide either rpc or disk parsing settings");
+    }
+    
+    // It'd be nice to do this after the indexes are updated, but they currently depend on the chain being fully updated
+    {
+        FixedSizeFileWriter<blocksci::RawBlock> blockFile{blocksci::ChainAccess::blockFilePath(config.dataConfig.chainDirectory())};
+        for (auto &block : newBlocks) {
+            blockFile.write(block);
+        }
+    }
+    
+    if (fullParse) {
+        updateHashDB(config, hashDb);
+        updateAddressDB(config);
+    }
 }
 
 int main(int argc, char * argv[]) {
     
-    enum class mode {update, updateCore, updateIndexes, updateHashIndex, updateAddressIndex, compactIndexes, help};
+    //    blocksci_parser
+    //    --config /hkalodner/bitcointest.json
+    //    generate-config
+    //    --coin-type bitcoin
+    //    --data-directory /Users/hkalodner/bitcoin-samp
+    //    --coin-directory /Users/hkalodner/Library/Application\ Support/Bitcoin
+    
+    enum class mode {generateConfig, update, updateCore, updateIndexes, updateHashIndex, updateAddressIndex, compactIndexes, help};
     mode selected = mode::help;
 
-
-    enum class updateMode {
-        disk, rpc
-    };
-    updateMode selectedUpdateMode = updateMode::disk;
+    std::string configFilePathString;
+    auto configFileOpt = (clipp::required("--config", "-c") & clipp::value("config file", configFilePathString)) % "Path to config file";
     
-    std::string dataDirectoryString;
-
-    auto outputDirOpt = (clipp::required("--output-directory", "-o") & clipp::value("output directory", dataDirectoryString)) % "Path to output parsed data";
-
+    bool enableRPC = false;
     std::string username;
     std::string password;
-    std::string address = "127.0.0.1";
-    int port = 9998;
+    std::string address = "NOTSET";
+    int port = -1;
+    
     auto rpcOptions = (
-        clipp::command("rpc").set(selectedUpdateMode, updateMode::rpc),
+        clipp::option("--rpc").set(enableRPC) & (
         (clipp::required("--username") & clipp::value("username", username)) % "RPC username",
         (clipp::required("--password") & clipp::value("password", password)) % "RPC password",
         (clipp::option("--address") & clipp::value("address", address)) % "RPC address",
         (clipp::option("--port") & clipp::value("port", port)) % "RPC port"
-    ).doc("RPC options");
-
-    std::string bitcoinDirectoryString;
+    ).doc("RPC options"));
+    
+    bool enableDisk = false;
+    std::string coinDirectoryString;
     auto fileOptions = (
-        clipp::command("disk").set(selectedUpdateMode, updateMode::disk),
-        (clipp::required("--coin-directory", "-c") & clipp::value("coin directory", bitcoinDirectoryString)) % "Path to cryptocurrency directory"
-    ).doc("File parser options");
+            clipp::option("--disk").set(enableDisk) & (
+            (clipp::required("--coin-directory") & clipp::value("coin directory", coinDirectoryString)) % "Path to cryptocurrency directory"
+        )).doc("File parser options");
 
+    
+    std::string coinType;
+    int maxBlockNum = 0;
+    std::string dataDirectory;
+    auto configOptions = (
+          clipp::value("coin type", coinType),
+          (clipp::required("--data-directory", "-d") & clipp::value("data directory", dataDirectory)) % "Path to blocksci data location",
+          (clipp::option("--max-block", "-m") & clipp::value("max block", maxBlockNum)) % "Max block height to scan up to",
+          fileOptions,
+          rpcOptions
+    ) % "Configuration options";
+    
+    auto generateConfigCommand = clipp::command("generate-config").set(selected,mode::generateConfig) % "Create new BlockSci configuration";
     auto updateCommand = clipp::command("update").set(selected,mode::update) % "Update all BlockSci data";
     auto updateCoreCommand = clipp::command("core-update").set(selected,mode::updateCore) % "Update just the core BlockSci data (excluding indexes)";
     auto indexUpdateCommand = clipp::command("index-update").set(selected,mode::updateIndexes) % "Update indexes to latest chain state";
@@ -356,14 +414,9 @@ int main(int argc, char * argv[]) {
     auto hashIndexUpdateCommand = clipp::command("hash-index-update").set(selected,mode::updateHashIndex) % "Update hash index to latest state";
     auto compactIndexesCommand = clipp::command("compact-indexes").set(selected, mode::compactIndexes) % "Compact indexes to speed up blockchain construction";
     
-    int maxBlockNum = 0;
-    auto maxBlockOpt = (clipp::option("--max-block", "-m") & clipp::value("max block", maxBlockNum)) % "Max block height to scan up to";
+    auto commands = (generateConfigCommand, configOptions) | updateCommand | updateCoreCommand | indexUpdateCommand | addressIndexUpdateCommand | hashIndexUpdateCommand | compactIndexesCommand;
     
-    auto coreUpdateOptions = (maxBlockOpt, (fileOptions | rpcOptions));
-    
-    auto commands = ((updateCommand | updateCoreCommand), coreUpdateOptions) | indexUpdateCommand | addressIndexUpdateCommand | hashIndexUpdateCommand | compactIndexesCommand;
-    
-    auto cli = (outputDirOpt, commands);
+    auto cli = (configFileOpt, commands);
     
     auto res = parse(argc, argv, cli);
     if (res.any_error()) {
@@ -376,55 +429,109 @@ int main(int argc, char * argv[]) {
         return 0;
     }
 
-    filesystem::path dataDirectory = {dataDirectoryString};
-//    dataDirectory = dataDirectory.make_absolute();
-
-    if(!dataDirectory.exists()){
-        filesystem::create_directory(dataDirectory);
+    filesystem::path configFilePath = {configFilePathString};
+    auto folder = configFilePath.parent_path();
+    if (!configFilePath.parent_path().exists()) {
+        filesystem::create_directory(configFilePath.parent_path());
     }
 
     switch (selected) {
+        case mode::generateConfig: {
+            blocksci::ChainConfiguration chainConfig;
+            ChainDiskConfiguration diskConfig;
+            ChainRPCConfiguration rpcConfig;
+            if (coinType == "bitcoin") {
+                chainConfig = blocksci::ChainConfiguration::bitcoin(dataDirectory);
+                diskConfig = ChainDiskConfiguration::bitcoin(coinDirectoryString);
+                rpcConfig = ChainRPCConfiguration::bitcoin(username, password);
+            } else if (coinType == "bitcoin_testnet") {
+                chainConfig = blocksci::ChainConfiguration::bitcoinTestnet(dataDirectory);
+                diskConfig = ChainDiskConfiguration::bitcoinTestnet(coinDirectoryString);
+                rpcConfig = ChainRPCConfiguration::bitcoinTestnet(username, password);
+            } else if (coinType == "bitcoin_regtest") {
+                chainConfig = blocksci::ChainConfiguration::bitcoinRegtest(dataDirectory);
+                diskConfig = ChainDiskConfiguration::bitcoinRegtest(coinDirectoryString);
+            } else if (coinType == "bitcoin_cash") {
+                chainConfig = blocksci::ChainConfiguration::bitcoinCash(dataDirectory);
+                diskConfig = ChainDiskConfiguration::bitcoinCash(coinDirectoryString);
+                rpcConfig = ChainRPCConfiguration::bitcoinCash(username, password);
+            } else if (coinType == "bitcoin_cash_testnet") {
+                chainConfig = blocksci::ChainConfiguration::bitcoinCashTestnet(dataDirectory);
+                diskConfig = ChainDiskConfiguration::bitcoinCashTestnet(coinDirectoryString);
+                rpcConfig = ChainRPCConfiguration::bitcoinCashTestnet(username, password);
+            } else if (coinType == "bitcoin_cash_regtest") {
+                chainConfig = blocksci::ChainConfiguration::bitcoinCashRegtest(dataDirectory);
+                diskConfig = ChainDiskConfiguration::bitcoinCashRegtest(coinDirectoryString);
+            } else if (coinType == "dash") {
+                chainConfig = blocksci::ChainConfiguration::dash(dataDirectory);
+                rpcConfig = ChainRPCConfiguration::dash(username, password);
+            } else if (coinType == "dash_testnet") {
+                chainConfig = blocksci::ChainConfiguration::dashTestnet(dataDirectory);
+                rpcConfig = ChainRPCConfiguration::dashTestnet(username, password);
+            } else if (coinType == "litecoin") {
+                chainConfig = blocksci::ChainConfiguration::litecoin(dataDirectory);
+                diskConfig = ChainDiskConfiguration::litecoin(coinDirectoryString);
+                rpcConfig = ChainRPCConfiguration::litecoin(username, password);
+            } else if (coinType == "litecoin_testnet") {
+                chainConfig = blocksci::ChainConfiguration::litecoinTestnet(dataDirectory);
+                diskConfig = ChainDiskConfiguration::litecoinTestnet(coinDirectoryString);
+                rpcConfig = ChainRPCConfiguration::litecoinTestnet(username, password);
+            } else if (coinType == "litecoin_regtest") {
+                chainConfig = blocksci::ChainConfiguration::litecoinRegtest(dataDirectory);
+                diskConfig = ChainDiskConfiguration::litecoinRegtest(coinDirectoryString);
+            } else if (coinType == "namecoin") {
+                chainConfig = blocksci::ChainConfiguration::namecoin(dataDirectory);
+                rpcConfig = ChainRPCConfiguration::namecoin(username, password);
+            } else if (coinType == "namecoin_testnet") {
+                chainConfig = blocksci::ChainConfiguration::namecoinTestnet(dataDirectory);
+                rpcConfig = ChainRPCConfiguration::namecoinTestnet(username, password);
+            } else if (coinType == "zcash") {
+                chainConfig = blocksci::ChainConfiguration::zcash(dataDirectory);
+                rpcConfig = ChainRPCConfiguration::zcash(username, password);
+            } else if (coinType == "zcash_testnet") {
+                chainConfig = blocksci::ChainConfiguration::zcashTestnet(dataDirectory);
+                rpcConfig = ChainRPCConfiguration::zcashTestnet(username, password);
+            }
+            
+            chainConfig.coinName = coinType;
+            chainConfig.dataDirectory = dataDirectory;
+            rpcConfig.username = username;
+            rpcConfig.password = password;
+            
+            if(address != "NOTSET") {
+                rpcConfig.address = address;
+            }
+            if (port != -1) {
+                rpcConfig.port = port;
+            }
+            
+            json parser = json::object({{"maxBlockNum", maxBlockNum}});
+            if (enableDisk) {
+                parser["disk"] = diskConfig;
+            }
+            if (enableRPC) {
+                parser["rpc"] = rpcConfig;
+            }
+            
+            json jsonConf = {
+                {"version", blocksci::dataVersion},
+                {"chainConfig", chainConfig},
+                {"parser", parser}
+            };
+            
+            std::ofstream rawConf(configFilePath.str());
+            rawConf << std::setw(4) << jsonConf;
+            
+            break;
+        }
         case mode::update:
         case mode::updateCore: {
-            ParserConfigurationBase config{dataDirectory.str()};
-            HashIndexCreator hashDb(config, config.dataConfig.hashIndexFilePath());
-            std::vector<blocksci::RawBlock> newBlocks;
-            switch (selectedUpdateMode) {
-                case updateMode::disk: {
-                    filesystem::path bitcoinDirectory = {bitcoinDirectoryString};
-                    bitcoinDirectory = bitcoinDirectory.make_absolute();
-                    ParserConfiguration<FileTag> config{bitcoinDirectory, dataDirectory.str()};
-                    newBlocks = updateChain(config, blocksci::BlockHeight{maxBlockNum}, hashDb);
-                    break;
-                }
-
-                case updateMode::rpc: {
-                    ParserConfiguration<RPCTag> config(username, password, address, port, dataDirectory.str());
-                    newBlocks = updateChain(config, blocksci::BlockHeight{maxBlockNum}, hashDb);
-                    break;
-                }
-            }
-            updateConfig(dataDirectory);
-            
-
-            // It'd be nice to do this after the indexes are updated, but they currently depend on the chain being fully updated
-            {
-                FixedSizeFileWriter<blocksci::RawBlock> blockFile{blocksci::ChainAccess::blockFilePath(config.dataConfig.chainDirectory())};
-                for (auto &block : newBlocks) {
-                    blockFile.write(block);
-                }
-            }
-
-            if (selected == mode::update) {
-                updateHashDB(config, hashDb);
-                updateAddressDB(config);
-            }
-            
+            updateChain(configFilePath, selected == mode::update);
             break;
         }
 
         case mode::updateIndexes: {
-            ParserConfigurationBase config{dataDirectory.str()};
+            auto config = getBaseConfig(configFilePath);
             updateAddressDB(config);
             {
                 HashIndexCreator db(config, config.dataConfig.hashIndexFilePath());
@@ -434,20 +541,20 @@ int main(int argc, char * argv[]) {
         }
 
         case mode::updateHashIndex: {
-            ParserConfigurationBase config{dataDirectory.str()};
+            auto config = getBaseConfig(configFilePath);
             HashIndexCreator db(config, config.dataConfig.hashIndexFilePath());
             updateHashDB(config, db);
             break;
         }
 
         case mode::updateAddressIndex: {
-            ParserConfigurationBase config{dataDirectory.str()};
+            auto config = getBaseConfig(configFilePath);
             updateAddressDB(config);
             break;
         }
             
         case mode::compactIndexes: {
-            ParserConfigurationBase config{dataDirectory.str()};
+            auto config = getBaseConfig(configFilePath);
             {
                 AddressDB db(config, config.dataConfig.addressDBFilePath());
                 db.compact();

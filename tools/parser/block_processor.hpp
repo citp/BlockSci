@@ -44,7 +44,7 @@ struct OutputLinkData {
     uint32_t txNum;
 };
 
-blocksci::RawBlock readNewBlock(uint32_t firstTxNum, uint64_t firstInputNum, uint64_t firstOutputNum, const BlockInfoBase &block, BlockFileReaderBase &fileReader, NewBlocksFiles &files, const std::function<bool(RawTransaction *&tx)> &loadFunc, const std::function<void(RawTransaction *tx)> &outFunc);
+blocksci::RawBlock readNewBlock(uint32_t firstTxNum, uint64_t firstInputNum, uint64_t firstOutputNum, const BlockInfoBase &block, BlockFileReaderBase &fileReader, NewBlocksFiles &files, const std::function<bool(RawTransaction *&tx)> &loadFunc, const std::function<void(RawTransaction *tx)> &outFunc, bool isSegwit);
 void calculateHash(RawTransaction &tx, FixedSizeFileWriter<blocksci::uint256> &hashFile);
 void generateScriptOutputs(RawTransaction &tx);
 void connectUTXOs(RawTransaction &tx, UTXOState &utxoState);

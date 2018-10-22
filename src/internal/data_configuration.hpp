@@ -22,54 +22,52 @@ namespace blocksci {
     
     static constexpr int dataVersion = 5;
     
+    nlohmann::json loadConfig(const std::string &configFilePath);
+    void checkVersion(const nlohmann::json &jsonConf);
+    
     struct DataConfiguration {
         DataConfiguration() {}
-        // May create data directory (Used by parser)
-        explicit DataConfiguration(const std::string &dataDirectory);
-        
-        // Must point to existing data directory
-        DataConfiguration(const std::string &dataDirectory, bool errorOnReorg, BlockHeight blocksIgnored);
+        DataConfiguration(ChainConfiguration &config, bool errorOnReorg, BlockHeight blocksIgnored);
         
         bool errorOnReorg;
         BlockHeight blocksIgnored;
         
         ChainConfiguration chainConfig;
         
-        filesystem::path dataDirectory;
-        
         bool isNull() const {
-            return dataDirectory.empty();
+            return chainConfig.dataDirectory.empty();
         }
         
         filesystem::path scriptsDirectory() const {
-            return dataDirectory/"scripts";
+            return chainConfig.dataDirectory/"scripts";
         }
         
         filesystem::path chainDirectory() const {
-            return dataDirectory/"chain";
+            return chainConfig.dataDirectory/"chain";
         }
         
         filesystem::path mempoolDirectory() const {
-            return dataDirectory/"mempool";
+            return chainConfig.dataDirectory/"mempool";
         }
         
         filesystem::path addressDBFilePath() const {
-            return dataDirectory/"addressesDb";
+            return chainConfig.dataDirectory/"addressesDb";
         }
         
         filesystem::path hashIndexFilePath() const {
-            return dataDirectory/"hashIndex";
+            return chainConfig.dataDirectory/"hashIndex";
         }
         
         bool operator==(const DataConfiguration &other) const {
-            return dataDirectory == other.dataDirectory;
+            return chainConfig.dataDirectory == other.chainConfig.dataDirectory;
         }
         
         bool operator!=(const DataConfiguration &other) const {
-            return dataDirectory != other.dataDirectory;
+            return chainConfig.dataDirectory != other.chainConfig.dataDirectory;
         }
     };
-
+    
+    DataConfiguration loadBlockchainConfig(const std::string &configPath, bool errorOnReorg, BlockHeight blocksIgnored);
 }
 
 #endif /* data_configuration_h */
