@@ -21,6 +21,8 @@
 
 #include <clipp.h>
 
+#include <nlohmann/json.hpp>
+
 #include <range/v3/range_for.hpp>
 
 #include <chrono>
@@ -213,27 +215,23 @@ int main(int argc, char * argv[]) {
     action.sa_handler = term;
     sigaction(SIGTERM, &action, nullptr);
     
+    std::string configFilePathString;
+    auto cli = clipp::group{clipp::value("config file", configFilePathString) % "Path to config file"};
     
-    std::string username;
-    std::string password;
-    std::string address = "127.0.0.1";
-    int port = 9998;
-    auto rpcOptions = (
-        (clipp::required("--username") & clipp::value("username", username)) % "RPC username",
-        (clipp::required("--password") & clipp::value("password", password)) % "RPC password",
-        (clipp::option("--address") & clipp::value("address", address)) % "RPC address",
-        (clipp::option("--port") & clipp::value("port", port)) % "RPC port"
-    ).doc("RPC options");
-
-    std::string dataLocation;
-    auto cli = (clipp::value("data location", dataLocation), rpcOptions);
     auto res = parse(argc, argv, cli);
     if (res.any_error()) {
         std::cout << "Invalid command line parameter\n" << clipp::make_man_page(cli, argv[0]);
         return 0;
     }
+    
+    filesystem::path configFilePath = {configFilePathString};
+    auto jsonConf = blocksci::loadConfig(configFilePath.str());
+    blocksci::checkVersion(jsonConf);
+    
+    blocksci::ChainConfiguration chainConfig = jsonConf.at("chainConfig");
+    blocksci::ChainRPCConfiguration rpcConfig = jsonConf.at("parser").at("rpc");
 
-    SaferBitcoinApi bitcoinAPI{username, password, address, port};
+    SaferBitcoinApi bitcoinAPI{rpcConfig.username, rpcConfig.password, rpcConfig.address, rpcConfig.port};
     
     auto connected = false;
     while (!connected) {
@@ -241,15 +239,15 @@ int main(int argc, char * argv[]) {
             bitcoinAPI.getrawmempool();
             connected = true;
         } catch (BitcoinException &) {
-            std::cerr << "Mempool recorder failed to connect to bitcoin node with {username = " << username
-            << ", password = " << password
-            << ", address = " << address
-            << ", port = " << port << "}" << std::endl;
+            std::cerr << "Mempool recorder failed to connect to bitcoin node with {username = " << rpcConfig.username
+            << ", password = " << rpcConfig.password
+            << ", address = " << rpcConfig.address
+            << ", port = " << rpcConfig.port << "}" << std::endl;
             std::this_thread::sleep_for(std::chrono::seconds(30));
         }
     }
     
-    MempoolRecorder recorder{dataLocation, bitcoinAPI};
+    MempoolRecorder recorder{chainConfig.dataDirectory.str(), bitcoinAPI};
     
     int updateCount = 0;
     while(!done) {

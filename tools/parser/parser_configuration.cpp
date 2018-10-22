@@ -157,132 +157,13 @@ ChainDiskConfiguration ChainDiskConfiguration::bitcoinCash(const std::string &pa
 
 #ifdef BLOCKSCI_RPC_PARSER
 
-void to_json(nlohmann::json& j, const ChainRPCConfiguration& p) {
-    j = json{{"username", p.username}, {"password", p.password}, {"address", p.address}, {"port", p.port}};
-}
-
-void from_json(const nlohmann::json& j, ChainRPCConfiguration& p) {
-    j.at("username").get_to(p.username);
-    j.at("password").get_to(p.password);
-    j.at("address").get_to(p.address);
-    j.at("port").get_to(p.port);
-}
-
 ParserConfiguration<RPCTag>::ParserConfiguration() : ParserConfigurationBase() {}
 
-ParserConfiguration<RPCTag>::ParserConfiguration(const blocksci::DataConfiguration &dataConfig, const ChainRPCConfiguration &rpc) : ParserConfigurationBase(dataConfig), config(rpc) {}
+ParserConfiguration<RPCTag>::ParserConfiguration(const blocksci::DataConfiguration &dataConfig, const blocksci::ChainRPCConfiguration &rpc) : ParserConfigurationBase(dataConfig), config(rpc) {}
 
 
 BitcoinAPI ParserConfiguration<RPCTag>::createBitcoinAPI() const {
     return BitcoinAPI{config.username, config.password, config.address, config.port};
-}
-
-ChainRPCConfiguration ChainRPCConfiguration::bitcoin(const std::string &username, const std::string &password) {
-    return {
-        username,
-        password,
-        "127.0.0.1",
-        8332
-    };
-}
-
-ChainRPCConfiguration ChainRPCConfiguration::bitcoinTestnet(const std::string &username, const std::string &password) {
-    return {
-        username,
-        password,
-        "127.0.0.1",
-        18332
-    };
-}
-
-ChainRPCConfiguration ChainRPCConfiguration::bitcoinCash(const std::string &username, const std::string &password) {
-    return {
-        username,
-        password,
-        "127.0.0.1",
-        8332
-    };
-}
-
-ChainRPCConfiguration ChainRPCConfiguration::bitcoinCashTestnet(const std::string &username, const std::string &password) {
-    return {
-        username,
-        password,
-        "127.0.0.1",
-        18332
-    };
-}
-
-ChainRPCConfiguration ChainRPCConfiguration::litecoin(const std::string &username, const std::string &password) {
-    return {
-        username,
-        password,
-        "127.0.0.1",
-        9332
-    };
-}
-
-ChainRPCConfiguration ChainRPCConfiguration::litecoinTestnet(const std::string &username, const std::string &password) {
-    return {
-        username,
-        password,
-        "127.0.0.1",
-        19332
-    };
-}
-
-ChainRPCConfiguration ChainRPCConfiguration::dash(const std::string &username, const std::string &password) {
-    return {
-        username,
-        password,
-        "127.0.0.1",
-        9998
-    };
-}
-
-ChainRPCConfiguration ChainRPCConfiguration::dashTestnet(const std::string &username, const std::string &password) {
-    return {
-        username,
-        password,
-        "127.0.0.1",
-        19998
-    };
-}
-
-ChainRPCConfiguration ChainRPCConfiguration::namecoin(const std::string &username, const std::string &password) {
-    return {
-        username,
-        password,
-        "127.0.0.1",
-        8336
-    };
-}
-
-ChainRPCConfiguration ChainRPCConfiguration::namecoinTestnet(const std::string &username, const std::string &password) {
-    return {
-        username,
-        password,
-        "127.0.0.1",
-        18336
-    };
-}
-
-ChainRPCConfiguration ChainRPCConfiguration::zcash(const std::string &username, const std::string &password) {
-    return {
-        username,
-        password,
-        "127.0.0.1",
-        8232
-    };
-}
-
-ChainRPCConfiguration ChainRPCConfiguration::zcashTestnet(const std::string &username, const std::string &password) {
-    return {
-        username,
-        password,
-        "127.0.0.1",
-        18232
-    };
 }
 
 #endif

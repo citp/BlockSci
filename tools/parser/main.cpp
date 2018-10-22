@@ -334,7 +334,7 @@ void updateChain(const filesystem::path &configFilePath, bool fullParse) {
         ParserConfiguration<FileTag> config{dataConfig, diskConfig};
         newBlocks = updateChain(config, blocksci::BlockHeight{maxBlock}, hashDb);
     } else if (parserConf.find("rpc") != parserConf.end()) {
-        ChainRPCConfiguration rpcConfig = parserConf.at("rpc");
+        blocksci::ChainRPCConfiguration rpcConfig = parserConf.at("rpc");
         ParserConfiguration<RPCTag> config(dataConfig, rpcConfig);
         newBlocks = updateChain(config, blocksci::BlockHeight{maxBlock}, hashDb);
     } else {
@@ -366,9 +366,6 @@ int main(int argc, char * argv[]) {
     
     enum class mode {generateConfig, update, updateCore, updateIndexes, updateHashIndex, updateAddressIndex, compactIndexes, help};
     mode selected = mode::help;
-
-    std::string configFilePathString;
-    auto configFileOpt = (clipp::required("--config", "-c") & clipp::value("config file", configFilePathString)) % "Path to config file";
     
     bool enableRPC = false;
     std::string username;
@@ -378,8 +375,8 @@ int main(int argc, char * argv[]) {
     
     auto rpcOptions = (
         clipp::option("--rpc").set(enableRPC) & (
-        (clipp::required("--username") & clipp::value("username", username)) % "RPC username",
-        (clipp::required("--password") & clipp::value("password", password)) % "RPC password",
+        clipp::value("username", username) % "RPC username",
+        clipp::value("password", password) % "RPC password",
         (clipp::option("--address") & clipp::value("address", address)) % "RPC address",
         (clipp::option("--port") & clipp::value("port", port)) % "RPC port"
     ).doc("RPC options"));
@@ -388,7 +385,7 @@ int main(int argc, char * argv[]) {
     std::string coinDirectoryString;
     auto fileOptions = (
             clipp::option("--disk").set(enableDisk) & (
-            (clipp::required("--coin-directory") & clipp::value("coin directory", coinDirectoryString)) % "Path to cryptocurrency directory"
+            clipp::value("coin directory", coinDirectoryString) % "Path to cryptocurrency directory"
         )).doc("File parser options");
 
     
@@ -397,7 +394,7 @@ int main(int argc, char * argv[]) {
     std::string dataDirectory;
     auto configOptions = (
           clipp::value("coin type", coinType),
-          (clipp::required("--data-directory", "-d") & clipp::value("data directory", dataDirectory)) % "Path to blocksci data location",
+          clipp::value("data directory", dataDirectory) % "Path to blocksci data location",
           (clipp::option("--max-block", "-m") & clipp::value("max block", maxBlockNum)) % "Max block height to scan up to",
           fileOptions,
           rpcOptions
@@ -410,6 +407,9 @@ int main(int argc, char * argv[]) {
     auto addressIndexUpdateCommand = clipp::command("address-index-update").set(selected,mode::updateAddressIndex) % "Update address index to latest state";
     auto hashIndexUpdateCommand = clipp::command("hash-index-update").set(selected,mode::updateHashIndex) % "Update hash index to latest state";
     auto compactIndexesCommand = clipp::command("compact-indexes").set(selected, mode::compactIndexes) % "Compact indexes to speed up blockchain construction";
+    
+    std::string configFilePathString;
+    auto configFileOpt = clipp::value("config file", configFilePathString) % "Path to config file";
     
     auto commands = (generateConfigCommand, configOptions) | updateCommand | updateCoreCommand | indexUpdateCommand | addressIndexUpdateCommand | hashIndexUpdateCommand | compactIndexesCommand;
     
@@ -436,58 +436,58 @@ int main(int argc, char * argv[]) {
         case mode::generateConfig: {
             blocksci::ChainConfiguration chainConfig;
             ChainDiskConfiguration diskConfig;
-            ChainRPCConfiguration rpcConfig;
+            blocksci::ChainRPCConfiguration rpcConfig;
             if (coinType == "bitcoin") {
                 chainConfig = blocksci::ChainConfiguration::bitcoin(dataDirectory);
                 diskConfig = ChainDiskConfiguration::bitcoin(coinDirectoryString);
-                rpcConfig = ChainRPCConfiguration::bitcoin(username, password);
+                rpcConfig = blocksci::ChainRPCConfiguration::bitcoin(username, password);
             } else if (coinType == "bitcoin_testnet") {
                 chainConfig = blocksci::ChainConfiguration::bitcoinTestnet(dataDirectory);
                 diskConfig = ChainDiskConfiguration::bitcoinTestnet(coinDirectoryString);
-                rpcConfig = ChainRPCConfiguration::bitcoinTestnet(username, password);
+                rpcConfig = blocksci::ChainRPCConfiguration::bitcoinTestnet(username, password);
             } else if (coinType == "bitcoin_regtest") {
                 chainConfig = blocksci::ChainConfiguration::bitcoinRegtest(dataDirectory);
                 diskConfig = ChainDiskConfiguration::bitcoinRegtest(coinDirectoryString);
             } else if (coinType == "bitcoin_cash") {
                 chainConfig = blocksci::ChainConfiguration::bitcoinCash(dataDirectory);
                 diskConfig = ChainDiskConfiguration::bitcoinCash(coinDirectoryString);
-                rpcConfig = ChainRPCConfiguration::bitcoinCash(username, password);
+                rpcConfig = blocksci::ChainRPCConfiguration::bitcoinCash(username, password);
             } else if (coinType == "bitcoin_cash_testnet") {
                 chainConfig = blocksci::ChainConfiguration::bitcoinCashTestnet(dataDirectory);
                 diskConfig = ChainDiskConfiguration::bitcoinCashTestnet(coinDirectoryString);
-                rpcConfig = ChainRPCConfiguration::bitcoinCashTestnet(username, password);
+                rpcConfig = blocksci::ChainRPCConfiguration::bitcoinCashTestnet(username, password);
             } else if (coinType == "bitcoin_cash_regtest") {
                 chainConfig = blocksci::ChainConfiguration::bitcoinCashRegtest(dataDirectory);
                 diskConfig = ChainDiskConfiguration::bitcoinCashRegtest(coinDirectoryString);
             } else if (coinType == "dash") {
                 chainConfig = blocksci::ChainConfiguration::dash(dataDirectory);
-                rpcConfig = ChainRPCConfiguration::dash(username, password);
+                rpcConfig = blocksci::ChainRPCConfiguration::dash(username, password);
             } else if (coinType == "dash_testnet") {
                 chainConfig = blocksci::ChainConfiguration::dashTestnet(dataDirectory);
-                rpcConfig = ChainRPCConfiguration::dashTestnet(username, password);
+                rpcConfig = blocksci::ChainRPCConfiguration::dashTestnet(username, password);
             } else if (coinType == "litecoin") {
                 chainConfig = blocksci::ChainConfiguration::litecoin(dataDirectory);
                 diskConfig = ChainDiskConfiguration::litecoin(coinDirectoryString);
-                rpcConfig = ChainRPCConfiguration::litecoin(username, password);
+                rpcConfig = blocksci::ChainRPCConfiguration::litecoin(username, password);
             } else if (coinType == "litecoin_testnet") {
                 chainConfig = blocksci::ChainConfiguration::litecoinTestnet(dataDirectory);
                 diskConfig = ChainDiskConfiguration::litecoinTestnet(coinDirectoryString);
-                rpcConfig = ChainRPCConfiguration::litecoinTestnet(username, password);
+                rpcConfig = blocksci::ChainRPCConfiguration::litecoinTestnet(username, password);
             } else if (coinType == "litecoin_regtest") {
                 chainConfig = blocksci::ChainConfiguration::litecoinRegtest(dataDirectory);
                 diskConfig = ChainDiskConfiguration::litecoinRegtest(coinDirectoryString);
             } else if (coinType == "namecoin") {
                 chainConfig = blocksci::ChainConfiguration::namecoin(dataDirectory);
-                rpcConfig = ChainRPCConfiguration::namecoin(username, password);
+                rpcConfig = blocksci::ChainRPCConfiguration::namecoin(username, password);
             } else if (coinType == "namecoin_testnet") {
                 chainConfig = blocksci::ChainConfiguration::namecoinTestnet(dataDirectory);
-                rpcConfig = ChainRPCConfiguration::namecoinTestnet(username, password);
+                rpcConfig = blocksci::ChainRPCConfiguration::namecoinTestnet(username, password);
             } else if (coinType == "zcash") {
                 chainConfig = blocksci::ChainConfiguration::zcash(dataDirectory);
-                rpcConfig = ChainRPCConfiguration::zcash(username, password);
+                rpcConfig = blocksci::ChainRPCConfiguration::zcash(username, password);
             } else if (coinType == "zcash_testnet") {
                 chainConfig = blocksci::ChainConfiguration::zcashTestnet(dataDirectory);
-                rpcConfig = ChainRPCConfiguration::zcashTestnet(username, password);
+                rpcConfig = blocksci::ChainRPCConfiguration::zcashTestnet(username, password);
             }
             
             chainConfig.coinName = coinType;

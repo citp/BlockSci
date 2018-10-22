@@ -100,41 +100,12 @@ struct ParserConfiguration<FileTag> : public ParserConfigurationBase {
 
 class BitcoinAPI;
 
-
-struct ChainRPCConfiguration {
-    std::string username;
-    std::string password;
-    std::string address;
-    int port = 0;
-    
-    static ChainRPCConfiguration bitcoin(const std::string &username, const std::string &password);
-    static ChainRPCConfiguration bitcoinTestnet(const std::string &username, const std::string &password);
-    
-    static ChainRPCConfiguration bitcoinCash(const std::string &username, const std::string &password);
-    static ChainRPCConfiguration bitcoinCashTestnet(const std::string &username, const std::string &password);
-    
-    static ChainRPCConfiguration litecoin(const std::string &username, const std::string &password);
-    static ChainRPCConfiguration litecoinTestnet(const std::string &username, const std::string &password);
-    
-    static ChainRPCConfiguration namecoin(const std::string &username, const std::string &password);
-    static ChainRPCConfiguration namecoinTestnet(const std::string &username, const std::string &password);
-    
-    static ChainRPCConfiguration dash(const std::string &username, const std::string &password);
-    static ChainRPCConfiguration dashTestnet(const std::string &username, const std::string &password);
-    
-    static ChainRPCConfiguration zcash(const std::string &username, const std::string &password);
-    static ChainRPCConfiguration zcashTestnet(const std::string &username, const std::string &password);
-};
-
-void to_json(nlohmann::json& j, const ChainRPCConfiguration& p);
-void from_json(const nlohmann::json& j, ChainRPCConfiguration& p);
-
 template<>
 struct ParserConfiguration<RPCTag> : public ParserConfigurationBase {
     ParserConfiguration();
-    ParserConfiguration(const blocksci::DataConfiguration &dataConfig, const ChainRPCConfiguration &rpc);
+    ParserConfiguration(const blocksci::DataConfiguration &dataConfig, const blocksci::ChainRPCConfiguration &rpc);
     
-    ChainRPCConfiguration config;
+    blocksci::ChainRPCConfiguration config;
     
     BitcoinAPI createBitcoinAPI() const;
 };
