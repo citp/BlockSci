@@ -197,6 +197,9 @@ namespace blocksci {
         std::vector<BlockRange> segment(unsigned int segmentCount) const;
         
         Slice sl;
+        
+        DataAccess &getAccess() { return *access; }
+        
     private:
         DataAccess *access;
         

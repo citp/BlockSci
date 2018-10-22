@@ -36,8 +36,6 @@ namespace blocksci {
 
         void reload();
         
-        DataAccess &getAccess() { return *access; }
-        
         uint32_t addressCount(AddressType::Enum type) const;
     };
     

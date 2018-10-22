@@ -149,13 +149,13 @@ namespace blocksci {
         }
     };
     
-    std::vector<uint32_t> createClusters(Blockchain &chain, std::unordered_map<DedupAddressType::Enum, uint32_t> addressStarts, uint32_t totalScriptCount, const heuristics::ChangeHeuristic &changeHeuristic) {
+    std::vector<uint32_t> createClusters(BlockRange &chain, std::unordered_map<DedupAddressType::Enum, uint32_t> addressStarts, uint32_t totalScriptCount, const heuristics::ChangeHeuristic &changeHeuristic) {
         
         AddressDisjointSets ds(totalScriptCount, std::move(addressStarts));
         
         auto &access = chain.getAccess();
         
-        auto scriptHashCount = chain.addressCount(AddressType::SCRIPTHASH);
+        auto scriptHashCount = access.getScripts().scriptCount(DedupAddressType::SCRIPTHASH);
         
         
         segmentWork(1, scriptHashCount + 1, 8, [&ds, &access](uint32_t index) {
@@ -246,7 +246,7 @@ namespace blocksci {
     }
     
     
-    ClusterManager ClusterManager::createClustering(Blockchain &chain, const heuristics::ChangeHeuristic &changeHeuristic, const std::string &outputPath, bool overwrite) {
+    ClusterManager ClusterManager::createClustering(BlockRange &chain, const heuristics::ChangeHeuristic &changeHeuristic, const std::string &outputPath, bool overwrite) {
         
         auto outputLocation = filesystem::path{outputPath};
         

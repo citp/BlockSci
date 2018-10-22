@@ -53,13 +53,17 @@ void init_cluster_manager(pybind11::module &s) {
     .def(py::init([](std::string arg, blocksci::Blockchain &chain) {
        return ClusterManager(arg, chain.getAccess());
     }))
-    .def_static("create_clustering", [](const std::string &location, Blockchain &chain, const heuristics::ChangeHeuristic &heuristic, bool shouldOverwrite) {
+    .def_static("create_clustering", [](const std::string &location, Blockchain &chain, BlockHeight start, BlockHeight stop, const heuristics::ChangeHeuristic &heuristic, bool shouldOverwrite) {
         py::scoped_ostream_redirect stream(
                                            std::cout,
                                            py::module::import("sys").attr("stdout")
                                            );
-        return ClusterManager::createClustering(chain, heuristic, location, shouldOverwrite);
-    }, py::arg("location"), py::arg("chain"), py::arg("heuristic") = heuristics::ChangeHeuristic{heuristics::LegacyChange{}}, py::arg("should_overwrite") = false)
+        if (stop == -1) {
+            stop = chain.size();
+        }
+        auto range = chain[{start, stop}];
+        return ClusterManager::createClustering(range, heuristic, location, shouldOverwrite);
+    }, py::arg("location"), py::arg("chain"), py::arg("start") = 0, py::arg("stop") = -1, py::arg("heuristic") = heuristics::ChangeHeuristic{heuristics::LegacyChange{}}, py::arg("should_overwrite") = false)
     .def("cluster_with_address", [](const ClusterManager &cm, const Address &address) -> Cluster {
        return cm.getCluster(address);
     }, py::arg("address"), "Return the cluster containing the given address")

@@ -33,7 +33,7 @@ namespace blocksci {
         ClusterManager &operator=(ClusterManager && other);
         ~ClusterManager();
         
-        static ClusterManager createClustering(Blockchain &chain, const heuristics::ChangeHeuristic &heuristic, const std::string &outputPath, bool overwrite = false);
+        static ClusterManager createClustering(BlockRange &chain, const heuristics::ChangeHeuristic &heuristic, const std::string &outputPath, bool overwrite = false);
         
         Cluster getCluster(const Address &address) const;
         
