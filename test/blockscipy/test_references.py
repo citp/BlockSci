@@ -37,7 +37,7 @@ def test_spending_tx_references(chain, json_data):
 
 def test_address_references(chain, json_data):
     for addr_type in ADDR_TYPES:
-        for i in range(3):
+        for i in range(2):
             addr = chain.address_from_string(json_data["address-{}-spend-{}".format(addr_type, i)])
             tx = chain.tx_with_hash(json_data["address-{}-spend-{}-tx".format(addr_type, i)])
             height = json_data["address-{}-spend-{}-height".format(addr_type, i)]
