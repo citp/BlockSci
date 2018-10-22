@@ -63,7 +63,6 @@ PUBLIC
   ranges
   json
 PRIVATE
-  simpleini
   OpenSSL::Crypto
   endian
 )

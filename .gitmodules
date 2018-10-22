@@ -31,9 +31,6 @@
 [submodule "external/filesystem"]
 	path = external/filesystem
 	url = https://github.com/hkalodner/filesystem
-[submodule "external/simpleini"]
-	path = external/simpleini
-	url = https://github.com/brofield/simpleini
 [submodule "external/endian"]
 	path = external/endian
 	url = https://github.com/steinwurf/endian

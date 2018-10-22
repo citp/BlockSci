@@ -22,9 +22,6 @@ target_include_directories(dset INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 add_library(clipp INTERFACE)
 target_include_directories(clipp SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/clipp/include)
 
-add_library(simpleini INTERFACE)
-target_include_directories(simpleini SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
-
 add_library(endian INTERFACE)
 target_include_directories(endian SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/endian/src/)
 
