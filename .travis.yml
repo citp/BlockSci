@@ -1,0 +1,31 @@
+dist: xenial
+language: cpp
+sudo: required
+env: PYTHONPATH=$PYTHONPATH:/usr/local/cmake-3.9.2/bin/
+
+cache:
+  pip: true
+  directories:
+    - blockscipy/build
+    - release
+
+before_install:
+  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+  - sudo apt-get update
+  - sudo apt install gcc-7 g++-7 libtool autoconf libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libboost-thread-dev libboost-test-dev  libssl-dev libjsoncpp-dev libcurl4-openssl-dev libjsoncpp-dev libjsonrpccpp-dev libsnappy-dev zlib1g-dev libbz2-dev liblz4-dev libzstd-dev libjemalloc-dev libsparsehash-dev python3-dev python3-pip
+install:
+  - mkdir -p release
+  - cd release
+  - CC=gcc-7 CXX=g++-7 cmake -DCMAKE_BUILD_TYPE=Release ..
+  - make -j 2
+  - sudo make install
+  - cd ..
+  - sed -i 's/j4/j2/g' blockscipy/setup.py
+  - sudo pip3 install -U pip setuptools
+  - sudo pip3 install pytest pytest-regtest
+  - while sleep 240; do echo "    [    ] $SECONDS seconds still running"; done &
+  - CC=gcc-7 CXX=g++-7 sudo -HE env PATH=$PATH PYTHONPATH=$PYTHONPATH pip3 install -v -e blockscipy
+  - kill %1
+script:
+  - cd test/blockscipy
+  - pytest
