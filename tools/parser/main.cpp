@@ -431,12 +431,18 @@ int main(int argc, char * argv[]) {
     if (!configFilePath.parent_path().exists()) {
         filesystem::create_directory(configFilePath.parent_path());
     }
+    configFilePath = configFilePath.make_absolute();
 
     switch (selected) {
         case mode::generateConfig: {
             blocksci::ChainConfiguration chainConfig;
             ChainDiskConfiguration diskConfig;
             blocksci::ChainRPCConfiguration rpcConfig;
+            
+            if (enableDisk) {
+                coinDirectoryString = filesystem::path{coinDirectoryString}.make_absolute().str();
+            }
+            
             if (coinType == "bitcoin") {
                 chainConfig = blocksci::ChainConfiguration::bitcoin(dataDirectory);
                 diskConfig = ChainDiskConfiguration::bitcoin(coinDirectoryString);
