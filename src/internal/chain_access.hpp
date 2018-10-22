@@ -176,7 +176,7 @@ namespace blocksci {
             }
             return {
                 txFile.getData(index),
-                nullptr, // txVersionFile[index]
+                txVersionFile[index],
                 txHashesFile[index],
                 inputsSpent,
                 sequenceNumbers

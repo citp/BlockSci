@@ -60,6 +60,10 @@ namespace blocksci {
             return *data.hash;
         }
         
+        int32_t getVersion() const {
+            return *data.version;
+        }
+        
         BlockHeight calculateBlockHeight() const;
         
         BlockHeight getBlockHeight() const {
