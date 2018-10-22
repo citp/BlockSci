@@ -62,7 +62,7 @@ namespace blocksci {
         std::string toString() const;
         
         std::string toPrettyString() const {
-            return addressString();
+            return toString();
         }
     };
 } // namespace blocksci
