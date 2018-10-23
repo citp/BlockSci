@@ -69,7 +69,7 @@ std::pair<AnyScriptOutput, std::unique_ptr<AnyScriptInput>> p2shGenerate(const I
     
     blocksci::CScriptView wrappedOutputScript(lastScript.begin(), lastScript.end());
     blocksci::CScriptView p2shScriptView{wrappedInputBegin, wrappedInputBegin + wrappedInputLength};
-    AnyScriptOutput wrappedScriptOutput(wrappedOutputScript, inputView.witnessActivated);
+    AnyScriptOutput wrappedScriptOutput(wrappedOutputScript, false, inputView.witnessActivated);
     return std::make_pair(wrappedScriptOutput, std::make_unique<AnyScriptInput>(inputView, p2shScriptView, tx, AnySpendData{wrappedScriptOutput}));
 }
 
@@ -93,12 +93,17 @@ ScriptInputData<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInputData(const 
         auto pc = scriptView.begin();
         blocksci::opcodetype opcode = blocksci::OP_0;
         ranges::iterator_range<const unsigned char *> vchSig;
-        
+        ranges::iterator_range<const unsigned char *> vchSig2;
         // tx 1b008139698117162a9539295ada34fc745f06f733b5f400674f15bf47e720a5 contains a OP_0 before the signature
-        while (opcode == blocksci::OP_0) {
-            scriptView.GetOp(pc, opcode, vchSig);
+        // tx bcd1835ebd7e0d44abcab84ec64a488eefd9fa048d2e11a5a24b197838d8af11 (testnet) contains an Push(13) before the real data
+        // tx 4c65efdf4e60e9c1bbc1a1a452c3c758789efc7894bff9ed694305eb9c389e7b (testnet) super weird
+        
+        while (scriptView.GetOp(pc, opcode, vchSig2)) {
+            if (vchSig2.size() == 65 || vchSig2.size() == 33) {
+                vchSig = vchSig2;
+                break;
+            }
         }
-        scriptView.GetOp(pc, opcode, vchSig);
         assert(vchSig.size() == 65 || vchSig.size() == 33);
         std::copy(vchSig.begin(), vchSig.end(), pubkey.begin());
     } else {
@@ -176,7 +181,7 @@ std::pair<AnyScriptOutput, std::unique_ptr<AnyScriptInput>> p2shWitnessGenerate(
     auto &witnessScriptItem = inputView.witnessStack.back();
     auto outputBegin = reinterpret_cast<const unsigned char *>(witnessScriptItem.itemBegin);
     blocksci::CScriptView witnessView(outputBegin, outputBegin + witnessScriptItem.length);
-    AnyScriptOutput wrappedScriptOutput(witnessView, inputView.witnessActivated);
+    AnyScriptOutput wrappedScriptOutput(witnessView, false, inputView.witnessActivated);
     return std::make_pair(wrappedScriptOutput, std::make_unique<AnyScriptInput>(inputView, scriptView, tx, AnySpendData{wrappedScriptOutput}));
 }
 

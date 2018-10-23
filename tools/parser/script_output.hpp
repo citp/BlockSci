@@ -211,7 +211,7 @@ public:
     blocksci::AddressType::Enum type() const;
     
     AnyScriptOutput() = default;
-    AnyScriptOutput(const blocksci::CScriptView &scriptPubKey, bool witnessActivated);
+    AnyScriptOutput(const blocksci::CScriptView &scriptPubKey, bool p2shActivated, bool witnessActivated);
     
     void check(AddressState &state);
     uint32_t resolve(AddressState &state);

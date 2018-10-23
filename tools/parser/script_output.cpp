@@ -80,7 +80,7 @@ static bool MatchMultisig(const CScriptView& script, ScriptOutputData<blocksci::
 }
 
 
-ScriptOutputDataType extractScriptData(const blocksci::CScriptView &scriptPubKey, bool witnessActivated) {
+ScriptOutputDataType extractScriptData(const blocksci::CScriptView &scriptPubKey, bool p2shActivated, bool witnessActivated) {
     using blocksci::AddressType;
     using blocksci::CScript;
     using blocksci::CScriptView;
@@ -89,7 +89,7 @@ ScriptOutputDataType extractScriptData(const blocksci::CScriptView &scriptPubKey
     
     // Shortcut for pay-to-script-hash, which are more constrained than the other types:
     // it is always OP_HASH160 20 [20 byte hash] OP_EQUAL
-    if (scriptPubKey.IsPayToScriptHash()) {
+    if (p2shActivated && scriptPubKey.IsPayToScriptHash()) {
         blocksci::uint160 hash;
         memcpy(&hash, &(*(scriptPubKey.begin()+2)), 20);
         return ScriptOutputData<AddressType::Enum::SCRIPTHASH>{{hash}};
@@ -146,7 +146,7 @@ struct ScriptOutputGenerator {
     }
 };
                      
-AnyScriptOutput::AnyScriptOutput(const blocksci::CScriptView &scriptPubKey, bool witnessActivated) : wrapped(mpark::visit(ScriptOutputGenerator(), extractScriptData(scriptPubKey, witnessActivated))) {}
+AnyScriptOutput::AnyScriptOutput(const blocksci::CScriptView &scriptPubKey, bool p2shActivated, bool witnessActivated) : wrapped(mpark::visit(ScriptOutputGenerator(), extractScriptData(scriptPubKey, p2shActivated, witnessActivated))) {}
 
 blocksci::RawAddress AnyScriptOutput::address() const {
     return mpark::visit([&](auto &output) { return blocksci::RawAddress{output.scriptNum, output.address_v}; }, wrapped);

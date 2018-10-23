@@ -89,7 +89,9 @@ void replayBlock(const ParserConfiguration<FileTag> &config, blocksci::BlockHeig
         }
         
         for (auto &output : tx.outputs) {
-            tx.scriptOutputs.emplace_back(output.getScriptView(), tx.isSegwit);
+            // 2nd param assumes p2sh is always active
+            // TODO: Add flag to disable p2sh
+            tx.scriptOutputs.emplace_back(output.getScriptView(), true, tx.isSegwit);
         }
         
         for (auto &scriptOutput : tx.scriptOutputs) {

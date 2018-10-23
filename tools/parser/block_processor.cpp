@@ -63,30 +63,6 @@ std::vector<unsigned char> ParseHex(const char* psz) {
     return vch;
 }
 
-struct SegwitChecker {
-    bool operator()(const ScriptOutput<blocksci::AddressType::Enum::NULL_DATA> &output) const {
-        uint32_t segwitMarker;
-        std::memcpy(&segwitMarker, output.data.fullData.data(), sizeof(segwitMarker));
-        return segwitMarker == 0xeda921aa;
-    }
-    
-    template <blocksci::AddressType::Enum type>
-    bool operator()(const ScriptOutput<type> &) const {
-        return false;
-    }
-};
-
-bool checkSegwit(RawTransaction *tx) {
-    SegwitChecker checker;
-    for (int i = static_cast<int>(tx->outputs.size()) - 1; i >= 0; i--) {
-        AnyScriptOutput scriptOutput(tx->outputs[static_cast<size_t>(i)].getScriptView(), tx->isSegwit);
-        if (mpark::visit(checker, scriptOutput.wrapped)) {
-            return true;
-        }
-    }
-    return false;
-}
-
 BlockFileReaderBase::~BlockFileReaderBase() = default;
 
 template <typename ParseTag>
@@ -286,7 +262,9 @@ void generateScriptOutputs(RawTransaction &tx) {
     tx.scriptOutputs.clear();
     tx.scriptOutputs.reserve(tx.outputs.size());
     for (auto &output : tx.outputs) {
-        tx.scriptOutputs.emplace_back(output.getScriptView(), tx.isSegwit);
+        // 2nd param assumes p2sh is always active
+        // TODO: Add flag to disable p2sh
+        tx.scriptOutputs.emplace_back(output.getScriptView(), true, tx.isSegwit);
     }
 }
 
