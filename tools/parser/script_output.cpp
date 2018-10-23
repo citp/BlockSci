@@ -104,7 +104,8 @@ ScriptOutputDataType extractScriptData(const blocksci::CScriptView &scriptPubKey
             } else if (witnessprogram.size() == 32) {
                 return ScriptOutputData<AddressType::Enum::WITNESS_SCRIPTHASH>(uint256{witnessprogram.begin(), witnessprogram.end()});
             } else {
-                throw std::runtime_error("Parsed witness v0 script with length != 20 or 32");
+                // Witness v0 with other script length is treated as nonstandard
+                return ScriptOutputData<AddressType::Enum::NONSTANDARD>{scriptPubKey};
             }
         } else {
              return ScriptOutputData<AddressType::Enum::WITNESS_UNKNOWN>(witnessversion, witnessprogram);
