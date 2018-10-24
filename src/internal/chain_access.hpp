@@ -42,7 +42,7 @@ namespace blocksci {
         const uint256 *lastBlockHashDisk = nullptr;
         BlockHeight maxHeight = 0;
         uint32_t _maxLoadedTx = 0;
-        BlockHeight blocksIgnored = 0;
+        BlockHeight blocksIgnored = 0; // suggestion: it sounds like a number of blocks to ignore, but doesn't this rather represent something like loadUptoBlockHeight or blocksIgnoredFrom
         bool errorOnReorg = false;
         
         void reorgCheck() const {

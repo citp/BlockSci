@@ -144,6 +144,7 @@ template <typename ParseTag>
 struct ChainIndex {
     using BlockType = BlockInfo<ParseTag>;
     using ConfigType = ParserConfiguration<ParseTag>;
+    // map of (block hash) -> (Blocktype)
     std::unordered_map<blocksci::uint256, BlockType> blockList;
     BlockType newestBlock;
     

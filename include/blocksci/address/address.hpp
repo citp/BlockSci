@@ -30,6 +30,7 @@ namespace blocksci {
         DataAccess *access;
         
     public:
+        // what does scriptNum represent? an index in the script file (for this address type?)? (there are script files for every type in the scripts/ directory)
         uint32_t scriptNum;
         AddressType::Enum type;
         

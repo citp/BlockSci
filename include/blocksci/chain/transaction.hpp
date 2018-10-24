@@ -38,7 +38,7 @@ namespace blocksci {
         mutable BlockHeight blockHeight;
         friend TransactionRange;
     public:
-        uint32_t txNum;
+        uint32_t txNum; // suggestion: always use the same name for this variable (in parameters etc.), at the moment it's a mix of "num" and "index" I think
         
         
         Transaction() = default;

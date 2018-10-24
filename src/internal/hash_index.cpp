@@ -137,6 +137,7 @@ namespace blocksci {
     }
     
     void HashIndex::rollback(uint32_t txCount, const std::array<uint32_t, DedupAddressType::size> &scriptCounts) {
+        // foreach over all ADDRESS_TYPE_LIST items, that is [9, 8, 7, 6, 5, 4, 3, 2, 1, 0] (at the moment of writing this comment)
         blocksci::for_each(AddressType::all(), [&](auto tag) {
             auto &column = getColumn(tag);
             rocksdb::WriteBatch batch;
@@ -152,6 +153,8 @@ namespace blocksci {
             assert(it->status().ok());
             writeBatch(batch);
         });
+
+        // delete all entries with value higher than txCount (value is the txNum I guess?)
         {
             auto it = getTxIterator();
             rocksdb::WriteBatch batch;
