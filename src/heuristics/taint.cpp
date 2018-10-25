@@ -128,6 +128,8 @@ namespace blocksci { namespace heuristics {
         
         if (maxBlockHeight == -1) {
             maxBlockHeight = access.getChain().blockCount();
+        } else {
+            maxBlockHeight += 1; // range should include block at maxBlockHeight
         }
         
         BlockHeight minHeight = std::numeric_limits<BlockHeight>::max();
