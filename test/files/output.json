@@ -137,5 +137,12 @@
     "block-fee-unclaimed-height": 185,
     "block-partial-reward-height": 186,
     "nsequence-fffffffe-tx": "a3db0b33959bac24eb35f62c2723317c0b1ad62aec015f76a19ae768ee1cc72c",
-    "op-return-tx": "00e6d71843a98df76f27329c37a3fe6d130d6f453ad40d884fa52459ea6ca1ad"
+    "op-return-tx": "00e6d71843a98df76f27329c37a3fe6d130d6f453ad40d884fa52459ea6ca1ad",
+    "taint-fund-tx-1": "b9f341e02d1dc17cf13d1dbffb3832bfef29f05dd8649a30259eff225e7c768f",
+    "taint-fund-tx-2": "1ae205c3cc00bc1e20724d112fac74ff7926a40ac06c4c477593f62f0f3f6f9f",
+    "taint-split-tx-1": "b3f1b2b2640bc009a74ac1fae46bf67112048aa68ba7053fca51fcfc92c2f85f",
+    "taint-merge-tx-1": "653f5860318f69fdb8b0d39193a2163b07833173050e3a27475d144252cde3ba",
+    "taint-merge-tx-2": "caf72c1e4adb888ddc7340139aa25d43dfde62ae7122c5b9bc1678891798be15",
+    "taint-merge-tx-3": "a9dc757b983626487b51705ebad963f73994bb1754f32982c81b8fee15a5e831",
+    "taint-max-height": 190
 }

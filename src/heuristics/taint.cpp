@@ -118,6 +118,28 @@ namespace blocksci { namespace heuristics {
         taint.clear();
     }
     
+    int64_t getSubsidy(Block &block) {
+        auto chainName = block.getAccess().config.chainConfig.coinName;
+        int64_t subsidy;
+        if(chainName == "bitcoin_regtest"){
+            subsidy = 50 * COIN;
+            if(block.height() >= 150){
+                subsidy = 25 * COIN;
+            }
+        } else {
+            subsidy = 50 * COIN;
+            int halvings = block.height() / 210000;
+            // Force block reward to zero when right shift is undefined.
+            if (halvings >= 64) {
+                subsidy = 0;
+            } else {
+                subsidy >>= halvings;
+            }
+        }
+        
+        return subsidy;
+    }
+    
     template <typename Func, typename Taint>
     std::vector<std::pair<Output, Taint>> getTaintedImpl(Func func, std::vector<std::pair<Output, Taint>> &taintedOutputsRaw, BlockHeight maxBlockHeight, bool taintFee) {
         assert(taintedOutputsRaw.size() > 0);
@@ -177,14 +199,7 @@ namespace blocksci { namespace heuristics {
                 txOutputTaint.reserve(block[0].outputCount());
                 clearTaint(coinbaseTaint);
                 
-                int64_t subsidy = 50 * COIN;
-                int halvings = block.height() / 210000;
-                // Force block reward to zero when right shift is undefined.
-                if (halvings >= 64) {
-                    subsidy = 0;
-                } else {
-                    subsidy >>= halvings;
-                }
+                int64_t subsidy = getSubsidy(block);
                 coinbaseTaintList.insert(coinbaseTaintList.begin(), UntaintedInputCreator<Taint>{}(subsidy));
                 func(block[0], coinbaseTaintList, txOutputTaint, coinbaseTaint);
                 processTx(taintedOutputs, block[0], txOutputTaint);
@@ -204,6 +219,11 @@ namespace blocksci { namespace heuristics {
                     outs.emplace_back(spendingOut.getValue(), 0);
                 }
                 coinbaseTaint.first = tx.fee();    
+            } else {
+                for (auto spendingOut : tx.outputs()) {
+                    outs.emplace_back(0, spendingOut.getValue());
+                }
+                coinbaseTaint.second = tx.fee();
             }
         };
 
