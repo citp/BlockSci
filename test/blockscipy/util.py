@@ -9,6 +9,10 @@ def tz_offset(ts):
     return local_time.utcoffset(ts)
 
 
+def reward(height):
+    return Coin(50) if height < 150 else Coin(25 - 10)
+
+
 class Coin(object):
     COIN = 1e8
 
