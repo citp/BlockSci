@@ -337,6 +337,7 @@ def setup_self_methods(main):
 def setup_iterator_methods(iterator):
     proxy_self = iterator.self_proxy
     proxy_obj = proxy_self.nested_proxy
+    proxy_self_cl = type(proxy_self)
     
 
     def iterator_creator(name):
@@ -345,16 +346,25 @@ def setup_iterator_methods(iterator):
     def iterator_method_creator(name):
         return lambda rng, *args: proxy_self._map(getattr(proxy_obj, name)(*args))(rng)
 
+    def iterator_proxy_creator(name):
+        return property(lambda self: self._map(getattr(proxy_obj, name)))
+
+    def iterator_proxy_method_creator(name):
+        return lambda self, *args: self._map(getattr(proxy_obj, name)(*args))
+
     for proxy_func in _get_properties_methods(proxy_obj):
         setattr(iterator, proxy_func, iterator_creator(proxy_func))
+        setattr(proxy_self_cl, proxy_func, iterator_proxy_creator(proxy_func))
 
     for proxy_func in _get_functions_methods(proxy_obj):
         setattr(iterator, proxy_func, iterator_method_creator(proxy_func))
+        setattr(proxy_self_cl, proxy_func, iterator_proxy_method_creator(proxy_func))
 
 
 def setup_range_methods(blocksci_range):
     proxy_self = blocksci_range.self_proxy
     proxy_obj = proxy_self.nested_proxy
+    proxy_self_cl = type(proxy_self)
 
     def range_creator(name):
         return property(proxy_self._map(getattr(proxy_obj, name)))
@@ -362,11 +372,19 @@ def setup_range_methods(blocksci_range):
     def range_method_creator(name):
         return lambda rng, *args: proxy_self._map(getattr(proxy_obj, name)(*args))(rng)
 
+    def range_proxy_creator(name):
+        return property(lambda rng: rng._map(getattr(proxy_obj, name)))
+
+    def range_proxy_method_creator(name):
+        return lambda rng, *args: rng._map(getattr(proxy_obj, name)(*args))
+
     for proxy_func in _get_properties_methods(proxy_obj):
         setattr(blocksci_range, proxy_func, range_creator(proxy_func))
+        setattr(proxy_self_cl, proxy_func, range_proxy_creator(proxy_func))
 
     for proxy_func in _get_functions_methods(proxy_obj):
         setattr(blocksci_range, proxy_func, range_method_creator(proxy_func))
+        setattr(proxy_self_cl, proxy_func, range_proxy_method_creator(proxy_func))
 
     blocksci_range.__getitem__ = lambda rng, index: proxy_self[index](rng)
 
