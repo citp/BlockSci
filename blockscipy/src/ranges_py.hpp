@@ -64,7 +64,7 @@ auto addCommonIteratorMethods(Class &cl) {
     .def("__iter__", [](R &range) { 
         return pybind11::make_iterator(range.begin(), range.end()); 
     }, pybind11::keep_alive<0, 1>())
-    .def_property_readonly("all", [](R & range) { 
+    .def("to_list", [](R & range) { 
         return pythonAllType(range);
     }, "Returns a list of all of the objects in the range")
     ;
