@@ -74,6 +74,7 @@ void addCallMethods(pybind11::class_<Proxy<T>> &cl, Func callFunc) {
 	addCallMethod<script::WitnessScriptHash>(cl, callFunc);
 	addCallMethod<script::OpReturn>(cl, callFunc);
 	addCallMethod<script::Nonstandard>(cl, callFunc);
+	addCallMethod<script::WitnessUnknown>(cl, callFunc);
 }
 
 struct AddProxyMethods {

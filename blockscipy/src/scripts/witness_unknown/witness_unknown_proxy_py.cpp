@@ -26,7 +26,7 @@ namespace py = pybind11;
 struct AddWitnessUnknownMethods {
     template <typename FuncApplication>
     void operator()(FuncApplication func) {
-        func(property_tag, "witness_version", &script::WitnessUnknown::witnessVersion, "Witness version of the unknown script");
+        func(property_tag, "witness_version", +[](const script::WitnessUnknown &script) -> int64_t { return script.witnessVersion(); }, "Witness version of the unknown script");
         func(property_tag, "witness_script", &script::WitnessUnknown::getWitnessScriptString, "Witness output script");
         func(property_tag, "witness_stack", +[](const script::WitnessUnknown &script) -> ranges::optional<py::list> {
             auto stack = script.getWitnessStack();

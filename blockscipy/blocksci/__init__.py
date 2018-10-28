@@ -424,6 +424,7 @@ setup_self_methods(WitnessScriptHashAddress)
 setup_self_methods(MultisigAddress)
 setup_self_methods(NonStandardAddress)
 setup_self_methods(OpReturn)
+setup_self_methods(WitnessUnknownAddress)
 
 setup_self_methods(cluster.Cluster)
 setup_self_methods(cluster.TaggedCluster)
