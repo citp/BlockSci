@@ -19,6 +19,22 @@ namespace py = pybind11;
 
 using namespace blocksci;
 
+template <AddressType::Enum type>
+using PythonScriptRange = Range<ScriptAddress<type>>;
+using PythonScriptRangeVariant = to_variadic_t<to_address_tuple_t<PythonScriptRange>, mpark::variant>;
+
+namespace {
+    template<blocksci::AddressType::Enum type>
+    struct PythonScriptRangeFunctor {
+        static PythonScriptRangeVariant f(blocksci::DataAccess &access) {
+            auto scriptCount = getScriptCount(type, access);
+            return ranges::view::ints(uint32_t{1}, scriptCount + 1) | ranges::view::transform([&](uint32_t scriptNum) {
+                return ScriptAddress<type>(scriptNum, access);
+            });
+        }
+    };
+}
+
 void init_blockchain(py::class_<Blockchain> &cl) {
     cl
     .def("__len__", [](Blockchain &chain) { return chain.size(); })
@@ -54,7 +70,9 @@ void init_blockchain(py::class_<Blockchain> &cl) {
     .def_property_readonly("data_location", &Blockchain::dataLocation, "Returns the location of the data directory that this Blockchain object represents.")
     .def("reload", &Blockchain::reload, "Reload the blockchain to make new blocks visible (Invalidates current BlockSci objects)")
     .def("addresses", [](Blockchain &chain, AddressType::Enum type) {
-        return scriptsRange(type, chain.getAccess());
+        static constexpr auto table = make_dynamic_table<AddressType, PythonScriptRangeFunctor>();
+        auto index = static_cast<size_t>(type);
+        return table.at(index)(chain.getAccess());
     }, py::arg("address_type"), "Return a range of all addresses of the given type")
     
     .def("address_count",
