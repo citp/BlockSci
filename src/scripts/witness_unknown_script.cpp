@@ -36,6 +36,10 @@ namespace blocksci {
         return {getData()->scriptData.begin(), getData()->scriptData.end()};
     }
     
+    std::string ScriptAddress<AddressType::WITNESS_UNKNOWN>::getWitnessScriptString() const {
+        return ScriptToAsmStr(getWitnessScript());
+    }
+    
     std::string ScriptAddress<AddressType::WITNESS_UNKNOWN>::toString() const {
         std::stringstream ss;
         ss << "WitnessUnknownScript()";

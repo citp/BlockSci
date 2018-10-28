@@ -36,6 +36,7 @@ namespace blocksci {
         CScriptView getWitnessScript() const;
         ranges::optional<ranges::any_view<ranges::any_view<unsigned char>>> getWitnessStack() const;
         
+        std::string getWitnessScriptString() const;
         uint8_t witnessVersion() const;
         
         std::string toString() const;

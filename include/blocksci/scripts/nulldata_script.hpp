@@ -30,7 +30,7 @@ namespace blocksci {
         ScriptAddress(uint32_t addressNum_, DataAccess &access_);
         
         std::string toString() const {
-            return "NulldataAddressData()";
+            return "OpReturn()";
         }
         
         std::string toPrettyString() const;

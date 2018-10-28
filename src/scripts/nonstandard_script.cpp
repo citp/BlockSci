@@ -45,13 +45,13 @@ namespace blocksci {
     
     std::string ScriptAddress<AddressType::NONSTANDARD>::toString() const {
         std::stringstream ss;
-        ss << "NonStandardScript()";
+        ss << "NonStandardAddress()";
         return ss.str();
     }
     
     std::string ScriptAddress<AddressType::NONSTANDARD>::toPrettyString() const {
         std::stringstream ss;
-        ss << "NonStandardScript(" << inputString() << ", " << outputString() << ")";
+        ss << "NonStandardAddress(" << inputString() << ", " << outputString() << ")";
         return ss.str();
     }
 } // namespace blocksci

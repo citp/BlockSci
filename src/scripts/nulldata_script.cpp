@@ -20,7 +20,7 @@ namespace blocksci {
 
     std::string ScriptAddress<AddressType::NULL_DATA>::toPrettyString() const {
         std::stringstream ss;
-        ss << "NulldataAddressData(" << getData() << ")";
+        ss << "OpReturn()";
         return ss.str();
     }
 
