@@ -77,8 +77,10 @@ template <typename T>
 py::list convertRandomSizedPy(T && t) {
     auto rangeSize = static_cast<size_t>(ranges::size(t));
     pybind11::list list{rangeSize};
+    size_t index = 0;
     RANGES_FOR(auto && a, t) {
-        list.append(std::forward<decltype(a)>(a));
+        list[index] = std::forward<decltype(a)>(a);
+        index++;
     }
     return list;
 }
