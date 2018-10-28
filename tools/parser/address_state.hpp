@@ -85,19 +85,21 @@ class AddressState {
     std::vector<uint32_t> scriptIndexes;
     
     template<blocksci::AddressType::Enum type>
-    void reloadBloomFilter() {
+    void reloadBloomFilter(int sizeIncreaseRatio) {
         auto &addressBloomFilter = std::get<AddressBloomFilterPointer<dedupType(type)>>(addressBloomFilters);
-        addressBloomFilter->reset(addressBloomFilter->getMaxItems(), addressBloomFilter->getFPRate());
+        addressBloomFilter->reset(addressBloomFilter->getMaxItems() * sizeIncreaseRatio, addressBloomFilter->getFPRate());
         
-        RANGES_FOR(auto item, db.db.getAddressRange<type>()) {
+        db.clearAddressCache<blocksci::DedupAddressInfo<dedupType(type)>::reprType>();
+        
+        RANGES_FOR(auto item, db.db.getAddressRange<blocksci::DedupAddressInfo<dedupType(type)>::reprType>()) {
             addressBloomFilter->add(item.second);
         }
     }
     
     void reloadBloomFilters() {
-        reloadBloomFilter<blocksci::AddressType::PUBKEY>();
-        reloadBloomFilter<blocksci::AddressType::SCRIPTHASH>();
-        reloadBloomFilter<blocksci::AddressType::MULTISIG>();
+        reloadBloomFilter<blocksci::AddressType::PUBKEYHASH>(1);
+        reloadBloomFilter<blocksci::AddressType::SCRIPTHASH>(1);
+        reloadBloomFilter<blocksci::AddressType::MULTISIG>(1);
     }
     
 public:
@@ -177,7 +179,7 @@ public:
             addressBloomFilter->add(addressInfo.hash);
             db.addAddress<blocksci::DedupAddressInfo<dedupType(type)>::reprType>(addressInfo.hash, addressNum);
             if (addressBloomFilter->isFull()) {
-                reloadBloomFilter<type>();
+                reloadBloomFilter<type>(2);
             }
         }
         return std::make_pair(addressNum, !existingAddress);

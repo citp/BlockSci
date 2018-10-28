@@ -133,6 +133,8 @@ class HashIndexCreator : public ParserIndex<HashIndexCreator> {
     
     void clearTxCache();
     
+public:
+    
     template<blocksci::AddressType::Enum type>
     void clearAddressCache() {
         auto &cache = std::get<HashIndexAddressCache<type>>(addressCache);
@@ -144,8 +146,6 @@ class HashIndexCreator : public ParserIndex<HashIndexCreator> {
         cache.clear();
         db.addAddresses<type>(std::move(rows));
     }
-    
-public:
     
     blocksci::HashIndex db;
     

@@ -232,7 +232,7 @@ namespace blocksci {
         }
         
         void reload() {
-            if (fileInfo.exists()) {
+            if (fileInfo.exists() && fileInfo.size() > 0) {
                 if (!file.is_open() || fileInfo.size() != file.size()) {
                     openFile();
                 }
@@ -318,8 +318,6 @@ namespace blocksci {
             if (offset == InvalidFileIndex) {
                 return nullptr;
             } else if (offset < fileEnd) {
-                auto val1 = file[offset];
-                file[offset] = val1;
                 return &file[offset];
             } else {
                 return buffer.data() + (offset - fileEnd);
@@ -355,7 +353,7 @@ namespace blocksci {
         }
         
         void truncate(OffsetType offset) {
-            if (offset < file.length()) {
+            if (offset < fileSize()) {
                 buffer.clear();
                 fileInfo.resize(offset);
                 reload();
@@ -401,7 +399,6 @@ namespace blocksci {
         pointer operator[](OffsetType index) {
             assert(index < size());
             char *pos = dataFile.getDataAtOffset(getPos(index));
-            *pos = *pos;
             return reinterpret_cast<pointer>(pos);
         }
 

@@ -52,6 +52,7 @@ bool BloomStore::isSet(int64_t bitPos) const {
 void BloomStore::reset(int64_t newLength) {
     backingFile.truncate(0);
     backingFile.truncate((newLength + BlockSize - 1) / BlockSize);
+    length = newLength;
 }
 
 int64_t calculateLength(int64_t maxItems, double fpRate) {

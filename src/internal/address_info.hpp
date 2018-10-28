@@ -29,6 +29,7 @@ namespace blocksci {
         static constexpr char name[] = "pubkey";
         static constexpr EquivAddressType::Enum equivType = EquivAddressType::PUBKEY;
         static constexpr DedupAddressType::Enum dedupType = DedupAddressType::PUBKEY;
+        static constexpr AddressType::Enum exampleType = AddressType::PUBKEYHASH;
         using IDType = uint160;
     };
     
