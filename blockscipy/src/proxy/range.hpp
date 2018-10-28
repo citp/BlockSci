@@ -26,14 +26,14 @@ void addProxySequenceMethods(pybind11::class_<Proxy<any_view<T, range_cat>>> &cl
 	using P = Proxy<R>;
 
 	cl
-	.def("any", [](P &p, Proxy<bool> &p2) -> Proxy<bool> {
+	.def("_any", [](P &p, Proxy<bool> &p2) -> Proxy<bool> {
 		return lift(p, [=](any_view<T, range_cat> && val) -> bool {
 			return ranges::any_of(val, [=](std::any && item) {
 				return p2(item);
 			});
 		});
 	})
-	.def("all", [](P &p, Proxy<bool> &p2) -> Proxy<bool> {
+	.def("_all", [](P &p, Proxy<bool> &p2) -> Proxy<bool> {
 		return lift(p, [=](any_view<T, range_cat> && val) -> bool {
 			return ranges::all_of(val, [=](std::any && item) {
 				return p2(item);

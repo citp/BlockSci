@@ -276,6 +276,14 @@ def setup_map_funcs():
         p = func(r.self_proxy.nested_proxy)
         return r.self_proxy._where(p)(r)
 
+    def range_any_func(r, func):
+        p = func(r.self_proxy.nested_proxy)
+        return r.self_proxy._any(p)(r)
+
+    def range_all_func(r, func):
+        p = func(r.self_proxy.nested_proxy)
+        return r.self_proxy._all(p)(r)
+
     def range_group_by_func(r, grouper_func, evaler_func):
         grouper = grouper_func(r.self_proxy.nested_proxy)
         evaler = evaler_func(r.self_proxy.nested_proxy.range_proxy)
@@ -287,6 +295,8 @@ def setup_map_funcs():
         globals()[cl].map = range_map_func
         globals()[cl].where = range_where_func
         globals()[cl].group_by = range_group_by_func
+        globals()[cl].any = range_any_func
+        globals()[cl].all = range_all_func
 
 def setup_proxy_map_funcs():
     def range_map_func(r, func):
@@ -297,11 +307,22 @@ def setup_proxy_map_funcs():
         p = func(r.nested_proxy)
         return r._where(p)
 
+    def range_any_func(r, func):
+        p = func(r.nested_proxy)
+        return r._any(p)
+
+    def range_all_func(r, func):
+        p = func(r.nested_proxy)
+        return r._all(p)
+
     iterator_and_range_cls = [x for x in dir(proxy) if ('Iterator' in x or 'Range' in x) and x[0].isupper()]
 
     for cl in iterator_and_range_cls:
         getattr(proxy, cl).map = range_map_func
         getattr(proxy, cl).where = range_where_func
+        getattr(proxy, cl).any = range_any_func
+        getattr(proxy, cl).all = range_all_func
+
 
 setup_proxy_map_funcs()
 setup_map_funcs()
