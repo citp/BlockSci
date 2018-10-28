@@ -55,6 +55,7 @@ void addProxyMapFuncsMethodsScripts(pybind11::class_<ProxySequence<range_cat>> &
 	.def("_map", mapSimple<range_cat, script::WitnessScriptHash>)
 	.def("_map", mapSimple<range_cat, script::OpReturn>)
 	.def("_map", mapSimple<range_cat, script::Nonstandard>)
+	.def("_map", mapSimple<range_cat, script::WitnessUnknown>)
 	;
 }
 
