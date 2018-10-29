@@ -33,8 +33,10 @@ namespace blocksci {
     json loadConfig(const std::string &configFilePath) {
         filesystem::path configFile{configFilePath};
         
-        if(!configFile.exists()) {
-            throw std::runtime_error("Error, blocksci config file does not exist");
+        if(!configFile.exists() || !configFile.is_file()) {
+            std::stringstream ss;
+            ss << "Error, path " << configFile.str() << " must point to to existing blocksci config file";
+            throw std::runtime_error(ss.str());
         }
         
         std::ifstream rawConf(configFile.str());

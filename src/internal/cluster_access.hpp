@@ -64,7 +64,11 @@ namespace blocksci {
             ss << dedupAddressName(tag) << "_cluster_index";
             return (filesystem::path{baseDirectory}/ss.str()).str();
         })),
-        access(access_)  {}
+        access(access_)  {
+            if (!(filesystem::path{baseDirectory}/"clusterAddresses.dat").exists()) {
+                throw std::runtime_error("Cluster data not found");
+            }
+        }
         
         static std::string offsetFilePath(const std::string &baseDirectory) {
             return (filesystem::path{baseDirectory}/"clusterOffsets.dat").str();
