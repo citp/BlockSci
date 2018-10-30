@@ -74,13 +74,13 @@ public:
     
     std::vector<WitnessStackItem> getWitnessStack() const {
         if (witnessStack.size() == 0) {
-            return witnessStack;
-        } else {
             std::vector<WitnessStackItem> realStack;
             for (const auto &witnessItem : rpcWitnessStack) {
                 realStack.emplace_back(witnessItem.data(), static_cast<uint32_t>(witnessItem.size()));
             }
             return realStack;
+        } else {
+            return witnessStack;
         }
     }
     
