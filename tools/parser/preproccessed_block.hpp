@@ -35,6 +35,8 @@ struct WitnessStackItem {
     uint32_t length = 0;
     const char *itemBegin = nullptr;
     
+    WitnessStackItem(const char *itemBegin_, uint32_t length_) : length(length_), itemBegin(itemBegin_) {}
+    
     #ifdef BLOCKSCI_FILE_PARSER
     WitnessStackItem(SafeMemReader &reader);
     #endif
@@ -47,11 +49,17 @@ private:
     
     std::vector<unsigned char> scriptBytes;
     
+    std::vector<WitnessStackItem> witnessStack;
+    
+    std::vector<std::vector<char>> rpcWitnessStack;
+    
 public:
     
     RawOutputPointer rawOutputPointer;
     uint32_t sequenceNum;
-    std::vector<WitnessStackItem> witnessStack;
+    
+    
+    
     UTXO utxo;
     
     blocksci::InoutPointer getOutputPointer() const;
@@ -64,10 +72,23 @@ public:
         }
     }
     
+    std::vector<WitnessStackItem> getWitnessStack() const {
+        if (witnessStack.size() == 0) {
+            return witnessStack;
+        } else {
+            std::vector<WitnessStackItem> realStack;
+            for (const auto &witnessItem : rpcWitnessStack) {
+                realStack.emplace_back(witnessItem.data(), static_cast<uint32_t>(witnessItem.size()));
+            }
+            return realStack;
+        }
+    }
+    
     RawInput() : utxo{} {}
     
     #ifdef BLOCKSCI_FILE_PARSER
     RawInput(SafeMemReader &reader);
+    void readWitnessStack(SafeMemReader &reader);
     #endif
     
     #ifdef BLOCKSCI_RPC_PARSER

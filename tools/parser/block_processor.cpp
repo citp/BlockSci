@@ -290,7 +290,7 @@ void generateScriptInput(RawTransaction &tx, UTXOAddressState &utxoAddressState)
     tx.scriptInputs.reserve(tx.inputs.size());
     uint16_t i = 0;
     for (auto &input : tx.inputs) {
-        InputView inputView(i, tx.txNum, input.witnessStack, tx.isSegwit);
+        InputView inputView(i, tx.txNum, input.getWitnessStack(), tx.isSegwit);
         auto spendData = utxoAddressState.spendOutput(input.getOutputPointer(), input.utxo.type);
         tx.scriptInputs.emplace_back(inputView, input.getScriptView(), tx, spendData);
         i++;
