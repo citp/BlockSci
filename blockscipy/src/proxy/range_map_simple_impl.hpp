@@ -17,8 +17,8 @@
 #include <range/v3/view/transform.hpp>
 
 template<ranges::category range_cat, typename R>
-Proxy<any_view<R, range_cat>> mapSimple(ProxySequence<range_cat> &seq, Proxy<R> &p2) {
-	auto generic = seq.getGenericSequence();
+Proxy<any_view<R, range_cat>> mapSimple(proxy_sequence<range_cat> &seq, Proxy<R> &p2) {
+	auto generic = seq.getGeneric();
 	return std::function<any_view<R, range_cat>(std::any &)>{[=](std::any &val) -> any_view<R, range_cat> {
 		return ranges::view::transform(generic(val), [=](std::any v) {
 			return p2(v);
@@ -27,7 +27,7 @@ Proxy<any_view<R, range_cat>> mapSimple(ProxySequence<range_cat> &seq, Proxy<R> 
 }
 
 template <ranges::category range_cat>
-void addProxyMapFuncsMethodsCore(pybind11::class_<ProxySequence<range_cat>> &cl) {
+void addProxyMapFuncsMethodsCore(pybind11::class_<proxy_sequence<range_cat>> &cl) {
 	using namespace blocksci;
 	cl
 	.def("_map", mapSimple<range_cat, Block>)
@@ -43,7 +43,7 @@ void addProxyMapFuncsMethodsCore(pybind11::class_<ProxySequence<range_cat>> &cl)
 }
 
 template <ranges::category range_cat>
-void addProxyMapFuncsMethodsScripts(pybind11::class_<ProxySequence<range_cat>> &cl) {
+void addProxyMapFuncsMethodsScripts(pybind11::class_<proxy_sequence<range_cat>> &cl) {
 	using namespace blocksci;
 	cl
 	.def("_map", mapSimple<range_cat, script::Pubkey>)
@@ -60,7 +60,7 @@ void addProxyMapFuncsMethodsScripts(pybind11::class_<ProxySequence<range_cat>> &
 }
 
 template <ranges::category range_cat>
-void addProxyMapFuncsMethodsOther(pybind11::class_<ProxySequence<range_cat>> &cl) {
+void addProxyMapFuncsMethodsOther(pybind11::class_<proxy_sequence<range_cat>> &cl) {
 	using namespace blocksci;
 	cl
 	.def("_map", mapSimple<range_cat, AddressType::Enum>)

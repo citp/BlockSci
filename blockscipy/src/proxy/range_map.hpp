@@ -11,50 +11,50 @@
 
 #include "proxy_py.hpp"
 
-void applyProxyMapOptionalFuncsCore(pybind11::class_<ProxySequence<ranges::category::input>> &cl);
-void applyProxyMapOptionalFuncsScripts(pybind11::class_<ProxySequence<ranges::category::input>> &cl);
-void applyProxyMapOptionalFuncsOther(pybind11::class_<ProxySequence<ranges::category::input>> &cl);
+void applyProxyMapOptionalFuncsCore(pybind11::class_<ProxyIterator> &cl);
+void applyProxyMapOptionalFuncsScripts(pybind11::class_<ProxyIterator> &cl);
+void applyProxyMapOptionalFuncsOther(pybind11::class_<ProxyIterator> &cl);
 
-void applyProxyMapOptionalFuncsCore(pybind11::class_<ProxySequence<random_access_sized>> &cl);
-void applyProxyMapOptionalFuncsScripts(pybind11::class_<ProxySequence<random_access_sized>> &cl);
-void applyProxyMapOptionalFuncsOther(pybind11::class_<ProxySequence<random_access_sized>> &cl);
-
-
-void applyProxyMapFuncsCore(pybind11::class_<ProxySequence<ranges::category::input>> &cl);
-void applyProxyMapFuncsScripts(pybind11::class_<ProxySequence<ranges::category::input>> &cl);
-void applyProxyMapFuncsOther(pybind11::class_<ProxySequence<ranges::category::input>> &cl);
-
-void applyProxyMapFuncsCore(pybind11::class_<ProxySequence<random_access_sized>> &cl);
-void applyProxyMapFuncsScripts(pybind11::class_<ProxySequence<random_access_sized>> &cl);
-void applyProxyMapFuncsOther(pybind11::class_<ProxySequence<random_access_sized>> &cl);
+void applyProxyMapOptionalFuncsCore(pybind11::class_<ProxyRange> &cl);
+void applyProxyMapOptionalFuncsScripts(pybind11::class_<ProxyRange> &cl);
+void applyProxyMapOptionalFuncsOther(pybind11::class_<ProxyRange> &cl);
 
 
-inline void applyProxyMapFuncs(pybind11::class_<ProxySequence<random_access_sized>> &cl) {
+void applyProxyMapFuncsCore(pybind11::class_<ProxyIterator> &cl);
+void applyProxyMapFuncsScripts(pybind11::class_<ProxyIterator> &cl);
+void applyProxyMapFuncsOther(pybind11::class_<ProxyIterator> &cl);
+
+void applyProxyMapFuncsCore(pybind11::class_<ProxyRange> &cl);
+void applyProxyMapFuncsScripts(pybind11::class_<ProxyRange> &cl);
+void applyProxyMapFuncsOther(pybind11::class_<ProxyRange> &cl);
+
+
+inline void applyProxyMapFuncs(pybind11::class_<ProxyRange> &cl) {
 	applyProxyMapFuncsCore(cl);
 	applyProxyMapFuncsScripts(cl);
 	applyProxyMapFuncsOther(cl);
 }
 
-inline void applyProxyMapFuncs(pybind11::class_<ProxySequence<ranges::category::input>> &cl) {
+inline void applyProxyMapFuncs(pybind11::class_<ProxyIterator> &cl) {
 	applyProxyMapFuncsCore(cl);
 	applyProxyMapFuncsScripts(cl);
 	applyProxyMapFuncsOther(cl);
 }
 
-inline void applyProxyMapOptionalFuncs(pybind11::class_<ProxySequence<random_access_sized>> &cl) {
+inline void applyProxyMapOptionalFuncs(pybind11::class_<ProxyRange> &cl) {
 	applyProxyMapOptionalFuncsCore(cl);
 	applyProxyMapOptionalFuncsScripts(cl);
 	applyProxyMapOptionalFuncsOther(cl);
 }
 
-inline void applyProxyMapOptionalFuncs(pybind11::class_<ProxySequence<ranges::category::input>> &cl) {
+inline void applyProxyMapOptionalFuncs(pybind11::class_<ProxyIterator> &cl) {
 	applyProxyMapOptionalFuncsCore(cl);
 	applyProxyMapOptionalFuncsScripts(cl);
 	applyProxyMapOptionalFuncsOther(cl);
 }
 
-void applyProxyMapSequenceFuncs(pybind11::class_<ProxySequence<random_access_sized>> &cl);
-void applyProxyMapSequenceFuncs(pybind11::class_<ProxySequence<ranges::category::input>> &cl);
+void applyProxyMapSequenceFuncs(pybind11::class_<ProxyIterator> &cl);
+void applyProxyMapSequenceFuncs(pybind11::class_<ProxyRange> &cl);
 
 
 #endif /* proxy_range_map_hpp */

@@ -12,9 +12,13 @@
 
 #include <pybind11/pybind11.h>
 
-void setupMainProxies(pybind11::module &m, pybind11::class_<ProxySequence<ranges::category::input>> &proxyIteratorCl, pybind11::class_<ProxySequence<random_access_sized>> &proxyRangeCl);
-void setupScriptProxies(pybind11::module &m, pybind11::class_<ProxySequence<ranges::category::input>> &proxyIteratorCl, pybind11::class_<ProxySequence<random_access_sized>> &proxyRangeCl);
-void setupOtherProxies(pybind11::module &m, pybind11::class_<ProxySequence<ranges::category::input>> &proxyIteratorCl, pybind11::class_<ProxySequence<random_access_sized>> &proxyRangeCl);
+struct MainProxies;
+struct ScriptProxies;
+struct OtherProxies;
+
+void setupMainProxies(MainProxies &proxies);
+void setupScriptProxies(ScriptProxies &proxies);
+void setupOtherProxies(OtherProxies &proxies);
 
 void setupProxies(pybind11::module &m);
 

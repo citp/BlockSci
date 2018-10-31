@@ -26,6 +26,7 @@ void addIntProxyMethods(AllProxyClasses<int64_t> &cls) {
 	addProxyComparisonMethods(cls.base);
 	addProxyArithMethods(cls.base);
 	addProxyOptionalMethods(cls.optional);
+	addProxyEqualityMethods(cls.optional);
 	addProxyOptionalArithMethods(cls.optional);
 	addProxyArithRangeMethods<ranges::category::input>(cls.iterator);
 	addProxyArithRangeMethods<random_access_sized>(cls.range);

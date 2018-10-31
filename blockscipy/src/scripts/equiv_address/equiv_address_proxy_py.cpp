@@ -14,6 +14,8 @@
 #include "proxy/optional.hpp"
 #include "proxy/range.hpp"
 
+#include <blocksci/cluster/cluster.hpp>
+
 struct AddEquivAddressMethods {
     template <typename FuncApplication>
     void operator()(FuncApplication func) {

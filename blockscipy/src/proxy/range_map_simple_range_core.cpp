@@ -12,6 +12,6 @@
 #include <blocksci/address/equiv_address.hpp>
 #include <blocksci/cluster/cluster.hpp>
 
-void applyProxyMapFuncsCore(pybind11::class_<ProxySequence<random_access_sized>> &cl) {
-	addProxyMapFuncsMethodsCore(cl);
+void applyProxyMapFuncsCore(pybind11::class_<ProxyRange> &cl) {
+	addProxyMapFuncsMethodsCore<random_access_sized>(cl);
 }

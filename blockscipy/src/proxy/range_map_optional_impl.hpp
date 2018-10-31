@@ -29,15 +29,15 @@ namespace internal {
 }
 
 template<ranges::category range_cat, typename R>
-Proxy<Iterator<R>> mapOptional(ProxySequence<range_cat> &seq, Proxy<ranges::optional<R>> &p2) {
-	auto generic = seq.getGenericSequence();
+Proxy<Iterator<R>> mapOptional(ProxyIterator &seq, Proxy<ranges::optional<R>> &p2) {
+	auto generic = seq.getGeneric();
 	return std::function<Iterator<R>(std::any &)>{[=](std::any &val) -> Iterator<R> {
 		return internal::flattenOptional(ranges::view::transform(generic(val), p2));
 	}};
 }
 
 template <ranges::category range_cat>
-void addProxyMapOptionalFuncsMethodsCore(pybind11::class_<ProxySequence<range_cat>> &cl) {
+void addProxyMapOptionalFuncsMethodsCore(pybind11::class_<proxy_sequence<range_cat>> &cl) {
 	using namespace blocksci;
 	cl
 	.def("_map", mapOptional<range_cat, Block>)
@@ -53,7 +53,7 @@ void addProxyMapOptionalFuncsMethodsCore(pybind11::class_<ProxySequence<range_ca
 }
 
 template <ranges::category range_cat>
-void addProxyMapOptionalFuncsMethodsScripts(pybind11::class_<ProxySequence<range_cat>> &cl) {
+void addProxyMapOptionalFuncsMethodsScripts(pybind11::class_<proxy_sequence<range_cat>> &cl) {
 	using namespace blocksci;
 	cl
 	.def("_map", mapOptional<range_cat, script::Pubkey>)
@@ -70,7 +70,7 @@ void addProxyMapOptionalFuncsMethodsScripts(pybind11::class_<ProxySequence<range
 }
 
 template <ranges::category range_cat>
-void addProxyMapOptionalFuncsMethodsOther(pybind11::class_<ProxySequence<range_cat>> &cl) {
+void addProxyMapOptionalFuncsMethodsOther(pybind11::class_<proxy_sequence<range_cat>> &cl) {
 	using namespace blocksci;
 	cl
 	.def("_map", mapOptional<range_cat, AddressType::Enum>)

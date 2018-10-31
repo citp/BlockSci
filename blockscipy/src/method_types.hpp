@@ -232,7 +232,7 @@ struct PythonTypeName<NumpyBool> {
 template <typename T>
 struct PythonTypeName<ranges::optional<T>> {
 	static std::string name() {
-		return "Optional[" + PythonTypeName<T>::name() + "]";
+		return "Optional" + PythonTypeName<T>::name();
 	}
 };
 
@@ -247,20 +247,6 @@ template <typename T>
 struct PythonTypeName<Iterator<T>> {
 	static std::string name() {
 		return PythonTypeName<T>::name() + "Iterator";
-	}
-};
-
-template <typename T>
-struct PythonTypeName<Range<ranges::optional<T>>> {
-	static std::string name() {
-		return PythonTypeName<T>::name() + "OptionalRange";
-	}
-};
-
-template <typename T>
-struct PythonTypeName<Iterator<ranges::optional<T>>> {
-	static std::string name() {
-		return PythonTypeName<T>::name() + "OptionalIterator";
 	}
 };
 

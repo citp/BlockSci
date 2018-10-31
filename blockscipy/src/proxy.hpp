@@ -50,15 +50,44 @@ struct GenericProxy {
 	}
 };
 
-template <ranges::category range_cat>
-struct ProxySequence {
-	virtual std::function<any_view<std::any, range_cat>(std::any &)> getGenericSequence() const = 0;
-	virtual ~ProxySequence() = default;
+struct ProxyIterator {
+	virtual std::function<any_view<std::any, ranges::category::input>(std::any &)> getGenericIterator() const = 0;
+	virtual ~ProxyIterator() = default;
 
-	std::function<any_view<std::any, range_cat>> getGeneric() const {
-		return getGenericSequence();
+	std::function<any_view<std::any, ranges::category::input>(std::any &)> getGeneric() const {
+		return getGenericIterator();
 	}
 };
+
+struct ProxyRange : public ProxyIterator {
+	virtual std::function<any_view<std::any, random_access_sized>(std::any &)> getGenericRange() const = 0;
+	virtual ~ProxyRange() = default;
+
+	std::function<any_view<std::any, ranges::category::input>(std::any &)> getGenericIterator() const override {
+		return getGenericRange();
+	}
+
+	std::function<any_view<std::any, random_access_sized>(std::any &)> getGeneric() const {
+		return getGenericRange();
+	}
+};
+
+template <ranges::category range_cat>
+struct ProxySequenceType;
+
+template <>
+struct ProxySequenceType<ranges::category::input> {
+	using type = ProxyIterator;
+};
+
+template <>
+struct ProxySequenceType<random_access_sized> {
+	using type = ProxyRange;
+};
+
+template <ranges::category range_cat>
+using proxy_sequence = typename ProxySequenceType<range_cat>::type;
+
 
 struct ProxyAddress {
 	virtual std::function<blocksci::AnyScript(std::any &)> getGenericScript() const = 0;
@@ -99,11 +128,11 @@ struct Proxy<ranges::optional<T>> : public GenericProxy<ranges::optional<T>> {
 
 
 template<typename T>
-struct Proxy<Iterator<T>> :  public GenericProxy<Iterator<T>>, public ProxySequence<ranges::category::input> {
+struct Proxy<Iterator<T>> :  public GenericProxy<Iterator<T>>, public ProxyIterator {
 	using output_t = Iterator<T>;
 	using GenericProxy<Iterator<T>>::GenericProxy;
 
-	std::function<Iterator<std::any>(std::any &)> getGenericSequence() const override {
+	std::function<Iterator<std::any>(std::any &)> getGenericIterator() const override {
 		return [f = this->func](std::any &val) -> Iterator<std::any> {
 			return ranges::view::transform(f(val), [](T && t) -> std::any {
 				return std::move(t);
@@ -113,11 +142,11 @@ struct Proxy<Iterator<T>> :  public GenericProxy<Iterator<T>>, public ProxySeque
 };
 
 template<typename T>
-struct Proxy<Range<T>> : public GenericProxy<Range<T>>, public ProxySequence<random_access_sized> {
+struct Proxy<Range<T>> : public GenericProxy<Range<T>>, public ProxyRange {
 	using output_t = Range<T>;
 	using GenericProxy<Range<T>>::GenericProxy;
 
-	std::function<Range<std::any>(std::any &)> getGenericSequence() const override {
+	std::function<Range<std::any>(std::any &)> getGenericRange() const override {
 		return [f = this->func](std::any &val) -> Range<std::any> {
 			return ranges::view::transform(f(val), [](T && t) -> std::any {
 				return std::move(t);

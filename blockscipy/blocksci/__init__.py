@@ -323,11 +323,6 @@ def setup_proxy_map_funcs():
         getattr(proxy, cl).any = range_any_func
         getattr(proxy, cl).all = range_all_func
 
-
-setup_proxy_map_funcs()
-setup_map_funcs()
-
-
 def _get_functions_methods(obj):
     return (attr for attr in dir(obj) if
             not attr[:2] == '__' and
@@ -408,6 +403,9 @@ def setup_range_methods(blocksci_range):
         setattr(proxy_self_cl, proxy_func, range_proxy_method_creator(proxy_func))
 
     blocksci_range.__getitem__ = lambda rng, index: proxy_self[index](rng)
+
+setup_proxy_map_funcs()
+setup_map_funcs()
 
 setup_self_methods(Block)
 setup_self_methods(Tx)

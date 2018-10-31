@@ -6,8 +6,8 @@
 //
 
 #include "python_proxies.hpp"
+#include "python_proxies_types.hpp"
 #include "caster_py.hpp"
-#include "proxy_py.hpp"
 #include "proxy/range_map.hpp"
 
 namespace py = pybind11;
@@ -15,19 +15,22 @@ using namespace blocksci;
 
 void setupProxies(py::module &m) {
 	auto proxyMod = m.def_submodule("proxy");
-    py::class_<ProxySequence<ranges::category::input>> proxyIteratorCl(proxyMod, "ProxyIterator");
-    py::class_<ProxySequence<random_access_sized>> proxyRangeCl(proxyMod, "ProxyRange");
+    py::class_<ProxyIterator> proxyIteratorCl(proxyMod, "ProxyIterator");
+    py::class_<ProxyRange> proxyRangeCl(proxyMod, "ProxyRange", proxyIteratorCl);
+
+    MainProxies mainProxies(proxyMod, proxyIteratorCl, proxyRangeCl);
+    ScriptProxies scriptProxies(proxyMod, proxyIteratorCl, proxyRangeCl);
+    OtherProxies otherProxies(proxyMod, proxyIteratorCl, proxyRangeCl);
 
     applyProxyMapFuncs(proxyIteratorCl);
-    applyProxyMapFuncs(proxyRangeCl);
-
     applyProxyMapOptionalFuncs(proxyIteratorCl);
-    applyProxyMapOptionalFuncs(proxyRangeCl);
-
     applyProxyMapSequenceFuncs(proxyIteratorCl);
+
+    applyProxyMapFuncs(proxyRangeCl);
+    applyProxyMapOptionalFuncs(proxyRangeCl);
     applyProxyMapSequenceFuncs(proxyRangeCl);
 
-    setupMainProxies(proxyMod, proxyIteratorCl, proxyRangeCl);
-    setupScriptProxies(proxyMod, proxyIteratorCl, proxyRangeCl);
-    setupOtherProxies(proxyMod, proxyIteratorCl, proxyRangeCl);
+    setupMainProxies(mainProxies);
+    setupScriptProxies(scriptProxies);
+    setupOtherProxies(otherProxies);
 }
