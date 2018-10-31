@@ -13,7 +13,7 @@
 namespace py = pybind11;
 using namespace blocksci;
 
-OtherProxies::OtherProxies(py::module &m, py::class_<ProxyIterator> &proxyIteratorCl, py::class_<ProxyRange> &proxyRangeCl) :
+OtherProxies::OtherProxies(py::module &m, py::class_<IteratorProxy> &proxyIteratorCl, py::class_<RangeProxy> &proxyRangeCl) :
 addressType(m, proxyIteratorCl, proxyRangeCl),
 integer(m, proxyIteratorCl, proxyRangeCl),
 boolean(m, proxyIteratorCl, proxyRangeCl),

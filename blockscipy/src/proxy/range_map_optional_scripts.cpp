@@ -12,10 +12,10 @@
 #include <blocksci/address/equiv_address.hpp>
 #include <blocksci/cluster/cluster.hpp>
 
-void applyProxyMapOptionalFuncsScripts(pybind11::class_<ProxyRange> &cl) {
+void applyProxyMapOptionalFuncsScripts(pybind11::class_<RangeProxy> &cl) {
 	addProxyMapOptionalFuncsMethodsScripts<random_access_sized>(cl);
 }
 
-void applyProxyMapOptionalFuncsScripts(pybind11::class_<ProxyIterator> &cl) {
+void applyProxyMapOptionalFuncsScripts(pybind11::class_<IteratorProxy> &cl) {
 	addProxyMapOptionalFuncsMethodsScripts<ranges::category::input>(cl);
 }

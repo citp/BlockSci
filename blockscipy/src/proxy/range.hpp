@@ -56,7 +56,7 @@ void addProxySequenceMethods(pybind11::class_<Proxy<any_view<T, range_cat>>> &cl
 }
 
 template<typename T>
-void addProxyRangeMethods(pybind11::class_<Proxy<Range<T>>> &cl) {
+void addRangeProxyMethods(pybind11::class_<Proxy<Range<T>>> &cl) {
 	using R = Range<T>;
 	using P = Proxy<R>;
 
@@ -94,7 +94,7 @@ template <typename T>
 void setupRangesProxy(AllProxyClasses<T> &cls) {
 	addProxySequenceMethods<T, ranges::category::input>(cls.iterator);
 	addProxySequenceMethods<T, random_access_sized>(cls.range);
-	addProxyRangeMethods(cls.range);
+	addRangeProxyMethods(cls.range);
 }
 
 

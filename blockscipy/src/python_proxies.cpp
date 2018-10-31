@@ -15,8 +15,8 @@ using namespace blocksci;
 
 void setupProxies(py::module &m) {
 	auto proxyMod = m.def_submodule("proxy");
-    py::class_<ProxyIterator> proxyIteratorCl(proxyMod, "ProxyIterator");
-    py::class_<ProxyRange> proxyRangeCl(proxyMod, "ProxyRange", proxyIteratorCl);
+    py::class_<IteratorProxy> proxyIteratorCl(proxyMod, "IteratorProxy");
+    py::class_<RangeProxy> proxyRangeCl(proxyMod, "RangeProxy", proxyIteratorCl);
 
     MainProxies mainProxies(proxyMod, proxyIteratorCl, proxyRangeCl);
     ScriptProxies scriptProxies(proxyMod, proxyIteratorCl, proxyRangeCl);
