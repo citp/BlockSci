@@ -23,9 +23,6 @@ void applyProxyMapFuncsCore(pybind11::class_<RangeProxy> &cl);
 void applyProxyMapFuncsScripts(pybind11::class_<RangeProxy> &cl);
 void applyProxyMapFuncsOther(pybind11::class_<RangeProxy> &cl);
 
-void addProxyIteratorMethods(pybind11::class_<IteratorProxy> &cl);
-void addProxyRangeMethods(pybind11::class_<RangeProxy> &cl);
-
 inline void applyProxyMapFuncs(pybind11::class_<RangeProxy> &cl) {
 	applyProxyMapFuncsCore(cl);
 	applyProxyMapFuncsScripts(cl);

@@ -30,6 +30,4 @@ void addProxyOptionalMethods(pybind11::class_<Proxy<ranges::optional<T>>> &cl) {
 	;
 }
 
-void addOptionalProxyMethods(pybind11::class_<OptionalProxy> &cl);
-
 #endif /* proxy_optional_hpp */

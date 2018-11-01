@@ -8,9 +8,8 @@
 #include "python_proxies.hpp"
 #include "python_proxies_types.hpp"
 #include "caster_py.hpp"
-#include "proxy/range_map.hpp"
-#include "proxy/optional.hpp"
-#include "proxy/optional_map.hpp"
+#include "generic_proxy/range.hpp"
+#include "generic_proxy/optional.hpp"
 
 namespace py = pybind11;
 using namespace blocksci;
@@ -74,15 +73,8 @@ void setupProxies(py::module &m) {
     OtherProxies otherProxies(proxyMod, proxySimpleCl, proxyOptionalCl, proxyIteratorCl, proxyRangeCl);
 
     addOptionalProxyMethods(proxyOptionalCl);
-    addOptionalProxyMapMethods(proxyOptionalCl);
-
-    applyProxyMapFuncs(proxyIteratorCl);
-    applyProxyMapOptionalFuncs(proxyIteratorCl);
-    applyProxyMapSequenceFuncs(proxyIteratorCl);
-    addProxyIteratorMethods(proxyIteratorCl);
-
-    applyProxyMapFuncs(proxyRangeCl);
-    addProxyRangeMethods(proxyRangeCl);
+    applyProxyIteratorFuncs(proxyIteratorCl);
+    applyProxyRangeFuncs(proxyRangeCl);
 
     setupMainProxies(mainProxies);
     setupScriptProxies(scriptProxies);

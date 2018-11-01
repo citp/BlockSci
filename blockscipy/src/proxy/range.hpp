@@ -16,7 +16,6 @@
 #include <range/v3/view/stride.hpp>
 #include <range/v3/view/slice.hpp>
 #include <range/v3/size.hpp>
-#include <range/v3/distance.hpp>
 
 template<typename T, ranges::category range_cat>
 void addProxySequenceMethods(pybind11::class_<Proxy<any_view<T, range_cat>>> &cl) {

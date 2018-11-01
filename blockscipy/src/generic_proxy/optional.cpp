@@ -7,8 +7,11 @@
 //
 
 #include "optional.hpp"
+#include "optional_map.hpp"
 
 void addOptionalProxyMethods(pybind11::class_<OptionalProxy> &cl) {
+	addOptionalProxyMapMethods(cl);
+	
 	cl
 	.def("has_value", [](OptionalProxy &p) -> Proxy<bool> {
 		auto generic = p.getGeneric();

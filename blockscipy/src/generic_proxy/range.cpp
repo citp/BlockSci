@@ -1,18 +1,24 @@
 //
-//  range_methods.cpp
+//  range.cpp
 //  blocksci
 //
 //  Created by Harry Kalodner on 11/1/18.
 //
 //
 
+#include "range.hpp"
 #include "range_map.hpp"
 
+#include <range/v3/distance.hpp>
 #include <range/v3/algorithm/any_of.hpp>
 #include <range/v3/algorithm/all_of.hpp>
 
-void addProxyIteratorMethods(pybind11::class_<IteratorProxy> &cl) {
-	cl
+void applyProxyIteratorFuncs(pybind11::class_<IteratorProxy> &cl) {
+	applyProxyMapFuncs(cl);
+    applyProxyMapOptionalFuncs(cl);
+    applyProxyMapSequenceFuncs(cl);
+
+    cl
 	.def_property_readonly("size", [](IteratorProxy &seq) -> Proxy<int64_t> {
 		auto generic = seq.getGeneric();
 		return std::function<int64_t(std::any &)>{[=](std::any &val) -> int64_t {
@@ -40,8 +46,10 @@ void addProxyIteratorMethods(pybind11::class_<IteratorProxy> &cl) {
 	;
 }
 
-void addProxyRangeMethods(pybind11::class_<RangeProxy> &cl) {
-	cl
+void applyProxyRangeFuncs(pybind11::class_<RangeProxy> &cl) {
+	applyProxyMapFuncs(cl);
+
+    cl
 	.def_property_readonly("size", [](RangeProxy &seq) -> Proxy<int64_t> {
 		auto generic = seq.getGeneric();
 		return std::function<int64_t(std::any &)>{[=](std::any &val) -> int64_t {
@@ -50,4 +58,3 @@ void addProxyRangeMethods(pybind11::class_<RangeProxy> &cl) {
 	})
 	;
 }
-
