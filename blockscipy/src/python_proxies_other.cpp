@@ -13,16 +13,16 @@
 namespace py = pybind11;
 using namespace blocksci;
 
-OtherProxies::OtherProxies(py::module &m, py::class_<IteratorProxy> &proxyIteratorCl, py::class_<RangeProxy> &proxyRangeCl) :
-addressType(m, proxyIteratorCl, proxyRangeCl),
-integer(m, proxyIteratorCl, proxyRangeCl),
-boolean(m, proxyIteratorCl, proxyRangeCl),
-time(m, proxyIteratorCl, proxyRangeCl),
-uint256(m, proxyIteratorCl, proxyRangeCl),
-uint160(m, proxyIteratorCl, proxyRangeCl),
-string(m, proxyIteratorCl, proxyRangeCl),
-bytes(m, proxyIteratorCl, proxyRangeCl),
-list(m, proxyIteratorCl, proxyRangeCl) {}
+OtherProxies::OtherProxies(py::module &m, py::class_<SimpleProxy> &proxySimpleCl, py::class_<OptionalProxy> &proxyOptionalCl, py::class_<IteratorProxy> &proxyIteratorCl, py::class_<RangeProxy> &proxyRangeCl) :
+addressType(m, proxySimpleCl, proxyOptionalCl, proxyIteratorCl, proxyRangeCl),
+integer(m, proxySimpleCl, proxyOptionalCl, proxyIteratorCl, proxyRangeCl),
+boolean(m, proxySimpleCl, proxyOptionalCl, proxyIteratorCl, proxyRangeCl),
+time(m, proxySimpleCl, proxyOptionalCl, proxyIteratorCl, proxyRangeCl),
+uint256(m, proxySimpleCl, proxyOptionalCl, proxyIteratorCl, proxyRangeCl),
+uint160(m, proxySimpleCl, proxyOptionalCl, proxyIteratorCl, proxyRangeCl),
+string(m, proxySimpleCl, proxyOptionalCl, proxyIteratorCl, proxyRangeCl),
+bytes(m, proxySimpleCl, proxyOptionalCl, proxyIteratorCl, proxyRangeCl),
+list(m, proxySimpleCl, proxyOptionalCl, proxyIteratorCl, proxyRangeCl) {}
 
 
 void setupOtherProxies(OtherProxies &proxies) {

@@ -265,9 +265,27 @@ Blockchain.__init__ = new_init
 Blockchain.range = block_range
 Blockchain.heights_to_dates = heights_to_dates
 
+def apply_map(prox, prop):
+    if prop.ptype == proxy.proxy_type.optional:
+        return prox._map_optional(prop)
+    elif prop.ptype == proxy.proxy_type.iterator:
+        return prox._map_sequence(prop)
+    elif prop.ptype == proxy.proxy_type.range:
+        return prox._map_sequence(prop)
+    else:
+        return prox._map(prop)
 
+def setup_optional_proxy_map_funcs():
+    def optional_map_func(r, func):
+        p = func(r.nested_proxy)
+        return r._map(p)
 
-def setup_map_funcs():
+    optional_cls = [x for x in dir(proxy) if 'Optional' in x and x[0].isupper()]
+
+    for cl in optional_cls:
+        getattr(proxy, cl).map = optional_map_func
+
+def setup_sequence_map_funcs():
     def range_map_func(r, func):
         p = func(r.self_proxy.nested_proxy)
         return r.self_proxy._map(p)(r)
@@ -298,10 +316,10 @@ def setup_map_funcs():
         globals()[cl].any = range_any_func
         globals()[cl].all = range_all_func
 
-def setup_proxy_map_funcs():
+def setup_sequence_proxy_map_funcs():
     def range_map_func(r, func):
         p = func(r.nested_proxy)
-        return r._map(p)
+        return apply_map(r, p)
 
     def range_where_func(r, func):
         p = func(r.nested_proxy)
@@ -323,14 +341,16 @@ def setup_proxy_map_funcs():
         getattr(proxy, cl).any = range_any_func
         getattr(proxy, cl).all = range_all_func
 
+non_copying_methods = set(["ptype"])
+
 def _get_functions_methods(obj):
     return (attr for attr in dir(obj) if
-            not attr[:2] == '__' and
+            not attr[:2] == '__' and attr not in non_copying_methods and
             not isinstance(getattr(type(obj), attr, None), property))
 
 
 def _get_properties_methods(obj):
-    return (attr for attr in dir(obj) if
+    return (attr for attr in dir(obj) if attr not in non_copying_methods and
             isinstance(getattr(type(obj), attr, None), property))
 
 
@@ -357,10 +377,10 @@ def setup_iterator_methods(iterator):
     
 
     def iterator_creator(name):
-        return property(proxy_self._map(getattr(proxy_obj, name)))
+        return apply_map(proxy_self, getattr(proxy_obj, name))
 
     def iterator_method_creator(name):
-        return lambda rng, *args: proxy_self._map(getattr(proxy_obj, name)(*args))(rng)
+        return lambda rng, *args: apply_map(proxy_self, getattr(proxy_obj, name)(*args))(rng)
 
     def iterator_proxy_creator(name):
         return property(lambda self: self._map(getattr(proxy_obj, name)))
@@ -376,14 +396,13 @@ def setup_iterator_methods(iterator):
         setattr(iterator, proxy_func, iterator_method_creator(proxy_func))
         setattr(proxy_self_cl, proxy_func, iterator_proxy_method_creator(proxy_func))
 
-
 def setup_range_methods(blocksci_range):
     proxy_self = blocksci_range.self_proxy
     proxy_obj = proxy_self.nested_proxy
     proxy_self_cl = type(proxy_self)
 
     def range_creator(name):
-        return property(proxy_self._map(getattr(proxy_obj, name)))
+        return apply_map(proxy_self, getattr(proxy_obj, name))
 
     def range_method_creator(name):
         return lambda rng, *args: proxy_self._map(getattr(proxy_obj, name)(*args))(rng)
@@ -404,8 +423,9 @@ def setup_range_methods(blocksci_range):
 
     blocksci_range.__getitem__ = lambda rng, index: proxy_self[index](rng)
 
-setup_proxy_map_funcs()
-setup_map_funcs()
+setup_optional_proxy_map_funcs()
+setup_sequence_proxy_map_funcs()
+setup_sequence_map_funcs()
 
 setup_self_methods(Block)
 setup_self_methods(Tx)

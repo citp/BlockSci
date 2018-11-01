@@ -22,7 +22,6 @@ void addWitnessScriptHashProxyMethods(AllProxyClasses<blocksci::script::WitnessS
 	cls.applyToAll(AddProxyMethods{});
     setupRangesProxy(cls);
     addProxyOptionalMethods(cls.optional);
-    addProxyOptionalMapMethods(cls.optional);
 
 	applyMethodsToProxy(cls.base, AddScriptHashBaseMethods<blocksci::script::WitnessScriptHash>{});
     addProxyEqualityMethods(cls.base);

@@ -87,7 +87,6 @@ void addAddressProxyMethods(AllProxyClasses<blocksci::AnyScript> &cls) {
 	cls.applyToAll(AddProxyMethods{});
     setupRangesProxy(cls);
     addProxyOptionalMethods(cls.optional);
-    addProxyOptionalMapMethods(cls.optional);
 
     addProxyEqualityMethods(cls.base);
 }

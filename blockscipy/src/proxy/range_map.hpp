@@ -15,11 +15,6 @@ void applyProxyMapOptionalFuncsCore(pybind11::class_<IteratorProxy> &cl);
 void applyProxyMapOptionalFuncsScripts(pybind11::class_<IteratorProxy> &cl);
 void applyProxyMapOptionalFuncsOther(pybind11::class_<IteratorProxy> &cl);
 
-void applyProxyMapOptionalFuncsCore(pybind11::class_<RangeProxy> &cl);
-void applyProxyMapOptionalFuncsScripts(pybind11::class_<RangeProxy> &cl);
-void applyProxyMapOptionalFuncsOther(pybind11::class_<RangeProxy> &cl);
-
-
 void applyProxyMapFuncsCore(pybind11::class_<IteratorProxy> &cl);
 void applyProxyMapFuncsScripts(pybind11::class_<IteratorProxy> &cl);
 void applyProxyMapFuncsOther(pybind11::class_<IteratorProxy> &cl);
@@ -28,6 +23,8 @@ void applyProxyMapFuncsCore(pybind11::class_<RangeProxy> &cl);
 void applyProxyMapFuncsScripts(pybind11::class_<RangeProxy> &cl);
 void applyProxyMapFuncsOther(pybind11::class_<RangeProxy> &cl);
 
+void addProxyIteratorMethods(pybind11::class_<IteratorProxy> &cl);
+void addProxyRangeMethods(pybind11::class_<RangeProxy> &cl);
 
 inline void applyProxyMapFuncs(pybind11::class_<RangeProxy> &cl) {
 	applyProxyMapFuncsCore(cl);
@@ -41,12 +38,6 @@ inline void applyProxyMapFuncs(pybind11::class_<IteratorProxy> &cl) {
 	applyProxyMapFuncsOther(cl);
 }
 
-inline void applyProxyMapOptionalFuncs(pybind11::class_<RangeProxy> &cl) {
-	applyProxyMapOptionalFuncsCore(cl);
-	applyProxyMapOptionalFuncsScripts(cl);
-	applyProxyMapOptionalFuncsOther(cl);
-}
-
 inline void applyProxyMapOptionalFuncs(pybind11::class_<IteratorProxy> &cl) {
 	applyProxyMapOptionalFuncsCore(cl);
 	applyProxyMapOptionalFuncsScripts(cl);
@@ -54,7 +45,6 @@ inline void applyProxyMapOptionalFuncs(pybind11::class_<IteratorProxy> &cl) {
 }
 
 void applyProxyMapSequenceFuncs(pybind11::class_<IteratorProxy> &cl);
-void applyProxyMapSequenceFuncs(pybind11::class_<RangeProxy> &cl);
 
 
 #endif /* proxy_range_map_hpp */

@@ -85,7 +85,6 @@ void addTxProxyMethods(AllProxyClasses<blocksci::Transaction> &cls) {
     cls.applyToAll(AddProxyMethods{});
     setupRangesProxy(cls);
     addProxyOptionalMethods(cls.optional);
-    addProxyOptionalMapMethods(cls.optional);
 
     applyMethodsToProxy(cls.base, AddTransactionMethods{});
     addProxyEqualityMethods(cls.base);

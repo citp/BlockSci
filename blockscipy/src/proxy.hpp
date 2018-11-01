@@ -17,6 +17,10 @@
 #include <any>
 #include <functional>
 
+enum class ProxyType {
+	Simple, Optional, Iterator, Range
+};
+
 template<typename T>
 struct Proxy;
 
@@ -28,16 +32,16 @@ Proxy<T> makeProxy() {
 }
 
 template<typename T>
-struct GenericProxy {
+struct ProxyImpl {
 	std::function<T(std::any &)> func;
 	
-	GenericProxy(const std::function<T(std::any &)> &func_) : func(func_) {}
+	ProxyImpl(const std::function<T(std::any &)> &func_) : func(func_) {}
 
-	GenericProxy(const GenericProxy<T> & proxy) : func(proxy.func) {}
+	ProxyImpl(const ProxyImpl<T> & proxy) : func(proxy.func) {}
 
-	GenericProxy(GenericProxy<T> && proxy) : func(std::move(proxy.func)) {}
+	ProxyImpl(ProxyImpl<T> && proxy) : func(std::move(proxy.func)) {}
 
-	GenericProxy(const T &val) : GenericProxy(std::function<T(std::any &)>{[=](std::any &) -> T {
+	ProxyImpl(const T &val) : ProxyImpl(std::function<T(std::any &)>{[=](std::any &) -> T {
 		return val;
 	}}) {}
 
@@ -50,9 +54,27 @@ struct GenericProxy {
 	}
 };
 
-struct IteratorProxy {
+struct GenericProxy {
+	virtual ProxyType getProxyType() const = 0;
+	virtual ~GenericProxy() = default;
+};
+
+struct SimpleProxy : public GenericProxy {
+	virtual std::function<std::any(std::any &)> getGenericSimple() const = 0;
+	virtual ~SimpleProxy() = default;
+
+	ProxyType getProxyType() const override {
+		return ProxyType::Simple;
+	}
+};
+
+struct IteratorProxy : public GenericProxy {
 	virtual std::function<any_view<std::any, ranges::category::input>(std::any &)> getGenericIterator() const = 0;
 	virtual ~IteratorProxy() = default;
+
+	virtual ProxyType getProxyType() const override {
+		return ProxyType::Iterator;
+	}
 
 	std::function<any_view<std::any, ranges::category::input>(std::any &)> getGeneric() const {
 		return getGenericIterator();
@@ -63,12 +85,29 @@ struct RangeProxy : public IteratorProxy {
 	virtual std::function<any_view<std::any, random_access_sized>(std::any &)> getGenericRange() const = 0;
 	virtual ~RangeProxy() = default;
 
+	ProxyType getProxyType() const override {
+		return ProxyType::Range;
+	}
+
 	std::function<any_view<std::any, ranges::category::input>(std::any &)> getGenericIterator() const override {
 		return getGenericRange();
 	}
 
 	std::function<any_view<std::any, random_access_sized>(std::any &)> getGeneric() const {
 		return getGenericRange();
+	}
+};
+
+struct OptionalProxy : public GenericProxy {
+	virtual std::function<ranges::optional<std::any>(std::any &)> getGenericOptional() const = 0;
+	virtual ~OptionalProxy() = default;
+
+	ProxyType getProxyType() const override {
+		return ProxyType::Optional;
+	}
+
+	std::function<ranges::optional<std::any>(std::any &)> getGeneric() const {
+		return getGenericOptional();
 	}
 };
 
@@ -89,9 +128,16 @@ template <ranges::category range_cat>
 using proxy_sequence = typename ProxySequenceType<range_cat>::type;
 
 
-struct ProxyAddress {
+struct ProxyAddress : public SimpleProxy {
 	virtual std::function<blocksci::AnyScript(std::any &)> getGenericScript() const = 0;
 	virtual ~ProxyAddress() = default;
+
+	std::function<std::any(std::any &)> getGenericSimple() const {
+		auto generic = getGenericScript();
+		return [=](std::any &val) -> std::any {
+			return generic(val);
+		};
+	}
 
 	std::function<blocksci::AnyScript(std::any &)> getGeneric() const {
 		return getGenericScript();
@@ -99,19 +145,21 @@ struct ProxyAddress {
 };
 
 template<typename T>
-struct Proxy : public GenericProxy<T> {
+struct Proxy : public ProxyImpl<T>, public SimpleProxy {
 	using output_t = T;
-	using GenericProxy<T>::GenericProxy;
+	using ProxyImpl<T>::ProxyImpl;
 
-	std::function<T(std::any &)> getGeneric() const {
-		return this->func;
+	std::function<std::any(std::any &)> getGenericSimple() const {
+		return [f = this->func](std::any &val) -> std::any {
+			return f(val);
+		};
 	}
 };
 
 template<typename T>
-struct Proxy<ranges::optional<T>> : public GenericProxy<ranges::optional<T>> {
+struct Proxy<ranges::optional<T>> : public ProxyImpl<ranges::optional<T>>, public OptionalProxy {
 	using output_t = ranges::optional<T>;
-	using GenericProxy<ranges::optional<T>>::GenericProxy;
+	using ProxyImpl<ranges::optional<T>>::ProxyImpl;
 
 	Proxy(const Proxy<T> &p) : Proxy(std::function<ranges::optional<T>(std::any &)>{[=](std::any &v) -> ranges::optional<T> {
 		return p(v);
@@ -121,16 +169,23 @@ struct Proxy<ranges::optional<T>> : public GenericProxy<ranges::optional<T>> {
 		return val;
 	}}) {}
 
-	std::function<ranges::optional<T>(std::any &)> getGeneric() const {
-		return this->func;
+	std::function<ranges::optional<std::any>(std::any &)> getGenericOptional() const override {
+		return [f = this->func](std::any &val) -> ranges::optional<std::any> {
+			auto v = f(val);
+			if (v) {
+				return *v;
+			} else {
+				return ranges::nullopt;
+			}
+		};
 	}
 };
 
 
 template<typename T>
-struct Proxy<Iterator<T>> :  public GenericProxy<Iterator<T>>, public IteratorProxy {
+struct Proxy<Iterator<T>> :  public ProxyImpl<Iterator<T>>, public IteratorProxy {
 	using output_t = Iterator<T>;
-	using GenericProxy<Iterator<T>>::GenericProxy;
+	using ProxyImpl<Iterator<T>>::ProxyImpl;
 
 	std::function<Iterator<std::any>(std::any &)> getGenericIterator() const override {
 		return [f = this->func](std::any &val) -> Iterator<std::any> {
@@ -142,9 +197,9 @@ struct Proxy<Iterator<T>> :  public GenericProxy<Iterator<T>>, public IteratorPr
 };
 
 template<typename T>
-struct Proxy<Range<T>> : public GenericProxy<Range<T>>, public RangeProxy {
+struct Proxy<Range<T>> : public ProxyImpl<Range<T>>, public RangeProxy {
 	using output_t = Range<T>;
-	using GenericProxy<Range<T>>::GenericProxy;
+	using ProxyImpl<Range<T>>::ProxyImpl;
 
 	std::function<Range<std::any>(std::any &)> getGenericRange() const override {
 		return [f = this->func](std::any &val) -> Range<std::any> {
@@ -156,9 +211,9 @@ struct Proxy<Range<T>> : public GenericProxy<Range<T>>, public RangeProxy {
 };
 
 template<blocksci::AddressType::Enum type>
-struct Proxy<blocksci::ScriptAddress<type>> : public GenericProxy<blocksci::ScriptAddress<type>>, public ProxyAddress {
+struct Proxy<blocksci::ScriptAddress<type>> : public ProxyImpl<blocksci::ScriptAddress<type>>, public ProxyAddress {
 	using output_t = blocksci::ScriptAddress<type>;
-	using GenericProxy<blocksci::ScriptAddress<type>>::GenericProxy;
+	using ProxyImpl<blocksci::ScriptAddress<type>>::ProxyImpl;
 
 	std::function<blocksci::AnyScript(std::any &)> getGenericScript() const override {
 		return [f = this->func](std::any &val) -> blocksci::AnyScript {
@@ -168,9 +223,9 @@ struct Proxy<blocksci::ScriptAddress<type>> : public GenericProxy<blocksci::Scri
 };
 
 template<>
-struct Proxy<blocksci::AnyScript> : public GenericProxy<blocksci::AnyScript>, public ProxyAddress {
+struct Proxy<blocksci::AnyScript> : public ProxyImpl<blocksci::AnyScript>, public ProxyAddress {
 	using output_t = blocksci::AnyScript;
-	using GenericProxy<blocksci::AnyScript>::GenericProxy;
+	using ProxyImpl<blocksci::AnyScript>::ProxyImpl;
 
 	std::function<blocksci::AnyScript(std::any &)> getGenericScript() const override {
 		return func;

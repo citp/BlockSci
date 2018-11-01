@@ -99,6 +99,12 @@ struct AddProxyMethods {
 	template<typename T>
 	void operator()(pybind11::class_<Proxy<ranges::optional<T>>> &cl) {
 		addCallMethods(cl, OptionalCallFunc{});
+
+		cl
+		.def_property_readonly_static("nested_proxy", [](pybind11::object &) -> Proxy<T> {
+	        return makeProxy<T>();
+	    })
+	    ;
 	}
 
 	template<typename T>

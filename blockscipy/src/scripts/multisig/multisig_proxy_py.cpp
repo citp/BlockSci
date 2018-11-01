@@ -39,7 +39,6 @@ void addMultisigProxyMethods(AllProxyClasses<blocksci::script::Multisig> &cls) {
 	cls.applyToAll(AddProxyMethods{});
     setupRangesProxy(cls);
     addProxyOptionalMethods(cls.optional);
-    addProxyOptionalMapMethods(cls.optional);
 
 	applyMethodsToProxy(cls.base, AddMultisigMethods{});
     addProxyEqualityMethods(cls.base);

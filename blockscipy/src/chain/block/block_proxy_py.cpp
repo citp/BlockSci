@@ -69,7 +69,6 @@ void addBlockProxyMethods(AllProxyClasses<blocksci::Block> &cls) {
     cls.applyToAll(AddProxyMethods{});
     setupRangesProxy(cls);
 	addProxyOptionalMethods(cls.optional);
-    addProxyOptionalMapMethods(cls.optional);
 
     applyMethodsToProxy(cls.base, AddBlockMethods{});
     addProxyEqualityMethods(cls.base);

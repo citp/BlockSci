@@ -22,7 +22,6 @@ void addPubkeyHashProxyMethods(AllProxyClasses<blocksci::script::PubkeyHash> &cl
 	cls.applyToAll(AddProxyMethods{});
     setupRangesProxy(cls);
     addProxyOptionalMethods(cls.optional);
-    addProxyOptionalMapMethods(cls.optional);
 
 	applyMethodsToProxy(cls.base, AddPubkeyBaseMethods<blocksci::script::PubkeyHash>{});
     addProxyEqualityMethods(cls.base);

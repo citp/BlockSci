@@ -47,7 +47,6 @@ void addClusterProxyMethods(AllProxyClasses<blocksci::Cluster> &cls) {
     cls.applyToAll(AddProxyMethods{});
     setupRangesProxy(cls);
     addProxyOptionalMethods(cls.optional);
-    addProxyOptionalMapMethods(cls.optional);
     setupRangesProxy(cls);
 
     applyMethodsToProxy(cls.base, AddClusterMethods{});

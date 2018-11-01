@@ -31,7 +31,6 @@ void addNonstandardProxyMethods(AllProxyClasses<blocksci::script::Nonstandard> &
 	cls.applyToAll(AddProxyMethods{});
     setupRangesProxy(cls);
     addProxyOptionalMethods(cls.optional);
-    addProxyOptionalMapMethods(cls.optional);
 
 	applyMethodsToProxy(cls.base, AddNonstandardMethods{});
     addProxyEqualityMethods(cls.base);

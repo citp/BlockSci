@@ -22,7 +22,6 @@ void addScriptHashProxyMethods(AllProxyClasses<blocksci::script::ScriptHash> &cl
 	cls.applyToAll(AddProxyMethods{});
     setupRangesProxy(cls);
     addProxyOptionalMethods(cls.optional);
-    addProxyOptionalMapMethods(cls.optional);
 
 	applyMethodsToProxy(cls.base, AddScriptHashBaseMethods<blocksci::script::ScriptHash>{});
     addProxyEqualityMethods(cls.base);

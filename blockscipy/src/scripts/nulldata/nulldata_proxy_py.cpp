@@ -32,7 +32,6 @@ void addNulldataProxyMethods(AllProxyClasses<blocksci::script::OpReturn> &cls) {
 	cls.applyToAll(AddProxyMethods{});
     setupRangesProxy(cls);
     addProxyOptionalMethods(cls.optional);
-    addProxyOptionalMapMethods(cls.optional);
 
 	applyMethodsToProxy(cls.base, AddOpReturnMethods{});
     addProxyEqualityMethods(cls.base);

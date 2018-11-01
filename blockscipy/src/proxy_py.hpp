@@ -43,10 +43,12 @@ struct AllProxyClasses {
 
 	AllProxyClasses(
         pybind11::module &m,
+        pybind11::class_<SimpleProxy> &proxySimpleCl,
+        pybind11::class_<OptionalProxy> &proxyOptionalCl,
         pybind11::class_<IteratorProxy> proxyIteratorCl,
         pybind11::class_<RangeProxy> proxyRangeCl) : 
-    	base(m, strdup(proxyName<T>().c_str())),
-    	optional(m, strdup(proxyName<ranges::optional<T>>().c_str())),
+    	base(m, strdup(proxyName<T>().c_str()), proxySimpleCl),
+    	optional(m, strdup(proxyName<ranges::optional<T>>().c_str()), proxyOptionalCl),
     	iterator(m, strdup(proxyName<Iterator<T>>().c_str()), proxyIteratorCl),
     	range(m, strdup(proxyName<Range<T>>().c_str()), proxyRangeCl) {
         base.def(pybind11::init<T>());
@@ -70,10 +72,11 @@ struct AllProxyClasses {
     AllProxyClasses(
         pybind11::module &m,
         pybind11::class_<ProxyAddress> proxyAddressCl,
+        pybind11::class_<OptionalProxy> &proxyOptionalCl,
         pybind11::class_<IteratorProxy> proxyIteratorCl,
         pybind11::class_<RangeProxy> proxyRangeCl) : 
         base(m, strdup(proxyName<T>().c_str()), proxyAddressCl),
-        optional(m, strdup(proxyName<ranges::optional<T>>().c_str())),
+        optional(m, strdup(proxyName<ranges::optional<T>>().c_str()), proxyOptionalCl),
         iterator(m, strdup(proxyName<Iterator<T>>().c_str()), proxyIteratorCl),
         range(m, strdup(proxyName<Range<T>>().c_str()), proxyRangeCl
     ) {

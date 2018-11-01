@@ -22,7 +22,6 @@ void addMultisigPubkeyProxyMethods(AllProxyClasses<blocksci::script::MultisigPub
 	cls.applyToAll(AddProxyMethods{});
     setupRangesProxy(cls);
     addProxyOptionalMethods(cls.optional);
-    addProxyOptionalMapMethods(cls.optional);
 
 	applyMethodsToProxy(cls.base, AddPubkeyBaseMethods<blocksci::script::MultisigPubkey>{});
     addProxyEqualityMethods(cls.base);

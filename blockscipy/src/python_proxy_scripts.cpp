@@ -24,19 +24,19 @@
 namespace py = pybind11;
 using namespace blocksci;
 
-ScriptProxies::ScriptProxies(py::module &m, py::class_<IteratorProxy> &proxyIteratorCl, py::class_<RangeProxy> &proxyRangeCl) :
-genericAddress(m, "ProxyAddress"),
-address(m, genericAddress, proxyIteratorCl, proxyRangeCl),
-pubkey(m, genericAddress, proxyIteratorCl, proxyRangeCl),
-pubkeyHash(m, genericAddress, proxyIteratorCl, proxyRangeCl),
-witnessPubkeyHash(m, genericAddress, proxyIteratorCl, proxyRangeCl),
-multisigPubkey(m, genericAddress, proxyIteratorCl, proxyRangeCl),
-multisig(m, genericAddress, proxyIteratorCl, proxyRangeCl),
-scripthash(m, genericAddress, proxyIteratorCl, proxyRangeCl),
-witnessScripthash(m, genericAddress, proxyIteratorCl, proxyRangeCl),
-nulldata(m, genericAddress, proxyIteratorCl, proxyRangeCl),
-nonstandard(m, genericAddress, proxyIteratorCl, proxyRangeCl),
-witnessUnknown(m, genericAddress, proxyIteratorCl, proxyRangeCl) {}
+ScriptProxies::ScriptProxies(py::module &m, py::class_<SimpleProxy> &proxySimpleCl, py::class_<OptionalProxy> &proxyOptionalCl, py::class_<IteratorProxy> &proxyIteratorCl, py::class_<RangeProxy> &proxyRangeCl) :
+genericAddress(m, "ProxyAddress", proxySimpleCl),
+address(m, genericAddress, proxyOptionalCl, proxyIteratorCl, proxyRangeCl),
+pubkey(m, genericAddress, proxyOptionalCl, proxyIteratorCl, proxyRangeCl),
+pubkeyHash(m, genericAddress, proxyOptionalCl, proxyIteratorCl, proxyRangeCl),
+witnessPubkeyHash(m, genericAddress, proxyOptionalCl, proxyIteratorCl, proxyRangeCl),
+multisigPubkey(m, genericAddress, proxyOptionalCl, proxyIteratorCl, proxyRangeCl),
+multisig(m, genericAddress, proxyOptionalCl, proxyIteratorCl, proxyRangeCl),
+scripthash(m, genericAddress, proxyOptionalCl, proxyIteratorCl, proxyRangeCl),
+witnessScripthash(m, genericAddress, proxyOptionalCl, proxyIteratorCl, proxyRangeCl),
+nulldata(m, genericAddress, proxyOptionalCl, proxyIteratorCl, proxyRangeCl),
+nonstandard(m, genericAddress, proxyOptionalCl, proxyIteratorCl, proxyRangeCl),
+witnessUnknown(m, genericAddress, proxyOptionalCl, proxyIteratorCl, proxyRangeCl) {}
 
 void setupScriptProxies(ScriptProxies &proxies) {
     init_proxy_address(proxies.genericAddress);

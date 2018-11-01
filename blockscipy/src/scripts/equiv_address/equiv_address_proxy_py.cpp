@@ -42,7 +42,6 @@ void addEquivAddressProxyMethods(AllProxyClasses<blocksci::EquivAddress> &cls) {
 	cls.applyToAll(AddProxyMethods{});
     setupRangesProxy(cls);
     addProxyOptionalMethods(cls.optional);
-    addProxyOptionalMapMethods(cls.optional);
 
     applyMethodsToProxy(cls.base, AddEquivAddressMethods{});
     addProxyEqualityMethods(cls.base);

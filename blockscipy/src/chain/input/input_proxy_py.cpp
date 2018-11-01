@@ -42,7 +42,6 @@ void addInputProxyMethods(AllProxyClasses<blocksci::Input> &cls) {
     cls.applyToAll(AddProxyMethods{});
     setupRangesProxy(cls);
     addProxyOptionalMethods(cls.optional);
-    addProxyOptionalMapMethods(cls.optional);
 
     applyMethodsToProxy(cls.base, AddInputMethods{});
     addProxyEqualityMethods(cls.base);

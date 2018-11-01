@@ -26,7 +26,6 @@ void addTaggedAddressProxyMethods(AllProxyClasses<blocksci::TaggedAddress> &cls)
 	cls.applyToAll(AddProxyMethods{});
     setupRangesProxy(cls);
     addProxyOptionalMethods(cls.optional);
-    addProxyOptionalMapMethods(cls.optional);
 
     applyMethodsToProxy(cls.base, AddTaggedAddressMethods{});
     addProxyEqualityMethods(cls.base);
