@@ -288,7 +288,7 @@ def setup_optional_proxy_map_funcs():
 def setup_sequence_map_funcs():
     def range_map_func(r, func):
         p = func(r.self_proxy.nested_proxy)
-        return r.self_proxy._map(p)(r)
+        return apply_map(r.self_proxy, p)(r)
 
     def range_where_func(r, func):
         p = func(r.self_proxy.nested_proxy)
@@ -377,16 +377,16 @@ def setup_iterator_methods(iterator):
     
 
     def iterator_creator(name):
-        return apply_map(proxy_self, getattr(proxy_obj, name))
+        return property(apply_map(proxy_self, getattr(proxy_obj, name)))
 
     def iterator_method_creator(name):
         return lambda rng, *args: apply_map(proxy_self, getattr(proxy_obj, name)(*args))(rng)
 
     def iterator_proxy_creator(name):
-        return property(lambda self: self._map(getattr(proxy_obj, name)))
+        return property(lambda rng: apply_map(rng, getattr(proxy_obj, name)))
 
     def iterator_proxy_method_creator(name):
-        return lambda self, *args: self._map(getattr(proxy_obj, name)(*args))
+        return lambda rng, *args: apply_map(rng, getattr(proxy_obj, name)(*args))
 
     for proxy_func in _get_properties_methods(proxy_obj):
         setattr(iterator, proxy_func, iterator_creator(proxy_func))
@@ -402,16 +402,16 @@ def setup_range_methods(blocksci_range):
     proxy_self_cl = type(proxy_self)
 
     def range_creator(name):
-        return apply_map(proxy_self, getattr(proxy_obj, name))
+        return property(apply_map(proxy_self, getattr(proxy_obj, name)))
 
     def range_method_creator(name):
-        return lambda rng, *args: proxy_self._map(getattr(proxy_obj, name)(*args))(rng)
+        return lambda rng, *args: apply_map(proxy_self, getattr(proxy_obj, name)(*args))(rng)
 
     def range_proxy_creator(name):
-        return property(lambda rng: rng._map(getattr(proxy_obj, name)))
+        return property(lambda rng: apply_map(rng, getattr(proxy_obj, name)))
 
     def range_proxy_method_creator(name):
-        return lambda rng, *args: rng._map(getattr(proxy_obj, name)(*args))
+        return lambda rng, *args: apply_map(rng, getattr(proxy_obj, name)(*args))
 
     for proxy_func in _get_properties_methods(proxy_obj):
         setattr(blocksci_range, proxy_func, range_creator(proxy_func))
