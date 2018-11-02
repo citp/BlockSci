@@ -21,10 +21,10 @@
 struct InputView {
     uint32_t inputNum;
     uint32_t txNum;
-    const std::vector<WitnessStackItem> &witnessStack;
+    std::vector<WitnessStackItem> witnessStack;
     bool witnessActivated;
     
-    InputView(uint32_t inputNum_, uint32_t txNum_, const std::vector<WitnessStackItem> &witnessStack_, bool witnessActivated_) : inputNum(inputNum_), txNum(txNum_), witnessStack(witnessStack_), witnessActivated(witnessActivated_) {}
+    InputView(uint32_t inputNum_, uint32_t txNum_, std::vector<WitnessStackItem> && witnessStack_, bool witnessActivated_) : inputNum(inputNum_), txNum(txNum_), witnessStack(std::move(witnessStack_)), witnessActivated(witnessActivated_) {}
 };
 
 template<blocksci::AddressType::Enum type>

@@ -8,6 +8,7 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "address_writer.hpp"
+#include "preproccessed_block.hpp"
 
 using blocksci::AddressType;
 using blocksci::DedupAddressType;
