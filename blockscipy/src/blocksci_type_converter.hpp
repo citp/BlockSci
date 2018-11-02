@@ -48,15 +48,15 @@ struct BlockSciTypeConverter {
     }
 
     Range<blocksci::Input> operator()(const blocksci::InputRange &val) {
-        return val;
+        return ranges::any_view<blocksci::Input, random_access_sized>{val};
     }
 
     Range<blocksci::Output> operator()(const blocksci::OutputRange &val) {
-        return val;
+        return ranges::any_view<blocksci::Output, random_access_sized>{val};
     }
 
     Range<blocksci::Block> operator()(const blocksci::BlockRange &val) {
-        return val;
+        return ranges::any_view<blocksci::Block, random_access_sized>{val};
     }
 
     template <typename T>

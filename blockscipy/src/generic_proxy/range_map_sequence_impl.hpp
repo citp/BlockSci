@@ -18,7 +18,11 @@ template<typename R>
 Proxy<Iterator<R>> mapSequence(IteratorProxy &seq, Proxy<Iterator<R>> &p2) {
 	auto generic = seq.getGeneric();
 	return std::function<Iterator<R>(std::any &)>{[=](std::any &val) -> Iterator<R> {
-		return ranges::view::join(ranges::view::transform(generic(val), p2));
+		return ranges::any_view<R>{ranges::view::join(ranges::view::transform(generic(val).rng, 
+			[p2](std::any && v) -> ranges::any_view<R> {
+				return p2(v).rng;
+			}
+		))};
 	}};
 }
 

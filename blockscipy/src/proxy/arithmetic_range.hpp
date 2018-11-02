@@ -15,25 +15,26 @@
 #include <range/v3/algorithm/min.hpp>
 #include <range/v3/numeric/accumulate.hpp>
 
-template<typename Class>
-void addProxyArithRangeMethods(Class  &cl) {
-	using P = typename Class::type;
-	using T = typename P::output_t;
+template<typename T>
+void addProxyArithRangeMethods(pybind11::class_<SequenceProxy<T>> &cl) {
 	cl
-	.def_property_readonly("min", [](P &p) -> Proxy<int64_t> {
-		return lift(p, [](T &&r) {
-			return ranges::min(std::move(r));
-		});
+	.def_property_readonly("min", [](SequenceProxy<T> &seq) -> Proxy<int64_t> {
+		auto generic = seq.getIteratorFunc();
+		return std::function<int64_t(std::any &)>{[=](std::any &val) -> int64_t {
+			return ranges::min(generic(val));
+		}};
 	})
-	.def_property_readonly("max", [](P &p) -> Proxy<int64_t> {
-		return lift(p, [](T &&r) {
-			return ranges::max(std::move(r));
-		});
+	.def_property_readonly("max", [](SequenceProxy<T> &seq) -> Proxy<int64_t> {
+		auto generic = seq.getIteratorFunc();
+		return std::function<int64_t(std::any &)>{[=](std::any &val) -> int64_t {
+			return ranges::max(generic(val));
+		}};
 	})
-	.def_property_readonly("sum", [](P &p) -> Proxy<int64_t> {
-		return lift(p, [](T &&r) {
-			return ranges::accumulate(std::move(r), int64_t(0));
-		});
+	.def_property_readonly("sum", [](SequenceProxy<T> &seq) -> Proxy<int64_t> {
+		auto generic = seq.getIteratorFunc();
+		return std::function<int64_t(std::any &)>{[=](std::any &val) -> int64_t {
+			return ranges::accumulate(generic(val), int64_t(0));
+		}};
 	})
 	;
 }

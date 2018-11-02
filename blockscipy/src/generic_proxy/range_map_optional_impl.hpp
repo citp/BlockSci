@@ -24,7 +24,7 @@ namespace internal {
 
 	template <typename T>
 	Iterator<typename ranges::range_value_t<T>::value_type> flattenOptional(T && t) {
-	    return {ranges::view::transform(ranges::view::filter(std::forward<T>(t), isOptional), derefOptional)};
+	    return ranges::any_view<typename ranges::range_value_t<T>::value_type>{ranges::view::transform(ranges::view::filter(std::forward<T>(t), isOptional), derefOptional)};
 	}
 }
 
@@ -32,7 +32,7 @@ template<typename R>
 Proxy<Iterator<R>> mapOptional(IteratorProxy &seq, Proxy<ranges::optional<R>> &p2) {
 	auto generic = seq.getGeneric();
 	return std::function<Iterator<R>(std::any &)>{[=](std::any &val) -> Iterator<R> {
-		return internal::flattenOptional(ranges::view::transform(generic(val), p2));
+		return internal::flattenOptional(ranges::view::transform(generic(val).rng, p2));
 	}};
 }
 

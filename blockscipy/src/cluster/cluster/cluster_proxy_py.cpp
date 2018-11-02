@@ -35,9 +35,9 @@ struct AddClusterMethods {
             return cluster.getInputs();
         }, "Returns an iterator over all inputs spent from this cluster");
         func(property_tag, "addresses", +[](const Cluster &cluster) -> Iterator<AnyScript> {
-            return ranges::view::transform(cluster.getAddresses(), [](Address && address) -> AnyScript {
+            return ranges::any_view<AnyScript>{ranges::view::transform(cluster.getAddresses(), [](Address && address) -> AnyScript {
                 return address.getScript();
-            });
+            })};
         }, "Get a iterable over all the addresses in the cluster");
         func(method_tag, "count_of_type", &Cluster::countOfType, "Return the number of addresses of the given type in the cluster", pybind11::arg("address_type"));
     }

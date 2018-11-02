@@ -58,7 +58,7 @@ struct NumpyConverter {
 template <typename T>
 pybind11::array_t<decltype(NumpyConverter{}(std::declval<ranges::range_value_type_t<T>>()))>
 convertRandomSizedNumpy(T && t) {
-    auto numpy_converted = ranges::view::transform(std::move(t), NumpyConverter{});
+    auto numpy_converted = ranges::view::transform(std::move(t.rng), NumpyConverter{});
     auto rangeSize = static_cast<size_t>(ranges::size(numpy_converted));
     pybind11::array_t<ranges::range_value_type_t<decltype(numpy_converted)>> ret{rangeSize};
     auto retPtr = ret.mutable_data();
@@ -69,16 +69,16 @@ convertRandomSizedNumpy(T && t) {
 template <typename T>
 pybind11::array_t<decltype(NumpyConverter{}(std::declval<ranges::range_value_type_t<T>>()))>
 convertInputNumpy(T && t) {
-    auto ret = ranges::to_vector(ranges::view::transform(std::move(t), NumpyConverter{}));
+    auto ret = ranges::to_vector(ranges::view::transform(std::move(t.rng), NumpyConverter{}));
     return pybind11::array_t<typename decltype(ret)::value_type>{ret.size(), ret.data()};
 }
 
 template <typename T>
 py::list convertRandomSizedPy(T && t) {
-    auto rangeSize = static_cast<size_t>(ranges::size(t));
+    auto rangeSize = static_cast<size_t>(ranges::size(t.rng));
     pybind11::list list{rangeSize};
     size_t index = 0;
-    RANGES_FOR(auto && a, t) {
+    RANGES_FOR(auto && a, t.rng) {
         list[index] = std::forward<decltype(a)>(a);
         index++;
     }
@@ -97,13 +97,13 @@ py::list convertInputPy(T && t) {
 template <typename T>
 Iterator<decltype(BlockSciTypeConverter{}(std::declval<ranges::range_value_type_t<T>>()))>
 convertInputBlockSci(T && t) {
-    return {ranges::view::transform(std::forward<T>(t), BlockSciTypeConverter{})};
+    return ranges::any_view<decltype(BlockSciTypeConverter{}(std::declval<ranges::range_value_type_t<T>>()))>{ranges::view::transform(std::forward<T>(t).rng, BlockSciTypeConverter{})};
 }
 
 template <typename T>
 Range<decltype(BlockSciTypeConverter{}(std::declval<ranges::range_value_type_t<T>>()))>
 convertRandomSizedBlockSci(T && t) {
-    return {ranges::view::transform(std::forward<T>(t), BlockSciTypeConverter{})};
+    return ranges::any_view<decltype(BlockSciTypeConverter{}(std::declval<ranges::range_value_type_t<T>>())), random_access_sized>{ranges::view::transform(std::forward<T>(t).rng, BlockSciTypeConverter{})};
 }
 
 Iterator<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(Iterator<ranges::optional<int16_t>> && t) { return convertInputBlockSci(std::move(t)); }

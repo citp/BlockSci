@@ -75,7 +75,16 @@ void init_block(py::class_<Block> &cl) {
     ;
 
     addCommonIteratorMethods(cl);
-    addCommonRangeMethods(cl);
+
+    cl
+    .def("__bool__", [](Block &range) {
+        return !ranges::empty(range);
+        
+    })
+    .def("__len__", [](Block &range) {
+        return range.size();
+    })
+    ;
 }
 
 void addBlockRangeMethods(RangeClasses<blocksci::Block> &classes) {

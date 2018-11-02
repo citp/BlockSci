@@ -28,9 +28,9 @@ namespace {
     struct PythonScriptRangeFunctor {
         static PythonScriptRangeVariant f(blocksci::DataAccess &access) {
             auto scriptCount = getScriptCount(type, access);
-            return ranges::view::ints(uint32_t{1}, scriptCount + 1) | ranges::view::transform([&](uint32_t scriptNum) {
+            return PythonScriptRange<type>{ranges::view::ints(uint32_t{1}, scriptCount + 1) | ranges::view::transform([&](uint32_t scriptNum) {
                 return ScriptAddress<type>(scriptNum, access);
-            });
+            })};
         }
     };
 }
@@ -60,7 +60,7 @@ void init_blockchain(py::class_<Blockchain> &cl) {
             throw std::runtime_error{"Cannot slice blockchain with step size not equal to one"};
         }
 
-        return chain[{static_cast<BlockHeight>(start), static_cast<BlockHeight>(stop)}];
+        return ranges::any_view<Block, random_access_sized>{chain[{static_cast<BlockHeight>(start), static_cast<BlockHeight>(stop)}]};
     }, py::arg("slice"))
     ;
 
@@ -82,7 +82,7 @@ void init_blockchain(py::class_<Blockchain> &cl) {
     )
     .def_property_readonly("blocks",
         +[](Blockchain &chain) -> Range<Block> {
-        return chain;
+        return ranges::any_view<Block, random_access_sized>{chain};
     }, "Returns a range of all the blocks in the chain")
     .def("tx_with_index", [](Blockchain &chain, uint32_t index) {
         return Transaction{index, chain.getAccess()};

@@ -109,7 +109,7 @@ struct AddProxyMethods {
 	}
 
 	template<typename T>
-	void operator()(pybind11::class_<Proxy<Iterator<T>>, IteratorProxy> &cl) {
+	void operator()(pybind11::class_<Proxy<Iterator<T>>, IteratorProxy, SequenceProxy<T>> &cl) {
 		addCallMethods(cl, IteratorCallFunc{});
 		addCallMethod<blocksci::AnyScript>(cl, IteratorCallFunc{});
 
@@ -121,7 +121,7 @@ struct AddProxyMethods {
 	}
 
 	template<typename T>
-	void operator()(pybind11::class_<Proxy<Range<T>>, RangeProxy> &cl) {
+	void operator()(pybind11::class_<Proxy<Range<T>>, RangeProxy, SequenceProxy<T>> &cl) {
 		addCallMethods(cl, RangeCallFunc{});
 		addCallMethod<blocksci::AnyScript>(cl, RangeCallFunc{});
 

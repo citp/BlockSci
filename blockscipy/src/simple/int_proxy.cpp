@@ -28,6 +28,5 @@ void addIntProxyMethods(AllProxyClasses<int64_t> &cls) {
 	addProxyOptionalMethods(cls.optional);
 	addProxyEqualityMethods(cls.optional);
 	addProxyOptionalArithMethods(cls.optional);
-	addProxyArithRangeMethods(cls.iterator);
-	addProxyArithRangeMethods(cls.range);
+	addProxyArithRangeMethods(cls.sequence);
 }

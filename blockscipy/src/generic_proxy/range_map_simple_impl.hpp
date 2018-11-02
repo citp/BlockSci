@@ -20,9 +20,9 @@ template<ranges::category range_cat, typename R>
 Proxy<any_view<R, range_cat>> mapSimple(proxy_sequence<range_cat> &seq, Proxy<R> &p2) {
 	auto generic = seq.getGeneric();
 	return std::function<any_view<R, range_cat>(std::any &)>{[=](std::any &val) -> any_view<R, range_cat> {
-		return ranges::view::transform(generic(val), [=](std::any v) {
+		return ranges::any_view<R, range_cat>{ranges::view::transform(generic(val).rng, [=](std::any v) {
 			return p2(v);
-		});
+		})};
 	}};
 }
 

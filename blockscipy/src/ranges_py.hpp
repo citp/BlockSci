@@ -75,11 +75,11 @@ auto addCommonRangeMethods(Class &cl) {
     using R = typename Class::type;
     cl
     .def("__bool__", [](R &range) {
-        return !ranges::empty(range);
+        return !ranges::empty(range.rng);
         
     })
     .def("__len__", [](R &range) {
-        return range.size();
+        return range.rng.size();
     })
     ;
 }
