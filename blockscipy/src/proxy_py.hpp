@@ -36,6 +36,29 @@ void addProxyConditional(pybind11::module &m) {
 
 template <typename T>
 struct AllProxyClasses {
+private:
+    void commonInit(pybind11::module &m) {
+        base.def(pybind11::init<T>());
+        iterator.def(pybind11::init<Iterator<T>>());
+        range.def(pybind11::init<Range<T>>());
+
+        optional.def(pybind11::init<Proxy<T>>());
+        iterator.def(pybind11::init<Proxy<Range<T>>>());
+
+        pybind11::implicitly_convertible<T, Proxy<T>>();
+        pybind11::implicitly_convertible<Iterator<T>, Proxy<Iterator<T>>>();
+        pybind11::implicitly_convertible<Range<T>, Proxy<Range<T>>>();
+
+        pybind11::implicitly_convertible<Proxy<T>, Proxy<ranges::optional<T>>>();
+        pybind11::implicitly_convertible<Proxy<Range<T>>, Proxy<Iterator<T>>>();
+
+
+        addProxyConditional<T>(m);
+        addProxyConditional<ranges::optional<T>>(m);
+        addProxyConditional<Iterator<T>>(m);
+        addProxyConditional<Range<T>>(m);
+    }
+public:
     pybind11::class_<Proxy<T>> base;
     pybind11::class_<Proxy<ranges::optional<T>>> optional;
     pybind11::class_<Proxy<Iterator<T>>> iterator;
@@ -51,22 +74,7 @@ struct AllProxyClasses {
     	optional(m, strdup(proxyName<ranges::optional<T>>().c_str()), proxyOptionalCl),
     	iterator(m, strdup(proxyName<Iterator<T>>().c_str()), proxyIteratorCl),
     	range(m, strdup(proxyName<Range<T>>().c_str()), proxyRangeCl) {
-        base.def(pybind11::init<T>());
-        optional.def(pybind11::init<T>());
-        optional.def(pybind11::init<Proxy<T>>());
-        iterator.def(pybind11::init<Iterator<T>>());
-        range.def(pybind11::init<Range<T>>());
-
-        pybind11::implicitly_convertible<T, Proxy<T>>();
-        pybind11::implicitly_convertible<T, Proxy<ranges::optional<T>>>();
-        pybind11::implicitly_convertible<Proxy<T>, Proxy<ranges::optional<T>>>();
-        pybind11::implicitly_convertible<Iterator<T>, Proxy<Iterator<T>>>();
-        pybind11::implicitly_convertible<Range<T>, Proxy<Range<T>>>();
-
-        addProxyConditional<T>(m);
-        addProxyConditional<ranges::optional<T>>(m);
-        addProxyConditional<Iterator<T>>(m);
-        addProxyConditional<Range<T>>(m);
+        commonInit(m);
     }
 
     AllProxyClasses(
@@ -80,22 +88,7 @@ struct AllProxyClasses {
         iterator(m, strdup(proxyName<Iterator<T>>().c_str()), proxyIteratorCl),
         range(m, strdup(proxyName<Range<T>>().c_str()), proxyRangeCl
     ) {
-        base.def(pybind11::init<T>());
-        optional.def(pybind11::init<T>());
-        optional.def(pybind11::init<Proxy<T>>());
-        iterator.def(pybind11::init<Iterator<T>>());
-        range.def(pybind11::init<Range<T>>());
-
-        pybind11::implicitly_convertible<T, Proxy<T>>();
-        pybind11::implicitly_convertible<T, Proxy<ranges::optional<T>>>();
-        pybind11::implicitly_convertible<Proxy<T>, Proxy<ranges::optional<T>>>();
-        pybind11::implicitly_convertible<Iterator<T>, Proxy<Iterator<T>>>();
-        pybind11::implicitly_convertible<Range<T>, Proxy<Range<T>>>();
-
-        addProxyConditional<T>(m);
-        addProxyConditional<ranges::optional<T>>(m);
-        addProxyConditional<Iterator<T>>(m);
-        addProxyConditional<Range<T>>(m);
+        commonInit(m);
     }
 
 	template<typename Func>

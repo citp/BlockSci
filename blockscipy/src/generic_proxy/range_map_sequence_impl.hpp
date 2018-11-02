@@ -14,8 +14,8 @@
 #include <range/v3/view/join.hpp>
 #include <range/v3/view/transform.hpp>
 
-template<ranges::category range_cat, typename R>
-Proxy<Iterator<R>> mapSequence(IteratorProxy &seq, Proxy<any_view<R, range_cat>> &p2) {
+template<typename R>
+Proxy<Iterator<R>> mapSequence(IteratorProxy &seq, Proxy<Iterator<R>> &p2) {
 	auto generic = seq.getGeneric();
 	return std::function<Iterator<R>(std::any &)>{[=](std::any &val) -> Iterator<R> {
 		return ranges::view::join(ranges::view::transform(generic(val), p2));

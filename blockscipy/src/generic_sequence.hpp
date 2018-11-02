@@ -44,6 +44,10 @@ struct Iterator : public GenericSequence<ranges::category::input>, public ranges
 
 	Iterator(ranges::any_view<T> &r) : ranges::any_view<T>(r) {}
 
+	Iterator(ranges::any_view<T, random_access_sized> && r) : ranges::any_view<T>(std::move(r)) {}
+
+	Iterator(ranges::any_view<T, random_access_sized> &r) : ranges::any_view<T>(r) {}
+
 	ranges::any_view<std::any> getAnySequence() override {
 		return ranges::view::transform(*this, [](T && t) -> std::any {
 			return std::move(t);

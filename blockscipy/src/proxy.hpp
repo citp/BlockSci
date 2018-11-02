@@ -181,14 +181,13 @@ struct Proxy<ranges::optional<T>> : public ProxyImpl<ranges::optional<T>>, publi
 	}
 };
 
-
 template<typename T>
-struct Proxy<Iterator<T>> :  public ProxyImpl<Iterator<T>>, public IteratorProxy {
-	using output_t = Iterator<T>;
-	using ProxyImpl<Iterator<T>>::ProxyImpl;
+struct Proxy<Range<T>> : public ProxyImpl<Range<T>>, public RangeProxy {
+	using output_t = Range<T>;
+	using ProxyImpl<Range<T>>::ProxyImpl;
 
-	std::function<Iterator<std::any>(std::any &)> getGenericIterator() const override {
-		return [f = this->func](std::any &val) -> Iterator<std::any> {
+	std::function<Range<std::any>(std::any &)> getGenericRange() const override {
+		return [f = this->func](std::any &val) -> Range<std::any> {
 			return ranges::view::transform(f(val), [](T && t) -> std::any {
 				return std::move(t);
 			});
@@ -197,12 +196,22 @@ struct Proxy<Iterator<T>> :  public ProxyImpl<Iterator<T>>, public IteratorProxy
 };
 
 template<typename T>
-struct Proxy<Range<T>> : public ProxyImpl<Range<T>>, public RangeProxy {
-	using output_t = Range<T>;
-	using ProxyImpl<Range<T>>::ProxyImpl;
+struct Proxy<Iterator<T>> :  public ProxyImpl<Iterator<T>>, public IteratorProxy {
+	using output_t = Iterator<T>;
+	using ProxyImpl<Iterator<T>>::ProxyImpl;
 
-	std::function<Range<std::any>(std::any &)> getGenericRange() const override {
-		return [f = this->func](std::any &val) -> Range<std::any> {
+	Proxy(const Proxy<Range<T>> &p) : Proxy(std::function<Iterator<T>(std::any &)>{
+		[=](std::any &v) -> Iterator<T> {
+		return p(v);
+	}}) {}
+
+	Proxy(Proxy<Range<T>> && p) : Proxy(std::function<Iterator<T>(std::any &)>{
+		[=](std::any &v) -> Iterator<T> {
+		return p(v);
+	}}) {}
+
+	std::function<Iterator<std::any>(std::any &)> getGenericIterator() const override {
+		return [f = this->func](std::any &val) -> Iterator<std::any> {
 			return ranges::view::transform(f(val), [](T && t) -> std::any {
 				return std::move(t);
 			});
