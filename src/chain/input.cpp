@@ -58,10 +58,6 @@ namespace blocksci {
         return {pointer, height, tx->getOutput(pointer.inoutNum), maxTxCount, *access};
     }
     
-    OutputPointer Input::getSpentOutputPointer() const {
-        return {inout->getLinkedTxNum(), *spentOutputNum};
-    }
-    
     std::string Input::toString() const {
         std::stringstream ss;
         ss << "TxIn(spent_tx_index=" << inout->getLinkedTxNum() << ", address=" << getAddress().toString() <<", value=" << inout->getValue() << ")";

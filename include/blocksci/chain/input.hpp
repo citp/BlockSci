@@ -13,6 +13,7 @@
 #include <blocksci/address/address_fwd.hpp>
 #include <blocksci/chain/chain_fwd.hpp>
 #include <blocksci/chain/input_pointer.hpp>
+#include <blocksci/chain/output_pointer.hpp>
 #include <blocksci/core/inout.hpp>
 #include <blocksci/core/raw_transaction.hpp>
 
@@ -88,7 +89,10 @@ namespace blocksci {
         
         Transaction getSpentTx() const;
         
-        OutputPointer getSpentOutputPointer() const;
+        OutputPointer getSpentOutputPointer() const {
+            return {inout->getLinkedTxNum(), *spentOutputNum};
+        }
+        
         Output getSpentOutput() const;
     };
     
