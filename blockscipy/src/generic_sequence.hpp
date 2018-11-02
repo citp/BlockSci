@@ -37,21 +37,15 @@ struct AnyViewType<T, random_access_sized> {
 template <typename T, ranges::category range_cat>
 using any_view = typename AnyViewType<T, range_cat>::type;
 
-template <ranges::category range_cat>
-struct GenericSequence {
-	virtual any_view<std::any, range_cat> getAnySequence() = 0;
-	virtual ~GenericSequence() = default;
-};
-
 
 template<typename T>
 struct Sequence {
-	virtual Iterator<T> getIterator() = 0;
+	virtual Iterator<T> getIterator() const = 0;
 	virtual ~Sequence() = default;
 };
 
 template <typename T>
-struct Iterator : public GenericSequence<ranges::category::input>, public Sequence<T>, public ranges::any_view<T> {
+struct Iterator : public Sequence<T> {
 	ranges::any_view<T> rng;
 
 	Iterator(ranges::any_view<T> && r) : rng(std::move(r)) {}
@@ -68,19 +62,19 @@ struct Iterator : public GenericSequence<ranges::category::input>, public Sequen
 		return rng.end();
 	}
 
-	Iterator<std::any> getAnySequence() override {
+	Iterator<std::any> getAnySequence() {
 		return ranges::any_view<std::any>{ranges::view::transform(rng, [](T && t) -> std::any {
 			return std::move(t);
 		})};
 	}
 
-	Iterator<T> getIterator() override {
-		return Iterator<T>{*this};
+	Iterator<T> getIterator() const override {
+		return *this;
 	}
 };
 
 template <typename T>
-struct Range : public GenericSequence<random_access_sized>, public Sequence<T> {
+struct Range : public Sequence<T> {
 	ranges::any_view<T, random_access_sized> rng;
 
 	Range(ranges::any_view<T, random_access_sized> && r) : rng(std::move(r)) {}
@@ -95,14 +89,14 @@ struct Range : public GenericSequence<random_access_sized>, public Sequence<T> {
 		return rng.end();
 	}
 
-	Range<std::any> getAnySequence() override {
+	Range<std::any> getAnySequence() {
 		return ranges::any_view<std::any, random_access_sized>{ranges::view::transform(rng, [](T && t) -> std::any {
 			return std::move(t);
 		})};
 	}
 
-	Iterator<T> getIterator() override {
-		return Iterator<T>{*this};
+	Iterator<T> getIterator() const override {
+		return *this;
 	}
 };
 

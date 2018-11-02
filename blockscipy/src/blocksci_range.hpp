@@ -17,10 +17,12 @@
 
 template <typename T>
 struct RangeClasses {
-    pybind11::class_<Iterator<T>> iterator;
-    pybind11::class_<Range<T>> range;
+	pybind11::class_<Sequence<T>> sequence;
+    pybind11::class_<Iterator<T>, Sequence<T>> iterator;
+    pybind11::class_<Range<T>, Sequence<T>> range;
 
     RangeClasses(pybind11::module &m) : 
+    sequence(m, strdup(PythonTypeName<Sequence<T>>::name().c_str()), pybind11::dynamic_attr()),
     iterator(m, strdup(PythonTypeName<Iterator<T>>::name().c_str()), pybind11::dynamic_attr()),
     range(m, strdup(PythonTypeName<Range<T>>::name().c_str()), pybind11::dynamic_attr()) {}
 };

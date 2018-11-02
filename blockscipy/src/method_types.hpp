@@ -237,6 +237,13 @@ struct PythonTypeName<ranges::optional<T>> {
 };
 
 template <typename T>
+struct PythonTypeName<Sequence<T>> {
+	static std::string name() {
+		return PythonTypeName<T>::name() + "Sequence";
+	}
+};
+
+template <typename T>
 struct PythonTypeName<Range<T>> {
 	static std::string name() {
 		return PythonTypeName<T>::name() + "Range";

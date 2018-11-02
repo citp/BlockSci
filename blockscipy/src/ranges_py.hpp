@@ -17,11 +17,11 @@
 #include <range/v3/range_for.hpp>
 
 
-template<typename GroupType, typename ResultType, typename V, ranges::category range_cat>
-void addGroupByFunc(pybind11::class_<any_view<V, range_cat>> &cl) {
-    cl.def("_group_by", [](any_view<V, range_cat> &range, Proxy<GroupType> &grouper, Proxy<ResultType> &eval) -> std::unordered_map<GroupType, ResultType> {
+template<typename GroupType, typename ResultType, typename V>
+void addGroupByFunc(pybind11::class_<Sequence<V>> &cl) {
+    cl.def("_group_by", [](Sequence<V> &range, Proxy<GroupType> &grouper, Proxy<ResultType> &eval) -> std::unordered_map<GroupType, ResultType> {
         std::unordered_map<GroupType, std::vector<V>> grouped;
-        RANGES_FOR(auto && item, range) {
+        RANGES_FOR(auto && item, range.getIterator()) {
             grouped[grouper(item)].push_back(item);
         }
         std::unordered_map<GroupType, ResultType> results;
@@ -34,12 +34,12 @@ void addGroupByFunc(pybind11::class_<any_view<V, range_cat>> &cl) {
     });
 }
 
-template<typename T, typename V, ranges::category range_cat>
-void addGroupByFuncs(pybind11::class_<any_view<V, range_cat>> &cl) {
-    addGroupByFunc<int64_t, T, V, range_cat>(cl);
-    addGroupByFunc<blocksci::AddressType::Enum, T, V, range_cat>(cl);
-    addGroupByFunc<bool, T, V, range_cat>(cl);
-    addGroupByFunc<blocksci::AnyScript, T, V, range_cat>(cl);
+template<typename T, typename V>
+void addGroupByFuncs(pybind11::class_<Sequence<V>> &cl) {
+    addGroupByFunc<int64_t, T>(cl);
+    addGroupByFunc<blocksci::AddressType::Enum, T>(cl);
+    addGroupByFunc<bool, T>(cl);
+    addGroupByFunc<blocksci::AnyScript, T>(cl);
 }
 
 template <typename T, CONCEPT_REQUIRES_(!ranges::Range<T>())>
@@ -65,7 +65,7 @@ auto addCommonIteratorMethods(Class &cl) {
         return pybind11::make_iterator(range.begin(), range.end()); 
     }, pybind11::keep_alive<0, 1>())
     .def("to_list", [](R & range) { 
-        return pythonAllType(range);
+        return pythonAllType(range.rng);
     }, "Returns a list of all of the objects in the range")
     ;
 }
@@ -84,29 +84,28 @@ auto addCommonRangeMethods(Class &cl) {
     ;
 }
 
-template<typename T, ranges::category range_cat>
-auto addSequenceMethods(pybind11::class_<any_view<T, range_cat>> &cl) {
-    cl
-    .def_property_readonly_static("self_proxy", [](pybind11::object &) -> Proxy<any_view<T, range_cat>> {
-        return makeProxy<any_view<T, range_cat>>();
-    })
-    ;
-
-    addGroupByFuncs<int64_t, T, range_cat>(cl);
-    addGroupByFuncs<bool, T, range_cat>(cl);
-    addGroupByFuncs<std::chrono::system_clock::time_point, T, range_cat>(cl);
-    addGroupByFuncs<blocksci::AddressType::Enum, T, range_cat>(cl);
-
-    return cl;
-}
-
 template <typename T>
 void addAllRangeMethods(RangeClasses<T> &cls) {
     addCommonIteratorMethods(cls.iterator);
     addCommonIteratorMethods(cls.range);
     addCommonRangeMethods(cls.range);
-    addSequenceMethods<T, ranges::category::input>(cls.iterator);
-    addSequenceMethods<T, random_access_sized>(cls.range);
+
+    cls.iterator
+    .def_property_readonly_static("self_proxy", [](pybind11::object &) -> Proxy<Iterator<T>> {
+        return makeProxy<Iterator<T>>();
+    })
+    ;
+
+    cls.range
+    .def_property_readonly_static("self_proxy", [](pybind11::object &) -> Proxy<Range<T>> {
+        return makeProxy<Range<T>>();
+    })
+    ;
+
+    addGroupByFuncs<int64_t>(cls.sequence);
+    addGroupByFuncs<bool>(cls.sequence);
+    addGroupByFuncs<std::chrono::system_clock::time_point>(cls.sequence);
+    addGroupByFuncs<blocksci::AddressType::Enum>(cls.sequence);
 }
 
 #endif /* ranges_py_hpp */
