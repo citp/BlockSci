@@ -11,9 +11,9 @@
 
 #include "proxy.hpp"
 
-template<typename T>
-void addProxyEqualityMethods(pybind11::class_<Proxy<T>> &cl) {
-	using P = Proxy<T>;
+template<typename Class>
+void addProxyEqualityMethods(Class &cl) {
+	using P = typename Class::type;
 	cl
 	.def("__eq__", [](P &p1, P &p2) -> Proxy<bool> {
 		return std::function<bool(std::any &)>{[=](std::any &t) -> bool {

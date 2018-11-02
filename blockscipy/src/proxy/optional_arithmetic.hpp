@@ -11,7 +11,7 @@
 
 #include "proxy.hpp"
 
-void addProxyOptionalArithMethods(pybind11::class_<Proxy<ranges::optional<int64_t>>> &cl) {
+void addProxyOptionalArithMethods(pybind11::class_<Proxy<ranges::optional<int64_t>>, OptionalProxy> &cl) {
 	using P = Proxy<ranges::optional<int64_t>>;
 	cl
 	.def("__add__", [](P &p1, P &p2) -> P {

@@ -21,7 +21,7 @@ struct MainProxies {
     AllProxyClasses<blocksci::TaggedCluster> taggedCluster;
     AllProxyClasses<blocksci::TaggedAddress> taggedAddress;
 
-    MainProxies(pybind11::module &m, pybind11::class_<SimpleProxy> &proxySimpleCl, pybind11::class_<OptionalProxy> &proxyOptionalCl, pybind11::class_<IteratorProxy> &proxyIteratorCl, pybind11::class_<RangeProxy> &proxyRangeCl);
+    MainProxies(pybind11::module &m, pybind11::class_<SimpleProxy> &proxySimpleCl);
 };
 
 struct ScriptProxies {
@@ -38,7 +38,7 @@ struct ScriptProxies {
     AllProxyClasses<blocksci::script::Nonstandard> nonstandard;
     AllProxyClasses<blocksci::script::WitnessUnknown> witnessUnknown;
 
-    ScriptProxies(pybind11::module &m, pybind11::class_<SimpleProxy> &proxySimpleCl, pybind11::class_<OptionalProxy> &proxyOptionalCl, pybind11::class_<IteratorProxy> &proxyIteratorCl, pybind11::class_<RangeProxy> &proxyRangeCl);
+    ScriptProxies(pybind11::module &m, pybind11::class_<SimpleProxy> &proxySimpleCl);
 };
 
 struct OtherProxies {
@@ -52,7 +52,7 @@ struct OtherProxies {
     AllProxyClasses<pybind11::bytes> bytes;
     AllProxyClasses<pybind11::list> list;
 
-    OtherProxies(pybind11::module &m, pybind11::class_<SimpleProxy> &proxySimpleCl, pybind11::class_<OptionalProxy> &proxyOptionalCl, pybind11::class_<IteratorProxy> &proxyIteratorCl, pybind11::class_<RangeProxy> &proxyRangeCl);
+    OtherProxies(pybind11::module &m, pybind11::class_<SimpleProxy> &proxySimpleCl);
 };
 
 #endif /*python_proxies_types_h*/

@@ -182,6 +182,12 @@ struct Proxy<ranges::optional<T>> : public ProxyImpl<ranges::optional<T>>, publi
 };
 
 template<typename T>
+struct ProxySequence {
+	virtual std::function<Iterator<T>(std::any &)> getIterator() const;
+	virtual ~ProxySequence() = default;
+};
+
+template<typename T>
 struct Proxy<Range<T>> : public ProxyImpl<Range<T>>, public RangeProxy {
 	using output_t = Range<T>;
 	using ProxyImpl<Range<T>>::ProxyImpl;

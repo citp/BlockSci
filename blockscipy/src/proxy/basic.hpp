@@ -20,34 +20,35 @@
 
 struct CallFunc {
 	template <typename T1, typename T2>
-	static T2 apply(Proxy<T2> &p, T1 &val) {
+	static typename T2::output_t apply(T2 &p, T1 &val) {
 		return p(val);
 	}
 };
 
 struct OptionalCallFunc {
 	template <typename T1, typename T2>
-	static T2 apply(Proxy<T2> &p, T1 &val) {
+	static typename T2::output_t apply(T2 &p, T1 &val) {
 		return p(val);
 	}
 };
 
 struct IteratorCallFunc {
 	template <typename T1, typename T2>
-	static auto apply(Proxy<T2> &p, T1 &val) -> decltype(convertPythonRange(p(val))) {
+	static auto apply(T2 &p, T1 &val) -> decltype(convertPythonRange(p(val))) {
 		return convertPythonRange(p(val));
 	}
 };	
 
 struct RangeCallFunc {
 	template <typename T1, typename T2>
-	static auto apply(Proxy<T2> &p, T1 &val) -> decltype(convertPythonRange(p(val))) {
+	static auto apply(T2 &p, T1 &val) -> decltype(convertPythonRange(p(val))) {
 		return convertPythonRange(p(val));
 	}
 };
 
-template <typename R, typename T, typename Func>
-void addCallMethod(pybind11::class_<Proxy<T>> &cl, Func) {
+template <typename R, typename Class, typename Func>
+void addCallMethod(Class &cl, Func) {
+	using T = typename Class::type;
 	cl
 	.def("__call__", Func::template apply<R, T>)
 	.def("__call__", Func::template apply<ranges::optional<R>, T>)
@@ -57,7 +58,7 @@ void addCallMethod(pybind11::class_<Proxy<T>> &cl, Func) {
 }
 
 template <typename T, typename Func>
-void addCallMethods(pybind11::class_<Proxy<T>> &cl, Func callFunc) {
+void addCallMethods(T &cl, Func callFunc) {
 	using namespace blocksci;
 	addCallMethod<Block>(cl, callFunc);
 	addCallMethod<Transaction>(cl, callFunc);
@@ -97,7 +98,7 @@ struct AddProxyMethods {
 	}
 
 	template<typename T>
-	void operator()(pybind11::class_<Proxy<ranges::optional<T>>> &cl) {
+	void operator()(pybind11::class_<Proxy<ranges::optional<T>>, OptionalProxy> &cl) {
 		addCallMethods(cl, OptionalCallFunc{});
 
 		cl
@@ -108,7 +109,7 @@ struct AddProxyMethods {
 	}
 
 	template<typename T>
-	void operator()(pybind11::class_<Proxy<Iterator<T>>> &cl) {
+	void operator()(pybind11::class_<Proxy<Iterator<T>>, IteratorProxy> &cl) {
 		addCallMethods(cl, IteratorCallFunc{});
 		addCallMethod<blocksci::AnyScript>(cl, IteratorCallFunc{});
 
@@ -120,7 +121,7 @@ struct AddProxyMethods {
 	}
 
 	template<typename T>
-	void operator()(pybind11::class_<Proxy<Range<T>>> &cl) {
+	void operator()(pybind11::class_<Proxy<Range<T>>, RangeProxy> &cl) {
 		addCallMethods(cl, RangeCallFunc{});
 		addCallMethod<blocksci::AnyScript>(cl, RangeCallFunc{});
 

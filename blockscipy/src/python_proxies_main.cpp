@@ -23,15 +23,15 @@
 namespace py = pybind11;
 using namespace blocksci;
 
-MainProxies::MainProxies(py::module &m, py::class_<SimpleProxy> &proxySimpleCl, py::class_<OptionalProxy> &proxyOptionalCl, py::class_<IteratorProxy> &proxyIteratorCl, py::class_<RangeProxy> &proxyRangeCl) :
-block(m, proxySimpleCl, proxyOptionalCl, proxyIteratorCl, proxyRangeCl),
-tx(m, proxySimpleCl, proxyOptionalCl, proxyIteratorCl, proxyRangeCl),
-input(m, proxySimpleCl, proxyOptionalCl, proxyIteratorCl, proxyRangeCl),
-output(m, proxySimpleCl, proxyOptionalCl, proxyIteratorCl, proxyRangeCl),
-equivAddress(m, proxySimpleCl, proxyOptionalCl, proxyIteratorCl, proxyRangeCl),
-cluster(m, proxySimpleCl, proxyOptionalCl, proxyIteratorCl, proxyRangeCl),
-taggedCluster(m, proxySimpleCl, proxyOptionalCl, proxyIteratorCl, proxyRangeCl),
-taggedAddress(m, proxySimpleCl, proxyOptionalCl, proxyIteratorCl, proxyRangeCl) {}
+MainProxies::MainProxies(py::module &m, py::class_<SimpleProxy> &proxySimpleCl) :
+block(m, proxySimpleCl),
+tx(m, proxySimpleCl),
+input(m, proxySimpleCl),
+output(m, proxySimpleCl),
+equivAddress(m, proxySimpleCl),
+cluster(m, proxySimpleCl),
+taggedCluster(m, proxySimpleCl),
+taggedAddress(m, proxySimpleCl) {}
 
 
 void setupMainProxies(MainProxies &proxies) {

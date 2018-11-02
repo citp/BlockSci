@@ -60,34 +60,27 @@ private:
     }
 public:
     pybind11::class_<Proxy<T>> base;
-    pybind11::class_<Proxy<ranges::optional<T>>> optional;
-    pybind11::class_<Proxy<Iterator<T>>> iterator;
-    pybind11::class_<Proxy<Range<T>>> range;
+    pybind11::class_<Proxy<ranges::optional<T>>, OptionalProxy> optional;
+    pybind11::class_<Proxy<Iterator<T>>, IteratorProxy> iterator;
+    pybind11::class_<Proxy<Range<T>>, RangeProxy> range;
 
 	AllProxyClasses(
         pybind11::module &m,
-        pybind11::class_<SimpleProxy> &proxySimpleCl,
-        pybind11::class_<OptionalProxy> &proxyOptionalCl,
-        pybind11::class_<IteratorProxy> proxyIteratorCl,
-        pybind11::class_<RangeProxy> proxyRangeCl) : 
+        pybind11::class_<SimpleProxy> &proxySimpleCl) : 
     	base(m, strdup(proxyName<T>().c_str()), proxySimpleCl),
-    	optional(m, strdup(proxyName<ranges::optional<T>>().c_str()), proxyOptionalCl),
-    	iterator(m, strdup(proxyName<Iterator<T>>().c_str()), proxyIteratorCl),
-    	range(m, strdup(proxyName<Range<T>>().c_str()), proxyRangeCl) {
+    	optional(m, strdup(proxyName<ranges::optional<T>>().c_str())),
+    	iterator(m, strdup(proxyName<Iterator<T>>().c_str())),
+    	range(m, strdup(proxyName<Range<T>>().c_str())) {
         commonInit(m);
     }
 
     AllProxyClasses(
         pybind11::module &m,
-        pybind11::class_<ProxyAddress> proxyAddressCl,
-        pybind11::class_<OptionalProxy> &proxyOptionalCl,
-        pybind11::class_<IteratorProxy> proxyIteratorCl,
-        pybind11::class_<RangeProxy> proxyRangeCl) : 
+        pybind11::class_<ProxyAddress> proxyAddressCl) : 
         base(m, strdup(proxyName<T>().c_str()), proxyAddressCl),
-        optional(m, strdup(proxyName<ranges::optional<T>>().c_str()), proxyOptionalCl),
-        iterator(m, strdup(proxyName<Iterator<T>>().c_str()), proxyIteratorCl),
-        range(m, strdup(proxyName<Range<T>>().c_str()), proxyRangeCl
-    ) {
+        optional(m, strdup(proxyName<ranges::optional<T>>().c_str())),
+        iterator(m, strdup(proxyName<Iterator<T>>().c_str())),
+        range(m, strdup(proxyName<Range<T>>().c_str())) {
         commonInit(m);
     }
 

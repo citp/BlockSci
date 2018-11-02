@@ -14,9 +14,17 @@
 #include <range/v3/algorithm/all_of.hpp>
 
 void applyProxyIteratorFuncs(pybind11::class_<IteratorProxy> &cl) {
-	applyProxyMapFuncs(cl);
-    applyProxyMapOptionalFuncs(cl);
-    applyProxyMapSequenceFuncs(cl);
+	applyProxyMapFuncsCore(cl);
+	applyProxyMapFuncsScripts(cl);
+	applyProxyMapFuncsOther(cl);
+
+    applyProxyMapOptionalFuncsCore(cl);
+	applyProxyMapOptionalFuncsScripts(cl);
+	applyProxyMapOptionalFuncsOther(cl);
+
+    applyProxyMapSequenceFuncsCore(cl);
+    applyProxyMapSequenceFuncsScripts(cl);
+    applyProxyMapSequenceFuncsOther(cl);
 
     cl
 	.def_property_readonly("size", [](IteratorProxy &seq) -> Proxy<int64_t> {
@@ -47,7 +55,9 @@ void applyProxyIteratorFuncs(pybind11::class_<IteratorProxy> &cl) {
 }
 
 void applyProxyRangeFuncs(pybind11::class_<RangeProxy> &cl) {
-	applyProxyMapFuncs(cl);
+	applyProxyMapFuncsCore(cl);
+	applyProxyMapFuncsScripts(cl);
+	applyProxyMapFuncsOther(cl);
 
     cl
 	.def_property_readonly("size", [](RangeProxy &seq) -> Proxy<int64_t> {

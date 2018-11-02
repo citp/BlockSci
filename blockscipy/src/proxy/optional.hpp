@@ -14,7 +14,7 @@
 #include <pybind11/pybind11.h>
 
 template<typename T>
-void addProxyOptionalMethods(pybind11::class_<Proxy<ranges::optional<T>>> &cl) {
+void addProxyOptionalMethods(pybind11::class_<Proxy<ranges::optional<T>>, OptionalProxy> &cl) {
 	using P = Proxy<ranges::optional<T>>;
 	cl
 	.def("or_value", [](P &p, Proxy<T> &v) -> Proxy<T> {

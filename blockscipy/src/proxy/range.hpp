@@ -17,8 +17,8 @@
 #include <range/v3/view/slice.hpp>
 #include <range/v3/size.hpp>
 
-template<typename T, ranges::category range_cat>
-void addProxySequenceMethods(pybind11::class_<Proxy<any_view<T, range_cat>>> &cl) {
+template<typename T, ranges::category range_cat, typename... Args>
+void addProxySequenceMethods(pybind11::class_<Proxy<any_view<T, range_cat>>, Args...> &cl) {
 	cl
 	.def("_where", [](Proxy<any_view<T, range_cat>> &p, Proxy<bool> &p2) -> Proxy<Iterator<T>> {
 		return lift(p, [=](any_view<T, range_cat> && range) -> Iterator<T> {
@@ -31,7 +31,7 @@ void addProxySequenceMethods(pybind11::class_<Proxy<any_view<T, range_cat>>> &cl
 }
 
 template<typename T>
-void addRangeProxyMethods(pybind11::class_<Proxy<Range<T>>> &cl) {
+void addRangeProxyMethods(pybind11::class_<Proxy<Range<T>>, RangeProxy> &cl) {
 	cl
     .def("__getitem__", [](Proxy<Range<T>> &p, int64_t posIndex) -> Proxy<T> {
     	return lift(p, [=](Range<T> && range) -> T {
