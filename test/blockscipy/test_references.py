@@ -43,5 +43,5 @@ def test_address_references(chain, json_data):
             height = json_data["address-{}-spend-{}-height".format(addr_type, i)]
 
             for j in range(i):
-                assert tx == addr.outs.all[j].tx
-                assert chain[height] == addr.outs.all[j].tx.block
+                assert tx == addr.outs.to_list()[j].tx
+                assert chain[height] == addr.outs.to_list()[j].tx.block

@@ -21,7 +21,7 @@ def test_block_with_p2wsh_tx(chain, json_data, regtest):
 
 
 def block_regression(block, regtest):
-    print(block.all, file=regtest)
+    print(block.to_list(), file=regtest)
     print(block.base_size, file=regtest)
     print(block.bits, file=regtest)
     print(block.coinbase_param, file=regtest)

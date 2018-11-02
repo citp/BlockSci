@@ -74,9 +74,10 @@ void init_block(py::class_<Block> &cl) {
     .def("net_full_type_value", py::overload_cast<const Block &>(netFullTypeValue), "Returns a set of the net change in the utxo pool after this block split up by full type")
     ;
 
-    addCommonIteratorMethods(cl);
-
     cl
+    .def("__iter__", [](Block &range) { 
+        return pybind11::make_iterator(range.begin(), range.end()); 
+    }, pybind11::keep_alive<0, 1>())
     .def("__bool__", [](Block &range) {
         return !ranges::empty(range);
         
@@ -84,6 +85,9 @@ void init_block(py::class_<Block> &cl) {
     .def("__len__", [](Block &range) {
         return range.size();
     })
+    .def("to_list", [](Block & range) { 
+        return pythonAllType(range);
+    }, "Returns a list of all of the objects in the block")
     ;
 }
 
