@@ -176,6 +176,7 @@ namespace blocksci { namespace heuristics {
                 txInputTaint.clear();
                 txInputTaint.reserve(tx.inputCount());
                 bool hasTaintedInputs = false;
+                // find tainted outputs spent in this transaction
                 for (auto input : tx.inputs()) {
                     auto it = taintedOutputs.find(input.getSpentOutputPointer());
                     if (it != taintedOutputs.end()) {
@@ -187,9 +188,11 @@ namespace blocksci { namespace heuristics {
                     }
                 }
                 if(hasTaintedInputs) {
+                    // compute taint of outputs
                     func(tx, txInputTaint, txOutputTaint, coinbaseTaint);
                     processTx(taintedOutputs, tx, txOutputTaint);    
                 } else {
+                    // no tainted inputs, thus fee is untainted
                     coinbaseTaint = UntaintedInputCreator<Taint>{}(tx.fee());
                 }
                 coinbaseTaintList.emplace_back(coinbaseTaint);
@@ -247,6 +250,8 @@ namespace blocksci { namespace heuristics {
             for (auto spendingOut : tx.outputs()) {
                 auto percentage = static_cast<double>(spendingOut.getValue()) / totalIn;
                 auto newTaintedValue = std::min(static_cast<int64_t>(percentage * static_cast<double>(totalTaintedVal)), spendingOut.getValue());
+                // make sure we don't taint more than what's left
+                newTaintedValue = std::min(newTaintedValue, totalTaintedVal - taintedValue);
                 taintedValue += newTaintedValue;
                 outs.emplace_back(newTaintedValue, spendingOut.getValue() - newTaintedValue);
             }
