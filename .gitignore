@@ -2,6 +2,7 @@ release
 xcode
 debug
 build
+.mtime_cache
 *.DS_Store
 Notebooks/blocksci
 *.so
