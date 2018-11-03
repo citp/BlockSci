@@ -1,0 +1,23 @@
+dist: xenial
+language: cpp
+sudo: required
+
+cache:
+  directories:
+    - release
+
+before_install:
+  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+  - sudo apt-get update
+  - sudo apt install gcc-7 g++-7 libtool autoconf libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libboost-thread-dev libboost-test-dev  libssl-dev libjsoncpp-dev libcurl4-openssl-dev libjsoncpp-dev libjsonrpccpp-dev libsnappy-dev zlib1g-dev libbz2-dev liblz4-dev libzstd-dev libjemalloc-dev libsparsehash-dev
+install:
+  - mkdir -p release
+  - cd release
+  - CC=gcc-7 CXX=g++-7 cmake -DCMAKE_BUILD_TYPE=Release ..
+  - make -j 2
+  - sudo make install
+  - cd ..
+script:
+  - cd test
+  - blocksci_parser regtest.json generate-config bitcoin_regtest bitcoin_regtest --disk files/regtest/
+  - blocksci_parser regtest.json update
