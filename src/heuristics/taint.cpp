@@ -81,32 +81,60 @@ namespace blocksci { namespace heuristics {
         return taint;
     }
     
+    struct InoutInfo {
+        uint32_t txNum;
+        OutputPointer pointer;
+        
+        bool operator<(const InoutInfo& other) const {
+            return std::tie(txNum, pointer) < std::tie(other.txNum, other.pointer);
+        }
+        
+        bool operator==(const InoutInfo& other) const {
+            return txNum == other.txNum && pointer == other.pointer;
+        }
+    };
+}}
+
+namespace std {
+    template<> struct BLOCKSCI_EXPORT hash<blocksci::heuristics::InoutInfo> {
+        size_t operator()(const blocksci::heuristics::InoutInfo &info) const {
+            std::size_t seed = 76547;
+            blocksci::hash_combine(seed, info.txNum);
+            blocksci::hash_combine(seed, info.pointer);
+            return seed;
+        }
+    };
+} // namespace std
+
+namespace blocksci { namespace heuristics {
     template <typename Taint>
-    void processOutput(std::unordered_map<OutputPointer, Taint> &taintedOutputs, const Output &spendingOut, Taint &newTaintedValue) {
+    using TaintMap = std::map<InoutInfo, Taint>;
+    
+    template <typename Taint>
+    void processOutput(TaintMap<Taint> &taintedInputs, std::unordered_map<OutputPointer, Taint> &taintedOutputs, const Output &spendingOut, Taint &newTaintedValue) {
         if (hasTaint(newTaintedValue) && spendingOut.getAddress().isSpendable()) {
-            auto it = taintedOutputs.find(spendingOut.pointer);
-            if (it == taintedOutputs.end()) { // check if output was passed in originally as fully tainted
-                taintedOutputs.insert(std::make_pair(spendingOut.pointer, std::move(newTaintedValue)));
+            auto spendingTx = spendingOut.getSpendingTxIndex();
+            if (spendingTx) {
+                InoutInfo info{*spendingTx, spendingOut.pointer};
+                auto it = taintedInputs.find(info);
+                if (it == taintedInputs.end()) { // check if output was passed in originally as fully tainted
+                    taintedInputs.insert(std::make_pair(info, std::move(newTaintedValue)));
+                }
+            } else {
+                auto it = taintedOutputs.find(spendingOut.pointer);
+                if (it == taintedOutputs.end()) { // check if output was passed in originally as fully tainted
+                    taintedOutputs.insert(std::make_pair(spendingOut.pointer, std::move(newTaintedValue)));
+                }
             }
         }
     }
     
     template <typename Taint>
-    void processTx(std::unordered_map<OutputPointer, Taint> &taintedOutputs, const Transaction &tx, std::vector<Taint> &outputTaint) {
+    void processTx(TaintMap<Taint> &taintedInputs, std::unordered_map<OutputPointer, Taint> &taintedOutputs, const Transaction &tx, std::vector<Taint> &outputTaint) {
         assert(outputTaint.size() == tx.outputCount());
         for (uint16_t i = 0; i < tx.outputCount(); i++) {
-            processOutput(taintedOutputs, tx.outputs()[i], outputTaint[i]);
+            processOutput(taintedInputs, taintedOutputs, tx.outputs()[i], outputTaint[i]);
         }
-    }
-    
-    template <typename Taint>
-    std::vector<std::pair<Output, Taint>> convertFinalOutputs(const std::unordered_map<OutputPointer, Taint> &taintedOutputs, DataAccess &access) {
-        std::vector<std::pair<Output, Taint>> ret;
-        ret.reserve(taintedOutputs.size());
-        for (auto &item : taintedOutputs) {
-            ret.emplace_back(Output{item.first, access}, item.second);
-        }
-        return ret;
     }
     
     void clearTaint(SimpleTaint &taint) {
@@ -148,6 +176,8 @@ namespace blocksci { namespace heuristics {
         
         auto &access = taintedOutputsRaw[0].first.getAccess();
         
+        TaintMap<Taint> taintedInputs;
+        
         std::unordered_map<OutputPointer, Taint> taintedOutputs;
         
         if (maxBlockHeight == -1) {
@@ -158,7 +188,7 @@ namespace blocksci { namespace heuristics {
         
         BlockHeight minHeight = std::numeric_limits<BlockHeight>::max();
         for(std::pair<Output, Taint> &taintedOutput : taintedOutputsRaw){
-            processOutput(taintedOutputs, taintedOutput.first, taintedOutput.second);
+            processOutput(taintedInputs, taintedOutputs, taintedOutput.first, taintedOutput.second);
             
             minHeight = std::min(minHeight, taintedOutput.first.getBlockHeight());
         }
@@ -169,6 +199,9 @@ namespace blocksci { namespace heuristics {
         Taint coinbaseTaint;
         clearTaint(coinbaseTaint);
         for (auto block : blocks) {
+            if (taintedInputs.begin()->first.txNum >= block.endTxIndex()) {
+                continue;
+            }
             std::vector<Taint> coinbaseTaintList;
             coinbaseTaintList.reserve(block.size());
             for (auto tx : block[{1, block.size()}]) {
@@ -177,26 +210,28 @@ namespace blocksci { namespace heuristics {
                 clearTaint(coinbaseTaint);
                 txInputTaint.clear();
                 txInputTaint.reserve(tx.inputCount());
-                bool hasTaintedInputs = false;
-                // find tainted outputs spent in this transaction
-                for (auto input : tx.inputs()) {
-                    auto it = taintedOutputs.find(input.getSpentOutputPointer());
-                    if (it != taintedOutputs.end()) {
-                        hasTaintedInputs = true;
-                        txInputTaint.emplace_back(std::move(it->second));
-                        taintedOutputs.erase(it);
-                    } else {
-                        txInputTaint.emplace_back(UntaintedInputCreator<Taint>{}(input.getValue()));
+                
+                if (taintedInputs.begin()->first.txNum == tx.txNum) {
+                    // find tainted outputs spent in this transaction
+                    for (auto input : tx.inputs()) {
+                        InoutInfo info{tx.txNum, input.getSpentOutputPointer()};
+                        auto it = taintedInputs.find(info);
+                        if (it != taintedInputs.end()) {
+                            txInputTaint.emplace_back(std::move(it->second));
+                            taintedInputs.erase(it);
+                        } else {
+                            txInputTaint.emplace_back(UntaintedInputCreator<Taint>{}(input.getValue()));
+                        }
                     }
-                }
-                if(hasTaintedInputs) {
+                    
                     // compute taint of outputs
                     func(tx, txInputTaint, txOutputTaint, coinbaseTaint);
-                    processTx(taintedOutputs, tx, txOutputTaint);    
+                    processTx(taintedInputs, taintedOutputs, tx, txOutputTaint);
                 } else {
                     // no tainted inputs, thus fee is untainted
                     coinbaseTaint = UntaintedInputCreator<Taint>{}(tx.fee());
                 }
+                
                 coinbaseTaintList.emplace_back(coinbaseTaint);
             }
             if (taintFee) {
@@ -207,10 +242,20 @@ namespace blocksci { namespace heuristics {
                 int64_t subsidy = getSubsidy(block);
                 coinbaseTaintList.insert(coinbaseTaintList.begin(), UntaintedInputCreator<Taint>{}(subsidy));
                 func(block[0], coinbaseTaintList, txOutputTaint, coinbaseTaint);
-                processTx(taintedOutputs, block[0], txOutputTaint);
+                processTx(taintedInputs, taintedOutputs, block[0], txOutputTaint);
             }
         }
-        return convertFinalOutputs(taintedOutputs, access);
+        
+        std::vector<std::pair<Output, Taint>> ret;
+        ret.reserve(taintedOutputs.size() + taintedInputs.size());
+        
+        for (auto &item : taintedOutputs) {
+            ret.emplace_back(Output{item.first, access}, item.second);
+        }
+        for (auto &item : taintedInputs) {
+            ret.emplace_back(Output{item.first.pointer, access}, item.second);
+        }
+        return ret;
     }
     
     /**
