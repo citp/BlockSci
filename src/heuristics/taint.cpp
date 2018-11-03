@@ -126,7 +126,7 @@ namespace blocksci { namespace heuristics {
             if(block.height() >= 150){
                 subsidy = 25 * COIN;
             }
-        } else {
+        } else if(chainName == "bitcoin") {
             subsidy = 50 * COIN;
             int halvings = block.height() / 210000;
             // Force block reward to zero when right shift is undefined.
@@ -135,6 +135,8 @@ namespace blocksci { namespace heuristics {
             } else {
                 subsidy >>= halvings;
             }
+        } else {
+            throw "Chain unsupported. You'll need to add chain-specific subsidy code to taint.cpp.";
         }
         
         return subsidy;
