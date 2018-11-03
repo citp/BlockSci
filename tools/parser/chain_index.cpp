@@ -101,7 +101,7 @@ std::vector<BlockInfo<FileTag>> readBlocksInfo(int fileNum, const ParserConfigur
 }
 
 template <>
-void ChainIndex<FileTag>::update(const ConfigType &config) {
+void ChainIndex<FileTag>::update(const ConfigType &config, blocksci::BlockHeight /*maxblockHeight*/) {
     int fileNum = 0;
     unsigned int filePos = 0;
 
@@ -187,11 +187,18 @@ void ChainIndex<FileTag>::update(const ConfigType &config) {
 }
 
 template<>
-void ChainIndex<RPCTag>::update(const ConfigType &config) {
+void ChainIndex<RPCTag>::update(const ConfigType &config, blocksci::BlockHeight blockHeight) {
     try {
         BitcoinAPI bapi{config.createBitcoinAPI()};
-        auto blockHeight = static_cast<blocksci::BlockHeight>(bapi.getblockcount());
-
+        
+        
+        auto maxBlockHeight = static_cast<blocksci::BlockHeight>(bapi.getblockcount());
+        if (blockHeight < 0) {
+            blockHeight = maxBlockHeight + blockHeight;
+        }
+        if (blockHeight > maxBlockHeight) {
+            blockHeight = maxBlockHeight;
+        }
         
         auto splitPoint = findSplitPointIndex(blockHeight, [&](blocksci::BlockHeight h) {
             return blocksci::uint256S(bapi.getblockhash(static_cast<int>(h)));

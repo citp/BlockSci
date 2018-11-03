@@ -147,7 +147,7 @@ struct ChainIndex {
     std::unordered_map<blocksci::uint256, BlockType> blockList;
     BlockType newestBlock;
     
-    void update(const ConfigType &config);
+    void update(const ConfigType &config, blocksci::BlockHeight maxblockHeight);
 
     std::vector<BlockType> generateChain(blocksci::BlockHeight maxBlockHeight) const {
         std::vector<BlockType> chain;

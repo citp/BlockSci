@@ -192,7 +192,7 @@ std::vector<blocksci::RawBlock> updateChain(const ParserConfiguration<ParserTag>
             }
         }
         
-        index.update(config);
+        index.update(config, maxBlockNum);
         auto blocks = index.generateChain(maxBlockNum);
         std::ofstream of(config.blockListPath().str(), std::ios::binary);
         cereal::BinaryOutputArchive oa(of);
