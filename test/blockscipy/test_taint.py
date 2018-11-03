@@ -55,6 +55,11 @@ def test_poison_two_outputs_no_fee(chain, json_data):
 
 def test_poison_single_output_with_fee(chain, json_data):
     out_1 = chain.tx_with_hash(json_data['taint-split-tx-1']).outputs[0]
+
+    result = blocksci.heuristics.poison_tainted_outputs([out_1], taint_fee=True,
+                                                        max_block_height=out_1.tx.block_height)
+    assert 1 == len(result)
+
     # taint one output for one block
     result = blocksci.heuristics.poison_tainted_outputs([out_1], taint_fee=True,
                                                         max_block_height=out_1.tx.block_height + 1)
