@@ -4,6 +4,7 @@ Tests a number of less common characteristics of blocks and transactions
 """
 
 from util import Coin
+import blocksci
 
 
 def test_reward_partially_claimed(chain, json_data):
@@ -43,3 +44,15 @@ def test_op_return(chain, json_data):
     assert op_return
     assert out == op_return
     assert b"Lord Voldemort" == op_return.address.data
+
+
+def test_multisig(chain, json_data):
+    tx = chain.tx_with_hash(json_data["multisig-p2sh-tx"])
+    out = tx.outputs[0]
+
+    assert blocksci.address_type.scripthash == out.address_type
+
+    wrapped = out.address.wrapped_address
+    assert blocksci.address_type.multisig == wrapped.type
+    assert 2 == wrapped.required
+    assert 3 == wrapped.total

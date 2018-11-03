@@ -1,8 +1,20 @@
+import blocksci
 from util import tz_offset
 
 
 def test_chain_sanity(chain):
     assert 110 < len(chain)
+
+
+def test_chain(chain, regtest):
+    assert 0 < chain.address_count(blocksci.address_type.pubkey)
+    assert 0 < chain.address_count(blocksci.address_type.pubkeyhash)
+    assert 0 < chain.address_count(blocksci.address_type.scripthash)
+    assert 0 < chain.address_count(blocksci.address_type.witness_pubkeyhash)
+    assert 0 < chain.address_count(blocksci.address_type.witness_scripthash)
+    assert 0 < chain.address_count(blocksci.address_type.nulldata)
+    assert 0 < chain.address_count(blocksci.address_type.multisig)
+    # print(chain.most_valuable_addresses(), file=regtest)
 
 
 def test_empty_block(chain, regtest):
