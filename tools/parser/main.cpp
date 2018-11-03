@@ -392,8 +392,29 @@ int main(int argc, char * argv[]) {
     std::string coinType;
     int maxBlockNum = 0;
     std::string dataDirectory;
+    
+    std::stringstream coinTypes;
+    coinTypes
+    << "coin type (supported modes)\n"
+    << "                        bitcoin(disk, rpc)\n"
+    << "                        bitcoin_testnet(disk, rpc)\n"
+    << "                        bitcoin_regtest(disk, rpc)\n"
+    << "                        bitcoin_cash(disk, rpc)\n"
+    << "                        bitcoin_cash_testnet(disk, rpc)\n"
+    << "                        bitcoin_cash_regtest(disk, rpc)\n"
+    << "                        litecoin(disk, rpc)\n"
+    << "                        litecoin_testnet(disk, rpc)\n"
+    << "                        litecoin_regtest(disk, rpc)\n"
+    << "                        dash(rpc)\n"
+    << "                        dash_testnet(rpc)\n"
+    << "                        namecoin(rpc)\n"
+    << "                        namecoin_testnet(rpc)\n"
+    << "                        zcash(rpc)\n"
+    << "                        zcash_testnet(rpc)\n"
+    << "                        custom"
+    ;
     auto configOptions = (
-          clipp::value("coin type", coinType),
+          clipp::value("coin type", coinType) % coinTypes.str(),
           clipp::value("data directory", dataDirectory) % "Path to blocksci data location",
           (clipp::option("--max-block", "-m") & clipp::value("max block", maxBlockNum)) % "Max block height to scan up to",
           fileOptions,
@@ -500,6 +521,11 @@ int main(int argc, char * argv[]) {
             } else if (coinType == "zcash_testnet") {
                 chainConfig = blocksci::ChainConfiguration::zcashTestnet(dataDirectory);
                 rpcConfig = blocksci::ChainRPCConfiguration::zcashTestnet(username, password);
+            } else if (coinType == "custom") {
+                
+            } else {
+                std::cout << "Selected invalid coin type\n";
+                return 0;
             }
             
             chainConfig.coinName = coinType;
