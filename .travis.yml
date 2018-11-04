@@ -1,27 +1,26 @@
-dist: xenial
 language: cpp
+dist: xenial
 sudo: required
-
+git:
+  depth: 3
+env: PYTHONPATH=$PYTHONPATH:/usr/local/cmake-3.9.2/bin/
 cache:
+  pip: true
   directories:
     - release
+    - blockscipy/build
     - .mtime_cache
-
-before_install:
-  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-  - sudo apt-get update
-  - sudo apt install gcc-7 g++-7 libtool autoconf libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libboost-thread-dev libboost-test-dev  libssl-dev libjsoncpp-dev libcurl4-openssl-dev libjsoncpp-dev libjsonrpccpp-dev libsnappy-dev zlib1g-dev libbz2-dev liblz4-dev libzstd-dev libjemalloc-dev libsparsehash-dev
-  - sudo apt-get install ruby-full -y  # only needed for caching
-  - gem install mtime_cache  # only needed for caching
-install:
-  - mkdir -p release
-  - cd release
-  - CC=gcc-7 CXX=g++-7 cmake -DCMAKE_BUILD_TYPE=Release ..
-  - mtime_cache ../**/*.{%{cpp}} -c ../.mtime_cache/cache.json
-  - make -j 2
-  - sudo make install
-  - cd ..
-script:
-  - cd test
-  - blocksci_parser regtest.json generate-config bitcoin_regtest bitcoin_regtest --disk files/regtest/
-  - blocksci_parser regtest.json update
+matrix:
+  include:
+    - stage: Build Core Library (CPP)
+      before_install: .travis/build_ubuntu_cpp.sh
+      install: .travis/compile_ubuntu_cpp.sh
+      script: .travis/test_parser.sh
+    - stage: Build Python Module
+      before_install:
+        - .travis/build_ubuntu_cpp.sh
+        - .travis/build_ubuntu_python.sh
+      install:
+        - .travis/compile_ubuntu_cpp.sh
+        - .travis/compile_ubuntu_python.sh
+      script: .travis/test_python.sh
