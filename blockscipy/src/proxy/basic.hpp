@@ -23,6 +23,16 @@ struct CallFunc {
 	static typename T2::output_t apply(T2 &p, T1 &val) {
 		return p(val);
 	}
+
+	template <typename T1, typename T2>
+	static typename T2::output_t applyIterator(T2 &p, Iterator<T1> &val) {
+		return p(val.rng);
+	}
+
+	template <typename T1, typename T2>
+	static typename T2::output_t applyRange(T2 &p, Range<T1> &val) {
+		return p(val.rng);
+	}
 };
 
 struct OptionalCallFunc {
@@ -30,19 +40,49 @@ struct OptionalCallFunc {
 	static typename T2::output_t apply(T2 &p, T1 &val) {
 		return p(val);
 	}
+
+	template <typename T1, typename T2>
+	static typename T2::output_t applyIterator(T2 &p, Iterator<T1> &val) {
+		return p(val.rng);
+	}
+
+	template <typename T1, typename T2>
+	static typename T2::output_t applyRange(T2 &p, Range<T1> &val) {
+		return p(val.rng);
+	}
 };
 
 struct IteratorCallFunc {
 	template <typename T1, typename T2>
-	static auto apply(T2 &p, T1 &val) -> decltype(convertPythonRange(p(val))) {
-		return convertPythonRange(p(val));
+	static auto apply(T2 &p, T1 &val) -> decltype(convertPythonRange(p.applySimple(val))) {
+		return convertPythonRange(p.applySimple(val));
+	}
+
+	template <typename T1, typename T2>
+	static auto applyIterator(T2 &p, Iterator<T1> &val) -> decltype(convertPythonRange(p.applySimple(val.rng))) {
+		return convertPythonRange(p.applySimple(val.rng));
+	}
+
+	template <typename T1, typename T2>
+	static auto applyRange(T2 &p, Range<T1> &val) -> decltype(convertPythonRange(p.applySimple(val.rng))) {
+		return convertPythonRange(p.applySimple(val.rng));
 	}
 };	
 
 struct RangeCallFunc {
 	template <typename T1, typename T2>
-	static auto apply(T2 &p, T1 &val) -> decltype(convertPythonRange(p(val))) {
-		return convertPythonRange(p(val));
+	static auto apply(T2 &p, T1 &val) -> decltype(convertPythonRange(p.applySimple(val))) {
+		return convertPythonRange(p.applySimple(val));
+	}
+
+	template <typename T1, typename T2>
+	static auto applyIterator(T2 &p, Iterator<T1> &val) -> decltype(convertPythonRange(p.applySimple(val.rng))) {
+		return convertPythonRange(p.applySimple(val.rng));
+	}
+
+	template <typename T1, typename T2>
+	static auto applyRange(T2 &p, Range<T1> &val) -> decltype(convertPythonRange(p.applySimple(val.rng))) {
+		return convertPythonRange(p.applySimple(val.rng));
 	}
 };
 
@@ -52,8 +92,8 @@ void addCallMethod(Class &cl, Func) {
 	cl
 	.def("__call__", Func::template apply<R, T>)
 	.def("__call__", Func::template apply<ranges::optional<R>, T>)
-	.def("__call__", Func::template apply<Iterator<R>, T>)
-	.def("__call__", Func::template apply<Range<R>, T>)
+	.def("__call__", Func::template applyIterator<R, T>)
+	.def("__call__", Func::template applyRange<R, T>)
 	;
 }
 
@@ -88,11 +128,11 @@ struct AddProxyMethods {
 		addCallMethods(cl, CallFunc{});
 
 		cl
-		.def_property_readonly_static("range_proxy", [](pybind11::object &) -> Proxy<Range<T>> {
-	        return makeProxy<Range<T>>();
+		.def_property_readonly_static("range_proxy", [](pybind11::object &) -> Proxy<RawRange<T>> {
+	        return makeProxy<RawRange<T>>();
 	    })
-	    .def_property_readonly_static("iterator_proxy", [](pybind11::object &) -> Proxy<Iterator<T>> {
-	        return makeProxy<Iterator<T>>();
+	    .def_property_readonly_static("iterator_proxy", [](pybind11::object &) -> Proxy<RawIterator<T>> {
+	        return makeProxy<RawIterator<T>>();
 	    })
 	    ;
 	}
@@ -109,7 +149,7 @@ struct AddProxyMethods {
 	}
 
 	template<typename T>
-	void operator()(pybind11::class_<Proxy<Iterator<T>>, IteratorProxy, SequenceProxy<T>> &cl) {
+	void operator()(pybind11::class_<Proxy<RawIterator<T>>, IteratorProxy, SequenceProxy<T>> &cl) {
 		addCallMethods(cl, IteratorCallFunc{});
 		addCallMethod<blocksci::AnyScript>(cl, IteratorCallFunc{});
 
@@ -121,7 +161,7 @@ struct AddProxyMethods {
 	}
 
 	template<typename T>
-	void operator()(pybind11::class_<Proxy<Range<T>>, RangeProxy, SequenceProxy<T>> &cl) {
+	void operator()(pybind11::class_<Proxy<RawRange<T>>, RangeProxy, SequenceProxy<T>> &cl) {
 		addCallMethods(cl, RangeCallFunc{});
 		addCallMethod<blocksci::AnyScript>(cl, RangeCallFunc{});
 

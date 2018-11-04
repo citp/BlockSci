@@ -12,6 +12,6 @@
 #include <blocksci/address/equiv_address.hpp>
 #include <blocksci/cluster/cluster.hpp>
 
-void applyProxyMapFuncsOther(pybind11::class_<IteratorProxy> &cl) {
+void applyProxyMapFuncsOther(pybind11::class_<IteratorProxy, GenericProxy> &cl) {
 	addProxyMapFuncsMethodsOther<ranges::category::input>(cl);
 }

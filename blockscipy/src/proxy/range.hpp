@@ -20,21 +20,20 @@
 template <typename T>
 void setupRangesProxy(AllProxyClasses<T> &cls) {
 	cls.sequence
-	.def("_where", [](SequenceProxy<T> &seq, Proxy<bool> &p2) -> Proxy<Iterator<T>> {
-		auto generic = seq.getIteratorFunc();
-		return std::function<Iterator<T>(std::any &)>{[=](std::any &val) -> Iterator<T> {
-			auto rng = generic(val);
-			return ranges::any_view<T>{ranges::view::filter(rng, [=](T item) {
+	.def("_where", [](SequenceProxy<T> &seq, Proxy<bool> &p2) -> Proxy<RawIterator<T>> {
+		return std::function<RawIterator<T>(std::any &)>{[generic = seq.getIteratorFunc(), p2](std::any &val) -> RawIterator<T> {
+			return generic(val) | ranges::view::filter([p2](T item) {
 				return p2(std::move(item));
-			})};
+			});
 		}};
 	})
 	;
 
 	cls.range
-    .def("__getitem__", [](Proxy<Range<T>> &p, int64_t posIndex) -> Proxy<T> {
-    	return lift(p, [=](Range<T> && range) -> T {
-			auto chainSize = static_cast<int64_t>(range.rng.size());
+    .def("__getitem__", [](Proxy<RawRange<T>> &p, int64_t posIndex) -> Proxy<T> {
+    	return std::function<T(std::any &)>{[p, posIndex](std::any &val) -> T {
+			auto range = p.applySimple(val);
+			auto chainSize = static_cast<int64_t>(range.size());
 			auto pos = posIndex;
 	        if (pos < 0) {
 	            pos += chainSize;
@@ -42,20 +41,21 @@ void setupRangesProxy(AllProxyClasses<T> &cls) {
 	        if (pos < 0 || pos >= chainSize) {
 	            throw pybind11::index_error();
 	        }
-	        return range.rng[pos];
-		});
+	        return range[pos];
+		}};
     }, pybind11::arg("index"))
-    .def("__getitem__", [](Proxy<Range<T>> &p, pybind11::slice slice) -> Proxy<Range<T>> {
-    	return lift(p, [=](Range<T> && range) -> Range<T> {
-	        size_t start, stop, step, slicelength;
+    .def("__getitem__", [](Proxy<RawRange<T>> &p, pybind11::slice slice) -> Proxy<RawRange<T>> {
+    	return std::function<RawRange<T>(std::any &)>{[p, slice](std::any &val) -> RawRange<T> {
+			auto range = p.applySimple(val);
+			size_t start, stop, step, slicelength;
 	        const auto &constRange = range;
-	        auto chainSize = ranges::size(constRange.rng);
+	        auto chainSize = ranges::size(constRange);
 	        if (!slice.compute(chainSize, &start, &stop, &step, &slicelength))
 	            throw pybind11::error_already_set();
 	        
-	        auto subset =  range.rng[{static_cast<ranges::range_size_type_t<Range<T>>>(start), static_cast<ranges::range_size_type_t<Range<T>>>(stop)}];
-	        return ranges::any_view<T, random_access_sized>{subset | ranges::view::stride(step)};
-	    });
+	        auto subset =  range[{static_cast<ranges::range_size_type_t<RawRange<T>>>(start), static_cast<ranges::range_size_type_t<Range<T>>>(stop)}];
+	        return subset | ranges::view::stride(step);
+		}};
     }, pybind11::arg("slice"))
 	;
 }

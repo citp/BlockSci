@@ -15,7 +15,7 @@
 using namespace blocksci;
 
 
-void addOptionalProxyMapMethods(pybind11::class_<OptionalProxy> &cl) {
+void addOptionalProxyMapMethods(pybind11::class_<OptionalProxy, GenericProxy> &cl) {
 	cl
 	.def("_map", mapOptional<Block>)
 	.def("_map", mapOptional<Transaction>)

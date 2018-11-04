@@ -22,13 +22,13 @@ struct AddBlockMethods {
         using namespace blocksci;
         namespace py = pybind11;
         
-        func(property_tag, "txes", +[](const Block &block) -> Range<Transaction> {
+        func(property_tag, "txes", +[](const Block &block) -> RawRange<Transaction> {
             return ranges::any_view<blocksci::Transaction, random_access_sized>{block};
         }, "A range of all of the txes in the block");
-        func(property_tag, "inputs", +[](const Block &block) -> Iterator<Input> {
+        func(property_tag, "inputs", +[](const Block &block) -> RawIterator<Input> {
             return ranges::any_view<blocksci::Input>{inputs(block)};
         }, "A range of all of the inputs in the block");
-        func(property_tag, "outputs", +[](const Block &block) -> Iterator<Output> {
+        func(property_tag, "outputs", +[](const Block &block) -> RawIterator<Output> {
             return ranges::any_view<blocksci::Output>{outputs(block)};
         }, "A range of all of the outputs in the block");
         func(property_tag, "next_block", &Block::nextBlock, "Returns the block which follows this one in the chain");

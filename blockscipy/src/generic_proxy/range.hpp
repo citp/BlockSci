@@ -13,8 +13,8 @@
 
 #include <pybind11/pybind11.h>
 
-void applyProxyIteratorFuncs(pybind11::class_<IteratorProxy> &cl);
-void applyProxyRangeFuncs(pybind11::class_<RangeProxy> &cl);
+void applyProxyIteratorFuncs(pybind11::class_<IteratorProxy, GenericProxy> &cl);
+void applyProxyRangeFuncs(pybind11::class_<RangeProxy, IteratorProxy> &cl);
 
 
 #endif /* generic_proxy_range_hpp */

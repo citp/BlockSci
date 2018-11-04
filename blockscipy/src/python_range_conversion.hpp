@@ -39,61 +39,61 @@ namespace pybind11 { namespace detail {
 }}
 
 struct PythonConversionTypeConverter {
-    pybind11::list operator()(Iterator<pybind11::bytes> && t);
-    pybind11::list operator()(Iterator<pybind11::list> && t);
-    pybind11::list operator()(Iterator<std::string> && t);
-    pybind11::list operator()(Iterator<blocksci::AddressType::Enum> && t);
+    pybind11::list operator()(RawIterator<pybind11::bytes> && t);
+    pybind11::list operator()(RawIterator<pybind11::list> && t);
+    pybind11::list operator()(RawIterator<std::string> && t);
+    pybind11::list operator()(RawIterator<blocksci::AddressType::Enum> && t);
 
-    pybind11::list operator()(Range<pybind11::bytes> && t);
-    pybind11::list operator()(Range<pybind11::list> && t);
-    pybind11::list operator()(Range<std::string> && t);
-    pybind11::list operator()(Range<blocksci::AddressType::Enum> && t);
+    pybind11::list operator()(RawRange<pybind11::bytes> && t);
+    pybind11::list operator()(RawRange<pybind11::list> && t);
+    pybind11::list operator()(RawRange<std::string> && t);
+    pybind11::list operator()(RawRange<blocksci::AddressType::Enum> && t);
 
-    pybind11::array_t<int64_t> operator()(Iterator<int64_t> && t);
-    pybind11::array_t<uint64_t> operator()(Iterator<uint64_t> && t);
-    pybind11::array_t<int32_t> operator()(Iterator<int32_t> && t);
-    pybind11::array_t<uint32_t> operator()(Iterator<uint32_t> && t);
-    pybind11::array_t<int16_t> operator()(Iterator<int16_t> && t);
-    pybind11::array_t<uint16_t> operator()(Iterator<uint16_t> && t);
-    pybind11::array_t<NumpyBool> operator()(Iterator<bool> && t);
-    pybind11::array_t<NumpyDatetime> operator()(Iterator<std::chrono::system_clock::time_point> && t);
-    pybind11::array_t<std::array<char, 40>> operator()(Iterator<blocksci::uint160> && t);
-    pybind11::array_t<std::array<char, 64>> operator()(Iterator<blocksci::uint256> && t);
+    pybind11::array_t<int64_t> operator()(RawIterator<int64_t> && t);
+    pybind11::array_t<uint64_t> operator()(RawIterator<uint64_t> && t);
+    pybind11::array_t<int32_t> operator()(RawIterator<int32_t> && t);
+    pybind11::array_t<uint32_t> operator()(RawIterator<uint32_t> && t);
+    pybind11::array_t<int16_t> operator()(RawIterator<int16_t> && t);
+    pybind11::array_t<uint16_t> operator()(RawIterator<uint16_t> && t);
+    pybind11::array_t<NumpyBool> operator()(RawIterator<bool> && t);
+    pybind11::array_t<NumpyDatetime> operator()(RawIterator<std::chrono::system_clock::time_point> && t);
+    pybind11::array_t<std::array<char, 40>> operator()(RawIterator<blocksci::uint160> && t);
+    pybind11::array_t<std::array<char, 64>> operator()(RawIterator<blocksci::uint256> && t);
 
-    pybind11::array_t<int64_t> operator()(Range<int64_t> && t);
-    pybind11::array_t<uint64_t> operator()(Range<uint64_t> && t);
-    pybind11::array_t<int32_t> operator()(Range<int32_t> && t);
-    pybind11::array_t<uint32_t> operator()(Range<uint32_t> && t);
-    pybind11::array_t<int16_t> operator()(Range<int16_t> && t);
-    pybind11::array_t<uint16_t> operator()(Range<uint16_t> && t);
-    pybind11::array_t<NumpyBool> operator()(Range<bool> && t);
-    pybind11::array_t<NumpyDatetime> operator()(Range<std::chrono::system_clock::time_point> && t);
-    pybind11::array_t<std::array<char, 40>> operator()(Range<blocksci::uint160> && t);
-    pybind11::array_t<std::array<char, 64>> operator()(Range<blocksci::uint256> && t);
+    pybind11::array_t<int64_t> operator()(RawRange<int64_t> && t);
+    pybind11::array_t<uint64_t> operator()(RawRange<uint64_t> && t);
+    pybind11::array_t<int32_t> operator()(RawRange<int32_t> && t);
+    pybind11::array_t<uint32_t> operator()(RawRange<uint32_t> && t);
+    pybind11::array_t<int16_t> operator()(RawRange<int16_t> && t);
+    pybind11::array_t<uint16_t> operator()(RawRange<uint16_t> && t);
+    pybind11::array_t<NumpyBool> operator()(RawRange<bool> && t);
+    pybind11::array_t<NumpyDatetime> operator()(RawRange<std::chrono::system_clock::time_point> && t);
+    pybind11::array_t<std::array<char, 40>> operator()(RawRange<blocksci::uint160> && t);
+    pybind11::array_t<std::array<char, 64>> operator()(RawRange<blocksci::uint256> && t);
 
-    Iterator<ranges::optional<int64_t>> operator()(Iterator<ranges::optional<int16_t>> && t);
-    Iterator<ranges::optional<int64_t>> operator()(Iterator<ranges::optional<uint16_t>> && t);
-    Iterator<ranges::optional<int64_t>> operator()(Iterator<ranges::optional<int32_t>> && t);
-    Iterator<ranges::optional<int64_t>> operator()(Iterator<ranges::optional<uint32_t>> && t);
-    Iterator<ranges::optional<int64_t>> operator()(Iterator<ranges::optional<uint64_t>> && t);
-    Iterator<blocksci::AnyScript> operator()(Iterator<blocksci::Address> && t);
-    Iterator<ranges::optional<blocksci::AnyScript>> operator()(Iterator<ranges::optional<blocksci::Address>> && t);
+    Iterator<ranges::optional<int64_t>> operator()(RawIterator<ranges::optional<int16_t>> && t);
+    Iterator<ranges::optional<int64_t>> operator()(RawIterator<ranges::optional<uint16_t>> && t);
+    Iterator<ranges::optional<int64_t>> operator()(RawIterator<ranges::optional<int32_t>> && t);
+    Iterator<ranges::optional<int64_t>> operator()(RawIterator<ranges::optional<uint32_t>> && t);
+    Iterator<ranges::optional<int64_t>> operator()(RawIterator<ranges::optional<uint64_t>> && t);
+    Iterator<blocksci::AnyScript> operator()(RawIterator<blocksci::Address> && t);
+    Iterator<ranges::optional<blocksci::AnyScript>> operator()(RawIterator<ranges::optional<blocksci::Address>> && t);
 
-    Range<ranges::optional<int64_t>> operator()(Range<ranges::optional<int16_t>> && t);
-    Range<ranges::optional<int64_t>> operator()(Range<ranges::optional<uint16_t>> && t);
-    Range<ranges::optional<int64_t>> operator()(Range<ranges::optional<int32_t>> && t);
-    Range<ranges::optional<int64_t>> operator()(Range<ranges::optional<uint32_t>> && t);
-    Range<ranges::optional<int64_t>> operator()(Range<ranges::optional<uint64_t>> && t);
-    Range<blocksci::AnyScript> operator()(Range<blocksci::Address> && t);
-    Range<ranges::optional<blocksci::AnyScript>> operator()(Range<ranges::optional<blocksci::Address>> && t);
+    Range<ranges::optional<int64_t>> operator()(RawRange<ranges::optional<int16_t>> && t);
+    Range<ranges::optional<int64_t>> operator()(RawRange<ranges::optional<uint16_t>> && t);
+    Range<ranges::optional<int64_t>> operator()(RawRange<ranges::optional<int32_t>> && t);
+    Range<ranges::optional<int64_t>> operator()(RawRange<ranges::optional<uint32_t>> && t);
+    Range<ranges::optional<int64_t>> operator()(RawRange<ranges::optional<uint64_t>> && t);
+    Range<blocksci::AnyScript> operator()(RawRange<blocksci::Address> && t);
+    Range<ranges::optional<blocksci::AnyScript>> operator()(RawRange<ranges::optional<blocksci::Address>> && t);
 
     template <typename T>
-    Iterator<T> operator()(Iterator<T> && t) {
+    Iterator<T> operator()(RawIterator<T> && t) {
         return t;
     }
 
     template <typename T>
-    Range<T> operator()(Range<T> && t) {
+    Range<T> operator()(RawRange<T> && t) {
         return t;
     }
 };

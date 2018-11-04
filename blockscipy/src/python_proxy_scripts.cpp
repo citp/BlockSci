@@ -24,7 +24,7 @@
 namespace py = pybind11;
 using namespace blocksci;
 
-ScriptProxies::ScriptProxies(py::module &m, py::class_<SimpleProxy> &proxySimpleCl) :
+ScriptProxies::ScriptProxies(py::module &m, py::class_<SimpleProxy, GenericProxy> &proxySimpleCl) :
 genericAddress(m, "ProxyAddress", proxySimpleCl),
 address(m, genericAddress),
 pubkey(m, genericAddress),

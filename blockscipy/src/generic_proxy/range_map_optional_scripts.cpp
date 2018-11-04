@@ -13,7 +13,7 @@
 #include <blocksci/cluster/cluster.hpp>
 
 
-void applyProxyMapOptionalFuncsScripts(pybind11::class_<IteratorProxy> &cl) {
+void applyProxyMapOptionalFuncsScripts(pybind11::class_<IteratorProxy, GenericProxy> &cl) {
 	using namespace blocksci;
 	cl
 	.def("_map_optional", mapOptional<script::Pubkey>)

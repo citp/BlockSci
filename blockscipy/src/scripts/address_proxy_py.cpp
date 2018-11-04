@@ -61,13 +61,13 @@ struct AddAddressMethods {
         func(property_tag, "first_tx", &AnyScript::getFirstTransaction, "Get the first transaction that was sent to a type equivalent address");
         func(property_tag, "revealed_tx", &AnyScript::getTransactionRevealed, "The transaction where a type equivalent address was first revealed");
         func(property_tag, "has_been_spent", &AnyScript::hasBeenSpent, "Check if a type equivalent address has ever been spent");
-        func(property_tag, "outs", +[](AnyScript &address) -> Iterator<Output> {
+        func(property_tag, "outs", +[](AnyScript &address) -> RawIterator<Output> {
             return address.getOutputs();
         }, "Returns a iterator over all outputs sent to this address");
-        func(property_tag, "ins", +[](AnyScript &address) -> Iterator<Input> {
+        func(property_tag, "ins", +[](AnyScript &address) -> RawIterator<Input> {
             return address.getInputs();
         }, "Returns an iterator over all inputs spent from this address");
-        func(property_tag, "out_txes", +[](AnyScript &address) -> Iterator<Transaction> {
+        func(property_tag, "out_txes", +[](AnyScript &address) -> RawIterator<Transaction> {
             return address.getOutputTransactions();
         }, "Returns an iterator over all transaction where this address was an output");
     }

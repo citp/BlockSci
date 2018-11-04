@@ -27,7 +27,7 @@ void addGroupByFunc(pybind11::class_<Sequence<V>> &cl) {
         std::unordered_map<GroupType, ResultType> results;
         results.reserve(grouped.size());
         for (auto &group : grouped) {
-            auto range = Range<V>{group.second};
+            auto range = RawRange<V>{group.second};
             results[group.first] = eval(range);
         }
         return results;
@@ -91,14 +91,14 @@ void addAllRangeMethods(RangeClasses<T> &cls) {
     addCommonRangeMethods(cls.range);
 
     cls.iterator
-    .def_property_readonly_static("self_proxy", [](pybind11::object &) -> Proxy<Iterator<T>> {
-        return makeProxy<Iterator<T>>();
+    .def_property_readonly_static("self_proxy", [](pybind11::object &) -> Proxy<RawIterator<T>> {
+        return makeProxy<RawIterator<T>>();
     })
     ;
 
     cls.range
-    .def_property_readonly_static("self_proxy", [](pybind11::object &) -> Proxy<Range<T>> {
-        return makeProxy<Range<T>>();
+    .def_property_readonly_static("self_proxy", [](pybind11::object &) -> Proxy<RawRange<T>> {
+        return makeProxy<RawRange<T>>();
     })
     ;
 

@@ -12,7 +12,7 @@
 #include <blocksci/address/equiv_address.hpp>
 #include <blocksci/cluster/cluster.hpp>
 
-void applyProxyMapOptionalFuncsOther(pybind11::class_<IteratorProxy> &cl) {
+void applyProxyMapOptionalFuncsOther(pybind11::class_<IteratorProxy, GenericProxy> &cl) {
 	using namespace blocksci;
 	cl
 	.def("_map_optional", mapOptional<AddressType::Enum>)

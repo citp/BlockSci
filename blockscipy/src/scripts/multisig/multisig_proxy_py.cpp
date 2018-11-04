@@ -18,20 +18,14 @@
 #include <blocksci/chain/block.hpp>
 #include <blocksci/cluster/cluster.hpp>
 
-pybind11::list pyMultisigAddresses(blocksci::script::Multisig &script) {
-    pybind11::list ret;
-    for (auto &address : script.pubkeyScripts()) {
-        ret.append(address);
-    }
-    return ret;
-}
-
 struct AddMultisigMethods {
     template <typename FuncApplication>
     void operator()(FuncApplication func) {
         func(property_tag, "required", &blocksci::script::Multisig::getRequired, "The number of signatures required for this address");
 		func(property_tag, "total", &blocksci::script::Multisig::getTotal, "The total number of keys that can sign for this address");
-		func(property_tag, "addresses", pyMultisigAddresses, "The list of the keys that can sign for this address");
+		func(property_tag, "addresses", +[](blocksci::script::Multisig &address) -> RawRange<blocksci::script::MultisigPubkey> {
+            return address.pubkeyScripts();
+        }, "The list of the keys that can sign for this address");
     }
 };
 

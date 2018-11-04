@@ -11,7 +11,7 @@
 
 #include <blocksci/scripts/script_variant.hpp>
 
-void applyProxyMapSequenceFuncsScripts(pybind11::class_<IteratorProxy> &cl) {
+void applyProxyMapSequenceFuncsScripts(pybind11::class_<IteratorProxy, GenericProxy> &cl) {
 	using namespace blocksci;
 	cl
 	.def("_map_sequence", mapSequence<script::Pubkey>)

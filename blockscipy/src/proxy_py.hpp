@@ -28,7 +28,7 @@ template <typename T>
 void addProxyConditional(pybind11::module &m) {
     m
     .def("conditional", [](const Proxy<bool> &cond, const Proxy<T> &p1, const Proxy<T> &p2) -> Proxy<T> {
-        return std::function<T(std::any &)>{[=](std::any &t) -> T {
+        return std::function<T(std::any &)>{[cond, p1, p2](std::any &t) -> T {
             if(cond(t)) {
                 return p1(t);
             } else {
@@ -48,14 +48,14 @@ private:
         range.def(pybind11::init<Range<T>>());
 
         optional.def(pybind11::init<Proxy<T>>());
-        iterator.def(pybind11::init<Proxy<Range<T>>>());
+        iterator.def(pybind11::init<Proxy<RawRange<T>>>());
 
         pybind11::implicitly_convertible<T, Proxy<T>>();
-        pybind11::implicitly_convertible<Iterator<T>, Proxy<Iterator<T>>>();
-        pybind11::implicitly_convertible<Range<T>, Proxy<Range<T>>>();
+        pybind11::implicitly_convertible<Iterator<T>, Proxy<RawIterator<T>>>();
+        pybind11::implicitly_convertible<Range<T>, Proxy<RawRange<T>>>();
 
         pybind11::implicitly_convertible<Proxy<T>, Proxy<ranges::optional<T>>>();
-        pybind11::implicitly_convertible<Proxy<Range<T>>, Proxy<Iterator<T>>>();
+        pybind11::implicitly_convertible<Proxy<RawRange<T>>, Proxy<RawIterator<T>>>();
 
 
         addProxyConditional<T>(m);
@@ -67,12 +67,12 @@ public:
     pybind11::class_<Proxy<T>> base;
     pybind11::class_<Proxy<ranges::optional<T>>, OptionalProxy> optional;
     pybind11::class_<SequenceProxy<T>> sequence;
-    pybind11::class_<Proxy<Iterator<T>>, IteratorProxy, SequenceProxy<T>> iterator;
-    pybind11::class_<Proxy<Range<T>>, RangeProxy, SequenceProxy<T>> range;
+    pybind11::class_<Proxy<RawIterator<T>>, IteratorProxy, SequenceProxy<T>> iterator;
+    pybind11::class_<Proxy<RawRange<T>>, RangeProxy, SequenceProxy<T>> range;
 
 	AllProxyClasses(
         pybind11::module &m,
-        pybind11::class_<SimpleProxy> &proxySimpleCl) : 
+        pybind11::class_<SimpleProxy, GenericProxy> &proxySimpleCl) : 
     	base(m, strdup(proxyName<T>().c_str()), proxySimpleCl),
     	optional(m, strdup(proxyName<ranges::optional<T>>().c_str())),
         sequence(m, strdup(proxySequenceName<T>().c_str())),

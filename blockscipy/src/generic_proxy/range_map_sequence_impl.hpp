@@ -15,14 +15,11 @@
 #include <range/v3/view/transform.hpp>
 
 template<typename R>
-Proxy<Iterator<R>> mapSequence(IteratorProxy &seq, Proxy<Iterator<R>> &p2) {
-	auto generic = seq.getGeneric();
-	return std::function<Iterator<R>(std::any &)>{[=](std::any &val) -> Iterator<R> {
-		return ranges::any_view<R>{ranges::view::join(ranges::view::transform(generic(val).rng, 
-			[p2](std::any && v) -> ranges::any_view<R> {
-				return p2(v).rng;
-			}
-		))};
+Proxy<RawIterator<R>> mapSequence(IteratorProxy &seq, Proxy<RawIterator<R>> &p2) {
+	return std::function<RawIterator<R>(std::any &)>{[generic = seq.getGenericIterator(), p2](std::any &val) -> RawIterator<R> {
+		return ranges::view::join(ranges::view::transform(generic(val), [p2](std::any && v) -> RawIterator<R> {
+			return p2.applySimple(v);
+		}));
 	}};
 }
 

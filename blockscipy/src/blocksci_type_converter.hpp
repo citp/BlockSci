@@ -47,15 +47,15 @@ struct BlockSciTypeConverter {
         return static_cast<int64_t>(val);
     }
 
-    Range<blocksci::Input> operator()(const blocksci::InputRange &val) {
+    RawRange<blocksci::Input> operator()(const blocksci::InputRange &val) {
         return ranges::any_view<blocksci::Input, random_access_sized>{val};
     }
 
-    Range<blocksci::Output> operator()(const blocksci::OutputRange &val) {
+    RawRange<blocksci::Output> operator()(const blocksci::OutputRange &val) {
         return ranges::any_view<blocksci::Output, random_access_sized>{val};
     }
 
-    Range<blocksci::Block> operator()(const blocksci::BlockRange &val) {
+    RawRange<blocksci::Block> operator()(const blocksci::BlockRange &val) {
         return ranges::any_view<blocksci::Block, random_access_sized>{val};
     }
 

@@ -379,7 +379,7 @@ namespace heuristics {
                 if (subType == AddressType::Enum::MULTISIG) {
                     script::Multisig multisigAddress(insidePointer->scriptNum, access);
                     i = multisigAddress.getRequired();
-                    j = static_cast<int>(multisigAddress.getAddresses().size());
+                    j = static_cast<int>(multisigAddress.getTotal());
                 }
             }
         }

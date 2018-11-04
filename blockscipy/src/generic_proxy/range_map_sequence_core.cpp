@@ -13,7 +13,7 @@
 #include <blocksci/cluster/cluster.hpp>
 #include <blocksci/chain/block.hpp>
 
-void applyProxyMapSequenceFuncsCore(pybind11::class_<IteratorProxy> &cl) {
+void applyProxyMapSequenceFuncsCore(pybind11::class_<IteratorProxy, GenericProxy> &cl) {
 	using namespace blocksci;
 	cl
 	.def("_map_sequence", mapSequence<Block>)

@@ -14,6 +14,8 @@
 
 #include <blocksci/blocksci_export.h>
 
+#include <range/v3/range_for.hpp>
+
 #include <vector>
 
 namespace blocksci {
@@ -35,7 +37,7 @@ namespace blocksci {
         std::string toPrettyString() const;
 
         void visitPointers(const std::function<void(const Address &)> &visitFunc) const {
-            for (auto &address : getAddresses()) {
+            RANGES_FOR(auto address, getAddresses()) {
                 visitFunc(address);
             }
         }
@@ -48,23 +50,8 @@ namespace blocksci {
             return getData()->n;
         }
         
-        std::vector<Address> getAddresses() const {
-            std::vector<Address> addresses;
-            addresses.reserve(getData()->addresses.size());
-            for (auto scriptNum : getData()->addresses) {
-                addresses.emplace_back(scriptNum, AddressType::Enum::MULTISIG_PUBKEY, getAccess());
-            }
-            return addresses;
-        }
-        
-        std::vector<script::MultisigPubkey> pubkeyScripts() const {
-            std::vector<script::MultisigPubkey> ret;
-            ret.reserve(static_cast<size_t>(getTotal()));
-            for (auto &address : getAddresses()) {
-                ret.emplace_back(address.scriptNum, getAccess());
-            }
-            return ret;
-        }
+        ranges::any_view<Address, ranges::category::random_access | ranges::category::sized> getAddresses() const;
+        ranges::any_view<script::MultisigPubkey, ranges::category::random_access | ranges::category::sized> pubkeyScripts() const;
     };
 } // namespace blocksci
 

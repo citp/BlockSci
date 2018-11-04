@@ -12,6 +12,8 @@
 #include <internal/data_access.hpp>
 #include <internal/script_access.hpp>
 
+#include <range/v3/view/transform.hpp>
+
 #include <sstream>
 
 namespace blocksci {
@@ -23,11 +25,25 @@ namespace blocksci {
         return ss.str();
     }
     
+    ranges::any_view<Address, ranges::category::random_access | ranges::category::sized> ScriptAddress<AddressType::MULTISIG>::getAddresses() const {
+        auto access_ = &getAccess();
+        auto data = getData();
+        return data->addresses | ranges::view::transform([access_](uint32_t scriptNum) -> Address {
+            return {scriptNum, AddressType::Enum::MULTISIG_PUBKEY, *access_};
+        });
+    }
+    
+    ranges::any_view<script::MultisigPubkey, ranges::category::random_access | ranges::category::sized> ScriptAddress<AddressType::MULTISIG>::pubkeyScripts() const {
+        return getAddresses() | ranges::view::transform([](Address address) -> script::MultisigPubkey {
+            return {address.scriptNum, address.getAccess()};
+        });
+    }
+    
     std::string ScriptAddress<AddressType::MULTISIG>::toPrettyString() const {
             std::stringstream ss;
             ss << "MultisigAddress(" << static_cast<int>(getRequired()) << " of " << static_cast<int>(getTotal()) << " multisig with addresses ";
             uint8_t i = 0;
-            for (auto &address : getAddresses()) {
+            RANGES_FOR(auto address, getAddresses()) {
                 script::MultisigPubkey pubkeyScript(address.scriptNum, getAccess());
                 ss << pubkeyScript.toPrettyString();
                 if (i < getTotal() - 1) {

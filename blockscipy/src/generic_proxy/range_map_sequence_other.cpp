@@ -9,7 +9,7 @@
 #include "range_map.hpp"
 #include "range_map_sequence_impl.hpp"
 
-void applyProxyMapSequenceFuncsOther(pybind11::class_<IteratorProxy> &cl) {
+void applyProxyMapSequenceFuncsOther(pybind11::class_<IteratorProxy, GenericProxy> &cl) {
 	using namespace blocksci;
 	cl
 	.def("_map_sequence", mapSequence<AddressType::Enum>)

@@ -16,7 +16,7 @@
 template<typename R>
 Proxy<ranges::optional<R>> mapOptional(OptionalProxy &seq, Proxy<R> &p2) {
 	auto generic = seq.getGeneric();
-	return std::function<ranges::optional<R>(std::any &)>{[=](std::any &val) -> ranges::optional<R> {
+	return std::function<ranges::optional<R>(std::any &)>{[generic, p2](std::any &val) -> ranges::optional<R> {
 		auto v = generic(val);
 		if (v) {
 			return p2(*v);
@@ -26,6 +26,6 @@ Proxy<ranges::optional<R>> mapOptional(OptionalProxy &seq, Proxy<R> &p2) {
 	}};
 }
 
-void addOptionalProxyMapMethods(pybind11::class_<OptionalProxy> &cl);
+void addOptionalProxyMapMethods(pybind11::class_<OptionalProxy, GenericProxy> &cl);
 
 #endif /* proxy_optional_map_hpp */

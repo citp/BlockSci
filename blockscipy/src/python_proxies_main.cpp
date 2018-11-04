@@ -23,7 +23,7 @@
 namespace py = pybind11;
 using namespace blocksci;
 
-MainProxies::MainProxies(py::module &m, py::class_<SimpleProxy> &proxySimpleCl) :
+MainProxies::MainProxies(py::module &m, py::class_<SimpleProxy, GenericProxy> &proxySimpleCl) :
 block(m, proxySimpleCl),
 tx(m, proxySimpleCl),
 input(m, proxySimpleCl),

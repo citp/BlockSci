@@ -8,12 +8,12 @@
 #ifndef generic_sequence_hpp
 #define generic_sequence_hpp
 
+#include "sequence.hpp"
+
 #include <range/v3/view/any_view.hpp>
 #include <range/v3/view/transform.hpp>
 
 #include <any>
-
-constexpr ranges::category random_access_sized = ranges::category::random_access | ranges::category::sized;
 
 template <typename T>
 struct Iterator;
@@ -37,7 +37,6 @@ struct AnyViewType<T, random_access_sized> {
 template <typename T, ranges::category range_cat>
 using any_view = typename AnyViewType<T, range_cat>::type;
 
-
 template<typename T>
 struct Sequence {
 	virtual Iterator<T> getIterator() const = 0;
@@ -48,9 +47,8 @@ template <typename T>
 struct Iterator : public Sequence<T> {
 	ranges::any_view<T> rng;
 
-	Iterator(ranges::any_view<T> && r) : rng(std::move(r)) {}
-
-	Iterator(const ranges::any_view<T> &r) : rng(std::move(r)) {}
+	template <typename R>
+	Iterator(R && r) : rng(std::forward<R>(r)) {}
 
 	Iterator(Range<T> r) : rng(std::move(r.rng)) {}
 
@@ -60,12 +58,6 @@ struct Iterator : public Sequence<T> {
 
 	auto end() {
 		return rng.end();
-	}
-
-	Iterator<std::any> getAnySequence() {
-		return ranges::any_view<std::any>{ranges::view::transform(rng, [](T && t) -> std::any {
-			return std::move(t);
-		})};
 	}
 
 	Iterator<T> getIterator() const override {
@@ -79,7 +71,7 @@ struct Range : public Sequence<T> {
 
 	Range(ranges::any_view<T, random_access_sized> && r) : rng(std::move(r)) {}
 
-	Range(const ranges::any_view<T, random_access_sized> &r) : rng(std::move(r)) {}
+	Range(const ranges::any_view<T, random_access_sized> &r) : rng(r) {}
 
 	auto begin() {
 		return rng.begin();
@@ -87,12 +79,6 @@ struct Range : public Sequence<T> {
 
 	auto end() {
 		return rng.end();
-	}
-
-	Range<std::any> getAnySequence() {
-		return ranges::any_view<std::any, random_access_sized>{ranges::view::transform(rng, [](T && t) -> std::any {
-			return std::move(t);
-		})};
 	}
 
 	Iterator<T> getIterator() const override {

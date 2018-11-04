@@ -9,13 +9,13 @@
 #include "optional.hpp"
 #include "optional_map.hpp"
 
-void addOptionalProxyMethods(pybind11::class_<OptionalProxy> &cl) {
+void addOptionalProxyMethods(pybind11::class_<OptionalProxy, GenericProxy> &cl) {
 	addOptionalProxyMapMethods(cl);
 	
 	cl
 	.def("has_value", [](OptionalProxy &p) -> Proxy<bool> {
 		auto generic = p.getGeneric();
-		return std::function<bool(std::any &)>{[=](std::any &t) -> bool {
+		return std::function<bool(std::any &)>{[generic](std::any &t) -> bool {
 			return generic(t).has_value();
 		}};
 	})

@@ -40,28 +40,28 @@ void setupProxies(py::module &m) {
 
     py::class_<GenericProxy> proxyCl(proxyMod, "Proxy");
 
-    py::class_<SimpleProxy> proxySimpleCl(proxyMod, "SimpleProxy", proxyCl);
+    py::class_<SimpleProxy, GenericProxy> proxySimpleCl(proxyMod, "SimpleProxy");
     proxySimpleCl
     .def_property_readonly_static("ptype", [](pybind11::object &) -> ProxyType {
         return ProxyType::Simple;
     })
     ;
         
-    py::class_<OptionalProxy> proxyOptionalCl(proxyMod, "OptionalProxy", proxyCl);
+    py::class_<OptionalProxy, GenericProxy> proxyOptionalCl(proxyMod, "OptionalProxy");
     proxyOptionalCl
     .def_property_readonly_static("ptype", [](pybind11::object &) -> ProxyType {
         return ProxyType::Optional;
     })
     ;
 
-    py::class_<IteratorProxy> proxyIteratorCl(proxyMod, "IteratorProxy", proxyCl);
+    py::class_<IteratorProxy, GenericProxy> proxyIteratorCl(proxyMod, "IteratorProxy");
     proxyIteratorCl
     .def_property_readonly_static("ptype", [](pybind11::object &) -> ProxyType {
         return ProxyType::Iterator;
     })
     ;
 
-    py::class_<RangeProxy> proxyRangeCl(proxyMod, "RangeProxy", proxyIteratorCl);
+    py::class_<RangeProxy, IteratorProxy> proxyRangeCl(proxyMod, "RangeProxy");
     proxyRangeCl
     .def_property_readonly_static("ptype", [](pybind11::object &) -> ProxyType {
         return ProxyType::Range;
