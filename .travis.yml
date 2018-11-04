@@ -1,5 +1,4 @@
 language: cpp
-dist: xenial
 sudo: required
 git:
   depth: 3
@@ -13,10 +12,32 @@ cache:
 matrix:
   include:
     - stage: Build Core Library (CPP)
+      dist: xenial
       before_install: .travis/build_ubuntu_cpp.sh
       install: .travis/compile_ubuntu_cpp.sh
       script: .travis/test_parser.sh
+    - os: osx
+      osx_image: xcode10.1
+      addons:
+        homebrew:
+          packages:
+            - cmake
+            - jsoncpp
+            - libjson-rpc-cpp
+            - boost
+            - openssl
+            - jemalloc
+            - zstd
+            - automake
+            - libtool
+            - google-sparsehash
+            - lz4
+            - python3
+      before_install: .travis/build_osx_cpp.sh
+      install: .travis/compile_osx_cpp.sh
+      script: .travis/test_parser.sh
     - stage: Build Python Module
+      dist: xenial
       before_install:
         - .travis/build_ubuntu_cpp.sh
         - .travis/build_ubuntu_python.sh
