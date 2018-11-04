@@ -43,7 +43,7 @@ Mac OS 10.13
 ..  code-block:: bash
 
     brew install cmake jsoncpp libjson-rpc-cpp boost openssl jemalloc zstd \
-    automake libtool google-sparsehash python3
+    automake libtool google-sparsehash lz4 python3
     sudo xcode-select --reset
 
     git clone https://github.com/citp/BlockSci.git
