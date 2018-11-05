@@ -1,11 +1,8 @@
-import datetime
-
 FEE = 0.0001
 
 
 def tz_offset(ts):
-    # https://stackoverflow.com/a/39079819
-    local_time = datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
+    local_time = ts.astimezone().tzinfo
     return local_time.utcoffset(ts)
 
 
