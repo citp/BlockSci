@@ -10,6 +10,12 @@ def addresses(chain, json_data):
             addr = chain.address_from_string(json_data["address-{}-spend-{}".format(addr_type, i)])
             yield addr, addr_type
 
+    raw_multisig_tx = chain.tx_with_hash(json_data['raw-multisig-tx'])
+    yield raw_multisig_tx.outputs[0].address, "multisig-raw"
+
+    p2sh_multisig_tx = chain.tx_with_hash(json_data['p2sh-multisig-tx'])
+    yield p2sh_multisig_tx.outputs[0].address, "multisig-p2sh"
+
 
 def address_received_test(addr, address_type, balance, ntxes):
     assert address_type == addr.type
@@ -63,7 +69,8 @@ def test_p2wsh_address(chain, json_data):
 
 def test_address_regression(chain, json_data, regtest):
     for addr, addr_type in addresses(chain, json_data):
-        print(addr.address_string, file=regtest)
+        if addr_type[0:8] != "multisig":
+            print(addr.address_string, file=regtest)
         print(addr.balance(), file=regtest)
         print(addr.equiv(), file=regtest)
         print(addr.has_been_spent, file=regtest)
@@ -71,9 +78,14 @@ def test_address_regression(chain, json_data, regtest):
         print(addr.in_txes_count(), file=regtest)
         print(addr.out_txes.to_list(), file=regtest)
         print(addr.out_txes_count(), file=regtest)
-        if addr_type[-2:] != "sh":
+        if addr_type == "p2pkh" or addr_type == "p2wpkh":
             print(addr.pubkey, file=regtest)
             print(addr.pubkeyhash, file=regtest)
         print(addr.raw_type, file=regtest)
         print(addr.revealed_tx, file=regtest)
         print(addr.type, file=regtest)
+        if addr.type == blocksci.address_type.multisig:
+            print(addr.required, file=regtest)
+            print(addr.total, file=regtest)
+        if addr_type == "p2sh" or addr_type == "p2wsh" or addr_type == "multisig-p2sh":
+            print(addr.wrapped_address, file=regtest)

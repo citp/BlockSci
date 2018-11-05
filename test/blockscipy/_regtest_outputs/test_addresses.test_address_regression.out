@@ -48,6 +48,7 @@ False
 4
 None
 Pay to script hash
+None
 2Mzqim7c3TBkpRyqXmB23DXXcm1nHN6kFsf
 0
 EquivAddress(ScriptHashAddress(2Mzqim7c3TBkpRyqXmB23DXXcm1nHN6kFsf))
@@ -59,6 +60,7 @@ True
 4
 Tx(len(txins)=1, len(txouts)=1, size_bytes=193, block_height=115, tx_index=125)
 Pay to script hash
+PubkeyAddress(mr6VKoQ9zMau7CSNaf1QBzy6Pw3DmMPrWm)
 2N1otuhuzEiwReoLqqrJKTk67A2aW5ZXXDW
 0
 EquivAddress(ScriptHashAddress(2N1otuhuzEiwReoLqqrJKTk67A2aW5ZXXDW))
@@ -70,6 +72,7 @@ True
 4
 Tx(len(txins)=1, len(txouts)=1, size_bytes=193, block_height=116, tx_index=128)
 Pay to script hash
+PubkeyAddress(mjAzMtZc7UFuvuRqJyhrrVXHQKoY5UhG6R)
 bcrt1qqlxxeyqj0ka4kqpzajv27l8px06neuqcwxg62e
 100000000
 EquivAddress(WitnessPubkeyAddress(bcrt1qqlxxeyqj0ka4kqpzajv27l8px06neuqcwxg62e))
@@ -120,6 +123,7 @@ False
 8
 None
 Pay to witness script hash
+None
 bcrt1qektr66tljls59h4w5qwshr6fwr4qfeuwm3zkwcsd424sd046n92sagvgwa
 0
 EquivAddress(WitnessScriptHashAddress(bcrt1qektr66tljls59h4w5qwshr6fwr4qfeuwm3zkwcsd424sd046n92sagvgwa))
@@ -131,6 +135,7 @@ True
 8
 Tx(len(txins)=1, len(txouts)=1, size_bytes=113, block_height=121, tx_index=145)
 Pay to witness script hash
+PubkeyAddress(mus5uwj8dVT9Wkvipg5YbLjhBa1uAs16Ui)
 bcrt1qe2stj85585lav85e4cgpcprxva6ghfdp978q4y0rjc8k9u0cc46q66sf9j
 0
 EquivAddress(WitnessScriptHashAddress(bcrt1qe2stj85585lav85e4cgpcprxva6ghfdp978q4y0rjc8k9u0cc46q66sf9j))
@@ -142,3 +147,27 @@ True
 8
 Tx(len(txins)=1, len(txouts)=1, size_bytes=113, block_height=122, tx_index=148)
 Pay to witness script hash
+PubkeyAddress(mq3p7Ki5CBzhDEwHJWjBxc5RrRa6EMjqNA)
+0
+EquivAddress(MultisigAddress(2 of 3))
+True
+[Tx(len(txins)=1, len(txouts)=1, size_bytes=231, block_height=187, tx_index=319)]
+1
+[Tx(len(txins)=1, len(txouts)=1, size_bytes=272, block_height=187, tx_index=318)]
+1
+5
+Tx(len(txins)=1, len(txouts)=1, size_bytes=231, block_height=187, tx_index=319)
+Multisig
+2
+3
+0
+EquivAddress(ScriptHashAddress(2N2PGeTV9hPu4nPtJHgNmV9shPRxKJy9Xqj))
+True
+[Tx(len(txins)=1, len(txouts)=1, size_bytes=340, block_height=188, tx_index=323)]
+1
+[Tx(len(txins)=1, len(txouts)=1, size_bytes=189, block_height=188, tx_index=322)]
+1
+4
+Tx(len(txins)=1, len(txouts)=1, size_bytes=340, block_height=188, tx_index=323)
+Pay to script hash
+MultisigAddress(2 of 3 multisig with addresses mrfx8rZk4kfkce2Dvxy1m5rcGVRmyZGn1U, n2vmQHZ1wK4meS4wvLpMNhdgwaderv8Uij, mr9KKBWmDqCWb7hpELAGnUyvYPbbMGpiSM)
