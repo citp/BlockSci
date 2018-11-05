@@ -46,8 +46,19 @@ def test_op_return(chain, json_data):
     assert b"Lord Voldemort" == op_return.address.data
 
 
-def test_multisig(chain, json_data):
-    tx = chain.tx_with_hash(json_data["multisig-p2sh-tx"])
+def test_raw_multisig(chain, json_data):
+    tx = chain.tx_with_hash(json_data["raw-multisig-tx"])
+    out = tx.outputs[0]
+
+    assert blocksci.address_type.multisig == out.address_type
+
+    addr = out.address
+    assert 2 == addr.required
+    assert 3 == addr.total
+
+
+def test_p2sh_multisig(chain, json_data):
+    tx = chain.tx_with_hash(json_data["p2sh-multisig-tx"])
     out = tx.outputs[0]
 
     assert blocksci.address_type.scripthash == out.address_type
