@@ -1,9 +1,13 @@
+import pytz
+from tzlocal import get_localzone
+
 FEE = 0.0001
 
 
-def tz_offset(ts):
-    local_time = ts.astimezone().tzinfo
-    return local_time.utcoffset(ts)
+def correct_timestamp(ts):
+    tz = get_localzone()
+    ts_local = tz.localize(ts)
+    return ts_local.astimezone(pytz.utc)
 
 
 def reward(height):

@@ -1,4 +1,4 @@
-from util import tz_offset
+from util import correct_timestamp
 
 
 def test_p2pkh_transaction_regression(chain, json_data, regtest):
@@ -24,7 +24,7 @@ def test_p2wsh_transaction_regression(chain, json_data, regtest):
 def transaction_regression(tx, regtest):
     print(tx.base_size, file=regtest)
     print(tx.block_height, file=regtest)
-    print(tx.block_time - tz_offset(tx.block_time), file=regtest)
+    print(correct_timestamp(tx.block_time), file=regtest)
     print(tx.fee, file=regtest)
     print(tx.fee_per_byte(), file=regtest)
     print(tx.hash, file=regtest)
