@@ -11,10 +11,10 @@ def addresses(chain, json_data):
             yield addr, addr_type
 
     raw_multisig_tx = chain.tx_with_hash(json_data['raw-multisig-tx'])
-    yield raw_multisig_tx.outputs[0].address, "multisig-raw"
+    yield raw_multisig_tx.outputs[0].address, "raw-multisig"
 
     p2sh_multisig_tx = chain.tx_with_hash(json_data['p2sh-multisig-tx'])
-    yield p2sh_multisig_tx.outputs[0].address, "multisig-p2sh"
+    yield p2sh_multisig_tx.outputs[0].address, "p2sh-multisig"
 
 
 def address_received_test(addr, address_type, balance, ntxes):
@@ -69,7 +69,7 @@ def test_p2wsh_address(chain, json_data):
 
 def test_address_regression(chain, json_data, regtest):
     for addr, addr_type in addresses(chain, json_data):
-        if addr_type[0:8] != "multisig":
+        if "multisig" not in addr_type:
             print(addr.address_string, file=regtest)
         print(addr.balance(), file=regtest)
         print(addr.equiv(), file=regtest)
@@ -87,5 +87,5 @@ def test_address_regression(chain, json_data, regtest):
         if addr.type == blocksci.address_type.multisig:
             print(addr.required, file=regtest)
             print(addr.total, file=regtest)
-        if addr_type == "p2sh" or addr_type == "p2wsh" or addr_type == "multisig-p2sh":
+        if "p2sh" in addr_type or addr_type == "p2wsh":
             print(addr.wrapped_address, file=regtest)
