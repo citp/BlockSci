@@ -54,13 +54,11 @@ namespace blocksci {
         
         AddressIndex(const filesystem::path &path, bool readonly);
         ~AddressIndex();
-
-        bool checkIfExists(const RawAddress &address) const;
-        bool checkIfTopLevel(const RawAddress &address) const;
         
         ranges::any_view<InoutPointer, ranges::category::forward> getOutputPointers(const RawAddress &address) const;
         
-        std::unordered_set<RawAddress> getPossibleNestedEquivalentUp(const RawAddress &searchAddress) const;
+        ranges::optional<DedupAddress> getNestingScriptHash(const RawAddress &searchAddress) const;
+        std::unordered_set<DedupAddress> getPossibleNestedEquivalentUp(const RawAddress &searchAddress) const;
         ranges::any_view<RawAddress> getIncludingMultisigs(const RawAddress &searchAddress) const;
         
         void addNestedAddresses(std::vector<std::pair<RawAddress, DedupAddress>> nestedCache);

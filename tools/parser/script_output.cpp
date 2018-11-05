@@ -183,8 +183,10 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::PUBKEY>::getHash
     return hash160(pubkey.data(), pubkey.size());
 }
 
-blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::PUBKEY>::getData(uint32_t txNum) const {
-    return {txNum, pubkey};
+blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::PUBKEY>::getData(uint32_t txNum, bool topLevel) const {
+    blocksci::PubkeyData data{txNum, pubkey};
+    data.saw(blocksci::AddressType::Enum::PUBKEY, topLevel);
+    return data;
 }
 
 // MARK: TX_PUBKEYHASH
@@ -193,8 +195,10 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::PUBKEYHASH>::get
     return hash;
 }
 
-blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::PUBKEYHASH>::getData(uint32_t txNum) const {
-    return {txNum, hash};
+blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::PUBKEYHASH>::getData(uint32_t txNum, bool topLevel) const {
+    blocksci::PubkeyData data{txNum, hash};
+    data.saw(blocksci::AddressType::Enum::PUBKEYHASH, topLevel);
+    return data;
 }
 
 // MARK: MULTISIG_PUBKEY
@@ -207,8 +211,10 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY>
     return hash160(pubkey.data(), pubkey.size());
 }
 
-blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY>::getData(uint32_t txNum) const {
-    return {txNum, pubkey};
+blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY>::getData(uint32_t txNum, bool topLevel) const {
+    blocksci::PubkeyData data{txNum, pubkey};
+    data.saw(blocksci::AddressType::Enum::MULTISIG_PUBKEY, topLevel);
+    return data;
 }
 
 // MARK: WITNESS_PUBKEYHASH
@@ -217,8 +223,10 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHA
     return hash;
 }
 
-blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::getData(uint32_t txNum) const {
-    return {txNum, hash};
+blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::getData(uint32_t txNum, bool topLevel) const {
+    blocksci::PubkeyData data{txNum, hash};
+    data.saw(blocksci::AddressType::Enum::WITNESS_PUBKEYHASH, topLevel);
+    return data;
 }
 
 // MARK: TX_SCRIPTHASH
@@ -227,8 +235,10 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::SCRIPTHASH>::get
     return hash;
 }
 
-blocksci::ScriptHashData ScriptOutputData<blocksci::AddressType::Enum::SCRIPTHASH>::getData(uint32_t txNum) const {
-    return {txNum, hash, blocksci::RawAddress{0, blocksci::AddressType::Enum::NONSTANDARD}};
+blocksci::ScriptHashData ScriptOutputData<blocksci::AddressType::Enum::SCRIPTHASH>::getData(uint32_t txNum, bool topLevel) const {
+    blocksci::ScriptHashData data{txNum, hash, blocksci::RawAddress{0, blocksci::AddressType::Enum::NONSTANDARD}};
+    data.saw(blocksci::AddressType::Enum::SCRIPTHASH, topLevel);
+    return data;
 }
 
 // MARK: WITNESS_SCRIPTHASH
@@ -237,8 +247,10 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHA
     return ripemd160(reinterpret_cast<const char *>(&hash), sizeof(hash));
 }
 
-blocksci::ScriptHashData ScriptOutputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::getData(uint32_t txNum) const {
-    return {txNum, hash, blocksci::RawAddress{0, blocksci::AddressType::Enum::NONSTANDARD}};
+blocksci::ScriptHashData ScriptOutputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::getData(uint32_t txNum, bool topLevel) const {
+    blocksci::ScriptHashData data{txNum, hash, blocksci::RawAddress{0, blocksci::AddressType::Enum::NONSTANDARD}};
+    data.saw(blocksci::AddressType::Enum::WITNESS_SCRIPTHASH, topLevel);
+    return data;
 }
 
 // MARK: TX_MULTISIG
@@ -275,8 +287,9 @@ void ScriptOutputData<blocksci::AddressType::Enum::MULTISIG>::addAddress(const r
     addressCount++;
 }
 
-blocksci::ArbitraryLengthData<blocksci::MultisigData> ScriptOutputData<blocksci::AddressType::Enum::MULTISIG>::getData(uint32_t txNum) const {
+blocksci::ArbitraryLengthData<blocksci::MultisigData> ScriptOutputData<blocksci::AddressType::Enum::MULTISIG>::getData(uint32_t txNum, bool topLevel) const {
     blocksci::MultisigData multisigData{txNum, numRequired, numTotal, addressCount};
+    multisigData.saw(blocksci::AddressType::Enum::MULTISIG, topLevel);
     blocksci::ArbitraryLengthData<blocksci::MultisigData> data(multisigData);
     for (auto &pubkeyScript : addresses) {
         data.add(pubkeyScript.scriptNum);
@@ -288,8 +301,9 @@ blocksci::ArbitraryLengthData<blocksci::MultisigData> ScriptOutputData<blocksci:
 
 ScriptOutputData<blocksci::AddressType::Enum::NONSTANDARD>::ScriptOutputData(const blocksci::CScriptView &script_) : script(script_) {}
 
-blocksci::ArbitraryLengthData<blocksci::NonstandardScriptData> ScriptOutputData<blocksci::AddressType::Enum::NONSTANDARD>::getData(uint32_t txNum) const {
+blocksci::ArbitraryLengthData<blocksci::NonstandardScriptData> ScriptOutputData<blocksci::AddressType::Enum::NONSTANDARD>::getData(uint32_t txNum, bool topLevel) const {
     blocksci::NonstandardScriptData scriptData(txNum, static_cast<uint32_t>(script.size()));
+    scriptData.saw(blocksci::AddressType::Enum::NONSTANDARD, topLevel);
     blocksci::ArbitraryLengthData<blocksci::NonstandardScriptData> data(scriptData);
     data.add(script.begin(), script.end());
     return data;
@@ -309,8 +323,9 @@ ScriptOutputData<blocksci::AddressType::Enum::NULL_DATA>::ScriptOutputData(const
     }
 }
 
-blocksci::ArbitraryLengthData<blocksci::RawData> ScriptOutputData<blocksci::AddressType::Enum::NULL_DATA>::getData(uint32_t txNum) const {
+blocksci::ArbitraryLengthData<blocksci::RawData> ScriptOutputData<blocksci::AddressType::Enum::NULL_DATA>::getData(uint32_t txNum, bool topLevel) const {
     blocksci::RawData scriptData(txNum, fullData);
+    scriptData.saw(blocksci::AddressType::Enum::NULL_DATA, topLevel);
     blocksci::ArbitraryLengthData<blocksci::RawData> data(scriptData);
     data.add(fullData.begin(), fullData.end());
     return data;
@@ -322,8 +337,9 @@ ScriptOutputData<blocksci::AddressType::Enum::WITNESS_UNKNOWN>::ScriptOutputData
     witnessData.assign(witnessData_.begin(), witnessData_.end());
 }
 
-blocksci::ArbitraryLengthData<blocksci::WitnessUnknownScriptData> ScriptOutputData<blocksci::AddressType::Enum::WITNESS_UNKNOWN>::getData(uint32_t txNum) const {
+blocksci::ArbitraryLengthData<blocksci::WitnessUnknownScriptData> ScriptOutputData<blocksci::AddressType::Enum::WITNESS_UNKNOWN>::getData(uint32_t txNum, bool topLevel) const {
     blocksci::WitnessUnknownScriptData scriptData(txNum, witnessVersion, static_cast<uint32_t>(witnessData.size()));
+    scriptData.saw(blocksci::AddressType::Enum::WITNESS_UNKNOWN, topLevel);
     blocksci::ArbitraryLengthData<blocksci::WitnessUnknownScriptData> data(scriptData);
     data.add(witnessData.begin(), witnessData.end());
     return data;

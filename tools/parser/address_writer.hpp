@@ -50,11 +50,16 @@ class AddressWriter {
     void serializeImp(const ScriptInput<blocksci::AddressType::WITNESS_UNKNOWN> &input, ScriptFile<blocksci::DedupAddressType::WITNESS_UNKNOWN> &file);
     
     template<blocksci::AddressType::Enum type>
-    void serializeImp(const ScriptOutput<type> &, ScriptFile<dedupType(type)> &) {}
+    void serializeImp(const ScriptOutput<type> &output, ScriptFile<dedupType(type)> &file, bool topLevel) {
+        auto data = file[output.scriptNum - 1];
+        data->saw(type, topLevel);
+    }
     
-    void serializeImp(const ScriptOutput<blocksci::AddressType::PUBKEY> &input, ScriptFile<blocksci::DedupAddressType::PUBKEY> &file);
-    void serializeImp(const ScriptOutput<blocksci::AddressType::MULTISIG_PUBKEY> &input, ScriptFile<blocksci::DedupAddressType::PUBKEY> &file);
-    void serializeImp(const ScriptOutput<blocksci::AddressType::WITNESS_SCRIPTHASH> &input, ScriptFile<blocksci::DedupAddressType::SCRIPTHASH> &file);
+    void serializeImp(const ScriptOutput<blocksci::AddressType::PUBKEY> &output, ScriptFile<blocksci::DedupAddressType::PUBKEY> &file, bool topLevel);
+    void serializeImp(const ScriptOutput<blocksci::AddressType::MULTISIG_PUBKEY> &output, ScriptFile<blocksci::DedupAddressType::PUBKEY> &file, bool topLevel);
+    void serializeImp(const ScriptOutput<blocksci::AddressType::WITNESS_SCRIPTHASH> &output, ScriptFile<blocksci::DedupAddressType::SCRIPTHASH> &file, bool topLevel);
+    void serializeImp(const ScriptOutput<blocksci::AddressType::NONSTANDARD> &output, ScriptFile<blocksci::DedupAddressType::NONSTANDARD> &file, bool topLevel);
+    void serializeImp(const ScriptOutput<blocksci::AddressType::WITNESS_UNKNOWN> &output, ScriptFile<blocksci::DedupAddressType::WITNESS_UNKNOWN> &file, bool topLevel);
     
     template<blocksci::AddressType::Enum type>
     void serializeWrapped(const ScriptInputData<type> &, uint32_t, uint32_t) {}
@@ -75,16 +80,16 @@ public:
     }
     
     template<blocksci::AddressType::Enum type>
-    blocksci::OffsetType serialize(const ScriptOutput<type> &output, uint32_t txNum) {
+    blocksci::OffsetType serialize(const ScriptOutput<type> &output, uint32_t txNum, bool topLevel) {
         if (output.isNew) {
             auto &file = std::get<ScriptFile<dedupType(type)>>(scriptFiles);
-            auto data = output.data.getData(txNum);
+            auto data = output.data.getData(txNum, topLevel);
             file.write(data);
-            output.data.visitWrapped([&](auto &output) { this->serialize(output, txNum); });
+            output.data.visitWrapped([&](auto &output) { this->serialize(output, txNum, false); });
             return file.size();
         } else {
             auto &file = std::get<ScriptFile<dedupType(type)>>(scriptFiles);
-            serializeImp(output, file);
+            serializeImp(output, file, topLevel);
         }
         return 0;
     }
@@ -109,7 +114,7 @@ public:
     
     void rollback(const blocksci::State &state);
     
-    blocksci::OffsetType serialize(const AnyScriptOutput &output, uint32_t txNum);
+    blocksci::OffsetType serialize(const AnyScriptOutput &output, uint32_t txNum, bool topLevel);
     void serialize(const AnyScriptInput &input, uint32_t txNum, uint32_t outputTxNum);
     
     AddressWriter(const ParserConfigurationBase &config);

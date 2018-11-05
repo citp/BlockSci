@@ -14,6 +14,7 @@
 
 #include <blocksci/scripts/multisig_script.hpp>
 #include <blocksci/scripts/bitcoin_pubkey.hpp>
+#include <blocksci/scripts/script_variant.hpp>
 
 #include <pybind11/pybind11.h>
 
@@ -24,7 +25,11 @@ struct AddPubkeyBaseMethods {
     template <typename FuncApplication>
     void operator()(FuncApplication func) {
         using namespace blocksci;
-        func(method_tag, "find_multisigs", &T::getIncludingMultisigs, "List of multisigs which include this public key");
+        func(method_tag, "find_multisigs", +[](const T &script) -> RawIterator<script::Multisig> {
+            return script.getIncludingMultisigs() | ranges::view::transform([](Address && address) -> script::Multisig {
+                return mpark::get<script::Multisig>(address.getScript().wrapped);
+            });
+        }, "List of multisigs which include this public key");
         func(property_tag, "pubkey", +[](const T &script) -> ranges::optional<pybind11::bytes> {
             auto pubkey = script.getPubkey();
             if (pubkey) {

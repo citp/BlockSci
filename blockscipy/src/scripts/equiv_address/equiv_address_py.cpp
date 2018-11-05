@@ -27,12 +27,11 @@ void init_equiv_address(py::class_<EquivAddress> &cl) {
     .def("__repr__", &EquivAddress::toString)
     .def("__len__", [](const EquivAddress &address) { return address.size(); })
     .def("__bool__", [](const EquivAddress &address) { return address.size() == 0; })
-    .def("__iter__", [](const EquivAddress &address) {
-        auto transformed = address | ranges::view::transform([](const Address &address) {
+    .def("addresses", [](const EquivAddress &address) -> RawIterator<AnyScript> {
+        return address | ranges::view::transform([](const Address &address) {
             return address.getScript();
         });
-        return py::make_iterator(transformed.begin(), transformed.end());
-    },py::keep_alive<0, 1>())
+    },py::return_value_policy::reference_internal)
     .def("txes", &EquivAddress::getTransactions, "Returns a list of all transactions involving these equivalent addresses")
     .def("out_txes", &EquivAddress::getOutputTransactions, "Returns a range of all transaction where these equivalent addresses were an output")
     .def("in_txes", &EquivAddress::getInputTransactions, "Returns a list of all transaction where these equivalent addresses were an input")

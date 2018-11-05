@@ -88,8 +88,6 @@ namespace blocksci {
     
     std::vector<Address> BLOCKSCI_EXPORT getAddressesWithPrefix(const std::string &prefix, DataAccess &access);
     
-    std::unordered_set<Address> BLOCKSCI_EXPORT getScriptNestedEquivalents(const Address &searchAddress);
-    
     inline size_t hashAddress(uint32_t scriptNum, AddressType::Enum type) {
         return (static_cast<size_t>(scriptNum) << 32) + static_cast<size_t>(type);
     }

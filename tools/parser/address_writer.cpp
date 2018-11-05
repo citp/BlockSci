@@ -19,30 +19,42 @@ scriptFiles(blocksci::apply(blocksci::DedupAddressType::all(), [&] (auto tag) {
 })) {
 }
 
-blocksci::OffsetType AddressWriter::serialize(const AnyScriptOutput &output, uint32_t txNum) {
-    return mpark::visit([&](auto &scriptOutput) { return this->serialize(scriptOutput, txNum); }, output.wrapped);
+blocksci::OffsetType AddressWriter::serialize(const AnyScriptOutput &output, uint32_t txNum, bool topLevel) {
+    return mpark::visit([&](auto &scriptOutput) { return this->serialize(scriptOutput, txNum, topLevel); }, output.wrapped);
 }
 
 void AddressWriter::serialize(const AnyScriptInput &input, uint32_t txNum, uint32_t outputTxNum) {
     mpark::visit([&](auto &scriptInput) { this->serialize(scriptInput, txNum, outputTxNum); }, input.wrapped);
 }
 
-void AddressWriter::serializeImp(const ScriptOutput<AddressType::PUBKEY> &output, ScriptFile<DedupAddressType::PUBKEY> &file) {
+void AddressWriter::serializeImp(const ScriptOutput<AddressType::PUBKEY> &output, ScriptFile<DedupAddressType::PUBKEY> &file, bool topLevel) {
     auto data = file[output.scriptNum - 1];
     std::copy(output.data.pubkey.begin(), output.data.pubkey.end(), data->pubkey.begin());
     data->hasPubkey = true;
+    data->saw(AddressType::PUBKEY, topLevel);
 }
 
-void AddressWriter::serializeImp(const ScriptOutput<AddressType::MULTISIG_PUBKEY> &output, ScriptFile<DedupAddressType::PUBKEY> &file) {
+void AddressWriter::serializeImp(const ScriptOutput<AddressType::MULTISIG_PUBKEY> &output, ScriptFile<DedupAddressType::PUBKEY> &file, bool topLevel) {
     auto data = file[output.scriptNum - 1];
     std::copy(output.data.pubkey.begin(), output.data.pubkey.end(), data->pubkey.begin());
+    data->saw(AddressType::MULTISIG_PUBKEY, topLevel);
     data->hasPubkey = true;
 }
 
-void AddressWriter::serializeImp(const ScriptOutput<AddressType::WITNESS_SCRIPTHASH> &output, ScriptFile<blocksci::DedupAddressType::SCRIPTHASH> &file) {
+void AddressWriter::serializeImp(const ScriptOutput<AddressType::WITNESS_SCRIPTHASH> &output, ScriptFile<blocksci::DedupAddressType::SCRIPTHASH> &file, bool topLevel) {
     auto data = file[output.scriptNum - 1];
     data->hash256 = output.data.hash;
     data->isSegwit = true;
+    data->saw(AddressType::WITNESS_SCRIPTHASH, topLevel);
+}
+
+void AddressWriter::serializeImp(const ScriptOutput<AddressType::NONSTANDARD> &output, ScriptFile<blocksci::DedupAddressType::NONSTANDARD> &file, bool topLevel) {
+    auto data = file[output.scriptNum - 1];
+    std::get<0>(data)->saw(AddressType::NONSTANDARD, topLevel);
+}
+void AddressWriter::serializeImp(const ScriptOutput<AddressType::WITNESS_UNKNOWN> &output, ScriptFile<blocksci::DedupAddressType::WITNESS_UNKNOWN> &file, bool topLevel) {
+    auto data = file[output.scriptNum - 1];
+    std::get<0>(data)->saw(AddressType::WITNESS_UNKNOWN, topLevel);
 }
 
 void AddressWriter::serializeImp(const ScriptInput<AddressType::PUBKEYHASH> &input, ScriptFile<DedupAddressType::PUBKEY> &file) {
@@ -67,7 +79,7 @@ void AddressWriter::serializeImp(const ScriptInput<AddressType::WITNESS_SCRIPTHA
 }
 
 void AddressWriter::serializeWrapped(const ScriptInputData<AddressType::Enum::WITNESS_SCRIPTHASH> &data, uint32_t txNum, uint32_t outputTxNum) {
-    serialize(data.wrappedScriptOutput, txNum);
+    serialize(data.wrappedScriptOutput, txNum, false);
     serialize(*data.wrappedScriptInput, txNum, outputTxNum);
 }
 
@@ -77,7 +89,7 @@ void AddressWriter::serializeImp(const ScriptInput<AddressType::SCRIPTHASH> &inp
 }
 
 void AddressWriter::serializeWrapped(const ScriptInputData<AddressType::Enum::SCRIPTHASH> &data, uint32_t txNum, uint32_t outputTxNum) {
-    serialize(data.wrappedScriptOutput, txNum);
+    serialize(data.wrappedScriptOutput, txNum, false);
     return serialize(*data.wrappedScriptInput, txNum, outputTxNum);
 }
 

@@ -65,8 +65,9 @@ namespace blocksci {
     struct BLOCKSCI_EXPORT ScriptDataBase {
         uint32_t txFirstSeen;
         uint32_t txFirstSpent;
+        uint32_t typesSeen;
         
-        explicit ScriptDataBase(uint32_t txNum) : txFirstSeen(txNum), txFirstSpent(std::numeric_limits<uint32_t>::max()) {}
+        explicit ScriptDataBase(uint32_t txNum) : txFirstSeen(txNum), txFirstSpent(std::numeric_limits<uint32_t>::max()), typesSeen(0) {}
         
         void visitPointers(const std::function<void(const RawAddress &)> &) const {}
         
@@ -76,6 +77,22 @@ namespace blocksci {
         
         bool hasBeenSpent() const {
             return txFirstSpent != std::numeric_limits<uint32_t>::max();
+        }
+        
+        void saw(blocksci::AddressType::Enum type, bool isTopLevel) {
+            typesSeen |= (1u << static_cast<uint32_t>(type) * 2);
+            if (isTopLevel) {
+                typesSeen |= (1u << (static_cast<uint32_t>(type) * 2 + 1));
+            }
+            
+        }
+        
+        bool seenTopLevel(blocksci::AddressType::Enum type) const {
+            return typesSeen & (1u << (static_cast<uint32_t>(type) * 2 + 1));
+        }
+        
+        bool seen(blocksci::AddressType::Enum type) const {
+            return typesSeen & (1u << static_cast<uint32_t>(type) * 2);
         }
     };
     

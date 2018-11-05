@@ -21,7 +21,7 @@
 #include <internal/data_access.hpp>
 #include <internal/dedup_address.hpp>
 #include <internal/dedup_address_info.hpp>
-#include <internal/address_index.hpp>
+#include <internal/script_access.hpp>
 
 #include <range/v3/distance.hpp>
 #include <range/v3/view/join.hpp>
@@ -32,7 +32,7 @@ namespace {
     template<DedupAddressType::Enum type>
     struct DedupAddressTypesRangeFunctor {
         static ranges::iterator_range<const AddressType::Enum *> f() {
-            auto &types = DedupAddressInfo<type>::addressTypes;
+            auto &types = DedupAddressInfo<type>::equivTypes;
             return ranges::iterator_range<const AddressType::Enum *>{types.begin(), types.end()};
         }
     };
@@ -54,7 +54,7 @@ namespace blocksci {
     }
     
     ranges::any_view<Address> Cluster::getPossibleAddresses() const {
-        auto access_ = access;
+        auto access_ = &clusterAccess.access;
         return getDedupAddresses() | ranges::view::transform([&access_](const DedupAddress &dedupAddress) {
             uint32_t scriptNum = dedupAddress.scriptNum;
             return addressTypesRange(dedupAddress.type) | ranges::view::transform([access_, scriptNum](AddressType::Enum addressType) {
@@ -64,10 +64,16 @@ namespace blocksci {
     }
     
     ranges::any_view<Address> Cluster::getAddresses() const {
-        auto &addressIndex = clusterAccess.access.getAddressIndex();
-        return getPossibleAddresses() | ranges::view::filter([&addressIndex](const Address &address) {
-            return addressIndex.checkIfTopLevel(address);
-        });
+        auto access_ = &clusterAccess.access;
+        return getDedupAddresses() | ranges::view::transform([access_](const DedupAddress &address) {
+            auto header = access_->getScripts().getScriptHeader(address.scriptNum, address.type);
+            uint32_t scriptNum = address.scriptNum;
+            return addressTypesRange(address.type) | ranges::view::filter([header](AddressType::Enum type) {
+                return header->seenTopLevel(type);
+            }) | ranges::view::transform([access_, scriptNum](AddressType::Enum addressType) {
+                return Address(scriptNum, addressType, *access_);
+            });
+        }) | ranges::view::join;
     }
     
     int64_t Cluster::getSize() const {
@@ -112,7 +118,6 @@ namespace blocksci {
         return getPossibleAddresses() | ranges::view::transform([&tags](Address && address) -> ranges::optional<TaggedAddress> {
             auto it = tags.find(address);
             if (it != tags.end()) {
-                
                 return TaggedAddress{it->first, it->second};
             } else {
                 return ranges::nullopt;
@@ -124,7 +129,6 @@ namespace blocksci {
         return getPossibleAddresses() | ranges::view::transform([tags](Address && address) -> ranges::optional<TaggedAddress> {
             auto it = tags.find(address);
             if (it != tags.end()) {
-                
                 return TaggedAddress{it->first, it->second};
             } else {
                 return ranges::nullopt;
@@ -135,10 +139,10 @@ namespace blocksci {
     uint32_t Cluster::countOfType(AddressType::Enum type) const {
         auto dedupSearchType = dedupType(type);
         uint32_t count = 0;
-        for (auto &address : clusterAccess.getClusterScripts(clusterNum)) {
+        for (auto &address : getDedupAddresses()) {
             if (address.type == dedupSearchType) {
-                auto searchAddress = Address{address.scriptNum, type, clusterAccess.access};
-                if (clusterAccess.access.getAddressIndex().checkIfTopLevel(searchAddress)) {
+                auto header = clusterAccess.access.getScripts().getScriptHeader(address.scriptNum, address.type);
+                if (header->seenTopLevel(type)) {
                     ++count;
                 }
             }
@@ -174,7 +178,7 @@ namespace blocksci {
     }
     
     int64_t Cluster::calculateBalance(BlockHeight height) const {
-        auto access_ = access;
+        auto access_ = &clusterAccess.access;
         auto balances = getDedupAddresses() | ranges::view::transform([access_, height](const DedupAddress &dedupAddress) {
             uint32_t scriptNum = dedupAddress.scriptNum;
             auto possibleAddressBalances = addressTypesRange(dedupAddress.type) | ranges::view::transform([&access_, scriptNum, height](AddressType::Enum addressType) {

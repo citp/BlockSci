@@ -8,46 +8,68 @@
 #include <blocksci/address/equiv_address.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/algorithms.hpp>
+#include <blocksci/scripts/scripthash_script.hpp>
 
 #include <internal/address_info.hpp>
 #include <internal/dedup_address.hpp>
 #include <internal/dedup_address_info.hpp>
 #include <internal/address_index.hpp>
 #include <internal/data_access.hpp>
+#include <internal/script_access.hpp>
 
 #include <sstream>
 
-namespace blocksci {
-    EquivAddress::EquivAddress(uint32_t scriptNum, EquivAddressType::Enum type, bool scriptEquivalent_, DataAccess &access_) : scriptEquivalent(scriptEquivalent_), access(access_) {
-        for (auto equivType : equivAddressTypes(type)) {
-            RawAddress address(scriptNum, equivType);
-            if (scriptEquivalent) {
-                auto upAddressesRaw = access_.getAddressIndex().getPossibleNestedEquivalentUp(address);
-                RANGES_FOR(auto &rawAddress, upAddressesRaw) {
-                    addresses.emplace(rawAddress, access_);
-                }
-                auto downAddresses = getScriptNestedEquivalents(Address{address, access});
-                addresses.insert(downAddresses.begin(), downAddresses.end());
+namespace {
+    using namespace blocksci;
+    
+    std::vector<DedupAddress> getScriptNestedEquivalents(const DedupAddress &searchAddress, DataAccess &access) {
+        std::vector<DedupAddress> nestedAddressed;
+        auto address = searchAddress;
+        while (address.type == DedupAddressType::SCRIPTHASH) {
+            auto scriptHash = script::ScriptHash{address.scriptNum, access};
+            auto wrapped = scriptHash.getWrappedAddress();
+            if (wrapped) {
+                nestedAddressed.emplace_back(address);
+                address = DedupAddress{wrapped->scriptNum, dedupType(wrapped->type)};
             } else {
-                addresses.emplace(address, access_);
-            }
-            
-        }
-        
-        auto end = addresses.end();
-        for (auto it = addresses.begin(); it != end;) {
-            if (!access_.getAddressIndex().checkIfExists(*it)) {
-                it = addresses.erase(it);
-            } else {
-                ++it;
+                break;
             }
         }
+        nestedAddressed.emplace_back(address);
+        return nestedAddressed;
     }
     
-    EquivAddress::EquivAddress(const Address &address, bool scriptEquivalent_) : EquivAddress(address.scriptNum, equivType(address.type), scriptEquivalent_, address.getAccess()) {}
+    std::unordered_set<Address> initAddresses(const DedupAddress &dedup, bool scriptEquivalent, DataAccess &access) {
+        std::unordered_set<DedupAddress> equiv;
+        equiv.insert(dedup);
+        if (scriptEquivalent) {
+            std::vector<DedupAddress> nestedEquiv = getScriptNestedEquivalents(dedup, access);
+            for (const auto &address : nestedEquiv) {
+                for (auto equivType : equivAddressTypes(address.type)) {
+                    auto upAddresses = access.getAddressIndex().getPossibleNestedEquivalentUp({address.scriptNum, equivType});
+                    equiv.insert(upAddresses.begin(), upAddresses.end());
+                }
+            }
+        }
+        
+        std::unordered_set<Address> addresses;
+        for (const auto &address : equiv) {
+            auto header = access.getScripts().getScriptHeader(address.scriptNum, address.type);
+            for (auto equivType : equivAddressTypes(address.type)) {
+                if (header->seen(equivType)) {
+                    addresses.emplace(address.scriptNum, equivType, access);
+                }
+            }
+        }
+        
+        return addresses;
+    }
+}
+
+namespace blocksci {
+    EquivAddress::EquivAddress(const Address &address, bool scriptEquivalent_) : scriptEquivalent(scriptEquivalent_), access(address.getAccess()), addresses(initAddresses(DedupAddress{address.scriptNum, dedupType(address.type)}, scriptEquivalent_, address.getAccess())) {}
     
-    EquivAddress::EquivAddress(const DedupAddress &address, bool scriptEquivalent_, DataAccess &access_) :
-    EquivAddress(address.scriptNum, equivType(address.type), scriptEquivalent_, access_) {}
+    EquivAddress::EquivAddress(const DedupAddress &address, bool scriptEquivalent_, DataAccess &access_) : scriptEquivalent(scriptEquivalent_), access(access_), addresses(initAddresses(address, scriptEquivalent_, access_)) {}
     
     std::string EquivAddress::toString() const {
         std::stringstream ss;

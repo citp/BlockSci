@@ -361,7 +361,7 @@ void serializeAddressess(RawTransaction &tx, AddressWriter &addressWriter) {
     }
     
     for (auto &scriptOutput : tx.scriptOutputs) {
-        addressWriter.serialize(scriptOutput, tx.txNum);
+        addressWriter.serialize(scriptOutput, tx.txNum, true);
     }
 }
 

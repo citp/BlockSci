@@ -69,7 +69,7 @@ struct ScriptOutputData<blocksci::AddressType::Enum::PUBKEY> : public ScriptOutp
     
     blocksci::uint160 getHash() const;
     
-    blocksci::PubkeyData getData(uint32_t txNum) const;
+    blocksci::PubkeyData getData(uint32_t txNum, bool topLevel) const;
 };
 
 template <>
@@ -81,7 +81,7 @@ struct ScriptOutputData<blocksci::AddressType::Enum::PUBKEYHASH> : public Script
     
     blocksci::uint160 getHash() const;
     
-    blocksci::PubkeyData getData(uint32_t txNum) const;
+    blocksci::PubkeyData getData(uint32_t txNum, bool topLevel) const;
 };
 
 template <>
@@ -96,7 +96,7 @@ struct ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY> : public S
     
     blocksci::uint160 getHash() const;
     
-    blocksci::PubkeyData getData(uint32_t txNum) const;
+    blocksci::PubkeyData getData(uint32_t txNum, bool topLevel) const;
 };
 
 template <>
@@ -108,7 +108,7 @@ struct ScriptOutputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : publi
     
     blocksci::uint160 getHash() const;
     
-    blocksci::PubkeyData getData(uint32_t txNum) const;
+    blocksci::PubkeyData getData(uint32_t txNum, bool topLevel) const;
 };
 
 template <>
@@ -119,7 +119,7 @@ struct ScriptOutputData<blocksci::AddressType::Enum::SCRIPTHASH> : public Script
     
     blocksci::uint160 getHash() const;
     
-    blocksci::ScriptHashData getData(uint32_t txNum) const;
+    blocksci::ScriptHashData getData(uint32_t txNum, bool topLevel) const;
 };
 
 template <>
@@ -132,7 +132,7 @@ struct ScriptOutputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> : publi
     
     blocksci::uint160 getHash() const;
     
-    blocksci::ScriptHashData getData(uint32_t txNum) const;
+    blocksci::ScriptHashData getData(uint32_t txNum, bool topLevel) const;
 };
 
 template <>
@@ -168,7 +168,7 @@ struct ScriptOutputData<blocksci::AddressType::Enum::MULTISIG> : public ScriptOu
         }
     }
     
-    blocksci::ArbitraryLengthData<blocksci::MultisigData> getData(uint32_t txNum) const;
+    blocksci::ArbitraryLengthData<blocksci::MultisigData> getData(uint32_t txNum, bool topLevel) const;
 };
 
 template <>
@@ -178,7 +178,7 @@ struct ScriptOutputData<blocksci::AddressType::Enum::NONSTANDARD> : public Scrip
     ScriptOutputData() {}
     ScriptOutputData(const blocksci::CScriptView &script);
     
-    blocksci::ArbitraryLengthData<blocksci::NonstandardScriptData> getData(uint32_t txNum) const;
+    blocksci::ArbitraryLengthData<blocksci::NonstandardScriptData> getData(uint32_t txNum, bool topLevel) const;
 };
 
 template <>
@@ -187,7 +187,7 @@ struct ScriptOutputData<blocksci::AddressType::Enum::NULL_DATA> : public ScriptO
     
     ScriptOutputData(const blocksci::CScriptView &script);
     
-    blocksci::ArbitraryLengthData<blocksci::RawData> getData(uint32_t txNum) const;
+    blocksci::ArbitraryLengthData<blocksci::RawData> getData(uint32_t txNum, bool topLevel) const;
 };
 
 template <>
@@ -198,7 +198,7 @@ struct ScriptOutputData<blocksci::AddressType::Enum::WITNESS_UNKNOWN> : public S
     ScriptOutputData() {}
     ScriptOutputData(uint8_t witnessVersion, const ranges::iterator_range<const unsigned char *> &witnessData);
     
-    blocksci::ArbitraryLengthData<blocksci::WitnessUnknownScriptData> getData(uint32_t txNum) const;
+    blocksci::ArbitraryLengthData<blocksci::WitnessUnknownScriptData> getData(uint32_t txNum, bool topLevel) const;
 };
 
 using ScriptOutputType = blocksci::to_variadic_t<blocksci::to_address_tuple_t<ScriptOutput>, mpark::variant>;

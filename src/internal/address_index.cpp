@@ -12,6 +12,7 @@
 #include "address_info.hpp"
 #include "column_iterator.hpp"
 #include "dedup_address.hpp"
+#include "dedup_address_info.hpp"
 #include "memory_view.hpp"
 
 #include <blocksci/core/inout_pointer.hpp>
@@ -178,61 +179,38 @@ namespace blocksci {
         });
     }
     
-    bool AddressIndex::checkIfExists(const RawAddress &address) const {
-        rocksdb::Slice key{reinterpret_cast<const char *>(&address.scriptNum), sizeof(address.scriptNum)};
-        {
-            auto it = getOutputIterator(address.type);
-            it->Seek(key);
-            if (it->Valid() && it->key().starts_with(key)) {
-                return true;
-            }
-        }
-        {
-            auto it = getNestedIterator(address.type);
-            it->Seek(key);
-            if (it->Valid() && it->key().starts_with(key)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    bool AddressIndex::checkIfTopLevel(const RawAddress &address) const {
-        rocksdb::Slice key{reinterpret_cast<const char *>(&address.scriptNum), sizeof(address.scriptNum)};
-        auto it = getOutputIterator(address.type);
+    ranges::optional<DedupAddress> AddressIndex::getNestingScriptHash(const RawAddress &searchAddress) const {
+        rocksdb::Slice key{reinterpret_cast<const char *>(&searchAddress.scriptNum), sizeof(searchAddress.scriptNum)};
+        auto it = getNestedIterator(searchAddress.type);
         it->Seek(key);
         if (it->Valid() && it->key().starts_with(key)) {
-            return true;
+            auto foundKey = it->key();
+            foundKey.remove_prefix(sizeof(uint32_t));
+            DedupAddress rawParent;
+            memcpy(&rawParent, foundKey.data(), sizeof(rawParent));
+            return rawParent;
         }
-        return false;
+        return ranges::nullopt;
     }
     
-    std::unordered_set<RawAddress> AddressIndex::getPossibleNestedEquivalentUp(const RawAddress &searchAddress) const {
+    std::unordered_set<DedupAddress> AddressIndex::getPossibleNestedEquivalentUp(const RawAddress &searchAddress) const {
         std::unordered_set<RawAddress> addressesToSearch{searchAddress};
-        std::unordered_set<RawAddress> searchedAddresses;
+        std::unordered_set<DedupAddress> searchedAddresses;
         while (addressesToSearch.size() > 0) {
-            auto setIt = addressesToSearch.begin();
-            auto address = *setIt;
-            rocksdb::Slice key{reinterpret_cast<const char *>(&address.scriptNum), sizeof(address.scriptNum)};
-            auto it = getNestedIterator(address.type);
-            for (it->Seek(key); it->Valid() && it->key().starts_with(key); it->Next()) {
-                auto foundKey = it->key();
-                foundKey.remove_prefix(sizeof(uint32_t));
-                DedupAddress rawParent;
-                memcpy(&rawParent, foundKey.data(), sizeof(rawParent));
-                if (rawParent.type == DedupAddressType::SCRIPTHASH) {
-                    for (auto type : equivAddressTypes(equivType(AddressType::SCRIPTHASH))) {
-                        RawAddress newAddress{rawParent.scriptNum, type};
-                        if (searchedAddresses.find(newAddress) == searchedAddresses.end()) {
-                            addressesToSearch.insert(newAddress);
+            auto address = *addressesToSearch.begin();
+            auto nestingAddress = getNestingScriptHash(address);
+            if (nestingAddress) {
+                if (nestingAddress->type == DedupAddressType::SCRIPTHASH) {
+                    if (searchedAddresses.find(*nestingAddress) == searchedAddresses.end()) {
+                        for (auto type : equivAddressTypes(dedupType(AddressType::SCRIPTHASH))) {
+                            addressesToSearch.insert({nestingAddress->scriptNum, type});
                         }
                     }
                 }
             }
-            searchedAddresses.insert(address);
-            addressesToSearch.erase(setIt);
+            searchedAddresses.insert({address.scriptNum, dedupType(address.type)});
+            addressesToSearch.erase(addressesToSearch.begin());
         }
-        
         return searchedAddresses;
     }
 }

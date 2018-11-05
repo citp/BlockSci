@@ -40,7 +40,6 @@ namespace blocksci {
     
     class BLOCKSCI_EXPORT Cluster {
         const ClusterAccess &clusterAccess;
-        DataAccess *access;
         
         ranges::iterator_range<const blocksci::DedupAddress *> getDedupAddresses() const;
         

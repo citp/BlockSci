@@ -202,35 +202,5 @@ namespace blocksci {
     int64_t Address::calculateBalance(BlockHeight height) const {
         return balance(height, outputs(getOutputPointers(), *access));
     }
-    
-    std::unordered_set<Address> getScriptNestedEquivalents(const Address &searchAddress) {
-        std::unordered_set<Address> addressesToSearch{searchAddress};
-        std::unordered_set<Address> searchedAddresses;
-        std::function<bool(const blocksci::Address &)> visitFunc = [&](const blocksci::Address &a) {
-            if (dedupType(a.type) == DedupAddressType::SCRIPTHASH) {
-                script::ScriptHash scriptHash(a.scriptNum, searchAddress.getAccess());
-                auto wrapped = scriptHash.getWrappedAddress();
-                if (wrapped) {
-                    for (auto type : equivAddressTypes(equivType(wrapped->type))) {
-                        Address newAddress(wrapped->scriptNum, type, searchAddress.getAccess());
-                        if (searchedAddresses.find(newAddress) == searchedAddresses.end()) {
-                            addressesToSearch.insert(newAddress);
-                        }
-                    }
-                }
-                return true;
-            }
-            return false;
-        };
-        while (addressesToSearch.size() > 0) {
-            auto setIt = addressesToSearch.begin();
-            auto address = *setIt;
-            visit(address, visitFunc);
-            searchedAddresses.insert(address);
-            addressesToSearch.erase(setIt);
-        }
-        
-        return searchedAddresses;
-    }
 }
 

@@ -32,8 +32,10 @@ AddressDB::~AddressDB() {
 }
 
 void AddressDB::processTx(const blocksci::RawTransaction *tx, uint32_t txNum, const blocksci::ChainAccess &, const blocksci::ScriptAccess &scripts) {
+    std::unordered_set<RawAddress> addedAddresses;
     std::function<bool(const RawAddress &)> visitFunc = [&](const RawAddress &a) {
-        if (dedupType(a.type) == DedupAddressType::SCRIPTHASH) {
+        if (dedupType(a.type) == DedupAddressType::SCRIPTHASH && addedAddresses.find(a) != addedAddresses.end()) {
+            addedAddresses.insert(a);
             auto scriptHash = scripts.getScriptData<DedupAddressType::SCRIPTHASH>(a.scriptNum);
             if (scriptHash->txFirstSeen == txNum) {
                 addAddressNested(scriptHash->wrappedAddress, DedupAddress{a.scriptNum, DedupAddressType::SCRIPTHASH});
@@ -41,8 +43,9 @@ void AddressDB::processTx(const blocksci::RawTransaction *tx, uint32_t txNum, co
             } else {
                 return false;
             }
+        } else {
+            return false;
         }
-        return false;
     };
     auto inputs = ranges::make_iterator_range(tx->beginInputs(), tx->endInputs());
     for (auto &input : inputs) {

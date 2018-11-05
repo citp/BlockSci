@@ -24,13 +24,11 @@ namespace blocksci {
     class DataAccess;
     
     class BLOCKSCI_EXPORT EquivAddress {
-        std::unordered_set<Address> addresses;
         bool scriptEquivalent;
         DataAccess &access;
+        std::unordered_set<Address> addresses;
         
         friend struct std::hash<EquivAddress>;
-        
-        EquivAddress(uint32_t scriptNum, EquivAddressType::Enum type, bool scriptEquivalent_, DataAccess &access_);
     public:
         EquivAddress(const Address &address, bool scriptEquivalent_);
         EquivAddress(const DedupAddress &address, bool scriptEquivalent_, DataAccess &access_);

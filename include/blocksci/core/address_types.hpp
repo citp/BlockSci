@@ -18,9 +18,6 @@
 #define ADDRESS_TYPE_LIST VAL(NONSTANDARD), VAL(PUBKEY), VAL(PUBKEYHASH), VAL(MULTISIG_PUBKEY), VAL(SCRIPTHASH), VAL(MULTISIG), VAL(NULL_DATA), VAL(WITNESS_PUBKEYHASH), VAL(WITNESS_SCRIPTHASH), VAL(WITNESS_UNKNOWN)
 #define ADDRESS_TYPE_SET VAL(NONSTANDARD) VAL(PUBKEY) VAL(PUBKEYHASH) VAL(MULTISIG_PUBKEY) VAL(SCRIPTHASH) VAL(MULTISIG) VAL(NULL_DATA) VAL(WITNESS_PUBKEYHASH) VAL(WITNESS_SCRIPTHASH) VAL(WITNESS_UNKNOWN)
 
-#define EQUIV_ADDRESS_TYPE_LIST VAL(NONSTANDARD), VAL(PUBKEY), VAL(SCRIPTHASH), VAL(MULTISIG), VAL(NULL_DATA), VAL(WITNESS_UNKNOWN)
-#define EQUIV_ADDRESS_TYPE_SET VAL(NONSTANDARD) VAL(PUBKEY) VAL(SCRIPTHASH) VAL(MULTISIG) VAL(NULL_DATA) VAL(WITNESS_UNKNOWN)
-
 namespace blocksci {
     struct BLOCKSCI_EXPORT AddressType {
         
@@ -36,32 +33,11 @@ namespace blocksci {
         
         static constexpr Enum example = PUBKEY;
     };
-    
-    struct EquivAddressType {
-        
-        enum Enum {
-            #define VAL(x) x
-            EQUIV_ADDRESS_TYPE_LIST
-            #undef VAL
-        };
-        
-        static constexpr size_t size = 6;
-        #define VAL(x) std::integral_constant<Enum, x>
-        using all = std::tuple<EQUIV_ADDRESS_TYPE_LIST>;
-        #undef VAL
-        static constexpr Enum example = PUBKEY;
-    };
 }
 
 namespace std {
     template<> struct BLOCKSCI_EXPORT hash<blocksci::AddressType::Enum> {
         size_t operator()(blocksci::AddressType::Enum type) const {
-            return static_cast<size_t>(type);
-        }
-    };
-    
-    template<> struct BLOCKSCI_EXPORT hash<blocksci::EquivAddressType::Enum> {
-        size_t operator()(blocksci::EquivAddressType::Enum type) const {
             return static_cast<size_t>(type);
         }
     };
