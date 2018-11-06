@@ -39,6 +39,10 @@ namespace blocksci {
         return access->config.chainConfig.dataDirectory.str();
     }
     
+    std::string Blockchain::configLocation() const {
+        return access->config.configPath;
+    }
+    
     void Blockchain::reload() {
         access->reload();
         sl.stop = access->getChain().blockCount();

@@ -320,7 +320,7 @@ void updateChain(const filesystem::path &configFilePath, bool fullParse) {
     blocksci::checkVersion(jsonConf);
     
     blocksci::ChainConfiguration chainConfig = jsonConf.at("chainConfig");
-    blocksci::DataConfiguration dataConfig{chainConfig, true, 0};
+    blocksci::DataConfiguration dataConfig{configFilePath.str(), chainConfig, true, 0};
     
     ParserConfigurationBase config{dataConfig};
     HashIndexCreator hashDb(config, config.dataConfig.hashIndexFilePath());

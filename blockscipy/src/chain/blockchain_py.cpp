@@ -68,6 +68,7 @@ void init_blockchain(py::class_<Blockchain> &cl) {
     .def(py::init<std::string>())
     .def(py::init<std::string, BlockHeight>())
     .def_property_readonly("data_location", &Blockchain::dataLocation, "Returns the location of the data directory that this Blockchain object represents.")
+    .def_property_readonly("config_location", &Blockchain::configLocation, "Returns the location of the configuration file that this Blockchain object represents.")
     .def("reload", &Blockchain::reload, "Reload the blockchain to make new blocks visible (Invalidates current BlockSci objects)")
     .def("addresses", [](Blockchain &chain, AddressType::Enum type) {
         static constexpr auto table = make_dynamic_table<AddressType, PythonScriptRangeFunctor>();

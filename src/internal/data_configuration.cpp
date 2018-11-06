@@ -21,7 +21,7 @@ namespace blocksci {
         checkVersion(jsonConf);
         
         ChainConfiguration chainConfig = jsonConf.at("chainConfig");
-        return {chainConfig, errorOnReorg, blocksIgnored};
+        return {configPath, chainConfig, errorOnReorg, blocksIgnored};
     }
     
     void createDirectory(const filesystem::path &dir) {
@@ -52,7 +52,7 @@ namespace blocksci {
         }
     }
     
-    DataConfiguration::DataConfiguration(ChainConfiguration &chainConfig_, bool errorOnReorg_, BlockHeight blocksIgnored_) : errorOnReorg(errorOnReorg_), blocksIgnored(blocksIgnored_), chainConfig(chainConfig_) {
+    DataConfiguration::DataConfiguration(const std::string &configPath_, ChainConfiguration &chainConfig_, bool errorOnReorg_, BlockHeight blocksIgnored_) : configPath(configPath_), errorOnReorg(errorOnReorg_), blocksIgnored(blocksIgnored_), chainConfig(chainConfig_) {
         createDirectory(chainConfig.dataDirectory);
         createDirectory(scriptsDirectory());
         createDirectory(chainDirectory());

@@ -27,8 +27,9 @@ namespace blocksci {
     
     struct DataConfiguration {
         DataConfiguration() {}
-        DataConfiguration(ChainConfiguration &config, bool errorOnReorg, BlockHeight blocksIgnored);
+        DataConfiguration(const std::string &configPath, ChainConfiguration &config, bool errorOnReorg, BlockHeight blocksIgnored);
         
+        std::string configPath;
         bool errorOnReorg;
         BlockHeight blocksIgnored;
         

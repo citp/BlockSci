@@ -33,6 +33,7 @@ namespace blocksci {
         ~Blockchain();
         
         std::string dataLocation() const;
+        std::string configLocation() const;
 
         void reload();
         

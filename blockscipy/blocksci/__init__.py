@@ -61,7 +61,7 @@ def mapreduce_block_ranges(chain, map_func, reduce_func, init=MISSING_PARAM, sta
         return mapFunc(chain[start:end])
 
     raw_segments = chain._segment_indexes(start, end, cpu_count)
-    segments = [(raw_segment, chain.data_location, len(chain)) for raw_segment in raw_segments]
+    segments = [(raw_segment, chain.config_location, len(chain)) for raw_segment in raw_segments]
 
     def real_map_func(input):
         local_chain = Blockchain(input[1], input[2])
