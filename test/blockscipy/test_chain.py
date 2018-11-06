@@ -14,7 +14,6 @@ def test_chain(chain, regtest):
     assert 0 < chain.address_count(blocksci.address_type.witness_scripthash)
     assert 0 < chain.address_count(blocksci.address_type.nulldata)
     assert 0 < chain.address_count(blocksci.address_type.multisig)
-    # print(chain.most_valuable_addresses(), file=regtest)
 
 
 def test_empty_block(chain, regtest):
