@@ -89,7 +89,7 @@ void HashIndexCreator::addTx(const blocksci::uint256 &hash, uint32_t txNum) {
     }
 }
 
-uint32_t HashIndexCreator::getTxIndex(const blocksci::uint256 &txHash) {
+ranges::optional<uint32_t> HashIndexCreator::getTxIndex(const blocksci::uint256 &txHash) {
     auto it = txCache.find(txHash);
     if (it != txCache.end()) {
         return it->second;

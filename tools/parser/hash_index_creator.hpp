@@ -160,7 +160,7 @@ public:
     
     void addTx(const blocksci::uint256 &hash, uint32_t txID);
     
-    uint32_t getTxIndex(const blocksci::uint256 &txHash);
+    ranges::optional<uint32_t> getTxIndex(const blocksci::uint256 &txHash);
     
     template<blocksci::AddressType::Enum type>
     void addAddress(const typename blocksci::AddressInfo<type>::IDType &hash, uint32_t scriptNum) {
