@@ -30,10 +30,11 @@
 namespace {
     uint32_t getTxIndex(const blocksci::uint256 &hash, blocksci::HashIndex &index) {
         auto txIndex = index.getTxIndex(hash);
-        if (txIndex == 0) {
+        if (txIndex) {
+            return *txIndex;
+        } else {
             throw blocksci::InvalidHashException();
         }
-        return txIndex;
     }
 }
 

@@ -124,7 +124,7 @@ namespace blocksci {
         return lookupAddress<AddressType::WITNESS_SCRIPTHASH>(scripthash);
     }
     
-    uint32_t HashIndex::getTxIndex(const uint256 &txHash) {
+    ranges::optional<uint32_t> HashIndex::getTxIndex(const uint256 &txHash) {
         return getMatch(getTxColumn().get(), txHash);
     }
     

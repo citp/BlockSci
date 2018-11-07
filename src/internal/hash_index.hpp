@@ -31,7 +31,7 @@ namespace blocksci {
         void addAddressesImpl(AddressType::Enum type, std::vector<std::pair<MemoryView, MemoryView>> dataViews);
         
         template <typename T>
-        uint32_t getMatch(rocksdb::ColumnFamilyHandle *handle, const T &t) {
+        ranges::optional<uint32_t> getMatch(rocksdb::ColumnFamilyHandle *handle, const T &t) {
             rocksdb::PinnableSlice val;
             rocksdb::Slice key{reinterpret_cast<const char *>(&t), sizeof(t)};
             auto getStatus = db->Get(rocksdb::ReadOptions{}, handle, key, &val);
@@ -40,7 +40,7 @@ namespace blocksci {
                 memcpy(&value, val.data(), sizeof(value));
                 return value;
             } else {
-                return 0;
+                return ranges::nullopt;
             }
         }
         
@@ -124,7 +124,7 @@ namespace blocksci {
         uint32_t getPubkeyHashIndex(const uint160 &pubkeyhash);
         uint32_t getScriptHashIndex(const uint160 &scripthash);
         uint32_t getScriptHashIndex(const uint256 &scripthash);
-        uint32_t getTxIndex(const uint256 &txHash);
+        ranges::optional<uint32_t> getTxIndex(const uint256 &txHash);
         
         uint32_t countColumn(AddressType::Enum type);
         uint32_t countTxes();
