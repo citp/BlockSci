@@ -56,9 +56,15 @@ namespace blocksci {
     
     template<DedupAddressType::Enum type>
     using ScriptFile = ScriptFileType_t<typename ScriptInfo<type>::storage>;
-    
-    
-    
+
+
+    /* Provides access to script data of all address types
+     *
+     * BlockSci supports the parsing of all standard Bitcoin address types in order to extract relevant data.
+     * Each address type has its own file/s storing this data.
+     *
+     * Directory: scripts/
+     */
     class ScriptAccess {
     private:
         using ScriptFilesTuple = to_dedup_address_tuple_t<ScriptFile>;

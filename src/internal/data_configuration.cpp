@@ -44,7 +44,8 @@ namespace blocksci {
         rawConf >> jsonConf;
         return jsonConf;
     }
-    
+
+    // Checks whether the provided config file's version matches the config file version of the running program
     void checkVersion(const json &jsonConf) {
         uint64_t versionNum = jsonConf.at("version");
         if (versionNum != dataVersion) {

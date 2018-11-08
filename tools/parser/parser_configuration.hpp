@@ -24,31 +24,45 @@ struct ParserConfigurationBase {
     
     ParserConfigurationBase();
     ParserConfigurationBase(const blocksci::DataConfiguration &config);
-    
+
+    // Directory that stores all files that are needed during the parsing process, see methods below
     filesystem::path parserDirectory() const {
         return filesystem::path{dataConfig.chainConfig.dataDirectory}/"parser";
     }
-    
+
+    // TODO: add comment
     filesystem::path utxoCacheFile() const {
         return parserDirectory()/"utxoCache.dat";
     }
-    
+
+    // TODO: add comment
     filesystem::path utxoAddressStatePath() const {
         return parserDirectory()/"utxoAddressState";
     }
-    
+
+    // TODO: add comment
     filesystem::path utxoScriptStatePath() const {
         return parserDirectory()/"utxoScriptState";
     }
-    
+
+    // TODO: add comment
     filesystem::path addressPath() const {
         return parserDirectory()/"address";
     }
-    
+
+    /* Stores the serialized ChainIndex<ParserTag> object
+     *
+     * Main content is ChainIndex's std::unordered_map<blocksci::uint256, BlockType> blockList property
+     * BlockType contains block data like the hash, height, size, no. of txes, inputCount, outputcount, CBlockHeader object
+     */
     filesystem::path blockListPath() const {
         return parserDirectory()/"blockList.dat";
     }
-    
+
+    /* Stores serialized OutputLinkData, memory-mapped as blocksci::FixedSizeFileMapper<OutputLinkData>
+     *
+     * OutputLinkData links an output (InoutPointer) with the spending transaction (tx number)
+     */
     std::string txUpdatesFilePath() const {
         return (parserDirectory()/"txUpdates").str();
     }

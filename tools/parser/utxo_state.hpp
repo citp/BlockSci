@@ -15,6 +15,7 @@
 
 #include <blocksci/core/inout_pointer.hpp>
 
+// Map of the current UTXO set of the parser
 class UTXOState : public SerializableMap<RawOutputPointer, UTXO> {
 public:
     UTXOState() : SerializableMap<RawOutputPointer, UTXO>({blocksci::uint256{}, 0}, {blocksci::uint256{}, 1}) {}

@@ -19,15 +19,15 @@
 
 namespace blocksci {
     Input::Input(const InputPointer &pointer_, DataAccess &access_) :
-    Input(pointer_,
-          access_.getChain().getBlockHeight(pointer_.txNum),
-          access_.getChain().getTx(pointer_.txNum)->getInput(pointer_.inoutNum),
-          &access_.getChain().getSpentOutputNumbers(pointer_.txNum)[pointer_.inoutNum],
-          &access_.getChain().getSequenceNumbers(pointer_.txNum)[pointer_.inoutNum],
-          static_cast<uint32_t>(access_.getChain().txCount()),
-          access_) {
-        
-        
+    Input(pointer_,                                                                     // const InputPointer &pointer_
+          access_.getChain().getBlockHeight(pointer_.txNum),                            // BlockHeight blockHeight_
+          access_.getChain().getTx(pointer_.txNum)->getInput(pointer_.inoutNum),        // const Inout &inout_
+          &access_.getChain().getSpentOutputNumbers(pointer_.txNum)[pointer_.inoutNum], // const uint16_t *spentOutputNum_
+          &access_.getChain().getSequenceNumbers(pointer_.txNum)[pointer_.inoutNum],    // const uint32_t *sequenceNum_
+          static_cast<uint32_t>(access_.getChain().txCount()),                          // uint32_t maxTxCount_
+          access_                                                                       // DataAccess &access_
+          ) {
+
     }
     
     Transaction Input::transaction() const {

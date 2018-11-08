@@ -150,14 +150,14 @@ struct ChainUpdateInfo {
     uint32_t splitPoint;
 };
 
-// @todo: seems to not be used anywhere in the code
+// TODO: seems to not be used anywhere in the code
 struct StartingCounts {
     uint32_t txCount;
     uint64_t inputCount;
     uint64_t outputCount;
 };
 
-// @todo: seems to not be used anywhere in the code
+// TODO: seems to not be used anywhere in the code
 uint32_t getStartingCounts(const blocksci::DataConfiguration &config) {
     blocksci::ChainAccess chain{config.chainDirectory(), config.blocksIgnored, config.errorOnReorg};
     if (chain.blockCount() > 0) {
@@ -168,7 +168,7 @@ uint32_t getStartingCounts(const blocksci::DataConfiguration &config) {
     }
 }
 
-// @todo: exactly the same as above getStartingCounts() function; seems to not be used anywhere in the code
+// TODO: exactly the same as above getStartingCounts() function; seems to not be used anywhere in the code
 uint32_t getStartingTxCount(const blocksci::DataConfiguration &config) {
     blocksci::ChainAccess chain{config.chainDirectory(), config.blocksIgnored, config.errorOnReorg};
     if (chain.blockCount() > 0) {
@@ -183,8 +183,11 @@ template <typename ParserTag>
 std::vector<blocksci::RawBlock> updateChain(const ParserConfiguration<ParserTag> &config, blocksci::BlockHeight maxBlockNum, HashIndexCreator &hashDb) {
     using namespace std::chrono_literals;
 
-    // does this code block return only new blocks, or all blocks?
-    // (why is it implemented as a lamda function?)
+    /* Load and update the persisted (serialized) ChainIndex object that contains information about all blocks (without transaction data)
+     * Generate the ChainIndex if no data is available on disk.
+     *
+     * This step represents the "xx.x% done fetching block headers" step of the parser output messages.
+     */
     auto chainBlocks = [&]() {
         ChainIndex<ParserTag> index;
         std::ifstream inFile(config.blockListPath().str(), std::ios::binary);
@@ -206,7 +209,10 @@ std::vector<blocksci::RawBlock> updateChain(const ParserConfiguration<ParserTag>
         return blocks;
     }();
 
-    // determines whether blocks have to be removed from the old chain (due to a fork caused by miners)
+    /* Determine whether blocks have to be removed from the old chain (due to a fork, eg. caused by miners)
+     *
+     * This step represents the "Starting with chain of X blocks" and "Adding X blocks" step of the parser output messages.
+     */
     blocksci::BlockHeight splitPoint = [&]() {
         blocksci::ChainAccess oldChain{config.dataConfig.chainDirectory(), config.dataConfig.blocksIgnored, config.dataConfig.errorOnReorg};
         blocksci::BlockHeight maxSize = std::min(oldChain.blockCount(), static_cast<blocksci::BlockHeight>(chainBlocks.size()));
@@ -231,11 +237,11 @@ std::vector<blocksci::RawBlock> updateChain(const ParserConfiguration<ParserTag>
     
     std::ios::sync_with_stdio(false);
 
-    // if blocks have been removed based on the splitPoint, rollback affected transactions as well
+    // If blocks have been removed based on the splitPoint, rollback affected transactions as well
     rollbackTransactions(splitPoint, hashDb, config);
     
     if (blocksToAdd.size() == 0) {
-        return {};
+        return {};  // No new blocks since the last update
     }
     
     uint32_t startingTxCount;
@@ -275,7 +281,8 @@ std::vector<blocksci::RawBlock> updateChain(const ParserConfiguration<ParserTag>
     while (it != end) {
         auto prev = it;
         uint32_t newTxCount = 0;
-        // process only as many blocks such that ~10,000,000 transactions are added in one BlockProcessor.addNewBlocks() call
+
+        // Process only as many blocks such that ~10,000,000 transactions are added in one BlockProcessor.addNewBlocks() call
         while (newTxCount < 10000000 && it != end) {
             newTxCount += it->nTx;
             ++it;
@@ -284,11 +291,11 @@ std::vector<blocksci::RawBlock> updateChain(const ParserConfiguration<ParserTag>
         decltype(blocksToAdd) nextBlocks{prev, it};
 
         auto blocks = processor.addNewBlocks(config, nextBlocks, utxoState, utxoAddressState, addressState, utxoScriptState);
-        // add all just processed blocks to newBlocks as RawBlock
-        // these blocks are in turn written to blockFile in the calling function
+
+        // Add all just processed blocks to newBlocks as RawBlock. The blocks are in turn written to blockFile in the calling (parent) function
         newBlocks.insert(newBlocks.end(), blocks.begin(), blocks.end());
 
-        // back linking transactions
+        // This step represents the "Back linking transactions" step of the parser output messages.
         backUpdateTxes(config);
     }
     
@@ -353,9 +360,9 @@ void updateChain(const filesystem::path &configFilePath, bool fullParse) {
         throw std::runtime_error("Must provide either rpc or disk parsing settings");
     }
     
-    // It'd be nice to do this after the indexes are updated (why?), but they currently depend on the chain being fully updated
+    // It'd be nice to do this after the indexes are updated, but they currently depend on the chain being fully updated
     {
-        // write new RawBlock blocks from the updateChain() method to the blockFile
+        // Write new RawBlock blocks from the updateChain() method to the blockFile
         FixedSizeFileWriter<blocksci::RawBlock> blockFile{blocksci::ChainAccess::blockFilePath(config.dataConfig.chainDirectory())};
         for (auto &block : newBlocks) {
             blockFile.write(block);

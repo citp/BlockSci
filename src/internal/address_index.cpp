@@ -32,11 +32,12 @@ namespace blocksci {
         // Optimize RocksDB. This is the easiest way to get RocksDB to perform well
         options.IncreaseParallelism();
         options.OptimizeLevelStyleCompaction();
-        // create the DB if it's not already present
+        // Create the DB if it's not already present
         options.create_if_missing = true;
         options.create_missing_column_families = true;
         
-        
+
+        // Initialize RocksDB column families
         std::vector<rocksdb::ColumnFamilyDescriptor> columnDescriptors;
         blocksci::for_each(AddressType::all(), [&](auto tag) {
             std::stringstream ss;
@@ -87,17 +88,17 @@ namespace blocksci {
     
     ranges::any_view<InoutPointer, ranges::category::forward> AddressIndex::getOutputPointers(const RawAddress &address) const {
         auto prefixData = reinterpret_cast<const char *>(&address.scriptNum);
-        std::vector<char> prefix(prefixData, prefixData + sizeof(address.scriptNum));
+        std::vector<char> prefix(prefixData, prefixData + sizeof(address.scriptNum));  // vector with scriptNum bytes
         auto rawOutputPointerRange = ColumnIterator(db.get(), getOutputColumn(address.type).get(), prefix);
         return rawOutputPointerRange | ranges::view::transform([](std::pair<MemoryView, MemoryView> pair) -> InoutPointer {
             InoutPointer outPoint;
             uint8_t txNumData[4];
             uint8_t outputNumData[2];
             
-            auto &key = pair.first;
-            key.data += sizeof(uint32_t);
+            auto &key = pair.first;  // Query result
+            key.data += sizeof(uint32_t);  // Skip the scriptNum in the key (first 4 bytes), as it is known already
             memcpy(txNumData, key.data, 4);
-            key.data += sizeof(txNumData);
+            key.data += sizeof(txNumData); // Move the key.data pointer forward
             memcpy(outputNumData, key.data, 2);
             endian::big_endian::get(outPoint.txNum, txNumData);
             endian::big_endian::get(outPoint.inoutNum, outputNumData);
@@ -138,7 +139,7 @@ namespace blocksci {
         }
         writeBatch(batch);
     }
-    
+
     void AddressIndex::addOutputAddresses(std::vector<std::pair<RawAddress, InoutPointer>> outputCache) {
         rocksdb::WriteBatch batch;
         for (auto &pair : outputCache) {

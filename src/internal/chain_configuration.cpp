@@ -150,7 +150,7 @@ namespace blocksci {
         return {
             "bitcoin_regtest",
             chainDir,
-            std::vector<unsigned char>(1,111),
+            std::vector<unsigned char>(1,111), // TODO: can be changed to {} initialization, eg. {111} here
             std::vector<unsigned char>(1,196),
             "bcrt",
             0

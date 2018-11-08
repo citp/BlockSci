@@ -21,16 +21,17 @@
 
 namespace blocksci {
     struct BLOCKSCI_EXPORT AddressType {
-        
+
+        // enum that holds all address types as listed in ADDRESS_TYPE_LIST
         enum Enum {
-            // after preprocessing: NONSTANDARD, PUBKEY, PUBKEYHASH, MULTISIG_PUBKEY, SCRIPTHASH, MULTISIG, NULL_DATA, WITNESS_PUBKEYHASH, WITNESS_SCRIPTHASH, WITNESS_UNKNOWN
+            // After preprocessing: NONSTANDARD, PUBKEY, PUBKEYHASH, MULTISIG_PUBKEY, SCRIPTHASH, MULTISIG, NULL_DATA, WITNESS_PUBKEYHASH, WITNESS_SCRIPTHASH, WITNESS_UNKNOWN
             #define VAL(x) x
             ADDRESS_TYPE_LIST
             #undef VAL
         };
         static constexpr size_t size = 10;
 
-        /* after preprocessing:
+        /* After preprocessing:
          * using all = std::tuple<std::integral_constant<Enum, NONSTANDARD>, std::integral_constant<Enum, PUBKEY>, std::integral_constant<Enum, PUBKEYHASH>, std::integral_constant<Enum, MULTISIG_PUBKEY>, std::integral_constant<Enum, SCRIPTHASH>, std::integral_constant<Enum, MULTISIG>, std::integral_constant<Enum, NULL_DATA>, std::integral_constant<Enum, WITNESS_PUBKEYHASH>, std::integral_constant<Enum, WITNESS_SCRIPTHASH>, std::integral_constant<Enum, WITNESS_UNKNOWN> >;
          */
         #define VAL(x) std::integral_constant<Enum, x>

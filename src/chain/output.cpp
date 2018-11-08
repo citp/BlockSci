@@ -31,7 +31,7 @@ namespace blocksci {
     Address Output::getAddress() const {
         return {inout->getAddressNum(), inout->getType(), *access};
     }
-    
+
     ranges::optional<Transaction> Output::getSpendingTx() const {
         auto index = getSpendingTxIndex();
         if (index) {
@@ -40,7 +40,8 @@ namespace blocksci {
             return ranges::nullopt;
         }
     }
-    
+
+    // Get the Input that spends this Output, if it was spent yet
     ranges::optional<Input> Output::getSpendingInput() const {
         auto spendingTx = getSpendingTx();
         if (spendingTx) {

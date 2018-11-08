@@ -23,8 +23,34 @@
 #include <cstring>
 
 namespace blocksci {
+
+    /* Provides access to hash indexes (RocksDB database)
+     *
+     * This RocksDB database is a lookup table from both (tx hash) and (address hash) to (internal BlockSci index) for those objects.
+     *
+     * The hash index contains a lookup table for each address type as well as one for transactions.
+     * In each of these tables, the key is the standard public identifier (tx hash for transactions, pubkey hash
+     * for pay to pubkey hash addresses, etc.) and the value is the internal integer index of that object.
+     *
+     * ColumnDescriptors: One for every named AddressType (@see blocksci::AddressType::all() @see blocksci::addressName())
+     *                    and "T" for the txHash -> txNum database
+     *                    Eg. "T", "pubkey", "pubkeyhash", "multisig_pubkey" etc.
+     *
+     * Key/value format:
+     *     - ColumnFamily "T": transaction hash -> transaction number
+     *         + Key: blocksci::uint256 hash
+     *         + Value: uint32_t txNum
+     *     - Other column families: address identifier (eg. pubkeyhash or scripthash) -> script number
+     *         + Key: blocksci::uint160 or blocksci::uint256
+     *         + Value: uint32_t scriptNum
+     *
+     * Directory: hashIndex/
+     */
     class HashIndex {
+        // Pointer to the RocksDB instance
         std::unique_ptr<rocksdb::DB> db;
+
+        // RocksDB column handles, one for each address type, @see blocksci::AddressType::Enum
         std::vector<std::unique_ptr<rocksdb::ColumnFamilyHandle>> columnHandles;
         
         uint32_t lookupAddressImpl(AddressType::Enum type, const char *data, size_t size);
@@ -43,7 +69,8 @@ namespace blocksci {
                 return ranges::nullopt;
             }
         }
-        
+
+        // Get the scriptNum for the given AddressType and identifier (pubkeyhash, script hash etc.)
         uint32_t getAddressMatch(blocksci::AddressType::Enum type, const char *data, size_t size) {
             rocksdb::PinnableSlice val;
             rocksdb::Slice key{data, size};
@@ -120,10 +147,15 @@ namespace blocksci {
         uint32_t lookupAddress(const typename AddressInfo<type>::IDType &hash) {
             return lookupAddressImpl(type, reinterpret_cast<const char *>(&hash), sizeof(hash));
         }
-        
+
+        // Get the scriptNum for the given public key hash
         uint32_t getPubkeyHashIndex(const uint160 &pubkeyhash);
+
+        // Get the scriptNum for the given script hash
         uint32_t getScriptHashIndex(const uint160 &scripthash);
         uint32_t getScriptHashIndex(const uint256 &scripthash);
+
+        // Get the tx number for the given transaction hash
         ranges::optional<uint32_t> getTxIndex(const uint256 &txHash);
         
         uint32_t countColumn(AddressType::Enum type);
@@ -139,7 +171,8 @@ namespace blocksci {
             }
             addAddressesImpl(type, dataViews);
         }
-        
+
+        // Add a mapping from tx hash to tx number to the hash index for all given rows
         void addTxes(std::vector<std::pair<uint256, uint32_t>> rows);
         
         void rollback(uint32_t txCount, const std::array<uint32_t, DedupAddressType::size> &scriptCounts);
@@ -148,7 +181,8 @@ namespace blocksci {
         
         template<AddressType::Enum type>
         ranges::any_view<std::pair<uint32_t, typename blocksci::AddressInfo<type>::IDType>> getAddressRange();
-        
+
+        // Compact the underlying RocksDB database
         void compactDB();
     };
     

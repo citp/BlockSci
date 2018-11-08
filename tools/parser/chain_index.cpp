@@ -52,7 +52,7 @@ namespace {
     std::vector<BlockInfo<FileTag>> readBlocksImpl(SafeMemReader &reader, int fileNum, const ChainDiskConfiguration &config) {
         try {
             std::vector<BlockInfo<FileTag>> blocks;
-            // read blocks in loop while we can...
+            // Read blocks in loop while we can...
             while (reader.has(sizeof(uint32_t))) {
                 auto magic = reader.readNext<uint32_t>();
                 if (magic != config.blockMagic) {
@@ -132,10 +132,10 @@ void ChainIndex<FileTag>::update(const ConfigType &config, blocksci::BlockHeight
             }
             blockFutures.emplace_back(std::async(std::launch::async, [&](int fileNum) {
                 activeThreads++;
-                // determine block file path
+                // Determine block file path
                 auto blockFilePath = localConfig.pathForBlockFile(fileNum);
                 SafeMemReader reader{blockFilePath.str()};
-                // logic for resume from last processed block, note blockStartOffset and length below
+                // Logic for resume from last processed block, note blockStartOffset and length below
                 if (fileNum == firstFile) {
                     reader.reset(filePos);
                 }
@@ -148,8 +148,6 @@ void ChainIndex<FileTag>::update(const ConfigType &config, blocksci::BlockHeight
                 std::lock_guard<std::mutex> lock(m);
                 
                 for (auto &block : blocks) {
-                    // where is block.hash assigned/calculated?
-                    // it is not stored in the blocks of Bitcoin Core and readBlocksImpl() does not seem to set/get it from the next block?
                     blockList[block.hash] = block;
                 }
                 
@@ -164,7 +162,7 @@ void ChainIndex<FileTag>::update(const ConfigType &config, blocksci::BlockHeight
     
     std::unordered_multimap<blocksci::uint256, blocksci::uint256> forwardHashes;
 
-    // fill forwardHashes with pairs of ((prevBlockHash) -> (currentBlockHash)) for every block
+    // Fill forwardHashes with pairs of ((prevBlockHash) -> (currentBlockHash)) for every block
     for (auto &pair : blockList) {
         forwardHashes.emplace(pair.second.header.hashPrevBlock, pair.second.hash);
     }
@@ -181,7 +179,6 @@ void ChainIndex<FileTag>::update(const ConfigType &config, blocksci::BlockHeight
         std::tie(blockHash, height) = queue.back();
         queue.pop_back();
         for (auto ret = forwardHashes.equal_range(blockHash); ret.first != ret.second; ++ret.first) {
-            // update `std::unordered_map<blocksci::uint256, BlockType> blockList`
             auto &block = blockList.at(ret.first->second);
             block.height = height + 1;
             queue.emplace_back(block.hash, block.height);

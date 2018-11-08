@@ -27,11 +27,17 @@ namespace std {
 namespace blocksci {
     class BLOCKSCI_EXPORT Output {
         DataAccess *access;
+
+        // Pointer to Inout that represents this Input (Inout consists of linkedTxNum, scriptNum, type, and value)
         const Inout *inout;
+
+        // Tx number of the transaction that spends this Output; 0 if still unspent (at the loaded block height)
         uint32_t spendingTxIndex;
+
         mutable BlockHeight blockHeight = -1;
         friend size_t std::hash<Output>::operator()(const Output &) const;
     public:
+        // Contains data to uniquely identify one output using txNum and inoutNum
         OutputPointer pointer;
         
         Output(const OutputPointer &pointer_, BlockHeight blockHeight_, const Inout &inout_, uint32_t maxTxLoaded, DataAccess &access_) :
@@ -50,7 +56,8 @@ namespace blocksci {
         }
         
         BlockHeight getBlockHeight() const;
-        
+
+        // Get the tx number of the tx that spends this output (in one of its inputs)
         ranges::optional<uint32_t> getSpendingTxIndex() const {
             return spendingTxIndex > 0 ? ranges::optional<uint32_t>{spendingTxIndex} : ranges::nullopt;
         }
@@ -85,9 +92,13 @@ namespace blocksci {
         }
 
         std::string toString() const;
-        
+
+        // Get the Transaction that spends this output, if it was spent yet (at the loaded block height)
         ranges::optional<Transaction> getSpendingTx() const;
+
+        // Get the Input that spends this Output
         ranges::optional<Input> getSpendingInput() const;
+
         ranges::optional<InputPointer> getSpendingInputPointer() const;
     };
     

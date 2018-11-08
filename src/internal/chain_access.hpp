@@ -24,25 +24,103 @@
 #include <algorithm>
 
 namespace blocksci {
-    
+
+    /* Provides data access for blocks, transactions, inputs, and outputs.
+     *
+     * The files here represent the core data about blocks and transactions.
+     * Data is stored in a hybrid column and row based structure.
+     * The core tx_data.dat and tx_index.dat are the core data files containing most information that is
+     * used about transactions, inputs, and outputs. The other files in this folder are column oriented storing
+     * less frequently accessed values.
+     *
+     * Directory: chain/
+     */
     class ChainAccess {
+        /* Stores the serialized RawBlock data in the same order they occur in the blockchain, indexed by block height.
+         *
+         * File: chain/block.dat
+         * Raw data format: [<RawBlock>, <RawBlock>, ...]
+         */
         FixedSizeFileMapper<RawBlock> blockFile;
+
+        /* Stores the coinbase data for every block, indexed by block height.
+         *
+         * Accessed by file offset that is stored for every block in Rawblock.coinbaseOffset
+         *
+         * File: chain/coinbases.dat
+         * Raw data format: [uint32_t coinbaseLength, <coinbaseBytes>, uint32_t coinbaseLength, <coinbaseBytes>, ...]
+         * Example: Genesis block of BTC contains "[...] The Times 03/Jan/2009 Chancellor on brink of second bailout for banks"
+         */
         SimpleFileMapper<> blockCoinbaseFile;
-        
+
+        /* Stores the serialized RawTransaction data in the same order they occur in the blockchain, indexed by tx number.
+         * Implemented as IndexedFileMapper as RawTransaction objects have variable length due to variable no. of inputs/outputs.
+         *
+         * The scripts and addresses are not stored in this file.
+         * Instead, a scriptNum is stored that references to a scripts file, @link blocksci::ScriptAccess.
+         *
+         * Files: - chain/tx_data.dat: actual data
+         *        - chain/tx_index.dat: index file that stores the offset for every transaction
+         * Raw data format: [<RawTransaction>, <Inout list>, <RawTransaction>, <Inout list>, ...]
+         */
         IndexedFileMapper<mio::access_mode::read, RawTransaction> txFile;
+
+        /* Stores the version number that is stored in the first 4 bytes of every transaction on the blockchain, indexed by tx number.
+         *
+         * File: chain/tx_version.dat
+         * Raw data format: [<int32_t versionNumberOfTx0>, <int32_t versionNumberOfTx1>, ...]
+         */
         FixedSizeFileMapper<int32_t> txVersionFile;
+
+        /* Stores the blockchain-wide number of the first input for every transaction, indexed by tx number.
+         *
+         * File(s): - chain/firstInput.dat
+         * Raw data format: [<uint64_t firstInputNumberOfTx0>, <uint64_t firstInputNumberOfTx1>, ...]
+         */
         FixedSizeFileMapper<uint64_t> txFirstInputFile;
+
+        /* Stores the blockchain-wide number of the first output for every transaction, indexed by tx number.
+         *
+         * File: chain/firstOutput.dat
+         * Raw data format: [<uint64_t firstOutputNumberOfTx0>, <uint64_t firstOutputNumberOfTx1>, ...]
+         */
         FixedSizeFileMapper<uint64_t> txFirstOutputFile;
+
+        /* Stores the tx-internal output number of the spent output for every input, indexed by blockchain-wide input number.
+         *
+         * File: chain/input_out_num.dat
+         * Raw data format: [<uint16_t>, <uint16_t>, ...]
+         */
         FixedSizeFileMapper<uint16_t> inputSpentOutputFile;
+
+        /* Stores the blockchain field sequence number for every input, indexed by blockchain-wide input number.
+         *
+         * File: chain/sequence.dat
+         * Raw data format: [<uint32_t sequenceFieldOfInput0>, <uint32_t sequenceFieldOfInput1>, ...]
+         */
         FixedSizeFileMapper<uint32_t> sequenceFile;
-        
+
+        /* Stores a mapping of (tx number) to (tx hash), thus indexed by tx number.
+         *
+         * File: chain/tx_hashes.dat
+         * Raw data format: [<uint64_t firstOutputNumberOfTx0>, <uint64_t firstOutputNumberOfTx1>, ...]
+         */
         FixedSizeFileMapper<uint256> txHashesFile;
-        
+
+        // Hash of the last loaded block
         uint256 lastBlockHash;
         const uint256 *lastBlockHashDisk = nullptr;
+
+        // Number of the highest loaded block
         BlockHeight maxHeight = 0;
+
+        // Number of the highest loaded transaction
         uint32_t _maxLoadedTx = 0;
-        BlockHeight blocksIgnored = 0; // suggestion: it sounds like a number of blocks to ignore, but doesn't this rather represent something like loadUptoBlockHeight or blocksIgnoredFrom
+
+        /* Block height that BlockSci should load up to as a 1-indexed number
+         * Eg. 10 loads blocks [0, 9], and -6 loads all but the last 6 blocks */
+        BlockHeight blocksIgnored = 0;
+
         bool errorOnReorg = false;
         
         void reorgCheck() const {
@@ -50,7 +128,7 @@ namespace blocksci {
                 throw ReorgException();
             }
         }
-        
+
         void setup() {
             if (blocksIgnored <= 0) {
                 maxHeight = static_cast<BlockHeight>(blockFile.size()) + blocksIgnored;
@@ -92,7 +170,7 @@ namespace blocksci {
         static filesystem::path txHashesFilePath(const filesystem::path &baseDirectory) {
             return baseDirectory/"tx_hashes";
         }
-        
+
         static filesystem::path blockFilePath(const filesystem::path &baseDirectory) {
             return baseDirectory/"block";
         }
@@ -159,14 +237,16 @@ namespace blocksci {
             reorgCheck();
             return sequenceFile[static_cast<OffsetType>(*txFirstInputFile[index])];
         }
-        
+
         const uint16_t *getSpentOutputNumbers(uint32_t index) const {
             reorgCheck();
             return inputSpentOutputFile[static_cast<OffsetType>(*txFirstInputFile[index])];
         }
-        
+
+        // Get TxData object for given tx number
         TxData getTxData(uint32_t index) const {
             reorgCheck();
+            // Blockchain-wide number of first input for the given tx
             auto firstInputNum = static_cast<OffsetType>(*txFirstInputFile[index]);
             const uint16_t *inputsSpent = nullptr;
             const uint32_t *sequenceNumbers = nullptr;
@@ -174,12 +254,12 @@ namespace blocksci {
                 inputsSpent = inputSpentOutputFile[firstInputNum];
                 sequenceNumbers = sequenceFile[firstInputNum];
             }
-            return {
-                txFile.getData(index),
-                txVersionFile[index],
-                txHashesFile[index],
-                inputsSpent,
-                sequenceNumbers
+            return {                   // construct TxData object
+                txFile.getData(index), // const RawTransaction *rawTx
+                txVersionFile[index],  // const int32_t *version
+                txHashesFile[index],   // const uint256 *hash
+                inputsSpent,           // const uint16_t *spentOutputNums
+                sequenceNumbers        // const uint32_t *sequenceNumbers
             };
         }
         

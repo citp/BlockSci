@@ -23,13 +23,18 @@
 #include <chrono>
 
 namespace blocksci {
-    class uint256;
+    class uint256;chain
     class DataAccess;
     
     struct BLOCKSCI_EXPORT InvalidHashException : public std::runtime_error {
         InvalidHashException() : std::runtime_error("No Match for hash") {}
     };
-    
+
+    /* Represents a Transaction of the blockchain
+     *
+     * Transaction data is stored as RawTransaction in chain/tx_data.dat. Inputs and outputs are stored as
+     * Inout objects in the same file, see ChainAccess for details.
+     */
     class BLOCKSCI_EXPORT Transaction {
     private:
         DataAccess *access;
@@ -38,7 +43,8 @@ namespace blocksci {
         mutable BlockHeight blockHeight;
         friend TransactionRange;
     public:
-        uint32_t txNum; // suggestion: always use the same name for this variable (in parameters etc.), at the moment it's a mix of "num" and "index" I think
+        // Blockchain-wide transaction number in the same order they appear in the blockchain, also called transaction index
+        uint32_t txNum;
         
         
         Transaction() = default;

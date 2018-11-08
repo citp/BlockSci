@@ -84,7 +84,12 @@ namespace blocksci {
             timestampFile.reload();
         }
     };
-    
+
+    /* Provides access to the mempool index, which stores the timestamp of when a transaction has been
+     * first seen. Only relevant when BlockSci's mempool_recorder is enabled (= running).
+     *
+     * Directory: mempool/
+     */
     class MempoolIndex {
         filesystem::path baseDirectory;
         std::vector<TimestampIndex> timestampFiles;
