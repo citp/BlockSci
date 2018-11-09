@@ -23,7 +23,7 @@
 #include <chrono>
 
 namespace blocksci {
-    class uint256;chain
+    class uint256;
     class DataAccess;
     
     struct BLOCKSCI_EXPORT InvalidHashException : public std::runtime_error {
