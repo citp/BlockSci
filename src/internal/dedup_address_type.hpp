@@ -21,14 +21,14 @@ namespace blocksci {
     struct DedupAddressType {
         
         enum Enum {
-            // after preprocessing: NONSTANDARD, PUBKEY, SCRIPTHASH, MULTISIG, NULL_DATA, WITNESS_UNKNOWN
+            // after preprocessing: SCRIPTHASH, PUBKEY, MULTISIG, NULL_DATA, WITNESS_UNKNOWN, NONSTANDARD
 #define VAL(x) x
             DEDUP_ADDRESS_TYPE_LIST
 #undef VAL
         };
         static constexpr size_t size = 6;
 
-        // after preprocessing: using all = std::tuple<std::integral_constant<Enum, NONSTANDARD>, std::integral_constant<Enum, PUBKEY>, std::integral_constant<Enum, PUBKEYHASH>, std::integral_constant<Enum, MULTISIG_PUBKEY>, std::integral_constant<Enum, SCRIPTHASH>, std::integral_constant<Enum, MULTISIG>, std::integral_constant<Enum, NULL_DATA>, std::integral_constant<Enum, WITNESS_PUBKEYHASH>, std::integral_constant<Enum, WITNESS_SCRIPTHASH>, std::integral_constant<Enum, WITNESS_UNKNOWN> >;
+        // after preprocessing: using all = std::tuple<std::integral_constant<Enum, SCRIPTHASH>, std::integral_constant<Enum, PUBKEY>, std::integral_constant<Enum, MULTISIG>, std::integral_constant<Enum, NULL_DATA>, std::integral_constant<Enum, WITNESS_UNKNOWN>, std::integral_constant<Enum, NONSTANDARD> >;
         #define VAL(x) std::integral_constant<Enum, x>
         using all = std::tuple<DEDUP_ADDRESS_TYPE_LIST>;
         #undef VAL
@@ -36,7 +36,7 @@ namespace blocksci {
 
         /* after preprocessing:
          * static std::array<Enum,size> allArray() {
-         *     return {{NONSTANDARD, PUBKEY, SCRIPTHASH, MULTISIG, NULL_DATA, WITNESS_UNKNOWN}};
+         *     return {{SCRIPTHASH, PUBKEY, MULTISIG, NULL_DATA, WITNESS_UNKNOWN, NONSTANDARD}};
          * }
          */
         #define VAL(x) x
