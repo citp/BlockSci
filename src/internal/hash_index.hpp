@@ -27,7 +27,7 @@ namespace blocksci {
         std::unique_ptr<rocksdb::DB> db;
         std::vector<std::unique_ptr<rocksdb::ColumnFamilyHandle>> columnHandles;
         
-        uint32_t lookupAddressImpl(AddressType::Enum type, const char *data, size_t size);
+        ranges::optional<uint32_t> lookupAddressImpl(AddressType::Enum type, const char *data, size_t size);
         void addAddressesImpl(AddressType::Enum type, std::vector<std::pair<MemoryView, MemoryView>> dataViews);
         
         template <typename T>
@@ -44,7 +44,7 @@ namespace blocksci {
             }
         }
         
-        uint32_t getAddressMatch(blocksci::AddressType::Enum type, const char *data, size_t size) {
+        ranges::optional<uint32_t> getAddressMatch(blocksci::AddressType::Enum type, const char *data, size_t size) {
             rocksdb::PinnableSlice val;
             rocksdb::Slice key{data, size};
             auto getStatus = db->Get(rocksdb::ReadOptions{}, getColumn(type).get(), key, &val);
@@ -53,7 +53,7 @@ namespace blocksci {
                 memcpy(&value, val.data(), sizeof(value));
                 return value;
             } else {
-                return 0;
+                return ranges::nullopt;
             }
         }
         
@@ -117,13 +117,13 @@ namespace blocksci {
         ~HashIndex();
 
         template<AddressType::Enum type>
-        uint32_t lookupAddress(const typename AddressInfo<type>::IDType &hash) {
+        ranges::optional<uint32_t> lookupAddress(const typename AddressInfo<type>::IDType &hash) {
             return lookupAddressImpl(type, reinterpret_cast<const char *>(&hash), sizeof(hash));
         }
         
-        uint32_t getPubkeyHashIndex(const uint160 &pubkeyhash);
-        uint32_t getScriptHashIndex(const uint160 &scripthash);
-        uint32_t getScriptHashIndex(const uint256 &scripthash);
+        ranges::optional<uint32_t> getPubkeyHashIndex(const uint160 &pubkeyhash);
+        ranges::optional<uint32_t> getScriptHashIndex(const uint160 &scripthash);
+        ranges::optional<uint32_t> getScriptHashIndex(const uint256 &scripthash);
         ranges::optional<uint32_t> getTxIndex(const uint256 &txHash);
         
         uint32_t countColumn(AddressType::Enum type);

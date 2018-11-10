@@ -140,10 +140,10 @@ public:
             }
         }
         
-        uint32_t destNum = db.lookupAddress<blocksci::DedupAddressInfo<dedupType(type)>::reprType>(hash);
-        if (destNum != 0) {
+        ranges::optional<uint32_t> destNum = db.lookupAddress<blocksci::DedupAddressInfo<dedupType(type)>::reprType>(hash);
+        if (destNum) {
             dbCount++;
-            return {hash, AddressLocation::LevelDb, destNum};
+            return {hash, AddressLocation::LevelDb, *destNum};
         } else {
             bloomFPCount++;
             // We must have had a false positive
