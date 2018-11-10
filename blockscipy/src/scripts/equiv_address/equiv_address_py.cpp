@@ -15,8 +15,6 @@
 
 #include <pybind11/operators.h>
 
-#include <range/v3/view/transform.hpp>
-
 namespace py = pybind11;
 using namespace blocksci;
 
@@ -27,11 +25,6 @@ void init_equiv_address(py::class_<EquivAddress> &cl) {
     .def("__repr__", &EquivAddress::toString)
     .def("__len__", [](const EquivAddress &address) { return address.size(); })
     .def("__bool__", [](const EquivAddress &address) { return address.size() == 0; })
-    .def("addresses", [](const EquivAddress &address) -> RawIterator<AnyScript> {
-        return address | ranges::view::transform([](const Address &address) {
-            return address.getScript();
-        });
-    },py::return_value_policy::reference_internal)
     .def("txes", &EquivAddress::getTransactions, "Returns a list of all transactions involving these equivalent addresses")
     .def("out_txes", &EquivAddress::getOutputTransactions, "Returns a range of all transaction where these equivalent addresses were an output")
     .def("in_txes", &EquivAddress::getInputTransactions, "Returns a list of all transaction where these equivalent addresses were an input")
