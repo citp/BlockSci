@@ -161,7 +161,7 @@ Multisig
 2
 3
 0
-EquivAddress(MultisigAddress(2 of 3), ScriptHashAddress(2N2PGeTV9hPu4nPtJHgNmV9shPRxKJy9Xqj))
+EquivAddress(ScriptHashAddress(2N2PGeTV9hPu4nPtJHgNmV9shPRxKJy9Xqj), MultisigAddress(2 of 3))
 True
 [Tx(len(txins)=1, len(txouts)=1, size_bytes=340, block_height=188, tx_index=323)]
 1

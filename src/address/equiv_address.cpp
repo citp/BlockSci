@@ -17,6 +17,8 @@
 #include <internal/data_access.hpp>
 #include <internal/script_access.hpp>
 
+#include <range/v3/action/sort.hpp>
+
 #include <sstream>
 
 namespace {
@@ -72,10 +74,13 @@ namespace blocksci {
     EquivAddress::EquivAddress(const DedupAddress &address, bool scriptEquivalent_, DataAccess &access_) : scriptEquivalent(scriptEquivalent_), access(access_), addresses(initAddresses(address, scriptEquivalent_, access_)) {}
     
     std::string EquivAddress::toString() const {
+        auto sortedAddresses = addresses | ranges::to_vector;
+        sortedAddresses = std::move(sortedAddresses) | ranges::action::sort;
+        
         std::stringstream ss;
         ss << "EquivAddress(";
         size_t i = 0;
-        for (auto &address : addresses) {
+        for(auto &address : sortedAddresses) {
             ss << address.toString();
             if (i < addresses.size() - 1) {
                 ss << ", ";
