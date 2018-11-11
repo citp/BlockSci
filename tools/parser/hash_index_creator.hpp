@@ -172,7 +172,7 @@ public:
     }
     
     template<blocksci::AddressType::Enum type>
-    uint32_t lookupAddress(const typename blocksci::AddressInfo<type>::IDType &hash) {
+    ranges::optional<uint32_t> lookupAddress(const typename blocksci::AddressInfo<type>::IDType &hash) {
         auto &cache = std::get<HashIndexAddressCache<type>>(addressCache);
         auto it = cache.find(hash);
         if (it != cache.end()) {

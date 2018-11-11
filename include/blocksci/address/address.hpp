@@ -57,11 +57,27 @@ namespace blocksci {
         bool isSpendable() const;
         
         bool operator==(const Address& other) const {
-            return type == other.type && scriptNum == other.scriptNum;
+            return std::tie(type, scriptNum) == std::tie(other.type, other.scriptNum);
         }
         
         bool operator!=(const Address& other) const {
-            return !operator==(other);
+            return std::tie(type, scriptNum) != std::tie(other.type, other.scriptNum);
+        }
+        
+        bool operator<(const Address& other) const {
+            return std::tie(type, scriptNum) < std::tie(other.type, other.scriptNum);
+        }
+        
+        bool operator<=(const Address& other) const {
+            return std::tie(type, scriptNum) <= std::tie(other.type, other.scriptNum);
+        }
+        
+        bool operator>(const Address& other) const {
+            return std::tie(type, scriptNum) > std::tie(other.type, other.scriptNum);
+        }
+        
+        bool operator>=(const Address& other) const {
+            return std::tie(type, scriptNum) >= std::tie(other.type, other.scriptNum);
         }
         
         std::string toString() const;

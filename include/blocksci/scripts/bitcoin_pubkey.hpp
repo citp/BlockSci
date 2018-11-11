@@ -51,6 +51,13 @@ namespace blocksci {
          */
         std::array<unsigned char, 65> vch;
         
+        //! Set this key data to be invalid
+        void Invalidate()
+        {
+            vch[0] = 0xFF;
+        }
+        
+    public:
         //! Compute the length of a pubkey with a given first byte.
         unsigned int static GetLen(unsigned char chHeader)
         {
@@ -61,13 +68,6 @@ namespace blocksci {
             return 0;
         }
         
-        //! Set this key data to be invalid
-        void Invalidate()
-        {
-            vch[0] = 0xFF;
-        }
-        
-    public:
         bool static ValidSize(const std::vector<unsigned char> &vch) {
             return vch.size() > 0 && GetLen(vch[0]) == vch.size();
         }

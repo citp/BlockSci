@@ -37,11 +37,27 @@ namespace blocksci {
         }
         
         bool operator==(const AnyScript& other) const {
-            return getType() == other.getType() && getScriptNum() == other.getScriptNum();
+            return std::make_tuple(getType(), getScriptNum()) == std::make_tuple(other.getType(), other.getScriptNum());
         }
         
         bool operator!=(const AnyScript& other) const {
-            return !operator==(other);
+            return std::make_tuple(getType(), getScriptNum()) != std::make_tuple(other.getType(), other.getScriptNum());
+        }
+        
+        bool operator<(const AnyScript& other) const {
+            return std::make_tuple(getType(), getScriptNum()) < std::make_tuple(other.getType(), other.getScriptNum());
+        }
+        
+        bool operator<=(const AnyScript& other) const {
+            return std::make_tuple(getType(), getScriptNum()) <= std::make_tuple(other.getType(), other.getScriptNum());
+        }
+        
+        bool operator>(const AnyScript& other) const {
+            return std::make_tuple(getType(), getScriptNum()) > std::make_tuple(other.getType(), other.getScriptNum());
+        }
+        
+        bool operator>=(const AnyScript& other) const {
+            return std::make_tuple(getType(), getScriptNum()) >= std::make_tuple(other.getType(), other.getScriptNum());
         }
         
         std::string toString() const {

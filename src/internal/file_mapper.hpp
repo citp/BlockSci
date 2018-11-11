@@ -509,7 +509,7 @@ namespace blocksci {
         FixedSizeFileMapper<FileIndex<indexCount>, mode> indexFile;
         
         void writeNewImp(const char *valuePos, OffsetType amountToWrite) {
-            assert(amountToWrite % alignof(nth_element<0>) == 0);
+            assert(amountToWrite % static_cast<OffsetType>(alignof(nth_element<0>)) == 0);
             FileIndex<indexCount> fileIndex;
             fileIndex[0] = dataFile.getWriteOffset();
             for(size_t i = 1; i < indexCount; i++) {
@@ -523,7 +523,7 @@ namespace blocksci {
         void writeUpdateImp(uint32_t addressNum, const char *valuePos, OffsetType amountToWrite) {
             static_assert(indexNum > 0, "Must call write without addressNum for first element");
             static_assert(indexNum < indexCount, "Index out of range");
-            assert(amountToWrite % alignof(nth_element<indexNum>) == 0);
+            assert(amountToWrite % static_cast<OffsetType>(alignof(nth_element<indexNum>)) == 0);
             auto &fileIndex = *indexFile[addressNum];
             fileIndex[indexNum] = dataFile.getWriteOffset();
             dataFile.write(valuePos, amountToWrite);

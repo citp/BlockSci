@@ -115,15 +115,15 @@ namespace blocksci {
         return ColumnIterator(db.get(), getColumn(type).get());
     }
     
-    uint32_t HashIndex::getPubkeyHashIndex(const uint160 &pubkeyhash) {
+    ranges::optional<uint32_t> HashIndex::getPubkeyHashIndex(const uint160 &pubkeyhash) {
         return lookupAddress<AddressType::PUBKEYHASH>(pubkeyhash);
     }
     
-    uint32_t HashIndex::getScriptHashIndex(const uint160 &scripthash) {
+    ranges::optional<uint32_t> HashIndex::getScriptHashIndex(const uint160 &scripthash) {
         return lookupAddress<AddressType::SCRIPTHASH>(scripthash);
     }
     
-    uint32_t HashIndex::getScriptHashIndex(const uint256 &scripthash) {
+    ranges::optional<uint32_t> HashIndex::getScriptHashIndex(const uint256 &scripthash) {
         return lookupAddress<AddressType::WITNESS_SCRIPTHASH>(scripthash);
     }
     
@@ -131,7 +131,7 @@ namespace blocksci {
         return getMatch(getTxColumn().get(), txHash);
     }
     
-    uint32_t HashIndex::lookupAddressImpl(blocksci::AddressType::Enum type, const char *data, size_t size) {
+    ranges::optional<uint32_t> HashIndex::lookupAddressImpl(blocksci::AddressType::Enum type, const char *data, size_t size) {
         return getAddressMatch(type, data, size);
     }
 

@@ -27,6 +27,7 @@
 #include <range/v3/view/transform.hpp>
 #include <range/v3/view/unique.hpp>
 
+#include <iostream>
 #include <sstream>
 
 namespace blocksci {
@@ -99,15 +100,15 @@ namespace blocksci {
             if (decoded.first == 0) {
                 if (decoded.second.size() == 20) {
                     uint160 pubkeyHash(decoded.second.begin(), decoded.second.end());
-                    uint32_t addressNum = access.getHashIndex().getPubkeyHashIndex(pubkeyHash);
-                    if (addressNum > 0) {
-                        return Address{addressNum, AddressType::WITNESS_PUBKEYHASH, access};
+                    ranges::optional<uint32_t> addressNum = access.getHashIndex().getPubkeyHashIndex(pubkeyHash);
+                    if (addressNum) {
+                        return Address{*addressNum, AddressType::WITNESS_PUBKEYHASH, access};
                     }
                 } else if (decoded.second.size() == 32) {
                     uint256 scriptHash(decoded.second.begin(), decoded.second.end());
-                    uint32_t addressNum = access.getHashIndex().getScriptHashIndex(scriptHash);
-                    if (addressNum > 0) {
-                        return Address{addressNum, AddressType::WITNESS_SCRIPTHASH, access};
+                    ranges::optional<uint32_t> addressNum = access.getHashIndex().getScriptHashIndex(scriptHash);
+                    if (addressNum) {
+                        return Address{*addressNum, AddressType::WITNESS_SCRIPTHASH, access};
                     }
                 }
             }
@@ -117,19 +118,18 @@ namespace blocksci {
         uint160 hash;
         blocksci::AddressType::Enum type;
         std::tie(hash, type) = address.Get(access.config.chainConfig);
-        if (type == AddressType::Enum::NONSTANDARD) {
-            return ranges::nullopt;
-        }
-        uint32_t addressNum = 0;
+        ranges::optional<uint32_t> addressNum = ranges::nullopt;
         if (type == AddressType::Enum::PUBKEYHASH) {
+            std::cout << hash.GetHex() << std::endl;
             addressNum = access.getHashIndex().getPubkeyHashIndex(hash);
         } else if (type == AddressType::Enum::SCRIPTHASH) {
             addressNum = access.getHashIndex().getScriptHashIndex(hash);
         }
-        if (addressNum > 0) {
-            return Address{addressNum, type, access};
+        if (addressNum) {
+            return Address{*addressNum, type, access};
+        } else {
+            return ranges::nullopt;
         }
-        return ranges::nullopt;
     }
     
     template<AddressType::Enum type>

@@ -180,7 +180,8 @@ ScriptOutputData<blocksci::AddressType::Enum::PUBKEY>::ScriptOutputData(const ra
 }
 
 blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::PUBKEY>::getHash() const {
-    return hash160(pubkey.data(), pubkey.size());
+    auto length = CPubKey::GetLen(pubkey[0]);
+    return hash160(pubkey.data(), length);
 }
 
 blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::PUBKEY>::getData(uint32_t txNum, bool topLevel) const {
@@ -208,7 +209,8 @@ ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY>::ScriptOutputData
 }
 
 blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY>::getHash() const {
-    return hash160(pubkey.data(), pubkey.size());
+    auto length = CPubKey::GetLen(pubkey[0]);
+    return hash160(pubkey.data(), length);
 }
 
 blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY>::getData(uint32_t txNum, bool topLevel) const {

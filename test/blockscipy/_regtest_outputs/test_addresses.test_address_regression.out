@@ -51,7 +51,7 @@ Pay to script hash
 None
 2Mzqim7c3TBkpRyqXmB23DXXcm1nHN6kFsf
 0
-EquivAddress(ScriptHashAddress(2Mzqim7c3TBkpRyqXmB23DXXcm1nHN6kFsf))
+EquivAddress(PubkeyAddress(mr6VKoQ9zMau7CSNaf1QBzy6Pw3DmMPrWm), ScriptHashAddress(2Mzqim7c3TBkpRyqXmB23DXXcm1nHN6kFsf))
 True
 [Tx(len(txins)=1, len(txouts)=1, size_bytes=193, block_height=115, tx_index=125)]
 1
@@ -63,7 +63,7 @@ Pay to script hash
 PubkeyAddress(mr6VKoQ9zMau7CSNaf1QBzy6Pw3DmMPrWm)
 2N1otuhuzEiwReoLqqrJKTk67A2aW5ZXXDW
 0
-EquivAddress(ScriptHashAddress(2N1otuhuzEiwReoLqqrJKTk67A2aW5ZXXDW))
+EquivAddress(PubkeyAddress(mjAzMtZc7UFuvuRqJyhrrVXHQKoY5UhG6R), ScriptHashAddress(2N1otuhuzEiwReoLqqrJKTk67A2aW5ZXXDW))
 True
 [Tx(len(txins)=1, len(txouts)=1, size_bytes=193, block_height=116, tx_index=128), Tx(len(txins)=1, len(txouts)=1, size_bytes=194, block_height=116, tx_index=130)]
 2
@@ -126,7 +126,7 @@ Pay to witness script hash
 None
 bcrt1qektr66tljls59h4w5qwshr6fwr4qfeuwm3zkwcsd424sd046n92sagvgwa
 0
-EquivAddress(WitnessScriptHashAddress(bcrt1qektr66tljls59h4w5qwshr6fwr4qfeuwm3zkwcsd424sd046n92sagvgwa))
+EquivAddress(PubkeyAddress(mus5uwj8dVT9Wkvipg5YbLjhBa1uAs16Ui), WitnessScriptHashAddress(bcrt1qektr66tljls59h4w5qwshr6fwr4qfeuwm3zkwcsd424sd046n92sagvgwa))
 True
 [Tx(len(txins)=1, len(txouts)=1, size_bytes=113, block_height=121, tx_index=145)]
 1
@@ -138,7 +138,7 @@ Pay to witness script hash
 PubkeyAddress(mus5uwj8dVT9Wkvipg5YbLjhBa1uAs16Ui)
 bcrt1qe2stj85585lav85e4cgpcprxva6ghfdp978q4y0rjc8k9u0cc46q66sf9j
 0
-EquivAddress(WitnessScriptHashAddress(bcrt1qe2stj85585lav85e4cgpcprxva6ghfdp978q4y0rjc8k9u0cc46q66sf9j))
+EquivAddress(PubkeyAddress(mq3p7Ki5CBzhDEwHJWjBxc5RrRa6EMjqNA), WitnessScriptHashAddress(bcrt1qe2stj85585lav85e4cgpcprxva6ghfdp978q4y0rjc8k9u0cc46q66sf9j))
 True
 [Tx(len(txins)=1, len(txouts)=1, size_bytes=113, block_height=122, tx_index=148), Tx(len(txins)=1, len(txouts)=1, size_bytes=113, block_height=122, tx_index=150)]
 2
@@ -161,7 +161,7 @@ Multisig
 2
 3
 0
-EquivAddress(ScriptHashAddress(2N2PGeTV9hPu4nPtJHgNmV9shPRxKJy9Xqj))
+EquivAddress(ScriptHashAddress(2N2PGeTV9hPu4nPtJHgNmV9shPRxKJy9Xqj), MultisigAddress(2 of 3))
 True
 [Tx(len(txins)=1, len(txouts)=1, size_bytes=340, block_height=188, tx_index=323)]
 1

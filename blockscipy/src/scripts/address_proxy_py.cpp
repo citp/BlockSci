@@ -10,6 +10,7 @@
 #include "address_py.hpp"
 #include "proxy_apply_py.hpp"
 #include "proxy/basic.hpp"
+#include "proxy/comparison.hpp"
 #include "proxy/equality.hpp"
 #include "proxy/optional.hpp"
 #include "proxy/range.hpp"
@@ -89,4 +90,5 @@ void addAddressProxyMethods(AllProxyClasses<blocksci::AnyScript> &cls) {
     addProxyOptionalMethods(cls.optional);
 
     addProxyEqualityMethods(cls.base);
+    addProxyComparisonMethods(cls.base);
 }
