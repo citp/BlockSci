@@ -19,11 +19,21 @@ namespace blocksci {
     class DataAccess;
     
     struct BLOCKSCI_EXPORT OutputRange {
+        // Pointer to the Inout of the first input in the range, more <Inout>s follow and can be accessed like inouts[number]
         const Inout *inouts;
+
+        // Block height of the transaction whose outputs are part of the range
         BlockHeight height;
+
+        // Transaction number of the outputs that are part of the range
         uint32_t txIndex;
+
+        // Maximum (last) tx-internal input number that is part of the range
         uint16_t maxOutputNum;
+
+        // Needed to create Output objects in the iterator struct
         uint32_t maxTxLoaded;
+
         DataAccess *access = nullptr;
 
         struct iterator {

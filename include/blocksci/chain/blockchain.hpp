@@ -22,6 +22,7 @@ namespace blocksci {
     class DataAccess;
     
     class BLOCKSCI_EXPORT Blockchain : public BlockRange {
+        // Pointer to the DataAccess instance that manages all data access objects (ChainAccess, ScriptAccess etc.) for this chain
         std::unique_ptr<DataAccess> access;
     public:
         

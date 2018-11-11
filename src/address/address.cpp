@@ -51,7 +51,7 @@ namespace blocksci {
     std::vector<Transaction> Address::getTransactions() const {
         return blocksci::getTransactions(getOutputPointers(), *access);
     }
-    
+
     ranges::any_view<Transaction> Address::getOutputTransactions() const {
         auto _access = access;
         auto uniqueTxNums = _access->getAddressIndex().getOutputPointers(*this)
@@ -198,7 +198,11 @@ namespace blocksci {
     EquivAddress Address::getEquivAddresses(bool nestedEquivalent) const {
         return EquivAddress{*this, nestedEquivalent};
     }
-    
+
+    /* Get the balance of the address by:
+     * 1) getting all outputs that are linked to the address, and
+     * 2) adding up all unspent outputs.
+     */
     int64_t Address::calculateBalance(BlockHeight height) const {
         return balance(height, outputs(getOutputPointers(), *access));
     }

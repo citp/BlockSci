@@ -98,9 +98,13 @@ public:
     void serialize(const ScriptInput<type> &input, uint32_t txNum, uint32_t outputTxNum) {
         auto &file = std::get<ScriptFile<dedupType(type)>>(scriptFiles);
         auto data = file.getDataAtIndex(input.scriptNum - 1);
+
+        // Default value of ScriptDataBase.txFirstSpent is (std::numeric_limits<uint32_t>::max())
         bool isFirstSpend = data->txFirstSpent == std::numeric_limits<uint32_t>::max();
+
+        // Default value of ScriptDataBase.txFirstSeen is the txNum of the transaction that contained the script
         bool isNewerFirstSeen = outputTxNum < data->txFirstSeen;
-        
+
         if (isNewerFirstSeen) {
             data->txFirstSeen = outputTxNum;
         }

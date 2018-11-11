@@ -39,11 +39,14 @@ namespace blocksci {
         // Optimize RocksDB. This is the easiest way to get RocksDB to perform well
         options.IncreaseParallelism();
         options.OptimizeLevelStyleCompaction();
-        // create the DB if it's not already present
+
+        // Create the DB if it's not already present
         options.create_if_missing = true;
         options.create_missing_column_families = true;
         
         auto cache = rocksdb::NewLRUCache(static_cast<size_t>(1024 * 1024 * 1024));
+
+        // Initialize RocksDB column families
         std::vector<rocksdb::ColumnFamilyDescriptor> columnDescriptors;
         columnDescriptors.reserve(AddressType::size + 2);
         for_each(AddressType::all(), [&](auto tag) {
@@ -137,6 +140,7 @@ namespace blocksci {
     }
     
     void HashIndex::rollback(uint32_t txCount, const std::array<uint32_t, DedupAddressType::size> &scriptCounts) {
+        // foreach over all ADDRESS_TYPE_LIST items (= a list of integers from AddressType::Enum)
         blocksci::for_each(AddressType::all(), [&](auto tag) {
             auto &column = getColumn(tag);
             rocksdb::WriteBatch batch;
@@ -152,6 +156,8 @@ namespace blocksci {
             assert(it->status().ok());
             writeBatch(batch);
         });
+
+        // Delete all entries with value higher than txCount
         {
             auto it = getTxIterator();
             rocksdb::WriteBatch batch;
@@ -163,7 +169,7 @@ namespace blocksci {
                 }
             }
             writeBatch(batch);
-            assert(it->status().ok()); // Check for any errors found during the scan
+            assert(it->status().ok());  // Check for errors found during the scan
         }
     }
     

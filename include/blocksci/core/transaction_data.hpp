@@ -16,11 +16,21 @@
 #include <cstdint>
 
 namespace blocksci {
+    // Class that brings transaction data from several files together
     struct BLOCKSCI_EXPORT TxData {
+        // Raw transaction data, stored in chain/tx_data.dat
         const RawTransaction *rawTx;
+
+        // Version field of this transaction (blockchain data), stored in chain/tx_version.dat
         const int32_t *version;
+
+        // Transaction hash (256 bit), stored in chain/tx_hashes.dat
         const uint256 *hash;
+
+        // Pointer to the tx-internal output number that the first input of the transaction spends. stored in chain/input_out_num.dat
         const uint16_t *spentOutputNums;
+
+        // Pointer to the blockchain field <sequence number> of the transaction's first input, stored in chain/sequence.dat
         const uint32_t *sequenceNumbers;
 
         TxData &operator++() {

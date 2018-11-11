@@ -12,10 +12,19 @@
 #include <blocksci/core/bitcoin_uint256.hpp>
 
 namespace blocksci {
+    /* Represents raw block data as stored in the chain/blocks.dat file.
+     *
+     * The chain/blocks.dat file is implemented as FixedSizeFileMapper<RawBlock> and is
+     * initialized in ChainAccess' blockFile property. @see blocksci::ChainAccess for the data format of the tx_data.dat file.
+     *
+     * The transactions of a block are not part of this data structure/file. Instead, they are loaded from
+     * chain/tx_data.dat, implemented as IndexedFileMapper<mio::access_mode::read, RawTransaction>, hold in
+     * ChainAccess's txFile property.
+     */
     struct BLOCKSCI_EXPORT RawBlock {
         uint256 hash;
-        uint64_t coinbaseOffset;
-        uint32_t firstTxIndex;
+        uint64_t coinbaseOffset;  // Offset in bytes for the chain/coinbases.dat file that stores the coinbase "messages"
+        uint32_t firstTxIndex;    // Blockchain-wide transaction number of the first transaction in this block
         uint32_t txCount;
         uint32_t inputCount;
         uint32_t outputCount;

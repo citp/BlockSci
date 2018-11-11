@@ -13,6 +13,14 @@
 #include <blocksci/core/typedefs.hpp>
 
 namespace blocksci {
+    /* Represents raw transaction data as stored in the chain/tx_data.dat file.
+     *
+     * The chain/tx_data.dat file is implemented as IndexedFileMapper<mio::access_mode, RawTransaction> and is
+     * accessible via ChainAccess' txFile property.
+     *
+     * Actual inputs and outputs are not part of the RawTransaction struct, but are stored as Inout objects
+     * in the chain/tx_data.dat file, @see blocksci::ChainAccess for details.
+     */
     struct BLOCKSCI_EXPORT RawTransaction {
         uint32_t realSize;
         uint32_t baseSize;

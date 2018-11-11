@@ -25,12 +25,21 @@
 
 namespace blocksci {
     class DataAccess;
-    
+
+    /* Represents an address of the blockchain
+     *
+     * In BlockSci, an address consists of a script number (scriptNum) and the address type.
+     * Script data is stored in separate files for every address type in scripts/ and can be accessed by ScriptAccess.
+     * The scriptNum represents an index to the scripts file for this address type.
+     */
     class BLOCKSCI_EXPORT Address {
         DataAccess *access;
         
     public:
+        // Script number of the address, represents an index in the scripts file for this address type
         uint32_t scriptNum;
+
+        // Address type of this address
         AddressType::Enum type;
         
         Address() : access(nullptr), scriptNum(0), type(AddressType::Enum::NONSTANDARD) {}

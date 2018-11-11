@@ -16,6 +16,7 @@
 #include <functional>
 
 namespace blocksci {
+    // Contains data to uniquely identify one input or output using txNum and inoutNum
     struct BLOCKSCI_EXPORT InoutPointer {
         uint32_t txNum;
         uint16_t inoutNum;

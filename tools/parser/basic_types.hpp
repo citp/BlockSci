@@ -14,6 +14,7 @@
 #include <functional>
 #include <cstdint>
 
+// Represents a pointer to an output by tx hash and output number
 struct RawOutputPointer {
     blocksci::uint256 hash;
     uint16_t outputNum;

@@ -140,10 +140,17 @@ struct BlockInfo<RPCTag> : BlockInfoBase {
     }
 };
 
+/* Holds the current set/state of blocks for the parser
+ *
+ * File: parser/blockList.dat
+ * Raw data format: ChainIndex object serialized using cereal library @see: https://uscilab.github.io/cereal/
+ * @see: std::vector<blocksci::RawBlock> updateChain(const ParserConfiguration<ParserTag>, blocksci::BlockHeight, HashIndexCreator) in tools/parser/main.cpp
+ */
 template <typename ParseTag>
 struct ChainIndex {
     using BlockType = BlockInfo<ParseTag>;
     using ConfigType = ParserConfiguration<ParseTag>;
+    // map of (block hash) -> (Blocktype)
     std::unordered_map<blocksci::uint256, BlockType> blockList;
     BlockType newestBlock;
     

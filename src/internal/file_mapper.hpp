@@ -371,7 +371,15 @@ namespace blocksci {
             }
         }
     };
-    
+
+    /* Implements a memory-mapped file that contains elements of fixed-size
+     *
+     * File(s): data file, no index file
+     *     - data file: stores all elements, eg. chain/block.dat that stores RawBlock objects; implemented as SimpleFileMapper
+     *
+     * Indexing: no separate index file is needed as the offset can be determined by elementNum * sizeof(ElementType)
+     *           Access pattern is like dataFile[index * sizeof(ElementType)], given that dataFile[] access is byte-wise
+     */
     template <typename T, mio::access_mode mode>
     struct FixedSizeFileMapper {
     private:
@@ -479,7 +487,18 @@ namespace blocksci {
         static_assert(sizeof...(A) == N, "The tuple sizes must be the same");
         return tuple_cast_helper<add_ptr_t<std::tuple<A...>>>( t1, std::make_index_sequence<N>{} );
     }
-    
+
+
+    /* Implements a memory-mapped file that contains elements of variable size
+     *
+     * File(s): data file and index file
+     *     - data file: stores all elements, eg. chain/tx_data.dat that stores RawTransaction (and Inout) elements; implemented as SimpleFileMapper
+     *     - index file: stores the offset in the data file for every element; implemented as FixedSizeFileMapper
+     *
+     * Indexing: separate index file is needed, as the size of each item is variable and the access approach
+     *           of SimpleFileMapper is not applicable.
+     *           Access pattern is like dataFile[indexFile[index]], given that dataFile[] access is byte-wise
+     */
     template <mio::access_mode mode, typename... T>
     struct IndexedFileMapper {
     private:

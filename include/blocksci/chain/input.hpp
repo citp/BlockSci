@@ -30,13 +30,19 @@ namespace blocksci {
     class BLOCKSCI_EXPORT Input {
         DataAccess *access;
         uint32_t maxTxCount;
+
+        // Pointer to Inout that represents this Input (Inout consists of linkedTxNum, scriptNum, type, and value)
         const Inout *inout;
+
+        // Tx-internal number of the output that this Input spends
         const uint16_t *spentOutputNum;
+
+        // Blockchain's sequence number field of the input
         const uint32_t *sequenceNum;
-        
         
         friend size_t std::hash<Input>::operator()(const Input &) const;
     public:
+        // Contains data to uniquely identify one input using txNum and inoutNum
         InputPointer pointer;
         
         BlockHeight blockHeight;
@@ -80,19 +86,22 @@ namespace blocksci {
         }
         
         Address getAddress() const;
-        
+
+        // Get the tx number of the tx that contains the output that is spent by this input
         uint32_t spentTxIndex() const {
             return inout->getLinkedTxNum();
         }
         
         std::string toString() const;
-        
+
+        // Get the Transaction that contains the output that is spent by this input
         Transaction getSpentTx() const;
-        
+
+        // Get OutputPointer of the output that this input spends
         OutputPointer getSpentOutputPointer() const {
             return {inout->getLinkedTxNum(), *spentOutputNum};
         }
-        
+
         Output getSpentOutput() const;
     };
     
