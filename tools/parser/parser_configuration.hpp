@@ -30,22 +30,25 @@ struct ParserConfigurationBase {
         return filesystem::path{dataConfig.chainConfig.dataDirectory}/"parser";
     }
 
-    // TODO: add comment
+    // File that contains the serialization of the UTXOState class which maps raw output pointers to output data
     filesystem::path utxoCacheFile() const {
         return parserDirectory()/"utxoCache.dat";
     }
 
-    // TODO: add comment
+    /* Directory that stores the serialization of the UTXOAddressState class. For each address type, this contains mapping from output
+       pointers to addresses of that type to data necessary to parse the input script spending an output of that type */
     filesystem::path utxoAddressStatePath() const {
         return parserDirectory()/"utxoAddressState";
     }
 
-    // TODO: add comment
+    // File that contains the serialization of the UTXOScriptState class which maps output pointers to the scriptNum of the containted script
     filesystem::path utxoScriptStatePath() const {
-        return parserDirectory()/"utxoScriptState";
+        return parserDirectory()/"utxoScriptState.dat";
     }
 
-    // TODO: add comment
+    /* Directory that contains the serialization of the AddressState class. This contains bloom filters which provide checking of whether an
+       address has been seen before, multi-address maps providing fast lookups for addresses seen multiple times, and a count of the total
+       number of scripts of each type */
     filesystem::path addressPath() const {
         return parserDirectory()/"address";
     }

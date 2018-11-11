@@ -334,7 +334,9 @@ void generateScriptInput(RawTransaction &tx, UTXOAddressState &utxoAddressState)
     }
 }
 
-// 5. Step: TODO: add comment
+/* 5. Step: Attach a scriptNum to each script in the transaction. For address types which are
+      deduplicated (Pubkey, ScriptHash, Multisig and their varients) use the previously allocated
+      scriptNum if the address was seen before. Increment the scriptNum counter for newly seen addresses. */
 void processAddresses(RawTransaction &tx, AddressState &addressState) {
     for (auto &scriptInput : tx.scriptInputs) {
         scriptInput.process(addressState);
@@ -345,7 +347,8 @@ void processAddresses(RawTransaction &tx, AddressState &addressState) {
     }
 }
 
-// 6. Step: TODO: add comment
+/* 6. Step: Record the scriptNum for each output for later reference. Assign each spent input with
+            the scriptNum of the output its spending */
 void recordAddresses(RawTransaction &tx, UTXOScriptState &state) {
     for (size_t i = 0; i < tx.inputs.size(); i++) {
         auto &input = tx.inputs[i];
@@ -619,10 +622,13 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfigu
      *    Then store information about each output address for future lookup. */
     ProcessStep<decltype(generateScriptInputFunc), decltype(advanceFunc)> generateScriptInputStep(connectUTXOsStep, generateScriptInputFunc, advanceFunc);
 
-    // 5. Step: TODO: add comment
+    /* 5. Step: Attach a scriptNum to each script in the transaction. For address types which are
+          deduplicated (Pubkey, ScriptHash, Multisig and their varients) use the previously allocated
+          scriptNum if the address was seen before. Increment the scriptNum counter for newly seen addresses. */
     ProcessStep<decltype(processAddressFunc), decltype(advanceFunc)> processAddressStep(generateScriptInputStep, processAddressFunc, advanceFunc);
 
-    // 6. Step: TODO: add comment
+    /* 6. Step: Record the scriptNum for each output for later reference. Assign each spent input with
+     the scriptNum of the output its spending */
     ProcessStep<decltype(recordAddressesFunc), decltype(advanceFunc)> recordAddressesStep(processAddressStep, recordAddressesFunc, advanceFunc);
 
     // 7. Step: Serialize transaction data, inputs, and outputs and write them to the txFile
@@ -738,7 +744,7 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfigu
     return blocksAdded;
 }
 
-// TODO addNewBlocksSingle seems to never be used
+// addNewBlocksSingle has the same functionality as addNewBlocks except that it is single threaded instead of using multiple lock-free queues
 template <typename ParseTag>
 std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocksSingle(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> blocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState) {
     

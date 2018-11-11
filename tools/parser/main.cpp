@@ -150,35 +150,6 @@ struct ChainUpdateInfo {
     uint32_t splitPoint;
 };
 
-// TODO: seems to not be used anywhere in the code
-struct StartingCounts {
-    uint32_t txCount;
-    uint64_t inputCount;
-    uint64_t outputCount;
-};
-
-// TODO: seems to not be used anywhere in the code
-uint32_t getStartingCounts(const blocksci::DataConfiguration &config) {
-    blocksci::ChainAccess chain{config.chainDirectory(), config.blocksIgnored, config.errorOnReorg};
-    if (chain.blockCount() > 0) {
-        auto lastBlock = chain.getBlock(chain.blockCount() - 1);
-        return lastBlock->firstTxIndex + lastBlock->txCount;
-    } else {
-        return 0;
-    }
-}
-
-// TODO: exactly the same as above getStartingCounts() function; seems to not be used anywhere in the code
-uint32_t getStartingTxCount(const blocksci::DataConfiguration &config) {
-    blocksci::ChainAccess chain{config.chainDirectory(), config.blocksIgnored, config.errorOnReorg};
-    if (chain.blockCount() > 0) {
-        auto lastBlock = chain.getBlock(chain.blockCount() - 1);
-        return lastBlock->firstTxIndex + lastBlock->txCount;
-    } else {
-        return 0;
-    }
-}
-
 template <typename ParserTag>
 std::vector<blocksci::RawBlock> updateChain(const ParserConfiguration<ParserTag> &config, blocksci::BlockHeight maxBlockNum, HashIndexCreator &hashDb) {
     using namespace std::chrono_literals;
