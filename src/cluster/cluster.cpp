@@ -54,8 +54,8 @@ namespace blocksci {
     }
     
     ranges::any_view<Address> Cluster::getPossibleAddresses() const {
-        auto access_ = &clusterAccess.access;
-        return getDedupAddresses() | ranges::view::transform([&access_](const DedupAddress &dedupAddress) {
+        DataAccess *access_ = &clusterAccess.access;
+        return getDedupAddresses() | ranges::view::transform([access_](const DedupAddress &dedupAddress) {
             uint32_t scriptNum = dedupAddress.scriptNum;
             return addressTypesRange(dedupAddress.type) | ranges::view::transform([access_, scriptNum](AddressType::Enum addressType) {
                 return Address(scriptNum, addressType, *access_);
@@ -64,7 +64,7 @@ namespace blocksci {
     }
     
     ranges::any_view<Address> Cluster::getAddresses() const {
-        auto access_ = &clusterAccess.access;
+        DataAccess *access_ = &clusterAccess.access;
         return getDedupAddresses() | ranges::view::transform([access_](const DedupAddress &address) {
             auto header = access_->getScripts().getScriptHeader(address.scriptNum, address.type);
             uint32_t scriptNum = address.scriptNum;
