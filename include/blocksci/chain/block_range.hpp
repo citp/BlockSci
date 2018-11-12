@@ -125,7 +125,7 @@ namespace blocksci {
             return this->operator[](0).firstTxIndex();
         }
         uint32_t endTxIndex() const {
-            return this->operator[](sl.stop - 1).endTxIndex();
+            return this->operator[](size() - 1).endTxIndex();
         }
         
         template <typename ResultType, typename MapFunc, typename ReduceFunc>
