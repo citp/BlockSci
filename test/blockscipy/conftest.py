@@ -7,8 +7,6 @@ import os
 def chain(tmpdir_factory):
     temp_dir = tmpdir_factory.mktemp("bitcoin_regtest")
     chain_dir = str(temp_dir)
-    if not os.path.exists(chain_dir):
-        os.mkdir(chain_dir)
     create_config_cmd = ["blocksci_parser", chain_dir + "/config.json", "generate-config", "bitcoin_regtest", chain_dir,
                          "--disk", "../files/regtest/"]
     subprocess.run(create_config_cmd, check=True)
