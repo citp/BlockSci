@@ -120,7 +120,6 @@ namespace blocksci {
         std::tie(hash, type) = address.Get(access.config.chainConfig);
         ranges::optional<uint32_t> addressNum = ranges::nullopt;
         if (type == AddressType::Enum::PUBKEYHASH) {
-            std::cout << hash.GetHex() << std::endl;
             addressNum = access.getHashIndex().getPubkeyHashIndex(hash);
         } else if (type == AddressType::Enum::SCRIPTHASH) {
             addressNum = access.getHashIndex().getScriptHashIndex(hash);
