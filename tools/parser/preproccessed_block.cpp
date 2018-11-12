@@ -198,7 +198,7 @@ void RawTransaction::load(const getrawtransaction_t &txinfo, uint32_t txNum_, bl
     isSegwit = witnessActivated;
     blockHeight = blockHeight_;
     version = txinfo.version;
-    locktime = static_cast<uint32_t>(txinfo.locktime);
+    locktime = txinfo.locktime;
     realSize = static_cast<uint32_t>(txinfo.hex.size() / 2);
     auto inputCount = txinfo.vin.size();
     inputs.clear();
