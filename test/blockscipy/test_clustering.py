@@ -2,12 +2,12 @@ import blocksci
 
 
 def no_change_heuristic():
-    return blocksci.heuristics.change.legacy() - blocksci.heuristics.change.legacy()
+    return blocksci.heuristics.change.legacy - blocksci.heuristics.change.legacy
 
 
 def test_clustering_no_change(chain, json_data, regtest, tmpdir_factory):
     cm = blocksci.cluster.ClusterManager.create_clustering(str(tmpdir_factory.mktemp("clustering")), chain,
-                                                           heuristic=no_change_heuristic())
+                                                           heuristic=no_change_heuristic().unique_change)
     cluster = cm.cluster_with_address(chain.address_from_string(json_data['merge-addr-1']))
 
     assert 3 == len(cluster.addresses.to_list())

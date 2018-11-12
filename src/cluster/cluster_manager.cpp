@@ -105,23 +105,6 @@ namespace blocksci {
         }) | flatMapOptionals();
     }
     
-    std::vector<std::pair<Address, Address>> processTransaction(const Transaction &tx, const heuristics::ChangeHeuristic &changeHeuristic) {
-        std::vector<std::pair<Address, Address>> pairsToUnion;
-        
-        if (!heuristics::isCoinjoin(tx) && !tx.isCoinbase()) {
-            auto inputs = tx.inputs();
-            auto firstAddress = inputs[0].getAddress();
-            for (uint16_t i = 1; i < inputs.size(); i++) {
-                pairsToUnion.emplace_back(firstAddress, inputs[i].getAddress());
-            }
-            
-            if (auto change = changeHeuristic.uniqueChange(tx)) {
-                pairsToUnion.emplace_back(change->getAddress(), firstAddress);
-            }
-        }
-        return pairsToUnion;
-    }
-    
     struct AddressDisjointSets {
         DisjointSets disjoinSets;
         std::unordered_map<DedupAddressType::Enum, uint32_t> addressStarts;
@@ -149,14 +132,26 @@ namespace blocksci {
         }
     };
     
-    std::vector<uint32_t> createClusters(BlockRange &chain, std::unordered_map<DedupAddressType::Enum, uint32_t> addressStarts, uint32_t totalScriptCount, const heuristics::ChangeHeuristic &changeHeuristic) {
+    template <typename ChangeFunc>
+    std::vector<std::pair<Address, Address>> processTransaction(const Transaction &tx, ChangeFunc && changeHeuristic) {
+        std::vector<std::pair<Address, Address>> pairsToUnion;
         
-        AddressDisjointSets ds(totalScriptCount, std::move(addressStarts));
-        
-        auto &access = chain.getAccess();
-        
+        if (!heuristics::isCoinjoin(tx) && !tx.isCoinbase()) {
+            auto inputs = tx.inputs();
+            auto firstAddress = inputs[0].getAddress();
+            for (uint16_t i = 1; i < inputs.size(); i++) {
+                pairsToUnion.emplace_back(firstAddress, inputs[i].getAddress());
+            }
+            
+            if (auto change = std::forward<ChangeFunc>(changeHeuristic)(tx)) {
+                pairsToUnion.emplace_back(change->getAddress(), firstAddress);
+            }
+        }
+        return pairsToUnion;
+    }
+    
+    void linkScripthashNested(DataAccess &access, AddressDisjointSets &ds) {
         auto scriptHashCount = access.getScripts().scriptCount(DedupAddressType::SCRIPTHASH);
-        
         
         segmentWork(1, scriptHashCount + 1, 8, [&ds, &access](uint32_t index) {
             Address pointer(index, AddressType::SCRIPTHASH, access);
@@ -166,17 +161,20 @@ namespace blocksci {
                 ds.link_addresses(pointer, *wrappedAddress);
             }
         });
+    }
+    
+    template <typename ChangeFunc>
+    std::vector<uint32_t> createClusters(BlockRange &chain, std::unordered_map<DedupAddressType::Enum, uint32_t> addressStarts, uint32_t totalScriptCount, ChangeFunc && changeHeuristic) {
         
+        AddressDisjointSets ds(totalScriptCount, std::move(addressStarts));
+        
+        auto &access = chain.getAccess();
+        
+        linkScripthashNested(access, ds);
         
         auto extract = [&](const BlockRange &blocks, int threadNum) {
-            uint32_t totalTxCount = 0;
             auto progressThread = static_cast<int>(std::thread::hardware_concurrency()) - 1;
-            if (threadNum == progressThread) {
-                for (auto block : blocks) {
-                    totalTxCount += block.size();
-                }
-            }
-            auto progressBar = makeProgressBar(totalTxCount, [=]() {});
+            auto progressBar = makeProgressBar(blocks.endTxIndex() - blocks.firstTxIndex(), [=]() {});
             if (threadNum != progressThread) {
                 progressBar.setSilent();
             }
@@ -245,9 +243,7 @@ namespace blocksci {
         clusterAddressesFile.write(reinterpret_cast<char *>(orderedScripts.data()), static_cast<long>(sizeof(DedupAddress) * orderedScripts.size()));
     }
     
-    
-    ClusterManager ClusterManager::createClustering(BlockRange &chain, const heuristics::ChangeHeuristic &changeHeuristic, const std::string &outputPath, bool overwrite) {
-        
+    void prepareClusterDataLocation(const std::string &outputPath, bool overwrite) {
         auto outputLocation = filesystem::path{outputPath};
         
         std::string offsetFile = ClusterAccess::offsetFilePath(outputPath);
@@ -286,56 +282,84 @@ namespace blocksci {
                 }
             }
         }
-        
-        // Put this in a block to that ofstreams get flushed on destruction
-        {
-            filesystem::create_directory(outputLocation);
-            // Generate cluster files
-            std::ofstream clusterAddressesFile(addressesFile, std::ios::binary);
-            std::ofstream clusterOffsetFile(offsetFile, std::ios::binary);
-            // Perform clustering
-            
-            auto &scripts = chain.getAccess().getScripts();
-            size_t totalScriptCount = scripts.totalAddressCount();
-            
-            std::unordered_map<DedupAddressType::Enum, uint32_t> scriptStarts;
-            {
-                std::vector<uint32_t> starts(DedupAddressType::size);
-                for (size_t i = 0; i < DedupAddressType::size; i++) {
-                    if (i > 0) {
-                        starts[i] = scripts.scriptCount(static_cast<DedupAddressType::Enum>(i - 1)) + starts[i - 1];
-                    }
-                    scriptStarts[static_cast<DedupAddressType::Enum>(i)] = starts[i];
-                }
-            }
-            
-            auto parent = createClusters(chain, scriptStarts, static_cast<uint32_t>(totalScriptCount), changeHeuristic);
-            uint32_t clusterCount = remapClusterIds(parent);
-            std::vector<uint32_t> clusterPositions;
-            clusterPositions.resize(clusterCount + 1);
-            for (auto parentId : parent) {
-                clusterPositions[parentId + 1]++;
-            }
-            
-            for (size_t i = 1; i < clusterPositions.size(); i++) {
-                clusterPositions[i] += clusterPositions[i-1];
-            }
-            
-            auto recordOrdered = std::async(std::launch::async, recordOrderedAddresses, parent, std::ref(clusterPositions), scriptStarts, std::ref(clusterAddressesFile));
-            
-            segmentWork(0, DedupAddressType::size, DedupAddressType::size, [&](uint32_t index) {
-                auto type = static_cast<DedupAddressType::Enum>(index);
-                uint32_t startIndex = scriptStarts[type];
-                uint32_t totalCount = scripts.scriptCount(type);
-                std::ofstream file{clusterIndexPaths[index], std::ios::binary};
-                file.write(reinterpret_cast<char *>(parent.data() + startIndex), sizeof(uint32_t) * totalCount);
-            });
-            
-            recordOrdered.get();
-            
-            clusterOffsetFile.write(reinterpret_cast<char *>(clusterPositions.data()), static_cast<long>(sizeof(uint32_t) * clusterPositions.size()));
+    }
+    
+    void serializeClusterData(const ScriptAccess &scripts, const std::string &outputPath, const std::vector<uint32_t> &parent, const std::unordered_map<DedupAddressType::Enum, uint32_t> &scriptStarts, uint32_t clusterCount) {
+        auto outputLocation = filesystem::path{outputPath};
+        std::string offsetFile = ClusterAccess::offsetFilePath(outputPath);
+        std::string addressesFile = ClusterAccess::addressesFilePath(outputPath);
+        std::vector<std::string> clusterIndexPaths;
+        clusterIndexPaths.resize(DedupAddressType::size);
+        for (auto dedupType : DedupAddressType::allArray()) {
+            clusterIndexPaths[static_cast<size_t>(dedupType)] = ClusterAccess::typeIndexFilePath(outputPath, dedupType);
         }
-        return {outputLocation.str(), chain.getAccess()};
+        
+        filesystem::create_directory(outputLocation);
+        // Generate cluster files
+        
+        std::vector<uint32_t> clusterPositions;
+        clusterPositions.resize(clusterCount + 1);
+        for (auto parentId : parent) {
+            clusterPositions[parentId + 1]++;
+        }
+        
+        for (size_t i = 1; i < clusterPositions.size(); i++) {
+            clusterPositions[i] += clusterPositions[i-1];
+        }
+        std::ofstream clusterAddressesFile(addressesFile, std::ios::binary);
+        auto recordOrdered = std::async(std::launch::async, recordOrderedAddresses, parent, std::ref(clusterPositions), scriptStarts, std::ref(clusterAddressesFile));
+        
+        segmentWork(0, DedupAddressType::size, DedupAddressType::size, [&](uint32_t index) {
+            auto type = static_cast<DedupAddressType::Enum>(index);
+            uint32_t startIndex = scriptStarts.at(type);
+            uint32_t totalCount = scripts.scriptCount(type);
+            std::ofstream file{clusterIndexPaths[index], std::ios::binary};
+            file.write(reinterpret_cast<const char *>(parent.data() + startIndex), sizeof(uint32_t) * totalCount);
+        });
+        
+        recordOrdered.get();
+        
+        std::ofstream clusterOffsetFile(offsetFile, std::ios::binary);
+        clusterOffsetFile.write(reinterpret_cast<char *>(clusterPositions.data()), static_cast<long>(sizeof(uint32_t) * clusterPositions.size()));
+    }
+    
+    template <typename ChangeFunc>
+    ClusterManager createClusteringImpl(BlockRange &chain, ChangeFunc && changeHeuristic, const std::string &outputPath, bool overwrite) {
+        prepareClusterDataLocation(outputPath, overwrite);
+        
+        // Perform clustering
+        
+        auto &scripts = chain.getAccess().getScripts();
+        size_t totalScriptCount = scripts.totalAddressCount();
+        
+        std::unordered_map<DedupAddressType::Enum, uint32_t> scriptStarts;
+        {
+            std::vector<uint32_t> starts(DedupAddressType::size);
+            for (size_t i = 0; i < DedupAddressType::size; i++) {
+                if (i > 0) {
+                    starts[i] = scripts.scriptCount(static_cast<DedupAddressType::Enum>(i - 1)) + starts[i - 1];
+                }
+                scriptStarts[static_cast<DedupAddressType::Enum>(i)] = starts[i];
+            }
+        }
+        
+        auto parent = createClusters(chain, scriptStarts, static_cast<uint32_t>(totalScriptCount), std::forward<ChangeFunc>(changeHeuristic));
+        uint32_t clusterCount = remapClusterIds(parent);
+        serializeClusterData(scripts, outputPath, parent, scriptStarts, clusterCount);
+        return {filesystem::path{outputPath}.str(), chain.getAccess()};
+    }
+    
+    ClusterManager ClusterManager::createClustering(BlockRange &chain, const heuristics::ChangeHeuristic &changeHeuristic, const std::string &outputPath, bool overwrite) {
+        
+        auto changeHeuristicL = [&changeHeuristic](const Transaction &tx) -> ranges::optional<Output> {
+            return changeHeuristic.uniqueChange(tx);
+        };
+        
+        return createClusteringImpl(chain, changeHeuristicL, outputPath, overwrite);
+    }
+    
+    ClusterManager ClusterManager::createClustering(BlockRange &chain, const std::function<ranges::optional<Output>(const Transaction &tx)> &changeHeuristic, const std::string &outputPath, bool overwrite) {
+        return createClusteringImpl(chain, changeHeuristic, outputPath, overwrite);
     }
 } // namespace blocksci
 
