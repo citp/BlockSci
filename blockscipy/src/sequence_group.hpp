@@ -12,6 +12,6 @@
 
 #include <pybind11/pybind11.h>
 
-void addAllGroupMethods(pybind11::class_<GenericSequence> &cl);
+void addAllGroupMethods(pybind11::class_<GenericIterator> &cl);
 
 #endif /* sequence_group_hpp */

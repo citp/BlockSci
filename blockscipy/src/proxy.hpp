@@ -108,9 +108,9 @@ struct ProxyAddress : public SimpleProxy {
 	virtual std::function<blocksci::AnyScript(std::any &)> getGenericScript() const = 0;
 	virtual ~ProxyAddress() = default;
 
-	std::function<BlocksciType(std::any &)> getGenericSimple() const {
+	std::function<BlocksciType(std::any &)> getGenericSimple() const override {
 		return [generic = getGenericScript()](std::any &val) -> BlocksciType {
-			return generic(val);
+			return BlocksciType{generic(val)};
 		};
 	}
 
@@ -141,9 +141,9 @@ struct Proxy : public SimpleProxy {
 		return func(t);
 	}
 
-	std::function<BlocksciType(std::any &)> getGenericSimple() const {
+	std::function<BlocksciType(std::any &)> getGenericSimple() const override {
 		return [f = this->func](std::any &val) -> BlocksciType {
-			return f(val);
+			return BlocksciType{f(val)};
 		};
 	}
 };
@@ -182,7 +182,7 @@ struct Proxy<ranges::optional<T>> : public OptionalProxy {
 		return [f = this->func](std::any &val) -> ranges::optional<BlocksciType> {
 			auto v = f(val);
 			if (v) {
-				return *v;
+				return BlocksciType{*v};
 			} else {
 				return ranges::nullopt;
 			}
@@ -227,7 +227,7 @@ struct Proxy<RawRange<T>> : public SequenceProxy<T>, public RangeProxy {
 	std::function<RawRange<BlocksciType>(std::any &)> getGenericRange() const override {
 		return [f = this->func](std::any &val) -> RawRange<BlocksciType> {
 			return ranges::view::transform(f(val), [](T t) -> BlocksciType {
-				return std::move(t);
+				return BlocksciType{t};
 			});
 		};
 	}
@@ -284,7 +284,7 @@ struct Proxy<RawIterator<T>> : public SequenceProxy<T>, public IteratorProxy {
 	std::function<RawIterator<BlocksciType>(std::any &)> getGenericIterator() const override {
 		return [f = this->func](std::any &val) -> RawIterator<BlocksciType> {
 			return ranges::view::transform(f(val), [](T t) -> BlocksciType {
-				return std::move(t);
+				return BlocksciType{t};
 			});
 		};
 	}

@@ -57,7 +57,7 @@ struct BlocksciType {
 	BlocksciTypeVariant var;
 
 	template <typename U, std::enable_if_t<std::is_convertible<U, BlocksciTypeVariant>::value> * = nullptr>
-	BlocksciType(U && t) : var(std::forward<U>(t)) {}
+	explicit BlocksciType(U && t) : var(std::forward<U>(t)) {}
 
 	BlocksciType(const BlocksciType &val) = default;
 	BlocksciType(BlocksciType && val) = default;

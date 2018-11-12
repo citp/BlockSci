@@ -36,25 +36,30 @@ struct AnyViewType<T, random_access_sized> {
 template <typename T, ranges::category range_cat>
 using any_view = typename AnyViewType<T, range_cat>::type;
 
-struct GenericSequence {
+struct GenericIterator {
 	virtual RawIterator<BlocksciType> getGenericIterator() = 0;
-	virtual ~GenericSequence() = default;
+	virtual ~GenericIterator() = default;
 };
 
-template<typename T>
-struct Sequence : public GenericSequence {
-	virtual RawIterator<T> getIterator() = 0;
-	virtual ~Sequence() = default;
+struct GenericRange : public GenericIterator {
+	virtual RawRange<BlocksciType> getGenericRange() = 0;
+	virtual int64_t size() const = 0;
+	virtual bool empty() const = 0;
+	virtual ~GenericRange() = default;
 
-	RawIterator<BlocksciType> getGenericIterator() {
-		return getIterator() | ranges::view::transform([](T && v) -> BlocksciType {
-			return v;
-		});
+	RawIterator<BlocksciType> getGenericIterator() override {
+		return getGenericRange();
 	}
 };
 
+template<typename T>
+struct Sequence {
+	virtual RawIterator<T> getIterator() = 0;
+	virtual ~Sequence() = default;
+};
+
 template <typename T>
-struct Iterator : public Sequence<T> {
+struct Iterator : public Sequence<T>, public GenericIterator {
 	ranges::any_view<T> rng;
 
 	template <typename R>
@@ -73,10 +78,16 @@ struct Iterator : public Sequence<T> {
 	RawIterator<T> getIterator() override {
 		return rng;
 	}
+
+	RawIterator<BlocksciType> getGenericIterator() override {
+		return rng | ranges::view::transform([](T && v) -> BlocksciType {
+			return BlocksciType{v};
+		});
+	}
 };
 
 template <typename T>
-struct Range : public Sequence<T> {
+struct Range : public Sequence<T>, public GenericRange {
 	ranges::any_view<T, random_access_sized> rng;
 
 	Range(ranges::any_view<T, random_access_sized> && r) : rng(std::move(r)) {}
@@ -93,6 +104,20 @@ struct Range : public Sequence<T> {
 
 	RawIterator<T> getIterator() override {
 		return rng;
+	}
+
+	RawRange<BlocksciType> getGenericRange() override {
+		return rng | ranges::view::transform([](T && v) -> BlocksciType {
+			return BlocksciType{v};
+		});
+	}
+
+	int64_t size() const override {
+		return rng.size();
+	}
+
+	bool empty() const override {
+		return ranges::empty(rng);
 	}
 };
 

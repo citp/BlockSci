@@ -17,9 +17,9 @@
 
 template <typename T>
 struct RangeClasses {
-	pybind11::class_<Sequence<T>, GenericSequence> sequence;
-    pybind11::class_<Iterator<T>, Sequence<T>> iterator;
-    pybind11::class_<Range<T>, Sequence<T>> range;
+	pybind11::class_<Sequence<T>> sequence;
+    pybind11::class_<Iterator<T>, Sequence<T>, GenericIterator> iterator;
+    pybind11::class_<Range<T>, Sequence<T>, GenericRange> range;
 
     RangeClasses(pybind11::module &m) : 
     sequence(m, strdup(PythonTypeName<Sequence<T>>::name().c_str()), pybind11::dynamic_attr()),

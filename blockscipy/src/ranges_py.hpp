@@ -46,25 +46,10 @@ auto addCommonIteratorMethods(Class &cl) {
     ;
 }
 
-template<typename Class>
-auto addCommonRangeMethods(Class &cl) {
-    using R = typename Class::type;
-    cl
-    .def("__bool__", [](R &range) {
-        return !ranges::empty(range.rng);
-        
-    })
-    .def("__len__", [](R &range) {
-        return range.rng.size();
-    })
-    ;
-}
-
 template <typename T>
 void addAllRangeMethods(RangeClasses<T> &cls) {
     addCommonIteratorMethods(cls.iterator);
     addCommonIteratorMethods(cls.range);
-    addCommonRangeMethods(cls.range);
 
     cls.iterator
     .def_property_readonly_static("self_proxy", [](pybind11::object &) -> Proxy<RawIterator<T>> {

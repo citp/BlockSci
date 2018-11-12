@@ -25,9 +25,8 @@ struct OptionalProxy;
 struct ProxyAddress;
 
 struct BlocksciType;
-struct GenericSequence;
-
-
+struct GenericIterator;
+struct GenericRange;
 
 
 #endif /* blocksci_python_fwd_h */

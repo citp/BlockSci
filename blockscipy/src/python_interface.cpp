@@ -12,6 +12,7 @@
 #include "proxy_create.hpp"
 #include "python_proxies.hpp"
 #include "sequence_group.hpp"
+#include "sequence_py.hpp"
 
 #include "chain/blockchain_py.hpp"
 #include "chain/input/input_py.hpp"
@@ -123,7 +124,8 @@ PYBIND11_MODULE(_blocksci, m) {
     py::class_<TaggedCluster> taggedClusterCl(clusterMod, "TaggedCluster");
     py::class_<TaggedAddress> taggedAddressCl(clusterMod, "TaggedAddress");
 
-    py::class_<GenericSequence> genericSequenceCl(m, "GenericSequence", "Class representing any blocksci sequence");
+    py::class_<GenericIterator> genericIteratorCl(m, "GenericIterator", "Class representing any blocksci iterator");
+    py::class_<GenericRange, GenericIterator> genericRangeCl(m, "GenericRange", "Class representing any blocksci range");
 
     RangeClasses<Block> blockRangeCls(m);
     RangeClasses<Transaction> txRangeCls(m);
@@ -261,5 +263,6 @@ PYBIND11_MODULE(_blocksci, m) {
     }
     init_address(addressCl);
 
-    addAllGroupMethods(genericSequenceCl);
+    addCommonRangeMethods(genericRangeCl);
+    addAllGroupMethods(genericIteratorCl);
 }
