@@ -8,6 +8,8 @@
 #ifndef proxy_hpp
 #define proxy_hpp
 
+#include "python_fwd.hpp"
+
 #include "generic_sequence.hpp"
 
 #include <blocksci/scripts/script_variant.hpp>
@@ -20,16 +22,6 @@
 enum class ProxyType {
 	Simple, Optional, Iterator, Range
 };
-
-template<typename T>
-struct Proxy;
-
-template<typename T>
-Proxy<T> makeProxy() {
-	return std::function<T(std::any &)>{[](std::any &t) -> T {
-		return std::any_cast<T>(t);
-	}};
-}
 
 struct GenericProxy {
 	virtual ProxyType getProxyType() const = 0;
@@ -135,6 +127,10 @@ struct Proxy : public SimpleProxy {
 	
 	std::function<output_t(std::any &)> func;
 
+	Proxy() : Proxy(std::function<output_t(std::any &)>{[](std::any &t) -> output_t {
+		return std::any_cast<output_t>(t);
+	}}) {}
+
 	Proxy(const std::function<output_t(std::any &)> &func_) : func(func_) {}
 
 	Proxy(std::function<output_t(std::any &)> && func_) : func(std::move(func_)) {}
@@ -163,6 +159,10 @@ struct Proxy<ranges::optional<T>> : public OptionalProxy {
 	using output_t = ranges::optional<T>;
 	
 	std::function<output_t(std::any &)> func;
+
+	Proxy() : Proxy(std::function<output_t(std::any &)>{[](std::any &t) -> output_t {
+		return std::any_cast<output_t>(t);
+	}}) {}
 
 	Proxy(const std::function<output_t(std::any &)> &func_) : func(func_) {}
 
@@ -205,6 +205,10 @@ struct Proxy<RawRange<T>> : public SequenceProxy<T>, public RangeProxy {
 	using output_t = RawRange<T>;
 	
 	std::function<output_t(std::any &)> func;
+
+	Proxy() : Proxy(std::function<output_t(std::any &)>{[](std::any &t) -> output_t {
+		return std::any_cast<output_t>(t);
+	}}) {}
 
 	Proxy(const std::function<output_t(std::any &)> &func_) : func(func_) {}
 
@@ -252,6 +256,10 @@ struct Proxy<RawIterator<T>> : public SequenceProxy<T>, public IteratorProxy {
 	using output_t = RawIterator<T>;
 	
 	std::function<output_t(std::any &)> func;
+
+	Proxy() : Proxy(std::function<output_t(std::any &)>{[](std::any &t) -> output_t {
+		return std::any_cast<output_t>(t);
+	}}) {}
 
 	Proxy(const std::function<output_t(std::any &)> &func_) : func(func_) {}
 
@@ -310,6 +318,10 @@ struct Proxy<blocksci::ScriptAddress<type>> : public ProxyAddress {
 	
 	std::function<output_t(std::any &)> func;
 
+	Proxy() : Proxy(std::function<output_t(std::any &)>{[](std::any &t) -> output_t {
+		return std::any_cast<output_t>(t);
+	}}) {}
+
 	Proxy(const std::function<output_t(std::any &)> &func_) : func(func_) {}
 
 	Proxy(std::function<output_t(std::any &)> && func_) : func(std::move(func_)) {}
@@ -338,6 +350,10 @@ struct Proxy<blocksci::AnyScript> : public ProxyAddress {
 	using output_t = blocksci::AnyScript;
 	
 	std::function<output_t(std::any &)> func;
+
+	Proxy() : Proxy(std::function<output_t(std::any &)>{[](std::any &t) -> output_t {
+		return std::any_cast<output_t>(t);
+	}}) {}
 
 	Proxy(const std::function<output_t(std::any &)> &func_) : func(func_) {}
 

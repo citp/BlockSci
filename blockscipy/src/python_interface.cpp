@@ -30,6 +30,10 @@
 #include "scripts/nonstandard/nonstandard_py.hpp"
 #include "scripts/witness_unknown/witness_unknown_py.hpp"
 
+#include <blocksci/chain/blockchain.hpp>
+#include <blocksci/cluster/cluster.hpp>
+#include <blocksci/address/equiv_address.hpp>
+
 #include <pybind11/functional.h>
 
 namespace py = pybind11;
@@ -43,8 +47,23 @@ template <typename Class>
 void addSelfProxy(Class &cl) {
     using T = typename Class::type;
     cl.def_property_readonly_static("self_proxy", [](pybind11::object &) -> Proxy<T> {
-        return makeProxy<T>();
+        return {};
     });
+}
+
+template <typename T>
+void addAnyInit(py::class_<std::any> &cl) {
+    cl
+    .def(py::init([](T &val) -> std::any { return val; }))
+    .def(py::init([](ranges::optional<T> &val) -> std::any { return val; }))
+    .def(py::init([](Iterator<T> &val) -> std::any { return val.rng; }))
+    .def(py::init([](Range<T> &val) -> std::any { return val.rng; }))
+    ;
+
+    pybind11::implicitly_convertible<T, std::any>();
+    pybind11::implicitly_convertible<ranges::optional<T>, std::any>();
+    pybind11::implicitly_convertible<Iterator<T>, std::any>();
+    pybind11::implicitly_convertible<Range<T>, std::any>();
 }
 
 PYBIND11_MODULE(_blocksci, m) {
@@ -69,6 +88,29 @@ PYBIND11_MODULE(_blocksci, m) {
     py::class_<script::Nonstandard> nonstandardCl(m, "NonStandardAddress", addressCl, "Extra data about non-standard address");
     py::class_<script::OpReturn> opReturnCl(m, "OpReturn", addressCl, "Extra data about op_return address");
     py::class_<script::WitnessUnknown> witnessUnknownCl(m, "WitnessUnknownAddress", addressCl, "Data about an unknown witness address");
+
+    py::class_<std::any> anyCl(m, "Any", "A generic class representing a BlockSci type");
+
+    addAnyInit<Block>(anyCl);
+    addAnyInit<Transaction>(anyCl);
+    addAnyInit<Input>(anyCl);
+    addAnyInit<Output>(anyCl);
+    addAnyInit<EquivAddress>(anyCl);
+
+    addAnyInit<script::Pubkey>(anyCl);
+    addAnyInit<script::PubkeyHash>(anyCl);
+    addAnyInit<script::WitnessPubkeyHash>(anyCl);
+    addAnyInit<script::MultisigPubkey>(anyCl);
+    addAnyInit<script::Multisig>(anyCl);
+    addAnyInit<script::ScriptHash>(anyCl);
+    addAnyInit<script::WitnessScriptHash>(anyCl);
+    addAnyInit<script::OpReturn>(anyCl);
+    addAnyInit<script::Nonstandard>(anyCl);
+    addAnyInit<script::WitnessUnknown>(anyCl);
+
+    addAnyInit<Cluster>(anyCl);
+    addAnyInit<TaggedCluster>(anyCl);
+    addAnyInit<TaggedAddress>(anyCl);
 
     auto clusterMod = m.def_submodule("cluster");
     py::class_<Cluster> clusterCl(clusterMod, "Cluster", "Class representing a cluster");

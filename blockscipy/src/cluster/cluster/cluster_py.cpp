@@ -15,6 +15,7 @@
 
 #include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/block.hpp>
+#include <blocksci/cluster/cluster.hpp>
 
 #include <range/v3/range_for.hpp>
 

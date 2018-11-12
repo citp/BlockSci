@@ -11,6 +11,7 @@
 #include "generic_sequence.hpp"
 
 #include <blocksci/address/address.hpp>
+#include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/access.hpp>
 #include <blocksci/scripts/script_range.hpp>
 #include <blocksci/cluster/cluster.hpp>

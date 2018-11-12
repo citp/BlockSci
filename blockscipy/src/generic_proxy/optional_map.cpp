@@ -7,6 +7,7 @@
 //
 
 #include "optional_map.hpp"
+#include "proxy.hpp"
 
 #include <blocksci/chain/block.hpp>
 
@@ -14,6 +15,20 @@
 
 using namespace blocksci;
 
+namespace {
+	template<typename R>
+	Proxy<ranges::optional<R>> mapOptional(OptionalProxy &seq, Proxy<R> &p2) {
+		auto generic = seq.getGeneric();
+		return std::function<ranges::optional<R>(std::any &)>{[generic, p2](std::any &val) -> ranges::optional<R> {
+			auto v = generic(val);
+			if (v) {
+				return p2(*v);
+			} else {
+				return ranges::nullopt;
+			}
+		}};
+	}
+}
 
 void addOptionalProxyMapMethods(pybind11::class_<OptionalProxy, GenericProxy> &cl) {
 	cl

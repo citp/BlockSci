@@ -11,6 +11,7 @@
 #include "ranges_py.hpp"
 
 #include <blocksci/chain/access.hpp>
+#include <blocksci/chain/block.hpp>
 
 #include <pybind11/operators.h>
 

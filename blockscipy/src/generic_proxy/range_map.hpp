@@ -9,7 +9,9 @@
 #ifndef proxy_range_map_hpp
 #define proxy_range_map_hpp
 
-#include "proxy_py.hpp"
+#include "python_fwd.hpp"
+
+#include <pybind11/pybind11.h>
 
 void applyProxyMapOptionalFuncsCore(pybind11::class_<IteratorProxy, GenericProxy> &cl);
 void applyProxyMapOptionalFuncsScripts(pybind11::class_<IteratorProxy, GenericProxy> &cl);

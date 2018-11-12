@@ -10,6 +10,8 @@
 #include "caster_py.hpp"
 #include "ranges_py.hpp"
 
+#include <blocksci/scripts/nulldata_script.hpp>
+
 using namespace blocksci;
 namespace py = pybind11;
 

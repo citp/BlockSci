@@ -92,13 +92,13 @@ void addAllRangeMethods(RangeClasses<T> &cls) {
 
     cls.iterator
     .def_property_readonly_static("self_proxy", [](pybind11::object &) -> Proxy<RawIterator<T>> {
-        return makeProxy<RawIterator<T>>();
+        return {};
     })
     ;
 
     cls.range
     .def_property_readonly_static("self_proxy", [](pybind11::object &) -> Proxy<RawRange<T>> {
-        return makeProxy<RawRange<T>>();
+        return {};
     })
     ;
 

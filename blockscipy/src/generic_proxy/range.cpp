@@ -8,6 +8,7 @@
 
 #include "range.hpp"
 #include "range_map.hpp"
+#include "proxy.hpp"
 
 #include <range/v3/distance.hpp>
 #include <range/v3/algorithm/any_of.hpp>

@@ -8,9 +8,9 @@
 #ifndef output_py_h
 #define output_py_h
 
-#include "blocksci_range.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/chain/output.hpp>
+#include <blocksci/chain/chain_fwd.hpp>
 
 #include <pybind11/pybind11.h>
 

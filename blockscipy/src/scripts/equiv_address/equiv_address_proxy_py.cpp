@@ -15,6 +15,7 @@
 #include "proxy/range.hpp"
 
 #include <blocksci/cluster/cluster.hpp>
+#include <blocksci/address/equiv_address.hpp>
 
 #include <range/v3/view/transform.hpp>
 #include <range/v3/view/iota.hpp>

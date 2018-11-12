@@ -17,6 +17,7 @@
 
 #include <blocksci/chain/block.hpp>
 #include <blocksci/cluster/cluster.hpp>
+#include <blocksci/scripts/nulldata_script.hpp>
 
 struct AddOpReturnMethods {
     template <typename FuncApplication>

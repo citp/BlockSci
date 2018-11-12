@@ -8,10 +8,11 @@
 #ifndef address_proxy_py_h
 #define address_proxy_py_h
 
-#include "proxy_py.hpp"
 #include "python_fwd.hpp"
 
-#include <blocksci/scripts/script_variant.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
+
+#include <pybind11/pybind11.h>
 
 void init_proxy_address(pybind11::class_<ProxyAddress> &addressCl);
 

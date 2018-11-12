@@ -8,9 +8,9 @@
 #ifndef nulldata_proxy_py_h
 #define nulldata_proxy_py_h
 
-#include "proxy_py.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/scripts/nulldata_script.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
 
 void addNulldataProxyMethodsMain(AllProxyClasses<blocksci::script::OpReturn> &cls);
 void addNulldataProxyMethodsRange(AllProxyClasses<blocksci::script::OpReturn> &cls);

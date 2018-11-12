@@ -8,9 +8,9 @@
 #ifndef input_proxy_py_h
 #define input_proxy_py_h
 
-#include "proxy_py.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/chain/input.hpp>
+#include <blocksci/chain/chain_fwd.hpp>
 
 void addInputProxyMethods(AllProxyClasses<blocksci::Input> &cls);
 

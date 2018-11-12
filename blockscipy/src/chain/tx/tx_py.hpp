@@ -8,12 +8,11 @@
 #ifndef tx_py_h
 #define tx_py_h
 
-#include "blocksci_range.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/chain/transaction.hpp>
+#include <blocksci/chain/chain_fwd.hpp>
 
 #include <pybind11/pybind11.h>
-#include <pybind11/chrono.h>
 
 void init_tx(pybind11::class_<blocksci::Transaction> &cl);
 void addTxRangeMethods(RangeClasses<blocksci::Transaction> &classes);

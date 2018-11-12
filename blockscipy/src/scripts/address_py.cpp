@@ -13,6 +13,7 @@
 #include <blocksci/chain/algorithms.hpp>
 #include <blocksci/chain/access.hpp>
 #include <blocksci/chain/block.hpp>
+#include <blocksci/address/equiv_address.hpp>
 #include <blocksci/cluster/cluster.hpp>
 
 #include <pybind11/operators.h>

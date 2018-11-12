@@ -11,9 +11,6 @@
 #include "sequence.hpp"
 
 #include <range/v3/view/any_view.hpp>
-#include <range/v3/view/transform.hpp>
-
-#include <any>
 
 template <typename T>
 struct Iterator;

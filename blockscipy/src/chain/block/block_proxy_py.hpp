@@ -8,9 +8,9 @@
 #ifndef block_proxy_py_h
 #define block_proxy_py_h
 
-#include "proxy_py.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/chain/block.hpp>
+#include <blocksci/chain/chain_fwd.hpp>
 
 void addBlockProxyMethods(AllProxyClasses<blocksci::Block> &cls);
 

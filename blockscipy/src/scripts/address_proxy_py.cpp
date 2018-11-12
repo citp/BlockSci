@@ -16,6 +16,7 @@
 #include "proxy/range.hpp"
 #include "caster_py.hpp"
 
+#include <blocksci/address/equiv_address.hpp>
 #include <blocksci/chain/block.hpp>
 #include <blocksci/cluster/cluster.hpp>
 

@@ -9,9 +9,9 @@
 #ifndef blocksci_witness_unknown_py_h
 #define blocksci_witness_unknown_py_h
 
-#include "blocksci_range.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/scripts/witness_unknown_script.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
 
 #include <pybind11/pybind11.h>
 

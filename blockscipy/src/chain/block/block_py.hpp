@@ -8,12 +8,11 @@
 #ifndef block_py_h
 #define block_py_h
 
-#include "blocksci_range.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/chain/block.hpp>
+#include <blocksci/blocksci_fwd.hpp>
 
 #include <pybind11/pybind11.h>
-#include <pybind11/chrono.h>
 
 void init_uint256(pybind11::class_<blocksci::uint256> &cl);
 void init_uint160(pybind11::class_<blocksci::uint160> &cl);

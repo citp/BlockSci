@@ -15,8 +15,10 @@
 #include "proxy/optional.hpp"
 #include "proxy/range.hpp"
 
+#include <blocksci/address/equiv_address.hpp>
 #include <blocksci/chain/block.hpp>
 #include <blocksci/cluster/cluster.hpp>
+#include <blocksci/scripts/nonstandard_script.hpp>
 
 struct AddNonstandardMethods {
     template <typename FuncApplication>

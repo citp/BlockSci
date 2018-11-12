@@ -8,9 +8,9 @@
 #ifndef tagged_cluster_proxy_py_h
 #define tagged_cluster_proxy_py_h
 
-#include "proxy_py.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/cluster/cluster.hpp>
+#include <blocksci/cluster/cluster_fwd.hpp>
 
 void addTaggedClusterProxyMethodsMain(AllProxyClasses<blocksci::TaggedCluster> &cls);
 void addTaggedClusterProxyMethodsRange(AllProxyClasses<blocksci::TaggedCluster> &cls);

@@ -17,6 +17,7 @@
 
 #include <blocksci/chain/block.hpp>
 #include <blocksci/cluster/cluster.hpp>
+#include <blocksci/scripts/multisig_script.hpp>
 
 struct AddMultisigMethods {
     template <typename FuncApplication>

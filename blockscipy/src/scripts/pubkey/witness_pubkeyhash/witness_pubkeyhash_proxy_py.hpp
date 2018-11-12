@@ -8,9 +8,9 @@
 #ifndef witness_pubkeyhash_proxy_py_h
 #define witness_pubkeyhash_proxy_py_h
 
-#include "proxy_py.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/scripts/pubkey_script.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
 
 void addWitnessPubkeyHashProxyMethodsMain(AllProxyClasses<blocksci::script::WitnessPubkeyHash> &cls);
 void addWitnessPubkeyHashProxyMethodsRange(AllProxyClasses<blocksci::script::WitnessPubkeyHash> &cls);

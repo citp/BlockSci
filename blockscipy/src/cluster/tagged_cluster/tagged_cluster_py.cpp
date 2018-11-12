@@ -13,6 +13,7 @@
 #include <blocksci/chain/block.hpp>
 #include <blocksci/chain/input_range.hpp>
 #include <blocksci/chain/output_range.hpp>
+#include <blocksci/cluster/cluster.hpp>
 
 namespace py = pybind11;
 using namespace blocksci;

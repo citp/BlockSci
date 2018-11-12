@@ -8,7 +8,13 @@
 #ifndef simple_proxies_h
 #define simple_proxies_h
 
-#include "proxy_py.hpp"
+#include "python_fwd.hpp"
+
+#include <blocksci/blocksci_fwd.hpp>
+
+#include <pybind11/pybind11.h>
+
+#include <chrono>
 
 void addIntProxyMethods(AllProxyClasses<int64_t> &cls);
 void addBoolProxyMethods(AllProxyClasses<bool> &cls);

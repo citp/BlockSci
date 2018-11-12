@@ -9,9 +9,9 @@
 #ifndef tagged_address_py_hpp
 #define tagged_address_py_hpp
 
-#include "blocksci_range.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/cluster/cluster.hpp>
+#include <blocksci/cluster/cluster_fwd.hpp>
 
 #include <pybind11/pybind11.h>
 

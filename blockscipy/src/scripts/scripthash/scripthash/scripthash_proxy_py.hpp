@@ -8,9 +8,9 @@
 #ifndef scripthash_proxy_py_h
 #define scripthash_proxy_py_h
 
-#include "proxy_py.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/scripts/scripthash_script.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
 
 void addScriptHashProxyMethodsMain(AllProxyClasses<blocksci::script::ScriptHash> &cls);
 void addScriptHashProxyMethodsRange(AllProxyClasses<blocksci::script::ScriptHash> &cls);

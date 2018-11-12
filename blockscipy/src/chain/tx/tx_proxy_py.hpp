@@ -8,9 +8,9 @@
 #ifndef tx_proxy_py_h
 #define tx_proxy_py_h
 
-#include "proxy_py.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/chain/transaction.hpp>
+#include <blocksci/chain/chain_fwd.hpp>
 
 void addTxProxyMethods(AllProxyClasses<blocksci::Transaction> &cls);
 

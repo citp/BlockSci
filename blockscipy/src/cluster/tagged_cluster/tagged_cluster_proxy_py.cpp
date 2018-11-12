@@ -13,6 +13,8 @@
 #include "proxy/optional.hpp"
 #include "proxy/range.hpp"
 
+#include <blocksci/cluster/cluster.hpp>
+
 using namespace blocksci;
 
 struct AddTaggedClusterMethods {

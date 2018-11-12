@@ -8,9 +8,9 @@
 #ifndef multisig_pubkey_proxy_py_h
 #define multisig_pubkey_proxy_py_h
 
-#include "proxy_py.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/scripts/multisig_pubkey_script.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
 
 void addMultisigPubkeyProxyMethods(AllProxyClasses<blocksci::script::MultisigPubkey> &cls);
 

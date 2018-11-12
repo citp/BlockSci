@@ -8,9 +8,9 @@
 #ifndef multisig_proxy_py_h
 #define multisig_proxy_py_h
 
-#include "proxy_py.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/scripts/multisig_script.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
 
 void addMultisigProxyMethods(AllProxyClasses<blocksci::script::Multisig> &cls);
 

@@ -8,9 +8,9 @@
 #ifndef blocksci_equiv_address_py_h
 #define blocksci_equiv_address_py_h
 
-#include "blocksci_range.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/address/equiv_address.hpp>
+#include <blocksci/address/address_fwd.hpp>
 
 #include <pybind11/pybind11.h>
 

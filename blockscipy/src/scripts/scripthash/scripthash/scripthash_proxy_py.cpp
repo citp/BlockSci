@@ -7,7 +7,7 @@
 //
 
 #include "scripthash_proxy_py.hpp"
-#include "scripts/scripthash/scripthash_py.hpp"
+#include "scripts/scripthash/scripthash_proxy_impl.hpp"
 #include "scripts/address_py.hpp"
 #include "proxy_apply_py.hpp"
 #include "proxy/basic.hpp"
@@ -17,6 +17,7 @@
 
 #include <blocksci/chain/block.hpp>
 #include <blocksci/cluster/cluster.hpp>
+#include <blocksci/scripts/scripthash_script.hpp>
 
 void addScriptHashProxyMethods(AllProxyClasses<blocksci::script::ScriptHash> &cls) {
 	cls.applyToAll(AddProxyMethods{});

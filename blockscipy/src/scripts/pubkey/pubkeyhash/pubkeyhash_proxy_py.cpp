@@ -7,7 +7,7 @@
 //
 
 #include "pubkeyhash_proxy_py.hpp"
-#include "scripts/pubkey/pubkey_py.hpp"
+#include "scripts/pubkey/pubkey_proxy_impl.hpp"
 #include "scripts/address_py.hpp"
 #include "proxy_apply_py.hpp"
 #include "proxy/basic.hpp"
@@ -17,6 +17,7 @@
 
 #include <blocksci/chain/block.hpp>
 #include <blocksci/cluster/cluster.hpp>
+#include <blocksci/scripts/pubkey_script.hpp>
 
 void addPubkeyHashProxyMethods(AllProxyClasses<blocksci::script::PubkeyHash> &cls) {
 	cls.applyToAll(AddProxyMethods{});

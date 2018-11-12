@@ -8,9 +8,9 @@
 #ifndef equiv_address_proxy_py_h
 #define equiv_address_proxy_py_h
 
-#include "proxy_py.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/address/equiv_address.hpp>
+#include <blocksci/address/address_fwd.hpp>
 
 void addEquivAddressProxyMethods(AllProxyClasses<blocksci::EquivAddress> &cls);
 

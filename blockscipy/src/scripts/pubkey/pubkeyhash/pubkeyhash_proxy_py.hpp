@@ -8,9 +8,9 @@
 #ifndef pubkeyhash_proxy_py_h
 #define pubkeyhash_proxy_py_h
 
-#include "proxy_py.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/scripts/pubkey_script.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
 
 void addPubkeyHashProxyMethods(AllProxyClasses<blocksci::script::PubkeyHash> &cls);
 

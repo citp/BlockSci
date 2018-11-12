@@ -17,6 +17,7 @@
 
 #include <blocksci/chain/block.hpp>
 #include <blocksci/cluster/cluster.hpp>
+#include <blocksci/scripts/witness_unknown_script.hpp>
 
 #include <range/v3/range_for.hpp>
 

@@ -8,9 +8,9 @@
 #ifndef witness_unknown_proxy_py_h
 #define witness_unknown_proxy_py_h
 
-#include "proxy_py.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/scripts/witness_unknown_script.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
 
 void addWitnessUnknownProxyMethods(AllProxyClasses<blocksci::script::WitnessUnknown> &cls);
 

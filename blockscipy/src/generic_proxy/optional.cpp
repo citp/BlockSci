@@ -8,6 +8,7 @@
 
 #include "optional.hpp"
 #include "optional_map.hpp"
+#include "proxy.hpp"
 
 void addOptionalProxyMethods(pybind11::class_<OptionalProxy, GenericProxy> &cl) {
 	addOptionalProxyMapMethods(cl);

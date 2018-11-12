@@ -8,9 +8,9 @@
 #ifndef witness_scripthash_proxy_py_h
 #define witness_scripthash_proxy_py_h
 
-#include "proxy_py.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/scripts/scripthash_script.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
 
 void addWitnessScriptHashProxyMethodsMain(AllProxyClasses<blocksci::script::WitnessScriptHash> &cls);
 void addWitnessScriptHashProxyMethodsRange(AllProxyClasses<blocksci::script::WitnessScriptHash> &cls);

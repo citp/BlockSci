@@ -9,11 +9,11 @@
 #define blocksci_address_py_h
 
 #include "method_tags.hpp"
-#include "blocksci_range.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/chain/transaction.hpp>
-#include <blocksci/scripts/script.hpp>
-#include <blocksci/address/equiv_address.hpp>
+#include <blocksci/address/address_fwd.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
+
 #include <pybind11/pybind11.h>
 
 void init_address_type(pybind11::module &m);

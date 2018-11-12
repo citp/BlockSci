@@ -9,9 +9,9 @@
 #ifndef input_py_hpp
 #define input_py_hpp
 
-#include "blocksci_range.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/chain/input.hpp>
+#include <blocksci/chain/chain_fwd.hpp>
 
 #include <pybind11/pybind11.h>
 

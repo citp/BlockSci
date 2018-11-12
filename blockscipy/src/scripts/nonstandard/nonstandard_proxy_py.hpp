@@ -8,9 +8,9 @@
 #ifndef nonstandard_proxy_py_h
 #define nonstandard_proxy_py_h
 
-#include "proxy_py.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/scripts/nonstandard_script.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
 
 void addNonstandardProxyMethods(AllProxyClasses<blocksci::script::Nonstandard> &cls);
 

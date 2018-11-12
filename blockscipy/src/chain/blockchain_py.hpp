@@ -8,13 +8,9 @@
 #ifndef blockchain_py_h
 #define blockchain_py_h
 
-#include "method_tags.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/chain/blockchain.hpp>
-#include <blocksci/scripts/script_variant.hpp>
-
-#include <range/v3/view/slice.hpp>
-#include <range/v3/view/stride.hpp>
+#include <blocksci/chain/chain_fwd.hpp>
 
 #include <pybind11/pybind11.h>
 

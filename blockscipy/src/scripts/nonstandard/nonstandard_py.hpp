@@ -9,9 +9,9 @@
 #ifndef blocksci_nonstandard_py_h
 #define blocksci_nonstandard_py_h
 
-#include "blocksci_range.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/scripts/nonstandard_script.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
 
 #include <pybind11/pybind11.h>
 

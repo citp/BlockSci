@@ -8,9 +8,9 @@
 #ifndef cluster_proxy_py_h
 #define cluster_proxy_py_h
 
-#include "proxy_py.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/cluster/cluster.hpp>
+#include <blocksci/cluster/cluster_fwd.hpp>
 
 void addClusterProxyMethods(AllProxyClasses<blocksci::Cluster> &cls);
 

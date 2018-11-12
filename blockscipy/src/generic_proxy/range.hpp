@@ -9,7 +9,7 @@
 #ifndef generic_proxy_range_hpp
 #define generic_proxy_range_hpp
 
-#include "proxy.hpp"
+#include "python_fwd.hpp"
 
 #include <pybind11/pybind11.h>
 

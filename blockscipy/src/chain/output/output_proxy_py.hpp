@@ -8,9 +8,9 @@
 #ifndef output_proxy_py_h
 #define output_proxy_py_h
 
-#include "proxy_py.hpp"
+#include "python_fwd.hpp"
 
-#include <blocksci/chain/output.hpp>
+#include <blocksci/chain/chain_fwd.hpp>
 
 void addOutputProxyMethods(AllProxyClasses<blocksci::Output> &cls);
 
