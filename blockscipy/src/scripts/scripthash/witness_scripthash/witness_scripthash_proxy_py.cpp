@@ -19,7 +19,7 @@
 #include <blocksci/cluster/cluster.hpp>
 #include <blocksci/scripts/scripthash_script.hpp>
 
-void addWitnessScriptHashProxyMethods(AllProxyClasses<blocksci::script::WitnessScriptHash> &cls) {
+void addWitnessScriptHashProxyMethods(AllProxyClasses<blocksci::script::WitnessScriptHash, ProxyAddress> &cls) {
 	cls.applyToAll(AddProxyMethods{});
     setupRangesProxy(cls);
     addProxyOptionalMethods(cls.optional);

@@ -27,15 +27,15 @@
 namespace py = pybind11;
 using namespace blocksci;
 
-MainProxies::MainProxies(py::module &m, py::class_<SimpleProxy, GenericProxy> &proxySimpleCl) :
-block(m, proxySimpleCl),
-tx(m, proxySimpleCl),
-input(m, proxySimpleCl),
-output(m, proxySimpleCl),
-equivAddress(m, proxySimpleCl),
-cluster(m, proxySimpleCl),
-taggedCluster(m, proxySimpleCl),
-taggedAddress(m, proxySimpleCl) {}
+MainProxies::MainProxies(py::module &m) :
+block(m),
+tx(m),
+input(m),
+output(m),
+equivAddress(m),
+cluster(m),
+taggedCluster(m),
+taggedAddress(m) {}
 
 
 void setupMainProxies(MainProxies &proxies) {

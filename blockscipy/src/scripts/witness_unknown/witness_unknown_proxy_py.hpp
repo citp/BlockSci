@@ -12,6 +12,6 @@
 
 #include <blocksci/scripts/scripts_fwd.hpp>
 
-void addWitnessUnknownProxyMethods(AllProxyClasses<blocksci::script::WitnessUnknown> &cls);
+void addWitnessUnknownProxyMethods(AllProxyClasses<blocksci::script::WitnessUnknown, ProxyAddress> &cls);
 
 #endif /* witness_unknown_proxy_py_h */

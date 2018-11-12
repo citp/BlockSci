@@ -12,6 +12,6 @@
 
 #include <blocksci/scripts/scripts_fwd.hpp>
 
-void addMultisigPubkeyProxyMethods(AllProxyClasses<blocksci::script::MultisigPubkey> &cls);
+void addMultisigPubkeyProxyMethods(AllProxyClasses<blocksci::script::MultisigPubkey, ProxyAddress> &cls);
 
 #endif /* multisig_pubkey_proxy_py_h */

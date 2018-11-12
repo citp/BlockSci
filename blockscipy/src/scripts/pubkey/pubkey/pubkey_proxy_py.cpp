@@ -19,7 +19,7 @@
 #include <blocksci/cluster/cluster.hpp>
 #include <blocksci/scripts/pubkey_script.hpp>
 
-void addPubkeyProxyMethods(AllProxyClasses<blocksci::script::Pubkey> &cls) {
+void addPubkeyProxyMethods(AllProxyClasses<blocksci::script::Pubkey, ProxyAddress> &cls) {
 	cls.applyToAll(AddProxyMethods{});
     setupRangesProxy(cls);
     addProxyOptionalMethods(cls.optional);

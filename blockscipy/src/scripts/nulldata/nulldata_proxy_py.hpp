@@ -12,9 +12,9 @@
 
 #include <blocksci/scripts/scripts_fwd.hpp>
 
-void addNulldataProxyMethodsMain(AllProxyClasses<blocksci::script::OpReturn> &cls);
-void addNulldataProxyMethodsRange(AllProxyClasses<blocksci::script::OpReturn> &cls);
+void addNulldataProxyMethodsMain(AllProxyClasses<blocksci::script::OpReturn, ProxyAddress> &cls);
+void addNulldataProxyMethodsRange(AllProxyClasses<blocksci::script::OpReturn, ProxyAddress> &cls);
 
-void addNulldataProxyMethods(AllProxyClasses<blocksci::script::OpReturn> &cls);
+void addNulldataProxyMethods(AllProxyClasses<blocksci::script::OpReturn, ProxyAddress> &cls);
 
 #endif /* nulldata_proxy_py_h */

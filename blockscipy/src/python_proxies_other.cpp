@@ -15,16 +15,16 @@
 namespace py = pybind11;
 using namespace blocksci;
 
-OtherProxies::OtherProxies(py::module &m, py::class_<SimpleProxy, GenericProxy> &proxySimpleCl) :
-addressType(m, proxySimpleCl),
-integer(m, proxySimpleCl),
-boolean(m, proxySimpleCl),
-time(m, proxySimpleCl),
-uint256(m, proxySimpleCl),
-uint160(m, proxySimpleCl),
-string(m, proxySimpleCl),
-bytes(m, proxySimpleCl),
-list(m, proxySimpleCl) {}
+OtherProxies::OtherProxies(py::module &m) :
+addressType(m),
+integer(m),
+boolean(m),
+time(m),
+uint256(m),
+uint160(m),
+string(m),
+bytes(m),
+list(m) {}
 
 
 void setupOtherProxies(OtherProxies &proxies) {

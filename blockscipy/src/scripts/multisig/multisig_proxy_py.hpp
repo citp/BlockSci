@@ -12,6 +12,6 @@
 
 #include <blocksci/scripts/scripts_fwd.hpp>
 
-void addMultisigProxyMethods(AllProxyClasses<blocksci::script::Multisig> &cls);
+void addMultisigProxyMethods(AllProxyClasses<blocksci::script::Multisig, ProxyAddress> &cls);
 
 #endif /* multisig_proxy_py_h */

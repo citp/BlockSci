@@ -29,7 +29,7 @@ struct AddNonstandardMethods {
     }
 };
 
-void addNonstandardProxyMethods(AllProxyClasses<blocksci::script::Nonstandard> &cls) {
+void addNonstandardProxyMethods(AllProxyClasses<blocksci::script::Nonstandard, ProxyAddress> &cls) {
 	cls.applyToAll(AddProxyMethods{});
     setupRangesProxy(cls);
     addProxyOptionalMethods(cls.optional);

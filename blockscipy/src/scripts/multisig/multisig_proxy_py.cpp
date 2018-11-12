@@ -30,7 +30,7 @@ struct AddMultisigMethods {
     }
 };
 
-void addMultisigProxyMethods(AllProxyClasses<blocksci::script::Multisig> &cls) {
+void addMultisigProxyMethods(AllProxyClasses<blocksci::script::Multisig, ProxyAddress> &cls) {
 	cls.applyToAll(AddProxyMethods{});
     setupRangesProxy(cls);
     addProxyOptionalMethods(cls.optional);

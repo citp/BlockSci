@@ -19,7 +19,7 @@
 #include <blocksci/cluster/cluster.hpp>
 #include <blocksci/scripts/multisig_pubkey_script.hpp>
 
-void addMultisigPubkeyProxyMethods(AllProxyClasses<blocksci::script::MultisigPubkey> &cls) {
+void addMultisigPubkeyProxyMethods(AllProxyClasses<blocksci::script::MultisigPubkey, ProxyAddress> &cls) {
 	cls.applyToAll(AddProxyMethods{});
     setupRangesProxy(cls);
     addProxyOptionalMethods(cls.optional);

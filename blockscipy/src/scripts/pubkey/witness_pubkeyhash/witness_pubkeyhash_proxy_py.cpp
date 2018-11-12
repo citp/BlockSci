@@ -19,7 +19,7 @@
 #include <blocksci/cluster/cluster.hpp>
 #include <blocksci/scripts/pubkey_script.hpp>
 
-void addWitnessPubkeyHashProxyMethods(AllProxyClasses<blocksci::script::WitnessPubkeyHash> &cls) {
+void addWitnessPubkeyHashProxyMethods(AllProxyClasses<blocksci::script::WitnessPubkeyHash, ProxyAddress> &cls) {
 	cls.applyToAll(AddProxyMethods{});
     setupRangesProxy(cls);
     addProxyOptionalMethods(cls.optional);

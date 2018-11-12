@@ -45,7 +45,7 @@ struct AddWitnessUnknownMethods {
     }
 };
 
-void addWitnessUnknownProxyMethods(AllProxyClasses<script::WitnessUnknown> &cls) {
+void addWitnessUnknownProxyMethods(AllProxyClasses<script::WitnessUnknown, ProxyAddress> &cls) {
 	cls.applyToAll(AddProxyMethods{});
     setupRangesProxy(cls);
     addProxyOptionalMethods(cls.optional);

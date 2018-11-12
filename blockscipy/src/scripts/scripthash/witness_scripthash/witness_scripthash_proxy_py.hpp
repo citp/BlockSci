@@ -12,9 +12,9 @@
 
 #include <blocksci/scripts/scripts_fwd.hpp>
 
-void addWitnessScriptHashProxyMethodsMain(AllProxyClasses<blocksci::script::WitnessScriptHash> &cls);
-void addWitnessScriptHashProxyMethodsRange(AllProxyClasses<blocksci::script::WitnessScriptHash> &cls);
+void addWitnessScriptHashProxyMethodsMain(AllProxyClasses<blocksci::script::WitnessScriptHash, ProxyAddress> &cls);
+void addWitnessScriptHashProxyMethodsRange(AllProxyClasses<blocksci::script::WitnessScriptHash, ProxyAddress> &cls);
 
-void addWitnessScriptHashProxyMethods(AllProxyClasses<blocksci::script::WitnessScriptHash> &cls);
+void addWitnessScriptHashProxyMethods(AllProxyClasses<blocksci::script::WitnessScriptHash, ProxyAddress> &cls);
 
 #endif /* witness_scripthash_proxy_py_h */

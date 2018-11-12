@@ -12,9 +12,9 @@
 
 #include <blocksci/scripts/scripts_fwd.hpp>
 
-void addPubkeyProxyMethodsMain(AllProxyClasses<blocksci::script::Pubkey> &cls);
-void addPubkeyProxyMethodsRange(AllProxyClasses<blocksci::script::Pubkey> &cls);
+void addPubkeyProxyMethodsMain(AllProxyClasses<blocksci::script::Pubkey, ProxyAddress> &cls);
+void addPubkeyProxyMethodsRange(AllProxyClasses<blocksci::script::Pubkey, ProxyAddress> &cls);
 
-void addPubkeyProxyMethods(AllProxyClasses<blocksci::script::Pubkey> &cls);
+void addPubkeyProxyMethods(AllProxyClasses<blocksci::script::Pubkey, ProxyAddress> &cls);
 
 #endif /* pubkey_proxy_py_h */

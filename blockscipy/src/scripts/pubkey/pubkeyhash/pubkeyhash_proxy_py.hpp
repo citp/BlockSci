@@ -12,6 +12,6 @@
 
 #include <blocksci/scripts/scripts_fwd.hpp>
 
-void addPubkeyHashProxyMethods(AllProxyClasses<blocksci::script::PubkeyHash> &cls);
+void addPubkeyHashProxyMethods(AllProxyClasses<blocksci::script::PubkeyHash, ProxyAddress> &cls);
 
 #endif /* pubkeyhash_proxy_py_h */

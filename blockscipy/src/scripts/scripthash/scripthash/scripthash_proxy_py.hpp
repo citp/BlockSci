@@ -12,9 +12,9 @@
 
 #include <blocksci/scripts/scripts_fwd.hpp>
 
-void addScriptHashProxyMethodsMain(AllProxyClasses<blocksci::script::ScriptHash> &cls);
-void addScriptHashProxyMethodsRange(AllProxyClasses<blocksci::script::ScriptHash> &cls);
+void addScriptHashProxyMethodsMain(AllProxyClasses<blocksci::script::ScriptHash, ProxyAddress> &cls);
+void addScriptHashProxyMethodsRange(AllProxyClasses<blocksci::script::ScriptHash, ProxyAddress> &cls);
 
-void addScriptHashProxyMethods(AllProxyClasses<blocksci::script::ScriptHash> &cls);
+void addScriptHashProxyMethods(AllProxyClasses<blocksci::script::ScriptHash, ProxyAddress> &cls);
 
 #endif /* scripthash_proxy_py_h */

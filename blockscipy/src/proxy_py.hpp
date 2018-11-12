@@ -54,10 +54,22 @@ void addProxySequenceConditional(pybind11::module &m) {
     ;
 }
 
-template <typename T>
+template <typename T, typename SimpleBase>
 struct AllProxyClasses {
 private:
-    void commonInit(pybind11::module &m) {
+public:
+    pybind11::class_<Proxy<T>, SimpleBase> base;
+    pybind11::class_<Proxy<ranges::optional<T>>, OptionalProxy> optional;
+    pybind11::class_<SequenceProxy<T>> sequence;
+    pybind11::class_<Proxy<RawIterator<T>>, IteratorProxy, SequenceProxy<T>> iterator;
+    pybind11::class_<Proxy<RawRange<T>>, RangeProxy, SequenceProxy<T>> range;
+
+	AllProxyClasses(pybind11::module &m) : 
+    	base(m, strdup(proxyName<T>().c_str())),
+    	optional(m, strdup(proxyName<ranges::optional<T>>().c_str())),
+        sequence(m, strdup(proxySequenceName<T>().c_str())),
+    	iterator(m, strdup(proxyName<Iterator<T>>().c_str())),
+    	range(m, strdup(proxyName<Range<T>>().c_str())) {
         base.def(pybind11::init<T>());
         iterator.def(pybind11::init<Iterator<T>>());
         range.def(pybind11::init<Range<T>>());
@@ -77,34 +89,6 @@ private:
         addProxyConditional<ranges::optional<T>>(m);
         addProxySequenceConditional<RawIterator<T>>(m);
         addProxySequenceConditional<RawRange<T>>(m);
-    }
-public:
-    pybind11::class_<Proxy<T>> base;
-    pybind11::class_<Proxy<ranges::optional<T>>, OptionalProxy> optional;
-    pybind11::class_<SequenceProxy<T>> sequence;
-    pybind11::class_<Proxy<RawIterator<T>>, IteratorProxy, SequenceProxy<T>> iterator;
-    pybind11::class_<Proxy<RawRange<T>>, RangeProxy, SequenceProxy<T>> range;
-
-	AllProxyClasses(
-        pybind11::module &m,
-        pybind11::class_<SimpleProxy, GenericProxy> &proxySimpleCl) : 
-    	base(m, strdup(proxyName<T>().c_str()), proxySimpleCl),
-    	optional(m, strdup(proxyName<ranges::optional<T>>().c_str())),
-        sequence(m, strdup(proxySequenceName<T>().c_str())),
-    	iterator(m, strdup(proxyName<Iterator<T>>().c_str())),
-    	range(m, strdup(proxyName<Range<T>>().c_str())) {
-        commonInit(m);
-    }
-
-    AllProxyClasses(
-        pybind11::module &m,
-        pybind11::class_<ProxyAddress> proxyAddressCl) : 
-        base(m, strdup(proxyName<T>().c_str()), proxyAddressCl),
-        optional(m, strdup(proxyName<ranges::optional<T>>().c_str())),
-        sequence(m, strdup(proxySequenceName<T>().c_str())),
-        iterator(m, strdup(proxyName<Iterator<T>>().c_str())),
-        range(m, strdup(proxyName<Range<T>>().c_str())) {
-        commonInit(m);
     }
 
 	template<typename Func>

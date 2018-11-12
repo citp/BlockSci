@@ -75,11 +75,11 @@ struct AddAddressMethods {
     }
 };
 
-void init_proxy_address(pybind11::class_<ProxyAddress> &addressCl) {
+void init_proxy_address(pybind11::class_<ProxyAddress, SimpleProxy> &addressCl) {
 	applyMethodsToProxyGeneric(addressCl, AddAddressMethods{});
 }
 
-void addAddressProxyMethods(AllProxyClasses<blocksci::AnyScript> &cls) {
+void addAddressProxyMethods(AllProxyClasses<blocksci::AnyScript, ProxyAddress> &cls) {
 	cls.base.def("with_type",  [](Proxy<blocksci::AnyScript> &p , blocksci::AddressType::Enum type) {
 		static auto table = blocksci::make_dynamic_table<blocksci::AddressType, ProxyScriptWithTypeFunctor>();
         auto index = static_cast<size_t>(type);

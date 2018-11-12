@@ -29,7 +29,7 @@ struct AddOpReturnMethods {
     }
 };
 
-void addNulldataProxyMethods(AllProxyClasses<blocksci::script::OpReturn> &cls) {
+void addNulldataProxyMethods(AllProxyClasses<blocksci::script::OpReturn, ProxyAddress> &cls) {
 	cls.applyToAll(AddProxyMethods{});
     setupRangesProxy(cls);
     addProxyOptionalMethods(cls.optional);

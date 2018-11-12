@@ -70,9 +70,9 @@ void setupProxies(py::module &m) {
     })
     ;
 
-    MainProxies mainProxies(proxyMod, proxySimpleCl);
-    ScriptProxies scriptProxies(proxyMod, proxySimpleCl);
-    OtherProxies otherProxies(proxyMod, proxySimpleCl);
+    MainProxies mainProxies(proxyMod);
+    ScriptProxies scriptProxies(proxyMod);
+    OtherProxies otherProxies(proxyMod);
 
     addOptionalProxyMethods(proxyOptionalCl);
     applyProxyIteratorFuncs(proxyIteratorCl);

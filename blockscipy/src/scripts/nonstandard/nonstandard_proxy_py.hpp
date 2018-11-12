@@ -12,6 +12,6 @@
 
 #include <blocksci/scripts/scripts_fwd.hpp>
 
-void addNonstandardProxyMethods(AllProxyClasses<blocksci::script::Nonstandard> &cls);
+void addNonstandardProxyMethods(AllProxyClasses<blocksci::script::Nonstandard, ProxyAddress> &cls);
 
 #endif /* nonstandard_proxy_py_h */

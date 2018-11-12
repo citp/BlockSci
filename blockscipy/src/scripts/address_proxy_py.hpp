@@ -14,8 +14,8 @@
 
 #include <pybind11/pybind11.h>
 
-void init_proxy_address(pybind11::class_<ProxyAddress> &addressCl);
+void init_proxy_address(pybind11::class_<ProxyAddress, SimpleProxy> &addressCl);
 
-void addAddressProxyMethods(AllProxyClasses<blocksci::AnyScript> &cls);
+void addAddressProxyMethods(AllProxyClasses<blocksci::AnyScript, ProxyAddress> &cls);
 
 #endif /* address_proxy_py_h */

@@ -17,8 +17,8 @@
 #include <range/v3/view/slice.hpp>
 #include <range/v3/size.hpp>
 
-template <typename T>
-void setupRangesProxy(AllProxyClasses<T> &cls) {
+template <typename T, typename BaseSimple>
+void setupRangesProxy(AllProxyClasses<T, BaseSimple> &cls) {
 	cls.sequence
 	.def("_where", [](SequenceProxy<T> &seq, Proxy<bool> &p2) -> Proxy<RawIterator<T>> {
 		return std::function<RawIterator<T>(std::any &)>{[generic = seq.getIteratorFunc(), p2](std::any &val) -> RawIterator<T> {

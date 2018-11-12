@@ -21,24 +21,24 @@ struct MainProxies {
     AllProxyClasses<blocksci::TaggedCluster> taggedCluster;
     AllProxyClasses<blocksci::TaggedAddress> taggedAddress;
 
-    MainProxies(pybind11::module &m, pybind11::class_<SimpleProxy, GenericProxy> &proxySimpleCl);
+    MainProxies(pybind11::module &m);
 };
 
 struct ScriptProxies {
-    pybind11::class_<ProxyAddress> genericAddress;
-    AllProxyClasses<blocksci::AnyScript> address;
-    AllProxyClasses<blocksci::script::Pubkey> pubkey;
-    AllProxyClasses<blocksci::script::PubkeyHash> pubkeyHash;
-    AllProxyClasses<blocksci::script::WitnessPubkeyHash> witnessPubkeyHash;
-    AllProxyClasses<blocksci::script::MultisigPubkey> multisigPubkey;
-    AllProxyClasses<blocksci::script::Multisig> multisig;
-    AllProxyClasses<blocksci::script::ScriptHash> scripthash;
-    AllProxyClasses<blocksci::script::WitnessScriptHash> witnessScripthash;
-    AllProxyClasses<blocksci::script::OpReturn> nulldata;
-    AllProxyClasses<blocksci::script::Nonstandard> nonstandard;
-    AllProxyClasses<blocksci::script::WitnessUnknown> witnessUnknown;
+    pybind11::class_<ProxyAddress, SimpleProxy> genericAddress;
+    AllProxyClasses<blocksci::AnyScript, ProxyAddress> address;
+    AllProxyClasses<blocksci::script::Pubkey, ProxyAddress> pubkey;
+    AllProxyClasses<blocksci::script::PubkeyHash, ProxyAddress> pubkeyHash;
+    AllProxyClasses<blocksci::script::WitnessPubkeyHash, ProxyAddress> witnessPubkeyHash;
+    AllProxyClasses<blocksci::script::MultisigPubkey, ProxyAddress> multisigPubkey;
+    AllProxyClasses<blocksci::script::Multisig, ProxyAddress> multisig;
+    AllProxyClasses<blocksci::script::ScriptHash, ProxyAddress> scripthash;
+    AllProxyClasses<blocksci::script::WitnessScriptHash, ProxyAddress> witnessScripthash;
+    AllProxyClasses<blocksci::script::OpReturn, ProxyAddress> nulldata;
+    AllProxyClasses<blocksci::script::Nonstandard, ProxyAddress> nonstandard;
+    AllProxyClasses<blocksci::script::WitnessUnknown, ProxyAddress> witnessUnknown;
 
-    ScriptProxies(pybind11::module &m, pybind11::class_<SimpleProxy, GenericProxy> &proxySimpleCl);
+    ScriptProxies(pybind11::module &m);
 };
 
 struct OtherProxies {
@@ -52,7 +52,7 @@ struct OtherProxies {
     AllProxyClasses<pybind11::bytes> bytes;
     AllProxyClasses<pybind11::list> list;
 
-    OtherProxies(pybind11::module &m, pybind11::class_<SimpleProxy, GenericProxy> &proxySimpleCl);
+    OtherProxies(pybind11::module &m);
 };
 
 #endif /*python_proxies_types_h*/

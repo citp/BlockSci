@@ -22,6 +22,7 @@ enum class ProxyType {
 };
 
 struct GenericProxy {
+	virtual std::function<std::any(std::any &)> getGenericAny() const = 0;
 	virtual ProxyType getProxyType() const = 0;
 	virtual ~GenericProxy() = default;
 };
@@ -29,6 +30,13 @@ struct GenericProxy {
 struct SimpleProxy : public GenericProxy {
 	virtual std::function<BlocksciType(std::any &)> getGenericSimple() const = 0;
 	virtual ~SimpleProxy() = default;
+
+	std::function<std::any(std::any &)> getGenericAny() const override {
+		auto generic = getGenericSimple();
+		return [generic](std::any &val) -> std::any {
+			return generic(val).toAny();
+		};
+	}
 
 	ProxyType getProxyType() const override {
 		return ProxyType::Simple;
@@ -41,6 +49,13 @@ struct IteratorProxy : public GenericProxy {
 
 	virtual ProxyType getProxyType() const override {
 		return ProxyType::Iterator;
+	}
+
+	std::function<std::any(std::any &)> getGenericAny() const override {
+		auto generic = getGenericIterator();
+		return [generic](std::any &val) -> std::any {
+			return generic(val);
+		};
 	}
 
 	std::function<RawIterator<BlocksciType>(std::any &)> getGeneric() const {
@@ -59,6 +74,13 @@ struct RangeProxy : public IteratorProxy {
 	std::function<RawIterator<BlocksciType>(std::any &)> getGenericIterator() const override {
 		auto generic = getGenericRange();
 		return [generic](std::any &val) -> RawIterator<BlocksciType> {
+			return generic(val);
+		};
+	}
+
+	std::function<std::any(std::any &)> getGenericAny() const override {
+		auto generic = getGenericRange();
+		return [generic](std::any &val) -> std::any {
 			return generic(val);
 		};
 	}
@@ -186,6 +208,12 @@ struct Proxy<ranges::optional<T>> : public OptionalProxy {
 			} else {
 				return ranges::nullopt;
 			}
+		};
+	}
+
+	std::function<std::any(std::any &)> getGenericAny() const override {
+		return [f = this->func](std::any &val) -> std::any {
+			return f(val);
 		};
 	}
 };

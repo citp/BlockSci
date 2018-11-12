@@ -11,8 +11,9 @@
 
 #include "proxy.hpp"
 
-void addProxyBooleanMethods(pybind11::class_<Proxy<bool>> &cl) {
-	using P = Proxy<bool>;
+template<typename Class>
+void addProxyBooleanMethods(Class &cl) {
+	using P = typename Class::type;
 	cl
 	.def("__and__", [](P &p1, P &p2) -> P {
 		return std::function<bool(std::any &)>{[p1, p2](std::any &v) -> bool {
