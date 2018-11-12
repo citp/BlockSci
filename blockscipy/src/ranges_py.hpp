@@ -12,6 +12,7 @@
 #include "blocksci_range.hpp"
 #include "proxy.hpp"
 #include "generic_sequence.hpp"
+#include "proxy_create.hpp"
 
 #include <range/v3/view/any_view.hpp>
 #include <range/v3/range_for.hpp>
@@ -92,13 +93,13 @@ void addAllRangeMethods(RangeClasses<T> &cls) {
 
     cls.iterator
     .def_property_readonly_static("self_proxy", [](pybind11::object &) -> Proxy<RawIterator<T>> {
-        return {};
+        return makeIteratorProxy<T>();
     })
     ;
 
     cls.range
     .def_property_readonly_static("self_proxy", [](pybind11::object &) -> Proxy<RawRange<T>> {
-        return {};
+        return makeRangeProxy<T>();
     })
     ;
 

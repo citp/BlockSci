@@ -9,6 +9,7 @@
 #include "caster_py.hpp"
 #include "blocksci_range.hpp"
 #include "proxy.hpp"
+#include "proxy_create.hpp"
 #include "python_proxies.hpp"
 
 #include "chain/blockchain_py.hpp"
@@ -47,7 +48,7 @@ template <typename Class>
 void addSelfProxy(Class &cl) {
     using T = typename Class::type;
     cl.def_property_readonly_static("self_proxy", [](pybind11::object &) -> Proxy<T> {
-        return {};
+        return makeSimpleProxy<T>();
     });
 }
 
@@ -56,8 +57,12 @@ void addAnyInit(py::class_<std::any> &cl) {
     cl
     .def(py::init([](T &val) -> std::any { return val; }))
     .def(py::init([](ranges::optional<T> &val) -> std::any { return val; }))
-    .def(py::init([](Iterator<T> &val) -> std::any { return val.rng; }))
-    .def(py::init([](Range<T> &val) -> std::any { return val.rng; }))
+    .def(py::init([](Iterator<T> &val) -> std::any {
+        return val.rng;
+    }))
+    .def(py::init([](Range<T> &val) -> std::any {
+        return val.rng;
+    }))
     ;
 
     pybind11::implicitly_convertible<T, std::any>();

@@ -10,9 +10,13 @@
 #define proxy_basic_hpp
 
 #include "proxy.hpp"
+#include "proxy_create.hpp"
 #include "caster_py.hpp"
 #include "generic_sequence.hpp"
 #include "python_range_conversion.hpp"
+
+#include <pybind11/pybind11.h>
+#include <pybind11/chrono.h>
 
 struct AddProxyMethods {
 	template<typename T>
@@ -22,10 +26,10 @@ struct AddProxyMethods {
 			return p(val);
 		})
 		.def_property_readonly_static("range_proxy", [](pybind11::object &) -> Proxy<RawRange<T>> {
-	        return {};
+	        return makeRangeProxy<T>();
 	    })
 	    .def_property_readonly_static("iterator_proxy", [](pybind11::object &) -> Proxy<RawIterator<T>> {
-	        return {};
+	        return makeIteratorProxy<T>();
 	    })
 	    ;
 	}
@@ -37,7 +41,7 @@ struct AddProxyMethods {
 			return p(val);
 		})
 		.def_property_readonly_static("nested_proxy", [](pybind11::object &) -> Proxy<T> {
-	        return {};
+	        return makeSimpleProxy<T>();
 	    })
 	    ;
 	}
@@ -49,7 +53,7 @@ struct AddProxyMethods {
 			return convertPythonRange(p.applySimple(val));
 		})
 		.def_property_readonly_static("nested_proxy", [](pybind11::object &) -> Proxy<T> {
-	        return {};
+	        return makeSimpleProxy<T>();
 	    })
 	    ;
 	}
@@ -61,7 +65,7 @@ struct AddProxyMethods {
 			return convertPythonRange(p.applySimple(val));
 		})
 		.def_property_readonly_static("nested_proxy", [](pybind11::object &) -> Proxy<T> {
-	        return {};
+	        return makeSimpleProxy<T>();
 	    })
 	    ;
 	}
