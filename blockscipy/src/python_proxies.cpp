@@ -11,6 +11,8 @@
 #include "generic_proxy/range.hpp"
 #include "generic_proxy/optional.hpp"
 
+#include <blocksci/chain/block.hpp>
+
 namespace py = pybind11;
 using namespace blocksci;
 

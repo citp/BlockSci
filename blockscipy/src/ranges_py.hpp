@@ -18,31 +18,6 @@
 #include <range/v3/range_for.hpp>
 
 
-template<typename GroupType, typename ResultType, typename V>
-void addGroupByFunc(pybind11::class_<Sequence<V>> &cl) {
-    cl.def("_group_by", [](Sequence<V> &range, Proxy<GroupType> &grouper, Proxy<ResultType> &eval) -> std::unordered_map<GroupType, ResultType> {
-        std::unordered_map<GroupType, std::vector<V>> grouped;
-        RANGES_FOR(auto && item, range.getIterator()) {
-            grouped[grouper(item)].push_back(item);
-        }
-        std::unordered_map<GroupType, ResultType> results;
-        results.reserve(grouped.size());
-        for (auto &group : grouped) {
-            auto range = RawRange<V>{group.second};
-            results[group.first] = eval(range);
-        }
-        return results;
-    });
-}
-
-template<typename T, typename V>
-void addGroupByFuncs(pybind11::class_<Sequence<V>> &cl) {
-    addGroupByFunc<int64_t, T>(cl);
-    addGroupByFunc<blocksci::AddressType::Enum, T>(cl);
-    addGroupByFunc<bool, T>(cl);
-    addGroupByFunc<blocksci::AnyScript, T>(cl);
-}
-
 template <typename T, CONCEPT_REQUIRES_(!ranges::Range<T>())>
 auto pythonAllType(T && t) {
     return std::forward<T>(t);
@@ -102,11 +77,6 @@ void addAllRangeMethods(RangeClasses<T> &cls) {
         return makeRangeProxy<T>();
     })
     ;
-
-    addGroupByFuncs<int64_t>(cls.sequence);
-    addGroupByFuncs<bool>(cls.sequence);
-    addGroupByFuncs<std::chrono::system_clock::time_point>(cls.sequence);
-    addGroupByFuncs<blocksci::AddressType::Enum>(cls.sequence);
 }
 
 #endif /* ranges_py_hpp */

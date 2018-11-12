@@ -29,26 +29,24 @@ void applyProxyIteratorFuncs(pybind11::class_<IteratorProxy, GenericProxy> &cl) 
 
     cl
 	.def_property_readonly("size", [](IteratorProxy &seq) -> Proxy<int64_t> {
-		auto generic = seq.getGeneric();
+		auto generic = seq.getGenericIterator();
 		return std::function<int64_t(std::any &)>{[generic](std::any &val) -> int64_t {
 			return ranges::distance(generic(val));
 		}};
 	})
 	.def("_any", [](IteratorProxy &seq, Proxy<bool> &p2) -> Proxy<bool> {
-		auto generic = seq.getGeneric();
+		auto generic = seq.getGenericIterator();
 		return std::function<bool(std::any &)>{[generic, p2](std::any &val) -> bool {
-			return ranges::any_of(generic(val), [p2](const std::any &item) {
-				auto r = item;
-				return p2(r);
+			return ranges::any_of(generic(val), [p2](const BlocksciType &item) {
+				return p2(item.toAny());
 			});
 		}};
 	})
 	.def("_all", [](IteratorProxy &seq, Proxy<bool> &p2) -> Proxy<bool> {
-		auto generic = seq.getGeneric();
+		auto generic = seq.getGenericIterator();
 		return std::function<bool(std::any &)>{[generic, p2](std::any &val) -> bool {
-			return ranges::all_of(generic(val), [p2](const std::any &item) {
-				auto r = item;
-				return p2(r);
+			return ranges::all_of(generic(val), [p2](const BlocksciType &item) {
+				return p2(item.toAny());
 			});
 		}};
 	})
@@ -62,7 +60,7 @@ void applyProxyRangeFuncs(pybind11::class_<RangeProxy, IteratorProxy> &cl) {
 
     cl
 	.def_property_readonly("size", [](RangeProxy &seq) -> Proxy<int64_t> {
-		auto generic = seq.getGeneric();
+		auto generic = seq.getGenericRange();
 		return std::function<int64_t(std::any &)>{[generic](std::any &val) -> int64_t {
 			return ranges::distance(generic(val));
 		}};

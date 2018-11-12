@@ -21,6 +21,8 @@
 #include "scripts/nonstandard/nonstandard_proxy_py.hpp"
 #include "scripts/witness_unknown/witness_unknown_proxy_py.hpp"
 
+#include <blocksci/chain/block.hpp>
+
 namespace py = pybind11;
 using namespace blocksci;
 

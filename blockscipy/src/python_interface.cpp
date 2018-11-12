@@ -11,6 +11,7 @@
 #include "proxy.hpp"
 #include "proxy_create.hpp"
 #include "python_proxies.hpp"
+#include "sequence_group.hpp"
 
 #include "chain/blockchain_py.hpp"
 #include "chain/input/input_py.hpp"
@@ -122,6 +123,8 @@ PYBIND11_MODULE(_blocksci, m) {
     py::class_<TaggedCluster> taggedClusterCl(clusterMod, "TaggedCluster");
     py::class_<TaggedAddress> taggedAddressCl(clusterMod, "TaggedAddress");
 
+    py::class_<GenericSequence> genericSequenceCl(m, "GenericSequence", "Class representing any blocksci sequence");
+
     RangeClasses<Block> blockRangeCls(m);
     RangeClasses<Transaction> txRangeCls(m);
     RangeClasses<Input> inputRangeCls(m);
@@ -145,7 +148,6 @@ PYBIND11_MODULE(_blocksci, m) {
 
     setupProxies(m);
 
-    // addSelfProxy(blockchainCl);
     addSelfProxy(uint160Cl);
     addSelfProxy(uint256Cl);
     addSelfProxy(blockCl);
@@ -258,4 +260,6 @@ PYBIND11_MODULE(_blocksci, m) {
         }
     }
     init_address(addressCl);
+
+    addAllGroupMethods(genericSequenceCl);
 }

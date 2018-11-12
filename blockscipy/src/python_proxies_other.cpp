@@ -10,6 +10,8 @@
 #include "caster_py.hpp"
 #include "simple/simple_proxies.hpp"
 
+#include <blocksci/chain/block.hpp>
+
 namespace py = pybind11;
 using namespace blocksci;
 

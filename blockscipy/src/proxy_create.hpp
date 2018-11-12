@@ -28,6 +28,10 @@ Proxy<ranges::optional<T>> makeOptionalProxy() {
 template<typename T>
 Proxy<RawIterator<T>> makeIteratorProxy() {
 	return std::function<RawIterator<T>(std::any &)>{[](std::any &t) -> RawIterator<T> {
+		RawIterator<BlocksciType> *rawIt = std::any_cast<RawIterator<BlocksciType>>(&t);
+		if (rawIt != nullptr) {
+			return ranges::view::transform(*rawIt, [](BlocksciType && r) -> T { return mpark::get<T>(r.var); });
+		}
 		return std::any_cast<RawIterator<T>>(t);
 	}};
 }
@@ -35,6 +39,10 @@ Proxy<RawIterator<T>> makeIteratorProxy() {
 template<typename T>
 Proxy<RawRange<T>> makeRangeProxy() {
 	return std::function<RawRange<T>(std::any &)>{[](std::any &t) -> RawRange<T> {
+		RawRange<BlocksciType> *rawIt = std::any_cast<RawRange<BlocksciType>>(&t);
+		if (rawIt != nullptr) {
+			return ranges::view::transform(*rawIt, [](BlocksciType && r) -> T { return mpark::get<T>(r.var); });
+		}
 		return std::any_cast<RawRange<T>>(t);
 	}};
 }

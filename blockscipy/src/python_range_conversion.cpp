@@ -106,21 +106,9 @@ convertRandomSizedBlockSci(T && t) {
     return ranges::any_view<decltype(BlockSciTypeConverter{}(std::declval<ranges::range_value_type_t<T>>())), random_access_sized>{ranges::view::transform(std::forward<T>(t), BlockSciTypeConverter{})};
 }
 
-Iterator<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(RawIterator<ranges::optional<int16_t>> && t) { return convertInputBlockSci(std::move(t)); }
-Iterator<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(RawIterator<ranges::optional<uint16_t>> && t) { return convertInputBlockSci(std::move(t)); }
-Iterator<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(RawIterator<ranges::optional<int32_t>> && t) { return convertInputBlockSci(std::move(t)); }
-Iterator<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(RawIterator<ranges::optional<uint32_t>> && t) { return convertInputBlockSci(std::move(t)); }
-Iterator<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(RawIterator<ranges::optional<uint64_t>> && t) { return convertInputBlockSci(std::move(t)); }
-Iterator<blocksci::AnyScript> PythonConversionTypeConverter::operator()(RawIterator<blocksci::Address> && t) { return convertInputBlockSci(std::move(t)); }
-Iterator<ranges::optional<blocksci::AnyScript>> PythonConversionTypeConverter::operator()(RawIterator<ranges::optional<blocksci::Address>> && t) { return convertInputBlockSci(std::move(t)); }
 
-Range<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(RawRange<ranges::optional<int16_t>> && t) { return convertRandomSizedBlockSci(std::move(t)); }
-Range<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(RawRange<ranges::optional<uint16_t>> && t) { return convertRandomSizedBlockSci(std::move(t)); }
-Range<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(RawRange<ranges::optional<int32_t>> && t) { return convertRandomSizedBlockSci(std::move(t)); }
-Range<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(RawRange<ranges::optional<uint32_t>> && t) { return convertRandomSizedBlockSci(std::move(t)); }
-Range<ranges::optional<int64_t>> PythonConversionTypeConverter::operator()(RawRange<ranges::optional<uint64_t>> && t) { return convertRandomSizedBlockSci(std::move(t)); }
+Iterator<blocksci::AnyScript> PythonConversionTypeConverter::operator()(RawIterator<blocksci::Address> && t) { return convertInputBlockSci(std::move(t)); }
 Range<blocksci::AnyScript> PythonConversionTypeConverter::operator()(RawRange<blocksci::Address> && t) { return convertRandomSizedBlockSci(std::move(t)); }
-Range<ranges::optional<blocksci::AnyScript>> PythonConversionTypeConverter::operator()(RawRange<ranges::optional<blocksci::Address>> && t) { return convertRandomSizedBlockSci(std::move(t)); }
 
 pybind11::list PythonConversionTypeConverter::operator()(RawIterator<pybind11::bytes> && t) { return convertInputPy(std::move(t)); }
 pybind11::list PythonConversionTypeConverter::operator()(RawIterator<pybind11::list> && t) { return convertInputPy(std::move(t)); }

@@ -22,7 +22,7 @@ namespace {
 		return std::function<ranges::optional<R>(std::any &)>{[generic, p2](std::any &val) -> ranges::optional<R> {
 			auto v = generic(val);
 			if (v) {
-				return p2(*v);
+				return p2(v->toAny());
 			} else {
 				return ranges::nullopt;
 			}

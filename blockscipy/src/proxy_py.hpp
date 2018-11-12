@@ -40,6 +40,21 @@ void addProxyConditional(pybind11::module &m) {
 }
 
 template <typename T>
+void addProxySequenceConditional(pybind11::module &m) {
+    m
+    .def("conditional", [](const Proxy<bool> &cond, const Proxy<T> &p1, const Proxy<T> &p2) -> Proxy<T> {
+        return std::function<T(std::any &)>{[cond, p1, p2](std::any &t) -> T {
+            if(cond(t)) {
+                return p1.applySimple(t);
+            } else {
+                return p2.applySimple(t);
+            }
+        }};
+    })
+    ;
+}
+
+template <typename T>
 struct AllProxyClasses {
 private:
     void commonInit(pybind11::module &m) {
@@ -60,8 +75,8 @@ private:
 
         addProxyConditional<T>(m);
         addProxyConditional<ranges::optional<T>>(m);
-        addProxyConditional<Iterator<T>>(m);
-        addProxyConditional<Range<T>>(m);
+        addProxySequenceConditional<RawIterator<T>>(m);
+        addProxySequenceConditional<RawRange<T>>(m);
     }
 public:
     pybind11::class_<Proxy<T>> base;

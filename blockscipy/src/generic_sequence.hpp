@@ -9,8 +9,10 @@
 #define generic_sequence_hpp
 
 #include "sequence.hpp"
+#include "blocksci_type.hpp"
 
 #include <range/v3/view/any_view.hpp>
+#include <range/v3/view/transform.hpp>
 
 template <typename T>
 struct Iterator;
@@ -34,10 +36,21 @@ struct AnyViewType<T, random_access_sized> {
 template <typename T, ranges::category range_cat>
 using any_view = typename AnyViewType<T, range_cat>::type;
 
+struct GenericSequence {
+	virtual RawIterator<BlocksciType> getGenericIterator() = 0;
+	virtual ~GenericSequence() = default;
+};
+
 template<typename T>
-struct Sequence {
-	virtual Iterator<T> getIterator() const = 0;
+struct Sequence : public GenericSequence {
+	virtual RawIterator<T> getIterator() = 0;
 	virtual ~Sequence() = default;
+
+	RawIterator<BlocksciType> getGenericIterator() {
+		return getIterator() | ranges::view::transform([](T && v) -> BlocksciType {
+			return v;
+		});
+	}
 };
 
 template <typename T>
@@ -57,8 +70,8 @@ struct Iterator : public Sequence<T> {
 		return rng.end();
 	}
 
-	Iterator<T> getIterator() const override {
-		return *this;
+	RawIterator<T> getIterator() override {
+		return rng;
 	}
 };
 
@@ -78,8 +91,8 @@ struct Range : public Sequence<T> {
 		return rng.end();
 	}
 
-	Iterator<T> getIterator() const override {
-		return *this;
+	RawIterator<T> getIterator() override {
+		return rng;
 	}
 };
 

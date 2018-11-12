@@ -30,9 +30,11 @@ namespace internal {
 
 template<typename R>
 Proxy<RawIterator<R>> mapOptional(IteratorProxy &seq, Proxy<ranges::optional<R>> &p2) {
-	auto generic = seq.getGeneric();
+	auto generic = seq.getGenericIterator();
 	return std::function<RawIterator<R>(std::any &)>{[generic, p2](std::any &val) -> RawIterator<R> {
-		return internal::flattenOptional(ranges::view::transform(generic(val), p2));
+		return internal::flattenOptional(ranges::view::transform(generic(val), [p2](BlocksciType && v) -> ranges::optional<R> {
+			return p2(v.toAny());
+		}));
 	}};
 }
 

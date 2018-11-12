@@ -71,21 +71,9 @@ struct PythonConversionTypeConverter {
     pybind11::array_t<std::array<char, 40>> operator()(RawRange<blocksci::uint160> && t);
     pybind11::array_t<std::array<char, 64>> operator()(RawRange<blocksci::uint256> && t);
 
-    Iterator<ranges::optional<int64_t>> operator()(RawIterator<ranges::optional<int16_t>> && t);
-    Iterator<ranges::optional<int64_t>> operator()(RawIterator<ranges::optional<uint16_t>> && t);
-    Iterator<ranges::optional<int64_t>> operator()(RawIterator<ranges::optional<int32_t>> && t);
-    Iterator<ranges::optional<int64_t>> operator()(RawIterator<ranges::optional<uint32_t>> && t);
-    Iterator<ranges::optional<int64_t>> operator()(RawIterator<ranges::optional<uint64_t>> && t);
+    
     Iterator<blocksci::AnyScript> operator()(RawIterator<blocksci::Address> && t);
-    Iterator<ranges::optional<blocksci::AnyScript>> operator()(RawIterator<ranges::optional<blocksci::Address>> && t);
-
-    Range<ranges::optional<int64_t>> operator()(RawRange<ranges::optional<int16_t>> && t);
-    Range<ranges::optional<int64_t>> operator()(RawRange<ranges::optional<uint16_t>> && t);
-    Range<ranges::optional<int64_t>> operator()(RawRange<ranges::optional<int32_t>> && t);
-    Range<ranges::optional<int64_t>> operator()(RawRange<ranges::optional<uint32_t>> && t);
-    Range<ranges::optional<int64_t>> operator()(RawRange<ranges::optional<uint64_t>> && t);
     Range<blocksci::AnyScript> operator()(RawRange<blocksci::Address> && t);
-    Range<ranges::optional<blocksci::AnyScript>> operator()(RawRange<ranges::optional<blocksci::Address>> && t);
 
     template <typename T>
     Iterator<T> operator()(RawIterator<T> && t) {

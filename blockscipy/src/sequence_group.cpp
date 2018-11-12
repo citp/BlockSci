@@ -1,0 +1,44 @@
+//
+//  sequence_group.cpp
+//  blocksci
+//
+//  Created by Harry Kalodner on 11/11/18.
+//
+
+#include "sequence_group.hpp"
+#include "generic_sequence.hpp"
+#include "proxy.hpp"
+
+#include <pybind11/stl.h>
+
+template<typename GroupType, typename ResultType>
+void addGroupByFunc(pybind11::class_<GenericSequence> &cl) {
+    cl.def("_group_by", [](GenericSequence &range, Proxy<GroupType> &grouper, Proxy<ResultType> &eval) -> std::unordered_map<GroupType, ResultType> {
+        std::unordered_map<GroupType, std::vector<BlocksciType>> grouped;
+        RANGES_FOR(auto && item, range.getGenericIterator()) {
+            grouped[grouper(item.toAny())].push_back(item);
+        }
+        std::unordered_map<GroupType, ResultType> results;
+        results.reserve(grouped.size());
+        for (auto &group : grouped) {
+            auto range = RawRange<BlocksciType>{group.second};
+            results[group.first] = eval(range);
+        }
+        return results;
+    });
+}
+
+template<typename T>
+void addGroupByFuncs(pybind11::class_<GenericSequence> &cl) {
+    addGroupByFunc<int64_t, T>(cl);
+    addGroupByFunc<blocksci::AddressType::Enum, T>(cl);
+    addGroupByFunc<bool, T>(cl);
+    addGroupByFunc<blocksci::AnyScript, T>(cl);
+}
+
+void addAllGroupMethods(pybind11::class_<GenericSequence> &cl) {
+    addGroupByFuncs<int64_t>(cl);
+    addGroupByFuncs<bool>(cl);
+    addGroupByFuncs<std::chrono::system_clock::time_point>(cl);
+    addGroupByFuncs<blocksci::AddressType::Enum>(cl);
+}
