@@ -573,6 +573,37 @@ OutputRange.spent_with_age_less_than = outputs_spent_with_age_less_than
 OutputRange.outputs_spent_with_age_greater_than = outputs_spent_with_age_greater_than
 OutputRange.with_address_type = outputs_with_address_type
 
+
+def coinjoin_txes(txes):
+    return txes.where(heuristics.is_coinjoin)
+
+def possible_coinjoin_txes(txes):
+    return txes.where(heuristics.is_possible_coinjoin)
+
+def address_deanon_txes(txes):
+    return txes.where(heuristics.is_address_deanon)
+
+def change_over_txes(txes):
+    return txes.where(heuristics.is_change_over)
+
+def keyset_change_txes(txes):
+    return txes.where(heuristics.is_keyset_change)
+
+old_power_of_ten_value = heuristics.change.power_of_ten_value
+def new_power_of_ten_value(digits, tx=None):
+    if tx is None:
+        return old_power_of_ten_value(digits)
+    else:
+        return old_power_of_ten_value(digits)(tx)
+
+heuristics.change.power_of_ten_value = new_power_of_ten_value
+heuristics.coinjoin_txes = coinjoin_txes
+heuristics.possible_coinjoin_txes = possible_coinjoin_txes
+heuristics.address_deanon_txes = address_deanon_txes
+heuristics.change_over_txes = change_over_txes
+heuristics.keyset_change_txes = keyset_change_txes
+
+
 first_miner_run = True
 
 
