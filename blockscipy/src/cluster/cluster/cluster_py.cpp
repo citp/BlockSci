@@ -69,7 +69,7 @@ void init_cluster_manager(pybind11::module &s) {
         return ClusterManager::createClustering(range, changeFunc, location, shouldOverwrite);
     }, py::arg("location"), py::arg("chain"), py::arg("start") = 0, py::arg("stop") = -1,
     py::arg("heuristic") = Proxy<ranges::optional<Output>>{std::function<ranges::optional<Output>(std::any &)>{[](std::any &v) -> ranges::optional<Output> {
-            return heuristics::ChangeHeuristic{heuristics::LegacyChange{}}.uniqueChange(std::any_cast<Transaction>(v));
+            return heuristics::ChangeHeuristic{heuristics::LegacyChange{}}.uniqueChange(makeSimpleProxy<Transaction>()(v));
         }}}, py::arg("should_overwrite") = false)
     .def("cluster_with_address", [](const ClusterManager &cm, const Address &address) -> Cluster {
        return cm.getCluster(address);

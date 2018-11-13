@@ -7,6 +7,7 @@
 
 #include "caster_py.hpp"
 #include "proxy.hpp"
+#include "proxy_create.hpp"
 
 #include <blocksci/heuristics.hpp>
 #include <blocksci/chain/blockchain.hpp>
@@ -32,34 +33,34 @@ void init_heuristics(py::module &m) {
     cl
     .def_property_readonly_static("is_coinjoin", [](pybind11::object &) -> Proxy<bool> {
         return std::function<bool(std::any &)>{[](std::any &v) {
-            return heuristics::isCoinjoin(std::any_cast<Transaction>(v));
+            return heuristics::isCoinjoin(makeSimpleProxy<Transaction>()(v));
         }};
     }, "Uses basic structural features to quickly decide whether this transaction might be a JoinMarket coinjoin transaction")
     .def_property_readonly_static("is_address_deanon", [](pybind11::object &) -> Proxy<bool> {
         return std::function<bool(std::any &)>{[](std::any &v) -> bool {
-            return heuristics::isDeanonTx(std::any_cast<Transaction>(v));
+            return heuristics::isDeanonTx(makeSimpleProxy<Transaction>()(v));
         }};
     }, "Returns true if this transaction's change address is deanonymized by the address types involved")
     .def_property_readonly_static("is_change_over", [](pybind11::object &) -> Proxy<bool> {
         return std::function<bool(std::any &)>{[](std::any &v) -> bool {
-            return heuristics::isChangeOverTx(std::any_cast<Transaction>(v));
+            return heuristics::isChangeOverTx(makeSimpleProxy<Transaction>()(v));
         }};
     }, "Returns true if this transaction contained all inputs of one address type and all outputs of a different type")
     .def_property_readonly_static("is_keyset_change", [](pybind11::object &) -> Proxy<bool> {
         return std::function<bool(std::any &)>{[](std::any &v) -> bool {
-            return heuristics::containsKeysetChange(std::any_cast<Transaction>(v));
+            return heuristics::containsKeysetChange(makeSimpleProxy<Transaction>()(v));
         }};
     }, "Returns true if this transaction contains distinct addresses which share some of the same keys, indicating that the access control structure has changed")
     .def_static("is_possible_coinjoin", [](int64_t minBaseFee, double percentageFee, size_t maxDepth) -> Proxy<int64_t> {
         return std::function<int64_t(std::any &)>{[=](std::any &v) -> int64_t {
             py::gil_scoped_release release;
-            return static_cast<int64_t>(heuristics::isPossibleCoinjoin(std::any_cast<Transaction>(v), minBaseFee, percentageFee, maxDepth));
+            return static_cast<int64_t>(heuristics::isPossibleCoinjoin(makeSimpleProxy<Transaction>()(v), minBaseFee, percentageFee, maxDepth));
         }};
     }, py::arg("min_base_fee"), py::arg("percentage_fee"), py::arg("max_depth") = 0, "This function uses subset matching in order to determine whether this transaction is a JoinMarket coinjoin. If maxDepth != 0, it limits the total number of possible subsets the algorithm will check.")
     .def_static("is_definite_coinjoin", [](int64_t minBaseFee, double percentageFee, size_t maxDepth) -> Proxy<int64_t> {
         return std::function<int64_t(std::any &)>{[=](std::any &v) -> int64_t {
             py::gil_scoped_release release;
-            return static_cast<int64_t>(heuristics::isCoinjoinExtra(std::any_cast<Transaction>(v), minBaseFee, percentageFee, maxDepth));
+            return static_cast<int64_t>(heuristics::isCoinjoinExtra(makeSimpleProxy<Transaction>()(v), minBaseFee, percentageFee, maxDepth));
         }};
     }, py::arg("min_base_fee"), py::arg("percentage_fee"), py::arg("max_depth") = 0, "This function uses subset matching in order to determine whether this transaction is a JoinMarket coinjoin. If maxDepth != 0, it limits the total number of possible subsets the algorithm will check.")
     ;
@@ -79,7 +80,7 @@ void init_heuristics(py::module &m) {
     .def("change", &ChangeHeuristic::operator(), py::arg("tx"), "Return all outputs matching the change heuristic")
     .def_property_readonly("unique_change", [](ChangeHeuristic &ch) -> Proxy<ranges::optional<Output>> {
         return std::function<ranges::optional<Output>(std::any &)>{[ch](std::any &v) -> ranges::optional<Output> {
-            return ch.uniqueChange(std::any_cast<Transaction>(v));
+            return ch.uniqueChange(makeSimpleProxy<Transaction>()(v));
         }};
     }, "Returns a proxy object which takes a tx as input. If the change heuristic only matches one output return it, otherwise return none")
     ;
