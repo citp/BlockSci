@@ -9,6 +9,7 @@
 #include "cluster_py.hpp"
 #include "ranges_py.hpp"
 #include "caster_py.hpp"
+#include "proxy_utils.hpp"
 
 #include <blocksci/cluster/cluster_manager.hpp>
 #include <blocksci/heuristics/change_address.hpp>
@@ -68,9 +69,9 @@ void init_cluster_manager(pybind11::module &s) {
         };
         return ClusterManager::createClustering(range, changeFunc, location, shouldOverwrite);
     }, py::arg("location"), py::arg("chain"), py::arg("start") = 0, py::arg("stop") = -1,
-    py::arg("heuristic") = Proxy<ranges::optional<Output>>{std::function<ranges::optional<Output>(std::any &)>{[](std::any &v) -> ranges::optional<Output> {
-            return heuristics::ChangeHeuristic{heuristics::LegacyChange{}}.uniqueChange(makeSimpleProxy<Transaction>()(v));
-        }}}, py::arg("should_overwrite") = false)
+    py::arg("heuristic") = lift(makeSimpleProxy<Transaction>(), [](const Transaction &tx) -> ranges::optional<Output> {
+        return heuristics::ChangeHeuristic{heuristics::LegacyChange{}}.uniqueChange(tx);
+    }), py::arg("should_overwrite") = false)
     .def("cluster_with_address", [](const ClusterManager &cm, const Address &address) -> Cluster {
        return cm.getCluster(address);
     }, py::arg("address"), "Return the cluster containing the given address")

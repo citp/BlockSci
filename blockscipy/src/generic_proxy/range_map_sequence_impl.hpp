@@ -10,17 +10,18 @@
 #define proxy_range_map_sequence_impl_hpp
 
 #include "proxy.hpp"
+#include "proxy_utils.hpp"
 
 #include <range/v3/view/join.hpp>
 #include <range/v3/view/transform.hpp>
 
 template<typename R>
-Proxy<RawIterator<R>> mapSequence(IteratorProxy &seq, Proxy<RawIterator<R>> &p2) {
-	return std::function<RawIterator<R>(std::any &)>{[generic = seq.getGenericIterator(), p2](std::any &val) -> RawIterator<R> {
-		return ranges::view::join(ranges::view::transform(generic(val), [p2](BlocksciType && v) -> RawIterator<R> {
+Proxy<RawIterator<R>> mapSequence(IteratorProxy &p, Proxy<RawIterator<R>> &p2) {
+	return liftGeneric(p, [p2](auto && seq) -> RawIterator<R> {
+		return ranges::view::join(ranges::view::transform(std::forward<decltype(seq)>(seq), [p2](BlocksciType && v) -> RawIterator<R> {
 			return p2.applySimple(v.toAny());
 		}));
-	}};
+	});
 }
 
 #endif /* proxy_range_map_optional_hpp */

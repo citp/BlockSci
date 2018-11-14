@@ -10,21 +10,21 @@
 
 #include "proxy.hpp"
 
-template <typename F1, typename F2>
-auto lift(F1 &f1, F2 && f2) -> Proxy<decltype(f2(f1(std::declval<std::any &>())))> {
-	return std::function<decltype(f2(f1(std::declval<std::any &>())))(std::any &)>{
-		[f1, f2](std::any &v) {
-			return f2(f1(v));
+template <typename P, typename F>
+auto lift(P && p, F && f) -> Proxy<decltype(f(p(std::declval<std::any &>())))> {
+	return std::function<decltype(f(p(std::declval<std::any &>())))(std::any &)>{
+		[p, f](std::any &v) {
+			return f(p(v));
 		}
 	};
 }
 
-template <typename F1, typename F2>
-auto liftGeneric(F1 &f1, F2 && f2) -> Proxy<decltype(f2(f1.getGeneric()(std::declval<std::any &>())))> {
-	auto genericF1 = f1.getGeneric();
-	return std::function<decltype(f2(genericF1(std::declval<std::any &>())))(std::any &)>{
-		[f2, genericF1](std::any &v) {
-			return f2(genericF1(v));
+template <typename P, typename F>
+auto liftGeneric(P && p, F && f) -> Proxy<decltype(f(p.getGeneric()(std::declval<std::any &>())))> {
+	auto generic = p.getGeneric();
+	return std::function<decltype(f(generic(std::declval<std::any &>())))(std::any &)>{
+		[f, generic](std::any &v) {
+			return f(generic(v));
 		}
 	};
 }

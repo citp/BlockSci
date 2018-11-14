@@ -8,6 +8,7 @@
 
 #include "optional_map.hpp"
 #include "proxy.hpp"
+#include "proxy_utils.hpp"
 
 #include <blocksci/chain/block.hpp>
 
@@ -17,16 +18,14 @@ using namespace blocksci;
 
 namespace {
 	template<typename R>
-	Proxy<ranges::optional<R>> mapOptional(OptionalProxy &seq, Proxy<R> &p2) {
-		auto generic = seq.getGeneric();
-		return std::function<ranges::optional<R>(std::any &)>{[generic, p2](std::any &val) -> ranges::optional<R> {
-			auto v = generic(val);
-			if (v) {
-				return p2(v->toAny());
+	Proxy<ranges::optional<R>> mapOptional(OptionalProxy &p, Proxy<R> &p2) {
+		return liftGeneric(p, [p2](auto && opt) -> ranges::optional<R> {
+			if (opt) {
+				return p2(opt->toAny());
 			} else {
 				return ranges::nullopt;
 			}
-		}};
+		});
 	}
 }
 

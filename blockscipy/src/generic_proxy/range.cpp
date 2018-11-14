@@ -9,6 +9,7 @@
 #include "range.hpp"
 #include "range_map.hpp"
 #include "proxy.hpp"
+#include "proxy_utils.hpp"
 
 #include <range/v3/distance.hpp>
 #include <range/v3/algorithm/any_of.hpp>
@@ -28,27 +29,24 @@ void applyProxyIteratorFuncs(pybind11::class_<IteratorProxy, GenericProxy> &cl) 
     applyProxyMapSequenceFuncsOther(cl);
 
     cl
-	.def_property_readonly("size", [](IteratorProxy &seq) -> Proxy<int64_t> {
-		auto generic = seq.getGenericIterator();
-		return std::function<int64_t(std::any &)>{[generic](std::any &val) -> int64_t {
-			return ranges::distance(generic(val));
-		}};
+	.def_property_readonly("size", [](IteratorProxy &p) -> Proxy<int64_t> {
+		return liftGeneric(p, [](auto && seq) -> int64_t {
+			return ranges::distance(std::forward<decltype(seq)>(seq));
+		});
 	})
-	.def("_any", [](IteratorProxy &seq, Proxy<bool> &p2) -> Proxy<bool> {
-		auto generic = seq.getGenericIterator();
-		return std::function<bool(std::any &)>{[generic, p2](std::any &val) -> bool {
-			return ranges::any_of(generic(val), [p2](const BlocksciType &item) {
+	.def("_any", [](IteratorProxy &p, Proxy<bool> &p2) -> Proxy<bool> {
+		return liftGeneric(p, [p2](auto && seq) -> bool {
+			return ranges::any_of(std::forward<decltype(seq)>(seq), [p2](const BlocksciType &item) {
 				return p2(item.toAny());
 			});
-		}};
+		});
 	})
-	.def("_all", [](IteratorProxy &seq, Proxy<bool> &p2) -> Proxy<bool> {
-		auto generic = seq.getGenericIterator();
-		return std::function<bool(std::any &)>{[generic, p2](std::any &val) -> bool {
-			return ranges::all_of(generic(val), [p2](const BlocksciType &item) {
+	.def("_all", [](IteratorProxy &p, Proxy<bool> &p2) -> Proxy<bool> {
+		return liftGeneric(p, [p2](auto && seq) -> bool {
+			return ranges::all_of(std::forward<decltype(seq)>(seq), [p2](const BlocksciType &item) {
 				return p2(item.toAny());
 			});
-		}};
+		});
 	})
 	;
 }
@@ -59,11 +57,10 @@ void applyProxyRangeFuncs(pybind11::class_<RangeProxy, IteratorProxy> &cl) {
 	applyProxyMapFuncsOther(cl);
 
     cl
-	.def_property_readonly("size", [](RangeProxy &seq) -> Proxy<int64_t> {
-		auto generic = seq.getGenericRange();
-		return std::function<int64_t(std::any &)>{[generic](std::any &val) -> int64_t {
-			return ranges::distance(generic(val));
-		}};
+	.def_property_readonly("size", [](RangeProxy &p) -> Proxy<int64_t> {
+		return liftGeneric(p, [](auto && seq) -> int64_t {
+			return ranges::distance(std::forward<decltype(seq)>(seq));
+		});
 	})
 	;
 }

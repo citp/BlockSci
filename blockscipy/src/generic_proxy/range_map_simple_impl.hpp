@@ -11,6 +11,7 @@
 
 #include "proxy.hpp"
 #include "proxy_py.hpp"
+#include "proxy_utils.hpp"
 
 #include <blocksci/chain/block.hpp>
 #include <blocksci/scripts/script_variant.hpp>
@@ -18,12 +19,12 @@
 #include <range/v3/view/transform.hpp>
 
 template<ranges::category range_cat, typename R>
-Proxy<ranges::any_view<R, range_cat>> mapSimple(proxy_sequence<range_cat> &seq, Proxy<R> &p2) {
-	return std::function<ranges::any_view<R, range_cat>(std::any &)>{[generic = seq.getGeneric(), p2](std::any &val) -> ranges::any_view<R, range_cat> {
-		return ranges::view::transform(generic(val), [p2](const BlocksciType &v) {
+Proxy<ranges::any_view<R, range_cat>> mapSimple(proxy_sequence<range_cat> &p, Proxy<R> &p2) {
+	return liftGeneric(p, [p2](auto && seq) -> ranges::any_view<R, range_cat> {
+		return ranges::view::transform(std::forward<decltype(seq)>(seq), [p2](const BlocksciType &v) {
 			return p2(v.toAny());
 		});
-	}};
+	});
 }
 
 template <ranges::category range_cat, typename Class>
