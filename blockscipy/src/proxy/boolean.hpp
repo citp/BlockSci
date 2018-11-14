@@ -10,6 +10,7 @@
 #define proxy_boolean_hpp
 
 #include "proxy.hpp"
+#include "proxy_type_check.hpp"
 
 template<typename Class>
 void addProxyBooleanMethods(Class &cl) {
@@ -18,15 +19,17 @@ void addProxyBooleanMethods(Class &cl) {
 	cl
 	.def("__and__", [](P &p1, P &p2) -> P {
 		// Use this instead of lift to take advantage of short-circuit
-		return std::function<bool(std::any &)>{[p1, p2](std::any &v) -> bool {
+		proxyTypeCheck(p1.getSourceType(), p2.getSourceType());
+		return {std::function<bool(std::any &)>{[p1, p2](std::any &v) -> bool {
 			return p1(v) && p2(v);
-		}};
+		}}, p1.getSourceType()};
 	})
 	.def("__or__", [](P &p1, P &p2) -> P {
 		// Use this instead of lift to take advantage of short-circuit
-		return std::function<bool(std::any &)>{[p1, p2](std::any &v) -> bool {
+		proxyTypeCheck(p1.getSourceType(), p2.getSourceType());
+		return {std::function<bool(std::any &)>{[p1, p2](std::any &v) -> bool {
 			return p1(v) || p2(v);
-		}};
+		}}, p1.getSourceType()};
 	})
 	.def("__invert__", [](P &p) -> P {
 		return lift(p, [](auto && v) -> T {

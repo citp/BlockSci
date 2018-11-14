@@ -9,6 +9,7 @@
 #define proxy_py_create_hpp
 
 #include "proxy.hpp"
+#include "proxy_type_check.hpp"
 #include "method_types.hpp"
 
 template <typename To>
@@ -25,13 +26,15 @@ template <typename T>
 void addProxyConditional(pybind11::module &m) {
     m
     .def("conditional", [](const Proxy<bool> &cond, const Proxy<T> &p1, const Proxy<T> &p2) -> Proxy<T> {
-        return std::function<T(std::any &)>{[cond, p1, p2](std::any &t) -> T {
+        proxyTypeCheck(cond.sourceType, p1.sourceType);
+        proxyTypeCheck(cond.sourceType, p2.sourceType);
+        return {std::function<T(std::any &)>{[cond, p1, p2](std::any &t) -> T {
             if(cond(t)) {
                 return p1(t);
             } else {
                 return p2(t);
             }
-        }};
+        }}, p1.sourceType};
     })
     ;
 }
@@ -47,32 +50,32 @@ AllProxyClasses<T, SimpleBase> createProxyClasses(pybind11::module &m) {
     base.def(pybind11::init([](const T &val) -> Proxy<T> {
         return {std::function<T(std::any &)>{[val](std::any &) -> T {
             return val;
-        }}};
+        }}, nullptr};
     }));
 
     iterator
     .def(pybind11::init([](const Iterator<T> &val) -> Proxy<RawIterator<T>> {
         return {std::function<RawIterator<T>(std::any &)>{[r = val.rng](std::any &) -> RawIterator<T> {
             return r;
-        }}};
+        }}, nullptr};
     }))
     .def(pybind11::init([](const Proxy<RawRange<T>> &p) -> Proxy<RawIterator<T>> {
         return {std::function<RawIterator<T>(std::any &)>{[p](std::any & v) -> RawIterator<T> {
             return p(v);
-        }}};
+        }}, p.sourceType};
     }))
     ;
 
     range.def(pybind11::init([](const Range<T> &val) -> Proxy<RawRange<T>> {
         return {std::function<RawRange<T>(std::any &)>{[r = val.rng](std::any &) -> RawRange<T> {
             return r;
-        }}};
+        }}, nullptr};
     }));
 
     optional.def(pybind11::init([](const Proxy<T> &p) -> Proxy<ranges::optional<T>> {
         return {std::function<ranges::optional<T>(std::any &)>{[p](std::any &v) -> ranges::optional<T> {
             return p(v);
-        }}};
+        }}, p.sourceType};
     }));
 
     pybind11::implicitly_convertible<T, Proxy<T>>();

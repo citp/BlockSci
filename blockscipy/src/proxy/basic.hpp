@@ -23,6 +23,7 @@ struct AddProxyMethods {
 	void operator()(pybind11::class_<Proxy<T>, BaseSimple> &cl) {
 		cl
 		.def("__call__", [](Proxy<T> &p, std::any &val) -> T {
+			proxyTypeCheck(p.getSourceType(), &val.type());
 			return p(val);
 		})
 		.def("__call__", compose<T>)
@@ -39,6 +40,7 @@ struct AddProxyMethods {
 	void operator()(pybind11::class_<Proxy<ranges::optional<T>>, OptionalProxy> &cl) {
 		cl
 		.def("__call__", [](Proxy<ranges::optional<T>> &p, std::any &val) -> ranges::optional<T> {
+			proxyTypeCheck(p.getSourceType(), &val.type());
 			return p(val);
 		})
 		.def("__call__", compose<ranges::optional<T>>)
@@ -52,6 +54,7 @@ struct AddProxyMethods {
 	void operator()(pybind11::class_<Proxy<RawIterator<T>>, IteratorProxy, SequenceProxy<T>> &cl) {
 		cl
 		.def("__call__", [](Proxy<RawIterator<T>> &p, std::any &val) -> decltype(convertPythonRange(p(val))) {
+			proxyTypeCheck(p.getSourceType(), &val.type());
 			return convertPythonRange(p(val));
 		})
 		.def("__call__", compose<RawIterator<T>>)
@@ -65,6 +68,7 @@ struct AddProxyMethods {
 	void operator()(pybind11::class_<Proxy<RawRange<T>>, RangeProxy, SequenceProxy<T>> &cl) {
 		cl
 		.def("__call__", [](Proxy<RawRange<T>> &p, std::any &val) -> decltype(convertPythonRange(p(val))) {
+			proxyTypeCheck(p.getSourceType(), &val.type());
 			return convertPythonRange(p(val));
 		})
 		.def("__call__", compose<RawRange<T>>)
