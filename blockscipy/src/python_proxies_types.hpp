@@ -42,12 +42,12 @@ struct ScriptProxies {
 };
 
 struct OtherProxies {
+    AllProxyClasses<blocksci::uint256> uint256;
+    AllProxyClasses<blocksci::uint160> uint160;
     AllProxyClasses<blocksci::AddressType::Enum> addressType;
     AllProxyClasses<int64_t> integer;
     AllProxyClasses<bool> boolean;
     AllProxyClasses<std::chrono::system_clock::time_point> time;
-    AllProxyClasses<blocksci::uint256> uint256;
-    AllProxyClasses<blocksci::uint160> uint160;
     AllProxyClasses<std::string> string;
     AllProxyClasses<pybind11::bytes> bytes;
     AllProxyClasses<pybind11::list> list;

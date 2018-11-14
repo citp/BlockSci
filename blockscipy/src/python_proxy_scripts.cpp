@@ -8,6 +8,7 @@
 #include "python_proxies.hpp"
 #include "python_proxies_types.hpp"
 #include "caster_py.hpp"
+#include "proxy_py_create.hpp"
 
 #include "scripts/address_proxy_py.hpp"
 #include "scripts/pubkey/pubkey/pubkey_proxy_py.hpp"
@@ -28,17 +29,17 @@ using namespace blocksci;
 
 ScriptProxies::ScriptProxies(py::module &m) :
 genericAddress(m, "ProxyAddress"),
-address(m),
-pubkey(m),
-pubkeyHash(m),
-witnessPubkeyHash(m),
-multisigPubkey(m),
-multisig(m),
-scripthash(m),
-witnessScripthash(m),
-nulldata(m),
-nonstandard(m),
-witnessUnknown(m) {}
+address(createProxyClasses<AnyScript, ProxyAddress>(m)),
+pubkey(createProxyClasses<script::Pubkey, ProxyAddress>(m)),
+pubkeyHash(createProxyClasses<script::PubkeyHash, ProxyAddress>(m)),
+witnessPubkeyHash(createProxyClasses<script::WitnessPubkeyHash, ProxyAddress>(m)),
+multisigPubkey(createProxyClasses<script::MultisigPubkey, ProxyAddress>(m)),
+multisig(createProxyClasses<script::Multisig, ProxyAddress>(m)),
+scripthash(createProxyClasses<script::ScriptHash, ProxyAddress>(m)),
+witnessScripthash(createProxyClasses<script::WitnessScriptHash, ProxyAddress>(m)),
+nulldata(createProxyClasses<script::OpReturn, ProxyAddress>(m)),
+nonstandard(createProxyClasses<script::Nonstandard, ProxyAddress>(m)),
+witnessUnknown(createProxyClasses<script::WitnessUnknown, ProxyAddress>(m)) {}
 
 void setupScriptProxies(ScriptProxies &proxies) {
     init_proxy_address(proxies.genericAddress);

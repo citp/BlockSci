@@ -9,6 +9,7 @@
 #ifndef proxy_range_map_optional_impl_hpp
 #define proxy_range_map_optional_impl_hpp
 
+#include "proxy.hpp"
 #include "proxy_py.hpp"
 
 #include <blocksci/chain/block.hpp>

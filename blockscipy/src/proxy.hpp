@@ -151,10 +151,6 @@ struct Proxy : public SimpleProxy {
 
 	Proxy(std::function<output_t(std::any &)> && func_) : func(std::move(func_)) {}
 
-	Proxy(const output_t &val) : Proxy(std::function<output_t(std::any &)>{[val](std::any &) -> output_t {
-		return val;
-	}}) {}
-
 	output_t operator()(std::any &t) const {
 		return func(t);
 	}
@@ -179,18 +175,6 @@ struct Proxy<ranges::optional<T>> : public OptionalProxy {
 	Proxy(const std::function<output_t(std::any &)> &func_) : func(func_) {}
 
 	Proxy(std::function<output_t(std::any &)> && func_) : func(std::move(func_)) {}
-
-	Proxy(const output_t &val) : Proxy(std::function<output_t(std::any &)>{[val](std::any &) -> output_t {
-		return val;
-	}}) {}
-
-	Proxy(const Proxy<T> &p) : Proxy(std::function<ranges::optional<T>(std::any &)>{[p](std::any &v) -> ranges::optional<T> {
-		return p(v);
-	}}) {}
-
-	Proxy(const T &val) : Proxy(std::function<ranges::optional<T>(std::any &)>{[val](std::any &) -> ranges::optional<T> {
-		return val;
-	}}) {}
 
 	output_t operator()(std::any &t) const {
 		return func(t);
@@ -227,14 +211,6 @@ struct Proxy<RawRange<T>> : public SequenceProxy<T>, public RangeProxy {
 	Proxy(const std::function<output_t(std::any &)> &func_) : func(func_) {}
 
 	Proxy(std::function<output_t(std::any &)> && func_) : func(std::move(func_)) {}
-
-	Proxy(const output_t &val) : Proxy(std::function<output_t(std::any &)>{[val](std::any &) -> output_t {
-		return val;
-	}}) {}
-
-	Proxy(const Range<T> &val) : Proxy(std::function<output_t(std::any &)>{[rng = val.rng](std::any &) -> output_t {
-		return rng;
-	}}) {}
 
 	Range<T> operator()(std::any &t) const {
 		return func(t);
@@ -275,24 +251,6 @@ struct Proxy<RawIterator<T>> : public SequenceProxy<T>, public IteratorProxy {
 
 	Proxy(std::function<output_t(std::any &)> && func_) : func(std::move(func_)) {}
 
-	Proxy(const output_t &val) : Proxy(std::function<output_t(std::any &)>{[val](std::any &) -> output_t {
-		return val;
-	}}) {}
-
-	Proxy(const Iterator<T> &val) : Proxy(std::function<output_t(std::any &)>{[rng = val.rng](std::any &) -> output_t {
-		return rng;
-	}}) {}
-
-	Proxy(const Proxy<RawRange<T>> &p) : Proxy(std::function<output_t(std::any &)>{
-		[p](std::any &v) -> output_t {
-		return p.applySimple(v);
-	}}) {}
-
-	Proxy(Proxy<RawRange<T>> && p) : Proxy(std::function<output_t(std::any &)>{
-		[p](std::any &v) -> output_t {
-		return p.applySimple(v);
-	}}) {}
-
 	Iterator<T> operator()(std::any &t) const {
 		return func(t);
 	}
@@ -332,10 +290,6 @@ struct Proxy<blocksci::ScriptAddress<type>> : public ProxyAddress {
 
 	Proxy(std::function<output_t(std::any &)> && func_) : func(std::move(func_)) {}
 
-	Proxy(const output_t &val) : Proxy(std::function<output_t(std::any &)>{[val](std::any &) -> output_t {
-		return val;
-	}}) {}
-
 	output_t operator()(std::any &t) const {
 		return func(t);
 	}
@@ -360,10 +314,6 @@ struct Proxy<blocksci::AnyScript> : public ProxyAddress {
 	Proxy(const std::function<output_t(std::any &)> &func_) : func(func_) {}
 
 	Proxy(std::function<output_t(std::any &)> && func_) : func(std::move(func_)) {}
-
-	Proxy(const output_t &val) : Proxy(std::function<output_t(std::any &)>{[val](std::any &) -> output_t {
-		return val;
-	}}) {}
 
 	output_t operator()(std::any &t) const {
 		return func(t);

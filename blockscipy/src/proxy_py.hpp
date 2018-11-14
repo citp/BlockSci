@@ -8,88 +8,26 @@
 #ifndef proxy_py_hpp
 #define proxy_py_hpp
 
-#include "proxy.hpp"
-#include "generic_sequence.hpp"
-#include "method_types.hpp"
+#include "sequence.hpp"
+#include "python_fwd.hpp"
 
 #include <pybind11/pybind11.h>
 
-template <typename To>
-std::string proxyName() {
-	return PythonTypeName<To>::name() + "Proxy";
-}
-
-template <typename To>
-std::string proxySequenceName() {
-    return PythonTypeName<To>::name() + "SequenceProxy";
-}
-
-template <typename T>
-void addProxyConditional(pybind11::module &m) {
-    m
-    .def("conditional", [](const Proxy<bool> &cond, const Proxy<T> &p1, const Proxy<T> &p2) -> Proxy<T> {
-        return std::function<T(std::any &)>{[cond, p1, p2](std::any &t) -> T {
-            if(cond(t)) {
-                return p1(t);
-            } else {
-                return p2(t);
-            }
-        }};
-    })
-    ;
-}
-
-template <typename T>
-void addProxySequenceConditional(pybind11::module &m) {
-    m
-    .def("conditional", [](const Proxy<bool> &cond, const Proxy<T> &p1, const Proxy<T> &p2) -> Proxy<T> {
-        return std::function<T(std::any &)>{[cond, p1, p2](std::any &t) -> T {
-            if(cond(t)) {
-                return p1.applySimple(t);
-            } else {
-                return p2.applySimple(t);
-            }
-        }};
-    })
-    ;
-}
+#include <range/v3/utility/optional.hpp>
 
 template <typename T, typename SimpleBase>
 struct AllProxyClasses {
-private:
-public:
-    pybind11::class_<Proxy<T>, SimpleBase> base;
-    pybind11::class_<Proxy<ranges::optional<T>>, OptionalProxy> optional;
-    pybind11::class_<SequenceProxy<T>> sequence;
-    pybind11::class_<Proxy<RawIterator<T>>, IteratorProxy, SequenceProxy<T>> iterator;
-    pybind11::class_<Proxy<RawRange<T>>, RangeProxy, SequenceProxy<T>> range;
+    using SimplePy = pybind11::class_<Proxy<T>, SimpleBase>;
+    using OptionalPy = pybind11::class_<Proxy<ranges::optional<T>>, OptionalProxy>;
+    using SequencePy = pybind11::class_<SequenceProxy<T>>;
+    using IteratorPy = pybind11::class_<Proxy<RawIterator<T>>, IteratorProxy, SequenceProxy<T>>;
+    using RangePy = pybind11::class_<Proxy<RawRange<T>>, RangeProxy, SequenceProxy<T>>;
 
-	AllProxyClasses(pybind11::module &m) : 
-    	base(m, strdup(proxyName<T>().c_str())),
-    	optional(m, strdup(proxyName<ranges::optional<T>>().c_str())),
-        sequence(m, strdup(proxySequenceName<T>().c_str())),
-    	iterator(m, strdup(proxyName<Iterator<T>>().c_str())),
-    	range(m, strdup(proxyName<Range<T>>().c_str())) {
-        base.def(pybind11::init<T>());
-        iterator.def(pybind11::init<Iterator<T>>());
-        range.def(pybind11::init<Range<T>>());
-
-        optional.def(pybind11::init<Proxy<T>>());
-        iterator.def(pybind11::init<Proxy<RawRange<T>>>());
-
-        pybind11::implicitly_convertible<T, Proxy<T>>();
-        pybind11::implicitly_convertible<Iterator<T>, Proxy<RawIterator<T>>>();
-        pybind11::implicitly_convertible<Range<T>, Proxy<RawRange<T>>>();
-
-        pybind11::implicitly_convertible<Proxy<T>, Proxy<ranges::optional<T>>>();
-        pybind11::implicitly_convertible<Proxy<RawRange<T>>, Proxy<RawIterator<T>>>();
-
-
-        addProxyConditional<T>(m);
-        addProxyConditional<ranges::optional<T>>(m);
-        addProxySequenceConditional<RawIterator<T>>(m);
-        addProxySequenceConditional<RawRange<T>>(m);
-    }
+    SimplePy base;
+    OptionalPy optional;
+    SequencePy sequence;
+    IteratorPy iterator;
+    RangePy range;
 
 	template<typename Func>
     void applyToAll(Func func) {

@@ -8,6 +8,7 @@
 #include "python_proxies.hpp"
 #include "python_proxies_types.hpp"
 #include "caster_py.hpp"
+#include "proxy_py_create.hpp"
 #include "simple/simple_proxies.hpp"
 
 #include <blocksci/chain/block.hpp>
@@ -16,15 +17,15 @@ namespace py = pybind11;
 using namespace blocksci;
 
 OtherProxies::OtherProxies(py::module &m) :
-addressType(m),
-integer(m),
-boolean(m),
-time(m),
-uint256(m),
-uint160(m),
-string(m),
-bytes(m),
-list(m) {}
+uint256(createProxyClasses<blocksci::uint256>(m)),
+uint160(createProxyClasses<blocksci::uint160>(m)),
+addressType(createProxyClasses<AddressType::Enum>(m)),
+integer(createProxyClasses<int64_t>(m)),
+boolean(createProxyClasses<bool>(m)),
+time(createProxyClasses<std::chrono::system_clock::time_point>(m)),
+string(createProxyClasses<std::string>(m)),
+bytes(createProxyClasses<py::bytes>(m)),
+list(createProxyClasses<py::list>(m)) {}
 
 
 void setupOtherProxies(OtherProxies &proxies) {

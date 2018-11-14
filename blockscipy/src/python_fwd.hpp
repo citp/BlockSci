@@ -21,7 +21,20 @@ struct RangeProxy;
 struct OptionalProxy;
 struct ProxyAddress;
 
+template <typename T>
+struct SequenceProxy;
+
 struct BlocksciType;
+
+template<typename T>
+struct Sequence;
+
+template <typename T>
+struct Iterator;
+
+template <typename T>
+struct Range;
+
 struct GenericIterator;
 struct GenericRange;
 

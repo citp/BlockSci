@@ -7,7 +7,7 @@
 //
 
 #include "caster_py.hpp"
-#include "blocksci_range.hpp"
+#include "blocksci_range_create.hpp"
 #include "proxy.hpp"
 #include "proxy_create.hpp"
 #include "python_proxies.hpp"
@@ -127,26 +127,26 @@ PYBIND11_MODULE(_blocksci, m) {
     py::class_<GenericIterator> genericIteratorCl(m, "GenericIterator", "Class representing any blocksci iterator");
     py::class_<GenericRange, GenericIterator> genericRangeCl(m, "GenericRange", "Class representing any blocksci range");
 
-    RangeClasses<Block> blockRangeCls(m);
-    RangeClasses<Transaction> txRangeCls(m);
-    RangeClasses<Input> inputRangeCls(m);
-    RangeClasses<Output> outputRangeCls(m);
-    RangeClasses<AnyScript> addressRangeCls(m);
-    RangeClasses<EquivAddress> equivAddressRangeCls(m);
-    RangeClasses<script::Pubkey> pubkeyRangeCls(m);
-    RangeClasses<script::PubkeyHash> pubkeyHashRangeCls(m);
-    RangeClasses<script::WitnessPubkeyHash> witnessPubkeyHashRangeCls(m);
-    RangeClasses<script::MultisigPubkey> multisigPubkeyRangeCls(m);
-    RangeClasses<script::Multisig> multisigRangeCls(m);
-    RangeClasses<script::ScriptHash> scripthashRangeCls(m);
-    RangeClasses<script::WitnessScriptHash> witnessScripthashRangeCls(m);
-    RangeClasses<script::OpReturn> nulldataRangeCls(m);
-    RangeClasses<script::Nonstandard> nonstandardRangeCls(m);
-    RangeClasses<script::WitnessUnknown> witnessUnknownRangeCls(m);
+    RangeClasses<Block> blockRangeCls(createRangeClasses<Block>(m));
+    RangeClasses<Transaction> txRangeCls(createRangeClasses<Transaction>(m));
+    RangeClasses<Input> inputRangeCls(createRangeClasses<Input>(m));
+    RangeClasses<Output> outputRangeCls(createRangeClasses<Output>(m));
+    RangeClasses<AnyScript> addressRangeCls(createRangeClasses<AnyScript>(m));
+    RangeClasses<EquivAddress> equivAddressRangeCls(createRangeClasses<EquivAddress>(m));
+    RangeClasses<script::Pubkey> pubkeyRangeCls(createRangeClasses<script::Pubkey>(m));
+    RangeClasses<script::PubkeyHash> pubkeyHashRangeCls(createRangeClasses<script::PubkeyHash>(m));
+    RangeClasses<script::WitnessPubkeyHash> witnessPubkeyHashRangeCls(createRangeClasses<script::WitnessPubkeyHash>(m));
+    RangeClasses<script::MultisigPubkey> multisigPubkeyRangeCls(createRangeClasses<script::MultisigPubkey>(m));
+    RangeClasses<script::Multisig> multisigRangeCls(createRangeClasses<script::Multisig>(m));
+    RangeClasses<script::ScriptHash> scripthashRangeCls(createRangeClasses<script::ScriptHash>(m));
+    RangeClasses<script::WitnessScriptHash> witnessScripthashRangeCls(createRangeClasses<script::WitnessScriptHash>(m));
+    RangeClasses<script::OpReturn> nulldataRangeCls(createRangeClasses<script::OpReturn>(m));
+    RangeClasses<script::Nonstandard> nonstandardRangeCls(createRangeClasses<script::Nonstandard>(m));
+    RangeClasses<script::WitnessUnknown> witnessUnknownRangeCls(createRangeClasses<script::WitnessUnknown>(m));
     
-    RangeClasses<Cluster> clusterRangeCls(clusterMod);
-    RangeClasses<TaggedCluster> taggedClusterRangeCls(clusterMod);
-    RangeClasses<TaggedAddress> taggedAddressRangeCls(clusterMod);
+    RangeClasses<Cluster> clusterRangeCls(createRangeClasses<Cluster>(clusterMod));
+    RangeClasses<TaggedCluster> taggedClusterRangeCls(createRangeClasses<TaggedCluster>(clusterMod));
+    RangeClasses<TaggedAddress> taggedAddressRangeCls(createRangeClasses<TaggedAddress>(clusterMod));
 
     setupProxies(m);
 

@@ -9,6 +9,7 @@
 #include "python_proxies_types.hpp"
 #include "caster_py.hpp"
 #include "proxy_py.hpp"
+#include "proxy_py_create.hpp"
 
 #include "chain/input/input_proxy_py.hpp"
 #include "chain/output/output_proxy_py.hpp"
@@ -28,14 +29,14 @@ namespace py = pybind11;
 using namespace blocksci;
 
 MainProxies::MainProxies(py::module &m) :
-block(m),
-tx(m),
-input(m),
-output(m),
-equivAddress(m),
-cluster(m),
-taggedCluster(m),
-taggedAddress(m) {}
+block(createProxyClasses<Block>(m)),
+tx(createProxyClasses<Transaction>(m)),
+input(createProxyClasses<Input>(m)),
+output(createProxyClasses<Output>(m)),
+equivAddress(createProxyClasses<EquivAddress>(m)),
+cluster(createProxyClasses<Cluster>(m)),
+taggedCluster(createProxyClasses<TaggedCluster>(m)),
+taggedAddress(createProxyClasses<TaggedAddress>(m)) {}
 
 
 void setupMainProxies(MainProxies &proxies) {
