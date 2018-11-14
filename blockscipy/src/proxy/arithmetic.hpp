@@ -18,80 +18,75 @@ void addProxyArithMethods(Class &cl) {
 	using P2 = Proxy<ranges::optional<T>>;
 	cl
 	.def("__add__", [](P &p1, P &p2) -> P {
-		return std::function<T(std::any &)>{[=](std::any &t) -> T {
-			return p1(t) + p2(t);
-		}};
+		return lift(p1, p2, [](auto && v1, auto && v2) -> T {
+			return std::forward<decltype(v1)>(v1) + std::forward<decltype(v2)>(v2);
+		});
 	})
 	.def("__sub__", [](P &p1, P &p2) -> P {
-		return std::function<T(std::any &)>{[=](std::any &t) -> T {
-			return p1(t) - p2(t);
-		}};
+		return lift(p1, p2, [](auto && v1, auto && v2) -> T {
+			return std::forward<decltype(v1)>(v1) - std::forward<decltype(v2)>(v2);
+		});
 	})
 	.def("__mul__", [](P &p1, P &p2) -> P {
-		return std::function<T(std::any &)>{[=](std::any &t) -> T {
-			return p1(t) * p2(t);
-		}};
+		return lift(p1, p2, [](auto && v1, auto && v2) -> T {
+			return std::forward<decltype(v1)>(v1) * std::forward<decltype(v2)>(v2);
+		});
 	})
 	.def("__floordiv__", [](P &p1, P &p2) -> P {
-		return std::function<T(std::any &)>{[=](std::any &t) -> T {
-			return p1(t) / p2(t);
-		}};
+		return lift(p1, p2, [](auto && v1, auto && v2) -> T {
+			return std::forward<decltype(v1)>(v1) / std::forward<decltype(v2)>(v2);
+		});
 	})
 	.def("__mod__", [](P &p1, P &p2) -> P {
-		return std::function<T(std::any &)>{[=](std::any &t) -> T {
-			return p1(t) % p2(t);
-		}};
+		return lift(p1, p2, [](auto && v1, auto && v2) -> T {
+			return std::forward<decltype(v1)>(v1) % std::forward<decltype(v2)>(v2);
+		});
 	})
 
 	.def("__add__", [](P &p1, P2 &p2) -> P2 {
-		return std::function<ranges::optional<T>(std::any &)>{[=](std::any &t) -> ranges::optional<T> {
-			auto v2 = p2(t);
+		return lift(p1, p2, [](auto && v1, auto && v2) -> ranges::optional<T> {
 			if (v2) {
-				return p1(t) + *v2;
+				return std::forward<decltype(v1)>(v1) + *v2;
 			} else {
 				return ranges::nullopt;
 			}
-		}};
+		});
 	})
 	.def("__sub__", [](P &p1, P2 &p2) -> P2 {
-		return std::function<ranges::optional<T>(std::any &)>{[=](std::any &t) -> ranges::optional<T> {
-			auto v2 = p2(t);
+		return lift(p1, p2, [](auto && v1, auto && v2) -> ranges::optional<T> {
 			if (v2) {
-				return p1(t) - *v2;
+				return std::forward<decltype(v1)>(v1) - *v2;
 			} else {
 				return ranges::nullopt;
 			}
-		}};
+		});
 	})
 	.def("__mul__", [](P &p1, P2 &p2) -> P2 {
-		return std::function<ranges::optional<T>(std::any &)>{[=](std::any &t) -> ranges::optional<T> {
-			auto v2 = p2(t);
+		return lift(p1, p2, [](auto && v1, auto && v2) -> ranges::optional<T> {
 			if (v2) {
-				return p1(t) * *v2;
+				return std::forward<decltype(v1)>(v1) * *v2;
 			} else {
 				return ranges::nullopt;
 			}
-		}};
+		});
 	})
 	.def("__floordiv__", [](P &p1, P2 &p2) -> P2 {
-		return std::function<ranges::optional<T>(std::any &)>{[=](std::any &t) -> ranges::optional<T> {
-			auto v2 = p2(t);
+		return lift(p1, p2, [](auto && v1, auto && v2) -> ranges::optional<T> {
 			if (v2) {
-				return p1(t) / *v2;
+				return std::forward<decltype(v1)>(v1) / *v2;
 			} else {
 				return ranges::nullopt;
 			}
-		}};
+		});
 	})
 	.def("__mod__", [](P &p1, P2 &p2) -> P2 {
-		return std::function<ranges::optional<T>(std::any &)>{[=](std::any &t) -> ranges::optional<T> {
-			auto v2 = p2(t);
+		return lift(p1, p2, [](auto && v1, auto && v2) -> ranges::optional<T> {
 			if (v2) {
-				return p1(t) % *v2;
+				return std::forward<decltype(v1)>(v1) % *v2;
 			} else {
 				return ranges::nullopt;
 			}
-		}};
+		});
 	})
 	;
 }

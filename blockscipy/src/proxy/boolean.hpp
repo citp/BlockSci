@@ -14,21 +14,24 @@
 template<typename Class>
 void addProxyBooleanMethods(Class &cl) {
 	using P = typename Class::type;
+	using T = typename P::output_t;
 	cl
 	.def("__and__", [](P &p1, P &p2) -> P {
+		// Use this instead of lift to take advantage of short-circuit
 		return std::function<bool(std::any &)>{[p1, p2](std::any &v) -> bool {
 			return p1(v) && p2(v);
 		}};
 	})
 	.def("__or__", [](P &p1, P &p2) -> P {
+		// Use this instead of lift to take advantage of short-circuit
 		return std::function<bool(std::any &)>{[p1, p2](std::any &v) -> bool {
 			return p1(v) || p2(v);
 		}};
 	})
 	.def("__invert__", [](P &p) -> P {
-		return std::function<bool(std::any &)>{[=](std::any &t) -> bool {
-			return !p(t);
-		}};
+		return lift(p, [](auto && v) -> T {
+			return !std::forward<decltype(v)>(v);
+		});
 	})
 	;
 }

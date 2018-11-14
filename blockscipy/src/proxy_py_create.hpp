@@ -36,21 +36,6 @@ void addProxyConditional(pybind11::module &m) {
     ;
 }
 
-template <typename T>
-void addProxySequenceConditional(pybind11::module &m) {
-    m
-    .def("conditional", [](const Proxy<bool> &cond, const Proxy<T> &p1, const Proxy<T> &p2) -> Proxy<T> {
-        return std::function<T(std::any &)>{[cond, p1, p2](std::any &t) -> T {
-            if(cond(t)) {
-                return p1.applySimple(t);
-            } else {
-                return p2.applySimple(t);
-            }
-        }};
-    })
-    ;
-}
-
 template <typename T, typename SimpleBase = SimpleProxy>
 AllProxyClasses<T, SimpleBase> createProxyClasses(pybind11::module &m) {
     pybind11::class_<Proxy<T>, SimpleBase> base(m, strdup(proxyName<T>().c_str()));
@@ -73,7 +58,7 @@ AllProxyClasses<T, SimpleBase> createProxyClasses(pybind11::module &m) {
     }))
     .def(pybind11::init([](const Proxy<RawRange<T>> &p) -> Proxy<RawIterator<T>> {
         return {std::function<RawIterator<T>(std::any &)>{[p](std::any & v) -> RawIterator<T> {
-            return p.applySimple(v);
+            return p(v);
         }}};
     }))
     ;
@@ -100,8 +85,8 @@ AllProxyClasses<T, SimpleBase> createProxyClasses(pybind11::module &m) {
 
     addProxyConditional<T>(m);
     addProxyConditional<ranges::optional<T>>(m);
-    addProxySequenceConditional<RawIterator<T>>(m);
-    addProxySequenceConditional<RawRange<T>>(m);
+    addProxyConditional<RawIterator<T>>(m);
+    addProxyConditional<RawRange<T>>(m);
 
     return {base, optional, sequence, iterator, range};
 }

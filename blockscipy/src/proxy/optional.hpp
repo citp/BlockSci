@@ -17,15 +17,14 @@ template<typename T>
 void addProxyOptionalMethods(pybind11::class_<Proxy<ranges::optional<T>>, OptionalProxy> &cl) {
 	using P = Proxy<ranges::optional<T>>;
 	cl
-	.def("or_value", [](P &p, Proxy<T> &v) -> Proxy<T> {
-		return std::function<T(std::any &)>{[=](std::any &t) {
-			auto opt = p(t);
+	.def("or_value", [](P &p, Proxy<T> &vp) -> Proxy<T> {
+		return lift(p, vp, [](auto && opt, auto && v) -> T {
 			if (opt) {
 				return *opt;
 			} else {
-				return v(t);
+				return v;
 			}
-		}};
+		});
 	})
 	;
 }

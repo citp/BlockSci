@@ -15,59 +15,49 @@ void addProxyOptionalArithMethods(pybind11::class_<Proxy<ranges::optional<int64_
 	using P = Proxy<ranges::optional<int64_t>>;
 	cl
 	.def("__add__", [](P &p1, P &p2) -> P {
-		return std::function<ranges::optional<int64_t>(std::any &)>{[=](std::any &t) -> ranges::optional<int64_t> {
-			auto v1 = p1(t);
-			auto v2 = p2(t);
+		return lift(p1, p2, [](auto && v1, auto && v2) -> ranges::optional<int64_t> {
 			if (v1 && v2) {
 				return *v1 + *v2;
 			} else {
 				return ranges::nullopt;
 			}
-		}};
+		});
 	})
 	.def("__sub__", [](P &p1, P &p2) -> P {
-		return std::function<ranges::optional<int64_t>(std::any &)>{[=](std::any &t) -> ranges::optional<int64_t> {
-			auto v1 = p1(t);
-			auto v2 = p2(t);
+		return lift(p1, p2, [](auto && v1, auto && v2) -> ranges::optional<int64_t> {
 			if (v1 && v2) {
 				return *v1 - *v2;
 			} else {
 				return ranges::nullopt;
 			}
-		}};
+		});
 	})
 	.def("__mul__", [](P &p1, P &p2) -> P {
-		return std::function<ranges::optional<int64_t>(std::any &)>{[=](std::any &t) -> ranges::optional<int64_t> {
-			auto v1 = p1(t);
-			auto v2 = p2(t);
+		return lift(p1, p2, [](auto && v1, auto && v2) -> ranges::optional<int64_t> {
 			if (v1 && v2) {
 				return *v1 * *v2;
 			} else {
 				return ranges::nullopt;
 			}
-		}};
+		});
 	})
 	.def("__floordiv__", [](P &p1, P &p2) -> P {
-		return std::function<ranges::optional<int64_t>(std::any &)>{[=](std::any &t) -> ranges::optional<int64_t> {
-			auto v1 = p1(t);
-			auto v2 = p2(t);
+		return lift(p1, p2, [](auto && v1, auto && v2) -> ranges::optional<int64_t> {
 			if (v1 && v2) {
 				return *v1 / *v2;
 			} else {
 				return ranges::nullopt;
 			}
-		}};
+		});
 	})
 	.def("__mod__", [](P &p1, P &p2) -> P {
-		return std::function<ranges::optional<int64_t>(std::any &)>{[=](std::any &t) -> ranges::optional<int64_t> {
-			auto v1 = p1(t);
-			auto v2 = p2(t);
+		return lift(p1, p2, [](auto && v1, auto && v2) -> ranges::optional<int64_t> {
 			if (v1 && v2) {
 				return *v1 % *v2;
 			} else {
 				return ranges::nullopt;
 			}
-		}};
+		});
 	})
 	;
 }

@@ -16,24 +16,24 @@ void addProxyComparisonMethods(Class &cl) {
 	using P = typename Class::type;
 	cl
 	.def("__lt__", [](P &p1, P &p2) -> Proxy<bool> {
-		return std::function<bool(std::any &)>{[=](std::any &t) -> bool {
-			return p1(t) < p2(t);
-		}};
+		return lift(p1, p2, [](auto && v1, auto && v2) -> bool {
+			return std::forward<decltype(v1)>(v1) < std::forward<decltype(v2)>(v2);
+		});
 	})
 	.def("__le__", [](P &p1, P &p2) -> Proxy<bool> {
-		return std::function<bool(std::any &)>{[=](std::any &t) -> bool {
-			return p1(t) <= p2(t);
-		}};
+		return lift(p1, p2, [](auto && v1, auto && v2) -> bool {
+			return std::forward<decltype(v1)>(v1) <= std::forward<decltype(v2)>(v2);
+		});
 	})
 	.def("__gt__", [](P &p1, P &p2) -> Proxy<bool> {
-		return std::function<bool(std::any &)>{[=](std::any &t) -> bool {
-			return p1(t) > p2(t);
-		}};
+		return lift(p1, p2, [](auto && v1, auto && v2) -> bool {
+			return std::forward<decltype(v1)>(v1) > std::forward<decltype(v2)>(v2);
+		});
 	})
 	.def("__ge__", [](P &p1, P &p2) -> Proxy<bool> {
-		return std::function<bool(std::any &)>{[=](std::any &t) -> bool {
-			return p1(t) >= p2(t);
-		}};
+		return lift(p1, p2, [](auto && v1, auto && v2) -> bool {
+			return std::forward<decltype(v1)>(v1) >= std::forward<decltype(v2)>(v2);
+		});
 	})
 	;
 }

@@ -18,23 +18,20 @@
 template<typename T>
 void addProxyArithRangeMethods(pybind11::class_<SequenceProxy<T>> &cl) {
 	cl
-	.def_property_readonly("min", [](SequenceProxy<T> &seq) -> Proxy<int64_t> {
-		auto generic = seq.getIteratorFunc();
-		return std::function<int64_t(std::any &)>{[=](std::any &val) -> int64_t {
-			return ranges::min(generic(val));
-		}};
+	.def_property_readonly("min", [](SequenceProxy<T> &p) -> Proxy<int64_t> {
+		return liftSequence(p, [](auto && seq) -> int64_t {
+			return ranges::min(std::forward<decltype(seq)>(seq));
+		});
 	})
-	.def_property_readonly("max", [](SequenceProxy<T> &seq) -> Proxy<int64_t> {
-		auto generic = seq.getIteratorFunc();
-		return std::function<int64_t(std::any &)>{[=](std::any &val) -> int64_t {
-			return ranges::max(generic(val));
-		}};
+	.def_property_readonly("max", [](SequenceProxy<T> &p) -> Proxy<int64_t> {
+		return liftSequence(p, [](auto && seq) -> int64_t {
+			return ranges::max(std::forward<decltype(seq)>(seq));
+		});
 	})
-	.def_property_readonly("sum", [](SequenceProxy<T> &seq) -> Proxy<int64_t> {
-		auto generic = seq.getIteratorFunc();
-		return std::function<int64_t(std::any &)>{[=](std::any &val) -> int64_t {
-			return ranges::accumulate(generic(val), int64_t(0));
-		}};
+	.def_property_readonly("sum", [](SequenceProxy<T> &p) -> Proxy<int64_t> {
+		return liftSequence(p, [](auto && seq) -> int64_t {
+			return ranges::accumulate(std::forward<decltype(seq)>(seq), int64_t(0));
+		});
 	})
 	;
 }

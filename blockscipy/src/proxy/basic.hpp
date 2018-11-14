@@ -25,11 +25,7 @@ struct AddProxyMethods {
 		.def("__call__", [](Proxy<T> &p, std::any &val) -> T {
 			return p(val);
 		})
-		.def("__call__", [](Proxy<T> &p, GenericProxy &g) -> Proxy<T> {
-			return std::function<T(std::any &)>{[generic = g.getGenericAny(), p](std::any &v) -> T {
-				return p(generic(v));
-			}};
-		})
+		.def("__call__", compose<T>)
 		.def_property_readonly_static("range_proxy", [](pybind11::object &) -> Proxy<RawRange<T>> {
 	        return makeRangeProxy<T>();
 	    })
@@ -45,11 +41,7 @@ struct AddProxyMethods {
 		.def("__call__", [](Proxy<ranges::optional<T>> &p, std::any &val) -> ranges::optional<T> {
 			return p(val);
 		})
-		.def("__call__", [](Proxy<ranges::optional<T>> &p, GenericProxy &g) -> Proxy<ranges::optional<T>> {
-			return std::function<ranges::optional<T>(std::any &)>{[generic = g.getGenericAny(), p](std::any &v) -> ranges::optional<T> {
-				return p(generic(v));
-			}};
-		})
+		.def("__call__", compose<ranges::optional<T>>)
 		.def_property_readonly_static("nested_proxy", [](pybind11::object &) -> Proxy<T> {
 	        return makeSimpleProxy<T>();
 	    })
@@ -59,14 +51,10 @@ struct AddProxyMethods {
 	template<typename T>
 	void operator()(pybind11::class_<Proxy<RawIterator<T>>, IteratorProxy, SequenceProxy<T>> &cl) {
 		cl
-		.def("__call__", [](Proxy<RawIterator<T>> &p, std::any &val) -> decltype(convertPythonRange(p.applySimple(val))) {
-			return convertPythonRange(p.applySimple(val));
+		.def("__call__", [](Proxy<RawIterator<T>> &p, std::any &val) -> decltype(convertPythonRange(p(val))) {
+			return convertPythonRange(p(val));
 		})
-		.def("__call__", [](Proxy<RawIterator<T>> &p, GenericProxy &g) -> Proxy<RawIterator<T>> {
-			return std::function<RawIterator<T>(std::any &)>{[generic = g.getGenericAny(), p](std::any &v) -> RawIterator<T> {
-				return p.applySimple(generic(v));
-			}};
-		})
+		.def("__call__", compose<RawIterator<T>>)
 		.def_property_readonly_static("nested_proxy", [](pybind11::object &) -> Proxy<T> {
 	        return makeSimpleProxy<T>();
 	    })
@@ -76,14 +64,10 @@ struct AddProxyMethods {
 	template<typename T>
 	void operator()(pybind11::class_<Proxy<RawRange<T>>, RangeProxy, SequenceProxy<T>> &cl) {
 		cl
-		.def("__call__", [](Proxy<RawRange<T>> &p, std::any &val) -> decltype(convertPythonRange(p.applySimple(val))) {
-			return convertPythonRange(p.applySimple(val));
+		.def("__call__", [](Proxy<RawRange<T>> &p, std::any &val) -> decltype(convertPythonRange(p(val))) {
+			return convertPythonRange(p(val));
 		})
-		.def("__call__", [](Proxy<RawRange<T>> &p, GenericProxy &g) -> Proxy<RawRange<T>> {
-			return std::function<RawRange<T>(std::any &)>{[generic = g.getGenericAny(), p](std::any &v) -> RawRange<T> {
-				return p.applySimple(generic(v));
-			}};
-		})
+		.def("__call__", compose<RawRange<T>>)
 		.def_property_readonly_static("nested_proxy", [](pybind11::object &) -> Proxy<T> {
 	        return makeSimpleProxy<T>();
 	    })

@@ -20,20 +20,19 @@
 template <typename T, typename BaseSimple>
 void setupRangesProxy(AllProxyClasses<T, BaseSimple> &cls) {
 	cls.sequence
-	.def("_where", [](SequenceProxy<T> &seq, Proxy<bool> &p2) -> Proxy<RawIterator<T>> {
-		return std::function<RawIterator<T>(std::any &)>{[generic = seq.getIteratorFunc(), p2](std::any &val) -> RawIterator<T> {
-			return generic(val) | ranges::view::filter([p2](T item) {
+	.def("_where", [](SequenceProxy<T> &p, Proxy<bool> &p2) -> Proxy<RawIterator<T>> {
+		return liftSequence(p, [p2](auto && seq) -> RawIterator<T> {
+			return ranges::view::filter(std::forward<decltype(seq)>(seq), [p2](T item) {
 				return p2(std::move(item));
 			});
-		}};
+		});
 	})
 	;
 
 	cls.range
     .def("__getitem__", [](Proxy<RawRange<T>> &p, int64_t posIndex) -> Proxy<T> {
-    	return std::function<T(std::any &)>{[p, posIndex](std::any &val) -> T {
-			auto range = p.applySimple(val);
-			auto chainSize = static_cast<int64_t>(range.size());
+    	return lift(p, [posIndex](auto && range) -> T {
+    		auto chainSize = static_cast<int64_t>(range.size());
 			auto pos = posIndex;
 	        if (pos < 0) {
 	            pos += chainSize;
@@ -42,12 +41,11 @@ void setupRangesProxy(AllProxyClasses<T, BaseSimple> &cls) {
 	            throw pybind11::index_error();
 	        }
 	        return range[pos];
-		}};
+    	});
     }, pybind11::arg("index"))
     .def("__getitem__", [](Proxy<RawRange<T>> &p, pybind11::slice slice) -> Proxy<RawRange<T>> {
-    	return std::function<RawRange<T>(std::any &)>{[p, slice](std::any &val) -> RawRange<T> {
-			auto range = p.applySimple(val);
-			size_t start, stop, step, slicelength;
+    	return lift(p, [slice](auto && range) -> RawRange<T> {
+    		size_t start, stop, step, slicelength;
 	        const auto &constRange = range;
 	        auto chainSize = ranges::size(constRange);
 	        if (!slice.compute(chainSize, &start, &stop, &step, &slicelength))
@@ -55,7 +53,7 @@ void setupRangesProxy(AllProxyClasses<T, BaseSimple> &cls) {
 	        
 	        auto subset =  range[{static_cast<ranges::range_size_type_t<RawRange<T>>>(start), static_cast<ranges::range_size_type_t<Range<T>>>(stop)}];
 	        return subset | ranges::view::stride(step);
-		}};
+    	});
     }, pybind11::arg("slice"))
 	;
 }

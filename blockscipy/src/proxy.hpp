@@ -212,19 +212,11 @@ struct Proxy<RawRange<T>> : public SequenceProxy<T>, public RangeProxy {
 
 	Proxy(std::function<output_t(std::any &)> && func_) : func(std::move(func_)) {}
 
-	Range<T> operator()(std::any &t) const {
+	output_t operator()(std::any &t) const {
 		return func(t);
 	}
 
-	Range<T> operator()(std::any && t) const {
-		return func(t);
-	}
-
-	output_t applySimple(std::any &t) const {
-		return func(t);
-	}
-
-	output_t applySimple(std::any && t) const {
+	output_t operator()(std::any && t) const {
 		return func(t);
 	}
 
@@ -251,19 +243,11 @@ struct Proxy<RawIterator<T>> : public SequenceProxy<T>, public IteratorProxy {
 
 	Proxy(std::function<output_t(std::any &)> && func_) : func(std::move(func_)) {}
 
-	Iterator<T> operator()(std::any &t) const {
+	output_t operator()(std::any &t) const {
 		return func(t);
 	}
 
-	Iterator<T> operator()(std::any && t) const {
-		return func(t);
-	}
-
-	output_t applySimple(std::any &t) const {
-		return func(t);
-	}
-
-	output_t applySimple(std::any && t) const {
+	output_t operator()(std::any && t) const {
 		return func(t);
 	}
 
