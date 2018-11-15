@@ -14,12 +14,12 @@
 
 template <typename To>
 std::string proxyName() {
-    return PythonTypeName<To>::name() + "Proxy";
+    return typenameLookup().getName<To>() + "Proxy";
 }
 
 template <typename To>
 std::string proxySequenceName() {
-    return PythonTypeName<To>::name() + "SequenceProxy";
+    return typenameLookup().getName<To>() + "SequenceProxy";
 }
 
 template <typename T>

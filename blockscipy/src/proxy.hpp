@@ -9,6 +9,7 @@
 #define proxy_hpp
 
 #include "generic_proxy.hpp"
+#include "python_range_conversion.hpp"
 
 #include <range/v3/view/transform.hpp>
 
@@ -68,6 +69,10 @@ struct Proxy : public SimpleProxy {
 	const std::type_info *getDestType() const override {
 		return &typeid(output_t);
 	}
+
+	const std::type_info *getOutputType() const override {
+		return &typeid(output_t);
+	}
 };
 
 template<typename T>
@@ -111,6 +116,10 @@ struct Proxy<ranges::optional<T>> : public OptionalProxy {
 	const std::type_info *getDestType() const override {
 		return &typeid(output_t);
 	}
+
+	const std::type_info *getOutputType() const override {
+		return &typeid(output_t);
+	}
 };
 
 template<typename T>
@@ -148,6 +157,10 @@ struct Proxy<RawRange<T>> : public SequenceProxy<T>, public RangeProxy {
 
 	const std::type_info *getDestType() const override {
 		return &typeid(output_t);
+	}
+
+	const std::type_info *getOutputType() const override {
+		return &typeid(decltype(convertPythonRange(std::declval<output_t>())));
 	}
 };
 
@@ -187,6 +200,10 @@ struct Proxy<RawIterator<T>> : public SequenceProxy<T>, public IteratorProxy {
 	const std::type_info *getDestType() const override {
 		return &typeid(output_t);
 	}
+
+	const std::type_info *getOutputType() const override {
+		return &typeid(decltype(convertPythonRange(std::declval<output_t>())));
+	}
 };
 
 template<blocksci::AddressType::Enum type>
@@ -219,6 +236,10 @@ struct Proxy<blocksci::ScriptAddress<type>> : public ProxyAddress {
 	const std::type_info *getDestType() const override {
 		return &typeid(output_t);
 	}
+
+	const std::type_info *getOutputType() const override {
+		return &typeid(output_t);
+	}
 };
 
 template<>
@@ -247,6 +268,10 @@ struct Proxy<blocksci::AnyScript> : public ProxyAddress {
 	}
 
 	const std::type_info *getDestType() const override {
+		return &typeid(output_t);
+	}
+
+	const std::type_info *getOutputType() const override {
 		return &typeid(output_t);
 	}
 };

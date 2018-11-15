@@ -8,6 +8,7 @@
 #ifndef python_range_conversion_h
 #define python_range_conversion_h
 
+#include "python_fwd.hpp"
 #include "generic_sequence.hpp"
 
 #include <blocksci/blocksci_fwd.hpp>
@@ -15,14 +16,6 @@
 #include <pybind11/numpy.h>
 
 #include <chrono>
-
-struct NumpyBool {
-    bool val;
-};
-
-struct NumpyDatetime {
-    int64_t time;
-};
 
 namespace pybind11 { namespace detail {
     template <>

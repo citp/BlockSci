@@ -24,6 +24,7 @@ struct GenericProxy {
 	virtual ProxyType getProxyType() const = 0;
 	virtual const std::type_info *getSourceType() const = 0;
 	virtual const std::type_info *getDestType() const = 0;
+	virtual const std::type_info *getOutputType() const = 0;
 	virtual ~GenericProxy() = default;
 };
 

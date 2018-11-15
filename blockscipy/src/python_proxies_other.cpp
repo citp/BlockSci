@@ -9,6 +9,7 @@
 #include "python_proxies_types.hpp"
 #include "caster_py.hpp"
 #include "proxy_py_create.hpp"
+#include "generic_sequence.hpp"
 #include "simple/simple_proxies.hpp"
 
 #include <blocksci/chain/block.hpp>

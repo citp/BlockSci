@@ -10,6 +10,7 @@
 #include "caster_py.hpp"
 #include "generic_proxy/range.hpp"
 #include "generic_proxy/optional.hpp"
+#include "method_types.hpp"
 
 #include <blocksci/chain/block.hpp>
 
@@ -73,6 +74,10 @@ void setupProxies(py::module &m) {
     MainProxies mainProxies(proxyMod);
     ScriptProxies scriptProxies(proxyMod);
     OtherProxies otherProxies(proxyMod);
+
+    proxyCl.def_property_readonly("output_type_name", [](GenericProxy &p) {
+        return typenameLookup().getDocstringName(*p.getOutputType());
+    });
 
     addOptionalProxyMethods(proxyOptionalCl);
     applyProxyIteratorFuncs(proxyIteratorCl);

@@ -341,32 +341,37 @@ def setup_sequence_proxy_map_funcs():
         getattr(proxy, cl).any = range_any_func
         getattr(proxy, cl).all = range_all_func
 
-non_copying_methods = set(["ptype"])
+non_copying_methods = set(["ptype", "iterator_proxy", "range_proxy", "output_type_name"])
 
 def _get_functions_methods(obj):
-    return (attr for attr in dir(obj) if
+    return (attr for attr in obj.__dict__ if
             not attr[:2] == '__' and attr not in non_copying_methods and
-            not isinstance(getattr(type(obj), attr, None), property))
+            not isinstance(getattr(obj, attr, None), property))
 
 
 def _get_properties_methods(obj):
-    return (attr for attr in dir(obj) if attr not in non_copying_methods and
-            isinstance(getattr(type(obj), attr, None), property))
+    return (attr for attr in obj.__dict__ if attr not in non_copying_methods and
+            isinstance(getattr(obj, attr, None), property))
 
 
-def setup_self_methods(main):
-    proxy_obj = main.self_proxy
+def setup_self_methods(main, proxy_obj_type = None):
+    if proxy_obj_type == None:
+        proxy_obj_type = type(main.self_proxy)
 
     def self_property_creator(name):
-        return property(getattr(proxy_obj, name))
+        prop = property(lambda s: getattr(s.self_proxy, name)(s))
+        prop.__doc__ = f'{getattr(proxy_obj_type, name).__doc__} \n\n:type: :class:`{proxy_obj_type.output_type_name}`'
+        return prop
 
     def self_method_creator(name):
-        return lambda main, *args: getattr(proxy_obj, name)(*args)(main)
+        method = lambda s, *args: getattr(s.self_proxy, name)(*args)(s)
+        method.__doc__ = getattr(proxy_obj_type, name).__doc__
+        return method
 
-    for proxy_func in _get_properties_methods(proxy_obj):
+    for proxy_func in _get_properties_methods(proxy_obj_type):
         setattr(main, proxy_func, self_property_creator(proxy_func))
 
-    for proxy_func in _get_functions_methods(proxy_obj):
+    for proxy_func in _get_functions_methods(proxy_obj_type):
         setattr(main, proxy_func, self_method_creator(proxy_func))
 
 
@@ -377,22 +382,26 @@ def setup_iterator_methods(iterator):
     
 
     def iterator_creator(name):
-        return property(apply_map(proxy_self, getattr(proxy_obj, name)))
+        proxy = apply_map(proxy_self, getattr(proxy_obj, name))
+        prop = property(proxy)
+        prop.__doc__ = f'For each item: {getattr(type(proxy_obj), name).__doc__} \n\n:type: :class:`{proxy.output_type_name}`'
+        return prop
 
     def iterator_method_creator(name):
-        return lambda rng, *args: apply_map(proxy_self, getattr(proxy_obj, name)(*args))(rng)
-
+        method = lambda rng, *args: apply_map(proxy_self, getattr(proxy_obj, name)(*args))(rng)
+        method.__doc__ = 'For each item: ' + getattr(type(proxy_obj), name).__doc__
+        return method
     def iterator_proxy_creator(name):
         return property(lambda rng: apply_map(rng, getattr(proxy_obj, name)))
 
     def iterator_proxy_method_creator(name):
         return lambda rng, *args: apply_map(rng, getattr(proxy_obj, name)(*args))
 
-    for proxy_func in _get_properties_methods(proxy_obj):
+    for proxy_func in _get_properties_methods(type(proxy_obj)):
         setattr(iterator, proxy_func, iterator_creator(proxy_func))
         setattr(proxy_self_cl, proxy_func, iterator_proxy_creator(proxy_func))
 
-    for proxy_func in _get_functions_methods(proxy_obj):
+    for proxy_func in _get_functions_methods(type(proxy_obj)):
         setattr(iterator, proxy_func, iterator_method_creator(proxy_func))
         setattr(proxy_self_cl, proxy_func, iterator_proxy_method_creator(proxy_func))
 
@@ -402,10 +411,15 @@ def setup_range_methods(blocksci_range):
     proxy_self_cl = type(proxy_self)
 
     def range_creator(name):
-        return property(apply_map(proxy_self, getattr(proxy_obj, name)))
+        proxy = apply_map(proxy_self, getattr(proxy_obj, name))
+        prop = property(proxy)
+        prop.__doc__ = f'For each item: {getattr(type(proxy_obj), name).__doc__} \n\n:type: :class:`{proxy.output_type_name}`'
+        return prop
 
     def range_method_creator(name):
-        return lambda rng, *args: apply_map(proxy_self, getattr(proxy_obj, name)(*args))(rng)
+        method = lambda rng, *args: apply_map(proxy_self, getattr(proxy_obj, name)(*args))(rng)
+        method.__doc__ = 'For each item: ' + getattr(type(proxy_obj), name).__doc__
+        return method
 
     def range_proxy_creator(name):
         return property(lambda rng: apply_map(rng, getattr(proxy_obj, name)))
@@ -413,11 +427,11 @@ def setup_range_methods(blocksci_range):
     def range_proxy_method_creator(name):
         return lambda rng, *args: apply_map(rng, getattr(proxy_obj, name)(*args))
 
-    for proxy_func in _get_properties_methods(proxy_obj):
+    for proxy_func in _get_properties_methods(type(proxy_obj)):
         setattr(blocksci_range, proxy_func, range_creator(proxy_func))
         setattr(proxy_self_cl, proxy_func, range_proxy_creator(proxy_func))
 
-    for proxy_func in _get_functions_methods(proxy_obj):
+    for proxy_func in _get_functions_methods(type(proxy_obj)):
         setattr(blocksci_range, proxy_func, range_method_creator(proxy_func))
         setattr(proxy_self_cl, proxy_func, range_proxy_method_creator(proxy_func))
 
@@ -433,6 +447,7 @@ setup_self_methods(Output)
 setup_self_methods(Input)
 setup_self_methods(EquivAddress)
 
+setup_self_methods(Address, proxy.ProxyAddress)
 setup_self_methods(PubkeyAddress)
 setup_self_methods(PubkeyHashAddress)
 setup_self_methods(WitnessPubkeyHashAddress)

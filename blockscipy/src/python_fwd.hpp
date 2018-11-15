@@ -8,11 +8,21 @@
 #ifndef blocksci_python_fwd_h
 #define blocksci_python_fwd_h
 
+#include <cstdint>
+
 template <typename T>
 struct RangeClasses;
 
 template<typename T>
 struct Proxy;
+
+struct NumpyBool {
+    bool val;
+};
+
+struct NumpyDatetime {
+    int64_t time;
+};
 
 struct GenericProxy;
 struct SimpleProxy;
@@ -37,6 +47,8 @@ struct Range;
 
 struct GenericIterator;
 struct GenericRange;
+
+struct TypenameLookup;
 
 
 template <typename T, typename SimpleBase = SimpleProxy>
