@@ -13,7 +13,7 @@
 
 template <typename P1, typename P2, typename F>
 auto lift(P1 && p1, P2 && p2, F && f) -> Proxy<decltype(f(p1(std::declval<std::any &>()), p2(std::declval<std::any &>())))> {
-	proxyTypeCheck(p1.getSourceType(), p2.getSourceType());
+	p1.getSourceType().checkMatch(p2.getSourceType());
 	return {std::function<decltype(f(p1(std::declval<std::any &>()), p2(std::declval<std::any &>())))(std::any &)>{
 		[p1, p2, f=f](std::any &v) {
 			return f(p1(v), p2(v));
@@ -52,7 +52,7 @@ auto liftSequence(P && p, F && f) -> Proxy<decltype(f(p.getIteratorFunc()(std::d
 
 template <typename T>
 Proxy<T> compose(Proxy<T> &p, GenericProxy &g) {
-	proxyTypeCheck(p.getSourceType(), g.getDestType());
+	p.getSourceType().checkAccept(g.getDestType());
 	return {std::function<T(std::any &)>{[generic = g.getGenericAny(), p](std::any &v) -> T {
 		return p(generic(v));
 	}}, g.getSourceType()};

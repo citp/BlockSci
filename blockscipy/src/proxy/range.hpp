@@ -51,7 +51,7 @@ void setupRangesProxy(AllProxyClasses<T, BaseSimple> &cls) {
 	        if (!slice.compute(chainSize, &start, &stop, &step, &slicelength))
 	            throw pybind11::error_already_set();
 	        
-	        auto subset =  range[{static_cast<ranges::range_size_type_t<RawRange<T>>>(start), static_cast<ranges::range_size_type_t<Range<T>>>(stop)}];
+	        auto subset =  range[{static_cast<ranges::range_size_type_t<RawRange<T>>>(start), static_cast<ranges::range_size_type_t<RawRange<T>>>(stop)}];
 	        return subset | ranges::view::stride(step);
     	});
     }, pybind11::arg("slice"))

@@ -17,32 +17,13 @@
 #include <range/v3/view/any_view.hpp>
 #include <range/v3/range_for.hpp>
 
-
-template <typename T, CONCEPT_REQUIRES_(!ranges::Range<T>())>
-auto pythonAllType(T && t) {
-    return std::forward<T>(t);
-}
-
-template <typename T, CONCEPT_REQUIRES_(ranges::Range<T>())>
-auto pythonAllType(T && t) {
-    pybind11::list list;
-    RANGES_FOR(auto && a, std::forward<T>(t)) {
-        list.append(pythonAllType(std::forward<decltype(a)>(a)));
-    }
-    return list;
-}
-
-
 template<typename Class>
 auto addCommonIteratorMethods(Class &cl) {
     using R = typename Class::type;
     cl
     .def("__iter__", [](R &range) { 
-        return pybind11::make_iterator(range.begin(), range.end()); 
+        return pybind11::make_iterator(range.rng.begin(), range.rng.end()); 
     }, pybind11::keep_alive<0, 1>())
-    .def("to_list", [](R & range) { 
-        return pythonAllType(range.rng);
-    }, "Returns a list of all of the objects in the range")
     ;
 }
 
@@ -52,13 +33,13 @@ void addAllRangeMethods(RangeClasses<T> &cls) {
     addCommonIteratorMethods(cls.range);
 
     cls.iterator
-    .def_property_readonly_static("self_proxy", [](pybind11::object &) -> Proxy<RawIterator<T>> {
+    .def_property_readonly_static("_self_proxy", [](pybind11::object &) -> Proxy<RawIterator<T>> {
         return makeIteratorProxy<T>();
     })
     ;
 
     cls.range
-    .def_property_readonly_static("self_proxy", [](pybind11::object &) -> Proxy<RawRange<T>> {
+    .def_property_readonly_static("_self_proxy", [](pybind11::object &) -> Proxy<RawRange<T>> {
         return makeRangeProxy<T>();
     })
     ;

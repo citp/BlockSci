@@ -1,5 +1,5 @@
 Tagged Cluster Iterator
 ====================================
 
-.. autoclass:: blocksci.TaggedClusterIterator
+.. autoclass:: blocksci.cluster.TaggedClusterIterator
    :members:

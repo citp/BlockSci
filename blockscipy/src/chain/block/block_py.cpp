@@ -86,8 +86,12 @@ void init_block(py::class_<Block> &cl) {
     .def("__len__", [](Block &range) {
         return range.size();
     })
-    .def("to_list", [](Block & range) { 
-        return pythonAllType(range);
+    .def("to_list", [](Block & range) {
+        py::list list;
+        for (auto tx : range) {
+            list.append(tx);
+        }
+        return list;
     }, "Returns a list of all of the objects in the block")
     ;
 }

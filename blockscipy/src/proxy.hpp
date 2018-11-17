@@ -18,8 +18,8 @@ struct SequenceProxy {
 	virtual std::function<RawIterator<T>(std::any &)> getIteratorFunc() const = 0;
 	virtual ~SequenceProxy() = default;
 
-	virtual const std::type_info *getSourceType() const = 0;
-	virtual const std::type_info *getDestType() const = 0;
+	virtual ProxyTypeInfo getSourceType() const = 0;
+	virtual ProxyTypeInfo getDestType() const = 0;
 };
 
 template <ranges::category range_cat>
@@ -44,9 +44,9 @@ struct Proxy : public SimpleProxy {
 	using output_t = T;
 	
 	std::function<output_t(std::any &)> func;
-	const std::type_info *sourceType;
+	ProxyTypeInfo sourceType;
 
-	Proxy(std::function<output_t(std::any &)> && func_, const std::type_info *sourceType_) : func(std::move(func_)), sourceType(sourceType_) {}
+	Proxy(std::function<output_t(std::any &)> && func_, const ProxyTypeInfo &sourceType_) : func(std::move(func_)), sourceType(sourceType_) {}
 
 	output_t operator()(std::any &t) const {
 		return func(t);
@@ -62,12 +62,12 @@ struct Proxy : public SimpleProxy {
 		};
 	}
 
-	const std::type_info *getSourceType() const override {
+	ProxyTypeInfo getSourceType() const override {
 		return sourceType;
 	}
 
-	const std::type_info *getDestType() const override {
-		return &typeid(output_t);
+	ProxyTypeInfo getDestType() const override {
+		return createProxyTypeInfo<output_t>();
 	}
 
 	const std::type_info *getOutputType() const override {
@@ -80,9 +80,9 @@ struct Proxy<ranges::optional<T>> : public OptionalProxy {
 	using output_t = ranges::optional<T>;
 	
 	std::function<output_t(std::any &)> func;
-	const std::type_info *sourceType;
+	ProxyTypeInfo sourceType;
 
-	Proxy(std::function<output_t(std::any &)> && func_, const std::type_info *sourceType_) : func(std::move(func_)), sourceType(sourceType_) {}
+	Proxy(std::function<output_t(std::any &)> && func_, const ProxyTypeInfo &sourceType_) : func(std::move(func_)), sourceType(sourceType_) {}
 
 	output_t operator()(std::any &t) const {
 		return func(t);
@@ -109,12 +109,12 @@ struct Proxy<ranges::optional<T>> : public OptionalProxy {
 		};
 	}
 
-	const std::type_info *getSourceType() const override {
+	ProxyTypeInfo getSourceType() const override {
 		return sourceType;
 	}
 
-	const std::type_info *getDestType() const override {
-		return &typeid(output_t);
+	ProxyTypeInfo getDestType() const override {
+		return createProxyTypeInfo<output_t>();
 	}
 
 	const std::type_info *getOutputType() const override {
@@ -127,9 +127,9 @@ struct Proxy<RawRange<T>> : public SequenceProxy<T>, public RangeProxy {
 	using output_t = RawRange<T>;
 	
 	std::function<output_t(std::any &)> func;
-	const std::type_info *sourceType;
+	ProxyTypeInfo sourceType;
 
-	Proxy(std::function<output_t(std::any &)> && func_, const std::type_info *sourceType_) : func(std::move(func_)), sourceType(sourceType_) {}
+	Proxy(std::function<output_t(std::any &)> && func_, const ProxyTypeInfo &sourceType_) : func(std::move(func_)), sourceType(sourceType_) {}
 
 	output_t operator()(std::any &t) const {
 		return func(t);
@@ -151,12 +151,12 @@ struct Proxy<RawRange<T>> : public SequenceProxy<T>, public RangeProxy {
 		return this->func;
 	}
 
-	const std::type_info *getSourceType() const override {
+	ProxyTypeInfo getSourceType() const override {
 		return sourceType;
 	}
 
-	const std::type_info *getDestType() const override {
-		return &typeid(output_t);
+	ProxyTypeInfo getDestType() const override {
+		return createProxyTypeInfo<output_t>();
 	}
 
 	const std::type_info *getOutputType() const override {
@@ -169,9 +169,9 @@ struct Proxy<RawIterator<T>> : public SequenceProxy<T>, public IteratorProxy {
 	using output_t = RawIterator<T>;
 	
 	std::function<output_t(std::any &)> func;
-	const std::type_info *sourceType;
+	ProxyTypeInfo sourceType;
 
-	Proxy(std::function<output_t(std::any &)> && func_, const std::type_info *sourceType_) : func(std::move(func_)), sourceType(sourceType_) {}
+	Proxy(std::function<output_t(std::any &)> && func_, const ProxyTypeInfo &sourceType_) : func(std::move(func_)), sourceType(sourceType_) {}
 
 	output_t operator()(std::any &t) const {
 		return func(t);
@@ -193,12 +193,12 @@ struct Proxy<RawIterator<T>> : public SequenceProxy<T>, public IteratorProxy {
 		return this->func;
 	}
 
-	const std::type_info *getSourceType() const override {
+	ProxyTypeInfo getSourceType() const override {
 		return sourceType;
 	}
 
-	const std::type_info *getDestType() const override {
-		return &typeid(output_t);
+	ProxyTypeInfo getDestType() const override {
+		return createProxyTypeInfo<output_t>();
 	}
 
 	const std::type_info *getOutputType() const override {
@@ -211,9 +211,9 @@ struct Proxy<blocksci::ScriptAddress<type>> : public ProxyAddress {
 	using output_t = blocksci::ScriptAddress<type>;
 	
 	std::function<output_t(std::any &)> func;
-	const std::type_info *sourceType;
+	ProxyTypeInfo sourceType;
 
-	Proxy(std::function<output_t(std::any &)> && func_, const std::type_info *sourceType_) : func(std::move(func_)), sourceType(sourceType_) {}
+	Proxy(std::function<output_t(std::any &)> && func_, const ProxyTypeInfo &sourceType_) : func(std::move(func_)), sourceType(sourceType_) {}
 
 	output_t operator()(std::any &t) const {
 		return func(t);
@@ -229,12 +229,12 @@ struct Proxy<blocksci::ScriptAddress<type>> : public ProxyAddress {
 		};
 	}
 
-	const std::type_info *getSourceType() const override {
+	ProxyTypeInfo getSourceType() const override {
 		return sourceType;
 	}
 
-	const std::type_info *getDestType() const override {
-		return &typeid(output_t);
+	ProxyTypeInfo getDestType() const override {
+		return createProxyTypeInfo<output_t>();
 	}
 
 	const std::type_info *getOutputType() const override {
@@ -247,9 +247,9 @@ struct Proxy<blocksci::AnyScript> : public ProxyAddress {
 	using output_t = blocksci::AnyScript;
 	
 	std::function<output_t(std::any &)> func;
-	const std::type_info *sourceType;
+	ProxyTypeInfo sourceType;
 
-	Proxy(std::function<output_t(std::any &)> && func_, const std::type_info *sourceType_) : func(std::move(func_)), sourceType(sourceType_) {}
+	Proxy(std::function<output_t(std::any &)> && func_, const ProxyTypeInfo &sourceType_) : func(std::move(func_)), sourceType(sourceType_) {}
 
 	output_t operator()(std::any &t) const {
 		return func(t);
@@ -263,12 +263,12 @@ struct Proxy<blocksci::AnyScript> : public ProxyAddress {
 		return this->func;
 	}
 
-	const std::type_info *getSourceType() const override {
+	ProxyTypeInfo getSourceType() const override {
 		return sourceType;
 	}
 
-	const std::type_info *getDestType() const override {
-		return &typeid(output_t);
+	ProxyTypeInfo getDestType() const override {
+		return createProxyTypeInfo<output_t>();
 	}
 
 	const std::type_info *getOutputType() const override {

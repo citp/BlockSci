@@ -7,8 +7,3 @@ Range Classes
    ClusterRange
    TaggedClusterRange
    TaggedAddressRange
-
-   ClusterOptionalRange
-   TaggedClusterOptionalRange
-   TaggedAddressOptionalRange
-   

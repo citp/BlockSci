@@ -48,6 +48,9 @@ struct Range;
 struct GenericIterator;
 struct GenericRange;
 
+struct GenericAddressIterator;
+struct GenericAddressRange;
+
 struct TypenameLookup;
 
 

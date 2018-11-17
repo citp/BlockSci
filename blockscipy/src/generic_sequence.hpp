@@ -58,32 +58,12 @@ struct Sequence {
 	virtual ~Sequence() = default;
 };
 
-template <typename T>
-struct Iterator : public Sequence<T>, public GenericIterator {
-	ranges::any_view<T> rng;
+struct GenericAddressIterator: public GenericIterator {
 
-	template <typename R>
-	Iterator(R && r) : rng(std::forward<R>(r)) {}
+};
 
-	Iterator(Range<T> r) : rng(std::move(r.rng)) {}
+struct GenericAddressRange : public GenericRange {
 
-	auto begin() {
-		return rng.begin();
-	}
-
-	auto end() {
-		return rng.end();
-	}
-
-	RawIterator<T> getIterator() override {
-		return rng;
-	}
-
-	RawIterator<BlocksciType> getGenericIterator() override {
-		return rng | ranges::view::transform([](T && v) -> BlocksciType {
-			return BlocksciType{v};
-		});
-	}
 };
 
 template <typename T>
@@ -93,14 +73,6 @@ struct Range : public Sequence<T>, public GenericRange {
 	Range(ranges::any_view<T, random_access_sized> && r) : rng(std::move(r)) {}
 
 	Range(const ranges::any_view<T, random_access_sized> &r) : rng(r) {}
-
-	auto begin() {
-		return rng.begin();
-	}
-
-	auto end() {
-		return rng.end();
-	}
 
 	RawIterator<T> getIterator() override {
 		return rng;
@@ -118,6 +90,124 @@ struct Range : public Sequence<T>, public GenericRange {
 
 	bool empty() const override {
 		return ranges::empty(rng);
+	}
+};
+
+template <>
+struct Range<blocksci::AnyScript> : public Sequence<blocksci::AnyScript>, public GenericAddressRange {
+	using T = blocksci::AnyScript;
+	ranges::any_view<T, random_access_sized> rng;
+
+	Range(ranges::any_view<T, random_access_sized> && r) : rng(std::move(r)) {}
+
+	Range(const ranges::any_view<T, random_access_sized> &r) : rng(r) {}
+
+	RawIterator<T> getIterator() override {
+		return rng;
+	}
+
+	RawRange<BlocksciType> getGenericRange() override {
+		return rng | ranges::view::transform([](T && v) -> BlocksciType {
+			return BlocksciType{v};
+		});
+	}
+
+	int64_t size() const override {
+		return rng.size();
+	}
+
+	bool empty() const override {
+		return ranges::empty(rng);
+	}
+};
+
+template <blocksci::AddressType::Enum type>
+struct Range<blocksci::ScriptAddress<type>> : public Sequence<blocksci::ScriptAddress<type>>, public GenericAddressRange {
+	using T = blocksci::ScriptAddress<type>;
+	ranges::any_view<T, random_access_sized> rng;
+
+	Range(ranges::any_view<T, random_access_sized> && r) : rng(std::move(r)) {}
+
+	Range(const ranges::any_view<T, random_access_sized> &r) : rng(r) {}
+
+	RawIterator<T> getIterator() override {
+		return rng;
+	}
+
+	RawRange<BlocksciType> getGenericRange() override {
+		return rng | ranges::view::transform([](T && v) -> BlocksciType {
+			return BlocksciType{v};
+		});
+	}
+
+	int64_t size() const override {
+		return rng.size();
+	}
+
+	bool empty() const override {
+		return ranges::empty(rng);
+	}
+};
+
+template <typename T>
+struct Iterator : public Sequence<T>, public GenericIterator {
+	ranges::any_view<T> rng;
+
+	template <typename R>
+	Iterator(R && r) : rng(std::forward<R>(r)) {}
+
+	Iterator(Range<T> r) : rng(std::move(r.rng)) {}
+
+	RawIterator<T> getIterator() override {
+		return rng;
+	}
+
+	RawIterator<BlocksciType> getGenericIterator() override {
+		return rng | ranges::view::transform([](T && v) -> BlocksciType {
+			return BlocksciType{v};
+		});
+	}
+};
+
+template <>
+struct Iterator<blocksci::AnyScript> : public Sequence<blocksci::AnyScript>, public GenericAddressIterator {
+	using T = blocksci::AnyScript;
+	ranges::any_view<T> rng;
+
+	template <typename R>
+	Iterator(R && r) : rng(std::forward<R>(r)) {}
+
+	Iterator(Range<T> r) : rng(std::move(r.rng)) {}
+
+	RawIterator<T> getIterator() override {
+		return rng;
+	}
+
+	RawIterator<BlocksciType> getGenericIterator() override {
+		return rng | ranges::view::transform([](T && v) -> BlocksciType {
+			return BlocksciType{v};
+		});
+	}
+};
+
+template <blocksci::AddressType::Enum type>
+struct Iterator<blocksci::ScriptAddress<type>> : public Sequence<blocksci::ScriptAddress<type>>, public GenericAddressIterator {
+	using T = blocksci::ScriptAddress<type>;
+	ranges::any_view<T> rng;
+
+	template <typename R>
+	Iterator(R && r) : rng(std::forward<R>(r)) {}
+
+	Iterator(Range<T> r) : rng(std::move(r.rng)) {}
+
+	RawIterator<T> getIterator() override {
+		return rng;
+	}
+
+	RawIterator<BlocksciType> getGenericIterator() override {
+		return rng | ranges::view::transform([](T && v) -> BlocksciType {
+			return BlocksciType{v};
+		});
 	}
 };
 

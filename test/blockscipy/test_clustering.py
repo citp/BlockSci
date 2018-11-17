@@ -33,7 +33,7 @@ def test_clustering_no_change(chain, json_data, regtest, tmpdir_factory):
     print(cluster.out_txes(), file=regtest)
     print(cluster.out_txes_count(), file=regtest)
     print(cluster.outs().to_list(), file=regtest)
-    print(cluster.size(), file=regtest)
+    print(cluster.address_count(), file=regtest)
     print(cluster.txes(), file=regtest)
     print(cluster.type_equiv_size, file=regtest)
 

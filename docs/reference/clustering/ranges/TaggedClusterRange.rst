@@ -1,5 +1,5 @@
 Tagged Cluster Range
 ====================================
 
-.. autoclass:: blocksci.TaggedClusterRange
+.. autoclass:: blocksci.cluster.TaggedClusterRange
    :members:

@@ -50,7 +50,7 @@ void init_heuristics(py::module &m);
 template <typename Class>
 void addSelfProxy(Class &cl) {
     using T = typename Class::type;
-    cl.def_property_readonly_static("self_proxy", [](pybind11::object &) -> Proxy<T> {
+    cl.def_property_readonly_static("_self_proxy", [](pybind11::object &) -> Proxy<T> {
         return makeSimpleProxy<T>();
     });
 }
@@ -108,35 +108,32 @@ PYBIND11_MODULE(_blocksci, m) {
 
     py::class_<GenericIterator> genericIteratorCl(m, "GenericIterator", "Class representing any blocksci iterator");
     py::class_<GenericRange, GenericIterator> genericRangeCl(m, "GenericRange", "Class representing any blocksci range");
+    py::class_<GenericAddressIterator, GenericIterator> genericAddressIteratorCl(m, "GenericAddressIterator", "Class representing any Address iterator");
+    py::class_<GenericAddressRange, GenericRange> genericAddressRangeCl(m, "GenericAddressRange", "Class representing any Address range");
+
 
     RangeClasses<Block> blockRangeCls(createRangeClasses<Block>(m));
     RangeClasses<Transaction> txRangeCls(createRangeClasses<Transaction>(m));
     RangeClasses<Input> inputRangeCls(createRangeClasses<Input>(m));
     RangeClasses<Output> outputRangeCls(createRangeClasses<Output>(m));
-    RangeClasses<AnyScript> addressRangeCls(createRangeClasses<AnyScript>(m));
+    RangeClasses<AnyScript> addressRangeCls(createAddressRangeClasses<AnyScript>(m));
     RangeClasses<EquivAddress> equivAddressRangeCls(createRangeClasses<EquivAddress>(m));
-    RangeClasses<script::Pubkey> pubkeyRangeCls(createRangeClasses<script::Pubkey>(m));
-    RangeClasses<script::PubkeyHash> pubkeyHashRangeCls(createRangeClasses<script::PubkeyHash>(m));
-    RangeClasses<script::WitnessPubkeyHash> witnessPubkeyHashRangeCls(createRangeClasses<script::WitnessPubkeyHash>(m));
-    RangeClasses<script::MultisigPubkey> multisigPubkeyRangeCls(createRangeClasses<script::MultisigPubkey>(m));
-    RangeClasses<script::Multisig> multisigRangeCls(createRangeClasses<script::Multisig>(m));
-    RangeClasses<script::ScriptHash> scripthashRangeCls(createRangeClasses<script::ScriptHash>(m));
-    RangeClasses<script::WitnessScriptHash> witnessScripthashRangeCls(createRangeClasses<script::WitnessScriptHash>(m));
-    RangeClasses<script::OpReturn> nulldataRangeCls(createRangeClasses<script::OpReturn>(m));
-    RangeClasses<script::Nonstandard> nonstandardRangeCls(createRangeClasses<script::Nonstandard>(m));
-    RangeClasses<script::WitnessUnknown> witnessUnknownRangeCls(createRangeClasses<script::WitnessUnknown>(m));
+    RangeClasses<script::Pubkey> pubkeyRangeCls(createAddressRangeClasses<script::Pubkey>(m));
+    RangeClasses<script::PubkeyHash> pubkeyHashRangeCls(createAddressRangeClasses<script::PubkeyHash>(m));
+    RangeClasses<script::WitnessPubkeyHash> witnessPubkeyHashRangeCls(createAddressRangeClasses<script::WitnessPubkeyHash>(m));
+    RangeClasses<script::MultisigPubkey> multisigPubkeyRangeCls(createAddressRangeClasses<script::MultisigPubkey>(m));
+    RangeClasses<script::Multisig> multisigRangeCls(createAddressRangeClasses<script::Multisig>(m));
+    RangeClasses<script::ScriptHash> scripthashRangeCls(createAddressRangeClasses<script::ScriptHash>(m));
+    RangeClasses<script::WitnessScriptHash> witnessScripthashRangeCls(createAddressRangeClasses<script::WitnessScriptHash>(m));
+    RangeClasses<script::OpReturn> nulldataRangeCls(createAddressRangeClasses<script::OpReturn>(m));
+    RangeClasses<script::Nonstandard> nonstandardRangeCls(createAddressRangeClasses<script::Nonstandard>(m));
+    RangeClasses<script::WitnessUnknown> witnessUnknownRangeCls(createAddressRangeClasses<script::WitnessUnknown>(m));
     
     RangeClasses<Cluster> clusterRangeCls(createRangeClasses<Cluster>(clusterMod));
     RangeClasses<TaggedCluster> taggedClusterRangeCls(createRangeClasses<TaggedCluster>(clusterMod));
     RangeClasses<TaggedAddress> taggedAddressRangeCls(createRangeClasses<TaggedAddress>(clusterMod));
 
     setupProxies(m);
-
-    addAnyInit<Block>(anyCl);
-    addAnyInit<Transaction>(anyCl);
-    addAnyInit<Input>(anyCl);
-    addAnyInit<Output>(anyCl);
-    addAnyInit<EquivAddress>(anyCl);
 
     addAnyInit<script::Pubkey>(anyCl);
     addAnyInit<script::PubkeyHash>(anyCl);
@@ -148,6 +145,13 @@ PYBIND11_MODULE(_blocksci, m) {
     addAnyInit<script::OpReturn>(anyCl);
     addAnyInit<script::Nonstandard>(anyCl);
     addAnyInit<script::WitnessUnknown>(anyCl);
+
+    addAnyInit<Block>(anyCl);
+    addAnyInit<Transaction>(anyCl);
+    addAnyInit<Input>(anyCl);
+    addAnyInit<Output>(anyCl);
+    addAnyInit<EquivAddress>(anyCl);
+    addAnyInit<AnyScript>(anyCl);
 
     addAnyInit<Cluster>(anyCl);
     addAnyInit<TaggedCluster>(anyCl);

@@ -10,19 +10,39 @@
 
 #include "proxy.hpp"
 
+#include <blocksci/scripts/scripts_fwd.hpp>
+
+template <typename T>
+struct SimpleProxyCreator {
+	Proxy<T> operator()() const {
+		return {std::function<T(std::any &)>{[](std::any &t) -> T {
+			return std::any_cast<T>(t);
+		}}, createProxyTypeInfo<T>()};
+	}
+};
+
+template <>
+struct SimpleProxyCreator<blocksci::AnyScript> {
+	Proxy<blocksci::AnyScript> operator()() const;
+};
 
 template<typename T>
 Proxy<T> makeSimpleProxy() {
-	return {std::function<T(std::any &)>{[](std::any &t) -> T {
-		return std::any_cast<T>(t);
-	}}, &typeid(T)};
+	return SimpleProxyCreator<T>{}();
 }
 
 template<typename T>
 Proxy<ranges::optional<T>> makeOptionalProxy() {
 	return {std::function<ranges::optional<T>(std::any &)>{[](std::any &t) -> ranges::optional<T> {
-		return std::any_cast<ranges::optional<T>>(t);
-	}}, &typeid(ranges::optional<T>)};
+		const std::type_info &o = t.type();
+		if (o == typeid(T)) {
+			return std::any_cast<T>(t);
+		} else if (o == typeid(ranges::optional<T>)) {
+			return std::any_cast<ranges::optional<T>>(t);
+		} else {
+			throw std::runtime_error("Proxy type error");
+		}
+	}}, createProxyTypeInfo<ranges::optional<T>>()};
 }
 
 template<typename T>
@@ -33,7 +53,7 @@ Proxy<RawIterator<T>> makeIteratorProxy() {
 			return ranges::view::transform(*rawIt, [](BlocksciType && r) -> T { return mpark::get<T>(r.var); });
 		}
 		return std::any_cast<RawIterator<T>>(t);
-	}}, &typeid(RawIterator<T>)};
+	}}, createProxyTypeInfo<RawIterator<T>>()};
 }
 
 template<typename T>
@@ -44,7 +64,7 @@ Proxy<RawRange<T>> makeRangeProxy() {
 			return ranges::view::transform(*rawIt, [](BlocksciType && r) -> T { return mpark::get<T>(r.var); });
 		}
 		return std::any_cast<RawRange<T>>(t);
-	}}, &typeid(RawRange<T>)};
+	}}, createProxyTypeInfo<RawRange<T>>()};
 }
 
 #endif /* proxy_create_hpp */

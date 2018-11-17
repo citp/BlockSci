@@ -19,7 +19,7 @@
 #include <range/v3/view/filter.hpp>
 #include <range/v3/view/transform.hpp>
 
-namespace internal {
+namespace {
 	constexpr auto isOptional = [](const auto &optional) { return static_cast<bool>(optional); };
 	constexpr auto derefOptional = [](const auto &optional) { return *optional; };
 
@@ -33,7 +33,7 @@ namespace internal {
 template<typename R>
 Proxy<RawIterator<R>> mapOptional(IteratorProxy &p, Proxy<ranges::optional<R>> &p2) {
 	return liftGeneric(p, [p2](auto && seq) -> RawIterator<R> {
-		return internal::flattenOptional(ranges::view::transform(std::forward<decltype(seq)>(seq), [p2](BlocksciType && v) -> ranges::optional<R> {
+		return flattenOptional(ranges::view::transform(std::forward<decltype(seq)>(seq), [p2](BlocksciType && v) -> ranges::optional<R> {
 			return p2(v.toAny());
 		}));
 	});

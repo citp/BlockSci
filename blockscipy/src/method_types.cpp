@@ -28,7 +28,9 @@ void addTypeName(
     std::unordered_map<std::type_index, std::string> &type_names,
     std::unordered_map<std::type_index, std::string> &docstring_type_names,
     const std::string &name,
-    bool isBlocksci = true) {
+    bool isBlocksci = true,
+    std::string module = ""
+    ) {
     type_names[std::type_index(typeid(T))] = name;
     type_names[std::type_index(typeid(ranges::optional<T>))] = "Optional" + name;
     type_names[std::type_index(typeid(Sequence<T>))] = name + "Sequence";
@@ -38,16 +40,16 @@ void addTypeName(
     type_names[std::type_index(typeid(RawRange<T>))] = name + "Range";
 
     if (isBlocksci) {
-        docstring_type_names[std::type_index(typeid(T))] = "blocksci." + name;
-        docstring_type_names[std::type_index(typeid(ranges::optional<T>))] = "Optional[blocksci." + name + "]";
-        docstring_type_names[std::type_index(typeid(Iterator<T>))] = "blocksci." + name + "Iterator";
-        docstring_type_names[std::type_index(typeid(Range<T>))] = "blocksci." + name + "Range";
-        docstring_type_names[std::type_index(typeid(RawIterator<T>))] = "blocksci." + name + "Iterator";
-        docstring_type_names[std::type_index(typeid(RawRange<T>))] = "blocksci." + name + "Range";
+        docstring_type_names[std::type_index(typeid(T))] = "blocksci." + module + name;
+        docstring_type_names[std::type_index(typeid(ranges::optional<T>))] = "Optional[blocksci." + module + name + "]";
+        docstring_type_names[std::type_index(typeid(Iterator<T>))] = "blocksci." + module + name + "Iterator";
+        docstring_type_names[std::type_index(typeid(Range<T>))] = "blocksci." + module + name + "Range";
+        docstring_type_names[std::type_index(typeid(RawIterator<T>))] = "blocksci." + module + name + "Iterator";
+        docstring_type_names[std::type_index(typeid(RawRange<T>))] = "blocksci." + module + name + "Range";
     } else {
-        docstring_type_names[std::type_index(typeid(ranges::optional<T>))] = "Optional[" + name + "]";
+        docstring_type_names[std::type_index(typeid(ranges::optional<T>))] = "Optional[" + module + name + "]";
     }
-    docstring_type_names[std::type_index(typeid(pybind11::array_t<T>))] = "numpy.ndarray[" + name + "]";
+    docstring_type_names[std::type_index(typeid(pybind11::array_t<T>))] = "numpy.ndarray[" + module + name + "]";
 }
 
 TypenameLookup::TypenameLookup() {
@@ -69,9 +71,9 @@ TypenameLookup::TypenameLookup() {
     addTypeName<Transaction>(typeNames, docstringTypeNames, "Tx");
     addTypeName<Input>(typeNames, docstringTypeNames, "Input");
     addTypeName<Output>(typeNames, docstringTypeNames, "Output");
-    addTypeName<Cluster>(typeNames, docstringTypeNames, "Cluster");
-    addTypeName<TaggedCluster>(typeNames, docstringTypeNames, "TaggedCluster");
-    addTypeName<TaggedAddress>(typeNames, docstringTypeNames, "TaggedAddress");
+    addTypeName<Cluster>(typeNames, docstringTypeNames, "Cluster", true, "cluster.");
+    addTypeName<TaggedCluster>(typeNames, docstringTypeNames, "TaggedCluster", true, "cluster.");
+    addTypeName<TaggedAddress>(typeNames, docstringTypeNames, "TaggedAddress", true, "cluster.");
 
     addTypeName<AddressType::Enum>(typeNames, docstringTypeNames, "address_type");
     addTypeName<uint160>(typeNames, docstringTypeNames, "uint160");

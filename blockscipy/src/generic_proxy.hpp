@@ -11,19 +11,16 @@
 #include "python_fwd.hpp"
 #include "blocksci_type.hpp"
 #include "sequence.hpp"
+#include "proxy_type_check.hpp"
 
 #include <any>
 #include <functional>
 
-enum class ProxyType {
-	Simple, Optional, Iterator, Range
-};
-
 struct GenericProxy {
 	virtual std::function<std::any(std::any &)> getGenericAny() const = 0;
 	virtual ProxyType getProxyType() const = 0;
-	virtual const std::type_info *getSourceType() const = 0;
-	virtual const std::type_info *getDestType() const = 0;
+	virtual ProxyTypeInfo getSourceType() const = 0;
+	virtual ProxyTypeInfo getDestType() const = 0;
 	virtual const std::type_info *getOutputType() const = 0;
 	virtual ~GenericProxy() = default;
 };

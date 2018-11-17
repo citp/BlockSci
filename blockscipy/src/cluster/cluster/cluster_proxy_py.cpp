@@ -21,7 +21,7 @@ struct AddClusterMethods {
         using namespace blocksci;
         func(property_tag, "index", +[](const Cluster &cluster) { return cluster.clusterNum; }, "The internal identifier of the cluster");
         func(method_tag, "tagged_addresses", &Cluster::taggedAddresses, "Given a dictionary of tags, return a range of TaggedAddress objects for any tagged addresses in the cluster", pybind11::arg("tagged_addresses"));
-        func(method_tag, "size", &Cluster::getSize, "The number of addresses in the cluster");
+        func(method_tag, "address_count", &Cluster::getSize, "The number of addresses in the cluster");
         func(property_tag, "type_equiv_size", &Cluster::getTypeEquivSize, "The number of addresses in the cluster not counting type equivalent addresses");
         func(method_tag, "balance", &Cluster::calculateBalance, "Calculates the balance held by this cluster at the height (Defaults to the full chain)", pybind11::arg("height") = -1);
         func(method_tag, "out_txes_count", +[](Cluster &cluster) -> int64_t {

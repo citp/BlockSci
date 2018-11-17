@@ -19,14 +19,14 @@ void addProxyBooleanMethods(Class &cl) {
 	cl
 	.def("__and__", [](P &p1, P &p2) -> P {
 		// Use this instead of lift to take advantage of short-circuit
-		proxyTypeCheck(p1.getSourceType(), p2.getSourceType());
+		p1.getSourceType().checkMatch(p2.getSourceType());
 		return {std::function<bool(std::any &)>{[p1, p2](std::any &v) -> bool {
 			return p1(v) && p2(v);
 		}}, p1.getSourceType()};
 	})
 	.def("__or__", [](P &p1, P &p2) -> P {
 		// Use this instead of lift to take advantage of short-circuit
-		proxyTypeCheck(p1.getSourceType(), p2.getSourceType());
+		p1.getSourceType().checkMatch(p2.getSourceType());
 		return {std::function<bool(std::any &)>{[p1, p2](std::any &v) -> bool {
 			return p1(v) || p2(v);
 		}}, p1.getSourceType()};

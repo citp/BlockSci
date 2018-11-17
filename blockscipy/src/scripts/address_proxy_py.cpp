@@ -84,7 +84,7 @@ void addAddressProxyMethods(AllProxyClasses<blocksci::AnyScript, ProxyAddress> &
 		static auto table = blocksci::make_dynamic_table<blocksci::AddressType, ProxyScriptWithTypeFunctor>();
         auto index = static_cast<size_t>(type);
         return table.at(index)(p);
-	});
+	}, "If the address has the given type return it, otherwise return None");
 
 	cls.applyToAll(AddProxyMethods{});
     setupRangesProxy(cls);

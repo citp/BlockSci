@@ -41,4 +41,15 @@ void addAllGroupMethods(pybind11::class_<GenericIterator> &cl) {
     addGroupByFuncs<bool>(cl);
     addGroupByFuncs<std::chrono::system_clock::time_point>(cl);
     addGroupByFuncs<blocksci::AddressType::Enum>(cl);
+
+
+    cl.def("to_list", [](GenericIterator & range) { 
+        pybind11::list list;
+        RANGES_FOR(auto && item, range.getGenericIterator()) {
+            mpark::visit([&list](auto && a) {
+                list.append(std::forward<decltype(a)>(a));
+            }, item.var);
+        }
+        return list;
+    }, "Returns a list of all of the objects in the range");
 }

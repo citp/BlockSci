@@ -287,24 +287,24 @@ def setup_optional_proxy_map_funcs():
 
 def setup_sequence_map_funcs():
     def range_map_func(r, func):
-        p = func(r.self_proxy.nested_proxy)
-        return apply_map(r.self_proxy, p)(r)
+        p = func(r._self_proxy.nested_proxy)
+        return apply_map(r._self_proxy, p)(r)
 
     def range_where_func(r, func):
-        p = func(r.self_proxy.nested_proxy)
-        return r.self_proxy._where(p)(r)
+        p = func(r._self_proxy.nested_proxy)
+        return r._self_proxy._where(p)(r)
 
     def range_any_func(r, func):
-        p = func(r.self_proxy.nested_proxy)
-        return r.self_proxy._any(p)(r)
+        p = func(r._self_proxy.nested_proxy)
+        return r._self_proxy._any(p)(r)
 
     def range_all_func(r, func):
-        p = func(r.self_proxy.nested_proxy)
-        return r.self_proxy._all(p)(r)
+        p = func(r._self_proxy.nested_proxy)
+        return r._self_proxy._all(p)(r)
 
     def range_group_by_func(r, grouper_func, evaler_func):
-        grouper = grouper_func(r.self_proxy.nested_proxy)
-        evaler = evaler_func(r.self_proxy.nested_proxy.range_proxy)
+        grouper = grouper_func(r._self_proxy.nested_proxy)
+        evaler = evaler_func(r._self_proxy.nested_proxy.range_proxy)
         return r._group_by(grouper, evaler)
 
     iterator_and_range_cls = [x for x in globals() if ('Iterator' in x or 'Range' in x) and x[0].isupper()]
@@ -341,101 +341,192 @@ def setup_sequence_proxy_map_funcs():
         getattr(proxy, cl).any = range_any_func
         getattr(proxy, cl).all = range_all_func
 
-non_copying_methods = set(["ptype", "iterator_proxy", "range_proxy", "output_type_name"])
+non_copying_methods = set(["ptype", "iterator_proxy", "range_proxy", "optional_proxy", "output_type_name"])
 
-def _get_functions_methods(obj):
+def _get_core_functions_methods(obj):
     return (attr for attr in obj.__dict__ if
             not attr[:2] == '__' and attr not in non_copying_methods and
             not isinstance(getattr(obj, attr, None), property))
 
 
-def _get_properties_methods(obj):
+def _get_core_properties_methods(obj):
     return (attr for attr in obj.__dict__ if attr not in non_copying_methods and
             isinstance(getattr(obj, attr, None), property))
 
+def _get_functions_methods(obj):
+    return (attr for attr in dir(obj) if
+            not attr[:2] == '__' and attr not in non_copying_methods and
+            not isinstance(getattr(obj, attr, None), property))
 
-def setup_self_methods(main, proxy_obj_type = None):
-    if proxy_obj_type == None:
-        proxy_obj_type = type(main.self_proxy)
+
+def _get_properties_methods(obj):
+    return (attr for attr in dir(obj) if attr not in non_copying_methods and
+            isinstance(getattr(obj, attr, None), property))
+
+# https://gist.github.com/carlsmith/b2e6ba538ca6f58689b4c18f46fef11c
+def replace(string, substitutions):
+    substrings = sorted(substitutions, key=len, reverse=True)
+    regex = re.compile('|'.join(map(re.escape, substrings)))
+    return regex.sub(lambda match: substitutions[match.group(0)], string)
+
+def fix_all_doc_def(doc):
+    doc = replace(doc, {
+        "blocksci.proxy.intIteratorProxy": "numpy.ndarray[int]",
+        "blocksci.proxy.intRangeProxy": "numpy.ndarray[int]",
+        "blocksci.proxy.boolIteratorProxy": "numpy.ndarray[bool]",
+        "blocksci.proxy.boolRangeProxy": "numpy.ndarray[bool]",
+        "blocksci.proxy.ClusterIteratorProxy": "blocksci.cluster.ClusterIterator",
+        "blocksci.proxy.TaggedClusterIteratorProxy": "blocksci.cluster.TaggedClusterIterator",
+        "blocksci.proxy.TaggedAddressIteratorProxy": "blocksci.cluster.TaggedAddressIterator"
+    })
+    doc = re.sub(r"(blocksci\.proxy\.)([a-zA-Z]+)(IteratorProxy)", r"blocksci.\2Iterator", doc)
+    return doc
+
+def fix_self_doc_def(doc):
+    doc = fix_all_doc_def(doc)
+    doc = replace(doc, {
+        "blocksci.proxy.intProxy": "int",
+        "blocksci.proxy.boolProxy": "bool",
+        "blocksci.proxy.ClusterProxy": "blocksci.cluster.Cluster",
+        "blocksci.proxy.TaggedClusterProxy": "blocksci.cluster.TaggedCluster",
+        "blocksci.proxy.TaggedAddressProxy": "blocksci.cluster.TaggedAddress",
+        "blocksci.proxy.ClusterRangeProxy": "blocksci.cluster.ClusterRange",
+        "blocksci.proxy.TaggedClusterRangeProxy": "blocksci.cluster.TaggedClusterRange",
+        "blocksci.proxy.TaggedAddressRangeProxy": "blocksci.cluster.TaggedAddressRange"
+    })
+
+    doc = re.sub(r"(blocksci\.proxy\.Optional)([a-zA-Z]+)(Proxy)", r"Optional\[blocksci\.\2\]", doc)
+    doc = re.sub(r"(blocksci\.proxy\.)([a-zA-Z]+)(RangeProxy)", r"blocksci.\2Range", doc)
+    doc = re.sub(r"(blocksci\.proxy\.)([a-zA-Z]+)(Proxy)", r"blocksci\.\2", doc)
+    return doc
+
+def fix_sequence_doc_def(doc):
+    doc = fix_all_doc_def(doc)
+    doc = replace(doc, {
+        "blocksci.proxy.intProxy": "numpy.ndarray[int]",
+        "blocksci.proxy.boolProxy": "numpy.ndarray[bool]",
+        "blocksci.proxy.ClusterRangeProxy": "blocksci.cluster.ClusterIterator",
+        "blocksci.proxy.TaggedClusterRangeProxy": "blocksci.cluster.TaggedClusterIterator",
+        "blocksci.proxy.TaggedAddressRangeProxy": "blocksci.cluster.ClusterIterator"
+    })
+
+    doc = re.sub(r"(blocksci\.proxy\.Optional)([a-zA-Z]+)(Proxy)", r"blocksci\.\2Iterator", doc)
+    doc = re.sub(r"(blocksci\.proxy\.)([a-zA-Z]+)(RangeProxy)", r"blocksci.\2Iterator", doc)
+    return doc
+
+def fix_iterator_doc_def(doc):
+    doc = fix_sequence_doc_def(doc)
+    doc = replace(doc, {
+        "blocksci.proxy.ClusterProxy": "blocksci.cluster.ClusterIterator",
+        "blocksci.proxy.TaggedClusterProxy": "blocksci.cluster.TaggedClusterIterator",
+        "blocksci.proxy.TaggedAddressProxy": "blocksci.cluster.TaggedAddressIterator"
+    })
+
+    doc = re.sub(r"(blocksci\.proxy\.)([a-zA-Z]+)(Proxy)", r"blocksci\.\2Iterator", doc)
+    return doc
+
+def fix_range_doc_def(doc):
+    doc = fix_sequence_doc_def(doc)
+    doc = replace(doc, {
+        "blocksci.proxy.ClusterProxy": "blocksci.cluster.ClusterRange",
+        "blocksci.proxy.TaggedClusterProxy": "blocksci.cluster.TaggedClusterRange",
+        "blocksci.proxy.TaggedAddressProxy": "blocksci.cluster.TaggedAddressRange"
+    })
+
+    doc = re.sub(r"(blocksci\.proxy\.)([a-zA-Z]+)(Proxy)", r"blocksci\.\2Range", doc)
+    return doc
+
+def setup_self_methods(main, proxy_obj_type = None, sample_proxy = None):
+    if proxy_obj_type is None:
+        proxy_obj_type = type(main._self_proxy)
+    if sample_proxy is None:
+        sample_proxy = main._self_proxy
 
     def self_property_creator(name):
-        prop = property(lambda s: getattr(s.self_proxy, name)(s))
-        prop.__doc__ = f'{getattr(proxy_obj_type, name).__doc__} \n\n:type: :class:`{proxy_obj_type.output_type_name}`'
+        prop = property(lambda s: getattr(s._self_proxy, name)(s))
+        prop.__doc__ = str(getattr(proxy_obj_type, name).__doc__) + "\n\n:type: :class:`" + getattr(sample_proxy, name).output_type_name + "`"
         return prop
 
     def self_method_creator(name):
-        method = lambda s, *args: getattr(s.self_proxy, name)(*args)(s)
-        method.__doc__ = getattr(proxy_obj_type, name).__doc__
+        def method(s, *args):
+            return getattr(s._self_proxy, name)(*args)(s)
+
+        orig_doc = getattr(proxy_obj_type, name).__doc__
+        split = orig_doc.split("\n\n")
+        method.__doc__ = fix_self_doc_def(split[0]) + '\n\n' + split[1]
         return method
 
-    for proxy_func in _get_properties_methods(proxy_obj_type):
+    for proxy_func in _get_core_properties_methods(proxy_obj_type):
         setattr(main, proxy_func, self_property_creator(proxy_func))
 
-    for proxy_func in _get_functions_methods(proxy_obj_type):
+    for proxy_func in _get_core_functions_methods(proxy_obj_type):
         setattr(main, proxy_func, self_method_creator(proxy_func))
 
 
-def setup_iterator_methods(iterator):
-    proxy_self = iterator.self_proxy
-    proxy_obj = proxy_self.nested_proxy
-    proxy_self_cl = type(proxy_self)
-    
+def setup_iterator_methods(iterator, doc_func=fix_iterator_doc_def, nested_proxy_cl=None, sample_proxy=None):
+    if nested_proxy_cl is None:
+        nested_proxy_cl = type(iterator._self_proxy.nested_proxy)
+        sample_proxy = iterator._self_proxy
 
     def iterator_creator(name):
-        proxy = apply_map(proxy_self, getattr(proxy_obj, name))
-        prop = property(proxy)
-        prop.__doc__ = f'For each item: {getattr(type(proxy_obj), name).__doc__} \n\n:type: :class:`{proxy.output_type_name}`'
+        def method(s):
+            return apply_map(s._self_proxy, getattr(s._self_proxy.nested_proxy, name))(s)
+        prop = property(method)
+        prop.__doc__ = "For each item: " + \
+                       getattr(nested_proxy_cl, name).__doc__ + \
+                       "\n\n:type: :class:`" + \
+                       apply_map(sample_proxy, getattr(sample_proxy.nested_proxy, name)).output_type_name + \
+                       "`"
         return prop
 
     def iterator_method_creator(name):
-        method = lambda rng, *args: apply_map(proxy_self, getattr(proxy_obj, name)(*args))(rng)
-        method.__doc__ = 'For each item: ' + getattr(type(proxy_obj), name).__doc__
+        def method(rng, *args):
+            return apply_map(rng._self_proxy, getattr(rng._self_proxy.nested_proxy, name)(*args))(rng)
+
+        orig_doc = getattr(nested_proxy_cl, name).__doc__
+        split = orig_doc.split("\n\n")
+        if len(split) != 2:
+            print(iterator, name)
+        method.__doc__ = doc_func(split[0]) + '\n\nFor each item: ' + split[1]
         return method
+
+    for proxy_func in _get_core_properties_methods(nested_proxy_cl):
+        setattr(iterator, proxy_func, iterator_creator(proxy_func))
+
+    for proxy_func in _get_core_functions_methods(nested_proxy_cl):
+        setattr(iterator, proxy_func, iterator_method_creator(proxy_func))
+
+def setup_iterator_proxy_methods(iterator_proxy):
+    nested_proxy_cl = type(iterator_proxy.nested_proxy)
+
     def iterator_proxy_creator(name):
-        return property(lambda rng: apply_map(rng, getattr(proxy_obj, name)))
+        def method(rng):
+            return apply_map(rng, getattr(rng.nested_proxy, name))
+        return property(method)
 
     def iterator_proxy_method_creator(name):
-        return lambda rng, *args: apply_map(rng, getattr(proxy_obj, name)(*args))
+        def method(rng, *args):
+            return apply_map(rng, getattr(rng.nested_proxy, name)(*args))
 
-    for proxy_func in _get_properties_methods(type(proxy_obj)):
-        setattr(iterator, proxy_func, iterator_creator(proxy_func))
-        setattr(proxy_self_cl, proxy_func, iterator_proxy_creator(proxy_func))
-
-    for proxy_func in _get_functions_methods(type(proxy_obj)):
-        setattr(iterator, proxy_func, iterator_method_creator(proxy_func))
-        setattr(proxy_self_cl, proxy_func, iterator_proxy_method_creator(proxy_func))
-
-def setup_range_methods(blocksci_range):
-    proxy_self = blocksci_range.self_proxy
-    proxy_obj = proxy_self.nested_proxy
-    proxy_self_cl = type(proxy_self)
-
-    def range_creator(name):
-        proxy = apply_map(proxy_self, getattr(proxy_obj, name))
-        prop = property(proxy)
-        prop.__doc__ = f'For each item: {getattr(type(proxy_obj), name).__doc__} \n\n:type: :class:`{proxy.output_type_name}`'
-        return prop
-
-    def range_method_creator(name):
-        method = lambda rng, *args: apply_map(proxy_self, getattr(proxy_obj, name)(*args))(rng)
-        method.__doc__ = 'For each item: ' + getattr(type(proxy_obj), name).__doc__
         return method
 
-    def range_proxy_creator(name):
-        return property(lambda rng: apply_map(rng, getattr(proxy_obj, name)))
+    for proxy_func in _get_properties_methods(nested_proxy_cl):
+        setattr(iterator_proxy, proxy_func, iterator_proxy_creator(proxy_func))
 
-    def range_proxy_method_creator(name):
-        return lambda rng, *args: apply_map(rng, getattr(proxy_obj, name)(*args))
+    for proxy_func in _get_functions_methods(nested_proxy_cl):
+        setattr(iterator_proxy, proxy_func, iterator_proxy_method_creator(proxy_func))
 
-    for proxy_func in _get_properties_methods(type(proxy_obj)):
-        setattr(blocksci_range, proxy_func, range_creator(proxy_func))
-        setattr(proxy_self_cl, proxy_func, range_proxy_creator(proxy_func))
+def setup_range_methods(blocksci_range, nested_proxy_cl=None, sample_proxy=None):
+    setup_iterator_methods(blocksci_range, fix_range_doc_def, nested_proxy_cl, sample_proxy)
+    blocksci_range.__getitem__ = lambda rng, index: rng._self_proxy[index](rng)
 
-    for proxy_func in _get_functions_methods(type(proxy_obj)):
-        setattr(blocksci_range, proxy_func, range_method_creator(proxy_func))
-        setattr(proxy_self_cl, proxy_func, range_proxy_method_creator(proxy_func))
+def setup_iterator_and_proxy_methods(iterator):
+    setup_iterator_methods(iterator)
+    setup_iterator_proxy_methods(iterator._self_proxy)
 
-    blocksci_range.__getitem__ = lambda rng, index: proxy_self[index](rng)
+def setup_range_and_proxy_methods(blocksci_range):
+    setup_range_methods(blocksci_range)
+    setup_iterator_proxy_methods(blocksci_range._self_proxy)
 
 setup_optional_proxy_map_funcs()
 setup_sequence_proxy_map_funcs()
@@ -447,7 +538,7 @@ setup_self_methods(Output)
 setup_self_methods(Input)
 setup_self_methods(EquivAddress)
 
-setup_self_methods(Address, proxy.ProxyAddress)
+setup_self_methods(Address, proxy.ProxyAddress, PubkeyAddress._self_proxy)
 setup_self_methods(PubkeyAddress)
 setup_self_methods(PubkeyHashAddress)
 setup_self_methods(WitnessPubkeyHashAddress)
@@ -463,47 +554,49 @@ setup_self_methods(cluster.Cluster)
 setup_self_methods(cluster.TaggedCluster)
 setup_self_methods(cluster.TaggedAddress)
 
-setup_iterator_methods(BlockIterator)
-setup_iterator_methods(TxIterator)
-setup_iterator_methods(OutputIterator)
-setup_iterator_methods(InputIterator)
-setup_iterator_methods(AddressIterator)
-setup_iterator_methods(EquivAddressIterator)
+setup_iterator_and_proxy_methods(BlockIterator)
+setup_iterator_and_proxy_methods(TxIterator)
+setup_iterator_and_proxy_methods(OutputIterator)
+setup_iterator_and_proxy_methods(InputIterator)
+setup_iterator_and_proxy_methods(AddressIterator)
+setup_iterator_and_proxy_methods(EquivAddressIterator)
 
-setup_iterator_methods(PubkeyAddressIterator)
-setup_iterator_methods(PubkeyHashAddressIterator)
-setup_iterator_methods(WitnessPubkeyHashAddressIterator)
-setup_iterator_methods(MultisigPubkeyIterator)
-setup_iterator_methods(ScriptHashAddressIterator)
-setup_iterator_methods(WitnessScriptHashAddressIterator)
-setup_iterator_methods(MultisigAddressIterator)
-setup_iterator_methods(NonstandardAddressIterator)
-setup_iterator_methods(OpReturnIterator)
+setup_iterator_methods(GenericAddressIterator, proxy.ProxyAddress, PubkeyAddressIterator._self_proxy)
+setup_iterator_and_proxy_methods(PubkeyAddressIterator)
+setup_iterator_and_proxy_methods(PubkeyHashAddressIterator)
+setup_iterator_and_proxy_methods(WitnessPubkeyHashAddressIterator)
+setup_iterator_and_proxy_methods(MultisigPubkeyIterator)
+setup_iterator_and_proxy_methods(ScriptHashAddressIterator)
+setup_iterator_and_proxy_methods(WitnessScriptHashAddressIterator)
+setup_iterator_and_proxy_methods(MultisigAddressIterator)
+setup_iterator_and_proxy_methods(NonstandardAddressIterator)
+setup_iterator_and_proxy_methods(OpReturnIterator)
 
-setup_iterator_methods(cluster.ClusterIterator)
-setup_iterator_methods(cluster.TaggedClusterIterator)
-setup_iterator_methods(cluster.TaggedAddressIterator)
+setup_iterator_and_proxy_methods(cluster.ClusterIterator)
+setup_iterator_and_proxy_methods(cluster.TaggedClusterIterator)
+setup_iterator_and_proxy_methods(cluster.TaggedAddressIterator)
 
-setup_range_methods(BlockRange)
-setup_range_methods(TxRange)
-setup_range_methods(OutputRange)
-setup_range_methods(InputRange)
-setup_range_methods(AddressRange)
-setup_range_methods(EquivAddressRange)
+setup_range_and_proxy_methods(BlockRange)
+setup_range_and_proxy_methods(TxRange)
+setup_range_and_proxy_methods(OutputRange)
+setup_range_and_proxy_methods(InputRange)
+setup_range_and_proxy_methods(AddressRange)
+setup_range_and_proxy_methods(EquivAddressRange)
 
-setup_range_methods(PubkeyAddressRange)
-setup_range_methods(PubkeyHashAddressRange)
-setup_range_methods(WitnessPubkeyHashAddressRange)
-setup_range_methods(MultisigPubkeyRange)
-setup_range_methods(ScriptHashAddressRange)
-setup_range_methods(WitnessScriptHashAddressRange)
-setup_range_methods(MultisigAddressRange)
-setup_range_methods(NonstandardAddressRange)
-setup_range_methods(OpReturnRange)
+setup_range_methods(GenericAddressRange, proxy.ProxyAddress, PubkeyAddressRange._self_proxy)
+setup_range_and_proxy_methods(PubkeyAddressRange)
+setup_range_and_proxy_methods(PubkeyHashAddressRange)
+setup_range_and_proxy_methods(WitnessPubkeyHashAddressRange)
+setup_range_and_proxy_methods(MultisigPubkeyRange)
+setup_range_and_proxy_methods(ScriptHashAddressRange)
+setup_range_and_proxy_methods(WitnessScriptHashAddressRange)
+setup_range_and_proxy_methods(MultisigAddressRange)
+setup_range_and_proxy_methods(NonstandardAddressRange)
+setup_range_and_proxy_methods(OpReturnRange)
 
-setup_range_methods(cluster.ClusterRange)
-setup_range_methods(cluster.TaggedClusterRange)
-setup_range_methods(cluster.TaggedAddressRange)
+setup_range_and_proxy_methods(cluster.ClusterRange)
+setup_range_and_proxy_methods(cluster.TaggedClusterRange)
+setup_range_and_proxy_methods(cluster.TaggedAddressRange)
 
 
 def txes_including_output_of_type(txes, typ):
@@ -514,23 +607,33 @@ TxIterator.including_output_of_type = txes_including_output_of_type
 TxRange.including_output_of_type = txes_including_output_of_type
 
 
-def inputs_sent_before_height(inputs, height):
+def inputs_sent_before_height(inputs, height: int) -> InputIterator:
+    """Filter the inputs to include only inputs which spent an output created before the given height
+    """
     return inputs.where(lambda inp: inp.spent_tx.block.height < height)
 
 
-def inputs_sent_after_height(inputs, height):
+def inputs_sent_after_height(inputs, height: int) -> InputIterator:
+    """Filter the inputs to include only inputs which spent an output created after the given height
+    """
     return inputs.where(lambda inp: inp.spent_tx.block.height >= height)
 
 
-def inputs_with_age_less_than(inputs, age):
+def inputs_with_age_less_than(inputs, age: int) -> InputIterator:
+    """Filter the inputs to include only inputs with age less than the given value
+    """
     return inputs.where(lambda inp: inp.tx.block_height - inp.spent_tx.block.height < age)
 
 
-def inputs_with_age_greater_than(inputs, age):
+def inputs_with_age_greater_than(inputs, age: int) -> InputIterator:
+    """Filter the inputs to include only inputs with age more than the given value
+    """
     return inputs.where(lambda inp: inp.tx.block_height - inp.spent_tx.block.height >= age)
 
 
-def inputs_with_address_type(inputs, typ):
+def inputs_with_address_type(inputs, typ: address_type) -> InputIterator:
+    """Filter the inputs to include only inputs that came from an address with the given type
+    """
     return inputs.where(lambda inp: inp.address_type == typ)
 
 

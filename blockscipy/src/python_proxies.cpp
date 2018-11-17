@@ -75,10 +75,6 @@ void setupProxies(py::module &m) {
     ScriptProxies scriptProxies(proxyMod);
     OtherProxies otherProxies(proxyMod);
 
-    proxyCl.def_property_readonly("output_type_name", [](GenericProxy &p) {
-        return typenameLookup().getDocstringName(*p.getOutputType());
-    });
-
     addOptionalProxyMethods(proxyOptionalCl);
     applyProxyIteratorFuncs(proxyIteratorCl);
     applyProxyRangeFuncs(proxyRangeCl);
