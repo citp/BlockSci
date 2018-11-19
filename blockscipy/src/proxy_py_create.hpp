@@ -22,35 +22,6 @@ std::string proxySequenceName() {
     return typenameLookup().getName<To>() + "SequenceProxy";
 }
 
-template <typename T>
-void addProxyConditional(pybind11::module &m) {
-    m
-    .def("conditional", [](const Proxy<bool> &cond, const Proxy<T> &p1, const Proxy<T> &p2) -> Proxy<T> {
-        cond.sourceType.checkMatch(p1.sourceType);
-        cond.sourceType.checkMatch(p2.sourceType);
-        return {std::function<T(std::any &)>{[cond, p1, p2](std::any &t) -> T {
-            if(cond(t)) {
-                return p1(t);
-            } else {
-                return p2(t);
-            }
-        }}, p1.sourceType};
-    })
-    .def("while_loop", [](const Proxy<bool> &cond, const Proxy<T> &body) -> Proxy<T> {
-        cond.sourceType.checkMatch(body.sourceType);
-        cond.sourceType.checkAccept(body.getDestType());
-
-        return {std::function<T(std::any &)>{[cond, body](std::any &t) -> T {
-            std::any v = t;
-            while(cond(v)) {
-                v = body(v);
-            }
-            return std::any_cast<T>(v);
-        }}, cond.sourceType};
-    })
-    ;
-}
-
 template <typename T, typename SimpleBase = SimpleProxy>
 AllProxyClasses<T, SimpleBase> createProxyClasses(pybind11::module &m) {
     pybind11::class_<Proxy<T>, SimpleBase> base(m, strdup(proxyName<T>().c_str()));
@@ -104,13 +75,7 @@ AllProxyClasses<T, SimpleBase> createProxyClasses(pybind11::module &m) {
     pybind11::implicitly_convertible<T, Proxy<ranges::optional<T>>>();
     pybind11::implicitly_convertible<Proxy<T>, Proxy<ranges::optional<T>>>();
     pybind11::implicitly_convertible<Proxy<RawRange<T>>, Proxy<RawIterator<T>>>();
-
-
-    addProxyConditional<T>(m);
-    addProxyConditional<ranges::optional<T>>(m);
-    addProxyConditional<RawIterator<T>>(m);
-    addProxyConditional<RawRange<T>>(m);
-
+    
     return {base, optional, sequence, iterator, range};
 }
 

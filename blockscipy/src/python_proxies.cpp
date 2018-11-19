@@ -8,6 +8,7 @@
 #include "python_proxies.hpp"
 #include "python_proxies_types.hpp"
 #include "caster_py.hpp"
+#include "proxy/proxy_functions.hpp"
 #include "generic_proxy/range.hpp"
 #include "generic_proxy/optional.hpp"
 #include "method_types.hpp"
@@ -75,7 +76,9 @@ void setupProxies(py::module &m) {
     ScriptProxies scriptProxies(proxyMod);
     OtherProxies otherProxies(proxyMod);
 
-    addOptionalProxyMethods(proxyOptionalCl);
+    defineProxyFunctions(m, proxyMod);
+
+    addOptionalProxyMethods(proxyOptionalCl, m);
     applyProxyIteratorFuncs(proxyIteratorCl);
     applyProxyRangeFuncs(proxyRangeCl);
 

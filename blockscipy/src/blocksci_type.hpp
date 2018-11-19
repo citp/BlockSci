@@ -67,5 +67,9 @@ struct BlocksciType {
 	}
 };
 
+inline void addToList(pybind11::list &l, BlocksciType &it) {
+	return mpark::visit([&](auto &r) { l.append(r); }, it.var);
+}
+
 
 #endif /* blocksci_type_hpp */
