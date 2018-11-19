@@ -74,10 +74,12 @@ def test_address_regression(chain, json_data, regtest):
         print(addr.balance(), file=regtest)
         print(addr.equiv(), file=regtest)
         print(addr.has_been_spent, file=regtest)
+        print(addr.ins.to_list(), file=regtest)
         print(addr.in_txes(), file=regtest)
         print(addr.in_txes_count(), file=regtest)
         print(addr.out_txes.to_list(), file=regtest)
         print(addr.out_txes_count(), file=regtest)
+        print(addr.outs.to_list(), file=regtest)
         if addr_type == "p2pkh" or addr_type == "p2wpkh":
             print(addr.pubkey, file=regtest)
             print(addr.pubkeyhash, file=regtest)
