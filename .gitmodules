@@ -42,4 +42,4 @@
 	url = https://github.com/nlohmann/json
 [submodule "test/testchain-generator"]
 	path = test/testchain-generator
-	url = git@github.com:citp/testchain-generator.git
+	url = https://github.com/citp/testchain-generator
