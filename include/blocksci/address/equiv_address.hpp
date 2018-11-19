@@ -30,7 +30,7 @@ namespace blocksci {
     class BLOCKSCI_EXPORT EquivAddress {
         bool scriptEquivalent;
 
-        DataAccess &access;
+        DataAccess *access;
 
         // Set of equivalent addresses
         std::unordered_set<Address> addresses;

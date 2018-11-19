@@ -39,7 +39,7 @@ namespace blocksci {
     struct TaggedCluster;
     
     class BLOCKSCI_EXPORT Cluster {
-        const ClusterAccess &clusterAccess;
+        const ClusterAccess *clusterAccess;
         
         ranges::iterator_range<const blocksci::DedupAddress *> getDedupAddresses() const;
         
@@ -51,7 +51,7 @@ namespace blocksci {
     public:
         uint32_t clusterNum;
         
-        Cluster(uint32_t clusterNum_, const ClusterAccess &access_) : clusterAccess(access_), clusterNum(clusterNum_) {}
+        Cluster(uint32_t clusterNum_, const ClusterAccess &access_) : clusterAccess(&access_), clusterNum(clusterNum_) {}
         
         ranges::any_view<Address> getAddresses() const;
         

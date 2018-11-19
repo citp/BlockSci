@@ -50,11 +50,11 @@ namespace {
 namespace blocksci {
     
     ranges::iterator_range<const blocksci::DedupAddress *> Cluster::getDedupAddresses() const {
-        return clusterAccess.getClusterScripts(clusterNum);
+        return clusterAccess->getClusterScripts(clusterNum);
     }
     
     ranges::any_view<Address> Cluster::getPossibleAddresses() const {
-        DataAccess *access_ = &clusterAccess.access;
+        DataAccess *access_ = &clusterAccess->access;
         return getDedupAddresses() | ranges::view::transform([access_](const DedupAddress &dedupAddress) {
             uint32_t scriptNum = dedupAddress.scriptNum;
             return addressTypesRange(dedupAddress.type) | ranges::view::transform([access_, scriptNum](AddressType::Enum addressType) {
@@ -64,7 +64,7 @@ namespace blocksci {
     }
     
     ranges::any_view<Address> Cluster::getAddresses() const {
-        DataAccess *access_ = &clusterAccess.access;
+        DataAccess *access_ = &clusterAccess->access;
         return getDedupAddresses() | ranges::view::transform([access_](const DedupAddress &address) {
             auto header = access_->getScripts().getScriptHeader(address.scriptNum, address.type);
             uint32_t scriptNum = address.scriptNum;
@@ -141,7 +141,7 @@ namespace blocksci {
         uint32_t count = 0;
         for (auto &address : getDedupAddresses()) {
             if (address.type == dedupSearchType) {
-                auto header = clusterAccess.access.getScripts().getScriptHeader(address.scriptNum, address.type);
+                auto header = clusterAccess->access.getScripts().getScriptHeader(address.scriptNum, address.type);
                 if (header->seenTopLevel(type)) {
                     ++count;
                 }
@@ -164,21 +164,21 @@ namespace blocksci {
     
     std::vector<blocksci::Transaction> Cluster::getTransactions() const {
         auto pointers = getOutputPointers() | ranges::to_vector;
-        return blocksci::getTransactions(pointers, clusterAccess.access);
+        return blocksci::getTransactions(pointers, clusterAccess->access);
     }
     
     std::vector<blocksci::Transaction> Cluster::getOutputTransactions() const {
         auto pointers = getOutputPointers() | ranges::to_vector;
-        return blocksci::getOutputTransactions(pointers, clusterAccess.access);
+        return blocksci::getOutputTransactions(pointers, clusterAccess->access);
     }
     
     std::vector<blocksci::Transaction> Cluster::getInputTransactions() const {
         auto pointers = getOutputPointers() | ranges::to_vector;
-        return blocksci::getInputTransactions(pointers, clusterAccess.access);
+        return blocksci::getInputTransactions(pointers, clusterAccess->access);
     }
     
     int64_t Cluster::calculateBalance(BlockHeight height) const {
-        auto access_ = &clusterAccess.access;
+        auto access_ = &clusterAccess->access;
         auto balances = getDedupAddresses() | ranges::view::transform([access_, height](const DedupAddress &dedupAddress) {
             uint32_t scriptNum = dedupAddress.scriptNum;
             auto possibleAddressBalances = addressTypesRange(dedupAddress.type) | ranges::view::transform([&access_, scriptNum, height](AddressType::Enum addressType) {

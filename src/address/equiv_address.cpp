@@ -69,9 +69,9 @@ namespace {
 }
 
 namespace blocksci {
-    EquivAddress::EquivAddress(const Address &address, bool scriptEquivalent_) : scriptEquivalent(scriptEquivalent_), access(address.getAccess()), addresses(initAddresses(DedupAddress{address.scriptNum, dedupType(address.type)}, scriptEquivalent_, address.getAccess())) {}
+    EquivAddress::EquivAddress(const Address &address, bool scriptEquivalent_) : scriptEquivalent(scriptEquivalent_), access(&address.getAccess()), addresses(initAddresses(DedupAddress{address.scriptNum, dedupType(address.type)}, scriptEquivalent_, address.getAccess())) {}
     
-    EquivAddress::EquivAddress(const DedupAddress &address, bool scriptEquivalent_, DataAccess &access_) : scriptEquivalent(scriptEquivalent_), access(access_), addresses(initAddresses(address, scriptEquivalent_, access_)) {}
+    EquivAddress::EquivAddress(const DedupAddress &address, bool scriptEquivalent_, DataAccess &access_) : scriptEquivalent(scriptEquivalent_), access(&access_), addresses(initAddresses(address, scriptEquivalent_, access_)) {}
     
     std::string EquivAddress::toString() const {
         auto sortedAddresses = addresses | ranges::to_vector;
@@ -117,15 +117,15 @@ namespace blocksci {
     }
     
     std::vector<Transaction> EquivAddress::getTransactions() const {
-        return blocksci::getTransactions(getOutputPointers(), access);
+        return blocksci::getTransactions(getOutputPointers(), *access);
     }
     
     std::vector<Transaction> EquivAddress::getOutputTransactions() const {
-        return blocksci::getOutputTransactions(getOutputPointers(), access);
+        return blocksci::getOutputTransactions(getOutputPointers(), *access);
     }
     
     std::vector<Transaction> EquivAddress::getInputTransactions() const {
-        return blocksci::getInputTransactions(getOutputPointers(), access);
+        return blocksci::getInputTransactions(getOutputPointers(), *access);
     }
 }
 
