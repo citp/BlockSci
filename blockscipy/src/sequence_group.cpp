@@ -8,6 +8,7 @@
 #include "sequence_group.hpp"
 #include "generic_sequence.hpp"
 #include "proxy.hpp"
+#include "caster_py.hpp"
 
 #include <pybind11/stl.h>
 
