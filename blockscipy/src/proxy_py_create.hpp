@@ -12,6 +12,9 @@
 #include "proxy_type_check.hpp"
 #include "method_types.hpp"
 
+#include <range/v3/view/empty.hpp>
+#include <range/v3/view/single.hpp>
+
 template <typename To>
 std::string proxyName() {
     return typenameLookup().getName<To>() + "Proxy";
@@ -53,7 +56,18 @@ AllProxyClasses<T, SimpleBase> createProxyClasses(pybind11::module &m) {
         return {std::function<RawRange<T>(std::any &)>{[r = val.rng](std::any &) -> RawRange<T> {
             return r;
         }}, {nullptr, nullptr, ProxyType::Simple}};
-    }));
+    }))
+    .def(pybind11::init([](const Proxy<ranges::optional<T>> &p) -> Proxy<RawRange<T>> {
+        return {std::function<RawRange<T>(std::any &)>{[p](std::any & v) -> RawRange<T> {
+            auto val = p(v);
+            if (val) {
+                return ranges::view::single(*val);
+            } else {
+                return ranges::view::empty<T>();
+            }
+        }}, p.sourceType};
+    }))
+    ;
 
     optional
     .def(pybind11::init([](const Proxy<T> &p) -> Proxy<ranges::optional<T>> {
@@ -61,19 +75,25 @@ AllProxyClasses<T, SimpleBase> createProxyClasses(pybind11::module &m) {
             return p(v);
         }}, p.sourceType};
     }))
-    .def(pybind11::init([](const T &v) -> Proxy<ranges::optional<T>> {
-        return {std::function<ranges::optional<T>(std::any &)>{[v](std::any &) -> ranges::optional<T> {
-            return v;
-        }}, {nullptr, nullptr, ProxyType::Simple}};
-    }))
     ;
 
     pybind11::implicitly_convertible<T, Proxy<T>>();
-    pybind11::implicitly_convertible<Iterator<T>, Proxy<RawIterator<T>>>();
+    pybind11::implicitly_convertible<T, Proxy<ranges::optional<T>>>();
+    pybind11::implicitly_convertible<T, Proxy<RawIterator<T>>>();
+    pybind11::implicitly_convertible<T, Proxy<RawRange<T>>>();
+
+    pybind11::implicitly_convertible<Range<T>, Proxy<RawIterator<T>>>();
     pybind11::implicitly_convertible<Range<T>, Proxy<RawRange<T>>>();
 
-    pybind11::implicitly_convertible<T, Proxy<ranges::optional<T>>>();
+    pybind11::implicitly_convertible<Iterator<T>, Proxy<RawIterator<T>>>();
+
     pybind11::implicitly_convertible<Proxy<T>, Proxy<ranges::optional<T>>>();
+    pybind11::implicitly_convertible<Proxy<T>, Proxy<RawIterator<T>>>();
+    pybind11::implicitly_convertible<Proxy<T>, Proxy<RawRange<T>>>();
+
+    pybind11::implicitly_convertible<Proxy<ranges::optional<T>>, Proxy<RawRange<T>>>();
+    pybind11::implicitly_convertible<Proxy<ranges::optional<T>>, Proxy<RawIterator<T>>>();
+
     pybind11::implicitly_convertible<Proxy<RawRange<T>>, Proxy<RawIterator<T>>>();
     
     return {base, optional, sequence, iterator, range};
