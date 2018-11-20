@@ -164,7 +164,6 @@ PYBIND11_MODULE(_blocksci, m) {
     addSelfProxy(inputCl);
     addSelfProxy(outputCl);
     addSelfProxy(equivAddressCl);
-    addSelfProxy(addressCl);
     
     addSelfProxy(pubkeyAddressCl);
     addSelfProxy(pubkeyHashAddressCl);
