@@ -23,6 +23,7 @@ from dateutil.relativedelta import relativedelta
 import pandas as pd
 
 from ._blocksci import *
+from ._blocksci import _traverse
 from .currency import *
 from .blockchain_info import *
 from .opreturn import label_application
@@ -265,6 +266,9 @@ Blockchain.__init__ = new_init
 Blockchain.range = block_range
 Blockchain.heights_to_dates = heights_to_dates
 
+def traverse(proxy_func, val):
+    return _traverse(proxy_func(val._self_proxy), val)
+
 def apply_map(prox, prop):
     if prop.ptype == proxy.proxy_type.optional:
         return prox._map_optional(prop)
@@ -385,6 +389,7 @@ def fix_all_doc_def(doc):
 def fix_self_doc_def(doc):
     doc = fix_all_doc_def(doc)
     doc = replace(doc, {
+        "blocksci.proxy.ProxyAddress": "blocksci.Address",
         "blocksci.proxy.intProxy": "int",
         "blocksci.proxy.boolProxy": "bool",
         "blocksci.proxy.ClusterProxy": "blocksci.cluster.Cluster",
@@ -397,7 +402,7 @@ def fix_self_doc_def(doc):
 
     doc = re.sub(r"(blocksci\.proxy\.Optional)([a-zA-Z]+)(Proxy)", r"Optional\[blocksci\.\2\]", doc)
     doc = re.sub(r"(blocksci\.proxy\.)([a-zA-Z]+)(RangeProxy)", r"blocksci.\2Range", doc)
-    doc = re.sub(r"(blocksci\.proxy\.)([a-zA-Z]+)(Proxy)", r"blocksci\.\2", doc)
+    doc = re.sub(r"(blocksci\.proxy\.)([a-zA-Z]+)(Proxy)", r"blocksci.\2", doc)
     return doc
 
 def fix_sequence_doc_def(doc):
