@@ -18,7 +18,7 @@ Disk mode is optimized for parsing Bitcoin's data files. It reads blockchain dat
 
 	blocksci_parser --output-directory bitcoin-data update disk --coin-directory .bitcoin
 
-RPC mode uses the RPC interface of a cryptocurrency to extract data regarding the blockchain. It works with a variety of cryptocurrencies which have the same general model as Bitcoin, but with minor changes to the serialization format which break the parser in disk mode. Examples of this are Zcash and Namecoin. To use the parser in RPC mode, you're full node must be running with txindex enabled.
+RPC mode uses the RPC interface of a cryptocurrency to extract data regarding the blockchain. It works with a variety of cryptocurrencies which have the same general model as Bitcoin, but with minor changes to the serialization format which break the parser in disk mode. Examples of this are Zcash and Namecoin. To use the parser in RPC mode, your full node must be running with txindex enabled.
 
 ..  code-block:: bash
 
