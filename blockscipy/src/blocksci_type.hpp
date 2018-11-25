@@ -62,14 +62,18 @@ struct BlocksciType {
 	BlocksciType(const BlocksciType &val) = default;
 	BlocksciType(BlocksciType && val) = default;
 
-	std::any toAny() const {
-		return mpark::visit([&](auto &r) -> std::any { return r; }, var);
-	}
+	std::any toAny() const;
+	pybind11::object toObject() const;
+	bool operator==(const BlocksciType &o) const;
 };
 
-inline void addToList(pybind11::list &l, BlocksciType &it) {
-	return mpark::visit([&](auto &r) { l.append(r); }, it.var);
+namespace std {
+    template<> struct hash<BlocksciType> {
+        size_t operator()(const BlocksciType &o) const;
+    };
 }
+
+void addToList(pybind11::list &l, BlocksciType &it);
 
 
 #endif /* blocksci_type_hpp */
