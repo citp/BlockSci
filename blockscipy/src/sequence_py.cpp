@@ -8,6 +8,7 @@
 #include "sequence_py.hpp"
 #include "generic_sequence.hpp"
 #include "generic_proxy.hpp"
+#include "caster_py.hpp"
 
 void addCommonRangeMethods(pybind11::class_<GenericRange, GenericIterator> &cl) {
     cl

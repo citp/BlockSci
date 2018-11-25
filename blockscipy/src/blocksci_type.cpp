@@ -6,6 +6,7 @@
 //
 
 #include "blocksci_type.hpp"
+#include "caster_py.hpp"
 
 struct BlocksciTypeHasher {
     size_t operator()(const std::chrono::system_clock::time_point &time) const {
