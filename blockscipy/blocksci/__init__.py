@@ -298,6 +298,14 @@ def setup_sequence_map_funcs():
         p = func(r._self_proxy.nested_proxy)
         return r._self_proxy._where(p)(r)
 
+    def range_max_func(r, func):
+        p = func(r._self_proxy.nested_proxy)
+        return r._self_proxy._max(p)(r)
+
+    def range_min_func(r, func):
+        p = func(r._self_proxy.nested_proxy)
+        return r._self_proxy._min(p)(r)
+
     def range_any_func(r, func):
         p = func(r._self_proxy.nested_proxy)
         return r._self_proxy._any(p)(r)
@@ -317,6 +325,8 @@ def setup_sequence_map_funcs():
         globals()[cl].map = range_map_func
         globals()[cl].where = range_where_func
         globals()[cl].group_by = range_group_by_func
+        globals()[cl].max = range_max_func
+        globals()[cl].min = range_min_func
         globals()[cl].any = range_any_func
         globals()[cl].all = range_all_func
 
@@ -328,6 +338,14 @@ def setup_sequence_proxy_map_funcs():
     def range_where_func(r, func):
         p = func(r.nested_proxy)
         return r._where(p)
+
+    def range_max_func(r, func):
+        p = func(r.nested_proxy)
+        return r._max(p)
+
+    def range_min_func(r, func):
+        p = func(r.nested_proxy)
+        return r._min(p)
 
     def range_any_func(r, func):
         p = func(r.nested_proxy)
@@ -342,6 +360,8 @@ def setup_sequence_proxy_map_funcs():
     for cl in iterator_and_range_cls:
         getattr(proxy, cl).map = range_map_func
         getattr(proxy, cl).where = range_where_func
+        getattr(proxy, cl).max = range_max_func
+        getattr(proxy, cl).min = range_min_func
         getattr(proxy, cl).any = range_any_func
         getattr(proxy, cl).all = range_all_func
 
@@ -515,10 +535,10 @@ def setup_iterator_proxy_methods(iterator_proxy):
 
         return method
 
-    for proxy_func in _get_properties_methods(nested_proxy_cl):
+    for proxy_func in _get_core_properties_methods(nested_proxy_cl):
         setattr(iterator_proxy, proxy_func, iterator_proxy_creator(proxy_func))
 
-    for proxy_func in _get_functions_methods(nested_proxy_cl):
+    for proxy_func in _get_core_functions_methods(nested_proxy_cl):
         setattr(iterator_proxy, proxy_func, iterator_proxy_method_creator(proxy_func))
 
 def setup_range_methods(blocksci_range, nested_proxy_cl=None, sample_proxy=None):
