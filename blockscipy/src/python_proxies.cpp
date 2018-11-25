@@ -44,20 +44,6 @@ void setupProxies(py::module &m) {
 
     py::class_<GenericProxy> proxyCl(proxyMod, "Proxy");
 
-    py::class_<SimpleProxy, GenericProxy> proxySimpleCl(proxyMod, "SimpleProxy");
-    proxySimpleCl
-    .def_property_readonly_static("ptype", [](pybind11::object &) -> ProxyType {
-        return ProxyType::Simple;
-    })
-    ;
-        
-    py::class_<OptionalProxy, GenericProxy> proxyOptionalCl(proxyMod, "OptionalProxy");
-    proxyOptionalCl
-    .def_property_readonly_static("ptype", [](pybind11::object &) -> ProxyType {
-        return ProxyType::Optional;
-    })
-    ;
-
     py::class_<IteratorProxy, GenericProxy> proxyIteratorCl(proxyMod, "IteratorProxy");
     proxyIteratorCl
     .def_property_readonly_static("ptype", [](pybind11::object &) -> ProxyType {
@@ -72,6 +58,20 @@ void setupProxies(py::module &m) {
     })
     ;
 
+    py::class_<OptionalProxy, RangeProxy> proxyOptionalCl(proxyMod, "OptionalProxy");
+    proxyOptionalCl
+    .def_property_readonly_static("ptype", [](pybind11::object &) -> ProxyType {
+        return ProxyType::Optional;
+    })
+    ;
+
+    py::class_<SimpleProxy, OptionalProxy> proxySimpleCl(proxyMod, "SimpleProxy");
+    proxySimpleCl
+    .def_property_readonly_static("ptype", [](pybind11::object &) -> ProxyType {
+        return ProxyType::Simple;
+    })
+    ;
+
     MainProxies mainProxies(proxyMod);
     ScriptProxies scriptProxies(proxyMod);
     OtherProxies otherProxies(proxyMod);
@@ -79,7 +79,7 @@ void setupProxies(py::module &m) {
     defineProxyFunctions(m, proxyMod);
 
     addOptionalProxyMethods(proxyOptionalCl, m);
-    applyProxyIteratorFuncs(proxyIteratorCl);
+    applyProxyIteratorFuncs(proxyIteratorCl, m);
     applyProxyRangeFuncs(proxyRangeCl);
 
     setupMainProxies(mainProxies);

@@ -13,6 +13,9 @@
 #include "sequence.hpp"
 #include "proxy_type_check.hpp"
 
+#include <range/v3/view/empty.hpp>
+#include <range/v3/view/single.hpp>
+
 #include <any>
 #include <functional>
 
@@ -23,22 +26,6 @@ struct GenericProxy {
 	virtual ProxyTypeInfo getDestType() const = 0;
 	virtual const std::type_info *getOutputType() const = 0;
 	virtual ~GenericProxy() = default;
-};
-
-struct SimpleProxy : public GenericProxy {
-	virtual std::function<BlocksciType(std::any &)> getGenericSimple() const = 0;
-	virtual ~SimpleProxy() = default;
-
-	std::function<std::any(std::any &)> getGenericAny() const override {
-		auto generic = getGenericSimple();
-		return [generic](std::any &val) -> std::any {
-			return generic(val).toAny();
-		};
-	}
-
-	ProxyType getProxyType() const override {
-		return ProxyType::Simple;
-	}
 };
 
 struct IteratorProxy : public GenericProxy {
@@ -88,7 +75,7 @@ struct RangeProxy : public IteratorProxy {
 	}
 };
 
-struct OptionalProxy : public GenericProxy {
+struct OptionalProxy : public RangeProxy {
 	virtual std::function<ranges::optional<BlocksciType>(std::any &)> getGenericOptional() const = 0;
 	virtual ~OptionalProxy() = default;
 
@@ -98,6 +85,39 @@ struct OptionalProxy : public GenericProxy {
 
 	std::function<ranges::optional<BlocksciType>(std::any &)> getGeneric() const {
 		return getGenericOptional();
+	}
+
+	std::function<RawRange<BlocksciType>(std::any &)> getGenericRange() const override {
+		return [generic = getGenericOptional()](std::any &v) -> RawRange<BlocksciType> {
+			auto val = generic(v);
+            if (val) {
+                return ranges::view::single(*val);
+            } else {
+                return ranges::view::empty<BlocksciType>();
+            }
+		};
+	}
+};
+
+struct SimpleProxy : public OptionalProxy {
+	virtual std::function<BlocksciType(std::any &)> getGenericSimple() const = 0;
+	virtual ~SimpleProxy() = default;
+
+	std::function<std::any(std::any &)> getGenericAny() const override {
+		auto generic = getGenericSimple();
+		return [generic](std::any &val) -> std::any {
+			return generic(val).toAny();
+		};
+	}
+
+	std::function<ranges::optional<BlocksciType>(std::any &)> getGenericOptional() const override {
+		return [generic = getGenericSimple()](std::any &val) -> ranges::optional<BlocksciType> {
+			return generic(val);
+		};
+	}
+
+	ProxyType getProxyType() const override {
+		return ProxyType::Simple;
 	}
 };
 

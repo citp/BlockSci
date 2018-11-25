@@ -11,7 +11,6 @@
 #include "proxy.hpp"
 #include "proxy_create.hpp"
 #include "python_proxies.hpp"
-#include "sequence_group.hpp"
 #include "sequence_py.hpp"
 #include "generic_sequence.hpp"
 
@@ -270,5 +269,5 @@ PYBIND11_MODULE(_blocksci, m) {
     init_address(addressCl);
 
     addCommonRangeMethods(genericRangeCl);
-    addAllGroupMethods(genericIteratorCl);
+    addCommonIteratorMethods(genericIteratorCl);
 }

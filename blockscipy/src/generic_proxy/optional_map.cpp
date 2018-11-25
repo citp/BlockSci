@@ -40,7 +40,7 @@ namespace {
 	}
 
 	template <typename T>
-	void addOptionalProxyMapMethodsImpl(pybind11::class_<OptionalProxy, GenericProxy> &cl) {
+	void addOptionalProxyMapMethodsImpl(pybind11::class_<OptionalProxy, RangeProxy> &cl) {
 		cl
 		.def("_map", mapOptional<T>)
 		.def("_map", mapOptionalOptional<T>)
@@ -48,7 +48,7 @@ namespace {
 	}
 }
 
-void addOptionalProxyMapMethods(pybind11::class_<OptionalProxy, GenericProxy> &cl) {
+void addOptionalProxyMapMethods(pybind11::class_<OptionalProxy, RangeProxy> &cl) {
 	addOptionalProxyMapMethodsImpl<Block>(cl);
 	addOptionalProxyMapMethodsImpl<Transaction>(cl);
 	addOptionalProxyMapMethodsImpl<Input>(cl);

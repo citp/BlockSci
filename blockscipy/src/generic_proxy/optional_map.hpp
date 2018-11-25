@@ -13,6 +13,6 @@
 
 #include <pybind11/pybind11.h>
 
-void addOptionalProxyMapMethods(pybind11::class_<OptionalProxy, GenericProxy> &cl);
+void addOptionalProxyMapMethods(pybind11::class_<OptionalProxy, RangeProxy> &cl);
 
 #endif /* proxy_optional_map_hpp */
