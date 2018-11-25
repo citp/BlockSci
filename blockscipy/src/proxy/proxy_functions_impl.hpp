@@ -49,7 +49,7 @@ void addProxyFunctions(pybind11::module &, pybind11::module &pm) {
     addProxyFunctionsT<RawRange<T>>(pm);
 
     pm
-    .def("conditional", [](const Proxy<bool> &cond, const Proxy<T> &p) -> Proxy<ranges::optional<T>> {
+    .def("conditional", [](const Proxy<bool> &cond, const Proxy<ranges::optional<T>> &p) -> Proxy<ranges::optional<T>> {
         cond.sourceType.checkMatch(p.sourceType);
         return {std::function<ranges::optional<T>(std::any &)>{[cond, p](std::any &t) -> ranges::optional<T> {
             if(cond(t)) {
