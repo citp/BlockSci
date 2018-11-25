@@ -22,7 +22,7 @@ struct AddTaggedClusterMethods {
     void operator()(FuncApplication func) {
         using namespace blocksci;
         func(property_tag, "cluster", +[](const TaggedCluster &t) { return t.cluster; }, "Return the cluster object which has been tagged");
-        func(property_tag, "tagged_addresses", +[](TaggedCluster &t) -> RawIterator<TaggedAddress> { return t.taggedAddresses; }, "Return the list of addresses inside the cluster which have been tagged");
+        func(property_tag, "tagged_addresses", +[](TaggedCluster &t) -> RawIterator<TaggedAddress> { return t.getTaggedAddresses(); }, "Return the list of addresses inside the cluster which have been tagged");
     }
 };
 
