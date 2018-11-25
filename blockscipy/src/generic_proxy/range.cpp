@@ -10,12 +10,13 @@
 #include "range_map.hpp"
 #include "proxy.hpp"
 #include "proxy_utils.hpp"
+#include "caster_py.hpp"
 
 #include <range/v3/distance.hpp>
 #include <range/v3/algorithm/any_of.hpp>
 #include <range/v3/algorithm/all_of.hpp>
 
-void applyProxyIteratorFuncs(pybind11::class_<IteratorProxy, GenericProxy> &cl) {
+void applyProxyIteratorFuncs(pybind11::class_<IteratorProxy, GenericProxy> &cl, pybind11::module &m) {
 	applyProxyMapFuncsCore(cl);
 	applyProxyMapFuncsScripts(cl);
 	applyProxyMapFuncsOther(cl);
@@ -48,6 +49,25 @@ void applyProxyIteratorFuncs(pybind11::class_<IteratorProxy, GenericProxy> &cl) 
 			});
 		});
 	})
+	;
+
+    m.def("_traverse", [](IteratorProxy &p, BlocksciTypeVariant &init) -> pybind11::list {
+    	auto generic = p.getGeneric();
+
+        std::vector<BlocksciType> in;
+        pybind11::list out;
+        in.emplace_back(init);
+        while (!in.empty()) {
+        	auto next = in.back();
+        	addToList(out, next);
+            in.pop_back();
+            auto anyV = next.toAny();
+            for (auto && elem : generic(anyV)) {
+            	in.emplace_back(std::forward<decltype(elem)>(elem));
+            }
+        }
+        return out;
+    })
 	;
 }
 

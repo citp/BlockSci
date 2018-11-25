@@ -53,18 +53,6 @@ void addProxyFlowFunctions(pybind11::module &m, pybind11::module &) {
     .def("take_while", [](Proxy<ranges::optional<T>> &body, ranges::optional<T> &init) -> Iterator<T> {
         return RawIterator<T>{take_while_range<T>{std::move(body), init}};
     })
-    .def("_traverse", [](Proxy<RawIterator<T>> &body, const T &init) -> std::vector<T> {
-        std::vector<T> in;
-        std::vector<T> out;
-        in.emplace_back(init);
-        while (!in.empty()) {
-            out.emplace_back(std::move(in.back()));
-            in.pop_back();
-            auto elems = body(out.back());
-            ranges::action::push_back(in, elems);
-        }
-        return out;
-    })
     ;
 }
 

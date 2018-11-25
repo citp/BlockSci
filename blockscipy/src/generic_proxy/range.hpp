@@ -13,7 +13,7 @@
 
 #include <pybind11/pybind11.h>
 
-void applyProxyIteratorFuncs(pybind11::class_<IteratorProxy, GenericProxy> &cl);
+void applyProxyIteratorFuncs(pybind11::class_<IteratorProxy, GenericProxy> &cl, pybind11::module &m);
 void applyProxyRangeFuncs(pybind11::class_<RangeProxy, IteratorProxy> &cl);
 
 
