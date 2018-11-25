@@ -9,9 +9,8 @@
 #ifndef address_info_hpp
 #define address_info_hpp
 
-#include "dedup_address_type.hpp"
-
 #include <blocksci/core/address_types.hpp>
+#include <blocksci/core/dedup_address_type.hpp>
 #include <blocksci/core/meta.hpp>
 
 #include <string>

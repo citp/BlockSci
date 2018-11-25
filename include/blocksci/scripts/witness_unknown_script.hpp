@@ -12,6 +12,7 @@
 #include "script.hpp"
 
 #include <blocksci/blocksci_export.h>
+#include <blocksci/core/hash_combine.hpp>
 
 #include <range/v3/utility/optional.hpp>
 
@@ -43,5 +44,15 @@ namespace blocksci {
         std::string toPrettyString() const;
     };
 } // namespace blocksci
+
+namespace std {
+    template<> struct BLOCKSCI_EXPORT hash<blocksci::ScriptAddress<blocksci::AddressType::WITNESS_UNKNOWN>> {
+        size_t operator()(const blocksci::ScriptAddress<blocksci::AddressType::WITNESS_UNKNOWN> &address) const {
+            std::size_t seed = 32847956;
+            blocksci::hash_combine(seed, static_cast<const blocksci::ScriptBase &>(address));
+            return seed;
+        }
+    };
+} // namespace std
 
 #endif /* witness_unkown_script_hpp */

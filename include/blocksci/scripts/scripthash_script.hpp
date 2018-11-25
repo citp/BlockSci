@@ -12,6 +12,7 @@
 #include "script.hpp"
 
 #include <blocksci/blocksci_export.h>
+#include <blocksci/core/hash_combine.hpp>
 
 namespace blocksci {
     class BLOCKSCI_EXPORT ScriptHashBase : public ScriptBase {
@@ -85,5 +86,31 @@ namespace blocksci {
         std::string toPrettyString() const;
     };
 } // namespace blocksci
+
+namespace std {
+    template<> struct BLOCKSCI_EXPORT hash<blocksci::ScriptHashBase> {
+        size_t operator()(const blocksci::ScriptHashBase &address) const {
+            std::size_t seed = 8736521;
+            blocksci::hash_combine(seed, static_cast<const blocksci::ScriptBase &>(address));
+            return seed;
+        }
+    };
+    
+    template<> struct BLOCKSCI_EXPORT hash<blocksci::ScriptAddress<blocksci::AddressType::SCRIPTHASH>> {
+        size_t operator()(const blocksci::ScriptAddress<blocksci::AddressType::SCRIPTHASH> &address) const {
+            std::size_t seed = 6543246;
+            blocksci::hash_combine(seed, static_cast<const blocksci::ScriptHashBase &>(address));
+            return seed;
+        }
+    };
+    
+    template<> struct BLOCKSCI_EXPORT hash<blocksci::ScriptAddress<blocksci::AddressType::WITNESS_SCRIPTHASH>> {
+        size_t operator()(const blocksci::ScriptAddress<blocksci::AddressType::WITNESS_SCRIPTHASH> &address) const {
+            std::size_t seed = 7653543;
+            blocksci::hash_combine(seed, static_cast<const blocksci::ScriptHashBase &>(address));
+            return seed;
+        }
+    };
+} // namespace std
 
 #endif /* scripthash_script_hpp */

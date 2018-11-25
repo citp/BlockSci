@@ -12,6 +12,7 @@
 #include "script.hpp"
 
 #include <blocksci/blocksci_export.h>
+#include <blocksci/core/hash_combine.hpp>
 
 #include <range/v3/utility/optional.hpp>
 
@@ -44,5 +45,15 @@ namespace blocksci {
         std::string toPrettyString() const;
     };
 } // namespace blocksci
+
+namespace std {
+    template<> struct BLOCKSCI_EXPORT hash<blocksci::ScriptAddress<blocksci::AddressType::NONSTANDARD>> {
+        size_t operator()(const blocksci::ScriptAddress<blocksci::AddressType::NONSTANDARD> &address) const {
+            std::size_t seed = 1357869;
+            blocksci::hash_combine(seed, static_cast<const blocksci::ScriptBase &>(address));
+            return seed;
+        }
+    };
+} // namespace std
 
 #endif /* nonstandard_script_hpp */

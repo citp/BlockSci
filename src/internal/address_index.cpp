@@ -11,12 +11,12 @@
 #include "address_index.hpp"
 #include "address_info.hpp"
 #include "column_iterator.hpp"
-#include "dedup_address.hpp"
 #include "dedup_address_info.hpp"
 #include "memory_view.hpp"
 
 #include <blocksci/core/inout_pointer.hpp>
 #include <blocksci/core/raw_address.hpp>
+#include <blocksci/core/dedup_address.hpp>
 
 #include <range/v3/view/transform.hpp>
 #include <range/v3/range_for.hpp>

@@ -9,11 +9,11 @@
 #define cluster_access_h
 
 #include "address_info.hpp"
-#include "dedup_address.hpp"
 #include "dedup_address_info.hpp"
 #include "file_mapper.hpp"
 
 #include <blocksci/core/raw_address.hpp>
+#include <blocksci/core/dedup_address.hpp>
 
 #include <range/v3/iterator_range.hpp>
 

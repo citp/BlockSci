@@ -13,7 +13,11 @@
 
 #include <blocksci/address/address.hpp>
 #include <blocksci/chain/output_pointer.hpp>
+#include <blocksci/chain/range_util.hpp>
 #include <blocksci/core/core_fwd.hpp>
+#include <blocksci/core/dedup_address.hpp>
+
+#include <range/v3/range_for.hpp>
 
 #include <unordered_map>
 #include <vector>
@@ -38,12 +42,47 @@ namespace blocksci {
     
     struct TaggedCluster;
     
+    struct TagChecker {
+        std::unordered_map<blocksci::Address, std::string> tags;
+        
+        ranges::optional<TaggedAddress> operator()(Address && address) const {
+            auto it = tags.find(address);
+            if (it != tags.end()) {
+                return TaggedAddress{it->first, it->second};
+            } else {
+                return ranges::nullopt;
+            }
+        }
+    };
+    
+    struct ClusterAddressCreator {
+        DataAccess *access;
+        uint32_t scriptNum;
+        
+        auto operator()(AddressType::Enum addressType) const {
+            return Address(scriptNum, addressType, *access);
+        }
+    };
+    
+    struct PossibleAddressesGetter {
+        DataAccess *access;
+        
+        ranges::transform_view<ranges::iterator_range<const AddressType::Enum *>, ClusterAddressCreator>
+        operator()(const DedupAddress &dedupAddress) const;
+    };
+    
+    struct AddressRangeTagChecker {
+        TagChecker tagCheck;
+        
+        auto operator()(ranges::transform_view<ranges::iterator_range<const AddressType::Enum *>, ClusterAddressCreator> && rng) const {
+            return std::move(rng) | ranges::view::transform(tagCheck)  | flatMapOptionals();
+        }
+    };
+    
     class BLOCKSCI_EXPORT Cluster {
         const ClusterAccess *clusterAccess;
         
         ranges::iterator_range<const blocksci::DedupAddress *> getDedupAddresses() const;
-        
-        ranges::any_view<Address> getPossibleAddresses() const;
         
         // Only holds tags by reference so it must remain alive while this range exists
         ranges::any_view<TaggedAddress> taggedAddressesUnsafe(const std::unordered_map<blocksci::Address, std::string> &tags) const;
@@ -56,6 +95,9 @@ namespace blocksci {
         ranges::any_view<Address> getAddresses() const;
         
         ranges::any_view<TaggedAddress> taggedAddresses(const std::unordered_map<blocksci::Address, std::string> &tags) const;
+        
+        ranges::transform_view<ranges::transform_view<ranges::iterator_range<const DedupAddress *>, PossibleAddressesGetter>, AddressRangeTagChecker>
+        taggedAddressesNested(const std::unordered_map<blocksci::Address, std::string> &tags) const;
         
         ranges::optional<TaggedCluster> getTaggedUnsafe(const std::unordered_map<blocksci::Address, std::string> &tags) const;
         ranges::optional<TaggedCluster> getTagged(const std::unordered_map<blocksci::Address, std::string> &tags) const;
@@ -87,10 +129,13 @@ namespace blocksci {
     
     struct BLOCKSCI_EXPORT TaggedCluster {
         Cluster cluster;
-        using TaggedRange = decltype(std::declval<Cluster>().taggedAddresses(std::unordered_map<blocksci::Address, std::string>{}));
+        using TaggedRange = decltype(std::declval<Cluster>().taggedAddressesNested(std::unordered_map<blocksci::Address, std::string>{}));
         TaggedRange taggedAddresses;
+
+        ranges::any_view<TaggedAddress> getTaggedAddresses() const;
         
     private:
+        
         friend Cluster;
         
         TaggedCluster(const Cluster &cluster_, TaggedRange &&taggedAddresses_) : cluster(cluster_), taggedAddresses(std::move(taggedAddresses_)) {}
@@ -105,5 +150,35 @@ namespace blocksci {
     }
     
 } // namespace blocksci
+
+namespace std {
+    template<> struct BLOCKSCI_EXPORT hash<blocksci::Cluster> {
+        size_t operator()(const blocksci::Cluster &cluster) const {
+            return static_cast<size_t>(cluster.clusterNum);
+        }
+    };
+    
+    template<> struct BLOCKSCI_EXPORT hash<blocksci::TaggedAddress> {
+        size_t operator()(const blocksci::TaggedAddress &address) const {
+            std::size_t seed = 894732847;
+            blocksci::hash_combine(seed, address.address);
+            blocksci::hash_combine(seed, address.tag);
+            return seed;
+        }
+    };
+    
+    template<> struct BLOCKSCI_EXPORT hash<blocksci::TaggedCluster> {
+        size_t operator()(const blocksci::TaggedCluster &cluster) const {
+            std::size_t seed = 67813489;
+            blocksci::hash_combine(seed, cluster.cluster);
+            
+            RANGES_FOR(auto address, cluster.getTaggedAddresses()) {
+                blocksci::hash_combine(seed, address);
+            }
+            
+            return seed;
+        }
+    };
+}
 
 #endif /* blocksci_cluster_cluster_hpp */

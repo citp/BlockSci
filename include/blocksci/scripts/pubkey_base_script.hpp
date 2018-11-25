@@ -10,7 +10,7 @@
 
 #include "script.hpp"
 
-
+#include <blocksci/core/hash_combine.hpp>
 #include <blocksci/blocksci_export.h>
 #include <blocksci/core/bitcoin_uint256.hpp>
 
@@ -31,5 +31,15 @@ namespace blocksci {
         ranges::any_view<Address> getIncludingMultisigs() const;
     };
 }
+
+namespace std {
+    template<> struct BLOCKSCI_EXPORT hash<blocksci::PubkeyAddressBase> {
+        size_t operator()(const blocksci::PubkeyAddressBase &address) const {
+            std::size_t seed = 1343532;
+            blocksci::hash_combine(seed, static_cast<const blocksci::ScriptBase &>(address));
+            return seed;
+        }
+    };
+} // namespace std
 
 #endif /* pubkey_base_script_h */

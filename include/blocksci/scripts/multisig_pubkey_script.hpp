@@ -31,4 +31,14 @@ namespace blocksci {
     };
 } // namespace blocksci
 
+namespace std {
+    template<> struct BLOCKSCI_EXPORT hash<blocksci::ScriptAddress<blocksci::AddressType::MULTISIG_PUBKEY>> {
+        size_t operator()(const blocksci::ScriptAddress<blocksci::AddressType::MULTISIG_PUBKEY> &address) const {
+            std::size_t seed = 254724;
+            blocksci::hash_combine(seed, static_cast<const blocksci::PubkeyAddressBase &>(address));
+            return seed;
+        }
+    };
+} // namespace std
+
 #endif /* multisig_pubkey_script_hpp */

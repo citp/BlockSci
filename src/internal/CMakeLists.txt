@@ -85,9 +85,7 @@ set(DATA_ACCESS_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/data_access.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/data_configuration.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/chain_configuration.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/dedup_address.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/dedup_address_info.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/dedup_address_type.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/exception.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/file_mapper.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/hash.hpp

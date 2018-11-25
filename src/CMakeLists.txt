@@ -119,6 +119,8 @@ set(CORE_HEADERS
   ${BLOCKSCI_HEADER_PREFIX}/core/address_type_meta.hpp
   ${BLOCKSCI_HEADER_PREFIX}/core/bitcoin_uint256.hpp
   ${BLOCKSCI_HEADER_PREFIX}/core/core_fwd.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/core/dedup_address.hpp
+  ${BLOCKSCI_HEADER_PREFIX}/core/dedup_address_type.hpp
   ${BLOCKSCI_HEADER_PREFIX}/core/hash_combine.hpp
   ${BLOCKSCI_HEADER_PREFIX}/core/inout.hpp
   ${BLOCKSCI_HEADER_PREFIX}/core/inout_pointer.hpp

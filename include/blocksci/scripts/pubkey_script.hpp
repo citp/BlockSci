@@ -67,4 +67,30 @@ namespace blocksci {
     };
 } // namespace blocksci
 
+namespace std {
+    template<> struct BLOCKSCI_EXPORT hash<blocksci::ScriptAddress<blocksci::AddressType::PUBKEY>> {
+        size_t operator()(const blocksci::ScriptAddress<blocksci::AddressType::PUBKEY> &address) const {
+            std::size_t seed = 2346547;
+            blocksci::hash_combine(seed, static_cast<const blocksci::PubkeyAddressBase &>(address));
+            return seed;
+        }
+    };
+    
+    template<> struct BLOCKSCI_EXPORT hash<blocksci::ScriptAddress<blocksci::AddressType::PUBKEYHASH>> {
+        size_t operator()(const blocksci::ScriptAddress<blocksci::AddressType::PUBKEYHASH> &address) const {
+            std::size_t seed = 84578;
+            blocksci::hash_combine(seed, static_cast<const blocksci::PubkeyAddressBase &>(address));
+            return seed;
+        }
+    };
+    
+    template<> struct BLOCKSCI_EXPORT hash<blocksci::ScriptAddress<blocksci::AddressType::WITNESS_PUBKEYHASH>> {
+        size_t operator()(const blocksci::ScriptAddress<blocksci::AddressType::WITNESS_PUBKEYHASH> &address) const {
+            std::size_t seed = 3456724;
+            blocksci::hash_combine(seed, static_cast<const blocksci::PubkeyAddressBase &>(address));
+            return seed;
+        }
+    };
+} // namespace std
+
 #endif /* pubkey_script_hpp */

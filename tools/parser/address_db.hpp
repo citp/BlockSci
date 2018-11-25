@@ -12,8 +12,9 @@
 #include "parser_fwd.hpp"
 #include "parser_index.hpp"
 
-#include <internal/dedup_address.hpp>
 #include <internal/address_index.hpp>
+
+#include <blocksci/core/dedup_address.hpp>
 
 class AddressDB;
 

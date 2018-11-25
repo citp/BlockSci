@@ -12,6 +12,7 @@
 #include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/range_util.hpp>
+#include <blocksci/core/dedup_address.hpp>
 #include <blocksci/heuristics/change_address.hpp>
 #include <blocksci/heuristics/tx_identification.hpp>
 #include <blocksci/scripts/scripthash_script.hpp>
@@ -19,7 +20,6 @@
 #include <internal/address_info.hpp>
 #include <internal/cluster_access.hpp>
 #include <internal/data_access.hpp>
-#include <internal/dedup_address.hpp>
 #include <internal/progress_bar.hpp>
 #include <internal/script_access.hpp>
 

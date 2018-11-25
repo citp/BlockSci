@@ -12,6 +12,7 @@
 #include "script.hpp"
 
 #include <blocksci/blocksci_export.h>
+#include <blocksci/core/hash_combine.hpp>
 
 #include <string>
 
@@ -42,5 +43,15 @@ namespace blocksci {
         bool isSegwitMarker() const;
     };
 } // namespace blocksci
+
+namespace std {
+    template<> struct BLOCKSCI_EXPORT hash<blocksci::ScriptAddress<blocksci::AddressType::NULL_DATA>> {
+        size_t operator()(const blocksci::ScriptAddress<blocksci::AddressType::NULL_DATA> &address) const {
+            std::size_t seed = 32847956;
+            blocksci::hash_combine(seed, static_cast<const blocksci::ScriptBase &>(address));
+            return seed;
+        }
+    };
+} // namespace std
 
 #endif /* nulldata_script_hpp */

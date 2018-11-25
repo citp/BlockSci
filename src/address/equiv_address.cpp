@@ -9,9 +9,9 @@
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/algorithms.hpp>
 #include <blocksci/scripts/scripthash_script.hpp>
+#include <blocksci/core/dedup_address.hpp>
 
 #include <internal/address_info.hpp>
-#include <internal/dedup_address.hpp>
 #include <internal/dedup_address_info.hpp>
 #include <internal/address_index.hpp>
 #include <internal/data_access.hpp>

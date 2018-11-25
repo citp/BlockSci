@@ -8,7 +8,7 @@
 #ifndef state_hpp
 #define state_hpp
 
-#include "dedup_address_type.hpp"
+#include <blocksci/core/dedup_address_type.hpp>
 
 #include <array>
 

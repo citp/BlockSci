@@ -14,9 +14,24 @@
 #include <range/v3/view/transform.hpp>
 
 namespace blocksci {
+    
+    struct FlatMapOptionalsFilter {
+        template <typename T>
+        bool operator()(T && t) const {
+            return static_cast<bool>(std::forward<T>(t));
+        }
+    };
+    
+    struct FlatMapOptionalsTransform {
+        template <typename T>
+        typename T::value_type operator()(T && t) const {
+            return *std::forward<T>(t);
+        }
+    };
+    
 	inline auto BLOCKSCI_EXPORT flatMapOptionals() {
-	    return  ranges::view::filter([](const auto &optional) { return static_cast<bool>(optional); })
-	    		| ranges::view::transform([](const auto &optional) { return *optional; });
+        return  ranges::view::filter(FlatMapOptionalsFilter{})
+        | ranges::view::transform(FlatMapOptionalsTransform{});
     }
     
 } // namespace blocksci

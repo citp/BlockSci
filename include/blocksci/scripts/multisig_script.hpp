@@ -55,4 +55,14 @@ namespace blocksci {
     };
 } // namespace blocksci
 
+namespace std {
+    template<> struct BLOCKSCI_EXPORT hash<blocksci::ScriptAddress<blocksci::AddressType::MULTISIG>> {
+        size_t operator()(const blocksci::ScriptAddress<blocksci::AddressType::MULTISIG> &address) const {
+            std::size_t seed = 9782345;
+            blocksci::hash_combine(seed, static_cast<const blocksci::ScriptBase &>(address));
+            return seed;
+        }
+    };
+} // namespace std
+
 #endif /* multisig_script_hpp */

@@ -14,12 +14,11 @@
 #include <blocksci/chain/output_pointer.hpp>
 #include <blocksci/chain/transaction.hpp>
 #include <blocksci/chain/algorithms.hpp>
-#include <blocksci/chain/range_util.hpp>
+#include <blocksci/core/dedup_address.hpp>
 
 #include <internal/address_info.hpp>
 #include <internal/cluster_access.hpp>
 #include <internal/data_access.hpp>
-#include <internal/dedup_address.hpp>
 #include <internal/dedup_address_info.hpp>
 #include <internal/script_access.hpp>
 
@@ -53,14 +52,32 @@ namespace blocksci {
         return clusterAccess->getClusterScripts(clusterNum);
     }
     
-    ranges::any_view<Address> Cluster::getPossibleAddresses() const {
+    ranges::transform_view<ranges::iterator_range<const AddressType::Enum *>, ClusterAddressCreator>
+    PossibleAddressesGetter::operator()(const DedupAddress &dedupAddress) const {
+        ClusterAddressCreator creator{access, dedupAddress.scriptNum};
+        return addressTypesRange(dedupAddress.type) | ranges::view::transform(creator);
+    }
+    
+    auto getPossibleAddressesNested(uint32_t clusterNum, const ClusterAccess *clusterAccess) {
+        PossibleAddressesGetter getter{&clusterAccess->access};
+        return clusterAccess->getClusterScripts(clusterNum) | ranges::view::transform(getter);
+    }
+    
+    auto getPossibleAddresses(uint32_t clusterNum, const ClusterAccess *clusterAccess) {
+        return getPossibleAddressesNested(clusterNum, clusterAccess) | ranges::view::join;
+    }
+    
+    auto getAddressesNested(uint32_t clusterNum, const ClusterAccess *clusterAccess) {
         DataAccess *access_ = &clusterAccess->access;
-        return getDedupAddresses() | ranges::view::transform([access_](const DedupAddress &dedupAddress) {
-            uint32_t scriptNum = dedupAddress.scriptNum;
-            return addressTypesRange(dedupAddress.type) | ranges::view::transform([access_, scriptNum](AddressType::Enum addressType) {
+        return clusterAccess->getClusterScripts(clusterNum) | ranges::view::transform([access_](const DedupAddress &address) {
+            auto header = access_->getScripts().getScriptHeader(address.scriptNum, address.type);
+            uint32_t scriptNum = address.scriptNum;
+            return addressTypesRange(address.type) | ranges::view::filter([header](AddressType::Enum type) {
+                return header->seenTopLevel(type);
+            }) | ranges::view::transform([access_, scriptNum](AddressType::Enum addressType) {
                 return Address(scriptNum, addressType, *access_);
             });
-        }) | ranges::view::join;
+        });
     }
     
     ranges::any_view<Address> Cluster::getAddresses() const {
@@ -75,6 +92,22 @@ namespace blocksci {
             });
         }) | ranges::view::join;
     }
+    
+//    ranges::any_view<
+//    ranges::any_view<Address, ranges::category::random_access | ranges::category::sized>,
+//    ranges::category::random_access | ranges::category::sized
+//    > Cluster::getAddressesNested() const {
+//        DataAccess *access_ = &clusterAccess->access;
+//        return getDedupAddresses() | ranges::view::transform([access_](const DedupAddress &address) -> ranges::any_view<Address, ranges::category::random_access | ranges::category::sized> {
+//            auto header = access_->getScripts().getScriptHeader(address.scriptNum, address.type);
+//            uint32_t scriptNum = address.scriptNum;
+//            return addressTypesRange(address.type) | ranges::view::filter([header](AddressType::Enum type) {
+//                return header->seenTopLevel(type);
+//            }) | ranges::view::transform([access_, scriptNum](AddressType::Enum addressType) {
+//                return Address(scriptNum, addressType, *access_);
+//            });
+//        });
+//    }
     
     int64_t Cluster::getSize() const {
         return ranges::distance(getAddresses());
@@ -93,7 +126,7 @@ namespace blocksci {
             return false;
         }();
         if (isEmpty) {
-            return TaggedCluster{*this, taggedAddresses(tags)};
+            return TaggedCluster{*this, taggedAddressesNested(tags)};
         } else {
             return ranges::nullopt;
         }
@@ -108,14 +141,14 @@ namespace blocksci {
             return false;
         }();
         if (isEmpty) {
-            return TaggedCluster{*this, taggedAddresses(tags)};
+            return TaggedCluster{*this, taggedAddressesNested(tags)};
         } else {
             return ranges::nullopt;
         }
     }
     
     ranges::any_view<TaggedAddress> Cluster::taggedAddressesUnsafe(const std::unordered_map<blocksci::Address, std::string> &tags) const {
-        return getPossibleAddresses() | ranges::view::transform([&tags](Address && address) -> ranges::optional<TaggedAddress> {
+        return getPossibleAddresses(clusterNum, clusterAccess) | ranges::view::transform([&tags](Address && address) -> ranges::optional<TaggedAddress> {
             auto it = tags.find(address);
             if (it != tags.end()) {
                 return TaggedAddress{it->first, it->second};
@@ -126,7 +159,7 @@ namespace blocksci {
     }
     
     ranges::any_view<TaggedAddress> Cluster::taggedAddresses(const std::unordered_map<blocksci::Address, std::string> &tags) const {
-        return getPossibleAddresses() | ranges::view::transform([tags](Address && address) -> ranges::optional<TaggedAddress> {
+        return getPossibleAddresses(clusterNum, clusterAccess) | ranges::view::transform([tags](Address && address) -> ranges::optional<TaggedAddress> {
             auto it = tags.find(address);
             if (it != tags.end()) {
                 return TaggedAddress{it->first, it->second};
@@ -134,6 +167,13 @@ namespace blocksci {
                 return ranges::nullopt;
             }
         }) | flatMapOptionals();
+    }
+    
+    ranges::transform_view<ranges::transform_view<ranges::iterator_range<const DedupAddress *>, PossibleAddressesGetter>, AddressRangeTagChecker>
+    Cluster::taggedAddressesNested(const std::unordered_map<blocksci::Address, std::string> &tags) const {
+        AddressRangeTagChecker tagCheck{tags};
+        
+        return getPossibleAddressesNested(clusterNum, clusterAccess) | ranges::view::transform(tagCheck);
     }
     
     uint32_t Cluster::countOfType(AddressType::Enum type) const {
@@ -151,15 +191,15 @@ namespace blocksci {
     }
     
     ranges::any_view<OutputPointer> Cluster::getOutputPointers() const {
-        return getPossibleAddresses() | ranges::view::transform([](auto && address) { return address.getOutputPointers(); }) | ranges::view::join;
+        return getPossibleAddresses(clusterNum, clusterAccess) | ranges::view::transform([](auto && address) { return address.getOutputPointers(); }) | ranges::view::join;
     }
 
     ranges::any_view<Output> Cluster::getOutputs() const {
-        return getPossibleAddresses() | ranges::view::transform([](auto && address) { return address.getOutputs(); }) | ranges::view::join;
+        return getPossibleAddresses(clusterNum, clusterAccess) | ranges::view::transform([](auto && address) { return address.getOutputs(); }) | ranges::view::join;
     }
     
     ranges::any_view<blocksci::Input> Cluster::getInputs() const {
-        return getPossibleAddresses() | ranges::view::transform([](auto && address) { return address.getInputs(); }) | ranges::view::join;
+        return getPossibleAddresses(clusterNum, clusterAccess) | ranges::view::transform([](auto && address) { return address.getInputs(); }) | ranges::view::join;
     }
     
     std::vector<blocksci::Transaction> Cluster::getTransactions() const {
@@ -187,6 +227,10 @@ namespace blocksci {
             return ranges::accumulate(possibleAddressBalances, int64_t{0});
         });
         return ranges::accumulate(balances, int64_t{0});
+    }
+    
+    ranges::any_view<TaggedAddress> TaggedCluster::getTaggedAddresses() const {
+        return ranges::view::join(taggedAddresses);
     }
 }
 
