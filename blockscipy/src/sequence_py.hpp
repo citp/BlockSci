@@ -13,5 +13,6 @@
 #include <pybind11/pybind11.h>
 
 void addCommonRangeMethods(pybind11::class_<GenericRange, GenericIterator> &cl);
+void addCommonIteratorMethods(pybind11::class_<GenericIterator> &cl);
 
 #endif /* generic_sequence_py_hpp */
