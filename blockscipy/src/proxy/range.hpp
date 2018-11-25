@@ -27,6 +27,46 @@ void setupRangesProxy(AllProxyClasses<T, BaseSimple> &cls) {
 			});
 		});
 	})
+	.def("_max", [](SequenceProxy<T> &p, Proxy<int64_t> &p2) -> Proxy<ranges::optional<T>> {
+		// Copied and modified from range/v3/algorithm/max.hpp
+		// Testing whether input range was empty required modification
+		return liftSequence(p, [p2](auto && rng) -> ranges::optional<T> {
+			auto begin = ranges::begin(rng);
+            auto end = ranges::end(rng);
+            if (begin == end) {
+            	return ranges::nullopt;
+            }
+
+            T result = *begin;
+            while(++begin != end) {
+                auto && tmp = *begin;
+                if (p2(result) < p2(tmp)) {
+                    result = (decltype(tmp) &&) tmp;
+                }
+            }
+            return result;
+		});
+	})
+	.def("_min", [](SequenceProxy<T> &p, Proxy<int64_t> &p2) -> Proxy<ranges::optional<T>> {
+		// Copied and modified from range/v3/algorithm/min.hpp
+		// Testing whether input range was empty required modification
+		return liftSequence(p, [p2](auto && rng) -> ranges::optional<T> {
+			auto begin = ranges::begin(rng);
+            auto end = ranges::end(rng);
+            if (begin == end) {
+            	return ranges::nullopt;
+            }
+
+            T result = *begin;
+            while(++begin != end) {
+                auto && tmp = *begin;
+                if (p2(result) > p2(tmp)) {
+                    result = (decltype(tmp) &&) tmp;
+                }
+            }
+            return result;
+		});
+	})
 	;
 
 	cls.range
