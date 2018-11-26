@@ -1,16 +1,16 @@
 //
-//  blocksci_range.hpp
+//  python_range.hpp
 //  blocksci
 //
 //  Created by Harry Kalodner on 4/11/18.
 //
 //
 
-#ifndef blocksci_blocksci_range_h
-#define blocksci_blocksci_range_h
+#ifndef blocksci_python_range_h
+#define blocksci_python_range_h
 
 #include "python_fwd.hpp"
-#include "generic_sequence.hpp"
+#include "sequence.hpp"
 
 #include <blocksci/scripts/script_variant.hpp>
 
@@ -37,4 +37,4 @@ struct RangeClasses<blocksci::AnyScript> {
     pybind11::class_<Range<blocksci::AnyScript>, Sequence<blocksci::AnyScript>, GenericAddressRange> range;
 };
 
-#endif /* blocksci_blocksci_range_h */
+#endif /* blocksci_python_range_h */

@@ -11,7 +11,6 @@
 
 #include "python_fwd.hpp"
 #include "method_tags.hpp"
-#include "sequence.hpp"
 
 #include <blocksci/scripts/script_variant.hpp>
 #include <blocksci/scripts/bitcoin_pubkey.hpp>

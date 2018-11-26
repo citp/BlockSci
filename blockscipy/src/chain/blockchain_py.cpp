@@ -8,7 +8,7 @@
 
 #include "blockchain_py.hpp"
 #include "caster_py.hpp"
-#include "generic_sequence.hpp"
+#include "sequence.hpp"
 
 #include <blocksci/address/address.hpp>
 #include <blocksci/chain/blockchain.hpp>

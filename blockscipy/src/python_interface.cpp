@@ -6,13 +6,13 @@
 //  Copyright © 2017 Harry Kalodner. All rights reserved.
 //
 
+#include "sequence.hpp"
 #include "caster_py.hpp"
 #include "blocksci_range_create.hpp"
 #include "proxy.hpp"
 #include "proxy_create.hpp"
 #include "python_proxies.hpp"
 #include "sequence_py.hpp"
-#include "generic_sequence.hpp"
 
 #include "chain/blockchain_py.hpp"
 #include "chain/input/input_py.hpp"

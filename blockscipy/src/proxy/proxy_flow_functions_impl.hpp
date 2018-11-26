@@ -11,6 +11,7 @@
 #include "proxy.hpp"
 #include "proxy_type_check.hpp"
 #include "caster_py.hpp"
+#include "sequence.hpp"
 
 #include <range/v3/action/push_back.hpp>
 

@@ -9,13 +9,9 @@
 #ifndef blocksci_proxy_type_check_hpp
 #define blocksci_proxy_type_check_hpp
 
-#include "sequence.hpp"
+#include "python_fwd.hpp"
 
 #include <typeinfo>
-
-enum class ProxyType {
-	Simple, Optional, Iterator, Range
-};
 
 struct ProxyTypeInfo {
 	const std::type_info *type;

@@ -7,6 +7,7 @@
 
 #include "python_range_conversion.hpp"
 #include "blocksci_type_converter.hpp"
+#include "sequence.hpp"
 
 #include <blocksci/chain/block.hpp>
 #include <blocksci/core/bitcoin_uint256.hpp>

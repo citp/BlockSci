@@ -9,9 +9,13 @@
 #define proxy_hpp
 
 #include "generic_proxy.hpp"
-#include "python_range_conversion.hpp"
+#include "proxy_type_check.hpp"
+#include "blocksci_type.hpp"
+#include "blocksci_iterator_type.hpp"
+#include "blocksci_range_type.hpp"
 
-#include <range/v3/view/transform.hpp>
+#include <range/v3/view/empty.hpp>
+#include <range/v3/view/single.hpp>
 
 template<typename T>
 struct SequenceProxy {
@@ -69,10 +73,6 @@ struct Proxy : public SimpleProxy {
 	ProxyTypeInfo getDestType() const override {
 		return createProxyTypeInfo<output_t>();
 	}
-
-	const std::type_info *getOutputType() const override {
-		return &typeid(output_t);
-	}
 };
 
 template<typename T>
@@ -103,6 +103,17 @@ struct Proxy<ranges::optional<T>> : public OptionalProxy {
 		};
 	}
 
+	std::function<BlocksciRangeType(std::any &)> getGenericRange() const override {
+		return [f = this->func](std::any &val) -> BlocksciRangeType {
+			auto v = f(val);
+			if (v) {
+				return BlocksciRangeType{RawRange<T>{ranges::view::single(*v)}};
+			} else {
+				return BlocksciRangeType{RawRange<T>{ranges::view::empty<T>()}};
+			}
+		};
+	}
+
 	std::function<std::any(std::any &)> getGenericAny() const override {
 		return [f = this->func](std::any &val) -> std::any {
 			return f(val);
@@ -115,10 +126,6 @@ struct Proxy<ranges::optional<T>> : public OptionalProxy {
 
 	ProxyTypeInfo getDestType() const override {
 		return createProxyTypeInfo<output_t>();
-	}
-
-	const std::type_info *getOutputType() const override {
-		return &typeid(output_t);
 	}
 };
 
@@ -139,11 +146,9 @@ struct Proxy<RawRange<T>> : public SequenceProxy<T>, public RangeProxy {
 		return func(t);
 	}
 
-	std::function<RawRange<BlocksciType>(std::any &)> getGenericRange() const override {
-		return [f = this->func](std::any &val) -> RawRange<BlocksciType> {
-			return ranges::view::transform(f(val), [](T t) -> BlocksciType {
-				return BlocksciType{t};
-			});
+	std::function<BlocksciRangeType(std::any &)> getGenericRange() const override {
+		return [f = this->func](std::any &val) -> BlocksciRangeType {
+			return BlocksciRangeType{f(val)};
 		};
 	}
 
@@ -157,10 +162,6 @@ struct Proxy<RawRange<T>> : public SequenceProxy<T>, public RangeProxy {
 
 	ProxyTypeInfo getDestType() const override {
 		return createProxyTypeInfo<output_t>();
-	}
-
-	const std::type_info *getOutputType() const override {
-		return &typeid(decltype(convertPythonRange(std::declval<output_t>())));
 	}
 };
 
@@ -181,11 +182,9 @@ struct Proxy<RawIterator<T>> : public SequenceProxy<T>, public IteratorProxy {
 		return func(t);
 	}
 
-	std::function<RawIterator<BlocksciType>(std::any &)> getGenericIterator() const override {
-		return [f = this->func](std::any &val) -> RawIterator<BlocksciType> {
-			return ranges::view::transform(f(val), [](T t) -> BlocksciType {
-				return BlocksciType{t};
-			});
+	std::function<BlocksciIteratorType(std::any &)> getGenericIterator() const override {
+		return [f = this->func](std::any &val) -> BlocksciIteratorType {
+			return BlocksciIteratorType{f(val)};
 		};
 	}
 
@@ -199,10 +198,6 @@ struct Proxy<RawIterator<T>> : public SequenceProxy<T>, public IteratorProxy {
 
 	ProxyTypeInfo getDestType() const override {
 		return createProxyTypeInfo<output_t>();
-	}
-
-	const std::type_info *getOutputType() const override {
-		return &typeid(decltype(convertPythonRange(std::declval<output_t>())));
 	}
 };
 
@@ -236,10 +231,6 @@ struct Proxy<blocksci::ScriptAddress<type>> : public ProxyAddress {
 	ProxyTypeInfo getDestType() const override {
 		return createProxyTypeInfo<output_t>();
 	}
-
-	const std::type_info *getOutputType() const override {
-		return &typeid(output_t);
-	}
 };
 
 template<>
@@ -269,10 +260,6 @@ struct Proxy<blocksci::AnyScript> : public ProxyAddress {
 
 	ProxyTypeInfo getDestType() const override {
 		return createProxyTypeInfo<output_t>();
-	}
-
-	const std::type_info *getOutputType() const override {
-		return &typeid(output_t);
 	}
 };
 

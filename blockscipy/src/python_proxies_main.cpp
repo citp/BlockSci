@@ -8,9 +8,8 @@
 #include "python_proxies.hpp"
 #include "python_proxies_types.hpp"
 #include "caster_py.hpp"
-#include "proxy_py.hpp"
 #include "proxy_py_create.hpp"
-#include "generic_sequence.hpp"
+#include "sequence.hpp"
 
 #include "chain/input/input_proxy_py.hpp"
 #include "chain/output/output_proxy_py.hpp"

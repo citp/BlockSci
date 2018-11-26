@@ -18,9 +18,7 @@
 template<typename R>
 Proxy<RawIterator<R>> mapSequence(IteratorProxy &p, Proxy<RawIterator<R>> &p2) {
 	return liftGeneric(p, [p2](auto && seq) -> RawIterator<R> {
-		return ranges::view::join(ranges::view::transform(std::forward<decltype(seq)>(seq), [p2](BlocksciType && v) -> RawIterator<R> {
-			return p2(v.toAny());
-		}));
+		return ranges::view::join(ranges::view::transform(std::forward<decltype(seq)>(seq).toAnySequence(), p2));
 	});
 }
 

@@ -9,6 +9,8 @@
 
 #include <boost/core/demangle.hpp>
 
+#include <sstream>
+
 using namespace blocksci;
 using namespace blocksci::script;
 

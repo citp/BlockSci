@@ -8,7 +8,6 @@
 #ifndef proxy_py_hpp
 #define proxy_py_hpp
 
-#include "sequence.hpp"
 #include "python_fwd.hpp"
 
 #include <pybind11/pybind11.h>

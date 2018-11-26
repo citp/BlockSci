@@ -9,6 +9,9 @@
 #define python_proxies_types_h
 
 #include "proxy_py.hpp"
+#include "proxy.hpp"
+
+#include <blocksci/blocksci_fwd.hpp>
 
 struct MainProxies {
     AllProxyClasses<blocksci::Block> block;

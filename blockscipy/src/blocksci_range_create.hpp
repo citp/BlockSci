@@ -1,5 +1,5 @@
 //
-//  blocksci_range.hpp
+//  blocksci_range_create.hpp
 //  blocksci
 //
 //  Created by Harry Kalodner on 4/11/18.
@@ -9,7 +9,7 @@
 #ifndef blocksci_blocksci_range_create_h
 #define blocksci_blocksci_range_create_h
 
-#include "blocksci_range.hpp"
+#include "python_range.hpp"
 #include "method_types.hpp"
 
 template <typename T>

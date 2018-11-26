@@ -8,7 +8,7 @@
 
 #include "method_types.hpp"
 #include "python_fwd.hpp"
-#include "generic_sequence.hpp"
+#include "sequence.hpp"
 
 #include <blocksci/scripts/script_variant.hpp>
 #include <blocksci/cluster/cluster.hpp>

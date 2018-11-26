@@ -8,8 +8,6 @@
 #ifndef python_proxies_h
 #define python_proxies_h
 
-#include "proxy.hpp"
-
 #include <pybind11/pybind11.h>
 
 struct MainProxies;

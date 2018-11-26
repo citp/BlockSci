@@ -32,21 +32,27 @@ void applyProxyIteratorFuncs(pybind11::class_<IteratorProxy, GenericProxy> &cl, 
     cl
 	.def_property_readonly("size", [](IteratorProxy &p) -> Proxy<int64_t> {
 		return liftGeneric(p, [](auto && seq) -> int64_t {
-			return ranges::distance(std::forward<decltype(seq)>(seq));
+			return mpark::visit(ranges::distance, std::forward<decltype(seq)>(seq).var);
 		});
 	})
 	.def("_any", [](IteratorProxy &p, Proxy<bool> &p2) -> Proxy<bool> {
 		return liftGeneric(p, [p2](auto && seq) -> bool {
-			return ranges::any_of(std::forward<decltype(seq)>(seq), [p2](const BlocksciType &item) {
-				return p2(item.toAny());
-			});
+			return mpark::visit([p2](auto && r) -> bool {
+				return ranges::any_of(std::forward<decltype(r)>(r), [p2](auto && item) {
+					return p2(std::forward<decltype(item)>(item));
+				});
+			}, std::forward<decltype(seq)>(seq).var);
+			
 		});
 	})
 	.def("_all", [](IteratorProxy &p, Proxy<bool> &p2) -> Proxy<bool> {
 		return liftGeneric(p, [p2](auto && seq) -> bool {
-			return ranges::all_of(std::forward<decltype(seq)>(seq), [p2](const BlocksciType &item) {
-				return p2(item.toAny());
-			});
+			return mpark::visit([p2](auto && r) -> bool {
+				return ranges::all_of(std::forward<decltype(r)>(r), [p2](auto && item) {
+					return p2(std::forward<decltype(item)>(item));
+				});
+			}, std::forward<decltype(seq)>(seq).var);
+			
 		});
 	})
 	;
@@ -62,9 +68,11 @@ void applyProxyIteratorFuncs(pybind11::class_<IteratorProxy, GenericProxy> &cl, 
         	addToList(out, next);
             in.pop_back();
             auto anyV = next.toAny();
-            for (auto && elem : generic(anyV)) {
-            	in.emplace_back(std::forward<decltype(elem)>(elem));
-            }
+            mpark::visit([&in](auto && seq) {
+            	for (auto && elem : std::forward<decltype(seq)>(seq)) {
+            		in.emplace_back(std::forward<decltype(elem)>(elem));
+            	}
+            }, generic(anyV).var);
         }
         return out;
     })
@@ -79,7 +87,7 @@ void applyProxyRangeFuncs(pybind11::class_<RangeProxy, IteratorProxy> &cl) {
     cl
 	.def_property_readonly("size", [](RangeProxy &p) -> Proxy<int64_t> {
 		return liftGeneric(p, [](auto && seq) -> int64_t {
-			return ranges::distance(std::forward<decltype(seq)>(seq));
+			return mpark::visit(ranges::distance, std::forward<decltype(seq)>(seq).var);
 		});
 	})
 	;

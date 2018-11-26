@@ -8,7 +8,25 @@
 #ifndef blocksci_python_fwd_h
 #define blocksci_python_fwd_h
 
+#include <range/v3/view/any_view.hpp>
 #include <cstdint>
+
+enum class ProxyType {
+	Simple, Optional, Iterator, Range
+};
+
+struct ProxyTypeInfo;
+struct BlocksciType;
+struct BlocksciIteratorType;
+struct BlocksciRangeType;
+
+constexpr ranges::category random_access_sized = ranges::category::random_access | ranges::category::sized;
+
+template <typename T>
+using RawIterator = ranges::any_view<T>;
+
+template <typename T>
+using RawRange = ranges::any_view<T, random_access_sized>;
 
 template <typename T>
 struct RangeClasses;
@@ -33,8 +51,6 @@ struct ProxyAddress;
 
 template <typename T>
 struct SequenceProxy;
-
-struct BlocksciType;
 
 template<typename T>
 struct Sequence;

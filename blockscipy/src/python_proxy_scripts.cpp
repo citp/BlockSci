@@ -9,7 +9,7 @@
 #include "python_proxies_types.hpp"
 #include "caster_py.hpp"
 #include "proxy_py_create.hpp"
-#include "generic_sequence.hpp"
+#include "sequence.hpp"
 
 #include "scripts/address_proxy_py.hpp"
 #include "scripts/pubkey/pubkey/pubkey_proxy_py.hpp"

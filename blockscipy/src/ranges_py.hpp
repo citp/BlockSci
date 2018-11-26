@@ -9,7 +9,7 @@
 #define ranges_py_hpp
 
 #include "python_fwd.hpp"
-#include "blocksci_range.hpp"
+#include "python_range.hpp"
 #include "proxy.hpp"
 #include "generic_sequence.hpp"
 #include "proxy_create.hpp"

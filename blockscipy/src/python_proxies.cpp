@@ -7,6 +7,7 @@
 
 #include "python_proxies.hpp"
 #include "python_proxies_types.hpp"
+#include "proxy.hpp"
 #include "caster_py.hpp"
 #include "proxy/proxy_functions.hpp"
 #include "generic_proxy/range.hpp"

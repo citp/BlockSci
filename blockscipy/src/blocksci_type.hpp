@@ -8,7 +8,7 @@
 #ifndef blocksci_type_hpp
 #define blocksci_type_hpp
 
-#include "sequence.hpp"
+#include "python_fwd.hpp"
 
 #include <blocksci/address/equiv_address.hpp>
 #include <blocksci/scripts/script_variant.hpp>

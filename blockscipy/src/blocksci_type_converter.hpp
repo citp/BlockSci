@@ -8,9 +8,11 @@
 #ifndef blocksci_type_converter_h
 #define blocksci_type_converter_h
 
-#include "generic_sequence.hpp"
-#include <blocksci/chain/block_range.hpp>
-#include <blocksci/scripts/script_variant.hpp>
+#include "python_fwd.hpp"
+
+#include <blocksci/address/address_fwd.hpp>
+#include <blocksci/chain/chain_fwd.hpp>
+#include <blocksci/scripts/scripts_fwd.hpp>
 
 #include <range/v3/view/any_view.hpp>
 #include <range/v3/view/transform.hpp>
@@ -22,9 +24,7 @@ struct BlockSciTypeConverter {
         return t;
     }
 
-    blocksci::AnyScript operator()(const blocksci::Address &address) {
-        return address.getScript();
-    }
+    blocksci::AnyScript operator()(const blocksci::Address &address);
 
     int64_t operator()(uint16_t val) {
         return static_cast<int64_t>(val);
@@ -47,17 +47,9 @@ struct BlockSciTypeConverter {
         return static_cast<int64_t>(val);
     }
 
-    RawRange<blocksci::Input> operator()(const blocksci::InputRange &val) {
-        return ranges::any_view<blocksci::Input, random_access_sized>{val};
-    }
-
-    RawRange<blocksci::Output> operator()(const blocksci::OutputRange &val) {
-        return ranges::any_view<blocksci::Output, random_access_sized>{val};
-    }
-
-    RawRange<blocksci::Block> operator()(const blocksci::BlockRange &val) {
-        return ranges::any_view<blocksci::Block, random_access_sized>{val};
-    }
+    RawRange<blocksci::Input> operator()(const blocksci::InputRange &val);
+    RawRange<blocksci::Output> operator()(const blocksci::OutputRange &val);
+    RawRange<blocksci::Block> operator()(const blocksci::BlockRange &val);
 
     template <typename T>
     auto operator()(const ranges::optional<T> &val) -> ranges::optional<decltype(this->operator()(*val))> {

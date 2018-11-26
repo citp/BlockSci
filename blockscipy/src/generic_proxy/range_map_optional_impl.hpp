@@ -33,9 +33,7 @@ namespace {
 template<typename R>
 Proxy<RawIterator<R>> mapOptional(IteratorProxy &p, Proxy<ranges::optional<R>> &p2) {
 	return liftGeneric(p, [p2](auto && seq) -> RawIterator<R> {
-		return flattenOptional(ranges::view::transform(std::forward<decltype(seq)>(seq), [p2](BlocksciType && v) -> ranges::optional<R> {
-			return p2(v.toAny());
-		}));
+		return flattenOptional(ranges::view::transform(std::forward<decltype(seq)>(seq).toAnySequence(), p2));
 	});
 }
 

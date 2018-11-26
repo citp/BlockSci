@@ -9,7 +9,7 @@
 #define python_range_conversion_h
 
 #include "python_fwd.hpp"
-#include "generic_sequence.hpp"
+#include "sequence.hpp"
 
 #include <blocksci/blocksci_fwd.hpp>
 
