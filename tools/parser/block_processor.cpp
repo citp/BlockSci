@@ -34,6 +34,7 @@
 #include <future>
 #include <iostream>
 #include <thread>
+#include <list>
 
 std::vector<unsigned char> ParseHex(const char* psz);
 
@@ -278,13 +279,16 @@ blocksci::RawBlock readNewBlock(uint32_t firstTxNum, uint64_t firstInputNum, uin
 // Definition of all functions for the processing pipeline
 
 // 1. Step: Calculate hash of transaction and write it to the hash file (chain/tx_hashes.dat)
-void calculateHash(RawTransaction &tx, FixedSizeFileWriter<blocksci::uint256> &hashFile) {
+void CalculateHashStep::processOutputs(RawTransaction &tx) {
     tx.calculateHash();
     hashFile.write(tx.hash);
 }
 
+void CalculateHashStep::processInputs(RawTransaction &) {}
+
 // 2. Step: Parse the output scripts (into CScriptView) of the transaction in order to identify address types and extract relevant information.
-void generateScriptOutputs(RawTransaction &tx) {
+
+void GenerateScriptOutputsStep::processOutputs(RawTransaction &tx) {
     tx.scriptOutputs.clear();
     tx.scriptOutputs.reserve(tx.outputs.size());
     for (auto &output : tx.outputs) {
@@ -294,13 +298,11 @@ void generateScriptOutputs(RawTransaction &tx) {
     }
 }
 
-// 3. Step: Store information about the spent output with each input of the transaction. Then store information about each output for future lookup.
-void connectUTXOs(RawTransaction &tx, UTXOState &utxoState) {
-    for (auto &input : tx.inputs) {
-        // remove the output that this input spends from the UTXOState and assign it to the input
-        input.utxo = utxoState.erase(input.rawOutputPointer);
-    }
+void GenerateScriptOutputsStep::processInputs(RawTransaction &) {}
 
+// 3. Step: Store information about the spent output with each input of the transaction. Then store information about each output for future lookup.
+
+void ConnectUTXOsStep::processOutputs(RawTransaction &tx) {
     // Fill UTXOState (SerializableMap<RawOutputPointer, UTXO>) with mapping tx output ->  UTXO(output.value, txNum, type)
     for (uint16_t i = 0; i < tx.outputs.size(); i++) {
         auto &output = tx.outputs[i];
@@ -314,9 +316,25 @@ void connectUTXOs(RawTransaction &tx, UTXOState &utxoState) {
     }
 }
 
+void ConnectUTXOsStep::processInputs(RawTransaction &tx) {
+    for (auto &input : tx.inputs) {
+        // remove the output that this input spends from the UTXOState and assign it to the input
+        input.utxo = utxoState.erase(input.rawOutputPointer);
+    }
+}
+
 /* 4. Step: Parse the input script of each input based information about the associated output script.
  *    Then store information about each output address for future lookup. */
-void generateScriptInput(RawTransaction &tx, UTXOAddressState &utxoAddressState) {
+
+void GenerateScriptInputStep::processOutputs(RawTransaction &tx) {
+    uint16_t i = 0;
+    for (auto &scriptOutput : tx.scriptOutputs) {
+        utxoAddressState.addOutput(AnySpendData{scriptOutput}, {tx.txNum, i});
+        i++;
+    }
+}
+
+void GenerateScriptInputStep::processInputs(RawTransaction &tx) {
     tx.scriptInputs.clear();
     tx.scriptInputs.reserve(tx.inputs.size());
     uint16_t i = 0;
@@ -326,38 +344,28 @@ void generateScriptInput(RawTransaction &tx, UTXOAddressState &utxoAddressState)
         tx.scriptInputs.emplace_back(inputView, input.getScriptView(), tx, spendData);
         i++;
     }
-    
-    i = 0;
-    for (auto &scriptOutput : tx.scriptOutputs) {
-        utxoAddressState.addOutput(AnySpendData{scriptOutput}, {tx.txNum, i});
-        i++;
-    }
 }
 
 /* 5. Step: Attach a scriptNum to each script in the transaction. For address types which are
       deduplicated (Pubkey, ScriptHash, Multisig and their varients) use the previously allocated
       scriptNum if the address was seen before. Increment the scriptNum counter for newly seen addresses. */
-void processAddresses(RawTransaction &tx, AddressState &addressState) {
-    for (auto &scriptInput : tx.scriptInputs) {
-        scriptInput.process(addressState);
-    }
-    
+
+void ProcessAddressesStep::processOutputs(RawTransaction &tx) {
     for (auto &scriptOutput : tx.scriptOutputs) {
         scriptOutput.resolve(addressState);
     }
 }
 
+void ProcessAddressesStep::processInputs(RawTransaction &tx) {
+    for (auto &scriptInput : tx.scriptInputs) {
+        scriptInput.process(addressState);
+    }
+}
+
 /* 6. Step: Record the scriptNum for each output for later reference. Assign each spent input with
             the scriptNum of the output its spending */
-void recordAddresses(RawTransaction &tx, UTXOScriptState &state) {
-    for (size_t i = 0; i < tx.inputs.size(); i++) {
-        auto &input = tx.inputs[i];
-        auto &scriptInput = tx.scriptInputs[i];
-        auto scriptNum = state.erase(input.getOutputPointer());
-        assert(scriptNum > 0);
-        scriptInput.setScriptNum(scriptNum);
-    }
-    
+
+void RecordAddressesStep::processOutputs(RawTransaction &tx) {
     uint16_t i = 0;
     for (auto &scriptOutput : tx.scriptOutputs) {
         auto scriptNum = scriptOutput.address().scriptNum;
@@ -367,8 +375,23 @@ void recordAddresses(RawTransaction &tx, UTXOScriptState &state) {
     }
 }
 
+void RecordAddressesStep::processInputs(RawTransaction &tx) {
+    for (size_t i = 0; i < tx.inputs.size(); i++) {
+        auto &input = tx.inputs[i];
+        auto &scriptInput = tx.scriptInputs[i];
+        auto scriptNum = state.erase(input.getOutputPointer());
+        assert(scriptNum > 0);
+        scriptInput.setScriptNum(scriptNum);
+    }
+}
+
 // 7. Step: Serialize transaction data, inputs, and outputs and write them to the txFile
-void serializeTransaction(RawTransaction &tx, IndexedFileWriter<1> &txFile, FixedSizeFileWriter<OutputLinkData> &linkDataFile) {
+
+void SerializeTransactionStep::processOutputs(RawTransaction &) {
+    
+}
+
+void SerializeTransactionStep::processInputs(RawTransaction &tx) {
     txFile.writeIndexGroup();
     txFile.write(tx.getRawTransaction());
     
@@ -388,20 +411,28 @@ void serializeTransaction(RawTransaction &tx, IndexedFileWriter<1> &txFile, Fixe
         blocksci::Inout blocksciOutput{0, address.scriptNum, address.type, output.value};
         txFile.write(blocksciOutput);
     }
+    std::cout << "Serialized tx " << tx.txNum << "with index file count " << txFile.size() << "\n";
+    if (tx.txNum == 347) {
+        std::cout << "Serialized tx " << tx.txNum << "\n";
+    }
 }
 
 // 8. Step: Save address data into files for the analysis library
-void serializeAddressess(RawTransaction &tx, AddressWriter &addressWriter) {
+
+void SerializeAddressesStep::processOutputs(RawTransaction &tx) {
+    for (auto &scriptOutput : tx.scriptOutputs) {
+        addressWriter.serialize(scriptOutput, tx.txNum, true);
+    }
+}
+
+void SerializeAddressesStep::processInputs(RawTransaction &tx) {
     for (size_t i = 0; i < tx.inputs.size(); i++) {
         auto &input = tx.inputs[i];
         auto &scriptInput = tx.scriptInputs[i];
         addressWriter.serialize(scriptInput, tx.txNum, input.utxo.txNum);
     }
-    
-    for (auto &scriptOutput : tx.scriptOutputs) {
-        addressWriter.serialize(scriptOutput, tx.txNum, true);
-    }
 }
+
 
 void backUpdateTxes(const ParserConfigurationBase &config) {
     std::vector<OutputLinkData> updates;
@@ -456,68 +487,108 @@ struct NextQueueFinishedEarlyException : public std::runtime_error {
     NextQueueFinishedEarlyException() : std::runtime_error("Next queue finished early") {}
 };
 
-template <typename ProcessFunc, typename AdvanceFunc>
+using TxQueue = boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<10000>>;
+using AdvanceFunc = std::function<bool(RawTransaction *, TxQueue *)>;
+
+template <typename Func>
+bool processNext(TxQueue &inputQueue, TxQueue *nextQueue, std::atomic<bool> *nextDone, std::function<bool(RawTransaction *, TxQueue *)> advanceFunc, Func && processFunc, int64_t &nextWaitCount) {
+    using namespace std::chrono_literals;
+    
+    RawTransaction *rawTx = nullptr;
+    inputQueue.pop(rawTx);
+    if (rawTx) {
+        // Execute processing step on rawTx, eg. calculateHashesFunc or connectUTXOsFunc
+        std::forward<Func>(processFunc)(rawTx);
+        // Check if advanceFunc is successful before further processing the pipeline
+        if (advanceFunc(rawTx, nextQueue)) {
+            assert(rawTx);
+            // Add rawTx to the next queue. if it fails (queue is full), wait 5ms and try again
+            while (!nextQueue->push(rawTx)) {
+                if (nextDone && *nextDone) {
+                    // Error: next ProcessStep finished before all items were queued
+                    throw NextQueueFinishedEarlyException();
+                }
+                nextWaitCount++;
+                std::this_thread::sleep_for(5ms);
+            }
+        }
+        return true;
+    } else {
+        return false;
+    }
+};
+
 class ProcessStep {
 public:
     std::atomic<bool> &prevDone;
+    std::atomic<bool> *prevDoneSecond = nullptr;
     
-    std::atomic<bool> isDone{false};
+    std::atomic<bool> isDoneFirst{false};
+    std::atomic<bool> isDoneSecond{false};
 
     /* Single-producer/single-consumer fifo queues, pushing and popping is wait-free
      *
      * size of the ringbuffer is specified by boost::lockfree::capacity<>
      */
-    boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<10000>> inputQueue;
-    boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<10000>> *nextQueue = nullptr;
-
-    std::atomic<bool> *nextDone = nullptr;
+    TxQueue inputQueueFirst;
+    TxQueue inputQueueSecond;
+    TxQueue *nextQueueFirst = nullptr;
+    TxQueue *nextQueueSecond = nullptr;
     
-    ProcessFunc func;
-    AdvanceFunc advanceFunc;
+    std::atomic<bool> *nextDoneFirst = nullptr;
+    std::atomic<bool> *nextDoneSecond = nullptr;
+    
+    std::unique_ptr<ProcessorStep> func;
+    AdvanceFunc advanceFuncFirst;
+    AdvanceFunc advanceFuncSecond;
     
     int64_t prevWaitCount = 0;
     int64_t nextWaitCount = 0;
     
     // AdvanceFunc
-    ProcessStep(std::atomic<bool> &prevDone_, ProcessFunc func_, AdvanceFunc advanceFunc_) : prevDone(prevDone_), func(func_), advanceFunc(advanceFunc_) {}
+    ProcessStep(std::atomic<bool> &prevDone_, std::unique_ptr<ProcessorStep> && func_, const AdvanceFunc &advanceFuncFirst_, const AdvanceFunc &advanceFuncSecond_) : prevDone(prevDone_), func(std::move(func_)), advanceFuncFirst(advanceFuncFirst_), advanceFuncSecond(advanceFuncSecond_) {}
     
     template <typename PrevStep>
-    ProcessStep(PrevStep &prevStep, ProcessFunc func_, AdvanceFunc advanceFunc_) : ProcessStep(prevStep.isDone, func_, advanceFunc_) {
+    ProcessStep(PrevStep &prevStep, std::unique_ptr<ProcessorStep> && func_, const AdvanceFunc &advanceFuncFirst_, const AdvanceFunc &advanceFuncSecond_) : ProcessStep(prevStep.isDoneFirst, std::move(func_), advanceFuncFirst_, advanceFuncSecond_) {
         // Link the queue- and done-pointers for the previous queue to this object's variables
-        prevStep.nextQueue = &inputQueue;
-        prevStep.nextDone = &isDone;
+        prevDoneSecond = &prevStep.isDoneSecond;
+        prevStep.nextQueueFirst = &inputQueueFirst;
+        prevStep.nextQueueSecond = &inputQueueSecond;
+        prevStep.nextDoneFirst = &isDoneFirst;
+        prevStep.nextDoneSecond = &isDoneSecond;
     }
-    
+    // inputProcessingDone
     void operator()() {
         using namespace std::chrono_literals;
         // CompletionGuard sets isDone to true in its destructor that is called at the end of this operator() method
-        CompletionGuard guard(isDone);
+        CompletionGuard firstGuard(isDoneFirst);
+        CompletionGuard secondGuard(isDoneSecond);
+        
         auto consumeAll = [&]() {
-            RawTransaction *rawTx = nullptr;
-            while (inputQueue.pop(rawTx)) {
-                // Execute processing step on rawTx, eg. calculateHashesFunc or connectUTXOsFunc
-                func(rawTx);
-                // Check if advanceFunc is successful before further processing the pipeline
-                if (advanceFunc(rawTx)) {
-                    assert(rawTx);
-                    // Add rawTx to the next queue. if it fails (queue is full), wait 5ms and try again
-                    while (!nextQueue->push(rawTx)) {
-                        if (nextDone && *nextDone) {
-                            // Error: next ProcessStep finished before all items were queued
-                            throw NextQueueFinishedEarlyException();
-                        }
-                        nextWaitCount++;
-                        std::this_thread::sleep_for(5ms);
-                    }
-                }
+            bool processedSecond = true;
+            bool processedFirst = true;
+            while (processedSecond || processedFirst) {
+                processedSecond = processNext(inputQueueSecond, nextQueueSecond, nextDoneSecond, advanceFuncSecond, [&](RawTransaction *tx) {
+                    func->processInputs(*tx);
+                }, nextWaitCount);
+                
+                processedFirst = processNext(inputQueueFirst, nextQueueFirst, nextDoneFirst, advanceFuncFirst, [&](RawTransaction *tx) {
+                    func->processOutputs(*tx);
+                }, nextWaitCount);
             }
         };
 
         // Consume queued items as long as the previous processing step has not finished
-        while (!prevDone) {
+        assert (prevDoneSecond != nullptr);
+        while (!prevDone || !*prevDoneSecond) {
             consumeAll();
             prevWaitCount++;
             std::this_thread::sleep_for(5ms);
+            
+            if (prevDone) {
+                consumeAll();
+                isDoneFirst = true;
+            }
         }
 
         // Last call to consume queued items to catch last items
@@ -525,15 +596,57 @@ public:
     }
 };
 
-template<typename ProcessFunc, typename AdvanceFunc, typename PrevStep>
-ProcessStep<ProcessFunc, AdvanceFunc> makeProcessStep(PrevStep &prevStep, ProcessFunc func, AdvanceFunc advanceFunc) {
-    return ProcessStep<ProcessFunc, AdvanceFunc>(prevStep, func, advanceFunc);
-}
-
-template<typename ProcessFunc, typename AdvanceFunc>
-ProcessStep<ProcessFunc, AdvanceFunc> makeProcessStep(std::atomic<bool> &prevDone, ProcessFunc func, AdvanceFunc advanceFunc) {
-    return ProcessStep<ProcessFunc, AdvanceFunc>(prevDone, func, advanceFunc);
-}
+struct ProcessStepQueue {
+    
+    std::atomic<bool> importDone{false};
+    
+    // Queue for RawTransaction objects that have gone through the entire processing pipeline
+    TxQueue finishedQueue;
+    
+    std::list<ProcessStep> steps;
+    std::vector<std::future<void>> futures;
+    
+    ProcessStepQueue(std::unique_ptr<ProcessorStep> && func, const AdvanceFunc &advanceFuncFirst, const AdvanceFunc &advanceFuncSecond) {
+        steps.emplace_back(importDone, std::move(func), advanceFuncFirst, advanceFuncSecond);
+    }
+    
+    void addStep(std::unique_ptr<ProcessorStep> && func, const AdvanceFunc &advanceFuncFirst, const AdvanceFunc &advanceFuncSecond) {
+        steps.emplace_back(steps.back(), std::move(func), advanceFuncFirst, advanceFuncSecond);
+    }
+    
+    TxQueue &inputQueue() {
+        return steps.front().inputQueueFirst;
+    }
+    
+    bool isRunning() {
+        return steps.front().isDoneFirst;
+    }
+    
+    void run() {
+        // Add finished_transaction_queue as the last queue after the last actual processing step
+        steps.back().nextQueueFirst = &steps.front().inputQueueSecond;
+        steps.back().nextQueueSecond = &finishedQueue;
+        
+        steps.front().prevDoneSecond = &steps.back().isDoneFirst;
+        
+        for (auto &step : steps) {
+            futures.push_back(std::async(std::launch::async, [&]() {
+                step();
+            }));
+        }
+    }
+    
+    void waitForComplete() {
+        for (auto &future : futures) {
+            future.get();
+        }
+        
+        // free all RawTransaction memory slots
+        finishedQueue.consume_all([](RawTransaction *tx) {
+            delete tx;
+        });
+    }
+};
 
 NewBlocksFiles::NewBlocksFiles(const ParserConfigurationBase &config) :
     blockCoinbaseFile(blocksci::ChainAccess::blockCoinbaseFilePath(config.dataConfig.chainDirectory())),
@@ -545,118 +658,80 @@ NewBlocksFiles::NewBlocksFiles(const ParserConfigurationBase &config) :
 
 template <typename ParseTag>
 std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> blocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState) {
-    
-    std::atomic<bool> rawDone{false};
 
-    // Queue for RawTransaction objects that have gone through the entire processing pipeline
-    boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<10000>> finished_transaction_queue;
-    
-    FixedSizeFileWriter<blocksci::uint256> hashFile{blocksci::ChainAccess::txHashesFilePath(config.dataConfig.chainDirectory())};
     AddressWriter addressWriter{config};
+    IndexedFileWriter<1> txFile(blocksci::ChainAccess::txFilePath(config.dataConfig.chainDirectory()));
+    FixedSizeFileWriter<OutputLinkData> linkDataFile(config.txUpdatesFilePath());
+    FixedSizeFileWriter<blocksci::uint256> txHashFile{blocksci::ChainAccess::txHashesFilePath(config.dataConfig.chainDirectory())};
+
+    auto advanceFunc = [](RawTransaction *, TxQueue *) { return true; };
     
     auto progressBar = blocksci::makeProgressBar(totalTxCount, [=](RawTransaction *tx) {
         auto blockHeight = tx->blockHeight;
         std::cout << ", Block " << blockHeight << "/" << maxBlockHeight;
     });
     
-    auto advanceFunc = [](RawTransaction *) { return true; };
-    
-    auto calculateHashesFunc = [&](RawTransaction *tx) {
-        calculateHash(*tx, hashFile);
-    };
-    
-    auto generateScriptOutputsFunc = [](RawTransaction *tx) {
-        generateScriptOutputs(*tx);
-    };
-    
-    auto connectUTXOsFunc = [&](RawTransaction *tx) {
-        connectUTXOs(*tx, utxoState);
-    };
-    
-    auto generateScriptInputFunc = [&](RawTransaction *tx) {
-        generateScriptInput(*tx, utxoAddressState);
-    };
-    
-    auto processAddressFunc = [&](RawTransaction *tx) {
-        processAddresses(*tx, addressState);
-    };
-    
-    auto recordAddressesFunc = [&](RawTransaction *tx) {
-        recordAddresses(*tx, utxoScriptState);
-    };
-    
-    IndexedFileWriter<1> txFile(blocksci::ChainAccess::txFilePath(config.dataConfig.chainDirectory()));
-    FixedSizeFileWriter<OutputLinkData> linkDataFile(config.txUpdatesFilePath());
-    
-    auto serializeTransactionFunc = [&](RawTransaction *tx) {
-        serializeTransaction(*tx, txFile, linkDataFile);
-    };
-    
-    auto serializeAddressFunc = [&](RawTransaction *tx) {
-        serializeAddressess(*tx, addressWriter);
-        progressBar.update(tx->txNum - startingTxCount, tx);
-    };
-
     /* Advance function of the last step
      * Optimization: Only push tx to finished_transaction_queue if it meets certain conditions, otherwise de-allocate it */
-    auto serializeAddressAdvanceFunc = [&](RawTransaction *tx) {
-        bool shouldSend = tx->realSize < 800 && finished_transaction_queue.write_available() >= 1;
+    
+    auto serializeAddressAdvanceFunc = [&](RawTransaction *tx,  TxQueue *nextQueue) {
+        progressBar.update(tx->txNum - startingTxCount, tx);
+        bool shouldSend = tx->realSize < 800 && nextQueue->write_available() >= 1;
         if (!shouldSend)  {
             delete tx;
         }
         return shouldSend;
     };
-
+    
     // Definition of all ProcessStep objects for the processing pipeline
-
+    
     // 1. Step: Calculate hash of transaction and write it to the hash file (chain/tx_hashes.dat)
-    ProcessStep<decltype(calculateHashesFunc), decltype(advanceFunc)> calculateHashesStep(rawDone, calculateHashesFunc, advanceFunc);
+    ProcessStepQueue processQueue(std::make_unique<CalculateHashStep>(txHashFile), advanceFunc, advanceFunc);
 
     // 2. Step: Parse the output scripts (into CScriptView) of the transaction in order to identify address types and extract relevant information.
-    ProcessStep<decltype(generateScriptOutputsFunc), decltype(advanceFunc)> generateScriptOutputsStep(calculateHashesStep, generateScriptOutputsFunc, advanceFunc);
+    processQueue.addStep(std::make_unique<GenerateScriptOutputsStep>(), advanceFunc, advanceFunc);
 
     // 3. Step: Store information about the spent output with each input of the transaction. Then store information about each output for future lookup.
-    ProcessStep<decltype(connectUTXOsFunc), decltype(advanceFunc)> connectUTXOsStep(generateScriptOutputsStep, connectUTXOsFunc, advanceFunc);
+    processQueue.addStep(std::make_unique<ConnectUTXOsStep>(utxoState), advanceFunc, advanceFunc);
 
     /* 4. Step: Parse the input script of each input based information about the associated output script.
      *    Then store information about each output address for future lookup. */
-    ProcessStep<decltype(generateScriptInputFunc), decltype(advanceFunc)> generateScriptInputStep(connectUTXOsStep, generateScriptInputFunc, advanceFunc);
+    processQueue.addStep(std::make_unique<GenerateScriptInputStep>(utxoAddressState), advanceFunc, advanceFunc);
 
     /* 5. Step: Attach a scriptNum to each script in the transaction. For address types which are
           deduplicated (Pubkey, ScriptHash, Multisig and their varients) use the previously allocated
           scriptNum if the address was seen before. Increment the scriptNum counter for newly seen addresses. */
-    ProcessStep<decltype(processAddressFunc), decltype(advanceFunc)> processAddressStep(generateScriptInputStep, processAddressFunc, advanceFunc);
+    processQueue.addStep(std::make_unique<ProcessAddressesStep>(addressState), advanceFunc, advanceFunc);
 
     /* 6. Step: Record the scriptNum for each output for later reference. Assign each spent input with
      the scriptNum of the output its spending */
-    ProcessStep<decltype(recordAddressesFunc), decltype(advanceFunc)> recordAddressesStep(processAddressStep, recordAddressesFunc, advanceFunc);
+    processQueue.addStep(std::make_unique<RecordAddressesStep>(utxoScriptState), advanceFunc, advanceFunc);
 
     // 7. Step: Serialize transaction data, inputs, and outputs and write them to the txFile
-    ProcessStep<decltype(serializeTransactionFunc), decltype(advanceFunc)> serializeTransactionStep(recordAddressesStep, serializeTransactionFunc, advanceFunc);
+    processQueue.addStep(std::make_unique<SerializeTransactionStep>(txFile, linkDataFile), advanceFunc, advanceFunc);
 
     // 8. Step: Save address data into files for the analysis library
-    ProcessStep<decltype(serializeAddressFunc), decltype(serializeAddressAdvanceFunc)> serializeAddressStep(serializeTransactionStep, serializeAddressFunc, serializeAddressAdvanceFunc);
-
-    // Add finished_transaction_queue as the last queue after the last actual processing step
-    serializeAddressStep.nextQueue = &finished_transaction_queue;
+    processQueue.addStep(std::make_unique<SerializeAddressesStep>(addressWriter), advanceFunc, serializeAddressAdvanceFunc);
     
     int64_t nextWaitCount = 0;
     
     std::vector<blocksci::RawBlock> blocksAdded;
+    BlockFileReader<ParseTag> fileReader(config, blocks, currentTxNum);
 
     // Launch the importer in its own thread
     auto importer = std::async(std::launch::async, [&] {
-        CompletionGuard guard(rawDone);
+        CompletionGuard guard(processQueue.importDone);
         auto loadFinishedTx = [&](RawTransaction *&tx) {
-            return finished_transaction_queue.pop(tx);
+            return processQueue.finishedQueue.pop(tx);
         };
 
+        
         // Function that adds transaction to the first queue of the processing pipeline
         auto outFunc = [&](RawTransaction *tx) {
             using namespace std::chrono_literals;
             // Add tx to the inputQueue of the first processing step, if it fails (queue is full), wait 5ms and try again
-            while (!calculateHashesStep.inputQueue.push(tx)) {
-                if (calculateHashesStep.isDone) {
+            while (!processQueue.inputQueue().push(tx)) {
+                if (!processQueue.isRunning()) {
                     // Error: calculateHashesStep() finished before all items were queued
                     throw NextQueueFinishedEarlyException();
                 }
@@ -665,7 +740,6 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfigu
             }
         };
         
-        BlockFileReader<ParseTag> fileReader(config, blocks, currentTxNum);
         NewBlocksFiles files(config);
 
         // Call readNewBlock for every block, which triggers the processing pipeline for every transaction
@@ -679,53 +753,14 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfigu
             currentInputNum += newBlock.inputCount;
             currentOutputNum += newBlock.outputCount;
         }
-        
-        return fileReader;
     });
 
     // Launch all processing steps as concurrent threads
-    auto calculateHashesStepFuture = std::async(std::launch::async, [&]() {
-        calculateHashesStep();
-    });
-    
-    auto generateScriptOutputsStepFuture = std::async(std::launch::async, [&]() {
-        generateScriptOutputsStep();
-    });
-    
-    auto connectUTXOsStepFuture = std::async(std::launch::async, [&]() {
-        connectUTXOsStep();
-    });
-    
-    auto generateScriptInputStepFuture = std::async(std::launch::async, [&] {
-        generateScriptInputStep();
-    });
-    
-    auto processAddressStepFuture = std::async(std::launch::async, [&] {
-        processAddressStep();
-    });
-    
-    auto recordAddressesStepFuture = std::async(std::launch::async, [&] {
-        recordAddressesStep();
-    });
-    
-    auto serializeTransactionStepFuture = std::async(std::launch::async, [&] {
-        serializeTransactionStep();
-    });
-    
-    auto serializeAddressStepFuture = std::async(std::launch::async, [&] {
-        serializeAddressStep();
-    });
+    processQueue.run();
 
     // Wait for all processing step threads to complete
-    auto reader = importer.get();
-    calculateHashesStepFuture.get();
-    generateScriptOutputsStepFuture.get();
-    connectUTXOsStepFuture.get();
-    generateScriptInputStepFuture.get();
-    processAddressStepFuture.get();
-    recordAddressesStepFuture.get();
-    serializeTransactionStepFuture.get();
-    serializeAddressStepFuture.get();
+    importer.get();
+    processQueue.waitForComplete();
     
 //    std::cout << "generateTxesStep:" << nextWaitCount << "\n";
 //    std::cout << "calculateHashesStep: " << calculateHashesStep.prevWaitCount << " " << calculateHashesStep.nextWaitCount << "\n";
@@ -736,67 +771,63 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfigu
 //    std::cout << "recordAddressesStep: " << recordAddressesStep.prevWaitCount << " " << recordAddressesStep.nextWaitCount << "\n";
 //    std::cout << "serializeTransactionStep: " << serializeTransactionStep.prevWaitCount << " " << serializeTransactionStep.nextWaitCount << "\n";
 //    std::cout << "serializeAddressStep: " << serializeAddressStep.prevWaitCount << " " << serializeAddressStep.nextWaitCount << "\n";
-
-    // free all RawTransaction memory slots
-    finished_transaction_queue.consume_all([](RawTransaction *tx) {
-        delete tx;
-    });
+    
     return blocksAdded;
 }
 
 // addNewBlocksSingle has the same functionality as addNewBlocks except that it is single threaded instead of using multiple lock-free queues
-template <typename ParseTag>
-std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocksSingle(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> blocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState) {
-    
-    RawTransaction realTx;
-    auto loadFinishedTx = [&](RawTransaction *&tx) {
-        tx = &realTx;
-        return true;
-    };
-    
-    FixedSizeFileWriter<blocksci::uint256> hashFile{blocksci::ChainAccess::txHashesFilePath(config.dataConfig.chainDirectory())};
-    AddressWriter addressWriter{config};
-    
-    auto progressBar = blocksci::makeProgressBar(totalTxCount, [=](RawTransaction *tx) {
-        auto blockHeight = tx->blockHeight;
-        std::cout << ", Block " << blockHeight << "/" << maxBlockHeight;
-    });
-    
-    FixedSizeFileWriter<OutputLinkData> linkDataFile(config.txUpdatesFilePath());
-    IndexedFileWriter<1> txFile(blocksci::ChainAccess::txFilePath(config.dataConfig.chainDirectory()));
-
-    auto outFunc = [&](RawTransaction *tx) {
-        calculateHash(*tx, hashFile);
-        connectUTXOs(*tx, utxoState);
-        generateScriptInput(*tx, utxoAddressState);
-        processAddresses(*tx, addressState);
-        recordAddresses(*tx, utxoScriptState);
-        serializeTransaction(*tx, txFile, linkDataFile);
-        serializeAddressess(*tx, addressWriter);
-        progressBar.update(tx->txNum - startingTxCount, tx);
-    };
-        
-    BlockFileReader<ParseTag> fileReader(config, blocks, currentTxNum);
-    NewBlocksFiles files(config);
-    
-    std::vector<blocksci::RawBlock> blocksAdded;
-    for (auto &block : blocks) {
-        fileReader.nextBlock(block, currentTxNum);
-        auto newBlock = readNewBlock(currentTxNum, currentInputNum, currentOutputNum, block, fileReader, files, loadFinishedTx, outFunc, block.height >= config.dataConfig.chainConfig.segwitActivationHeight);
-        blocksAdded.push_back(newBlock);
-        currentTxNum += newBlock.txCount;
-        currentInputNum += newBlock.inputCount;
-        currentOutputNum += newBlock.outputCount;
-    }
-    
-    return blocksAdded;
-}
+//template <typename ParseTag>
+//std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocksSingle(const ParserConfiguration<ParseTag> &config, std::vector<BlockInfo<ParseTag>> blocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState) {
+//
+//    RawTransaction realTx;
+//    auto loadFinishedTx = [&](RawTransaction *&tx) {
+//        tx = &realTx;
+//        return true;
+//    };
+//
+//    FixedSizeFileWriter<blocksci::uint256> hashFile{blocksci::ChainAccess::txHashesFilePath(config.dataConfig.chainDirectory())};
+//    AddressWriter addressWriter{config};
+//
+//    auto progressBar = blocksci::makeProgressBar(totalTxCount, [=](RawTransaction *tx) {
+//        auto blockHeight = tx->blockHeight;
+//        std::cout << ", Block " << blockHeight << "/" << maxBlockHeight;
+//    });
+//
+//    FixedSizeFileWriter<OutputLinkData> linkDataFile(config.txUpdatesFilePath());
+//    IndexedFileWriter<1> txFile(blocksci::ChainAccess::txFilePath(config.dataConfig.chainDirectory()));
+//
+//    auto outFunc = [&](RawTransaction *tx) {
+//        calculateHash(*tx, hashFile);
+//        connectUTXOs(*tx, utxoState);
+//        generateScriptInput(*tx, utxoAddressState);
+//        processAddresses(*tx, addressState);
+//        recordAddresses(*tx, utxoScriptState);
+//        serializeTransaction(*tx, txFile, linkDataFile);
+//        serializeAddressess(*tx, addressWriter);
+//        progressBar.update(tx->txNum - startingTxCount, tx);
+//    };
+//
+//    BlockFileReader<ParseTag> fileReader(config, blocks, currentTxNum);
+//    NewBlocksFiles files(config);
+//
+//    std::vector<blocksci::RawBlock> blocksAdded;
+//    for (auto &block : blocks) {
+//        fileReader.nextBlock(block, currentTxNum);
+//        auto newBlock = readNewBlock(currentTxNum, currentInputNum, currentOutputNum, block, fileReader, files, loadFinishedTx, outFunc, block.height >= config.dataConfig.chainConfig.segwitActivationHeight);
+//        blocksAdded.push_back(newBlock);
+//        currentTxNum += newBlock.txCount;
+//        currentInputNum += newBlock.inputCount;
+//        currentOutputNum += newBlock.outputCount;
+//    }
+//
+//    return blocksAdded;
+//}
 
 #ifdef BLOCKSCI_FILE_PARSER
 template std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfiguration<FileTag> &config, std::vector<BlockInfo<FileTag>> nextBlocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState);
-template std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocksSingle(const ParserConfiguration<FileTag> &config, std::vector<BlockInfo<FileTag>> nextBlocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState);
+//template std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocksSingle(const ParserConfiguration<FileTag> &config, std::vector<BlockInfo<FileTag>> nextBlocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState);
 #endif
 #ifdef BLOCKSCI_RPC_PARSER
 template std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfiguration<RPCTag> &config, std::vector<BlockInfo<RPCTag>> nextBlocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState);
-template std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocksSingle(const ParserConfiguration<RPCTag> &config, std::vector<BlockInfo<RPCTag>> nextBlocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState);
+//template std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocksSingle(const ParserConfiguration<RPCTag> &config, std::vector<BlockInfo<RPCTag>> nextBlocks, UTXOState &utxoState, UTXOAddressState &utxoAddressState, AddressState &addressState, UTXOScriptState &utxoScriptState);
 #endif

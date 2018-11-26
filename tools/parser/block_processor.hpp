@@ -45,14 +45,83 @@ struct OutputLinkData {
 };
 
 blocksci::RawBlock readNewBlock(uint32_t firstTxNum, uint64_t firstInputNum, uint64_t firstOutputNum, const BlockInfoBase &block, BlockFileReaderBase &fileReader, NewBlocksFiles &files, const std::function<bool(RawTransaction *&tx)> &loadFunc, const std::function<void(RawTransaction *tx)> &outFunc, bool isSegwit);
-void calculateHash(RawTransaction &tx, FixedSizeFileWriter<blocksci::uint256> &hashFile);
-void generateScriptOutputs(RawTransaction &tx);
-void connectUTXOs(RawTransaction &tx, UTXOState &utxoState);
-void serializeTransaction(RawTransaction &tx, IndexedFileWriter<1> &txFile, FixedSizeFileWriter<OutputLinkData> &linkDataFile);
-void generateScriptInput(RawTransaction &tx, UTXOAddressState &utxoAddressState);
-void processAddresses(RawTransaction &tx, AddressState &addressState);
-void recordAddresses(RawTransaction &tx, UTXOScriptState &state);
-void serializeAddressess(RawTransaction &tx, AddressWriter &addressWriter);
+
+struct ProcessorStep {
+    virtual void processOutputs(RawTransaction &tx) = 0;
+    virtual void processInputs(RawTransaction &tx) = 0;
+    
+    virtual ~ProcessorStep() = default;
+};
+
+struct CalculateHashStep : public ProcessorStep {
+    FixedSizeFileWriter<blocksci::uint256> &hashFile;
+    
+    CalculateHashStep(FixedSizeFileWriter<blocksci::uint256> &hashFile_) : hashFile(hashFile_) {}
+    
+    void processOutputs(RawTransaction &tx) override;
+    void processInputs(RawTransaction &tx) override;
+};
+
+struct GenerateScriptOutputsStep : public ProcessorStep {
+    void processOutputs(RawTransaction &tx) override;
+    void processInputs(RawTransaction &tx) override;
+};
+
+struct ConnectUTXOsStep : public ProcessorStep {
+    UTXOState &utxoState;
+    
+    ConnectUTXOsStep(UTXOState &utxoState_) : utxoState(utxoState_) {}
+    
+    void processOutputs(RawTransaction &tx) override;
+    void processInputs(RawTransaction &tx) override;
+};
+
+struct GenerateScriptInputStep : public ProcessorStep {
+    UTXOAddressState &utxoAddressState;
+    
+    GenerateScriptInputStep(UTXOAddressState &utxoAddressState_) : utxoAddressState(utxoAddressState_) {}
+    
+    void processOutputs(RawTransaction &tx) override;
+    void processInputs(RawTransaction &tx) override;
+};
+
+struct ProcessAddressesStep : public ProcessorStep {
+    AddressState &addressState;
+    
+    ProcessAddressesStep(AddressState &addressState_) : addressState(addressState_) {}
+    
+    void processOutputs(RawTransaction &tx) override;
+    void processInputs(RawTransaction &tx) override;
+};
+
+struct RecordAddressesStep : public ProcessorStep {
+    UTXOScriptState &state;
+    
+    RecordAddressesStep(UTXOScriptState &state_) : state(state_) {}
+    
+    void processOutputs(RawTransaction &tx) override;
+    void processInputs(RawTransaction &tx) override;
+};
+
+struct SerializeTransactionStep : public ProcessorStep {
+    IndexedFileWriter<1> &txFile;
+    FixedSizeFileWriter<OutputLinkData> &linkDataFile;
+    
+    SerializeTransactionStep(IndexedFileWriter<1> &txFile_, FixedSizeFileWriter<OutputLinkData> &linkDataFile_) : txFile(txFile_), linkDataFile(linkDataFile_) {}
+    
+    void processOutputs(RawTransaction &tx) override;
+    void processInputs(RawTransaction &tx) override;
+};
+
+struct SerializeAddressesStep : public ProcessorStep {
+    AddressWriter &addressWriter;
+    
+    SerializeAddressesStep(AddressWriter &addressWriter_) : addressWriter(addressWriter_) {}
+    
+    void processOutputs(RawTransaction &tx) override;
+    void processInputs(RawTransaction &tx) override;
+};
+
 void backUpdateTxes(const ParserConfigurationBase &config);
 
 
