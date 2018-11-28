@@ -16,3 +16,7 @@ You'll need to install `pytest` and the `pytest-regtest` plugin:
 - `pytest` to run all tests, or 
 - `pytest test_xyz.py` to run a single test
 - `pytest test_xyz.py --regtest-reset` to store the current output of the regression tests
+
+## Marking tests for specific chains
+
+Use `@pytest.mark.btc` or `@pytest.mark.bch` if tests should only be run for a specific chain (e.g., you might want to skip all tests involving Segwit addresses for Bitcoin Cash).

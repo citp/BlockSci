@@ -1,11 +1,17 @@
 import blocksci
+import pytest
 from util import Coin
 
-ADDR_TYPES = ['p2pkh', 'p2sh', 'p2wpkh', 'p2wsh']
+
+def address_types(chain_name):
+    if chain_name == "btc":
+        return ['p2pkh', 'p2sh', 'p2wpkh', 'p2wsh']
+    else:
+        return ['p2pkh', 'p2sh']
 
 
-def addresses(chain, json_data):
-    for addr_type in ADDR_TYPES:
+def addresses(chain, json_data, chain_name):
+    for addr_type in address_types(chain_name):
         for i in range(3):
             addr = chain.address_from_string(json_data["address-{}-spend-{}".format(addr_type, i)])
             yield addr, addr_type
@@ -45,6 +51,7 @@ def test_p2sh_address(chain, json_data):
     address_received_test(addr, blocksci.address_type.scripthash, 0, 4)
 
 
+@pytest.mark.btc
 def test_p2wpkh_address(chain, json_data):
     addr = chain.address_from_string(json_data['address-p2wpkh-spend-0'])
     address_received_test(addr, blocksci.address_type.witness_pubkeyhash, 1, 1)
@@ -56,6 +63,7 @@ def test_p2wpkh_address(chain, json_data):
     address_received_test(addr, blocksci.address_type.witness_pubkeyhash, 0, 4)
 
 
+@pytest.mark.btc
 def test_p2wsh_address(chain, json_data):
     addr = chain.address_from_string(json_data['address-p2wsh-spend-0'])
     address_received_test(addr, blocksci.address_type.witness_scripthash, 1, 1)
@@ -67,8 +75,9 @@ def test_p2wsh_address(chain, json_data):
     address_received_test(addr, blocksci.address_type.witness_scripthash, 0, 4)
 
 
-def test_address_regression(chain, json_data, regtest):
-    for addr, addr_type in addresses(chain, json_data):
+@pytest.mark.btc
+def test_address_regression(chain, json_data, regtest, chain_name):
+    for addr, addr_type in addresses(chain, json_data, chain_name):
         if "multisig" not in addr_type:
             print(addr.address_string, file=regtest)
         print(addr.balance(), file=regtest)

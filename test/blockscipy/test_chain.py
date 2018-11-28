@@ -1,3 +1,4 @@
+import pytest
 import blocksci
 from util import correct_timestamp
 
@@ -26,6 +27,7 @@ def test_block_with_p2pkh_tx(chain, json_data, regtest):
     block_regression(chain[height], regtest)
 
 
+@pytest.mark.btc
 def test_block_with_p2wsh_tx(chain, json_data, regtest):
     height = json_data['address-p2wsh-spend-2-height']
     block_regression(chain[height], regtest)

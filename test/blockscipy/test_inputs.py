@@ -1,3 +1,6 @@
+import pytest
+
+
 def test_p2pkh_input_regression(chain, json_data, regtest):
     tx = chain.tx_with_hash(json_data["address-p2pkh-spend-1-tx"])
     input_regression(tx, regtest)
@@ -8,11 +11,13 @@ def test_p2sh_input_regression(chain, json_data, regtest):
     input_regression(tx, regtest)
 
 
+@pytest.mark.btc
 def test_p2wpkh_input_regression(chain, json_data, regtest):
     tx = chain.tx_with_hash(json_data["address-p2wpkh-spend-0-tx"])
     input_regression(tx, regtest)
 
 
+@pytest.mark.btc
 def test_p2wsh_input_regression(chain, json_data, regtest):
     tx = chain.tx_with_hash(json_data["address-p2wsh-spend-1-tx"])
     input_regression(tx, regtest)

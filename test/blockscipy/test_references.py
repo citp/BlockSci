@@ -1,13 +1,14 @@
-from test_addresses import ADDR_TYPES
+import pytest
+from test_addresses import address_types
 
 
 def test_block_references(chain):
     for i in range(1, len(chain)):
-        assert chain[i-1] == chain[i].prev_block
+        assert chain[i - 1] == chain[i].prev_block
 
 
-def test_tx_references(chain, json_data):
-    for addr_type in ADDR_TYPES:
+def test_tx_references(chain, json_data, chain_name):
+    for addr_type in address_types(chain_name):
         for i in range(3):
             tx = chain.tx_with_hash(json_data["address-{}-spend-{}-tx".format(addr_type, i)])
             height = json_data["address-{}-spend-{}-height".format(addr_type, i)]
@@ -15,8 +16,8 @@ def test_tx_references(chain, json_data):
             assert chain[height] == tx.block
 
 
-def test_output_references(chain, json_data):
-    for addr_type in ADDR_TYPES:
+def test_output_references(chain, json_data, chain_name):
+    for addr_type in address_types(chain_name):
         for i in range(3):
             tx = chain.tx_with_hash(json_data["address-{}-spend-{}-tx".format(addr_type, i)])
             height = json_data["address-{}-spend-{}-height".format(addr_type, i)]
@@ -35,8 +36,8 @@ def test_spending_tx_references(chain, json_data):
         assert tx == next_tx.inputs[0].spent_tx
 
 
-def test_address_references(chain, json_data):
-    for addr_type in ADDR_TYPES:
+def test_address_references(chain, json_data, chain_name):
+    for addr_type in address_types(chain_name):
         for i in range(2):
             addr = chain.address_from_string(json_data["address-{}-spend-{}".format(addr_type, i)])
             tx = chain.tx_with_hash(json_data["address-{}-spend-{}-tx".format(addr_type, i)])

@@ -3,10 +3,12 @@ Tests a number of less common characteristics of blocks and transactions
 (not necessarily nonstandard as in what Bitcoin Core defines as nonstandard scripts).
 """
 
-from util import Coin
+import pytest
 import blocksci
+from util import Coin
 
 
+@pytest.mark.btc
 def test_reward_partially_claimed(chain, json_data):
     height = json_data['block-partial-reward-height']
     coinbase = chain[height].txes[0]
@@ -14,6 +16,7 @@ def test_reward_partially_claimed(chain, json_data):
     assert reward == sum(output.value for output in coinbase.outputs)
 
 
+@pytest.mark.btc
 def test_fees_not_claimed(chain, json_data):
     height = json_data['block-fee-unclaimed-height']
     coinbase = chain[height].txes[0]

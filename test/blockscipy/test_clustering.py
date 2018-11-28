@@ -1,3 +1,4 @@
+import pytest
 import blocksci
 
 
@@ -5,6 +6,7 @@ def no_change_heuristic():
     return blocksci.heuristics.change.legacy - blocksci.heuristics.change.legacy
 
 
+@pytest.mark.btc
 def test_clustering_no_change(chain, json_data, regtest, tmpdir_factory):
     cm = blocksci.cluster.ClusterManager.create_clustering(str(tmpdir_factory.mktemp("clustering")), chain,
                                                            heuristic=no_change_heuristic().unique_change)
@@ -36,4 +38,3 @@ def test_clustering_no_change(chain, json_data, regtest, tmpdir_factory):
     print(cluster.address_count(), file=regtest)
     print(cluster.txes(), file=regtest)
     print(cluster.type_equiv_size, file=regtest)
-
