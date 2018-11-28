@@ -1,0 +1,114 @@
+myowM8GghMuCX4tn58Nmh9eubwMjuwKiCJ
+100000000
+EquivAddress(PubkeyHashAddress(myowM8GghMuCX4tn58Nmh9eubwMjuwKiCJ))
+False
+[]
+[]
+0
+[Tx(len(txins)=1, len(txouts)=2, size_bytes=226, block_height=111, tx_index=112)]
+1
+[TxOut(spending_tx_index=0, address=PubkeyHashAddress(myowM8GghMuCX4tn58Nmh9eubwMjuwKiCJ), value=100000000)]
+None
+7fd8abeed9bbe533e8bac0d38732dd9c7f8ba8c8
+2
+None
+Pay to pubkey hash
+mrPRMELJcGsbKmuFiGwUgNCX9Wo4iSy44T
+0
+EquivAddress(PubkeyHashAddress(mrPRMELJcGsbKmuFiGwUgNCX9Wo4iSy44T))
+True
+[TxIn(spent_tx_index=115, address=PubkeyHashAddress(mrPRMELJcGsbKmuFiGwUgNCX9Wo4iSy44T), value=100000000)]
+[Tx(len(txins)=1, len(txouts)=1, size_bytes=191, block_height=112, tx_index=114)]
+1
+[Tx(len(txins)=1, len(txouts)=2, size_bytes=225, block_height=112, tx_index=115)]
+1
+[TxOut(spending_tx_index=114, address=PubkeyHashAddress(mrPRMELJcGsbKmuFiGwUgNCX9Wo4iSy44T), value=100000000)]
+b'\x02\x9e\xc4{e\xef\xbd\xd2N\xbcp\x10\xfbg\x1cz\xab\x92\x8e\x91"4?9\rpq\xda\x15\xe5l\xf5!'
+dd9f85e63f3e6f87bb9ee130bb2c8a62dea33c77
+2
+Tx(len(txins)=1, len(txouts)=1, size_bytes=191, block_height=112, tx_index=114)
+Pay to pubkey hash
+mk7GYZDvnyyTyi2anTr5w5sTqW3r18WQWb
+0
+EquivAddress(PubkeyHashAddress(mk7GYZDvnyyTyi2anTr5w5sTqW3r18WQWb))
+True
+[TxIn(spent_tx_index=117, address=PubkeyHashAddress(mk7GYZDvnyyTyi2anTr5w5sTqW3r18WQWb), value=200000000), TxIn(spent_tx_index=118, address=PubkeyHashAddress(mk7GYZDvnyyTyi2anTr5w5sTqW3r18WQWb), value=100000000)]
+[Tx(len(txins)=1, len(txouts)=1, size_bytes=191, block_height=113, tx_index=119), Tx(len(txins)=1, len(txouts)=1, size_bytes=191, block_height=113, tx_index=120)]
+2
+[Tx(len(txins)=1, len(txouts)=2, size_bytes=226, block_height=113, tx_index=117), Tx(len(txins)=1, len(txouts)=2, size_bytes=226, block_height=113, tx_index=118)]
+2
+[TxOut(spending_tx_index=120, address=PubkeyHashAddress(mk7GYZDvnyyTyi2anTr5w5sTqW3r18WQWb), value=200000000), TxOut(spending_tx_index=119, address=PubkeyHashAddress(mk7GYZDvnyyTyi2anTr5w5sTqW3r18WQWb), value=100000000)]
+b'\x03\x08\xde\xe8\xbb\xccv\xa7\xad\xdfm\xd7\xa2\xdam\xbf\xa8\xa0N(\x03\xd1\r\x98\x8c)\x8d\x12\x9f\xd3l\xae\xea'
+9a337fd549963efeb8780c93e234bbf754e15d32
+2
+Tx(len(txins)=1, len(txouts)=1, size_bytes=191, block_height=113, tx_index=119)
+Pay to pubkey hash
+2Mshjw3i5VcfqCm6FaJLxLSdSQhShKJYk6d
+100000000
+EquivAddress(ScriptHashAddress(2Mshjw3i5VcfqCm6FaJLxLSdSQhShKJYk6d))
+False
+[]
+[]
+0
+[Tx(len(txins)=1, len(txouts)=2, size_bytes=223, block_height=114, tx_index=122)]
+1
+[TxOut(spending_tx_index=0, address=ScriptHashAddress(2Mshjw3i5VcfqCm6FaJLxLSdSQhShKJYk6d), value=100000000)]
+4
+None
+Pay to script hash
+None
+2Mzqim7c3TBkpRyqXmB23DXXcm1nHN6kFsf
+0
+EquivAddress(PubkeyAddress(mr6VKoQ9zMau7CSNaf1QBzy6Pw3DmMPrWm), ScriptHashAddress(2Mzqim7c3TBkpRyqXmB23DXXcm1nHN6kFsf))
+True
+[TxIn(spent_tx_index=125, address=ScriptHashAddress(2Mzqim7c3TBkpRyqXmB23DXXcm1nHN6kFsf), value=100000000)]
+[Tx(len(txins)=1, len(txouts)=1, size_bytes=193, block_height=115, tx_index=124)]
+1
+[Tx(len(txins)=1, len(txouts)=2, size_bytes=224, block_height=115, tx_index=125)]
+1
+[TxOut(spending_tx_index=124, address=ScriptHashAddress(2Mzqim7c3TBkpRyqXmB23DXXcm1nHN6kFsf), value=100000000)]
+4
+Tx(len(txins)=1, len(txouts)=1, size_bytes=193, block_height=115, tx_index=124)
+Pay to script hash
+PubkeyAddress(mr6VKoQ9zMau7CSNaf1QBzy6Pw3DmMPrWm)
+2N1otuhuzEiwReoLqqrJKTk67A2aW5ZXXDW
+0
+EquivAddress(PubkeyAddress(mjAzMtZc7UFuvuRqJyhrrVXHQKoY5UhG6R), ScriptHashAddress(2N1otuhuzEiwReoLqqrJKTk67A2aW5ZXXDW))
+True
+[TxIn(spent_tx_index=128, address=ScriptHashAddress(2N1otuhuzEiwReoLqqrJKTk67A2aW5ZXXDW), value=100000000), TxIn(spent_tx_index=129, address=ScriptHashAddress(2N1otuhuzEiwReoLqqrJKTk67A2aW5ZXXDW), value=200000000)]
+[Tx(len(txins)=1, len(txouts)=1, size_bytes=193, block_height=116, tx_index=127), Tx(len(txins)=1, len(txouts)=1, size_bytes=194, block_height=116, tx_index=130)]
+2
+[Tx(len(txins)=1, len(txouts)=2, size_bytes=223, block_height=116, tx_index=128), Tx(len(txins)=1, len(txouts)=2, size_bytes=224, block_height=116, tx_index=129)]
+2
+[TxOut(spending_tx_index=130, address=ScriptHashAddress(2N1otuhuzEiwReoLqqrJKTk67A2aW5ZXXDW), value=100000000), TxOut(spending_tx_index=127, address=ScriptHashAddress(2N1otuhuzEiwReoLqqrJKTk67A2aW5ZXXDW), value=200000000)]
+4
+Tx(len(txins)=1, len(txouts)=1, size_bytes=193, block_height=116, tx_index=127)
+Pay to script hash
+PubkeyAddress(mjAzMtZc7UFuvuRqJyhrrVXHQKoY5UhG6R)
+0
+EquivAddress(MultisigAddress(2 of 3))
+True
+[TxIn(spent_tx_index=296, address=MultisigAddress(2 of 3), value=9990000)]
+[Tx(len(txins)=1, len(txouts)=1, size_bytes=231, block_height=179, tx_index=295)]
+1
+[Tx(len(txins)=1, len(txouts)=1, size_bytes=272, block_height=179, tx_index=296)]
+1
+[TxOut(spending_tx_index=295, address=MultisigAddress(2 of 3), value=9990000)]
+5
+Tx(len(txins)=1, len(txouts)=1, size_bytes=231, block_height=179, tx_index=295)
+Multisig
+2
+3
+0
+EquivAddress(ScriptHashAddress(2N2PGeTV9hPu4nPtJHgNmV9shPRxKJy9Xqj), MultisigAddress(2 of 3))
+True
+[TxIn(spent_tx_index=299, address=ScriptHashAddress(2N2PGeTV9hPu4nPtJHgNmV9shPRxKJy9Xqj), value=9990000)]
+[Tx(len(txins)=1, len(txouts)=1, size_bytes=337, block_height=180, tx_index=300)]
+1
+[Tx(len(txins)=1, len(txouts)=1, size_bytes=189, block_height=180, tx_index=299)]
+1
+[TxOut(spending_tx_index=300, address=ScriptHashAddress(2N2PGeTV9hPu4nPtJHgNmV9shPRxKJy9Xqj), value=9990000)]
+4
+Tx(len(txins)=1, len(txouts)=1, size_bytes=337, block_height=180, tx_index=300)
+Pay to script hash
+MultisigAddress(2 of 3 multisig with addresses mrfx8rZk4kfkce2Dvxy1m5rcGVRmyZGn1U, n2vmQHZ1wK4meS4wvLpMNhdgwaderv8Uij, mr9KKBWmDqCWb7hpELAGnUyvYPbbMGpiSM)

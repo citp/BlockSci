@@ -17,6 +17,14 @@ You'll need to install `pytest` and the `pytest-regtest` plugin:
 - `pytest test_xyz.py` to run a single test
 - `pytest test_xyz.py --regtest-reset` to store the current output of the regression tests
 
-## Marking tests for specific chains
+## Chain support
 
-Use `@pytest.mark.btc` or `@pytest.mark.bch` if tests should only be run for a specific chain (e.g., you might want to skip all tests involving Segwit addresses for Bitcoin Cash).
+We currently test BlockSci with [synthetic blockchains](https://github.com/citp/testchain-generator) that were generated with Bitcoin Core for Bitcoin (BTC) and Bitcoin ABC for Bitcoin Cash (BCH).
+
+### Running tests for a specific chain
+
+To only run tests for Bitcoin, run `pytest --btc`. To run tests for Bitcoin Cash, run `pytest --bch`.
+
+### Writing tests for specific chains
+
+Use `@pytest.mark.btc` or `@pytest.mark.bch` if tests should only be run for a specific chain. For example, you might want to skip all tests involving Segwit addresses for Bitcoin Cash.

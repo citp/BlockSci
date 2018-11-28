@@ -75,7 +75,6 @@ def test_p2wsh_address(chain, json_data):
     address_received_test(addr, blocksci.address_type.witness_scripthash, 0, 4)
 
 
-@pytest.mark.btc
 def test_address_regression(chain, json_data, regtest, chain_name):
     for addr, addr_type in addresses(chain, json_data, chain_name):
         if "multisig" not in addr_type:
