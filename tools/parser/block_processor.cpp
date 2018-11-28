@@ -492,7 +492,7 @@ struct NextQueueFinishedEarlyException : public std::runtime_error {
  */
 using TxQueue = boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::capacity<10000>>;
 
-using AdvanceFunc = std::function<bool(RawTransaction *, TxQueue *)>;
+using DiscardCheckFunc = std::function<bool(RawTransaction &)>;
 
 struct QueueStage {
     std::atomic<bool> *prevDone = nullptr;
@@ -538,21 +538,24 @@ struct SubStep {
 class ProcessSubStep : public SubStep {
 public:
     std::function<void(RawTransaction &)> func;
-    AdvanceFunc advanceFunc;
+    DiscardCheckFunc shouldDiscard;
+    bool discardIfFull;
     
-    ProcessSubStep(std::function<void(RawTransaction &)> func_, const AdvanceFunc &advanceFunc_) : func(std::move(func_)), advanceFunc(advanceFunc_) {}
+    ProcessSubStep(std::function<void(RawTransaction &)> func_, const DiscardCheckFunc &shouldDiscard_, bool discardIfFull_) : func(std::move(func_)), shouldDiscard(shouldDiscard_), discardIfFull(discardIfFull_) {}
     
     // inputProcessingDone
     bool processNext(QueueStage &stage) override {
-        if (stage.inputQueue.read_available() > 0 && stage.nextQueue->write_available() > 0) {
+        if (stage.inputQueue.read_available() && (discardIfFull || stage.nextQueue->write_available() > 0)) {
             RawTransaction *rawTx = nullptr;
             stage.inputQueue.pop(rawTx);
             assert(rawTx != nullptr);
             // Execute processing step on rawTx, eg. calculateHashesFunc or connectUTXOsFunc
             func(*rawTx);
             // Check if advanceFunc is successful before further processing the pipeline
-            if (advanceFunc(rawTx, stage.nextQueue)) {
+            if (stage.nextQueue->write_available() > 0 && !shouldDiscard(*rawTx)) {
                 stage.push(rawTx);
+            } else {
+                delete rawTx;
             }
             return true;
         } else {
@@ -669,14 +672,14 @@ public:
     }
 };
 
-ProcessStep makeStandardProcessStep(std::unique_ptr<ProcessorStep> && func, const AdvanceFunc &advanceFuncFirst, const AdvanceFunc &advanceFuncSecond) {
+ProcessStep makeStandardProcessStep(std::unique_ptr<ProcessorStep> && func, const DiscardCheckFunc &advanceFuncFirst, const DiscardCheckFunc &advanceFuncSecond, bool discardIfFullFirst = false, bool discardIfFullSecond = false) {
     std::vector<std::unique_ptr<SubStep>> subSteps;
     auto steps = func->steps();
     for (size_t i = 0; i < steps.size(); i++) {
         if (i == steps.size() - 1) {
-            subSteps.push_back(std::make_unique<ProcessSubStep>(steps[i], advanceFuncSecond));
+            subSteps.push_back(std::make_unique<ProcessSubStep>(steps[i], advanceFuncSecond, discardIfFullSecond));
         } else {
-            subSteps.push_back(std::make_unique<ProcessSubStep>(steps[i], advanceFuncFirst));
+            subSteps.push_back(std::make_unique<ProcessSubStep>(steps[i], advanceFuncFirst, discardIfFullFirst));
         }
     }
     return {std::move(func), std::move(subSteps)};
@@ -819,55 +822,50 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfigu
     FixedSizeFileWriter<OutputLinkData> linkDataFile(config.txUpdatesFilePath());
     FixedSizeFileWriter<blocksci::uint256> txHashFile{blocksci::ChainAccess::txHashesFilePath(config.dataConfig.chainDirectory())};
 
-    auto advanceFunc = [](RawTransaction *, TxQueue *) { return true; };
+    auto discardFunc = [](RawTransaction &) { return false; };
     
-    auto progressBar = blocksci::makeProgressBar(totalTxCount, [=](RawTransaction *tx) {
-        auto blockHeight = tx->blockHeight;
-        std::cout << ", Block " << blockHeight << "/" << maxBlockHeight;
+    auto progressBar = blocksci::makeProgressBar(totalTxCount, [=](RawTransaction &tx) {
+        std::cout << ", Block " << tx.blockHeight << "/" << maxBlockHeight;
     });
     
     /* Advance function of the last step
      * Optimization: Only push tx to finished_transaction_queue if it meets certain conditions, otherwise de-allocate it */
     
-    auto serializeAddressAdvanceFunc = [&](RawTransaction *tx,  TxQueue *nextQueue) {
-        progressBar.update(tx->txNum - startingTxCount, tx);
-        bool shouldSend = tx->realSize < 800 && nextQueue->write_available() >= 1;
-        if (!shouldSend)  {
-            delete tx;
-        }
-        return shouldSend;
+    auto serializeAddressDiscardFunc = [&](RawTransaction &tx) {
+        progressBar.update(tx.txNum - startingTxCount, tx);
+        return tx.realSize >= 800;
     };
     
     // Definition of all ProcessStep objects for the processing pipeline
     ProcessStepQueue processQueue;
     
     // 1. Step: Calculate hash of transaction and write it to the hash file (chain/tx_hashes.dat)
-    processQueue.addStep(makeStandardProcessStep(std::make_unique<CalculateHashStep>(txHashFile), advanceFunc, advanceFunc));
+    processQueue.addStep(makeStandardProcessStep(std::make_unique<CalculateHashStep>(txHashFile), discardFunc, discardFunc));
 
     // 2. Step: Parse the output scripts (into CScriptView) of the transaction in order to identify address types and extract relevant information.
-    processQueue.addStep(makeStandardProcessStep(std::make_unique<GenerateScriptOutputsStep>(), advanceFunc, advanceFunc));
+    processQueue.addStep(makeStandardProcessStep(std::make_unique<GenerateScriptOutputsStep>(), discardFunc, discardFunc));
 
     // 3. Step: Store information about the spent output with each input of the transaction. Then store information about each output for future lookup.
-    processQueue.addStep(makeStandardProcessStep(std::make_unique<ConnectUTXOsStep>(utxoState), advanceFunc, advanceFunc));
+    processQueue.addStep(makeStandardProcessStep(std::make_unique<ConnectUTXOsStep>(utxoState), discardFunc, discardFunc));
 
     /* 4. Step: Parse the input script of each input based information about the associated output script.
      *    Then store information about each output address for future lookup. */
-    processQueue.addStep(makeStandardProcessStep(std::make_unique<GenerateScriptInputStep>(utxoAddressState), advanceFunc, advanceFunc));
+    processQueue.addStep(makeStandardProcessStep(std::make_unique<GenerateScriptInputStep>(utxoAddressState), discardFunc, discardFunc));
 
     /* 5. Step: Attach a scriptNum to each script in the transaction. For address types which are
           deduplicated (Pubkey, ScriptHash, Multisig and their varients) use the previously allocated
           scriptNum if the address was seen before. Increment the scriptNum counter for newly seen addresses. */
-    processQueue.addStep(makeStandardProcessStep(std::make_unique<ProcessAddressesStep>(addressState), advanceFunc, advanceFunc));
+    processQueue.addStep(makeStandardProcessStep(std::make_unique<ProcessAddressesStep>(addressState), discardFunc, discardFunc));
 
     /* 6. Step: Record the scriptNum for each output for later reference. Assign each spent input with
      the scriptNum of the output its spending */
-    processQueue.addStep(makeStandardProcessStep(std::make_unique<RecordAddressesStep>(utxoScriptState), advanceFunc, advanceFunc));
+    processQueue.addStep(makeStandardProcessStep(std::make_unique<RecordAddressesStep>(utxoScriptState), discardFunc, discardFunc));
 
     // 7. Step: Serialize transaction data, inputs, and outputs and write them to the txFile
-    processQueue.addStep(makeStandardProcessStep(std::make_unique<SerializeTransactionStep>(txFile, linkDataFile), advanceFunc, advanceFunc));
+    processQueue.addStep(makeStandardProcessStep(std::make_unique<SerializeTransactionStep>(txFile, linkDataFile), discardFunc, discardFunc));
 
     // 8. Step: Save address data into files for the analysis library
-    processQueue.addStep(makeStandardProcessStep(std::make_unique<SerializeAddressesStep>(addressWriter), advanceFunc, serializeAddressAdvanceFunc));
+    processQueue.addStep(makeStandardProcessStep(std::make_unique<SerializeAddressesStep>(addressWriter), discardFunc, serializeAddressDiscardFunc, false, true));
     
     // Two hold stages for ATOR
     processQueue.addStep(makeHoldTxStep());
