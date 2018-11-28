@@ -423,6 +423,12 @@ std::vector<std::function<void(RawTransaction &tx)>> SerializeAddressesStep::ste
         for (size_t i = 0; i < tx.inputs.size(); i++) {
             auto &input = tx.inputs[i];
             auto &scriptInput = tx.scriptInputs[i];
+            addressWriter.serializeWrapped(scriptInput, tx.txNum, input.utxo.txNum);
+        }
+    }, [&](RawTransaction &tx) {
+        for (size_t i = 0; i < tx.inputs.size(); i++) {
+            auto &input = tx.inputs[i];
+            auto &scriptInput = tx.scriptInputs[i];
             addressWriter.serialize(scriptInput, tx.txNum, input.utxo.txNum);
         }
     }};
@@ -778,31 +784,7 @@ struct ProcessStepQueue {
     }
     
     void run() {
-        
-//
-//        if (holdStep.ctorHeight < std::numeric_limits<blocksci::BlockHeight>::max()) {
-//            // Insert hold step between last output step and first input step
-//            steps.front().secondStep.prevDone = &holdStep.isDone;
-//
-//            steps.back().firstStep.outQueue.nextDone = &holdStep.isDone;
-//            steps.back().firstStep.outQueue.nextQueue = &holdStep.inputQueue;
-//
-//            holdStep.prevDone = &steps.back().firstStep.isDone;
-//            holdStep.outQueue.nextQueue = &steps.front().secondStep.inputQueue;
-//            holdStep.outQueue.nextDone = &steps.front().secondStep.isDone;
-//
-//            futures.push_back(std::async(std::launch::async, [&]() {
-//                holdStep();
-//            }));
-//        } else {
-//            // Connect last output step to first input step directly
-//            steps.front().secondStep.prevDone = &steps.back().firstStep.isDone;
-//
-//            steps.back().firstStep.outQueue.nextQueue = &steps.front().secondStep.inputQueue;
-//            steps.back().firstStep.outQueue.nextDone = &steps.front().secondStep.isDone;
-//        }
-        
-            for (auto &step : steps) {
+        for (auto &step : steps) {
             futures.push_back(std::async(std::launch::async, [&]() {
                 step.run();
             }));
@@ -901,10 +883,11 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfigu
         {3, 1},
         {4, 0},
         {5, 0},
+        {7, 0},
         {9, 0},
         {5, 1},
         {6, 0},
-        {7, 0}
+        {7, 1}
     });
     
     int64_t nextWaitCount = 0;

@@ -112,14 +112,13 @@ public:
             data->txFirstSpent = txNum;
             serializeImp(input, file);
         }
-        
-        serializeWrapped(input.data, txNum, outputTxNum);
     }
     
     void rollback(const blocksci::State &state);
     
     blocksci::OffsetType serialize(const AnyScriptOutput &output, uint32_t txNum, bool topLevel);
     void serialize(const AnyScriptInput &input, uint32_t txNum, uint32_t outputTxNum);
+    void serializeWrapped(const AnyScriptInput &input, uint32_t txNum, uint32_t outputTxNum);
     
     AddressWriter(const ParserConfigurationBase &config);
 };

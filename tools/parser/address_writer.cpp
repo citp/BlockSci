@@ -27,6 +27,10 @@ void AddressWriter::serialize(const AnyScriptInput &input, uint32_t txNum, uint3
     mpark::visit([&](auto &scriptInput) { this->serialize(scriptInput, txNum, outputTxNum); }, input.wrapped);
 }
 
+void AddressWriter::serializeWrapped(const AnyScriptInput &input, uint32_t txNum, uint32_t outputTxNum) {
+    mpark::visit([&](auto &scriptInput) { this->serializeWrapped(scriptInput.data, txNum, outputTxNum); }, input.wrapped);
+}
+
 void AddressWriter::serializeImp(const ScriptOutput<AddressType::PUBKEY> &output, ScriptFile<DedupAddressType::PUBKEY> &file, bool topLevel) {
     auto data = file[output.scriptNum - 1];
     std::copy(output.data.pubkey.begin(), output.data.pubkey.end(), data->pubkey.begin());
