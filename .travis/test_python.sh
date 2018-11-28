@@ -1,2 +1,2 @@
 cd test/blockscipy
-pytest
+pytest -v
