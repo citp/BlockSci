@@ -494,7 +494,34 @@ using TxQueue = boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::c
 
 using DiscardCheckFunc = std::function<bool(RawTransaction &)>;
 
+struct StepNum {
+    size_t threadNum;
+    size_t subStepNum;
+    
+    bool operator==(const StepNum &o) const {
+        return threadNum == o.threadNum && subStepNum == o.subStepNum;
+    }
+};
+
+namespace std {
+    template <>
+    struct hash<StepNum> {
+        size_t operator()(const StepNum &s) const {
+            return s.threadNum + (s.subStepNum << 32);
+        }
+    };
+}
+
+std::ostream& operator<<(std::ostream& ofs, const StepNum& p){
+    return ofs << "(" << p.threadNum << ", " << p.subStepNum << ")";
+}
+
+
 struct QueueStage {
+    virtual bool processNext() = 0;
+    virtual void complete() = 0;
+    virtual ~QueueStage() = default;
+    
     std::atomic<bool> *prevDone = nullptr;
     
     std::atomic<bool> isDone{false};
@@ -502,7 +529,9 @@ struct QueueStage {
     
     TxQueue *nextQueue;
     std::atomic<bool> *nextDone = nullptr;
+    
     int64_t nextWaitCount;
+    StepNum stepNum;
     
     void push(RawTransaction *tx) {
         using namespace std::chrono_literals;
@@ -529,13 +558,7 @@ struct QueueStage {
     }
 };
 
-struct SubStep {
-    virtual bool processNext(QueueStage &stage) = 0;
-    virtual void complete(QueueStage &stage) = 0;
-    virtual ~SubStep() = default;
-};
-
-class ProcessSubStep : public SubStep {
+class ProcessSubStep : public QueueStage {
 public:
     std::function<void(RawTransaction &)> func;
     DiscardCheckFunc shouldDiscard;
@@ -544,18 +567,23 @@ public:
     ProcessSubStep(std::function<void(RawTransaction &)> func_, const DiscardCheckFunc &shouldDiscard_, bool discardIfFull_) : func(std::move(func_)), shouldDiscard(shouldDiscard_), discardIfFull(discardIfFull_) {}
     
     // inputProcessingDone
-    bool processNext(QueueStage &stage) override {
-        if (stage.inputQueue.read_available() && (discardIfFull || stage.nextQueue->write_available() > 0)) {
+    bool processNext() override {
+        if (inputQueue.read_available() && (discardIfFull || nextQueue->write_available() > 0)) {
             RawTransaction *rawTx = nullptr;
-            stage.inputQueue.pop(rawTx);
+            inputQueue.pop(rawTx);
+//            {
+//                static std::mutex m;
+//                std::lock_guard<std::mutex> lock(m);
+//                std::cout << "Step: " << stepNum << " processing tx " << rawTx->txNum << "\n";
+//            }
             assert(rawTx != nullptr);
             // Execute processing step on rawTx, eg. calculateHashesFunc or connectUTXOsFunc
             func(*rawTx);
             // Check if advanceFunc is successful before further processing the pipeline
-            if (stage.nextQueue->write_available() > 0 && !shouldDiscard(*rawTx)) {
-                stage.push(rawTx);
-            } else {
+            if (nextQueue->write_available() == 0 || shouldDiscard(*rawTx)) {
                 delete rawTx;
+            } else {
+                push(rawTx);
             }
             return true;
         } else {
@@ -563,36 +591,40 @@ public:
         }
     }
     
-    void complete(QueueStage &) override {
+    void complete() override {
         
     }
 };
 
 ProcessorStep::~ProcessorStep() = default;
 
-struct TxHoldSubStep : public SubStep {
+struct TxHoldSubStep : public QueueStage {
     std::vector<RawTransaction *> heldTransactions;
     
     int64_t prevWaitCount = 0;
     
     TxHoldSubStep() {}
     
-    void emptyQueue(QueueStage &stage) {
+    ~TxHoldSubStep() override {
+        assert(heldTransactions.empty());
+    }
+    
+    void emptyQueue() {
         using namespace std::chrono_literals;
         for (auto tx : heldTransactions) {
-            stage.push(tx);
+            push(tx);
         }
         heldTransactions.clear();
     }
     
-    bool processNext(QueueStage &stage) override {
+    bool processNext() override {
         RawTransaction *rawTx = nullptr;
-        stage.inputQueue.pop(rawTx);
+        inputQueue.pop(rawTx);
         if (rawTx) {
             if (heldTransactions.size() == 0 || heldTransactions.back()->blockHeight == rawTx->blockHeight) {
                 heldTransactions.push_back(rawTx);
             } else {
-                emptyQueue(stage);
+                emptyQueue();
                 heldTransactions.push_back(rawTx);
             }
             return true;
@@ -601,29 +633,25 @@ struct TxHoldSubStep : public SubStep {
         }
     }
     
-    void complete(QueueStage &stage) override {
-        emptyQueue(stage);
+    void complete() override {
+        emptyQueue();
     }
 };
 
 class ProcessStep {
 public:
     std::unique_ptr<ProcessorStep> func;
-    std::vector<std::unique_ptr<SubStep>> subSteps;
     std::vector<std::unique_ptr<QueueStage>> stages;
     
     int64_t prevWaitCount = 0;
     
     // AdvanceFunc
-    ProcessStep(std::unique_ptr<ProcessorStep> func_, std::vector<std::unique_ptr<SubStep>> subSteps_) : func(std::move(func_)), subSteps(std::move(subSteps_)) {
-        for (size_t i = 0; i < subSteps.size(); ++i) {
-            stages.emplace_back(std::make_unique<QueueStage>());
-        }
+    ProcessStep(std::unique_ptr<ProcessorStep> func_, std::vector<std::unique_ptr<QueueStage>> stages_) : func(std::move(func_)), stages(std::move(stages_)) {
     }
 
     bool anyNotDone() {
         for (auto &stage : stages) {
-            if (!stage->prevFinished()) {
+            if (!stage->prevFinished() || !stage->inputQueue.empty()) {
                 return true;
             }
         }
@@ -634,17 +662,15 @@ public:
         bool success = true;
         while (success) {
             success = false;
-            for (size_t i = 0; i < subSteps.size(); ++i) {
-                success |= subSteps[i]->processNext(*stages[i].get());
+            for (auto &stage : stages) {
+                success |= stage->processNext();
             }
         }
         
-        for (size_t i = 0; i < subSteps.size(); ++i) {
-            auto &subStep = subSteps[i];
-            auto &stage = stages[i];
+        for (auto &stage : stages) {
             if (stage->prevFinished() && stage->inputQueue.empty()) {
                 stage->isDone = true;
-                subStep->complete(*stage.get());
+                stage->complete();
             }
         }
     }
@@ -666,14 +692,14 @@ public:
 
         // Last call to consume queued items to catch last items
         doAll();
-        for (size_t i = 0; i < subSteps.size(); ++i) {
-            subSteps[i]->complete(*stages[i].get());
+        for (auto &stage : stages) {
+            stage->complete();
         }
     }
 };
 
 ProcessStep makeStandardProcessStep(std::unique_ptr<ProcessorStep> && func, const DiscardCheckFunc &advanceFuncFirst, const DiscardCheckFunc &advanceFuncSecond, bool discardIfFullFirst = false, bool discardIfFullSecond = false) {
-    std::vector<std::unique_ptr<SubStep>> subSteps;
+    std::vector<std::unique_ptr<QueueStage>> subSteps;
     auto steps = func->steps();
     for (size_t i = 0; i < steps.size(); i++) {
         if (i == steps.size() - 1) {
@@ -686,29 +712,11 @@ ProcessStep makeStandardProcessStep(std::unique_ptr<ProcessorStep> && func, cons
 }
 
 ProcessStep makeHoldTxStep() {
-    std::vector<std::unique_ptr<SubStep>> subSteps;
+    std::vector<std::unique_ptr<QueueStage>> subSteps;
     subSteps.push_back(std::make_unique<TxHoldSubStep>());
     
     std::unique_ptr<ProcessorStep> emptyStep;
     return {std::move(emptyStep), std::move(subSteps)};
-}
-
-struct StepNum {
-    size_t threadNum;
-    size_t subStepNum;
-    
-    bool operator==(const StepNum &o) const {
-        return threadNum == o.threadNum && subStepNum == o.subStepNum;
-    }
-};
-
-namespace std {
-    template <>
-    struct hash<StepNum> {
-        size_t operator()(const StepNum &s) const {
-            return s.threadNum + (s.subStepNum << 32);
-        }
-    };
 }
 
 struct ProcessStepQueue {
@@ -734,7 +742,7 @@ struct ProcessStepQueue {
         std::unordered_set<StepNum> allSubSteps;
         size_t j = 0;
         for (auto &step : steps) {
-            for (size_t i = 0; i < step.subSteps.size(); i++) {
+            for (size_t i = 0; i < step.stages.size(); i++) {
                 allSubSteps.insert({j, i});
             }
             j++;
@@ -757,6 +765,7 @@ struct ProcessStepQueue {
         QueueStage *prevStage = nullptr;
         for (const auto &stepNum : subStepList) {
             auto &stage = steps[stepNum.threadNum].stages[stepNum.subStepNum];
+            stage->stepNum = stepNum;
             if (prevStage != nullptr) {
                 stage->linkBack(*prevStage);
             } else {
