@@ -1,15 +1,9 @@
-import pytest
 import blocksci
 
 
-def no_change_heuristic():
-    return blocksci.heuristics.change.legacy - blocksci.heuristics.change.legacy
-
-
-@pytest.mark.btc
 def test_clustering_no_change(chain, json_data, regtest, tmpdir_factory):
     cm = blocksci.cluster.ClusterManager.create_clustering(str(tmpdir_factory.mktemp("clustering")), chain,
-                                                           heuristic=no_change_heuristic().unique_change)
+                                                           heuristic=blocksci.heuristics.change.none.unique_change)
     cluster = cm.cluster_with_address(chain.address_from_string(json_data['merge-addr-1']))
 
     assert 3 == len(cluster.addresses.to_list())
@@ -38,3 +32,30 @@ def test_clustering_no_change(chain, json_data, regtest, tmpdir_factory):
     print(cluster.address_count(), file=regtest)
     print(cluster.txes(), file=regtest)
     print(cluster.type_equiv_size, file=regtest)
+
+
+def test_clustering_with_change(chain, json_data, tmpdir_factory):
+    heuristics = [
+        blocksci.heuristics.change.peeling_chain.unique_change,
+        blocksci.heuristics.change.optimal_change.unique_change,
+        blocksci.heuristics.change.address_type.unique_change,
+        blocksci.heuristics.change.locktime.unique_change,
+        blocksci.heuristics.change.address_reuse.unique_change,
+        blocksci.heuristics.change.client_change_address_behavior.unique_change,
+        blocksci.heuristics.change.legacy.unique_change,
+        blocksci.heuristics.change.none.unique_change
+    ]
+
+    for f in heuristics:
+        cm = blocksci.cluster.ClusterManager.create_clustering(str(tmpdir_factory.mktemp("clustering")), chain,
+                                                               heuristic=f)
+        cluster = cm.cluster_with_address(chain.address_from_string(json_data['merge-addr-1']))
+
+        assert 3 <= len(cluster.addresses.to_list())
+
+        assert chain.address_from_string(json_data['merge-addr-1']) in cluster.addresses.to_list()
+        assert chain.address_from_string(json_data['merge-addr-2']) in cluster.addresses.to_list()
+        assert chain.address_from_string(json_data['merge-addr-3']) in cluster.addresses.to_list()
+
+        assert cluster.cluster_num >= 0
+        assert cluster.index >= 0

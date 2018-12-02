@@ -301,6 +301,18 @@ namespace blocksci { namespace heuristics {
         return internal::singleOrNullptr(this->operator()(tx));
     }
     
+    // Disables change address clustering by returning an empty set.
+    template<>
+    std::unordered_set<Output> ChangeHeuristicImpl<ChangeType::None>::operator()(const Transaction &tx) const {
+        std::unordered_set<Output> candidates;
+        return candidates;
+    }
+    
+    template<>
+    ranges::optional<Output> ChangeHeuristicImpl<ChangeType::None>::uniqueChange(const Transaction &tx) const {
+        return internal::singleOrNullptr(this->operator()(tx));
+    }
+    
     std::unordered_set<Output> changeByPeelingChain(const Transaction &tx) {
         return ChangeHeuristicImpl<ChangeType::PeelingChain>{}(tx);
     }
@@ -352,9 +364,15 @@ namespace blocksci { namespace heuristics {
     std::unordered_set<Output> changeByLegacyHeuristic(const Transaction &tx) {
         return ChangeHeuristicImpl<ChangeType::Legacy>{}(tx);
     }
-    
     ranges::optional<Output> ChangeHeuristic::uniqueChange(const Transaction &tx) const {
         return internal::singleOrNullptr(impl(tx));
+    }
+    
+    std::unordered_set<Output> noChange(const Transaction &tx) {
+        return ChangeHeuristicImpl<ChangeType::None>{}(tx);
+    }
+    ranges::optional<Output> uniqueNoChange(const Transaction &tx) {
+        return internal::singleOrNullptr(noChange(tx));
     }
 
 } // namespace heuristics

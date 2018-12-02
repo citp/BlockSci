@@ -102,5 +102,8 @@ void init_heuristics(py::module &m) {
 
     .def_property_readonly_static("legacy", [](pybind11::object &) { return ChangeHeuristic{LegacyChange{}}; },
         "Return a ChangeHeuristic object implementing the legacy heuristic: The original change address heuristic used in blocksci consisting of the intersection of the optimal change heuristic and the client address behavior heuristic")
+    
+    .def_property_readonly_static("none", [](pybind11::object &) { return ChangeHeuristic{NoChange{}}; },
+        "Return a ChangeHeuristic object implementing no change address heuristic: This effectively disables change address clustering.")
     ;
 }

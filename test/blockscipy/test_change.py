@@ -81,3 +81,14 @@ def test_address_client_behavior_change(chain, json_data):
 
         idx = json_data["change-client-behavior-position-{}".format(i)]
         assert idx == list(result)[0].index
+
+
+def test_no_change(chain, json_data):
+    test_txs = ['change-reuse-tx-{}', 'change-client-behavior-tx-{}', 'change-address-type-tx-{}']
+    for test in test_txs:
+        for i in range(3):
+            txid = json_data[test.format(i)]
+            tx = chain.tx_with_hash(txid)
+
+            result = blocksci.heuristics.change.none(tx)
+            assert 0 == len(result)
