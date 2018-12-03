@@ -55,7 +55,7 @@ void init_cluster_manager(pybind11::module &s) {
     .def(py::init([](std::string arg, blocksci::Blockchain &chain) {
        return ClusterManager(arg, chain.getAccess());
     }))
-    .def_static("create_clustering", [](const std::string &location, Blockchain &chain, BlockHeight start, BlockHeight stop, Proxy<ranges::optional<Output>> &heuristic, bool shouldOverwrite) {
+    .def_static("create_clustering", [](const std::string &location, Blockchain &chain, BlockHeight start, BlockHeight stop, Proxy<ranges::optional<Output>> &heuristic, bool shouldOverwrite, bool ignoreCoinJoin) {
         py::scoped_ostream_redirect stream(
                                            std::cout,
                                            py::module::import("sys").attr("stdout")
@@ -67,11 +67,11 @@ void init_cluster_manager(pybind11::module &s) {
         std::function<ranges::optional<Output>(const Transaction &tx)> changeFunc = [heuristic](const Transaction &tx) {
             return heuristic(tx);
         };
-        return ClusterManager::createClustering(range, changeFunc, location, shouldOverwrite);
+        return ClusterManager::createClustering(range, changeFunc, location, shouldOverwrite, ignoreCoinJoin);
     }, py::arg("location"), py::arg("chain"), py::arg("start") = 0, py::arg("stop") = -1,
     py::arg("heuristic") = lift(makeSimpleProxy<Transaction>(), [](const Transaction &tx) -> ranges::optional<Output> {
         return heuristics::ChangeHeuristic{heuristics::LegacyChange{}}.uniqueChange(tx);
-    }), py::arg("should_overwrite") = false)
+    }), py::arg("should_overwrite") = false, py::arg("ignore_coinjoin") = true)
     .def("cluster_with_address", [](const ClusterManager &cm, const Address &address) -> Cluster {
        return cm.getCluster(address);
     }, py::arg("address"), "Return the cluster containing the given address")

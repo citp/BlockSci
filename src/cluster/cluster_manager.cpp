@@ -133,10 +133,11 @@ namespace blocksci {
     };
     
     template <typename ChangeFunc>
-    std::vector<std::pair<Address, Address>> processTransaction(const Transaction &tx, ChangeFunc && changeHeuristic) {
+    std::vector<std::pair<Address, Address>> processTransaction(const Transaction &tx, ChangeFunc && changeHeuristic,
+                                                                bool ignoreCoinJoin) {
         std::vector<std::pair<Address, Address>> pairsToUnion;
         
-        if (!heuristics::isCoinjoin(tx) && !tx.isCoinbase()) {
+        if ((!heuristics::isCoinjoin(tx) || !ignoreCoinJoin) && !tx.isCoinbase()) {
             auto inputs = tx.inputs();
             auto firstAddress = inputs[0].getAddress();
             for (uint16_t i = 1; i < inputs.size(); i++) {
@@ -164,7 +165,7 @@ namespace blocksci {
     }
     
     template <typename ChangeFunc>
-    std::vector<uint32_t> createClusters(BlockRange &chain, std::unordered_map<DedupAddressType::Enum, uint32_t> addressStarts, uint32_t totalScriptCount, ChangeFunc && changeHeuristic) {
+    std::vector<uint32_t> createClusters(BlockRange &chain, std::unordered_map<DedupAddressType::Enum, uint32_t> addressStarts, uint32_t totalScriptCount, ChangeFunc && changeHeuristic, bool ignoreCoinJoin) {
         
         AddressDisjointSets ds(totalScriptCount, std::move(addressStarts));
         
@@ -181,7 +182,7 @@ namespace blocksci {
             uint32_t txNum = 0;
             for (auto block : blocks) {
                 for (auto tx : block) {
-                    auto pairs = processTransaction(tx, changeHeuristic);
+                    auto pairs = processTransaction(tx, changeHeuristic, ignoreCoinJoin);
                     for (auto &pair : pairs) {
                         ds.link_addresses(pair.first, pair.second);
                     }
@@ -324,7 +325,7 @@ namespace blocksci {
     }
     
     template <typename ChangeFunc>
-    ClusterManager createClusteringImpl(BlockRange &chain, ChangeFunc && changeHeuristic, const std::string &outputPath, bool overwrite) {
+    ClusterManager createClusteringImpl(BlockRange &chain, ChangeFunc && changeHeuristic, const std::string &outputPath, bool overwrite, bool ignoreCoinJoin) {
         prepareClusterDataLocation(outputPath, overwrite);
         
         // Perform clustering
@@ -343,23 +344,23 @@ namespace blocksci {
             }
         }
         
-        auto parent = createClusters(chain, scriptStarts, static_cast<uint32_t>(totalScriptCount), std::forward<ChangeFunc>(changeHeuristic));
+        auto parent = createClusters(chain, scriptStarts, static_cast<uint32_t>(totalScriptCount), std::forward<ChangeFunc>(changeHeuristic), ignoreCoinJoin);
         uint32_t clusterCount = remapClusterIds(parent);
         serializeClusterData(scripts, outputPath, parent, scriptStarts, clusterCount);
         return {filesystem::path{outputPath}.str(), chain.getAccess()};
     }
     
-    ClusterManager ClusterManager::createClustering(BlockRange &chain, const heuristics::ChangeHeuristic &changeHeuristic, const std::string &outputPath, bool overwrite) {
+    ClusterManager ClusterManager::createClustering(BlockRange &chain, const heuristics::ChangeHeuristic &changeHeuristic, const std::string &outputPath, bool overwrite, bool ignoreCoinJoin) {
         
         auto changeHeuristicL = [&changeHeuristic](const Transaction &tx) -> ranges::optional<Output> {
             return changeHeuristic.uniqueChange(tx);
         };
         
-        return createClusteringImpl(chain, changeHeuristicL, outputPath, overwrite);
+        return createClusteringImpl(chain, changeHeuristicL, outputPath, overwrite, ignoreCoinJoin);
     }
     
-    ClusterManager ClusterManager::createClustering(BlockRange &chain, const std::function<ranges::optional<Output>(const Transaction &tx)> &changeHeuristic, const std::string &outputPath, bool overwrite) {
-        return createClusteringImpl(chain, changeHeuristic, outputPath, overwrite);
+    ClusterManager ClusterManager::createClustering(BlockRange &chain, const std::function<ranges::optional<Output>(const Transaction &tx)> &changeHeuristic, const std::string &outputPath, bool overwrite, bool ignoreCoinJoin) {
+        return createClusteringImpl(chain, changeHeuristic, outputPath, overwrite, ignoreCoinJoin);
     }
 } // namespace blocksci
 

@@ -59,3 +59,47 @@ def test_clustering_with_change(chain, json_data, tmpdir_factory):
 
         assert cluster.cluster_num >= 0
         assert cluster.index >= 0
+
+
+def test_clustering_ignore_coinjoin(chain, json_data, tmpdir_factory):
+    addresses = chain.tx_with_hash(json_data['simple-coinjoin-tx']).inputs.map(lambda i: i.address).to_list()
+
+    cm = blocksci.cluster.ClusterManager.create_clustering(str(tmpdir_factory.mktemp("clustering")), chain,
+                                                           heuristic=blocksci.heuristics.change.none.unique_change,
+                                                           ignore_coinjoin=True)
+    cluster = cm.cluster_with_address(addresses[0])
+    cluster_addresses = cluster.addresses.to_list()
+    assert 1 == len(cluster)
+
+    for addr in addresses[1:]:
+        assert addr not in cluster_addresses
+
+    # Normal clustering should still work as expected
+    cluster = cm.cluster_with_address(chain.address_from_string(json_data['merge-addr-1']))
+    assert 3 <= len(cluster.addresses.to_list())
+
+    assert chain.address_from_string(json_data['merge-addr-1']) in cluster.addresses.to_list()
+    assert chain.address_from_string(json_data['merge-addr-2']) in cluster.addresses.to_list()
+    assert chain.address_from_string(json_data['merge-addr-3']) in cluster.addresses.to_list()
+
+
+def test_clustering_cluster_coinjoin(chain, json_data, tmpdir_factory):
+    addresses = chain.tx_with_hash(json_data['simple-coinjoin-tx']).inputs.map(lambda i: i.address).to_list()
+
+    cm = blocksci.cluster.ClusterManager.create_clustering(str(tmpdir_factory.mktemp("clustering")), chain,
+                                                           heuristic=blocksci.heuristics.change.none.unique_change,
+                                                           ignore_coinjoin=False)
+    cluster = cm.cluster_with_address(addresses[0])
+    cluster_addresses = cluster.addresses.to_list()
+    assert 1 < len(cluster)
+
+    for addr in addresses:
+        assert addr in cluster_addresses
+
+    # Normal clustering should still work as expected
+    cluster = cm.cluster_with_address(chain.address_from_string(json_data['merge-addr-1']))
+    assert 3 <= len(cluster.addresses.to_list())
+
+    assert chain.address_from_string(json_data['merge-addr-1']) in cluster.addresses.to_list()
+    assert chain.address_from_string(json_data['merge-addr-2']) in cluster.addresses.to_list()
+    assert chain.address_from_string(json_data['merge-addr-3']) in cluster.addresses.to_list()
