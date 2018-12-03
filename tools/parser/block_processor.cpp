@@ -415,9 +415,11 @@ std::vector<std::function<void(RawTransaction &tx)>> SerializeTransactionStep::s
 // 8. Step: Save address data into files for the analysis library
 
 std::vector<std::function<void(RawTransaction &tx)>> SerializeAddressesStep::steps() {
-    return {[&](RawTransaction &tx) {
+    return {[&](RawTransaction &tx) {        
         for (auto &scriptOutput : tx.scriptOutputs) {
-            addressWriter.serialize(scriptOutput, tx.txNum, true);
+            if (scriptOutput.isNew()) {
+                addressWriter.serializeNew(scriptOutput, tx.txNum, true);
+            }
         }
         
         for (size_t i = 0; i < tx.inputs.size(); i++) {
@@ -426,6 +428,12 @@ std::vector<std::function<void(RawTransaction &tx)>> SerializeAddressesStep::ste
             addressWriter.serializeWrapped(scriptInput, tx.txNum, input.utxo.txNum);
         }
     }, [&](RawTransaction &tx) {
+        for (auto &scriptOutput : tx.scriptOutputs) {
+            if (!scriptOutput.isNew()) {
+                addressWriter.serializeExisting(scriptOutput, true);
+            }
+        }
+        
         for (size_t i = 0; i < tx.inputs.size(); i++) {
             auto &input = tx.inputs[i];
             auto &scriptInput = tx.scriptInputs[i];

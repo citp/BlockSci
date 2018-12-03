@@ -19,8 +19,12 @@ scriptFiles(blocksci::apply(blocksci::DedupAddressType::all(), [&] (auto tag) {
 })) {
 }
 
-blocksci::OffsetType AddressWriter::serialize(const AnyScriptOutput &output, uint32_t txNum, bool topLevel) {
-    return mpark::visit([&](auto &scriptOutput) { return this->serialize(scriptOutput, txNum, topLevel); }, output.wrapped);
+blocksci::OffsetType AddressWriter::serializeNew(const AnyScriptOutput &output, uint32_t txNum, bool topLevel) {
+    return mpark::visit([&](auto &scriptOutput) { return this->serializeNew(scriptOutput, txNum, topLevel); }, output.wrapped);
+}
+
+void AddressWriter::serializeExisting(const AnyScriptOutput &output, bool topLevel) {
+    mpark::visit([&](auto &scriptOutput) { return this->serializeExisting(scriptOutput, topLevel); }, output.wrapped);
 }
 
 void AddressWriter::serialize(const AnyScriptInput &input, uint32_t txNum, uint32_t outputTxNum) {
@@ -83,7 +87,12 @@ void AddressWriter::serializeImp(const ScriptInput<AddressType::WITNESS_SCRIPTHA
 }
 
 void AddressWriter::serializeWrapped(const ScriptInputData<AddressType::Enum::WITNESS_SCRIPTHASH> &data, uint32_t txNum, uint32_t outputTxNum) {
-    serialize(data.wrappedScriptOutput, txNum, false);
+    if (data.wrappedScriptOutput.isNew()) {
+        serializeNew(data.wrappedScriptOutput, txNum, false);
+    } else {
+        serializeExisting(data.wrappedScriptOutput, false);
+    }
+    
     serialize(*data.wrappedScriptInput, txNum, outputTxNum);
 }
 
@@ -93,8 +102,13 @@ void AddressWriter::serializeImp(const ScriptInput<AddressType::SCRIPTHASH> &inp
 }
 
 void AddressWriter::serializeWrapped(const ScriptInputData<AddressType::Enum::SCRIPTHASH> &data, uint32_t txNum, uint32_t outputTxNum) {
-    serialize(data.wrappedScriptOutput, txNum, false);
-    return serialize(*data.wrappedScriptInput, txNum, outputTxNum);
+    if (data.wrappedScriptOutput.isNew()) {
+        serializeNew(data.wrappedScriptOutput, txNum, false);
+    } else {
+        serializeExisting(data.wrappedScriptOutput, false);
+    }
+    serialize(*data.wrappedScriptInput, txNum, outputTxNum);
+    serializeWrapped(*data.wrappedScriptInput, txNum, outputTxNum);
 }
 
 void AddressWriter::serializeImp(const ScriptInput<AddressType::NONSTANDARD> &input, ScriptFile<DedupAddressType::NONSTANDARD> &file) {

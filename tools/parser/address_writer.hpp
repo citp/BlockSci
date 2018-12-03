@@ -80,18 +80,27 @@ public:
     }
     
     template<blocksci::AddressType::Enum type>
-    blocksci::OffsetType serialize(const ScriptOutput<type> &output, uint32_t txNum, bool topLevel) {
-        if (output.isNew) {
-            auto &file = std::get<ScriptFile<dedupType(type)>>(scriptFiles);
-            auto data = output.data.getData(txNum, topLevel);
-            file.write(data);
-            output.data.visitWrapped([&](auto &output) { this->serialize(output, txNum, false); });
-            return file.size();
-        } else {
-            auto &file = std::get<ScriptFile<dedupType(type)>>(scriptFiles);
-            serializeImp(output, file, topLevel);
-        }
-        return 0;
+    blocksci::OffsetType serializeNew(const ScriptOutput<type> &output, uint32_t txNum, bool topLevel) {
+        assert(output.isNew);
+        auto &file = std::get<ScriptFile<dedupType(type)>>(scriptFiles);
+        auto data = output.data.getData(txNum, topLevel);
+        file.write(data);
+        assert(output.scriptNum == file.size());
+        output.data.visitWrapped([&](auto &wrappedOutput) {
+            if (wrappedOutput.isNew) {
+                serializeNew(wrappedOutput, txNum, false);
+            } else {
+                serializeExisting(wrappedOutput, false);
+            }
+        });
+        return file.size();
+    }
+    
+    template<blocksci::AddressType::Enum type>
+    void serializeExisting(const ScriptOutput<type> &output, bool topLevel) {
+        assert(!output.isNew);
+        auto &file = std::get<ScriptFile<dedupType(type)>>(scriptFiles);
+        serializeImp(output, file, topLevel);
     }
     
     template<blocksci::AddressType::Enum type>
@@ -116,7 +125,9 @@ public:
     
     void rollback(const blocksci::State &state);
     
-    blocksci::OffsetType serialize(const AnyScriptOutput &output, uint32_t txNum, bool topLevel);
+    blocksci::OffsetType serializeNew(const AnyScriptOutput &output, uint32_t txNum, bool topLevel);
+    void serializeExisting(const AnyScriptOutput &output, bool topLevel);
+    
     void serialize(const AnyScriptInput &input, uint32_t txNum, uint32_t outputTxNum);
     void serializeWrapped(const AnyScriptInput &input, uint32_t txNum, uint32_t outputTxNum);
     
