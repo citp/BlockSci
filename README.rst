@@ -107,7 +107,8 @@ Compilation_ instructions as well as setup_ instructions are available in the do
 Getting help
 ============
 
-If you've encountered a bug or have a question about using BlockSci, the best way to get help is to open a GitHub issue. We are an academic team and aren't able to provide the standard of support that you might expect for a commercial project, but we'll do our best. 
+Please make sure to check the list of [Frequently Asked Questions](https://github.com/citp/BlockSci/wiki) first.
+If you've encountered a bug or have a question about using BlockSci not answered in the FAQ, the best way to get help is to open a GitHub issue. We are an academic team and aren't able to provide the standard of support that you might expect for a commercial project, but we'll do our best. 
 
 Team & contact info
 ===================
