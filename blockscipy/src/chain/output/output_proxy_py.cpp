@@ -28,6 +28,7 @@ struct AddOutputMethods {
         func(property_tag, "is_spent", &Output::isSpent, "Returns whether this output has been spent");
         func(property_tag, "spending_tx_index", &Output::getSpendingTxIndex, "Returns the index of the tranasction which spent this output or 0 if it is unspent");
         func(property_tag, "spending_tx", &Output::getSpendingTx, "The transaction that spent this output or None if it is unspent");
+        func(property_tag, "spending_input", &Output::getSpendingInput, "The input that spent this output or None if it is unspent");
         func(property_tag, "tx", &Output::transaction, "The transaction that contains this input");
         func(property_tag, "block", &Output::block, "The block that contains this input");
         func(property_tag, "index", &Output::outputIndex, "The output index inside this output's transaction");
