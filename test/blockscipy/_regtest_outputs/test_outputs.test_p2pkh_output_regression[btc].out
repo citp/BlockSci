@@ -3,6 +3,7 @@ Pay to pubkey hash
 Block(tx_count=5, height=113, header_hash=6b967b3001ea5e7e5e5175cd4c98e5c5419b5f73137b2ea475f533ceff6c240b, version=536870912, timestamp=1535762400, bits=545259519, nonce=0)
 0
 True
+TxIn(spent_tx_index=117, address=PubkeyHashAddress(mk7GYZDvnyyTyi2anTr5w5sTqW3r18WQWb), value=100000000)
 Tx(len(txins)=1, len(txouts)=1, size_bytes=192, block_height=113, tx_index=118)
 118
 Tx(len(txins)=1, len(txouts)=2, size_bytes=226, block_height=113, tx_index=117)
@@ -13,6 +14,7 @@ Pay to pubkey hash
 Block(tx_count=5, height=113, header_hash=6b967b3001ea5e7e5e5175cd4c98e5c5419b5f73137b2ea475f533ceff6c240b, version=536870912, timestamp=1535762400, bits=545259519, nonce=0)
 1
 False
+None
 None
 None
 Tx(len(txins)=1, len(txouts)=2, size_bytes=226, block_height=113, tx_index=117)

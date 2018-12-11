@@ -30,6 +30,7 @@ def output_regression(tx, regtest):
         print(out.block, file=regtest)
         print(out.index, file=regtest)
         print(out.is_spent, file=regtest)
+        print(out.spending_input, file=regtest)
         print(out.spending_tx, file=regtest)
         print(out.spending_tx_index, file=regtest)
         print(out.tx, file=regtest)

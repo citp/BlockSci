@@ -31,6 +31,7 @@ def input_regression(tx, regtest):
         print(inpt.block, file=regtest)
         print(inpt.index, file=regtest)
         print(inpt.sequence_num, file=regtest)
+        print(inpt.spent_output, file=regtest)
         print(inpt.spent_tx, file=regtest)
         print(inpt.spent_tx_index, file=regtest)
         print(inpt.tx, file=regtest)

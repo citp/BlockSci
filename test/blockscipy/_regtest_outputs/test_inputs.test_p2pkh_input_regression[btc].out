@@ -4,6 +4,7 @@ Pay to pubkey hash
 Block(tx_count=3, height=112, header_hash=628da9df97ec8feb26bedfe08745be3eb94e322bbd25dac59c2efac07510fdf5, version=536870912, timestamp=1535761800, bits=545259519, nonce=2)
 0
 4294967295
+TxOut(spending_tx_index=114, address=PubkeyHashAddress(mjTkW3DjgyZck4KbiRusZsqTgaYTxdSz6z), value=5000000000)
 Tx(len(txins)=0, len(txouts)=2, size_bytes=144, block_height=2, tx_index=2)
 2
 Tx(len(txins)=1, len(txouts)=2, size_bytes=226, block_height=112, tx_index=114)

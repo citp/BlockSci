@@ -29,11 +29,29 @@ def test_output_references(chain, json_data, chain_name):
 
 def test_spending_tx_references(chain, json_data):
     for i in range(8):
-        tx = chain.tx_with_hash(json_data["tx-chain-10-tx-{}".format(i)])
-        next_tx = chain.tx_with_hash(json_data["tx-chain-10-tx-{}".format(i + 1)])
+        tx = chain.tx_with_hash(json_data["peeling-chain-{}-tx".format(i)])
+        next_tx = chain.tx_with_hash(json_data["peeling-chain-{}-tx".format(i + 1)])
 
-        assert next_tx == tx.outputs[0].spending_tx
+        assert next_tx == tx.outputs[json_data["peeling-chain-{}-position".format(i)]].spending_tx
         assert tx == next_tx.inputs[0].spent_tx
+
+
+def test_spent_output_references(chain, json_data):
+    for i in range(8):
+        tx = chain.tx_with_hash(json_data["peeling-chain-{}-tx".format(i + 1)])
+        prev_tx = chain.tx_with_hash(json_data["peeling-chain-{}-tx".format(i)])
+        output_index = json_data["peeling-chain-{}-position".format(i)]
+
+        assert tx.inputs[0].spent_output
+        assert output_index == tx.inputs[0].spent_output.index
+        assert prev_tx == tx.inputs[0].spent_output.tx
+
+
+def test_spending_input_references(chain, json_data):
+    tx = chain.tx_with_hash(json_data["fan-8-tx"])
+    redeeming_tx = chain.tx_with_hash(json_data["fan-8-tx-collect"])
+    for idx, out in enumerate(tx.outputs):
+        assert redeeming_tx.inputs[idx] == out.spending_input
 
 
 def test_address_references(chain, json_data, chain_name):
