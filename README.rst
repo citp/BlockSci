@@ -20,7 +20,7 @@ For installation instructions, see below.
 Latest release (BlockSci v0.5.0)
 ================================
 
-Version 0.5.0 focuses mainly on improvements and cleanups in the python interface. The largest new feature is the introduction of vectorized operations which return NumPy arrays, enabling much more rapid usage of BlockSci's python interface. You can read more details about the release in the `release notes`_. We are releasing a new AMI_ running 0.5.0 (explained under "Quick setup" below).
+Version 0.5.0 focuses mainly on improvements and cleanups in the Python interface. The largest new feature is the introduction of vectorized operations which return NumPy arrays, enabling much more rapid usage of BlockSci's Python interface. You can read more details about the release in the `release notes`_. We are releasing a new AMI_ running 0.5.0 (explained under "Quick setup" below).
 
 .. _release notes: https://citp.github.io/BlockSci/changelog.html#version-0-5-0
 .. _AMI: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-0d0091e593d44cce1
@@ -31,7 +31,7 @@ Quick setup using Amazon EC2
 
 AMI Last updated on May 8, 2018.
 
-If you want to start using BlockSci immediately, we have made available an EC2 image: ami-0d0091e593d44cce1_. We recommend using instance with 60 GB of memory or more for optimal performance (r4.2xlarge). On boot, a Jupyter Notebook running BlockSci will launch immediately. To access the notebook, you must set up port forwarding to your computer. Inserting the name of your private key file and the domain of your ec2 instance into the following command will make the Notebook available on your machine.
+If you want to start using BlockSci immediately, we have made available an EC2 image: ami-0d0091e593d44cce1_. We recommend using an instance with 60 GB of memory or more for optimal performance (r4.2xlarge). On boot, a Jupyter Notebook running BlockSci will launch immediately. To access the notebook, you must set up port forwarding to your computer. Inserting the name of your private key file and the domain of your ec2 instance into the following command will make the Notebook available on your machine.
 
 .. code-block:: bash
 
@@ -43,7 +43,7 @@ AWS instances suffer from a `known performance issue`_ when starting up from an 
 
 There is no need for user intervention to resolve this issue since the machine will do so automatically on launch.
 
-The AMI contains a fully updated version of the Bitcoin blockchain as of the creation date of the AMI (March 8, 2017). Additionally it will automatically start a Bitcoin full node and update the blockchain once every hour to the latest version of the chain.
+The AMI contains a fully updated version of the Bitcoin blockchain as of the creation date of the AMI (May 8, 2018). Additionally it will automatically start a Bitcoin full node and update the blockchain once every hour to the latest version of the chain.
 
 .. _ami-0d0091e593d44cce1: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-0d0091e593d44cce1
 .. _known performance issue: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-initialize.html
@@ -69,16 +69,16 @@ In order to use the C++ library, you must compile your code against the BlockSci
 Python
 -------
 
-Note that BlockSci only supports python 3.
+Note that BlockSci only supports Python 3.
 
-To use the BlockSci in python, you only need to import the BlockSci library. By default the library is installed into BlockSci/Notebooks. To use the library first open the Python interpreter in that folder:
+To use the BlockSci in Python, you only need to import the BlockSci library. By default the library is installed into BlockSci/Notebooks. To use the library first open the Python interpreter in that folder:
 
 .. code-block:: bash
 
 	cd BlockSci/Notebooks
 	python3
 	
-With the python interpreter open, the following code will load a Blockchain object created from the data output by the parser:
+With the Python interpreter open, the following code will load a Blockchain object created from the data output by the parser:
 
 .. code-block:: python
 
