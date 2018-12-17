@@ -3,7 +3,7 @@ Local setup
 
 BlockSci is composed of two major components, the parser, and the analysis library. The parser is used to generate the backing blocksci database format. The analysis library can then be pointed at the generated data.
 
-Note that BlockSci runs best with 64GB of RAM or above though 32 GB is feasable although much slower.
+Note that as of December 2018, BlockSci requires at least 60GB of RAM to parse the Bitcoin blockchain.
 
 BlockSci Parser
 -----------------
