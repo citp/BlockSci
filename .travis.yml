@@ -11,7 +11,7 @@ cache:
     - .mtime_cache
 matrix:
   include:
-    - stage: Build Core Library (CPP)
+    - stage: Build C++ Library
       dist: xenial
       before_install: .travis/build_ubuntu_cpp.sh
       install: .travis/compile_ubuntu_cpp.sh
@@ -44,4 +44,6 @@ matrix:
       install:
         - .travis/compile_ubuntu_cpp.sh
         - .travis/compile_ubuntu_python.sh
-      script: .travis/test_python.sh
+      script:
+        - .travis/test_python.sh
+        - .travis/generate_docs.sh
