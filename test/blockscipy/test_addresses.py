@@ -26,7 +26,7 @@ def addresses(chain, json_data, chain_name):
 def address_received_test(addr, address_type, balance, ntxes):
     assert address_type == addr.type
     assert Coin(balance) == addr.balance()
-    assert ntxes == len(addr.txes())
+    assert ntxes == len(addr.txes.to_list())
 
 
 def test_p2pkh_address(chain, json_data):
@@ -83,7 +83,7 @@ def test_address_regression(chain, json_data, regtest, chain_name):
         print(addr.equiv(), file=regtest)
         print(addr.has_been_spent, file=regtest)
         print(addr.ins.to_list(), file=regtest)
-        print(addr.in_txes(), file=regtest)
+        print(addr.in_txes.to_list(), file=regtest)
         print(addr.in_txes_count(), file=regtest)
         print(addr.out_txes.to_list(), file=regtest)
         print(addr.out_txes_count(), file=regtest)
