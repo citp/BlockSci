@@ -145,6 +145,12 @@ namespace blocksci {
                 _maxLoadedTx = 0;
                 lastBlockHashDisk = nullptr;
             }
+            
+            if (_maxLoadedTx > txFile.size()) {
+                std::stringstream ss;
+                ss << "Block data corrupted. Tx file has " << txFile.size() << " transaction, but max tx to load is tx " << _maxLoadedTx;
+                throw std::runtime_error(ss.str());
+            }
         }
         
     public:
