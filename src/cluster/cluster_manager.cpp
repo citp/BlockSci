@@ -137,7 +137,7 @@ namespace blocksci {
                                                                 bool ignoreCoinJoin) {
         std::vector<std::pair<Address, Address>> pairsToUnion;
         
-        if ((!heuristics::isCoinjoin(tx) || !ignoreCoinJoin) && !tx.isCoinbase()) {
+        if (!tx.isCoinbase() && (!ignoreCoinJoin || !heuristics::isCoinjoin(tx))) {
             auto inputs = tx.inputs();
             auto firstAddress = inputs[0].getAddress();
             for (uint16_t i = 1; i < inputs.size(); i++) {
