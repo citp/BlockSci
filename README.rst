@@ -44,6 +44,7 @@ AWS instances suffer from a `known performance issue`_ when starting up from an 
 There is no need for user intervention to resolve this issue since the machine will do so automatically on launch.
 
 The AMI contains a fully updated version of the Bitcoin blockchain as of the creation date of the AMI (May 8, 2018). Additionally it will automatically start a Bitcoin full node and update the blockchain once every hour to the latest version of the chain.
+When you start the AMI for the first time, it will take a few hours for the full node to synchronize with the Bitcoin network and for new blocks (after May 2018) to become available in BlockSci.
 
 .. _ami-0d0091e593d44cce1: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-0d0091e593d44cce1
 .. _known performance issue: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-initialize.html
