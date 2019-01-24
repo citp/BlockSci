@@ -1,6 +1,5 @@
 import pytest
 import subprocess
-import os
 
 
 def pytest_addoption(parser):
@@ -41,11 +40,15 @@ def chain(tmpdir_factory, chain_name):
     else:
         raise ValueError("Invalid chain name {}".format(chain_name))
 
+    # Parse the chain up to block 100 only
     create_config_cmd = ["blocksci_parser", chain_dir + "/config.json", "generate-config", blocksci_chain_name,
-                         chain_dir, "--disk", "../files/{}/regtest/".format(chain_name)]
+                         chain_dir, "--disk", "../files/{}/regtest/".format(chain_name), "--max-block", "100"]
     subprocess.run(create_config_cmd, check=True)
-
     parse_cmd = ["blocksci_parser", chain_dir + "/config.json", "update"]
+    subprocess.run(parse_cmd, check=True)
+
+    # Now parse the remainder of the chain
+    subprocess.run(create_config_cmd[:-2], check=True)
     subprocess.run(parse_cmd, check=True)
 
     import blocksci
