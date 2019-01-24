@@ -83,9 +83,9 @@ def test_address_regression(chain, json_data, regtest, chain_name):
         print(addr.equiv(), file=regtest)
         print(addr.has_been_spent, file=regtest)
         print(addr.ins.to_list(), file=regtest)
-        print(addr.in_txes.to_list(), file=regtest)
+        print(sorted_tx_list(addr.in_txes), file=regtest)
         print(addr.in_txes_count(), file=regtest)
-        print(addr.out_txes.to_list(), file=regtest)
+        print(sorted_tx_list(addr.out_txes), file=regtest)
         print(addr.out_txes_count(), file=regtest)
         print(addr.outs.to_list(), file=regtest)
         if addr_type == "p2pkh" or addr_type == "p2wpkh":
@@ -99,3 +99,8 @@ def test_address_regression(chain, json_data, regtest, chain_name):
             print(addr.total, file=regtest)
         if "p2sh" in addr_type or addr_type == "p2wsh":
             print(addr.wrapped_address, file=regtest)
+
+
+def sorted_tx_list(it):
+    l = it.to_list()
+    return sorted(l, key=lambda tx: tx.index)
