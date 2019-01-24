@@ -116,7 +116,7 @@ namespace blocksci {
                 
                 inTx = out.getSpendingTx();
                 if (inTx) {
-                    RANGES_FOR(auto output, tx.outputs()) {
+                    RANGES_FOR(auto output, inTx->outputs()) {
                         if (output.getAddress() == searchAddress) {
                             inTx = ranges::nullopt;
                             break;
