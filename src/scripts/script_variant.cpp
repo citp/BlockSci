@@ -56,7 +56,7 @@ namespace blocksci {
     	return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getInputs(); }, wrapped);
     }
 
-    std::vector<Transaction> AnyScript::getTransactions() const {
+    ranges::any_view<Transaction> AnyScript::getTransactions() const {
     	return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getTransactions(); }, wrapped);
     }
 
@@ -64,7 +64,7 @@ namespace blocksci {
     	return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getOutputTransactions(); }, wrapped);
     }
 
-    std::vector<Transaction> AnyScript::getInputTransactions() const {
+    ranges::any_view<Transaction> AnyScript::getInputTransactions() const {
     	return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getInputTransactions(); }, wrapped);
     }
 }

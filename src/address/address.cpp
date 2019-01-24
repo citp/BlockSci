@@ -26,6 +26,7 @@
 
 #include <range/v3/view/transform.hpp>
 #include <range/v3/view/unique.hpp>
+#include <range/v3/algorithm/min.hpp>
 
 #include <iostream>
 #include <sstream>
@@ -47,21 +48,159 @@ namespace blocksci {
         | ranges::view::transform([_access](const OutputPointer &pointer) { return Output(pointer, *_access).getSpendingInput(); })
         | flatMapOptionals();
     }
-    
-    std::vector<Transaction> Address::getTransactions() const {
-        return blocksci::getTransactions(getOutputPointers(), *access);
-    }
 
     ranges::any_view<Transaction> Address::getOutputTransactions() const {
         auto _access = access;
-        auto uniqueTxNums = _access->getAddressIndex().getOutputPointers(*this)
+        return _access->getAddressIndex().getOutputPointers(*this)
         | ranges::view::transform([](const InoutPointer &pointer) -> uint32_t { return pointer.txNum; })
-        | ranges::view::unique;
-        return ranges::view::transform(uniqueTxNums, [_access](uint32_t txNum) { return Transaction(txNum, _access->getChain().getBlockHeight(txNum), *_access); });
+        | ranges::view::unique
+        | ranges::view::transform([_access](uint32_t txNum) { return Transaction(txNum, _access->getChain().getBlockHeight(txNum), *_access); });
     }
     
-    std::vector<Transaction> Address::getInputTransactions() const {
-        return blocksci::getInputTransactions(getOutputPointers(), *access);
+    ranges::any_view<Transaction> Address::getInputTransactions() const {
+        auto _access = access;
+        Address searchAddress = *this;
+        return getOutputPointers()
+        | ranges::view::transform([_access, searchAddress](auto pointer) -> ranges::optional<Transaction> {
+            auto spendingTx = Output(std::forward<decltype(pointer)>(pointer), *_access).getSpendingTx();
+            if (spendingTx) {
+                RANGES_FOR(auto input, spendingTx->inputs()) {
+                    if (input.getAddress() == searchAddress) {
+                        if (input.getSpentOutputPointer() == pointer) {
+                            return input.transaction();
+                        } else {
+                            return ranges::nullopt;
+                        }
+                    }
+                }
+                assert(false);
+            } else {
+                return ranges::nullopt;
+            }
+        })
+        | flatMapOptionals();
+    }
+    
+    class AddressAllTxRange : public ranges::view_facade<AddressAllTxRange> {
+        friend ranges::range_access;
+        using PointerView = ranges::any_view<OutputPointer>;
+        
+        DataAccess *access;
+        Address searchAddress;
+        PointerView pointers;
+        
+        struct cursor {
+        private:
+            DataAccess *access;
+            Address searchAddress;
+            ranges::iterator_t<PointerView> it;
+            ranges::sentinel_t<PointerView> end;
+            ranges::optional<Transaction> outTx;
+            ranges::optional<Transaction> inTx;
+            
+            
+            bool initializeFromCurrentOutput() {
+                auto pointer = *it;
+                Output out(pointer, *access);
+                auto tx = out.transaction();
+                RANGES_FOR(auto output, tx.outputs()) {
+                    if (output.getAddress() == searchAddress) {
+                        if (output.pointer == pointer) {
+                            outTx = tx;
+                        } else {
+                            outTx = ranges::nullopt;
+                        }
+                        break;
+                    }
+                }
+                
+                inTx = out.getSpendingTx();
+                if (inTx) {
+                    RANGES_FOR(auto output, tx.outputs()) {
+                        if (output.getAddress() == searchAddress) {
+                            inTx = ranges::nullopt;
+                            break;
+                        }
+                    }
+                }
+                if (inTx) {
+                    RANGES_FOR(auto input, inTx->inputs()) {
+                        if (input.getAddress() == searchAddress) {
+                            if (input.getSpentOutputPointer() != pointer) {
+                                inTx = ranges::nullopt;
+                            }
+                            break;
+                        }
+                    }
+                }
+                
+                return inTx.has_value() || outTx.has_value();
+            }
+            
+            bool getNext() {
+                ++it;
+                if (it == end) {
+                    return true;
+                }
+                return initializeFromCurrentOutput();
+            }
+            
+            
+            void satisfyNext() {
+                while(!getNext()) {}
+            }
+        public:
+            cursor() = default;
+            
+            cursor(ranges::iterator_t<PointerView> && it_, ranges::sentinel_t<PointerView> && end_,  const Address &searchAddress_, DataAccess *access_) :
+            access(access_), searchAddress(searchAddress_), it(std::move(it_)), end(std::move(end_)) {
+                initializeFromCurrentOutput();
+            }
+            
+            
+            Transaction read() const {
+                assert(inTx.has_value() || outTx.has_value());
+                if (outTx) {
+                    return *outTx;
+                } else {
+                    return *inTx;
+                }
+            }
+            
+            bool equal(ranges::default_sentinel) const {
+                return it == end;
+            }
+            
+            void next() {
+                if (inTx && outTx) {
+                    outTx = ranges::nullopt;
+                } else {
+                    satisfyNext();
+                }
+            }
+        };
+        
+        cursor begin_cursor() {
+            return cursor{pointers.begin(), pointers.end(), searchAddress, access};
+        }
+        
+        ranges::default_sentinel end_cursor() {
+            return {};
+        }
+        
+    public:
+        AddressAllTxRange() = default;
+        
+        AddressAllTxRange(const Address &searchAddress_, DataAccess *access_) :
+        access(access_), searchAddress(searchAddress_),
+        pointers(access_->getAddressIndex().getOutputPointers(searchAddress_)
+        | ranges::view::transform([](const InoutPointer &pointer) {
+            return OutputPointer(pointer.txNum, pointer.inoutNum);
+        })) {}
+    };
+    
+    ranges::any_view<Transaction> Address::getTransactions() const {
+        return AddressAllTxRange{*this, access};
     }
     
     bool Address::isSpendable() const {

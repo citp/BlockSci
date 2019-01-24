@@ -93,6 +93,10 @@ namespace blocksci {
         }) | ranges::view::join;
     }
     
+    bool Cluster::containsAddress(const Address &address) const {
+        return clusterAccess->getClusterNum(address) == clusterNum;
+    }
+    
 //    ranges::any_view<
 //    ranges::any_view<Address, ranges::category::random_access | ranges::category::sized>,
 //    ranges::category::random_access | ranges::category::sized

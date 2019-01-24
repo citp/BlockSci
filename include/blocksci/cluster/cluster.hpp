@@ -93,6 +93,7 @@ namespace blocksci {
         Cluster(uint32_t clusterNum_, const ClusterAccess &access_) : clusterAccess(&access_), clusterNum(clusterNum_) {}
         
         ranges::any_view<Address> getAddresses() const;
+        bool containsAddress(const Address &address) const;
         
         ranges::any_view<TaggedAddress> taggedAddresses(const std::unordered_map<blocksci::Address, std::string> &tags) const;
         

@@ -71,7 +71,13 @@ struct AddAddressMethods {
         }, "Returns an iterator over all inputs spent from this address");
         func(property_tag, "out_txes", +[](AnyScript &address) -> RawIterator<Transaction> {
             return address.getOutputTransactions();
-        }, "Returns an iterator over all transaction where this address was an output");
+        }, "Returns an iterator over all transactions where this address was an output");
+        func(property_tag, "in_txes", +[](AnyScript &address) -> RawIterator<Transaction> {
+            return address.getInputTransactions();
+        }, "Returns an iterator over all transactions where this address was an input");
+        func(property_tag, "txes", +[](AnyScript &address) -> RawIterator<Transaction> {
+            return address.getTransactions();
+        }, "Returns an iterator over all transactions involving this address");
     }
 };
 

@@ -96,9 +96,9 @@ namespace blocksci {
         int64_t calculateBalance(BlockHeight height) const;
         ranges::any_view<Output> getOutputs() const;
         ranges::any_view<Input> getInputs() const;
-        std::vector<Transaction> getTransactions() const;
+        ranges::any_view<Transaction> getTransactions() const;
         ranges::any_view<Transaction> getOutputTransactions() const;
-        std::vector<Transaction> getInputTransactions() const;
+        ranges::any_view<Transaction> getInputTransactions() const;
         
         ScriptVariant wrapped;
     };
