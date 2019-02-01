@@ -9,6 +9,8 @@ cache:
     - release
     - blockscipy/build
     - .mtime_cache
+    - $HOME/.local
+    - $HOME/.cache/pip
 matrix:
   include:
     - stage: Build C++ Library
