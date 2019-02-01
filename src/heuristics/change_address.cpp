@@ -182,7 +182,7 @@ namespace blocksci { namespace heuristics {
     }
     
     // Bitcoin Core sets the locktime to the current block height to prevent fee sniping.
-    // If all outpus have been spent, and there is only one output that has been spent
+    // If all outputs have been spent, and there is only one output that has been spent
     // in a transaction that matches this transaction's locktime behavior, it is the change.
     template<>
     std::unordered_set<Output> ChangeHeuristicImpl<ChangeType::Locktime>::operator()(const Transaction &tx) const {
@@ -303,7 +303,7 @@ namespace blocksci { namespace heuristics {
     
     // Disables change address clustering by returning an empty set.
     template<>
-    std::unordered_set<Output> ChangeHeuristicImpl<ChangeType::None>::operator()(const Transaction &tx) const {
+    std::unordered_set<Output> ChangeHeuristicImpl<ChangeType::None>::operator()(const Transaction &) const {
         std::unordered_set<Output> candidates;
         return candidates;
     }
