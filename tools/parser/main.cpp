@@ -144,6 +144,36 @@ void rollbackTransactions(blocksci::BlockHeight blockKeepCount, HashIndexCreator
     }
 }
 
+void lockDataDirectory(const blocksci::DataConfiguration &dataConfig) {
+    filesystem::path pidFile = dataConfig.pidFilePath();
+
+    if(pidFile.exists()) {
+        std::cout << "A PID file exists in the data directory, another parser instance might already be running. Aborting." << std::endl;
+        exit(1);
+    } else {
+        std::cout << "Locking data directory." << std::endl;
+        std::ofstream rawFile(pidFile.str());
+        rawFile << getpid();
+        rawFile.close();
+    }
+}
+
+void lockDataDirectory(const ParserConfigurationBase &config) {
+    lockDataDirectory(config.dataConfig);
+}
+
+void unlockDataDirectory(const blocksci::DataConfiguration &dataConfig) {
+    std::cout << "Unlocking data directory." << std::endl;
+    filesystem::path pidFile = dataConfig.pidFilePath();
+    if(pidFile.exists()) {
+        pidFile.remove_file();
+    }
+}
+
+void unlockDataDirectory(const ParserConfigurationBase &config) {
+    unlockDataDirectory(config.dataConfig);
+}
+
 template <typename BlockType>
 struct ChainUpdateInfo {
     std::vector<BlockType> blocksToAdd;
@@ -552,35 +582,45 @@ int main(int argc, char * argv[]) {
         }
         case mode::update:
         case mode::updateCore: {
+            auto config = getBaseConfig(configFilePath);
+            lockDataDirectory(config);
             updateChain(configFilePath, selected == mode::update);
+            unlockDataDirectory(config);
             break;
         }
 
         case mode::updateIndexes: {
             auto config = getBaseConfig(configFilePath);
+            lockDataDirectory(config);
             updateAddressDB(config);
             {
                 HashIndexCreator db(config, config.dataConfig.hashIndexFilePath());
                 updateHashDB(config, db);
             }
+            unlockDataDirectory(config);
             break;
         }
 
         case mode::updateHashIndex: {
             auto config = getBaseConfig(configFilePath);
+            lockDataDirectory(config);
             HashIndexCreator db(config, config.dataConfig.hashIndexFilePath());
             updateHashDB(config, db);
+            unlockDataDirectory(config);
             break;
         }
 
         case mode::updateAddressIndex: {
             auto config = getBaseConfig(configFilePath);
+            lockDataDirectory(config);
             updateAddressDB(config);
+            unlockDataDirectory(config);
             break;
         }
             
         case mode::compactIndexes: {
             auto config = getBaseConfig(configFilePath);
+            lockDataDirectory(config);
             {
                 AddressDB db(config, config.dataConfig.addressDBFilePath());
                 db.compact();
@@ -589,6 +629,7 @@ int main(int argc, char * argv[]) {
                 HashIndexCreator db(config, config.dataConfig.hashIndexFilePath());
                 db.compact();
             }
+            unlockDataDirectory(config);
             break;
         }
 

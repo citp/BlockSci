@@ -64,6 +64,10 @@ namespace blocksci {
             return chainConfig.dataDirectory/"hashIndex";
         }
         
+        filesystem::path pidFilePath() const {
+            return chainConfig.dataDirectory/"blocksci_parser.pid";
+        }
+        
         bool operator==(const DataConfiguration &other) const {
             return chainConfig.dataDirectory == other.chainConfig.dataDirectory;
         }
