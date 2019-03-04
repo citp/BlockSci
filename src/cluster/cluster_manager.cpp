@@ -57,9 +57,8 @@ namespace {
                 segmentsRemaining--;
             }
             uint32_t endSegment = i;
-            segments.emplace_back(startSegment + start, endSegment);
+            segments.emplace_back(startSegment + start, endSegment + start);
         }
-        
         std::vector<std::thread> threads;
         for (uint32_t i = 0; i < segmentCount - 1; i++) {
             auto segment = segments[i];
