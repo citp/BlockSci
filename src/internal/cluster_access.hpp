@@ -101,7 +101,7 @@ namespace blocksci {
         }
         
         uint32_t clusterCount() const {
-            return static_cast<uint32_t>(clusterOffsetFile.size());
+            return static_cast<uint32_t>(clusterOffsetFile.size()) - 1;
         }
         
         ranges::iterator_range<const blocksci::DedupAddress *> getClusterScripts(uint32_t clusterNum) const {
