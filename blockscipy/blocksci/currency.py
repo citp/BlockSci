@@ -2,17 +2,28 @@ import datetime
 import requests
 import pandas as pd
 
+try:
+    from IPython.core.display import display
+    def _print_coindesk_info():
+        display('Exchange rates are provided by CoinDesk (https://www.coindesk.com/price/).')
+except ImportError:
+    def _print_coindesk_info():
+        print('Exchange rates are provided by CoinDesk (https://www.coindesk.com/price/).')
+
+
 class CurrencyConverter(object):
     """
     Imports Bitcoin exchange rates in a variety of currencies using the Coindesk API available at https://www.coindesk.com/price/.
     """
 
     min_start = pd.to_datetime('2009-01-03').date()
-    max_end = datetime.date.today()
+    max_end = datetime.date.today() - datetime.timedelta(days=1)
     # the API has data starting at 2010-07-19
     COINDESK_START = pd.to_datetime('2010-07-19').date()
 
     def __init__(self, currency='USD', start=min_start, end=max_end):
+        _print_coindesk_info() 
+
         self.currency = currency
 
         self.start = self.validate_date(start)
