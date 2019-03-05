@@ -25,6 +25,7 @@ namespace heuristics {
             return false;
         }
         
+        // Each participant contributes a spend and a change output
         uint16_t participantCount = (tx.outputCount() + 1) / 2;
         if (participantCount > tx.inputCount()) {
             return false;
@@ -50,11 +51,12 @@ namespace heuristics {
                                        return p1.second < p2.second;
                                    }
                                    );
-        
+        // The most common output value should appear exactly `participantCount` times
         if (pr->second != participantCount) {
             return false;
         }
         
+        // Exclude transactions sending dust outputs (unlikely to be CoinJoin)
         if (pr->first == 546 || pr->first == 2730) {
             return false;
         }

@@ -80,7 +80,7 @@ void init_heuristics(py::module &m) {
 
     s2
     .def_property_readonly_static("peeling_chain", [](pybind11::object &) { return ChangeHeuristic{PeelingChainChange{}}; }, 
-        "Return a ChangeHeuristic object implementing the power of ten value heuristic: If tx is a peeling chain, returns the smaller output.")
+                                  "Return a ChangeHeuristic object implementing the peeling chain heuristic: If tx is a peeling chain, returns the outputs that continue the peeling chain. Note: This heuristic depends on the outputs being spent and will return unspent outputs as potential candidates.")
     
     .def_static("power_of_ten_value", [](int digits) { return ChangeHeuristic{PowerOfTenChange{digits}}; }, py::arg("digits") = 6, 
         "Return a ChangeHeuristic object implementing the power of ten value heuristic: Detects possible change outputs by checking for output values that are multiples of 10^digits.")
@@ -92,7 +92,7 @@ void init_heuristics(py::module &m) {
         "Return a ChangeHeuristic object implementing the address type heuristic: If all inputs are of one address type (e.g., P2PKH or P2SH), it is likely that the change output has the same type")
 
     .def_property_readonly_static("locktime", [](pybind11::object &) { return ChangeHeuristic{LocktimeChange{}}; },
-        "Return a ChangeHeuristic object implementing the locktime heuristic: Bitcoin Core sets the locktime to the current block height to prevent fee sniping. If all outpus have been spent, and there is only one output that has been spent in a transaction that matches this transaction's locktime behavior, it is the change.")
+        "Return a ChangeHeuristic object implementing the locktime heuristic: Bitcoin Core sets the locktime to the current block height to prevent fee sniping. If all outpus have been spent, and there is only one output that has been spent in a transaction that matches this transaction's locktime behavior, it is the change. Note: This heuristic depends on the outputs being spent and will return unspent outputs as potential candidates.")
 
     .def_property_readonly_static("address_reuse", [](pybind11::object &) { return ChangeHeuristic{AddressReuseChange{}}; }, 
         "Return a ChangeHeuristic object implementing the address reuse heuristic: If input addresses appear as an output address, the client might have reused addresses for change.")

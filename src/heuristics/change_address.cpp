@@ -63,7 +63,7 @@ namespace blocksci { namespace heuristics {
         if(looksLikePeelingChain(tx.inputs()[0].getSpentTx())) {
             return true;
         }
-        // Check if future transaction is peeling chain
+        // Check if any future transaction is peeling chain
         RANGES_FOR(auto output, tx.outputs()) {
             if(output.isSpent() && looksLikePeelingChain(*output.getSpendingTx())) {
                 return true;
@@ -72,30 +72,29 @@ namespace blocksci { namespace heuristics {
         return false;
     }
     
-    // Peeling chains 'peel off' small amounts of bitcoins in every transaction,
-    // using the change as the input to the next peeling chain.
-    // Thus, the change is usually the larger output.
-    // TODO: check if it looks like peeling chain?
-    ranges::optional<Output> uniqueChangeByPeelingChain(const Transaction &tx) {
-        if(isPeelingChain(tx)) {
-            if(tx.outputs()[0].getValue() > tx.outputs()[1].getValue()) {
-                return tx.outputs()[0];
-            } else {
-                return tx.outputs()[1];
-            }
-        }
-        return ranges::nullopt;
-    }
-    
-    // This function mostly exists to ensure a consistent API.
-    // The set it returns will never contain more than one output.
+    // In a peeling chain, the change output is the output that continues the chain
+    // This heuristic depends on the outputs being spent to detect change.
+    // If an output has not been spent, it is considered a potential change output.
     template<>
     std::unordered_set<Output> ChangeHeuristicImpl<ChangeType::PeelingChain>::operator()(const Transaction &tx) const {
         std::unordered_set<Output> candidates;
-        auto candidate = uniqueChangeByPeelingChain(tx);
-        if(candidate) {
-            candidates.insert(*candidate);
+        
+        // If current tx is not a peeling chain, return an empty set
+        if(!isPeelingChain(tx)) {
+            return candidates;
         }
+        
+        // Check which output(s) continue the peeling chain
+        RANGES_FOR(auto output, tx.outputs()) {
+            if(output.isSpent()) {
+                if(isPeelingChain(*output.getSpendingTx())) {
+                    candidates.insert(output);
+                }
+            } else { // not spent, hence unknown
+                candidates.insert(output);
+            }
+        }
+        
         return removeOpReturnOutputs(candidates);
     }
     
@@ -152,7 +151,7 @@ namespace blocksci { namespace heuristics {
     }
     
     // If all inputs are of one address type (e.g., P2PKH or P2SH),
-    // it is likely that the change output has the same type
+    // it is likely that the change output has the same type.
     template<>
     std::unordered_set<Output> ChangeHeuristicImpl<ChangeType::AddressType>::operator()(const Transaction &tx) const {
         std::unordered_set<Output> candidates;
@@ -184,6 +183,8 @@ namespace blocksci { namespace heuristics {
     // Bitcoin Core sets the locktime to the current block height to prevent fee sniping.
     // If all outputs have been spent, and there is only one output that has been spent
     // in a transaction that matches this transaction's locktime behavior, it is the change.
+    // This heuristic depends on the outputs being spent to detect change.
+    // If an output has not been spent, it is considered a potential change output.
     template<>
     std::unordered_set<Output> ChangeHeuristicImpl<ChangeType::Locktime>::operator()(const Transaction &tx) const {
         std::unordered_set<Output> candidates;
@@ -313,12 +314,12 @@ namespace blocksci { namespace heuristics {
         return internal::singleOrNullptr(this->operator()(tx));
     }
     
+    
     std::unordered_set<Output> changeByPeelingChain(const Transaction &tx) {
         return ChangeHeuristicImpl<ChangeType::PeelingChain>{}(tx);
     }
     ranges::optional<Output> uniqueChangeByPeelingChain(const Transaction &tx);
     
-    // Detects a change output by checking for output values that are multiples of 10^digits.
     std::unordered_set<Output> changeByPowerOfTenValue(const Transaction &tx, int digits) {
         return ChangeHeuristicImpl<ChangeType::PowerOfTen>{digits}(tx);
     }
