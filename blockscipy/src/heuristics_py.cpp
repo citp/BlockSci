@@ -105,5 +105,8 @@ void init_heuristics(py::module &m) {
     
     .def_property_readonly_static("none", [](pybind11::object &) { return ChangeHeuristic{NoChange{}}; },
         "Return a ChangeHeuristic object implementing no change address heuristic: This effectively disables change address clustering.")
+    
+    .def_property_readonly_static("spent", [](pybind11::object &) { return ChangeHeuristic{Spent{}}; },
+                                  "Return a ChangeHeuristic object that selects spent outputs. Useful in combination with heuristics that select unspent outputs as candidates.")
     ;
 }

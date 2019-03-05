@@ -16,7 +16,8 @@ def test_peeling_chain_change(chain, json_data):
     for i in range(3, 8):
         txid = json_data["peeling-chain-{}-tx".format(i)]
         tx = chain.tx_with_hash(txid)
-        result = blocksci.heuristics.change.peeling_chain(tx)
+        heuristic = blocksci.heuristics.change.peeling_chain and blocksci.heuristics.change.spent
+        result = heuristic(tx)
         assert 1 == len(result)
 
         idx = json_data["peeling-chain-{}-position".format(i)]

@@ -257,7 +257,17 @@ namespace blocksci { namespace heuristics {
         return candidates;
     }
     
+    // Returns all outputs that have been spent. Useful in combination with change address heuristics that return unspent outputs as candidates.
     template<>
+    std::unordered_set<Output> ChangeHeuristicImpl<ChangeType::Spent>::operator()(const Transaction &tx) const {
+        std::unordered_set<Output> candidates;
+        
+        RANGES_FOR (auto output, tx.outputs()) {
+            if (output.isSpent()) {
+                candidates.insert(output);
+            }
+        }
+        return removeOpReturnOutputs(candidates);
     }
     
 } // namespace heuristics
