@@ -7,6 +7,7 @@ def test_clustering_no_change(chain, json_data, regtest, tmpdir_factory):
     cluster = cm.cluster_with_address(chain.address_from_string(json_data['merge-addr-1']))
 
     assert 3 == len(cluster.addresses.to_list())
+    assert 3 == cluster.address_count()
 
     assert chain.address_from_string(json_data['merge-addr-1']) in cluster.addresses.to_list()
     assert chain.address_from_string(json_data['merge-addr-2']) in cluster.addresses.to_list()
@@ -32,6 +33,13 @@ def test_clustering_no_change(chain, json_data, regtest, tmpdir_factory):
     print(cluster.address_count(), file=regtest)
     print(cluster.txes(), file=regtest)
     print(cluster.type_equiv_size, file=regtest)
+
+    for tx in chain.blocks.txes:
+        if tx.input_count > 1 and not blocksci.heuristics.is_coinjoin(tx):
+            cluster = cm.cluster_with_address(tx.inputs[0].address)
+            addresses = cluster.addresses.to_list()
+            for i in range(tx.input_count):
+                assert tx.inputs[i].address in addresses
 
 
 def test_clustering_with_change(chain, json_data, tmpdir_factory):
