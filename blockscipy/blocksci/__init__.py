@@ -522,6 +522,7 @@ def setup_iterator_methods(iterator, doc_func=fix_iterator_doc_def, nested_proxy
         setattr(iterator, proxy_func, iterator_method_creator(proxy_func))
 
 def setup_iterator_proxy_methods(iterator_proxy):
+    proxy_cl = type(iterator_proxy)
     nested_proxy_cl = type(iterator_proxy.nested_proxy)
 
     def iterator_proxy_creator(name):
@@ -536,10 +537,10 @@ def setup_iterator_proxy_methods(iterator_proxy):
         return method
 
     for proxy_func in _get_core_properties_methods(nested_proxy_cl):
-        setattr(iterator_proxy, proxy_func, iterator_proxy_creator(proxy_func))
+        setattr(proxy_cl, proxy_func, iterator_proxy_creator(proxy_func))
 
     for proxy_func in _get_core_functions_methods(nested_proxy_cl):
-        setattr(iterator_proxy, proxy_func, iterator_proxy_method_creator(proxy_func))
+        setattr(proxy_cl, proxy_func, iterator_proxy_method_creator(proxy_func))
 
 def setup_range_methods(blocksci_range, nested_proxy_cl=None, sample_proxy=None):
     setup_iterator_methods(blocksci_range, fix_range_doc_def, nested_proxy_cl, sample_proxy)
