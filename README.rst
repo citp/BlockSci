@@ -105,6 +105,7 @@ Compilation_ instructions as well as setup_ instructions are available in the do
 .. _Compilation: https://citp.github.io/BlockSci/compiling.html
 .. _setup: https://citp.github.io/BlockSci/setup.html
 
+
 Getting help
 ============
 
@@ -112,6 +113,24 @@ Please make sure to check the list of `Frequently Asked Questions`_ first.
 If you've encountered a bug or have a question about using BlockSci not answered in the FAQ, the best way to get help is to open a GitHub issue. We are an academic team and aren't able to provide the standard of support that you might expect for a commercial project, but we'll do our best. 
 
 .. _Frequently Asked Questions: https://github.com/citp/BlockSci/wiki
+
+
+Contributing
+============
+
+We highly welcome contributions to BlockSci. Below we've listed a few ways you can help improve BlockSci:
+
+- *Maintenance:* We greatly appreciate help in maintaining BlockSci, including raising issues with reproducible examples, reviewing pull requests, helping answer questions about using BlockSci, or fixing smaller bugs.
+- *Documentation:* We welcome contributions that improve our documentation_ and FAQ_ or add helpful comments to the code.
+- *Testing:* We welcome contributions that extend or improve our existing Python test suite. We also welcome improvements of the `testchain-generator`_ that we use to generate a synthetic blockchain to run tests against.
+- *Code contributions:* If you're interested in making larger code contributions (e.g., adding new features, extensive rewrites of existing code), please contact us first.
+
+Please note that the ``master`` branch does not necessarily contain the latest version of BlockSci. We're currently working on a new version on the `v0.6 branch`_. Most contributions should use this development branch as a starting point.
+
+.. _testchain-generator: https://github.com/citp/testchain-generator
+.. _v0.6 branch: https://github.com/citp/BlockSci/tree/v0.6
+.. _documentation: https://citp.github.io/BlockSci/
+.. _FAQ: https://github.com/citp/BlockSci/wiki
 
 Team & contact info
 ===================
