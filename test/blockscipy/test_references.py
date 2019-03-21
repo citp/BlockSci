@@ -1,4 +1,3 @@
-import pytest
 from test_addresses import address_types
 
 
