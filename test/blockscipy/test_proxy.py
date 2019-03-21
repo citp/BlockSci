@@ -55,14 +55,19 @@ def test_min(chain):
 
 def test_all(chain, json_data):
     tx = chain.tx_with_hash(json_data['change-address-type-tx-0'])
-    assert tx.outputs.any(lambda o: o.value == 100000000)
-    assert tx.outputs.all(lambda o: o.value == 100000000)
+    value = tx.outputs[0].value
+    assert tx.outputs.any(lambda o: o.value == value)
+    assert tx.outputs.all(lambda o: o.value == value)
 
 
 def test_any(chain, json_data):
     tx = chain.tx_with_hash(json_data['change-negative-testcase-tx'])
-    assert tx.outputs.any(lambda o: o.value == 148888800)
-    assert not tx.outputs.all(lambda o: o.value == 148888800)
+    value = int(json_data['change-negative-testcase-value-0'])
+    assert tx.outputs.any(lambda o: o.value == value)
+    assert not tx.outputs.all(lambda o: o.value == value)
+
+    value += 1
+    assert not tx.outputs.any(lambda o: o.value == value)
 
 
 def test_where_block_height(chain):

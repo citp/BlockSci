@@ -137,6 +137,8 @@
     "change-client-behavior-position-1": 1,
     "change-client-behavior-tx-2": "02a4d4352381a3b72103b1bb3229fc484cd4b25610a027426a81a22d5f69ae46",
     "change-client-behavior-position-2": 2,
+    "change-negative-testcase-value-0": 148888800,
+    "change-negative-testcase-value-1": 151111200,
     "change-negative-testcase-tx": "a88d839ce799bfc83ac7ca6922de26c95d8eb0c137b973e174e3d42b94ff809d",
     "block-fee-unclaimed-height": 189,
     "block-partial-reward-height": 190,
