@@ -28,6 +28,7 @@ def test_block_with_p2pkh_tx(chain, json_data, regtest):
 
 
 @pytest.mark.btc
+@pytest.mark.ltc
 def test_block_with_p2wsh_tx(chain, json_data, regtest):
     height = json_data['address-p2wsh-spend-2-height']
     block_regression(chain[height], regtest)

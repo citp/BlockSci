@@ -52,6 +52,7 @@ def test_p2sh_address(chain, json_data):
 
 
 @pytest.mark.btc
+@pytest.mark.ltc
 def test_p2wpkh_address(chain, json_data):
     addr = chain.address_from_string(json_data['address-p2wpkh-spend-0'])
     address_received_test(addr, blocksci.address_type.witness_pubkeyhash, 1, 1)
@@ -64,6 +65,7 @@ def test_p2wpkh_address(chain, json_data):
 
 
 @pytest.mark.btc
+@pytest.mark.ltc
 def test_p2wsh_address(chain, json_data):
     addr = chain.address_from_string(json_data['address-p2wsh-spend-0'])
     address_received_test(addr, blocksci.address_type.witness_scripthash, 1, 1)

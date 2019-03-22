@@ -13,12 +13,14 @@ def test_p2sh_transaction_regression(chain, json_data, regtest):
 
 
 @pytest.mark.btc
+@pytest.mark.ltc
 def test_p2wpkh_transaction_regression(chain, json_data, regtest):
     tx = chain.tx_with_hash(json_data["address-p2wpkh-spend-2-tx"])
     transaction_regression(tx, regtest)
 
 
 @pytest.mark.btc
+@pytest.mark.ltc
 def test_p2wsh_transaction_regression(chain, json_data, regtest):
     tx = chain.tx_with_hash(json_data["address-p2wsh-spend-1-tx"])
     transaction_regression(tx, regtest)

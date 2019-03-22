@@ -7,6 +7,8 @@ def pytest_addoption(parser):
                      help="Run tests for Bitcoin")
     parser.addoption("--bch", action="store_true",
                      help="Run tests for Bitcoin Cash")
+    parser.addoption("--ltc", action="store_true",
+                     help="Run tests for Litecoin")
 
 
 def pytest_generate_tests(metafunc):
@@ -16,8 +18,10 @@ def pytest_generate_tests(metafunc):
         chains += ["btc"]
     if metafunc.config.option.bch:
         chains += ["bch"]
+    if metafunc.config.option.ltc:
+        chains += ["ltc"]
     if not chains:
-        chains = ["btc", "bch"]
+        chains = ["btc", "bch", "ltc"]
     metafunc.parametrize('chain_name', chains, scope="session")
 
 
@@ -37,6 +41,8 @@ def chain(tmpdir_factory, chain_name):
         blocksci_chain_name = "bitcoin_regtest"
     elif chain_name == "bch":
         blocksci_chain_name = "bitcoin_cash_regtest"
+    elif chain_name == "ltc":
+        blocksci_chain_name = "litecoin_regtest"
     else:
         raise ValueError("Invalid chain name {}".format(chain_name))
 

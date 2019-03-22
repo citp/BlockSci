@@ -1,0 +1,22 @@
+WitnessScriptHashAddress(rltc1qektr66tljls59h4w5qwshr6fwr4qfeuwm3zkwcsd424sd046n92s4txhps, wrapped_address=PubkeyAddress(mus5uwj8dVT9Wkvipg5YbLjhBa1uAs16Ui))
+Pay to witness script hash
+Block(tx_count=3, height=121, header_hash=aee604c197849f16df2d4a34db8c952eef11333b805cbe7e4e00967b830b1bd1, version=536870912, timestamp=1535767200, bits=545259519, nonce=3)
+0
+True
+TxIn(spent_tx_index=144, address=WitnessScriptHashAddress(rltc1qektr66tljls59h4w5qwshr6fwr4qfeuwm3zkwcsd424sd046n92s4txhps), value=100000000)
+Tx(len(txins)=1, len(txouts)=1, size_bytes=113, block_height=121, tx_index=145)
+145
+Tx(len(txins)=1, len(txouts)=2, size_bytes=235, block_height=121, tx_index=144)
+144
+100000000
+PubkeyHashAddress(mjTkW3DjgyZck4KbiRusZsqTgaYTxdSz6z)
+Pay to pubkey hash
+Block(tx_count=3, height=121, header_hash=aee604c197849f16df2d4a34db8c952eef11333b805cbe7e4e00967b830b1bd1, version=536870912, timestamp=1535767200, bits=545259519, nonce=3)
+1
+False
+None
+None
+None
+Tx(len(txins)=1, len(txouts)=2, size_bytes=235, block_height=121, tx_index=144)
+144
+4899990000
