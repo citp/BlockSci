@@ -18,6 +18,6 @@ import blocksci
 ```
 
 #### System Information
-BlockSci version: 
+BlockSci version: (please provide a commit id if you're on a development branch)
 Using AMI: yes/no
-Total memory:
+Total memory: XX GB
