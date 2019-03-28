@@ -116,3 +116,27 @@ def test_negative_testcase(chain, json_data):
     for h in full_heuristics:
         result = h(tx)
         assert 2 == len(result)
+
+
+def test_change_regression(chain, json_data, regtest):
+    heuristics = [
+        blocksci.heuristics.change.address_type,
+        blocksci.heuristics.change.locktime,
+        blocksci.heuristics.change.client_change_address_behavior,
+        blocksci.heuristics.change.peeling_chain,
+        blocksci.heuristics.change.optimal_change,
+        blocksci.heuristics.change.address_reuse,
+        blocksci.heuristics.change.legacy,
+        blocksci.heuristics.change.none
+    ]
+    identifiers = ['change-negative-testcase-tx', 'change-reuse-tx-1', "change-locktime-tx-1", "change-optimal-0-tx",
+                   "peeling-chain-5-tx", "change-ten-2-tx", 'fan-8-tx', 'peeling-chain-4-tx', 'tx-chain-10-tx-1',
+                   'funding-tx-2-in-2-out']
+    txs = [chain.tx_with_hash(json_data[identifier]) for identifier in identifiers]
+    for h in heuristics:
+        for tx in txs:
+            r1 = h(tx)
+            print(sorted([x.index for x in r1 if r1]), file=regtest)
+            r2 = h.unique_change(tx)
+            v = [r2.index] if r2 else []
+            print(v, file=regtest)
