@@ -5,7 +5,7 @@ def test_power_of_ten_change(chain, json_data):
     for i in range(6):
         txid = json_data["change-ten-{}-tx".format(i)]
         tx = chain.tx_with_hash(txid)
-        result = blocksci.heuristics.change.power_of_ten_value(8 - i, tx)
+        result = blocksci.heuristics.change.power_of_ten_value(8 - i, tx).to_list()
         assert 1 == len(result), "Incorrect number of outputs identified with {} digits".format(i)
 
         idx = json_data["change-ten-{}-position".format(i)]
@@ -17,7 +17,7 @@ def test_peeling_chain_change(chain, json_data):
         txid = json_data["peeling-chain-{}-tx".format(i)]
         tx = chain.tx_with_hash(txid)
         heuristic = blocksci.heuristics.change.peeling_chain and blocksci.heuristics.change.spent
-        result = heuristic(tx)
+        result = heuristic(tx).to_list()
         assert 1 == len(result)
 
         idx = json_data["peeling-chain-{}-position".format(i)]
@@ -29,7 +29,8 @@ def test_optimal_change(chain, json_data):
         txid = json_data["change-optimal-{}-tx".format(i)]
         tx = chain.tx_with_hash(txid)
 
-        result = blocksci.heuristics.change.optimal_change(tx)
+        result = blocksci.heuristics.change.optimal_change(tx).to_list()
+        print(result)
         assert 1 == len(result)
 
         idx = json_data["change-optimal-{}-position".format(i)]
@@ -41,7 +42,7 @@ def test_address_type_change(chain, json_data):
         txid = json_data["change-address-type-tx-{}".format(i)]
         tx = chain.tx_with_hash(txid)
 
-        result = blocksci.heuristics.change.address_type(tx)
+        result = blocksci.heuristics.change.address_type(tx).to_list()
         assert 1 == len(result)
 
         idx = json_data["change-address-type-position-{}".format(i)]
@@ -53,7 +54,7 @@ def test_locktime_change(chain, json_data):
         txid = json_data["change-locktime-tx-{}".format(i)]
         tx = chain.tx_with_hash(txid)
 
-        result = blocksci.heuristics.change.locktime(tx)
+        result = blocksci.heuristics.change.locktime(tx).to_list()
         assert 1 == len(result)
 
         idx = json_data["change-locktime-position-{}".format(i)]
@@ -65,7 +66,7 @@ def test_address_reuse_change(chain, json_data):
         txid = json_data["change-reuse-tx-{}".format(i)]
         tx = chain.tx_with_hash(txid)
 
-        result = blocksci.heuristics.change.address_reuse(tx)
+        result = blocksci.heuristics.change.address_reuse(tx).to_list()
         assert 1 == len(result)
 
         idx = json_data["change-reuse-position-{}".format(i)]
@@ -77,7 +78,7 @@ def test_client_behavior_change(chain, json_data):
         txid = json_data["change-client-behavior-tx-{}".format(i)]
         tx = chain.tx_with_hash(txid)
 
-        result = blocksci.heuristics.change.client_change_address_behavior(tx)
+        result = blocksci.heuristics.change.client_change_address_behavior(tx).to_list()
         assert 1 == len(result)
 
         idx = json_data["change-client-behavior-position-{}".format(i)]
@@ -91,8 +92,17 @@ def test_no_change(chain, json_data):
             txid = json_data[test.format(i)]
             tx = chain.tx_with_hash(txid)
 
-            result = blocksci.heuristics.change.none(tx)
+            result = blocksci.heuristics.change.none(tx).to_list()
             assert 0 == len(result)
+
+
+def test_unique_change(chain, json_data):
+    for i in range(3):
+        txid = json_data["change-client-behavior-tx-{}".format(i)]
+        tx = chain.tx_with_hash(txid)
+
+        result = blocksci.heuristics.change.client_change_address_behavior.unique_change(tx).to_list()
+        assert 1 == len(result)
 
 
 def test_negative_testcase(chain, json_data):
@@ -105,7 +115,7 @@ def test_negative_testcase(chain, json_data):
         blocksci.heuristics.change.none
     ]
     for h in empty_heuristics:
-        result = h(tx)
+        result = h(tx).to_list()
         assert 0 == len(result)
 
     full_heuristics = [
@@ -114,7 +124,7 @@ def test_negative_testcase(chain, json_data):
         blocksci.heuristics.change.client_change_address_behavior
     ]
     for h in full_heuristics:
-        result = h(tx)
+        result = h(tx).to_list()
         assert 2 == len(result)
 
 
@@ -135,8 +145,5 @@ def test_change_regression(chain, json_data, regtest):
     txs = [chain.tx_with_hash(json_data[identifier]) for identifier in identifiers]
     for h in heuristics:
         for tx in txs:
-            r1 = h(tx)
-            print(sorted([x.index for x in r1 if r1]), file=regtest)
-            r2 = h.unique_change(tx)
-            v = [r2.index] if r2 else []
-            print(v, file=regtest)
+            print(h(tx).index.tolist(), file=regtest)
+            print(h.unique_change(tx).index.tolist(), file=regtest)

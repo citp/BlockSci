@@ -28,6 +28,7 @@
 #include <wjfilesystem/path.h>
 
 #include <range/v3/view/iota.hpp>
+#include <range/v3/range_for.hpp>
 #include <fstream>
 #include <future>
 #include <map>
@@ -143,8 +144,8 @@ namespace blocksci {
                 pairsToUnion.emplace_back(firstAddress, inputs[i].getAddress());
             }
             
-            if (auto change = std::forward<ChangeFunc>(changeHeuristic)(tx)) {
-                pairsToUnion.emplace_back(change->getAddress(), firstAddress);
+            RANGES_FOR(auto change, std::forward<ChangeFunc>(changeHeuristic)(tx)) {
+                pairsToUnion.emplace_back(change.getAddress(), firstAddress);
             }
         }
         return pairsToUnion;
@@ -351,14 +352,14 @@ namespace blocksci {
     
     ClusterManager ClusterManager::createClustering(BlockRange &chain, const heuristics::ChangeHeuristic &changeHeuristic, const std::string &outputPath, bool overwrite, bool ignoreCoinJoin) {
         
-        auto changeHeuristicL = [&changeHeuristic](const Transaction &tx) -> ranges::optional<Output> {
-            return changeHeuristic.uniqueChange(tx);
+        auto changeHeuristicL = [&changeHeuristic](const Transaction &tx) -> ranges::any_view<Output> {
+            return changeHeuristic(tx);
         };
         
         return createClusteringImpl(chain, changeHeuristicL, outputPath, overwrite, ignoreCoinJoin);
     }
     
-    ClusterManager ClusterManager::createClustering(BlockRange &chain, const std::function<ranges::optional<Output>(const Transaction &tx)> &changeHeuristic, const std::string &outputPath, bool overwrite, bool ignoreCoinJoin) {
+    ClusterManager ClusterManager::createClustering(BlockRange &chain, const std::function<ranges::any_view<Output>(const Transaction &tx)> &changeHeuristic, const std::string &outputPath, bool overwrite, bool ignoreCoinJoin) {
         return createClusteringImpl(chain, changeHeuristic, outputPath, overwrite, ignoreCoinJoin);
     }
 } // namespace blocksci

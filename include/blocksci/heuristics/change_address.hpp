@@ -14,6 +14,9 @@
 #include <blocksci/scripts/scripts_fwd.hpp>
 
 #include <range/v3/utility/optional.hpp>
+#include <range/v3/distance.hpp>
+#include <range/v3/view.hpp>
+#include <range/v3/view/set_algorithm.hpp>
 
 #include <unordered_set>
 
@@ -38,16 +41,14 @@ namespace heuristics {
     
     template <ChangeType::Enum heuristic>
     struct BLOCKSCI_EXPORT ChangeHeuristicImpl {
-        std::unordered_set<Output> operator()(const Transaction &tx) const;
-        ranges::optional<Output> uniqueChange(const Transaction &tx) const;
+        ranges::any_view<Output> operator()(const Transaction &tx) const;
     };
     
     template<>
     struct BLOCKSCI_EXPORT ChangeHeuristicImpl<ChangeType::PowerOfTen> {
         int digits;
-        ChangeHeuristicImpl(int digits_ = 5) : digits(digits_) {}
-        std::unordered_set<Output> operator()(const Transaction &tx) const;
-        ranges::optional<Output> uniqueChange(const Transaction &tx) const;
+        ChangeHeuristicImpl(int digits_ = 6) : digits(digits_) {}
+        ranges::any_view<Output> operator()(const Transaction &tx) const;
     };
     
     using PeelingChainChange = ChangeHeuristicImpl<ChangeType::PeelingChain>;
@@ -62,8 +63,7 @@ namespace heuristics {
     using Spent = ChangeHeuristicImpl<ChangeType::Spent>;
     
     struct BLOCKSCI_EXPORT ChangeHeuristic {
-        
-        using HeuristicFunc = std::function<std::unordered_set<Output>(const Transaction &tx)>;
+        using HeuristicFunc = std::function<ranges::any_view<Output>(const Transaction &tx)>;
         
         HeuristicFunc impl;
         
@@ -72,31 +72,26 @@ namespace heuristics {
         template<typename T>
         ChangeHeuristic(T func) : impl(std::move(func)) {}
         
-        std::unordered_set<Output> operator()(const Transaction &tx) const {
+        ranges::any_view<Output> operator()(const Transaction &tx) const {
             return impl(tx);
         }
         
-        ranges::optional<Output> uniqueChange(const Transaction &tx) const {
-            auto candidates = impl(tx);
-            if(candidates.size() == 1) {
-                return *candidates.begin();
-            } else {
-                return ranges::nullopt;
-            }
+        static ChangeHeuristic uniqueChange(ChangeHeuristic ch) {
+            return ChangeHeuristic{HeuristicFunc{[=](const Transaction &tx) {
+                auto c = ch(tx);
+                if (ranges::distance(c) == 1) {
+                    return c;
+                }
+                ranges::any_view<Output> empty = ranges::view::empty<Output>();
+                return empty;
+            }}};
         }
         
         static ChangeHeuristic setIntersection(ChangeHeuristic a, ChangeHeuristic b) {
             return ChangeHeuristic{HeuristicFunc{[=](const Transaction &tx) {
                 auto first = a(tx);
                 auto second = b(tx);
-                for(auto it = begin(first); it != end(first);) {
-                    if (second.find(*it) == end(second)){
-                        it = first.erase(it);
-                    } else {
-                        ++it;
-                    }
-                }
-                return first;
+                return ranges::view::set_intersection(first, second);
             }}};
         }
         
@@ -104,10 +99,7 @@ namespace heuristics {
             return ChangeHeuristic{HeuristicFunc{[=](const Transaction &tx) {
                 auto first = a(tx);
                 auto second = b(tx);
-                for (auto &item : second) {
-                    first.insert(item);
-                }
-                return first;
+                return ranges::view::set_union(first, second);
             }}};
         }
         
@@ -115,17 +107,11 @@ namespace heuristics {
             return ChangeHeuristic{HeuristicFunc{[=](const Transaction &tx) {
                 auto first = a(tx);
                 auto second = b(tx);
-                for(auto it = begin(first); it != end(first);) {
-                    if (second.find(*it) != end(second)){
-                        it = first.erase(it);
-                    } else {
-                        ++it;
-                    }
-                }
-                return first;
+                return ranges::view::set_difference(first, second);
             }}};
         }
     };
-}}
+}  // namespace heuristics
+}  // namespace blocksci
 
 #endif /* change_address_hpp */

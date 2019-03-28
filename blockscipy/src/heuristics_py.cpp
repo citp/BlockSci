@@ -69,13 +69,17 @@ void init_heuristics(py::module &m) {
     .def("__and__", &ChangeHeuristic::setIntersection, py::arg("other_heuristic"), "Return a new heuristic matching outputs that match both of the given heuristics")
     .def("__or__", &ChangeHeuristic::setUnion, py::arg("other_heuristic"), "Return a new heuristic matching outputs that match either of the given heuristics")
     .def("__sub__", &ChangeHeuristic::setDifference, py::arg("other_heuristic"), "Return a new heuristic matching outputs matched by the first heuristic unless they're matched by the second heuristic")
-    .def("__call__", &ChangeHeuristic::operator(), py::arg("tx"), "Return all outputs matching the change heuristic")
-    .def("change", &ChangeHeuristic::operator(), py::arg("tx"), "Return all outputs matching the change heuristic")
-    .def_property_readonly("unique_change", [](ChangeHeuristic &ch) -> Proxy<ranges::optional<Output>> {
+    .def_property_readonly("__call__", [](ChangeHeuristic &ch) -> Proxy<ranges::any_view<Output>> {
         return lift(makeSimpleProxy<Transaction>(), [ch](const Transaction &tx) {
-            return ch.uniqueChange(tx);
+            return ch(tx);
         });
-    }, "Returns a proxy object which takes a tx as input. If the change heuristic only matches one output return it, otherwise return none")
+    }, "Return all outputs matching the change heuristic")
+    .def_property_readonly("change", [](ChangeHeuristic &ch) -> Proxy<ranges::any_view<Output>> {
+        return lift(makeSimpleProxy<Transaction>(), [ch](const Transaction &tx) {
+            return ch(tx);
+        });
+    }, "Return all outputs matching the change heuristic")
+    .def_property_readonly("unique_change", &ChangeHeuristic::uniqueChange, "Return a new heuristic that will return a single output if it's the only match, and otherwise none.");
     ;
 
     s2
