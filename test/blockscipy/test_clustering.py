@@ -69,6 +69,23 @@ def test_clustering_with_change(chain, json_data, tmpdir_factory):
         assert cluster.index >= 0
 
 
+def test_clustering_composability(chain, tmpdir_factory):
+    nofunc = blocksci.heuristics.change.none.unique_change
+    compfunc = (blocksci.heuristics.change.legacy - blocksci.heuristics.change.legacy).unique_change
+
+    cm1 = blocksci.cluster.ClusterManager.create_clustering(str(tmpdir_factory.mktemp("clustering")), chain,
+                                                            heuristic=nofunc)
+    cm2 = blocksci.cluster.ClusterManager.create_clustering(str(tmpdir_factory.mktemp("clustering")), chain,
+                                                            heuristic=compfunc)
+
+    for cl in cm1.clusters():
+        if cl.address_count() > 0:
+            a = cl.addresses.to_list()[0]
+            other_cluster = cm2.cluster_with_address(a)
+            assert cl.address_count() == other_cluster.address_count()
+            assert set(cl.addresses.to_list()) == set(other_cluster.addresses.to_list())
+
+
 def test_clustering_ignore_coinjoin(chain, json_data, tmpdir_factory):
     addresses = chain.tx_with_hash(json_data['simple-coinjoin-tx']).inputs.map(lambda i: i.address).to_list()
 
