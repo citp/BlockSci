@@ -41,8 +41,10 @@ def test_clustering_no_change(chain, json_data, regtest, tmpdir_factory):
             for i in range(tx.input_count):
                 assert tx.inputs[i].address in addresses
 
+    cluster_regtest(chain, json_data, regtest, cm)
 
-def test_clustering_with_change(chain, json_data, tmpdir_factory):
+
+def test_clustering_with_change(chain, json_data, tmpdir_factory, regtest):
     heuristics = [
         blocksci.heuristics.change.peeling_chain.unique_change,
         blocksci.heuristics.change.optimal_change.unique_change,
@@ -68,6 +70,8 @@ def test_clustering_with_change(chain, json_data, tmpdir_factory):
         assert cluster.cluster_num >= 0
         assert cluster.index >= 0
 
+        cluster_regtest(chain, json_data, regtest, cm)
+
 
 def test_clustering_composability(chain, tmpdir_factory):
     nofunc = blocksci.heuristics.change.none.unique_change
@@ -86,7 +90,7 @@ def test_clustering_composability(chain, tmpdir_factory):
             assert set(cl.addresses.to_list()) == set(other_cluster.addresses.to_list())
 
 
-def test_clustering_ignore_coinjoin(chain, json_data, tmpdir_factory):
+def test_clustering_ignore_coinjoin(chain, json_data, tmpdir_factory, regtest):
     addresses = chain.tx_with_hash(json_data['simple-coinjoin-tx']).inputs.map(lambda i: i.address).to_list()
 
     cm = blocksci.cluster.ClusterManager.create_clustering(str(tmpdir_factory.mktemp("clustering")), chain,
@@ -107,8 +111,10 @@ def test_clustering_ignore_coinjoin(chain, json_data, tmpdir_factory):
     assert chain.address_from_string(json_data['merge-addr-2']) in cluster.addresses.to_list()
     assert chain.address_from_string(json_data['merge-addr-3']) in cluster.addresses.to_list()
 
+    cluster_regtest(chain, json_data, regtest, cm)
 
-def test_clustering_cluster_coinjoin(chain, json_data, tmpdir_factory):
+
+def test_clustering_cluster_coinjoin(chain, json_data, tmpdir_factory, regtest):
     addresses = chain.tx_with_hash(json_data['simple-coinjoin-tx']).inputs.map(lambda i: i.address).to_list()
 
     cm = blocksci.cluster.ClusterManager.create_clustering(str(tmpdir_factory.mktemp("clustering")), chain,
@@ -128,3 +134,14 @@ def test_clustering_cluster_coinjoin(chain, json_data, tmpdir_factory):
     assert chain.address_from_string(json_data['merge-addr-1']) in cluster.addresses.to_list()
     assert chain.address_from_string(json_data['merge-addr-2']) in cluster.addresses.to_list()
     assert chain.address_from_string(json_data['merge-addr-3']) in cluster.addresses.to_list()
+
+    cluster_regtest(chain, json_data, regtest, cm)
+
+
+def cluster_regtest(chain, json_data, regtest, cm):
+    ids = ["address-p2pkh-spend-1", "address-p2sh-spend-2", "addr-2-in-2-out", "addr-peeling-chain", "addr-merge-0",
+           "addr-merge-2", "merge-addr-1", "merge-addr-2"]
+    addresses = [chain.address_from_string(json_data[x]) for x in ids]
+    for addr in addresses:
+        cluster = cm.cluster_with_address(addr)
+        print(sorted(cluster.addresses.to_list(), key=lambda x: x.address_num), file=regtest)
