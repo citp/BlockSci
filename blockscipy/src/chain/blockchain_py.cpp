@@ -111,8 +111,6 @@ void init_blockchain(py::class_<Blockchain> &cl) {
         }
         return pyAddresses;
     }, "Find all addresses beginning with the given prefix", pybind11::arg("prefix"))
-
-    .def("most_valuable_addresses", mostValuableAddresses, "Get a list of the top 100 most valuable addresses")
     .def("_segment_indexes", [](Blockchain &chain, BlockHeight start, BlockHeight stop, unsigned int cpuCount) {
         auto segments = chain[{start, stop}].segment(cpuCount);
         std::vector<std::pair<BlockHeight, BlockHeight>> ret;

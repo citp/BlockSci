@@ -56,30 +56,4 @@ namespace blocksci {
     uint32_t Blockchain::addressCount(AddressType::Enum type) const {
         return access->getScripts().scriptCount(dedupType(type));
     }
-    
-    std::map<int64_t, Address> mostValuableAddresses(Blockchain &chain) {
-        RawAddressOutputRange range{*chain.getAccess().addressIndex};
-        auto grouped = range | ranges::view::group_by([](auto pair1, auto pair2) { return pair1.first == pair2.first; });
-        std::map<int64_t, Address> topAddresses;
-        
-        RANGES_FOR(auto outputGroup, grouped) {
-            auto address = ranges::front(outputGroup).first;
-            auto balancesIfUnspent = outputGroup | ranges::view::transform([&](auto pair) -> int64_t {
-                Output out{OutputPointer{pair.second.txNum, pair.second.inoutNum}, chain.getAccess()};
-                return out.isSpent() ? 0 : out.getValue();
-            });
-            
-            int64_t balance = ranges::accumulate(balancesIfUnspent, int64_t{0});
-            if (topAddresses.size() < 100) {
-                topAddresses.insert(std::make_pair(balance, Address{address, chain.getAccess()}));
-            } else {
-                auto lowestVal = topAddresses.begin();
-                if (balance > lowestVal->first) {
-                    topAddresses.erase(lowestVal);
-                    topAddresses.insert(std::make_pair(balance, Address{address, chain.getAccess()}));
-                }
-            }
-        }
-        return topAddresses;
-    }
 } // namespace blocksci

@@ -42,9 +42,7 @@ namespace blocksci {
     };
     
     uint32_t BLOCKSCI_EXPORT txCount(Blockchain &chain);
-    
-    std::map<int64_t, Address> BLOCKSCI_EXPORT mostValuableAddresses(Blockchain &chain);
-    
+        
 } // namespace blocksci
 
 

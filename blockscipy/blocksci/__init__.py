@@ -14,6 +14,8 @@ import inspect
 import copy
 import io
 import re
+import heapq
+import operator
 from functools import reduce
 
 import psutil
@@ -262,9 +264,18 @@ def new_init(self, loc, max_block=0):
             print("Note: this appears to be a fresh instance. Index data has not yet been cached locally. A few queries might be slow. Caching is currently ongoing in the background, and usually takes 3.5 hours.")
 
 
+def most_valuable_addresses(self, nlargest=100):
+    current_address_vals = self.blocks.outputs.where(lambda o: ~o.is_spent) \
+    .group_by( \
+        lambda output: output.address, \
+        lambda outputs: outputs.value.sum \
+    )
+    return heapq.nlargest(nlargest, current_address_vals.items(), key=operator.itemgetter(1))
+
 Blockchain.__init__ = new_init
 Blockchain.range = block_range
 Blockchain.heights_to_dates = heights_to_dates
+Blockchain.most_valuable_addresses = most_valuable_addresses
 
 def traverse(proxy_func, val):
     return _traverse(proxy_func(val._self_proxy), val)
