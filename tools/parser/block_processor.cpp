@@ -238,7 +238,7 @@ blocksci::RawBlock readNewBlock(uint32_t firstTxNum, uint64_t firstInputNum, uin
         // Read next transaction into tx
         fileReader.nextTx(tx, isSegwit);
 
-        // For every tx, write blockchain-wide number of the first tx input and ouput to file (FixedSizeFileMapper<uint64_t>)
+        // For every tx, write blockchain-wide number of the first tx input and output to file (FixedSizeFileMapper<uint64_t>)
         files.txFirstInput.write(firstInputNum + inputCount);
         files.txFirstOutput.write(firstOutputNum + outputCount);
 
