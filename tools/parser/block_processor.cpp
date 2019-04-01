@@ -677,8 +677,8 @@ public:
         
         for (auto &stage : stages) {
             if (stage->prevFinished() && stage->inputQueue.empty()) {
-                stage->isDone = true;
                 stage->complete();
+                stage->isDone = true;
             }
         }
     }
