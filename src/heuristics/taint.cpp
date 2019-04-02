@@ -183,7 +183,10 @@ namespace blocksci { namespace heuristics {
         if (maxBlockHeight == -1) {
             maxBlockHeight = access.getChain().blockCount();
         } else {
-            maxBlockHeight += 1; // range should include block at maxBlockHeight
+            // range should include block at maxBlockHeight
+            maxBlockHeight += 1;
+            // range shouldn't be larger than chain size
+            maxBlockHeight = std::min(maxBlockHeight, access.getChain().blockCount());
         }
         
         BlockHeight minHeight = std::numeric_limits<BlockHeight>::max();
@@ -278,6 +281,7 @@ namespace blocksci { namespace heuristics {
         };
 
         std::vector<std::pair<Output, SimpleTaint>> taint;
+        taint.reserve(outputs.size());
         for(const auto &output : outputs) {
             taint.emplace_back(output, SimpleTaint{output.getValue(), 0});
         }
@@ -310,6 +314,7 @@ namespace blocksci { namespace heuristics {
         };
 
         std::vector<std::pair<Output, SimpleTaint>> taint;
+        taint.reserve(outputs.size());
         for(const auto &output : outputs) {
             taint.emplace_back(output, SimpleTaint{output.getValue(), 0});
         }

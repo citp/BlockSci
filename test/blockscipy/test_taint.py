@@ -14,6 +14,16 @@ def total_tainted_value(taint_result):
 def total_untainted_value(taint_result):
     return sum(x[1][1] for x in taint_result)
 
+
+@pytest.mark.btc
+class TestTaint(object):
+    def test_ridiculous_max_block_height(self, chain, json_data):
+        out_1 = chain.tx_with_hash(json_data['taint-split-tx-1']).outputs[0]
+
+        result = blocksci.heuristics.poison_tainted_outputs([out_1], taint_fee=False, max_block_height=999999999)
+        assert 0 < len(result)
+
+
 @pytest.mark.btc
 class TestPoison(object):
     def test_poison_single_output_no_fee(self, chain, json_data):
@@ -109,6 +119,9 @@ class TestPoison(object):
         assert Coin(35) == total_output_value(result)
         assert Coin(35) == total_tainted_value(result)
 
+
+@pytest.mark.btc
+class TestHaircut(object):
     def test_haircut_single_output_no_fee(self, chain, json_data):
         out_1 = chain.tx_with_hash(json_data['taint-split-tx-1']).outputs[0]
 
