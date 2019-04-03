@@ -16,8 +16,8 @@
 #include <vector>
 
 namespace blocksci { namespace heuristics {
-    using SimpleTaint = std::pair<int64_t, int64_t>;
-    using ComplexTaint = std::vector<std::pair<int64_t, bool>>;
+    using SimpleTaint = std::pair<int64_t, int64_t>; // (tainted value, untainted value)
+    using ComplexTaint = std::vector<std::pair<int64_t, bool>>; // [(value, isTainted), (value, isTainted), ...]
     
     std::vector<std::pair<Output, SimpleTaint>> BLOCKSCI_EXPORT getPoisonTainted(std::vector<Output> &outputs, BlockHeight maxBlockHeight, bool taintFee);
     std::vector<std::pair<Output, SimpleTaint>> BLOCKSCI_EXPORT getHaircutTainted(std::vector<Output> &outputs, BlockHeight maxBlockHeight, bool taintFee);

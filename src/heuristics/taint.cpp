@@ -110,8 +110,12 @@ namespace blocksci { namespace heuristics {
     template <typename Taint>
     using TaintMap = std::map<InoutInfo, Taint>;
     
+    // Process an output and its associated taint value
+    // If output has been spent, add the corresponding input to the list of tainted inputs
+    // If output is unspent, add it to the list of tainted outputs
     template <typename Taint>
     void processOutput(TaintMap<Taint> &taintedInputs, std::unordered_map<OutputPointer, Taint> &taintedOutputs, const Output &spendingOut, Taint &newTaintedValue) {
+        // ignore untainted or unspendable (OP_RETURN) outputs
         if (hasTaint(newTaintedValue) && spendingOut.getAddress().isSpendable()) {
             auto spendingTx = spendingOut.getSpendingTxIndex();
             if (spendingTx) {
@@ -129,6 +133,7 @@ namespace blocksci { namespace heuristics {
         }
     }
     
+    // Pass all outputs of a transaction and the corresponding taint to processOutput()
     template <typename Taint>
     void processTx(TaintMap<Taint> &taintedInputs, std::unordered_map<OutputPointer, Taint> &taintedOutputs, const Transaction &tx, std::vector<Taint> &outputTaint) {
         assert(outputTaint.size() == tx.outputCount());
@@ -146,6 +151,7 @@ namespace blocksci { namespace heuristics {
         taint.clear();
     }
     
+    // Return the expected reward for a block
     int64_t getSubsidy(Block &block) {
         auto chainName = block.getAccess().config.chainConfig.coinName;
         int64_t subsidy;
@@ -170,6 +176,7 @@ namespace blocksci { namespace heuristics {
         return subsidy;
     }
     
+    // Propagate taint
     template <typename Func, typename Taint>
     std::vector<std::pair<Output, Taint>> getTaintedImpl(Func func, std::vector<std::pair<Output, Taint>> &taintedOutputsRaw, BlockHeight maxBlockHeight, bool taintFee) {
         assert(taintedOutputsRaw.size() > 0);
@@ -183,14 +190,15 @@ namespace blocksci { namespace heuristics {
         if (maxBlockHeight == -1) {
             maxBlockHeight = access.getChain().blockCount();
         } else {
-            // range should include block at maxBlockHeight
+            // Range should include block at maxBlockHeight
             maxBlockHeight += 1;
-            // range shouldn't be larger than chain size
+            // Range shouldn't be larger than chain size
             maxBlockHeight = std::min(maxBlockHeight, access.getChain().blockCount());
         }
         
         BlockHeight minHeight = std::numeric_limits<BlockHeight>::max();
         for(std::pair<Output, Taint> &taintedOutput : taintedOutputsRaw){
+            // Add outputs to map of tainted outputs
             processOutput(taintedInputs, taintedOutputs, taintedOutput.first, taintedOutput.second);
             
             minHeight = std::min(minHeight, taintedOutput.first.getBlockHeight());
@@ -214,8 +222,10 @@ namespace blocksci { namespace heuristics {
                 txInputTaint.clear();
                 txInputTaint.reserve(tx.inputCount());
                 
+                // Transactions are processed in chronological order
+                // If any input has taint, it must be at the beginning of the ordered taint map
                 if (taintedInputs.begin()->first.txNum == tx.txNum) {
-                    // find tainted outputs spent in this transaction
+                    // Find tainted outputs spent in this transaction
                     for (auto input : tx.inputs()) {
                         InoutInfo info{tx.txNum, input.getSpentOutputPointer()};
                         auto it = taintedInputs.find(info);
@@ -227,16 +237,18 @@ namespace blocksci { namespace heuristics {
                         }
                     }
                     
-                    // compute taint of outputs
+                    // Compute new taint of outputs
                     func(tx, txInputTaint, txOutputTaint, coinbaseTaint);
+                    // Add new taint to taintedInputs/taintedOutputs
                     processTx(taintedInputs, taintedOutputs, tx, txOutputTaint);
                 } else {
-                    // no tainted inputs, thus fee is untainted
+                    // No tainted inputs, thus fee is untainted
                     coinbaseTaint = UntaintedInputCreator<Taint>{}(tx.fee());
                 }
                 
                 coinbaseTaintList.emplace_back(coinbaseTaint);
             }
+            // If taintFee is false, all taint going into the coinbase transaction is discarded
             if (taintFee) {
                 txOutputTaint.clear();
                 txOutputTaint.reserve(block[0].outputCount());
@@ -252,9 +264,11 @@ namespace blocksci { namespace heuristics {
         std::vector<std::pair<Output, Taint>> ret;
         ret.reserve(taintedOutputs.size() + taintedInputs.size());
         
+        // Tainted unspent outputs
         for (auto &item : taintedOutputs) {
             ret.emplace_back(Output{item.first, access}, item.second);
         }
+        // Tainted spent outputs, but unspent at maxBlockHeight
         for (auto &item : taintedInputs) {
             ret.emplace_back(Output{item.first.pointer, access}, item.second);
         }
@@ -266,6 +280,7 @@ namespace blocksci { namespace heuristics {
      Poison taint completely taints all outputs of a transaction.
      */
     std::vector<std::pair<Output, SimpleTaint>> getPoisonTainted(std::vector<Output> &outputs, BlockHeight maxBlockHeight, bool taintFee) {
+        // Poison taint function
         auto poisonTaint = [](const Transaction &tx, const std::vector<SimpleTaint> &taintedInputs, std::vector<SimpleTaint> &outs, SimpleTaint &coinbaseTaint) {
             if(totalTaintedValue(tx, taintedInputs) > 0) {
                 for (auto spendingOut : tx.outputs()) {
@@ -280,6 +295,7 @@ namespace blocksci { namespace heuristics {
             }
         };
 
+        // Outputs passed in are assumed to be fully tainted
         std::vector<std::pair<Output, SimpleTaint>> taint;
         taint.reserve(outputs.size());
         for(const auto &output : outputs) {
@@ -294,6 +310,7 @@ namespace blocksci { namespace heuristics {
      Haircut taint applies all input taint uniformly distributed to the outputs.
      */
     std::vector<std::pair<Output, SimpleTaint>> getHaircutTainted(std::vector<Output> &outputs, BlockHeight maxBlockHeight, bool taintFee) {
+        // Haircut taint function
         auto haircutTaint = [](const Transaction &tx, const std::vector<SimpleTaint> &taintedInputs, std::vector<SimpleTaint> &outs, SimpleTaint &coinbaseTaint) {
             int64_t totalTaintedVal = totalTaintedValue(tx, taintedInputs);
             auto totalIn = static_cast<double>(totalOutputValue(tx) + tx.fee());
@@ -313,6 +330,7 @@ namespace blocksci { namespace heuristics {
             coinbaseTaint.second = totalTxFee - feeTaint;
         };
 
+        // Outputs passed in are assumed to be fully tainted
         std::vector<std::pair<Output, SimpleTaint>> taint;
         taint.reserve(outputs.size());
         for(const auto &output : outputs) {
