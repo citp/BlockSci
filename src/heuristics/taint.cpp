@@ -37,6 +37,15 @@ namespace blocksci { namespace heuristics {
         return false;
     }
     
+    bool hasTaint(const std::vector<SimpleTaint> &t) {
+        for(const auto &taint : t) {
+            if(taint.first > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     int64_t totalValue(const SimpleTaint &taint) {
         return taint.first + taint.second;
     }
@@ -51,7 +60,13 @@ namespace blocksci { namespace heuristics {
 
     int64_t totalTaintedValue(const Transaction &tx, const std::vector<SimpleTaint> &taintedInputs) {
         int64_t taintedValue = 0;
-        int64_t totalVal = totalOutputValue(tx) + tx.fee();
+        int64_t totalVal;
+        if(tx.isCoinbase()) {
+            // coinbase transactions can destroy value by not claiming all input value + fees
+           totalVal = totalOutputValue(tx);
+        } else {
+            totalVal = totalInputValue(tx);
+        }
         for(auto taint : taintedInputs) {
             int64_t newTaintedValue = std::min(taint.first, totalVal);
             taintedValue += newTaintedValue;
@@ -282,7 +297,7 @@ namespace blocksci { namespace heuristics {
     std::vector<std::pair<Output, SimpleTaint>> getPoisonTainted(std::vector<Output> &outputs, BlockHeight maxBlockHeight, bool taintFee) {
         // Poison taint function
         auto poisonTaint = [](const Transaction &tx, const std::vector<SimpleTaint> &taintedInputs, std::vector<SimpleTaint> &outs, SimpleTaint &coinbaseTaint) {
-            if(totalTaintedValue(tx, taintedInputs) > 0) {
+            if(hasTaint(taintedInputs)) {
                 for (auto spendingOut : tx.outputs()) {
                     outs.emplace_back(spendingOut.getValue(), 0);
                 }
