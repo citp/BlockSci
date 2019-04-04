@@ -130,8 +130,8 @@ namespace blocksci { namespace heuristics {
     // If output is unspent, add it to the list of tainted outputs
     template <typename Taint>
     void processOutput(TaintMap<Taint> &taintedInputs, std::unordered_map<OutputPointer, Taint> &taintedOutputs, const Output &spendingOut, Taint &newTaintedValue) {
-        // ignore untainted or unspendable (OP_RETURN) outputs
-        if (hasTaint(newTaintedValue) && spendingOut.getAddress().isSpendable()) {
+        // Ignore untainted outputs
+        if (hasTaint(newTaintedValue)) {
             auto spendingTx = spendingOut.getSpendingTxIndex();
             if (spendingTx) {
                 InoutInfo info{*spendingTx, spendingOut.pointer};
