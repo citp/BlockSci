@@ -290,6 +290,16 @@ namespace blocksci { namespace heuristics {
         return ret;
     }
     
+    std::vector<std::pair<Output, SimpleTaint>> initSimpleTaint(std::vector<Output> &outputs) {
+        // Outputs passed in are assumed to be fully tainted
+        std::vector<std::pair<Output, SimpleTaint>> taint;
+        taint.reserve(outputs.size());
+        for(const auto &output : outputs) {
+            taint.emplace_back(output, SimpleTaint{output.getValue(), 0});
+        }
+        return taint;
+    }
+    
     /**
      Implements poison tainting.
      Poison taint completely taints all outputs of a transaction.
@@ -309,14 +319,7 @@ namespace blocksci { namespace heuristics {
                 coinbaseTaint.second = tx.fee();
             }
         };
-
-        // Outputs passed in are assumed to be fully tainted
-        std::vector<std::pair<Output, SimpleTaint>> taint;
-        taint.reserve(outputs.size());
-        for(const auto &output : outputs) {
-            taint.emplace_back(output, SimpleTaint{output.getValue(), 0});
-        }
-
+        auto taint = initSimpleTaint(outputs);
         return getTaintedImpl(poisonTaint, taint, maxBlockHeight, taintFee);
     }
     
@@ -344,14 +347,7 @@ namespace blocksci { namespace heuristics {
             coinbaseTaint.first = feeTaint;
             coinbaseTaint.second = totalTxFee - feeTaint;
         };
-
-        // Outputs passed in are assumed to be fully tainted
-        std::vector<std::pair<Output, SimpleTaint>> taint;
-        taint.reserve(outputs.size());
-        for(const auto &output : outputs) {
-            taint.emplace_back(output, SimpleTaint{output.getValue(), 0});
-        }
-
+        auto taint = initSimpleTaint(outputs);
         return getTaintedImpl(haircutTaint, taint, maxBlockHeight, taintFee);
     }
 }}
