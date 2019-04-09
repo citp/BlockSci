@@ -637,7 +637,7 @@ setup_range_and_proxy_methods(cluster.TaggedAddressRange)
 
 
 def txes_including_output_of_type(txes, typ):
-    return txes.where(proxy.tx.outputs.any(proxy.output.address_type == typ))
+    return txes.where(lambda tx: tx.outputs.any(lambda o: o.address_type == typ))
 
 TxIterator.including_output_of_type = txes_including_output_of_type
 
@@ -695,14 +695,11 @@ def outputs_unspent(outputs, height = -1):
     else:
         return outputs.where(lambda output: (~output.is_spent) | (output.spending_tx.block_height.or_value(0) > height))
 
-
 def outputs_spent_before_height(outputs, height):
     return outputs.where(lambda output: output.is_spent).where(lambda output: output.spending_tx.map(lambda tx: tx.block_height).or_value(0) < height)
 
-
 def outputs_spent_after_height(outputs, age):
     return outputs.where(lambda output: output.is_spent).where(lambda output: output.spending_tx.map(lambda tx: tx.block_height).or_value(0) >= height)
-
 
 def outputs_spent_with_age_less_than(outputs, age):
     return outputs.where(lambda output: output.is_spent).where(lambda output: _outputAge(output).or_value(0) < age)
