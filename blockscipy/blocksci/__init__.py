@@ -249,7 +249,6 @@ def new_init(self, loc, max_block=0):
     else:
         old_init(self, loc, max_block)
     self.block_times = None
-    self.cpp = CPP(self)
     ec2_instance_path = "/home/ubuntu/BlockSci/IS_EC2"
     tx_heated_path = "/home/ubuntu/BlockSci/TX_DATA_HEATED"
     scripts_heated_path = "/home/ubuntu/BlockSci/SCRIPT_DATA_HEATED"
@@ -813,66 +812,3 @@ def get_miner(block) -> str:
 
 
 Block.miner = get_miner
-
-
-class CPP(object):
-    def __init__(self, chain):
-        self.dynamicFunctionCounter = 0
-        self.module_directory = tempfile.TemporaryDirectory()
-        sys.path.append(self.module_directory.name)
-        self.saved_tx_filters = {}
-        self.chain = chain
-
-    def generate_module_name(self):
-        module_name = "dynamicCode" + str(self.dynamicFunctionCounter)
-        self.dynamicFunctionCounter += 1
-        return module_name
-
-    def filter_tx(self, code, start=None, end=None):
-        if start is None:
-            start = 0
-        if end is None:
-            end = len(self.chain)
-        if code not in self.saved_tx_filters:
-            from string import Template
-            filein = open(loaderDirectory + '/filterTxesExtension.cpp')
-            template = Template(filein.read())
-            module_name = self.generate_module_name()
-            filled_template = template.safe_substitute({
-                "module_name": module_name,
-                "func_def": code
-            })
-            makefile = self.create_makefile(module_name)
-            func = self.build_function(filled_template, makefile, module_name)
-            self.saved_tx_filters[code] = func
-        return self.saved_tx_filters[code](self.chain, start, end)
-
-    def create_makefile(self, module_name):
-        from string import Template
-        filein = open(loaderDirectory + '/templateMakefile')
-        template = Template(filein.read())
-        subs = {
-            "module_name": module_name,
-            "install_location": self.module_directory.name,
-            "srcname": module_name + ".cpp",
-            "python_blocksci_dir": loaderDirectory
-        }
-        return template.safe_substitute(subs)
-
-    def build_function(self, full_code, makefile, module_name):
-        builddir = tempfile.TemporaryDirectory()
-        with open(builddir.name + '/' + module_name + ".cpp", 'w') as f:
-            f.write(full_code)
-        with open(builddir.name + '/CMakeLists.txt', 'w') as f:
-            f.write(makefile)
-        process = subprocess.Popen(["cmake", "."], cwd=builddir.name, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out, err = process.communicate()
-        print(err.decode('utf8'))
-        process = subprocess.Popen(["make"], cwd=builddir.name, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out, err = process.communicate()
-        print(err.decode('utf8'))
-        process = subprocess.Popen(["make", "install"], cwd=builddir.name, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out, err = process.communicate()
-        print(err.decode('utf8'))
-        mod = importlib.import_module(module_name)
-        return getattr(mod, "func")
