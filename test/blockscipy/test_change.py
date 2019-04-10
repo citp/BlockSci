@@ -1,4 +1,5 @@
 import blocksci
+import pytest
 
 
 def test_power_of_ten_change(chain, json_data):
@@ -147,3 +148,62 @@ def test_change_regression(chain, json_data, regtest):
         for tx in txs:
             print(h(tx).index.tolist(), file=regtest)
             print(h.unique_change(tx).index.tolist(), file=regtest)
+
+
+heuristics = [
+    blocksci.heuristics.change.address_reuse,
+    blocksci.heuristics.change.address_type,
+    blocksci.heuristics.change.optimal_change,
+    blocksci.heuristics.change.power_of_ten_value(5),
+    blocksci.heuristics.change.power_of_ten_value(7),
+    blocksci.heuristics.change.none
+]
+
+
+@pytest.mark.btc
+def test_union(chain):
+    for h1 in heuristics:
+        for h2 in heuristics:
+            hunion = h1 | h2
+
+            for tx in chain.blocks[100:].txes:
+                r1 = set(h1(tx).to_list())
+                r2 = set(h2(tx).to_list())
+
+                union = set(hunion(tx).to_list())
+
+                assert union == r1.union(r2)
+
+
+@pytest.mark.btc
+def test_intersection(chain):
+    for h1 in heuristics:
+        for h2 in heuristics:
+
+            hintersect = h1 & h2
+
+            for tx in chain.blocks[100:].txes:
+                r1 = set(h1(tx).to_list())
+                r2 = set(h2(tx).to_list())
+
+                rintersect = set(hintersect(tx).to_list())
+                assert rintersect == r1.intersection(r2)
+
+
+@pytest.mark.btc
+def test_diff(chain):
+    for h1 in heuristics:
+        for h2 in heuristics:
+
+            hdiff1 = h1 - h2
+            hdiff2 = h2 - h1
+
+            for tx in chain.blocks[100:].txes:
+                r1 = set(h1(tx).to_list())
+                r2 = set(h2(tx).to_list())
+
+                diff1 = set(hdiff1(tx).to_list())
+                diff2 = set(hdiff2(tx).to_list())
+
+                assert diff1 == r1.difference(r2)
+                assert diff2 == r2.difference(r1)
