@@ -81,9 +81,10 @@ namespace heuristics {
                 auto c = ch(tx);
                 if (ranges::distance(c) == 1) {
                     return c;
+                } else {
+                    ranges::any_view<Output> empty = ranges::view::empty<Output>();
+                    return empty;
                 }
-                ranges::any_view<Output> empty = ranges::view::empty<Output>();
-                return empty;
             }}};
         }
         
