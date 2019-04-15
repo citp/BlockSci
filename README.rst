@@ -125,7 +125,7 @@ We highly welcome contributions to BlockSci. Below we've listed a few ways you c
 - *Testing:* We welcome contributions that extend or improve our existing Python test suite. We also welcome improvements of the `testchain-generator`_ that we use to generate a synthetic blockchain to run tests against.
 - *Code contributions:* If you're interested in making larger code contributions (e.g., adding new features, extensive rewrites of existing code), please contact us first.
 
-Please note that the ``master`` branch does not necessarily contain the latest version of BlockSci. We're currently working on a new version on the `v0.6 branch`_. Most contributions should use this development branch as a starting point.
+We're currently working on a new version on the `v0.6 branch`_. Most contributions should use this development branch as a starting point. (The development branch can be unstable at times. The master branch contains the last stable version for which an AMI was released. All other branches are feature branches that shouldn't be used.)
 
 .. _testchain-generator: https://github.com/citp/testchain-generator
 .. _v0.6 branch: https://github.com/citp/BlockSci/tree/v0.6
