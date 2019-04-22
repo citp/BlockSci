@@ -70,7 +70,7 @@ void init_cluster_manager(pybind11::module &s) {
         return ClusterManager::createClustering(range, changeFunc, location, shouldOverwrite, ignoreCoinJoin);
     }, py::arg("location"), py::arg("chain"), py::arg("start") = 0, py::arg("stop") = -1,
     py::arg("heuristic") = lift(makeSimpleProxy<Transaction>(), [](const Transaction &tx) -> ranges::any_view<Output> {
-        return heuristics::ChangeHeuristic{heuristics::LegacyChange{}}(tx);
+        return heuristics::ChangeHeuristic{heuristics::NoChange{}}(tx);
     }), py::arg("should_overwrite") = false, py::arg("ignore_coinjoin") = true)
     .def("cluster_with_address", [](const ClusterManager &cm, const Address &address) -> Cluster {
        return cm.getCluster(address);

@@ -31,6 +31,6 @@ int main(int argc, char * argv[]) {
     
     blocksci::Blockchain chain(dataLocation);
     
-    blocksci::ClusterManager::createClustering(chain, blocksci::heuristics::LegacyChange{}, outputLocation, overwrite);
+    blocksci::ClusterManager::createClustering(chain, blocksci::heuristics::NoChange{}, outputLocation, overwrite);
     return 0;
 }
