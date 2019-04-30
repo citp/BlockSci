@@ -385,7 +385,7 @@ int main(int argc, char * argv[]) {
     //    --data-directory /Users/hkalodner/bitcoin-samp
     //    --coin-directory /Users/hkalodner/Library/Application\ Support/Bitcoin
     
-    enum class mode {generateConfig, update, updateCore, updateIndexes, updateHashIndex, updateAddressIndex, compactIndexes, help};
+    enum class mode {generateConfig, update, updateCore, updateIndexes, updateHashIndex, updateAddressIndex, compactIndexes, help, doctor};
     mode selected = mode::help;
     
     bool enableRPC = false;
@@ -449,11 +449,12 @@ int main(int argc, char * argv[]) {
     auto addressIndexUpdateCommand = clipp::command("address-index-update").set(selected,mode::updateAddressIndex) % "Update address index to latest state";
     auto hashIndexUpdateCommand = clipp::command("hash-index-update").set(selected,mode::updateHashIndex) % "Update hash index to latest state";
     auto compactIndexesCommand = clipp::command("compact-indexes").set(selected, mode::compactIndexes) % "Compact indexes to speed up blockchain construction";
+    auto doctorCommand = clipp::command("doctor").set(selected,mode::doctor) % "Diagnose issues with BlockSci or the provided config file.";
     
     std::string configFilePathString;
     auto configFileOpt = clipp::value("config file", configFilePathString) % "Path to config file";
     
-    auto commands = (generateConfigCommand, configOptions) | updateCommand | updateCoreCommand | indexUpdateCommand | addressIndexUpdateCommand | hashIndexUpdateCommand | compactIndexesCommand;
+    auto commands = (generateConfigCommand, configOptions) | updateCommand | updateCoreCommand | indexUpdateCommand | addressIndexUpdateCommand | hashIndexUpdateCommand | compactIndexesCommand | doctorCommand;
     
     auto cli = (configFileOpt, commands);
     
@@ -630,6 +631,63 @@ int main(int argc, char * argv[]) {
                 db.compact();
             }
             unlockDataDirectory(config);
+            break;
+        }
+
+        case mode::doctor: {
+            auto config = getBaseConfig(configFilePath);
+            auto jsonConf = blocksci::loadConfig(configFilePath.str());
+
+            // Info messages
+            std::cout << "Checking configuration file for issues." << std::endl << std::endl;
+
+            int warnings = 0;
+            int errors = 0;
+
+            // Chain config
+            blocksci::ChainConfiguration chainConfig = jsonConf.at("chainConfig");
+
+            auto dataDirectory = chainConfig.dataDirectory;
+            if(!dataDirectory.exists()) {
+                std::cout << "Warning: data directory does not exist." << std::endl;
+                warnings += 1;
+
+                if(!filesystem::create_directory(dataDirectory)) {
+                    std::cout << "Error: cannot create directory for path " << dataDirectory << ". Check file permissions." << std::endl;
+                    errors += 1;
+                }
+            }
+
+            // Parser
+            auto parserConf = jsonConf.at("parser");
+            if (parserConf.find("disk") == parserConf.end() && parserConf.find("rpc") == parserConf.end()) {
+                std::cout << "Error: config contains neither disk nor RPC parsing settings." << std::endl;
+                errors += 1;
+            }
+
+            // Disk parser
+            if (parserConf.find("disk") != parserConf.end()) {
+                ChainDiskConfiguration diskConfig = parserConf.at("disk");
+                auto coinDirectory = diskConfig.coinDirectory;
+                if(!coinDirectory.exists()) {
+                    std::cout << "Error: coin directory does not exist." << std::endl;
+                    errors += 1;
+                }
+                auto blockDirectory = coinDirectory/"blocks";
+                if(coinDirectory.exists() && !blockDirectory.exists()) {
+                    std::cout << "Error: Coin directory does not contain blocks subdirectory." << std::endl;
+                    errors += 1;
+                }
+            }
+
+            // Results
+            if(warnings + errors > 0) {
+                std::cout << std::endl << "Found " << warnings << " warnings and " << errors << " errors." << std::endl;
+                std::cout << "Warnings may be bening, errors must be resolved for BlockSci to run." << std::endl;
+            } else {
+                std::cout << "No issues detected." << std::endl;
+            }
+
             break;
         }
 
