@@ -253,7 +253,8 @@ namespace blocksci {
             }
             return ranges::nullopt;
         }
-        CBitcoinAddress address{addressString};
+        unsigned int nVersionBytes = access.config.chainConfig.pubkeyPrefix.size();
+        CBitcoinAddress address{addressString, nVersionBytes};
         uint160 hash;
         blocksci::AddressType::Enum type;
         std::tie(hash, type) = address.Get(access.config.chainConfig);
