@@ -181,9 +181,9 @@ namespace blocksci {
         return true;
     }
 
-    bool CBase58Data::SetString(const std::string& str)
+    bool CBase58Data::SetString(const std::string& str, unsigned int nVersionBytes)
     {
-        return SetString(str.c_str());
+        return SetString(str.c_str(), nVersionBytes);
     }
 
     std::string CBase58Data::ToString() const

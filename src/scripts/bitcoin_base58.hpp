@@ -85,7 +85,7 @@ namespace blocksci {
         
     public:
         bool SetString(const char* psz, unsigned int nVersionBytes = 1);
-        bool SetString(const std::string& str);
+        bool SetString(const std::string& str, unsigned int nVersionBytes = 1);
         std::string ToString() const;
         int CompareTo(const CBase58Data& b58) const;
         
@@ -106,7 +106,7 @@ namespace blocksci {
     public:
         CBitcoinAddress(const uint160 &dest, AddressType::Enum type, const ChainConfiguration &config);
         CBitcoinAddress(const uint160 &dest, const std::vector<unsigned char>& version);
-        CBitcoinAddress(const std::string& strAddress) { SetString(strAddress); }
+        CBitcoinAddress(const std::string& strAddress, unsigned int nVersionBytes) { SetString(strAddress, nVersionBytes); }
         CBitcoinAddress(const char* pszAddress) { SetString(pszAddress); }
         
         std::pair<uint160, AddressType::Enum> Get(const ChainConfiguration &config) const;
