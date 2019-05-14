@@ -1,9 +1,14 @@
 import blocksci
 
 
+def test_clustering_default_heuristic(chain, tmpdir_factory):
+    """Tests that we can run create_clustering with path and chain only"""
+    blocksci.cluster.ClusterManager.create_clustering(str(tmpdir_factory.mktemp("clustering_default_heuristic")), chain)
+
+
 def test_clustering_no_change(chain, json_data, regtest, tmpdir_factory):
     cm = blocksci.cluster.ClusterManager.create_clustering(str(tmpdir_factory.mktemp("clustering")), chain,
-                                                           heuristic=blocksci.heuristics.change.none.unique_change)
+                                                           heuristic=blocksci.heuristics.change.none)
     cluster = cm.cluster_with_address(chain.address_from_string(json_data['merge-addr-1']))
 
     assert 3 == len(cluster.addresses.to_list())
@@ -53,7 +58,7 @@ def test_clustering_with_change(chain, json_data, tmpdir_factory, regtest):
         blocksci.heuristics.change.address_reuse.unique_change,
         blocksci.heuristics.change.client_change_address_behavior.unique_change,
         blocksci.heuristics.change.legacy.unique_change,
-        blocksci.heuristics.change.none.unique_change
+        blocksci.heuristics.change.none
     ]
 
     for f in heuristics:
@@ -74,7 +79,7 @@ def test_clustering_with_change(chain, json_data, tmpdir_factory, regtest):
 
 
 def test_clustering_composability(chain, tmpdir_factory):
-    nofunc = blocksci.heuristics.change.none.unique_change
+    nofunc = blocksci.heuristics.change.none
     compfunc = (blocksci.heuristics.change.legacy - blocksci.heuristics.change.legacy).unique_change
 
     cm1 = blocksci.cluster.ClusterManager.create_clustering(str(tmpdir_factory.mktemp("clustering")), chain,
@@ -94,7 +99,7 @@ def test_clustering_ignore_coinjoin(chain, json_data, tmpdir_factory, regtest):
     addresses = chain.tx_with_hash(json_data['simple-coinjoin-tx']).inputs.map(lambda i: i.address).to_list()
 
     cm = blocksci.cluster.ClusterManager.create_clustering(str(tmpdir_factory.mktemp("clustering")), chain,
-                                                           heuristic=blocksci.heuristics.change.none.unique_change,
+                                                           heuristic=blocksci.heuristics.change.none,
                                                            ignore_coinjoin=True)
     cluster = cm.cluster_with_address(addresses[0])
     cluster_addresses = cluster.addresses.to_list()
@@ -118,7 +123,7 @@ def test_clustering_cluster_coinjoin(chain, json_data, tmpdir_factory, regtest):
     addresses = chain.tx_with_hash(json_data['simple-coinjoin-tx']).inputs.map(lambda i: i.address).to_list()
 
     cm = blocksci.cluster.ClusterManager.create_clustering(str(tmpdir_factory.mktemp("clustering")), chain,
-                                                           heuristic=blocksci.heuristics.change.none.unique_change,
+                                                           heuristic=blocksci.heuristics.change.none,
                                                            ignore_coinjoin=False)
     cluster = cm.cluster_with_address(addresses[0])
     cluster_addresses = cluster.addresses.to_list()
