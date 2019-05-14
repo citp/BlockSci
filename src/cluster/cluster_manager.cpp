@@ -281,6 +281,12 @@ namespace blocksci {
                     }
                 }
             }
+        } else {
+            if(!filesystem::create_directory(outputLocationPath)) {
+                std::stringstream ss;
+                ss << "Cannot create directory at path " << outputLocationPath;
+                throw std::runtime_error(ss.str());
+            }
         }
     }
     
@@ -293,10 +299,8 @@ namespace blocksci {
         for (auto dedupType : DedupAddressType::allArray()) {
             clusterIndexPaths[static_cast<size_t>(dedupType)] = ClusterAccess::typeIndexFilePath(outputPath, dedupType);
         }
-        
-        filesystem::create_directory(outputLocation);
-        // Generate cluster files
-        
+
+        // Generate cluster files        
         std::vector<uint32_t> clusterPositions;
         clusterPositions.resize(clusterCount + 1);
         for (auto parentId : parent) {
