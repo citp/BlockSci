@@ -224,7 +224,13 @@ namespace blocksci {
         
         std::map<uint32_t, DedupAddressType::Enum> typeIndexes;
         for (auto &pair : scriptStarts) {
-            typeIndexes[pair.second] = pair.first;
+            auto it = typeIndexes.find(pair.second);
+            if(it != typeIndexes.end()) {
+                // If an address type is not used, skip to the next one
+                it->second = std::max(it->second, pair.first);
+            } else {
+                typeIndexes[pair.second] = pair.first;
+            }
         }
         
         std::vector<DedupAddress> orderedScripts;
