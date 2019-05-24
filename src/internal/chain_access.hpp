@@ -309,6 +309,10 @@ namespace blocksci {
             blockFile.reload();
             blockCoinbaseFile.reload();
             txFile.reload();
+            txFirstInputFile.reload();
+            txFirstOutputFile.reload();
+            txVersionFile.reload();
+            inputSpentOutputFile.reload();
             txHashesFile.reload();
             sequenceFile.reload();
             setup();
