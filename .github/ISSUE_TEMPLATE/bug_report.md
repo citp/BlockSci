@@ -1,18 +1,11 @@
 ---
-name: Bug report
-about: Create a bug report to help us improve BlockSci
+name: Technical issue / Bug report
+about: Discuss a technical issue or create a bug report to help us improve BlockSci
 
 ---
 
-Please provide a clear and concise description of what the problem is.
+Please provide a clear and concise description of the problem.
 
-#### Expected Result
-
-What you expected to happen.
-
-#### Actual Result
-
-What happened instead.
 
 #### Reproduction Steps
 
