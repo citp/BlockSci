@@ -228,7 +228,6 @@ int main(int argc, char * argv[]) {
     auto jsonConf = blocksci::loadConfig(configFilePath.str());
     blocksci::checkVersion(jsonConf);
     
-    blocksci::ChainConfiguration chainConfig = jsonConf.at("chainConfig");
     blocksci::ChainRPCConfiguration rpcConfig = jsonConf.at("parser").at("rpc");
 
     SaferBitcoinApi bitcoinAPI{rpcConfig.username, rpcConfig.password, rpcConfig.address, rpcConfig.port};
@@ -247,7 +246,7 @@ int main(int argc, char * argv[]) {
         }
     }
     
-    MempoolRecorder recorder{chainConfig.dataDirectory.str(), bitcoinAPI};
+    MempoolRecorder recorder{configFilePath.str(), bitcoinAPI};
     
     int updateCount = 0;
     while(!done) {
