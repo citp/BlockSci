@@ -106,9 +106,10 @@ class MempoolRecorder {
     std::unordered_map<std::string, std::pair<BlockRecord, int>> blocksSeen;
     
     static constexpr int heightCutoff = 1000;
+
 public:
-    MempoolRecorder(const std::string &dataLocation, SaferBitcoinApi &bitcoinAPI_) :
-    chain(dataLocation),
+    MempoolRecorder(const std::string &configLocation, SaferBitcoinApi &bitcoinAPI_) :
+    chain(configLocation),
     lastHeight(static_cast<int>(chain.size())),
     bitcoinAPI(bitcoinAPI_),
     files(chain.getAccess().config.mempoolDirectory(), initializeRecordingFile(chain)) {
