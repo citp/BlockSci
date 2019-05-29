@@ -29,8 +29,8 @@ namespace blocksci {
         Blockchain() = default;
         Blockchain(std::unique_ptr<DataAccess> access_);
         explicit Blockchain(const DataConfiguration &config);
-        explicit Blockchain(const std::string &dataDirectory);
-        Blockchain(const std::string &dataDirectory, BlockHeight maxBlock);
+        explicit Blockchain(const std::string &configPath);
+        Blockchain(const std::string &configPath, BlockHeight maxBlock);
         ~Blockchain();
         
         std::string dataLocation() const;

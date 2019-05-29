@@ -38,11 +38,11 @@ Incremental updates
 
 BlockSci can be kept up to date with the blockchain by setting up a cronjob to periodically run the parser command. Updates to the parser should not noticeably impact usage of the analysis library. It is recommended that the Blockchain be kept approximately 6 blocks back from the head of the chain in order to avoid imperfect reorg handling in BlockSci.
 
-For example you can set BlockSci to update hourly and stay 6 blocks behind the head of the chain via adding
+For example, you can set BlockSci to stay 6 blocks behind the head of the chain by setting `"maxBlockNum": -6` in your config file and adding
 
 ..  code-block:: bash
 
-	@hourly /usr/local/bin/blocksci_parser --output-directory /home/ubuntu/bitcoin-data update --max-block -6 disk --coin-directory /home/ubuntu/.bitcoin
+	@hourly /usr/local/bin/blocksci_parser <config file> update
 
 to your system crontab_.
 
@@ -52,13 +52,11 @@ to your system crontab_.
 Mempool Recorder
 ------------------
 
-BlockSci provides an optional mempool recorder will record the arrival times of blocks and transactions at your local node. The recorder works by repeatedly pinging the RPC interface and obvserving as new transactions arrive. This data is accessable directly through the python API via `Tx.time_seen` and `Block.time_seen` which will return a datetime or `None` if the transaction or block was not observed.
-
-Running the mempool recorder is very similar to running the parser in RCP mode.
+BlockSci provides an optional mempool recorder will record the arrival times of blocks and transactions at your local node. The recorder works by repeatedly pinging the RPC interface and obvserving as new transactions arrive. This data is accessible directly through the python API via `Tx.time_seen` and `Block.time_seen` which will return a datetime or `None` if the transaction or block was not observed. To use the mempool recorder, you need to have continuous incremental updates enabled (see above) and a valid RPC section in your config file.
 
 ..  code-block:: bash
 
-	mempool_recorder <data location> --username <username> --password <password> [--address <address>] [--port <port>]
+	mempool_recorder <config file>
 
 
 Clusterer

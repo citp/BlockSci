@@ -34,11 +34,11 @@ auto timeFunc(std::string name, Func func, Args&& ...args) -> decltype(func(args
 
 int main(int argc, char * argv[]) {
     bool includeRandom = false;
-    std::string dataLocation;
+    std::string configLocation;
     int endBlock = -1;
 
     auto cli = (
-        clipp::value("data location", dataLocation),
+        clipp::value("config file location", configLocation),
         clipp::option("--with-random").set(includeRandom).doc("Include random order benchmarks"),
         clipp::option("-m", "--max-block") & clipp::value("Run benchmark up to the given block", endBlock)
     );
@@ -47,7 +47,7 @@ int main(int argc, char * argv[]) {
         std::cout << "Invalid command line parameter\n" << clipp::make_man_page(cli, argv[0]);
         return 0;
     }
-    Blockchain chain(dataLocation);
+    Blockchain chain(configLocation);
     
     int startBlock = 0;
     if (endBlock == -1) {
