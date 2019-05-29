@@ -66,6 +66,12 @@ void init_heuristics(py::module &m) {
     py::class_<Change> s2(cl, "change");
 
     py::class_<ChangeHeuristic>(s2, "ChangeHeuristic", "Class representing a change heuristic")
+    .def(py::init([](Proxy<ranges::any_view<Output>> &heuristic) {
+        std::function<ranges::any_view<Output>(const Transaction &tx)> changeFunc = [heuristic](const Transaction &tx) {
+            return heuristic(tx);
+        };
+        return ChangeHeuristic(changeFunc);
+    }))
     .def("__and__", &ChangeHeuristic::setIntersection, py::arg("other_heuristic"), "Return a new heuristic matching outputs that match both of the given heuristics")
     .def("__or__", &ChangeHeuristic::setUnion, py::arg("other_heuristic"), "Return a new heuristic matching outputs that match either of the given heuristics")
     .def("__sub__", &ChangeHeuristic::setDifference, py::arg("other_heuristic"), "Return a new heuristic matching outputs matched by the first heuristic unless they're matched by the second heuristic")
