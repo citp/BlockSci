@@ -21,10 +21,21 @@ Ubuntu 16.04
 
 	sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
 	sudo apt-get update
-	sudo apt install cmake libtool autoconf libboost-filesystem-dev libboost-iostreams-dev \
+	sudo apt install libtool autoconf libboost-filesystem-dev libboost-iostreams-dev \
 	libboost-serialization-dev libboost-thread-dev libboost-test-dev  libssl-dev libjsoncpp-dev \
 	libcurl4-openssl-dev libjsoncpp-dev libjsonrpccpp-dev libsnappy-dev zlib1g-dev libbz2-dev \
-	liblz4-dev libzstd-dev libjemalloc-dev libsparsehash-dev python3-dev python3-pip
+	liblz4-dev libzstd-dev libjemalloc-dev libsparsehash-dev python3-dev python3-pip \
+	git gcc-7 g++-7
+
+	# get recent cmake
+	git clone -b release https://gitlab.kitware.com/cmake/cmake.git
+	cd cmake
+	./bootstrap
+	make
+	make install
+	cd ..
+	# verify cmake version, should be >=3.13 now
+	cmake --version
 
 	git clone https://github.com/citp/BlockSci.git
 	cd BlockSci
@@ -36,7 +47,6 @@ Ubuntu 16.04
 
 	cd ..
 	CC=gcc-7 CXX=g++-7 sudo -H pip3 install -e blockscipy
-	
 
 Mac OS 10.13
 --------------
