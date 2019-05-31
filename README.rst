@@ -121,14 +121,13 @@ Note that BlockSci only actively supports python 3.
 
 ..  code-block:: bash
 
-	sudo apt-get update
-	sudo apt install build-essential cmake libssl-dev libboost-all-dev libsqlite3-dev autogen \
-	autoconf libleveldb-dev libcurl4-openssl-dev libjsoncpp-dev libjsonrpccpp-dev libjsonrpccpp-tools \
-	python3-dev python3-pip
 	sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
 	sudo apt-get update
-	sudo apt install gcc-6 g++-6
-	sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 60 --slave /usr/bin/g++ g++ /usr/bin/g++-6
+	sudo apt install build-essential cmake libssl-dev libboost-all-dev libsqlite3-dev autogen \
+	autoconf libcurl4-openssl-dev libjsoncpp-dev libjsonrpccpp-dev libjsonrpccpp-tools \
+	python3-dev python3-pip liblmdb-dev libsparsehash-dev libargtable2-dev libmicrohttpd-dev \
+	libhiredis-dev libjsoncpp-dev catch gcc-7 g++-7
+	sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7
 
 	git clone https://github.com/bitcoin-core/secp256k1
 	cd secp256k1
@@ -137,21 +136,42 @@ Note that BlockSci only actively supports python 3.
 	make
 	sudo make install
 	
+	cd ~
+	wget https://cmake.org/files/v3.10/cmake-3.10.0.tar.gz
+	tar xzf cmake-3.10.0.tar.gz
+	cd cmake-3.10.0/
+	cmake .
+	make      
+	sudo make install
+	exec bash
+	
+	cd ~
+	git clone https://github.com/rescrv/HyperLevelDB
+	cd HyperLevelDB
+	autoreconf -i
+	./configure
+	make
+	sudo make install
+	sudo ldconfig
+	
+	cd ~
 	git clone https://github.com/citp/BlockSci.git
 	cd BlockSci
-	git submodule update --init --recursive --checkout
+	git checkout segwit
+	git submodule init
+	git submodule update --recursive
 
 	cd libs/bitcoin-api-cpp
 	mkdir release
 	cd release
-	cmake --DCMAKE_BUILD_TYPE=Release ..
+	cmake -DCMAKE_BUILD_TYPE=Release ..
 	make
 	sudo make install
 
 	cd ../../..
 	mkdir release
 	cd release
-	cmake --DCMAKE_BUILD_TYPE=Release ..
+	cmake -DCMAKE_BUILD_TYPE=Release ..
 	make
 	sudo make install
 
