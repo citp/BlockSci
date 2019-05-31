@@ -16,3 +16,9 @@
 [submodule "external/rocksdb"]
 	path = external/rocksdb
 	url = https://github.com/facebook/rocksdb
+[submodule "blockscipy/blocksci/Blockchain-Known-Pools"]
+	path = blockscipy/blocksci/Blockchain-Known-Pools
+	url = https://github.com/blockchain/Blockchain-Known-Pools
+[submodule "blockscipy/blocksci/pybind11"]
+	path = blockscipy/blocksci/pybind11
+	url = https://github.com/pybind/pybind11/
