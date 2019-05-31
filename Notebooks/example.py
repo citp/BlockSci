@@ -1,6 +1,10 @@
 import blocksci
 
+<<<<<<< HEAD
 chain = blocksci.Blockchain("../zcash-devdata")
+=======
+chain = blocksci.Blockchain("../../../zcash-testdata") #the directory of your parsed zcash data
+>>>>>>> parent of 6f20902... Update example.py
 
 in_z_addresses = 0
 num_of_txes = 0
