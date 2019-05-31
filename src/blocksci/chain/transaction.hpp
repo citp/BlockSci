@@ -9,83 +9,60 @@
 #ifndef transaction_hpp
 #define transaction_hpp
 
-#include <boost/range/adaptor/transformed.hpp>
+#include "raw_transaction.hpp"
+#include "output.hpp"
+#include "input.hpp"
+#include "chain_access.hpp"
+
+#include <blocksci/scripts/scripts_fwd.hpp>
+#include <blocksci/address/address_info.hpp>
+
+#include <range/v3/iterator_range.hpp>
+#include <range/v3/numeric/accumulate.hpp>
+#include <range/v3/view/transform.hpp>
+#include <range/v3/view/remove_if.hpp>
+#include <range/v3/view/filter.hpp>
+#include <range/v3/view/zip_with.hpp>
+#include <range/v3/view/iota.hpp>
+#include <range/v3/utility/optional.hpp>
 
 #include <vector>
-#include <stdio.h>
-
-enum class CoinJoinResult {
-    True, False, Timeout
-};
 
 namespace blocksci {
     struct Address;
     class uint256;
-    class ScriptAccess;
-    class ChainAccess;
-    class AddressFirstSeenAccess;
-    struct TransactionSummary;
-    struct Input;
-    struct Output;
-    struct Block;
-    struct InputPointer;
-    struct OutputPointer;
+    class HashIndex;
     
-    struct RawTransaction {
-        uint32_t sizeBytes;
-        uint32_t locktime;
-        uint16_t inputCount;
-        uint16_t outputCount;
-        uint16_t vpubCount;
-        
-        RawTransaction(uint32_t sizeBytes, uint32_t locktime, uint16_t inputCount, uint16_t outputCount, uint16_t vpubCount);
-        
-        RawTransaction(const RawTransaction &) = delete;
-        RawTransaction(RawTransaction &&) = delete;
-        RawTransaction &operator=(const RawTransaction &) = delete;
-        RawTransaction &operator=(RawTransaction &&) = delete;
+    struct InvalidHashException : public std::runtime_error {
+        InvalidHashException() : std::runtime_error("No Match for hash") {}
     };
     
-    
-    struct Transaction {
+    class Transaction {
     private:
+        const ChainAccess *access;
         const RawTransaction *data;
+        const uint32_t *sequenceNumbers;
         friend TransactionSummary;
     public:
         uint32_t txNum;
-        uint32_t blockHeight;
+        BlockHeight blockHeight;
         
-        using input_range = boost::iterator_range<const Input *>;
-        using output_range = boost::iterator_range<const Output *>;
-        using uint64_range = boost::iterator_range<const uint64_t *>;
+        Transaction() = default;
         
-        Transaction(const RawTransaction *data, uint32_t txNum, uint32_t blockHeight);
+        Transaction(const RawTransaction *data_, uint32_t txNum_, BlockHeight blockHeight_, const ChainAccess &access_) : access(&access_), data(data_), sequenceNumbers(access_.getSequenceNumbers(txNum_)), txNum(txNum_), blockHeight(blockHeight_) {}
         
-        static Transaction txWithIndex(const ChainAccess &access, uint32_t index);
-        static Transaction txWithIndex(const ChainAccess &access,uint32_t index, uint32_t height);
-        static boost::optional<Transaction> txWithHash(const ChainAccess &access,uint256 hash);
-        static boost::optional<Transaction> txWithHash(const ChainAccess &access, std::string hash);
+        Transaction(uint32_t index, const ChainAccess &access_) : Transaction(index, access_.getBlockHeight(index), access_) {}
         
-        uint256 getHash(const ChainAccess &access) const;
-        std::string getString() const;
+        Transaction(uint32_t index, BlockHeight height, const ChainAccess &access_) : Transaction(access_.getTx(index), index, height, access_) {}
         
-        std::vector<OutputPointer> getOutputPointers(const InputPointer &pointer, const ChainAccess &access) const;
-        std::vector<InputPointer> getInputPointers(const OutputPointer &pointer, const ChainAccess &access) const;
+        Transaction(uint256 hash, const HashIndex &index, const ChainAccess &access);
+        Transaction(std::string hash, const HashIndex &index, const ChainAccess &access);
         
-        /*std::vector<uint64_t> vpubold() const;
-		std::vector<uint64_t> vpubnew() const;*/
-		uint64_range vpubold() const;
-		uint64_range vpubnew() const;
+        uint256 getHash() const;
+        std::string toString() const;
         
-        bool operator==(const Transaction& other) const {
-            return txNum == other.txNum;
-        }
-        
-        bool operator<(const Transaction &other) const {
-            return txNum < other.txNum;
-        }
-        
-        const Block &block(const ChainAccess &access) const;
+        std::vector<OutputPointer> getOutputPointers(const InputPointer &pointer) const;
+        std::vector<InputPointer> getInputPointers(const OutputPointer &pointer) const;
         
         uint32_t sizeBytes() const {
             return data->sizeBytes;
@@ -103,62 +80,72 @@ namespace blocksci {
             return data->outputCount;
         }
         
-        uint16_t vpubCount() const {
-            return data->vpubCount;
+        ranges::iterator_range<const Inout *> rawOutputs() const {
+            auto &firstOut = data->getOutput(0);
+            return ranges::make_iterator_range(&firstOut, &firstOut + outputCount());
         }
         
-        static const Transaction &create(const ChainAccess &access, uint32_t index);
+        ranges::iterator_range<const Inout *> rawInputs() const {
+            auto &firstIn = data->getInput(0);
+            return ranges::make_iterator_range(&firstIn, &firstIn + inputCount());
+        }
         
-        input_range inputs() const;
-        output_range outputs() const;
+        auto outputs() const {
+            auto chainAccess = access;
+            uint32_t txIndex = txNum;
+            BlockHeight height = blockHeight;
+            return ranges::view::zip_with([chainAccess, txIndex, height](uint16_t outputNum, const Inout &inout) {
+                return Output({txIndex, outputNum}, height, inout, *chainAccess);
+            }, ranges::view::iota(uint16_t{0}, outputCount()), rawOutputs());
+        }
+        
+        auto inputs() const {
+            auto chainAccess = access;
+            uint32_t txIndex = txNum;
+            BlockHeight height = blockHeight;
+            auto seq = sequenceNumbers;
+            return ranges::view::zip_with([chainAccess, txIndex, height, seq](uint16_t inputNum, const Inout &inout) {
+                return Input({txIndex, inputNum}, height, inout, &seq[inputNum], *chainAccess);
+            }, ranges::view::iota(uint16_t{0}, inputCount()), rawInputs());
+        }
+        
+        bool isCoinbase() const {
+            return inputCount() == 0;
+        }
+        
+        Block block() const;
         
         // Requires DataAccess
         #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        
-        static const Transaction &create(uint32_t index);
-        
-        static Transaction txWithIndex(uint32_t index);
-        static Transaction txWithIndex(uint32_t index, uint32_t height);
-        static boost::optional<Transaction> txWithHash(uint256 hash);
-        static boost::optional<Transaction> txWithHash(std::string hash);
-        
-        uint256 getHash() const;
-        
-        const Block &block() const;
+        Transaction(uint32_t index);
+        Transaction(uint32_t index, BlockHeight height);
+        Transaction(uint256 hash);
+        Transaction(std::string hash);
         #endif
     };
     
-    std::vector<Transaction> getTransactionsFromHashes(const ChainAccess &access, const std::vector<std::string> &txHashes);
+    inline bool operator==(const Transaction& a, const Transaction& b) {
+        return a.txNum == b.txNum;
+    }
+
+    inline bool operator!=(const Transaction& a, const Transaction& b) {
+        return a.txNum != b.txNum;
+    }
     
-    bool hasFeeGreaterThan(const Transaction &tx, uint64_t fee);
+    inline bool operator<(const Transaction& a, const Transaction& b) {
+        return a.txNum < b.txNum;
+    }
     
-    bool isCoinbase(const Transaction &tx);
-    bool isCoinjoin(const Transaction &tx);
-    bool isJoinsplit(const Transaction &tx);
-    bool isDeanonTx(const Transaction &tx);
-    bool isChangeOverTx(const Transaction &tx, const ScriptAccess &scripts);
-    bool containsKeysetChange(const Transaction &tx, const blocksci::ScriptAccess &access);
-    CoinJoinResult isPossibleCoinjoin(const Transaction &tx, uint64_t minBaseFee, double percentageFee, size_t maxDepth);
-    CoinJoinResult isCoinjoinExtra(const Transaction &tx, uint64_t minBaseFee, double percentageFee, size_t maxDepth);
-    const Output *getOpReturn(const Transaction &tx);
+    using input_range = decltype(std::declval<Transaction>().inputs());
+    using output_range = decltype(std::declval<Transaction>().outputs());
     
-    uint64_t totalOut(const Transaction &tx);
-    uint64_t totalIn(const Transaction &tx);
-    uint64_t totalVpubold(const Transaction &tx);
-    uint64_t totalVpubnew(const Transaction &tx);
-    uint64_t fee(const Transaction &tx);
-    double feePerByte(const Transaction &tx);
+    bool hasFeeGreaterThan(Transaction &tx, uint64_t fee);
     
-    const Output * getChangeOutput(const AddressFirstSeenAccess &scripts, const Transaction &tx);
-    
-    #ifndef BLOCKSCI_WITHOUT_SINGLETON
-    std::vector<Transaction> getTransactionsFromHashes(const std::vector<std::string> &txHashes);
-    bool containsKeysetChange(const Transaction &tx);
-    
-    const Output *getChangeOutput(const Transaction &tx);
-    bool isChangeOverTx(const Transaction &tx);
-    
-    #endif
+    ranges::optional<Output> getOpReturn(const Transaction &tx);
+
+    inline std::ostream &operator<<(std::ostream &os, const Transaction &tx) { 
+        return os << tx.toString();
+    }
 }
 
 

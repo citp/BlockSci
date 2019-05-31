@@ -11,38 +11,60 @@
 
 #include "config.hpp"
 #include "script_output.hpp"
+#include "script_input.hpp"
+#include "utxo.hpp"
 
-#include <blocksci/bitcoin_uint256.hpp>
+#include <blocksci/util/bitcoin_uint256.hpp>
 
-#include <boost/variant/variant.hpp>
-
-#include <stdio.h>
-
-struct InputInfo;
-struct UTXO;
 struct getrawtransaction_t;
 struct vout_t;
 struct vin_t;
+struct InputView;
 
 namespace blocksci {
     struct RawTransaction;
     struct OutputPointer;
 }
 
+class SafeMemReader;
+
+struct WitnessStackItem {
+    uint32_t length;
+    const char *itemBegin;
+    
+    #ifdef BLOCKSCI_FILE_PARSER
+    WitnessStackItem(SafeMemReader &reader);
+    #endif
+};
+
 struct RawInput {
-    RawOutputPointer rawOutputPointer;
-    uint32_t sequenceNum;
+private:
     const unsigned char *scriptBegin;
-    const unsigned char *scriptEnd;
+    uint32_t scriptLength;
     
     std::vector<unsigned char> scriptBytes;
     
-    InputInfo getInfo(const UTXO &utxo, uint16_t i);
+public:
+    
+    RawOutputPointer rawOutputPointer;
+    uint32_t sequenceNum;
+    std::vector<WitnessStackItem> witnessStack;
+    UTXO utxo;
+    
+    blocksci::OutputPointer getOutputPointer() const;
+    
+    blocksci::CScriptView getScriptView() const {
+        if (scriptLength == 0) {
+            return blocksci::CScriptView(scriptBytes.data(), scriptBytes.data() + scriptBytes.size());
+        } else {
+            return blocksci::CScriptView(scriptBegin, scriptBegin + scriptLength);
+        }
+    }
     
     RawInput(){}
     
     #ifdef BLOCKSCI_FILE_PARSER
-    RawInput(const char **buffer);
+    RawInput(SafeMemReader &reader);
     #endif
     
     #ifdef BLOCKSCI_RPC_PARSER
@@ -51,25 +73,39 @@ struct RawInput {
 };
 
 struct RawOutput {
-    uint64_t value;
-    uint32_t scriptLength;
+private:
     const unsigned char *scriptBegin;
-    ScriptOutputType scriptOutput;
+    uint32_t scriptLength;
+    
+    std::vector<unsigned char> scriptBytes;
+public:
+    uint64_t value;
 
     #ifdef BLOCKSCI_FILE_PARSER
-    RawOutput(const char **buffer);
+    RawOutput(SafeMemReader &reader);
     #endif
     
     #ifdef BLOCKSCI_RPC_PARSER
     RawOutput(const vout_t &vout);
+    RawOutput(std::vector<unsigned char> scriptBytes_, uint64_t value_);
     #endif
     
-    RawOutput(const std::vector<unsigned char> &scriptBytes, uint64_t value);
-    
-    RawOutput(const ScriptOutputType &scriptOutput_, uint64_t value_, uint32_t scriptLength_) : value(value_), scriptLength(scriptLength_), scriptOutput(scriptOutput_) {}
-    
-    RawOutput(uint64_t value, uint32_t scriptLength, const char **buffer);
-    
+    blocksci::CScriptView getScriptView() const {
+        if (scriptLength == 0) {
+            return blocksci::CScriptView(scriptBytes.data(), scriptBytes.data() + scriptBytes.size());
+        } else {
+            return blocksci::CScriptView(scriptBegin, scriptBegin + scriptLength);
+        }
+    }
+};
+
+struct TransactionHeader {
+    int32_t version;
+    uint32_t inputCount;
+    uint32_t outputCount;
+    uint32_t sizeBytes;
+    uint32_t locktime;
+    TransactionHeader(SafeMemReader &reader);
 };
 
 struct RawTransaction {
@@ -78,11 +114,16 @@ struct RawTransaction {
     uint32_t sizeBytes;
     uint32_t locktime;
     int32_t version;
+    blocksci::BlockHeight blockHeight;
+    bool isSegwit;
+    const char *txHashStart;
+    uint32_t txHashLength;
     
     std::vector<RawInput> inputs;
     std::vector<RawOutput> outputs;
-    std::vector<uint64_t> vpubold;
-    std::vector<uint64_t> vpubnew;
+    std::vector<AnyScriptInput> scriptInputs;
+    std::vector<AnyScriptOutput> scriptOutputs;
+    
     
     RawTransaction() :
       txNum(0),
@@ -90,20 +131,19 @@ struct RawTransaction {
       sizeBytes(0),
       locktime(0),
       version(0),
-      inputs(),
-      outputs(),
-      vpubold(),
-      vpubnew() {}
+      blockHeight(0) {}
     
     #ifdef BLOCKSCI_FILE_PARSER
-    void load(const char **buffer);
+    void load(SafeMemReader &reader, uint32_t txNum, blocksci::BlockHeight blockHeight, bool witnessActivated);
     #endif
     
     #ifdef BLOCKSCI_RPC_PARSER
-    void load(const getrawtransaction_t &txinfo);
+    void load(const getrawtransaction_t &txinfo, uint32_t txNum, blocksci::BlockHeight blockHeight, bool witnessActivated);
     #endif
     
-    blocksci::uint256 getHash(const InputInfo &info, int hashType) const;
+    void calculateHash();
+    
+    blocksci::uint256 getHash(const InputView &info, const blocksci::CScriptView &scriptView, int hashType) const;
     blocksci::RawTransaction getRawTransaction() const;
 };
 

@@ -16,14 +16,23 @@
 
 
 #include <blocksci/address/address_types.hpp>
-#include <blocksci/data_configuration.hpp>
-
-#include "bitcoin_pubkey.hpp"
 
 #include <string>
 #include <vector>
 
 namespace blocksci {
+    
+    struct DataConfiguration;
+    class uint160;
+    
+    class InvalidAddressException : virtual public std::runtime_error {
+    public:
+        InvalidAddressException() : std::runtime_error("Tried to construct invalid address") {}
+        InvalidAddressException(const InvalidAddressException &) = default;
+        InvalidAddressException(InvalidAddressException &&) = default;
+        virtual ~InvalidAddressException() = default;
+    };
+    
     /**
      * Encode a byte sequence as a base58-encoded string.
      * pbegin and pend cannot be nullptr, unless both are.

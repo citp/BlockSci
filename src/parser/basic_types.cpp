@@ -10,8 +10,20 @@
 
 #include "basic_types.hpp"
 
+#include <blocksci/util/hash.hpp>
+
 #include <ostream>
-#include <cstdio>
+
+namespace std
+{
+    size_t hash<RawOutputPointer>::operator()(const RawOutputPointer &pointer) const {
+        std::size_t seed = 5764245;
+        hash_combine(seed, pointer.hash);
+        hash_combine(seed, pointer.outputNum);
+        return seed;
+    }
+}
+
 
 std::ostream &operator<<(std::ostream &os, RawOutputPointer const &pointer) {
     os << pointer.hash.GetHex();
@@ -19,3 +31,4 @@ std::ostream &operator<<(std::ostream &os, RawOutputPointer const &pointer) {
     os << pointer.outputNum;
     return os;
 }
+

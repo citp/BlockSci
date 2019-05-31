@@ -11,42 +11,52 @@
 #include "scripthash_script.hpp"
 #include "script_data.hpp"
 #include "script_access.hpp"
+#include "script_variant.hpp"
 #include "bitcoin_base58.hpp"
 
 namespace blocksci {
     using namespace script;
     
-    ScriptHash::ScriptAddress(const ScriptHashData *rawData) : address(rawData->address), wrappedAddress(rawData->wrappedAddress) {}
+    ScriptHash::ScriptAddress(uint32_t scriptNum_, const ScriptHashData *rawData, const ScriptAccess &access) : BaseScript(scriptNum_, scriptType, *rawData, access), wrappedAddress(rawData->wrappedAddress), address(rawData->address) {}
     
-    ScriptHash::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : ScriptHash(access.getScriptData<AddressType::Enum::SCRIPTHASH>(addressNum)) {}
+    ScriptHash::ScriptAddress(const ScriptAccess &access, uint32_t addressNum) : ScriptHash(addressNum, access.getScriptData<scriptType>(addressNum), access) {}
     
-    ScriptHash::ScriptAddress(const uint160 &address_) : address(address_), wrappedAddress() {}
-    
-    bool ScriptHash::operator==(const Script &other) {
-        auto otherA = dynamic_cast<const ScriptHash *>(&other);
-        return otherA && otherA->address == address;
+    std::string ScriptHash::addressString() const {
+        return CBitcoinAddress(address, AddressType::Enum::SCRIPTHASH, access->config).ToString();
     }
     
-    std::string ScriptHash::addressString(const DataConfiguration &config) const {
-        return CBitcoinAddress(address, AddressType::Enum::SCRIPTHASH, config).ToString();
+    ranges::optional<Address> ScriptHash::getWrappedAddress() const {
+        if (wrappedAddress.scriptNum != 0) {
+            return wrappedAddress;
+        } else {
+            return ranges::nullopt;
+        }
     }
     
-    std::string ScriptHash::toString(const DataConfiguration &config) const {
+    ranges::optional<AnyScript> ScriptHash::wrappedScript() const {
+        auto add = getWrappedAddress();
+        if (add) {
+            return add->getScript(*access);
+        }
+        return ranges::nullopt;
+    }
+    
+    std::string ScriptHash::toString() const {
         std::stringstream ss;
         ss << "P2SHAddress(";
-        ss << "address=" << addressString(config);
+        ss << "address=" << addressString();
         ss << ")";
         return ss.str();
     }
     
-    std::string ScriptHash::toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const {
-        auto wrapped = wrappedScript(access);
+    std::string ScriptHash::toPrettyString() const {
         std::stringstream ss;
         ss << "P2SHAddress(";
-        ss << "address=" << addressString(config);
+        ss << "address=" << addressString();
         ss << ", wrappedAddress=";
-        if (wrappedAddress.addressNum > 0) {
-            ss << wrapped->toPrettyString(config, access);
+        auto wrapped = wrappedScript();
+        if (wrapped) {
+            ss << wrapped->toPrettyString();
         } else {
             ss << "unknown";
         }

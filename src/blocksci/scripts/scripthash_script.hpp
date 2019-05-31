@@ -9,48 +9,42 @@
 #ifndef scripthash_script_hpp
 #define scripthash_script_hpp
 
-#include "scriptsfwd.hpp"
 #include "script.hpp"
-#include <blocksci/bitcoin_uint256.hpp>
+#include "scripts_fwd.hpp"
+#include <blocksci/address/address.hpp>
+#include <blocksci/util/bitcoin_uint256.hpp>
+
+#include <range/v3/utility/optional.hpp>
 
 namespace blocksci {
-    struct ScriptHashData;
-    
     template <>
-    class ScriptAddress<AddressType::Enum::SCRIPTHASH> : public Script {
-        
+    class ScriptAddress<ScriptType::Enum::SCRIPTHASH> : public BaseScript {
+    private:
+        Address wrappedAddress;
     public:
         uint160 address;
-        Address wrappedAddress;
         
-        ScriptAddress<AddressType::Enum::SCRIPTHASH>(const ScriptHashData *rawData);
-        ScriptAddress<AddressType::Enum::SCRIPTHASH>(const uint160 &address);
-        ScriptAddress<AddressType::Enum::SCRIPTHASH>(const ScriptAccess &access, uint32_t addressNum);
+        constexpr static ScriptType::Enum scriptType = ScriptType::Enum::SCRIPTHASH;
         
-        std::string addressString(const DataConfiguration &config) const;
+        ScriptAddress<scriptType>(uint32_t scriptNum, const ScriptHashData *rawData, const ScriptAccess &access);
+        ScriptAddress<scriptType>(const ScriptAccess &access, uint32_t addressNum);
         
-        std::string toString(const DataConfiguration &config) const override;
-        std::string toPrettyString(const DataConfiguration &config, const ScriptAccess &access) const override;
+        ranges::optional<Transaction> transactionRevealed(const ChainAccess &chain) const;
         
-        bool operator==(const Script &other) override;
-        
-        std::vector<Address> nestedAddresses() const override {
-            std::vector<Address> addresses;
-            if (wrappedAddress.addressNum != 0) {
-                addresses.push_back(wrappedAddress);
-            }
-            return addresses;
-        }
-        
-        std::unique_ptr<Script> wrappedScript(const ScriptAccess &access) const {
-            return wrappedAddress.getScript(access);
-        }
-        
-        #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        ScriptAddress<AddressType::Enum::SCRIPTHASH>(uint32_t addressNum);
         std::string addressString() const;
-        std::unique_ptr<Script> wrappedScript() const;
-        #endif
+        
+        std::string toString() const;
+        std::string toPrettyString() const;
+        
+        ranges::optional<Address> getWrappedAddress() const;
+        
+        void visitPointers(const std::function<void(const Address &)> &visitFunc) const {
+            if (hasBeenSpent()) {
+                visitFunc(wrappedAddress);
+            }
+        }
+        
+        ranges::optional<AnyScript> wrappedScript() const;
     };
 }
 

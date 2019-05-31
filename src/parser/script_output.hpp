@@ -10,124 +10,207 @@
 #define script_output_hpp
 
 #include "basic_types.hpp"
+#include "address_state.hpp"
+#include "parser_fwd.hpp"
 
-#include <blocksci/scripts/bitcoin_script.hpp>
 #include <blocksci/scripts/bitcoin_pubkey.hpp>
 #include <blocksci/address/address_info.hpp>
 #include <blocksci/address/address.hpp>
+#include <blocksci/scripts/script_info.hpp>
+#include <blocksci/scripts/script_view.hpp>
 
-#include <boost/variant/variant_fwd.hpp>
+#include <mpark/variant.hpp>
 
 #include <array>
-#include <stdio.h>
-
-class BlockchainState;
-class AddressWriter;
-
-
-struct ScriptOutputBase {
-    void processOutput(BlockchainState &) {}
-    void checkOutput(const BlockchainState &) {}
-};
 
 template<blocksci::AddressType::Enum type>
-struct ScriptOutput;
-
-template <>
-struct ScriptOutput<blocksci::AddressType::Enum::PUBKEY> : public ScriptOutputBase {
-    CPubKey pubkey;
+struct ScriptOutput {
+    static constexpr auto address_v = type;
+    static constexpr auto script_v = scriptType(type);
+    ScriptOutputData<type> data;
+    uint32_t scriptNum = 0;
+    bool isNew = false;
     
-    ScriptOutput(const std::vector<unsigned char> &vch1);
-    ScriptOutput(const CPubKey &pub) : pubkey(pub) {}
+    ScriptOutput() = default;
+    ScriptOutput(const ScriptOutputData<type> &data_) : data(data_) {}
     
-    bool isValid() const { return true; }
+    template<blocksci::AddressType::Enum t = type, std::enable_if_t<blocksci::ScriptInfo<scriptType(t)>::deduped, int> = 0>
+    uint32_t resolve(AddressState &state) {
+        RawScript rawScript{data.getHash(), script_v};
+        auto addressInfo = state.findAddress(rawScript);
+        std::tie(scriptNum, isNew) = state.resolveAddress(addressInfo);
+        assert(scriptNum > 0);
+        if (isNew) {
+            data.visitWrapped([&](auto &output) { output.resolve(state); });
+        }
+        return scriptNum;
+    }
     
-    blocksci::uint160 getHash();
-};
-
-template <>
-struct ScriptOutput<blocksci::AddressType::Enum::PUBKEYHASH> : public ScriptOutputBase {
+    template<blocksci::AddressType::Enum t = type, std::enable_if_t<!blocksci::ScriptInfo<scriptType(t)>::deduped, int> = 0>
+    uint32_t resolve(AddressState &state) {
+        scriptNum = state.getNewAddressIndex(script_v);
+        isNew = true;
+        assert(scriptNum > 0);
+        data.visitWrapped([&](auto &output) { output.resolve(state); });
+        return scriptNum;
+    }
     
-    CKeyID hash;
+    template<blocksci::AddressType::Enum t = type, std::enable_if_t<blocksci::ScriptInfo<scriptType(t)>::deduped, int> = 0>
+    void check(const AddressState &state) {
+        RawScript rawScript{data.getHash(), script_v};
+        auto addressInfo = state.findAddress(rawScript);
+        scriptNum = addressInfo.addressNum;
+        isNew = addressInfo.addressNum == 0;
+        data.visitWrapped([&](auto &output) { output.check(state); });
+    }
     
-    ScriptOutput(blocksci::uint160 &pubkeyHash) : hash{pubkeyHash} {}
-    
-    bool isValid() const { return true; }
-    
-    blocksci::uint160 getHash();
-};
-
-template <>
-struct ScriptOutput<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptOutputBase {
-    CKeyID hash;
-    
-    ScriptOutput(blocksci::uint160 hash_) : hash(hash_) {}
-    
-    blocksci::uint160 getHash();
-    
-    bool isValid() const {
-        return true;
+    template<blocksci::AddressType::Enum t = type, std::enable_if_t<!blocksci::ScriptInfo<scriptType(t)>::deduped, int> = 0>
+    void check(const AddressState &state) {
+        scriptNum = 0;
+        isNew = true;
+        data.visitWrapped([&](auto &output) { output.check(state); });
     }
 };
 
+struct ScriptOutputDataBase {
+    bool isValid() const { return true; }
+    
+    template<typename Func>
+    void visitWrapped(Func) {}
+    
+    template<typename Func>
+    void visitWrapped(Func) const {}
+};
+
 template <>
-struct ScriptOutput<blocksci::AddressType::Enum::MULTISIG> {
+struct ScriptOutputData<blocksci::AddressType::Enum::PUBKEY> : public ScriptOutputDataBase {
+    blocksci::CPubKey pubkey;
+    
+    ScriptOutputData(const boost::iterator_range<const unsigned char *> &vch1);
+    ScriptOutputData(const blocksci::CPubKey &pub) : pubkey(pub) {}
+    ScriptOutputData() = default;
+    
+    blocksci::uint160 getHash() const;
+    
+    blocksci::PubkeyData getData(uint32_t txNum) const;
+};
+
+template <>
+struct ScriptOutputData<blocksci::AddressType::Enum::PUBKEYHASH> : public ScriptOutputDataBase {
+    
+    blocksci::CKeyID hash;
+    
+    ScriptOutputData(blocksci::uint160 &pubkeyHash) : hash{pubkeyHash} {}
+    
+    blocksci::uint160 getHash() const;
+    
+    blocksci::PubkeyData getData(uint32_t txNum) const;
+};
+
+template <>
+struct ScriptOutputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : public ScriptOutputDataBase {
+    
+    blocksci::CKeyID hash;
+    
+    ScriptOutputData(blocksci::uint160 &&pubkeyHash) : hash{pubkeyHash} {}
+    
+    blocksci::uint160 getHash() const;
+    
+    blocksci::PubkeyData getData(uint32_t txNum) const;
+};
+
+template <>
+struct ScriptOutputData<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptOutputDataBase {
+    blocksci::CKeyID hash;
+    
+    ScriptOutputData(blocksci::uint160 hash_) : hash(hash_) {}
+    
+    blocksci::uint160 getHash() const;
+    
+    blocksci::ScriptHashData getData(uint32_t txNum) const;
+};
+
+template <>
+struct ScriptOutputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> : public ScriptOutputDataBase {
+    blocksci::uint256 hash;
+    
+    ScriptOutputData(blocksci::uint256 hash_) : hash(hash_) {}
+    
+    blocksci::uint160 getHash() const;
+    
+    blocksci::ScriptHashData getData(uint32_t txNum) const;
+};
+
+template <>
+struct ScriptOutputData<blocksci::AddressType::Enum::MULTISIG> : public ScriptOutputDataBase {
     static constexpr int MAX_ADDRESSES = 16;
-    using RawAddressArray = std::array<CPubKey, MAX_ADDRESSES>;
-    using ProcessedAddressArray = std::array<blocksci::Address, MAX_ADDRESSES>;
-    using FirstSeenArray = std::array<bool, MAX_ADDRESSES>;
     uint8_t numRequired;
     uint8_t numTotal;
     uint16_t addressCount;
     
-    ProcessedAddressArray processedAddresses;
-    RawAddressArray addresses;
-    FirstSeenArray firstSeen;
+    std::vector<ScriptOutput<blocksci::AddressType::Enum::PUBKEY>> addresses;
     
-    ScriptOutput() : addressCount(0) {}
+    ScriptOutputData() : addressCount(0) {}
     
-    void addAddress(const std::vector<unsigned char> &vch1);
+    void addAddress(const boost::iterator_range<const unsigned char *> &vch1);
     
     bool isValid() const {
         return numRequired <= numTotal && numTotal == addressCount;
     }
     
-    blocksci::uint160 getHash();
-    void processOutput(BlockchainState &state);
-    void checkOutput(const BlockchainState &state);
-};
-
-template <>
-struct ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD> : public ScriptOutputBase {
-    CScript script;
+    blocksci::uint160 getHash() const;
     
-    ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD>() {};
-    ScriptOutput<blocksci::AddressType::Enum::NONSTANDARD>(const CScript &script);
-    
-    bool isValid() const {
-        return true;
+    template<typename Func>
+    void visitWrapped(Func func) {
+        for (auto &pubkey : addresses) {
+            func(pubkey);
+        }
     }
+    
+    template<typename Func>
+    void visitWrapped(Func func) const {
+        for (auto &pubkey : addresses) {
+            func(pubkey);
+        }
+    }
+    
+    blocksci::ArbitraryLengthData<blocksci::MultisigData> getData(uint32_t txNum) const;
 };
 
 template <>
-struct ScriptOutput<blocksci::AddressType::Enum::NULL_DATA> : public ScriptOutputBase {
+struct ScriptOutputData<blocksci::AddressType::Enum::NONSTANDARD> : public ScriptOutputDataBase {
+    blocksci::CScriptView script;
+    
+    ScriptOutputData() {}
+    ScriptOutputData(const blocksci::CScriptView &script);
+    
+    blocksci::ArbitraryLengthData<blocksci::NonstandardScriptData> getData(uint32_t txNum) const;
+};
+
+template <>
+struct ScriptOutputData<blocksci::AddressType::Enum::NULL_DATA> : public ScriptOutputDataBase {
     std::vector<unsigned char> fullData;
     
-    ScriptOutput<blocksci::AddressType::Enum::NULL_DATA>(const CScript &script);
+    ScriptOutputData(const blocksci::CScriptView &script);
     
-    bool isValid() const {
-        return true;
-    }
+    blocksci::ArbitraryLengthData<blocksci::RawData> getData(uint32_t txNum) const;
 };
 
-using ScriptOutputType = blocksci::to_script_variant_t<ScriptOutput, blocksci::AddressInfoList>;
+using ScriptOutputType = blocksci::to_variadic_t<blocksci::to_address_tuple_t<ScriptOutput>, mpark::variant>;
 
-template <blocksci::AddressType::Enum type>
-std::pair<blocksci::Address, bool> getAddressNum(ScriptOutput<type> &data, BlockchainState &state);
-
-template <blocksci::AddressType::Enum type>
-std::pair<blocksci::Address, bool> checkAddressNum(ScriptOutput<type> &data, const BlockchainState &state);
-
-ScriptOutputType extractScriptData(const unsigned char *scriptBegin, const unsigned char *scriptEnd);
+class AnyScriptOutput {
+public:
+    ScriptOutputType wrapped;
+    blocksci::Address address() const;
+    bool isNew() const;
+    blocksci::AddressType::Enum type() const;
+    
+    AnyScriptOutput() = default;
+    AnyScriptOutput(const blocksci::CScriptView &scriptPubKey, bool witnessActivated);
+    
+    void check(const AddressState &state);
+    uint32_t resolve(AddressState &state);
+    bool isValid() const;
+};
 
 #endif /* script_output_hpp */

@@ -9,52 +9,100 @@
 #ifndef output_hpp
 #define output_hpp
 
-#include "inout.hpp"
+#include <blocksci/chain/inout.hpp>
+#include <blocksci/chain/inout_pointer.hpp>
+#include <blocksci/chain/chain_access.hpp>
+#include <blocksci/address/address.hpp>
 #include <blocksci/address/address_types.hpp>
 
-#include <boost/optional.hpp>
+#include <range/v3/utility/optional.hpp>
 
-#include <memory>
-#include <stdio.h>
+namespace std {
+    template<> struct hash<blocksci::Output> {
+        size_t operator()(const blocksci::Output &input) const;
+    };
+}
 
 namespace blocksci {
-    struct Transaction;
-    struct Address;
-    struct OutputPointer;
-    struct Input;
-    class ChainAccess;
     
-    struct Output : public Inout {
-        using Inout::Inout;
+    struct Address;
+    
+    class Output {
+        const ChainAccess *access;
+        const Inout *inout;
+        uint32_t spendingTxIndex;
+        OutputPointer pointer;
         
-        Output(const Inout &other) : Inout(other) {}
-        
-        Input matchedInput(uint32_t txIndex) const;
-        
-        uint32_t getSpendingTxIndex(const ChainAccess &access) const;
-        
-        bool isSpent(const ChainAccess &access) const {
-            return getSpendingTxIndex(access) != 0;
+        friend size_t std::hash<Output>::operator()(const Output &) const;
+    public:
+        BlockHeight blockHeight;
+        Output(const OutputPointer &pointer_, BlockHeight blockHeight_, const Inout &inout_, const ChainAccess &access_) :
+        access(&access_), inout(&inout_), pointer(pointer_), blockHeight(blockHeight_) {
+            assert(pointer.isValid(access_));
+            if (inout->linkedTxNum < access->maxLoadedTx()) {
+                spendingTxIndex = inout->linkedTxNum;
+            } else {
+                spendingTxIndex = 0;
+            }
         }
         
-        std::string toString() const;
+        Output(const OutputPointer &pointer_, const ChainAccess &access_) :
+        Output(pointer_, access_.getBlockHeight(pointer_.txNum), access_.getTx(pointer_.txNum)->getOutput(pointer_.inoutNum), access_) {}
         
-        boost::optional<Transaction> getSpendingTx(const ChainAccess &access) const;
+        uint32_t getSpendingTxIndex() const {
+            return spendingTxIndex;
+        }
+
+        uint32_t txIndex() const {
+            return pointer.txNum;
+        }
+
+        uint32_t outputIndex() const {
+            return pointer.inoutNum;
+        }
         
-        // Requires DataAccess
-        #ifndef BLOCKSCI_WITHOUT_SINGLETON
-        
-        uint32_t getSpendingTxIndex() const;
-        boost::optional<Transaction> getSpendingTx() const;
+        Transaction transaction() const;
+        Block block() const;
         
         bool isSpent() const {
             return getSpendingTxIndex() != 0;
         }
         
+        bool operator==(const Output &other) const {
+            return pointer == other.pointer;
+        }
+
+        bool operator!=(const Output &other) const {
+            return pointer != other.pointer;
+        }
+        
+        bool operator==(const Inout &other) const {
+            return *inout == other;
+        }
+        
+        blocksci::AddressType::Enum getType() const {
+            return inout->getType();
+        }
+        
+        uint64_t getValue() const {
+            return inout->getValue();
+        }
+        
+        Address getAddress() const {
+            return inout->getAddress();
+        }
+
+        std::string toString() const;
+        ranges::optional<Transaction> getSpendingTx() const;
+        
+        #ifndef BLOCKSCI_WITHOUT_SINGLETON
+        Output(const OutputPointer &pointer);
         #endif
     };
-}
 
-std::ostream &operator<<(std::ostream &os, blocksci::Output const &output);
+    inline std::ostream &operator<<(std::ostream &os, const Output &output) { 
+        return os << output.toString();
+    }
+}
 
 #endif /* output_hpp */

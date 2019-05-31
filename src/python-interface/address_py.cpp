@@ -7,16 +7,15 @@
 //
 
 #include "optional_py.hpp"
+#include "variant_py.hpp"
 
 #include <blocksci/address/address.hpp>
-#include <blocksci/chain/chain.hpp>
 #include <blocksci/address/address_info.hpp>
-#include <blocksci/scripts/scripts.hpp>
+#include <blocksci/chain.hpp>
+#include <blocksci/script.hpp>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
-#include <pybind11/stl.h>
-#include <pybind11/stl_bind.h>
 
 namespace py = pybind11;
 
@@ -28,57 +27,84 @@ void init_address(py::module &m) {
     .def("__repr__", &Address::toString)
     .def(py::self == py::self)
     .def(hash(py::self))
-    .def_readonly("address_num", &Address::addressNum)
+    .def_readonly("script_num", &Address::scriptNum)
     .def_readonly("type", &Address::type)
-    .def_property_readonly("outs", py::overload_cast<>(&Address::getOutputs, py::const_), "Returns a list of all outputs sent to this address")
-    .def_property_readonly("ins", py::overload_cast<>(&Address::getInputs, py::const_), "Returns a list of all inputs spent from this address")
-    .def_property_readonly("txes", py::overload_cast<>(&Address::getTransactions, py::const_), "Returns a list of all transactions involving this address")
-    .def_property_readonly("in_txes", py::overload_cast<>(&Address::getInputTransactions, py::const_), "Returns a list of all transaction where this address was an input")
-    .def_property_readonly("out_txes", py::overload_cast<>(&Address::getOutputTransactions, py::const_), "Returns a list of all transaction where this address was an output")
-    .def_property_readonly("script", py::overload_cast<>(&Address::getScript, py::const_), "Returns the script associated with this address")
-    .def_property_readonly("first_tx", py::overload_cast<>(&Address::getFirstTransaction, py::const_), "Get the first transaction that was sent to this address")
-    .def_static("from_string", py::overload_cast<const std::string &>(getAddressFromString), "Construct an address object from an address string")
-    .def_static("from_strings", py::overload_cast<const std::vector<std::string> &>(getAddressesFromStrings), "Return a list of addresses that match the given address strings")
+    .def("balance", py::overload_cast<BlockHeight>(&Address::calculateBalance, py::const_), py::arg("height") = 0, "Calculates the balance held by this address at the height (Defaults to the full chain)")
+    .def("outs", py::overload_cast<>(&Address::getOutputs, py::const_), "Returns a list of all outputs sent to this address")
+    .def("ins", py::overload_cast<>(&Address::getInputs, py::const_), "Returns a list of all inputs spent from this address")
+    .def("txes", py::overload_cast<>(&Address::getTransactions, py::const_), "Returns a list of all transactions involving this address")
+    .def("in_txes", py::overload_cast<>(&Address::getInputTransactions, py::const_), "Returns a list of all transaction where this address was an input")
+    .def("out_txes", py::overload_cast<>(&Address::getOutputTransactions, py::const_), "Returns a list of all transaction where this address was an output")
+    .def_property_readonly("script", [](const Address &address) {
+        return address.getScript().wrapped;
+    }, "Returns the script associated with this address")
     .def_static("address_count", static_cast<size_t(*)()>(addressCount), "Get the total number of address of a given type")
-    .def_static("addresses_with_prefix", py::overload_cast<const std::string &>(getAddressesWithPrefix), "Find all addresses that begin with the given prefix")
+    .def_static("from_string", py::overload_cast<const std::string &>(getAddressFromString), "Construct an address object from an address string")
+    .def_static("with_prefix", py::overload_cast<const std::string &>(getAddressesWithPrefix))
     ;
     
-    py::class_<Script> baseScript(m, "Script", "Class representing a script which coins are sent to");
+    py::class_<Script> script(m, "Script", "Class representing a script which coins are sent to");
+    
+    script
+    .def(py::init<uint32_t, ScriptType::Enum>(), "Can be constructed directly by passing it an address index and address type")
+    .def("__repr__", &Script::toString)
+    .def(py::self == py::self)
+    .def(hash(py::self))
+    .def_property_readonly("script", [](const Script &script) {
+        return script.getScript().wrapped;
+    }, "Returns the script data associated with this script")
+    .def_readonly("script_num", &Script::scriptNum)
+    .def_readonly("type", &Script::type)
+    .def(py::init<uint32_t, ScriptType::Enum>(), "Can be constructed directly by passing it an address index and address type")
+    .def("outs", py::overload_cast<>(&Script::getOutputs, py::const_), "Returns a list of all outputs sent to this script")
+    .def("ins", py::overload_cast<>(&Script::getInputs, py::const_), "Returns a list of all inputs spent from this script")
+    .def("txes", py::overload_cast<>(&Script::getTransactions, py::const_), "Returns a list of all transactions involving this script")
+    .def("in_txes", py::overload_cast<>(&Script::getInputTransactions, py::const_), "Returns a list of all transaction where this script was an input")
+    .def("out_txes", py::overload_cast<>(&Script::getOutputTransactions, py::const_), "Returns a list of all transaction where this script was an output")
+    ;
+    
+    py::class_<BaseScript> baseScript(m, "BaseScript", script, "Class representing a script which coins are sent to");
     baseScript
-    .def("__repr__", py::overload_cast<>(&Script::toString, py::const_))
-    .def("__str__", py::overload_cast<>(&Script::toPrettyString, py::const_))
+    .def_property_readonly("first_tx", py::overload_cast<>(&BaseScript::getFirstTransaction, py::const_), "Get the first transaction that was sent to this address")
+    .def_property_readonly("revealed_tx",py::overload_cast<>(&BaseScript::getTransactionRevealed, py::const_), "The transaction where this wrapped script was first revealed")
     ;
     
     py::class_<script::Pubkey>(m, "PubkeyScript", baseScript, "Extra data about pay to pubkey address")
-    .def_readonly("raw_address", &script::Pubkey::pubkey, "Public key for this address")
-    .def_property_readonly("address", py::overload_cast<>(&script::Pubkey::addressString, py::const_), "Bitcoin address string")
-    ;
-    
-    py::class_<script::PubkeyHash>(m, "PubkeyHashScript", baseScript, "Extra data about pay to pubkey hash address")
-    .def_readonly("raw_address", &script::PubkeyHash::address, "160 bit address hash")
-    .def_property_readonly("address", py::overload_cast<>(&script::PubkeyHash::addressString, py::const_), "Bitcoin address string")
+    .def("__repr__", py::overload_cast<>(&script::Pubkey::toString, py::const_))
+    .def("__str__", py::overload_cast<>(&script::Pubkey::toPrettyString, py::const_))
+    .def_property_readonly("pubkey", &script::Pubkey::getPubkey, "Public key for this address")
+    .def_readonly("pubkeyhash", &script::Pubkey::pubkeyhash, "160 bit address hash")
+    .def_property_readonly("address_string", py::overload_cast<>(&script::Pubkey::addressString, py::const_), "Bitcoin address string")
     ;
     
     py::class_<script::Multisig>(m, "MultisigScript", baseScript, "Extra data about multi-signature address")
+    .def("__repr__", py::overload_cast<>(&script::Multisig::toString, py::const_))
+    .def("__str__", py::overload_cast<>(&script::Multisig::toPrettyString, py::const_))
     .def_readonly("required", &script::Multisig::required, "The number of signatures required for this address")
     .def_readonly("total", &script::Multisig::total, "The total number of keys that can sign for this address")
     .def_readonly("addresses", &script::Multisig::addresses, "The list of the keys that can sign for this address")
     ;
     
     py::class_<script::ScriptHash>(m, "PayToScriptHashScript", baseScript, "Extra data about pay to script hash address")
-    .def_readonly("wrapped_address", &script::ScriptHash::wrappedAddress, "The address inside this P2SH address")
+    .def("__repr__", py::overload_cast<>(&script::ScriptHash::toString, py::const_))
+    .def("__str__", py::overload_cast<>(&script::ScriptHash::toPrettyString, py::const_))
+    .def_property_readonly("wrapped_address", &script::ScriptHash::getWrappedAddress, "The address inside this P2SH address")
     .def_readonly("raw_address",  &script::ScriptHash::address, "The 160 bit P2SH address hash")
     .def_property_readonly("wrapped_script",py::overload_cast<>(&script::ScriptHash::wrappedScript, py::const_), "The script inside this P2SH address")
     .def_property_readonly("address", py::overload_cast<>(&script::ScriptHash::addressString, py::const_), "Bitcoin address string")
     ;
     
     py::class_<script::OpReturn>(m, "NulldataScript", baseScript, "Extra data about op_return address")
+    .def("__repr__", py::overload_cast<>(&script::OpReturn::toString, py::const_))
+    .def("__str__", py::overload_cast<>(&script::OpReturn::toPrettyString, py::const_))
     .def_property_readonly("data", [](const script::OpReturn &address) {
         return py::bytes(address.data);
-    }, py::return_value_policy::copy, "Data contained inside this script")
+    }, "Data contained inside this script")
     ;
     
     py::class_<script::Nonstandard>(m, "NonStandardScript", baseScript, "Extra data about non-standard address")
+    .def("__repr__", py::overload_cast<>(&script::Nonstandard::toString, py::const_))
+    .def("__str__", py::overload_cast<>(&script::Nonstandard::toPrettyString, py::const_))
     .def_property_readonly("in_script", &script::Nonstandard::inputString, "Nonstandard input script")
     .def_property_readonly("out_script", &script::Nonstandard::outputString, "Nonstandard output script")
     ;
@@ -90,7 +116,8 @@ void init_address(py::module &m) {
     .value("scripthash", AddressType::Enum::SCRIPTHASH)
     .value("multisig", AddressType::Enum::MULTISIG)
     .value("nulldata", AddressType::Enum::NULL_DATA)
-    .export_values()
+    .value("witness_pubkeyhash", AddressType::Enum::WITNESS_PUBKEYHASH)
+    .value("witness_scripthash", AddressType::Enum::WITNESS_SCRIPTHASH)
     .def_property_readonly_static("types", [](py::object) -> std::array<AddressType::Enum, 6> {
         return {{AddressType::Enum::PUBKEY, AddressType::Enum::PUBKEYHASH, AddressType::Enum::SCRIPTHASH,
             AddressType::Enum::MULTISIG, AddressType::Enum::NULL_DATA, AddressType::Enum::NONSTANDARD}};
@@ -108,6 +135,34 @@ void init_address(py::module &m) {
             case AddressType::Enum::NONSTANDARD:
                 return "Nonstandard";
             case AddressType::Enum::NULL_DATA:
+                return "Null data";
+            case AddressType::Enum::WITNESS_PUBKEYHASH:
+                return "Pay to witness pubkey hash";
+            case AddressType::Enum::WITNESS_SCRIPTHASH:
+                return "Pay to witness script hash";
+            default:
+                return "Unknown Address Type";
+        }
+    })
+    ;
+    
+    py::enum_<ScriptType::Enum>(m, "script_type", py::arithmetic(), "Enumeration of all address types")
+    .value("nonstandard", ScriptType::Enum::NONSTANDARD)
+    .value("pubkey", ScriptType::Enum::PUBKEY)
+    .value("scripthash", ScriptType::Enum::SCRIPTHASH)
+    .value("multisig", ScriptType::Enum::MULTISIG)
+    .value("nulldata", ScriptType::Enum::NULL_DATA)
+    .def("pretty_name", [](AddressType::Enum val) {
+        switch (val) {
+            case ScriptType::Enum::PUBKEY:
+                return "Pay to pubkey";
+            case ScriptType::Enum::SCRIPTHASH:
+                return "Pay to script hash";
+            case ScriptType::Enum::MULTISIG:
+                return "Multisig";
+            case ScriptType::Enum::NONSTANDARD:
+                return "Nonstandard";
+            case ScriptType::Enum::NULL_DATA:
                 return "Null data";
             default:
                 return "Unknown Address Type";
