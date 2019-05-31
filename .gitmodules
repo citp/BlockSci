@@ -1,0 +1,18 @@
+[submodule "external/clipp"]
+	path = external/clipp
+	url = https://github.com/muellan/clipp
+[submodule "external/bitcoin-api-cpp"]
+	path = external/bitcoin-api-cpp
+	url = https://github.com/feddan35/bitcoin-api-cpp
+[submodule "external/dset"]
+	path = external/dset
+	url = https://github.com/wjakob/dset.git
+[submodule "external/variant"]
+	path = external/variant
+	url = https://github.com/mpark/variant.git
+[submodule "external/range-v3"]
+	path = external/range-v3
+	url = https://github.com/hkalodner/range-v3.git
+[submodule "external/rocksdb"]
+	path = external/rocksdb
+	url = https://github.com/facebook/rocksdb
