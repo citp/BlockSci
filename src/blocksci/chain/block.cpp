@@ -25,7 +25,7 @@
 
 namespace blocksci {
     
-    Block::Block(uint32_t firstTxIndex, uint32_t numTxes, uint32_t height, uint256 hash_, int32_t version, uint32_t timestamp, uint32_t bits, uint256 nonce_, uint64_t coinbaseOffset_, double difficulty) : firstTxIndex(firstTxIndex), numTxes(numTxes), height(height), hash(hash_), version(version), timestamp(timestamp), bits(bits), nonce(nonce_), coinbaseOffset(coinbaseOffset_), difficulty(difficulty) {}
+    Block::Block(uint32_t firstTxIndex, uint32_t numTxes, uint32_t height, uint256 hash_, int32_t version, uint32_t timestamp, uint32_t bits, uint32_t nonce, uint64_t coinbaseOffset_, double difficulty) : firstTxIndex(firstTxIndex), numTxes(numTxes), height(height), hash(hash_), version(version), timestamp(timestamp), bits(bits), nonce(nonce), coinbaseOffset(coinbaseOffset_), difficulty(difficulty) {}
     
     bool Block::operator==(const Block& other) const {
         return firstTxIndex == other.firstTxIndex
@@ -41,7 +41,7 @@ namespace blocksci {
     
     std::string Block::getString() const {
         std::stringstream ss;
-        ss << "Block(numTxes=" << numTxes <<", height=" << height <<", header_hash=" << hash.GetHex() << ", version=" << version <<", timestamp=" << timestamp << ", bits=" << bits << ", nonce=" << nonce.GetHex() << ", difficulty=" << difficulty << ")";
+        ss << "Block(numTxes=" << numTxes <<", height=" << height <<", header_hash=" << hash.GetHex() << ", version=" << version <<", timestamp=" << timestamp << ", bits=" << bits << ", nonce=" << nonce << ", difficulty=" << difficulty << ")";
         return ss.str();
     }
     
