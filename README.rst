@@ -139,7 +139,7 @@ Note that BlockSci only actively supports python 3.
 	make
 	sudo make install
 	
-	git clone https://github.com/cryptolu/BlockSci.git
+	git clone https://github.com/citp/BlockSci.git
 	cd BlockSci
 	git submodule update --init --recursive --checkout
 
