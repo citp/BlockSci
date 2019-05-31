@@ -22,6 +22,7 @@
 #include <openssl/sha.h>
 
 #include <iostream>
+#include <cmath>
 
 using SequenceNum = uint32_t;
 using Value = uint64_t;
@@ -181,7 +182,7 @@ RawInput::RawInput(const vin_t &vin) {
 RawOutput::RawOutput(std::vector<unsigned char> scriptBytes_, int64_t value_) : scriptBytes(std::move(scriptBytes_)), value(value_)  {
 }
 
-RawOutput::RawOutput(const vout_t &vout) : RawOutput(hexStringToVec(vout.scriptPubKey.hex), static_cast<int64_t>(vout.value * 100000000)) {}
+RawOutput::RawOutput(const vout_t &vout) : RawOutput(hexStringToVec(vout.scriptPubKey.hex), static_cast<int64_t>(std::round(vout.value * 100000000))) {}
 
 void RawTransaction::load(const getrawtransaction_t &txinfo, uint32_t txNum_, blocksci::BlockHeight blockHeight_, bool witnessActivated) {
     txNum = txNum_;
@@ -191,6 +192,9 @@ void RawTransaction::load(const getrawtransaction_t &txinfo, uint32_t txNum_, bl
     locktime = static_cast<uint32_t>(txinfo.locktime);
     realSize = static_cast<uint32_t>(txinfo.hex.size() / 2);
     auto inputCount = txinfo.vin.size();
+    valueBalance = static_cast<int64_t>(std::round(txinfo.valueBalance * 100000000));
+    nShieldedSpend = static_cast<uint16_t>(txinfo.nShieldedSpend);
+    nShieldedOutput = static_cast<uint16_t>(txinfo.nShieldedOutput);
     inputs.clear();
     inputs.reserve(inputCount);
     for (size_t i = 0; i < inputCount; i++) {
@@ -203,13 +207,23 @@ void RawTransaction::load(const getrawtransaction_t &txinfo, uint32_t txNum_, bl
     for (unsigned int i = 0; i < outputCount; i++) {
         outputs.emplace_back(txinfo.vout[i]);
     }
-    hash = blocksci::uint256S(txinfo.txid);;
+    hash = blocksci::uint256S(txinfo.txid);
+    auto vpubSize = txinfo.vpub_old.size();
+    
+    vpubold.clear();
+    vpubold.reserve(vpubSize);
+	vpubnew.clear();
+    vpubnew.reserve(vpubSize);
+    for (unsigned int i = 0; i < vpubSize; i++) {
+        vpubold.emplace_back(static_cast<uint64_t>(std::round(txinfo.vpub_old[i] * 100000000)));
+        vpubnew.emplace_back(static_cast<uint64_t>(std::round(txinfo.vpub_new[i] * 100000000)));
+    }
 }
 
 #endif
 
 blocksci::RawTransaction RawTransaction::getRawTransaction() const {
-    return {realSize, baseSize, locktime, static_cast<uint16_t>(inputs.size()), static_cast<uint16_t>(outputs.size())};
+    return {realSize, baseSize, locktime, static_cast<uint16_t>(inputs.size()), static_cast<uint16_t>(outputs.size()), static_cast<uint16_t>(vpubold.size()), valueBalance, nShieldedSpend, nShieldedOutput};
 }
 
 blocksci::OutputPointer RawInput::getOutputPointer() const {

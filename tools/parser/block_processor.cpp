@@ -376,6 +376,14 @@ void serializeTransaction(RawTransaction &tx, IndexedFileWriter<1> &txFile, Fixe
         blocksci::Inout blocksciOutput{0, address.scriptNum, address.type, output.value};
         txFile.write(blocksciOutput);
     }
+    
+    for (size_t i = 0; i < tx.vpubold.size(); i++) {
+		txFile.write(tx.vpubold[i]);
+	}
+	
+	for (size_t i = 0; i < tx.vpubnew.size(); i++) {
+		txFile.write(tx.vpubnew[i]);
+	}
 }
 
 void serializeAddressess(RawTransaction &tx, AddressWriter &addressWriter) {

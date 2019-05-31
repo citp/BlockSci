@@ -120,6 +120,9 @@ struct RawTransaction {
     uint32_t realSize = 0;
     uint32_t locktime = 0;
     int32_t version = 0;
+    int64_t valueBalance = 0;
+    uint16_t nShieldedSpend = 0;
+    uint16_t nShieldedOutput = 0;
     blocksci::BlockHeight blockHeight;
     bool isSegwit;
     const char *txHashStart;
@@ -127,6 +130,8 @@ struct RawTransaction {
     
     boost::container::small_vector<RawInput, 4> inputs;
     boost::container::small_vector<RawOutput, 4> outputs;
+    boost::container::small_vector<uint64_t, 4> vpubold;
+    boost::container::small_vector<uint64_t, 4> vpubnew;
     boost::container::small_vector<AnyScriptInput, 4> scriptInputs;
     boost::container::small_vector<AnyScriptOutput, 4> scriptOutputs;
     

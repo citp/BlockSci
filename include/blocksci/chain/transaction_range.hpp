@@ -30,7 +30,8 @@ namespace blocksci {
             auto tx = reinterpret_cast<const RawTransaction *>(currentTxPos);
             currentTxPos += sizeof(RawTransaction) +
             static_cast<size_t>(tx->inputCount) * sizeof(Inout) +
-            static_cast<size_t>(tx->outputCount) * sizeof(Inout);
+            static_cast<size_t>(tx->outputCount) * sizeof(Inout) +
+            static_cast<size_t>(tx->vpubCount) * sizeof(uint64_t) * 2;
             ++currentTxIndex;
             if (currentTxIndex == nextBlockFirst) {
                 ++blockNum;

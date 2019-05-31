@@ -20,8 +20,12 @@ namespace blocksci {
         uint32_t locktime;
         uint16_t inputCount;
         uint16_t outputCount;
+        uint16_t vpubCount;
+        int64_t valueBalance;
+        uint16_t nShieldedSpend;
+        uint16_t nShieldedOutput;
         
-        RawTransaction(uint32_t realSize_, uint32_t baseSize_, uint32_t locktime_, uint16_t inputCount_, uint16_t outputCount_) : realSize(realSize_), baseSize(baseSize_), locktime(locktime_), inputCount(inputCount_), outputCount(outputCount_) {}
+        RawTransaction(uint32_t realSize_, uint32_t baseSize_, uint32_t locktime_, uint16_t inputCount_, uint16_t outputCount_, uint16_t vpubCount_, int64_t valueBalance_, uint16_t nShieldedSpend_, uint16_t nShieldedOutput_) : realSize(realSize_), baseSize(baseSize_), locktime(locktime_), inputCount(inputCount_), outputCount(outputCount_), vpubCount(vpubCount_), valueBalance(valueBalance_), nShieldedSpend(nShieldedSpend_), nShieldedOutput(nShieldedOutput_) {}
         
         RawTransaction(const RawTransaction &) = delete;
         RawTransaction(RawTransaction &&) = delete;
@@ -61,7 +65,7 @@ namespace blocksci {
         }
         
         size_t serializedSize() const {
-            return sizeof(RawTransaction) + sizeof(Inout) * (inputCount + outputCount);
+            return sizeof(RawTransaction) + sizeof(Inout) * (inputCount + outputCount) + (vpubCount * sizeof(uint64_t) * 2);
         }
         
     private:

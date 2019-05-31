@@ -63,7 +63,8 @@ namespace blocksci {
                 auto tx = reinterpret_cast<const RawTransaction *>(currentTxPos);
                 currentTxPos += sizeof(RawTransaction) +
                 static_cast<size_t>(tx->inputCount) * sizeof(Inout) +
-                static_cast<size_t>(tx->outputCount) * sizeof(Inout);
+                static_cast<size_t>(tx->outputCount) * sizeof(Inout) +
+                static_cast<size_t>(tx->vpubCount) * sizeof(uint64_t) * 2;
                 currentTxIndex++;
             }
             
@@ -155,9 +156,35 @@ namespace blocksci {
             return rawBlock->bits;
         }
         
-        uint32_t nonce() const {
+        uint256 nonce() const {
             return rawBlock->nonce;
         }
+        
+        double difficulty() const {
+			uint32_t nbits = bits();
+
+			uint32_t powLimit = 520617983;
+			
+			int nShift = (nbits >> 24) & 0xff;
+			int nShiftAmount = (powLimit >> 24) & 0xff;
+
+			double dDiff =
+				(double)(powLimit & 0x00ffffff) / 
+				(double)(nbits & 0x00ffffff);
+
+			while (nShift < nShiftAmount)
+			{
+				dDiff *= 256.0;
+				nShift++;
+			}
+			while (nShift > nShiftAmount)
+			{
+				dDiff /= 256.0;
+				nShift--;
+			}
+
+			return dDiff;
+		}
         
         uint32_t baseSize() const {
             return rawBlock->baseSize;
@@ -197,7 +224,7 @@ namespace blocksci {
         
         std::string toString() const {
             std::stringstream ss;
-            ss << "Block(numTxes=" << rawBlock->numTxes <<", height=" << blockNum <<", header_hash=" << rawBlock->hash.GetHex() << ", version=" << rawBlock->version <<", timestamp=" << rawBlock->timestamp << ", bits=" << rawBlock->bits << ", nonce=" << rawBlock->nonce << ")";
+            ss << "Block(numTxes=" << rawBlock->numTxes <<", height=" << blockNum <<", header_hash=" << rawBlock->hash.GetHex() << ", version=" << rawBlock->version <<", timestamp=" << rawBlock->timestamp << ", bits=" << rawBlock->bits << ", nonce=" << rawBlock->nonce.GetHex() << ")";
             return ss.str();
         }
         

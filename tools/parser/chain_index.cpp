@@ -36,7 +36,7 @@ BlockInfo<FileTag>::BlockInfo(const CBlockHeader &h, uint32_t size_, unsigned in
 BlockInfo<RPCTag>::BlockInfo(const blockinfo_t &info, blocksci::BlockHeight height_) : 
 BlockInfoBase(
     blocksci::uint256S(info.hash), 
-    {info.version, blocksci::uint256S(info.previousblockhash), blocksci::uint256S(info.merkleroot), info.time, 0, info.nonce}, 
+    {info.version, blocksci::uint256S(info.previousblockhash), blocksci::uint256S(info.merkleroot), info.time, std::stoul (info.bits,nullptr,16), blocksci::uint256S(info.nonce)}, 
     static_cast<uint32_t>(info.size), 
     static_cast<uint32_t>(info.tx.size()), 0, 0
     ), tx(info.tx) {

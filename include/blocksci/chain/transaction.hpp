@@ -102,12 +102,34 @@ namespace blocksci {
                 for (auto &input : rawInputs()) {
                     total += input.getValue();
                 }
+                for (auto &vpubold : vpubolds()) {
+                    total -= vpubold;
+                }
                 for (auto &output : rawOutputs()) {
                     total -= output.getValue();
+                }
+                for (auto &vpubnew : vpubnews()) {
+                    total += vpubnew;
                 }
                 return total;
             }
         }
+        
+        int64_t totalVpubold() const {
+			int64_t total = 0;
+			for (auto &vpubold : vpubolds()) {
+				total += vpubold;
+			}
+			return total;
+		}
+		
+		int64_t totalVpubnew() const {
+			int64_t total = 0;
+			for (auto &vpubnew : vpubnews()) {
+				total += vpubnew;
+			}
+			return total;
+		}
         
         uint32_t locktime() const {
             return data->locktime;
@@ -119,6 +141,22 @@ namespace blocksci {
         
         uint16_t outputCount() const {
             return data->outputCount;
+        }
+        
+        uint16_t vpubCount() const {
+            return data->vpubCount;
+        }
+        
+        int64_t valueBalance() const {
+			return data->valueBalance;
+		}
+		
+		uint16_t shieldedSpendCount() const {
+            return data->nShieldedSpend;
+        }
+        
+        uint16_t shieldedOutputCount() const {
+            return data->nShieldedOutput;
         }
         
         ranges::iterator_range<const Inout *> rawOutputs() const {
@@ -148,8 +186,30 @@ namespace blocksci {
             }, ranges::view::ints(uint16_t{0}, inputCount()), rawInputs());
         }
         
+        ranges::iterator_range<const uint64_t *> vpubolds() const {
+			auto pos = reinterpret_cast<const char *>(data) + sizeof(RawTransaction) + outputCount() * sizeof(Inout) + inputCount() * sizeof(Inout);
+			return ranges::make_iterator_range(reinterpret_cast<const uint64_t *>(pos), reinterpret_cast<const uint64_t *>(pos + vpubCount() * sizeof(uint64_t)));
+		}
+		
+		ranges::iterator_range<const uint64_t *> vpubnews() const {
+			auto pos = reinterpret_cast<const char *>(data) + sizeof(RawTransaction) + outputCount() * sizeof(Inout) + inputCount() * sizeof(Inout) + vpubCount() * sizeof(uint64_t);
+			return ranges::make_iterator_range(reinterpret_cast<const uint64_t *>(pos), reinterpret_cast<const uint64_t *>(pos + vpubCount() * sizeof(uint64_t)));
+		}
+		
+		bool isShielded() const {
+				return vpubCount() != 0 or shieldedSpendCount() != 0 or shieldedOutputCount() != 0;
+		}
+		
+		bool isSproutShielded() const {
+				return vpubCount() != 0;
+		}
+		
+		bool isSaplingShielded() const {
+				return shieldedSpendCount() != 0 or shieldedOutputCount() != 0;
+		}
+        
         bool isCoinbase() const {
-            return inputCount() == 0;
+            return inputCount() == 0 && !isShielded();
         }
         
         Block block() const;

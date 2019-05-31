@@ -10,6 +10,7 @@
 
 #include "chain_fwd.hpp"
 #include "transaction.hpp"
+#include "block.hpp"
 #include "range_util.hpp"
 
 #include <blocksci/blocksci_export.h>
@@ -211,6 +212,18 @@ namespace blocksci {
     
     inline int64_t BLOCKSCI_EXPORT fee(const Transaction &tx) {
         return tx.fee();
+    }
+    
+    inline int64_t BLOCKSCI_EXPORT totalVpubold(const Transaction &tx) {
+        return tx.totalVpubold();
+    }
+    
+    inline int64_t BLOCKSCI_EXPORT totalVpubnew(const Transaction &tx) {
+        return tx.totalVpubnew();
+    }
+    
+    inline double BLOCKSCI_EXPORT difficulty(const Block &block) {
+        return block.difficulty();
     }
     
     template <typename T>
