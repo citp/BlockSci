@@ -202,6 +202,13 @@ struct PythonTypeName<int64_t> {
 };
 
 template <>
+struct PythonTypeName<double> {
+	static std::string name() {
+		return "double";
+	}
+};
+
+template <>
 struct PythonTypeName<bool> {
 	static std::string name() {
 		return "bool";

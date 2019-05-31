@@ -69,6 +69,7 @@ template <> struct type_tag<int32_t> { using type = numpy_tag; };
 template <> struct type_tag<uint32_t> { using type = numpy_tag; };
 template <> struct type_tag<int64_t> { using type = numpy_tag; };
 template <> struct type_tag<uint64_t> { using type = numpy_tag; };
+template <> struct type_tag<double> { using type = numpy_tag; };
 template <> struct type_tag<bool> { using type = numpy_tag; };
 template <> struct type_tag<std::chrono::system_clock::time_point> { using type = numpy_tag; };
 template <> struct type_tag<blocksci::uint256> { using type = numpy_tag; };
@@ -115,6 +116,10 @@ struct BlockSciTypeConverter {
 
     int64_t operator()(int64_t val) {
         return static_cast<int64_t>(val);
+    }
+    
+    double operator()(double val) {
+        return static_cast<double>(val);
     }
 
     template <typename A, typename B>

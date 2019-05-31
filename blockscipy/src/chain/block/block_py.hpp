@@ -65,6 +65,9 @@ struct AddBlockMethods {
         func(property_tag, "tx_count", [](const Block &block) -> int64_t {
             return block.size();
         }, "A range of all of the txes in the block");
+        func(property_tag, "difficulty", [](const Block &block) -> double {
+            return difficulty(block);
+        }, "Difficulty value as a float");
         func(property_tag, "input_count", inputCount<Block &>, "Returns total number of inputs included in this block");
         func(property_tag, "output_count", outputCount<Block &>, "Returns total number of outputs included in this block");
         ;

@@ -29,6 +29,12 @@ struct AddTransactionMethods {
         func(property_tag, "inputs", &Transaction::inputs, "A list of the inputs of the transaction"); // same as above
         func(property_tag, "outs", &Transaction::outputs, "A list of the outputs of the transaction"); // same as below
         func(property_tag, "outputs", &Transaction::outputs, "A list of the outputs of the transaction"); // same as above
+        func(property_tag, "vpub_old", &Transaction::vpubolds, "A list of the vpubolds of the transaction"); // same as above
+        func(property_tag, "vpub_new", &Transaction::vpubnews, "A list of the vpubnews of the transaction"); // same as above
+        func(property_tag, "vpub_count", &Transaction::vpubCount, "The number of joinsplits in the transaction"); // same as above
+        func(property_tag, "value_balance", &Transaction::valueBalance, "The valueBalance of the transaction"); // same as above
+        func(property_tag, "sspend_count", &Transaction::shieldedSpendCount, "The number of shielded spends in the transaction"); // same as above
+        func(property_tag, "soutput_count", &Transaction::shieldedOutputCount, "The number of shielded outputs in the transaction"); // same as above
         func(property_tag, "output_count", &Transaction::outputCount, "The number of outputs this transaction has");
         func(property_tag, "input_count", &Transaction::inputCount, "The number of inputs this transaction has");
         func(property_tag, "size_bytes", &Transaction::totalSize, "The size of this transaction in bytes");
@@ -51,6 +57,12 @@ struct AddTransactionMethods {
         func(property_tag, "fee", [](const Transaction &tx) -> int64_t {
             return fee(tx);
         }, "The fee paid by this transaction");
+        func(property_tag, "sum_vpubold", [](const Transaction &tx) -> int64_t {
+            return totalVpubold(tx);
+        }, "The sum of vpub_old values");
+        func(property_tag, "sum_vpubnew", [](const Transaction &tx) -> int64_t {
+            return totalVpubnew(tx);
+        }, "The sum of vpub_new values");
         func(method_tag, "fee_per_byte", [](const Transaction &tx, const std::string &sizeMeasure) -> int64_t {
             auto txFee = fee(tx);
             if (sizeMeasure == "total") {
@@ -70,6 +82,9 @@ struct AddTransactionMethods {
         }, "If this transaction included a null data address, return its output. Otherwise return None");
         func(method_tag, "includes_output_of_type", includesOutputOfType, "Check whether the given transaction includes an output of the given address type", pybind11::arg("address_type"));
         func(property_tag, "is_coinbase", &Transaction::isCoinbase, "Return's true if this transaction is a Coinbase transaction");
+        func(property_tag, "is_shielded", &Transaction::isShielded, "Return's true if this transaction is a shielded transaction");
+        func(property_tag, "is_saplingshielded", &Transaction::isSaplingShielded, "Return's true if this transaction is a shielded transaction");
+        func(property_tag, "is_sproutshielded", &Transaction::isSproutShielded, "Return's true if this transaction is a shielded transaction");
         func(property_tag, "change_output", [](const Transaction &tx) -> ranges::optional<Output> {
             return heuristics::uniqueChangeByLegacyHeuristic(tx);
         }, "If the change address in this transaction can be determined via the fresh address criteria, return it. Otherwise return None.");
