@@ -2,6 +2,7 @@ import blocksci
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 chain = blocksci.Blockchain("../zcash-devdata")
 =======
 chain = blocksci.Blockchain("../../../zcash-testdata") #the directory of your parsed zcash data
@@ -9,6 +10,9 @@ chain = blocksci.Blockchain("../../../zcash-testdata") #the directory of your pa
 =======
 chain = blocksci.Blockchain("../../../zcash-testdata")
 >>>>>>> parent of 03a5f45... Update example.py
+=======
+chain = blocksci.Blockchain("../zcash-devdata")
+>>>>>>> parent of ddd7bdb... Update example.py
 
 in_z_addresses = 0
 num_of_txes = 0
