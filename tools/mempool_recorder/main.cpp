@@ -26,8 +26,11 @@
 #include <range/v3/range_for.hpp>
 
 #include <chrono>
+#include <ctime>
+#include <iomanip>
 #include <iostream>
 #include <future>
+#include <sstream>
 #include <unordered_map>
 
 #include <csignal>
@@ -36,6 +39,7 @@ using namespace blocksci;
 using namespace std::chrono;
 
 static volatile sig_atomic_t done = 0;
+static bool verbose = false;
 
 void term(int)
 {
@@ -75,7 +79,6 @@ class SaferBitcoinApi {
     BitcoinAPI bitcoinAPI;
     
 public:
-    
     SaferBitcoinApi(std::string username_, std::string password_, std::string address_, int port_) :
     username(std::move(username_)), password(std::move(password_)), address(std::move(address_)), port(port_), bitcoinAPI(username, password, address, port) {}
     
@@ -138,10 +141,12 @@ public:
             auto it = mempool.find(txHash);
             if (it == mempool.end()) {
                 mempool[txHash] = {time};
+                newTxs += 1;
             }
         }
     }
-    
+
+    // Update our view of the mempool
     void updateMempool() {
         try {
             updateTxTimes(system_clock::to_time_t(system_clock::now()));
@@ -150,7 +155,8 @@ public:
             std::cerr << "Failed to update mempool with error: " << e.what() << std::endl;
         }
     }
-    
+
+    // Write timestamps for transactions and blocks that were observed in the mempool
     void recordMempool() {
         chain.reload();
 
@@ -163,12 +169,16 @@ public:
             auto block = chain[lastHeight];
             time_t time;
             auto blockIt = blocksSeen.find(block.getHash().GetHex());
+            std::stringstream ss;
             if (blockIt == blocksSeen.end()) {
+                ss << "Block at height " << lastHeight << " hasn't been observed in the network.";
                 system_clock::time_point tp = system_clock::now();
                 time = system_clock::to_time_t(tp);
             } else {
+                ss << "Block at height " << lastHeight << "has been observed in the network.";
                 time = blockIt->second.first.observationTime;
             }
+            print_msg(ss.str(), true);
             files.blockTimeFile.write({time});
             RANGES_FOR(auto tx, chain[lastHeight]) {
                 allTxs += 1;
@@ -185,15 +195,19 @@ public:
         }
 
         if(newBlocks > 0) {
-            std::cout << "Added mempool data for " << newBlocks << " blocks and "
-            << txWithTimestamp << " out of " << allTxs << " transactions." << std::endl;
+            files.txTimeFile.flush();
+            files.blockTimeFile.flush();
+
+            std::stringstream ss;
+            ss << "Added mempool data for " << newBlocks << " blocks and " << txWithTimestamp << " out of " << allTxs << " transactions.";
+            print_msg(ss.str());
         }
-        
-        files.txTimeFile.flush();
-        files.blockTimeFile.flush();
     }
-    
+
+    // Clear transactions and blocks that were not included in the chain in more than 5 days
     void clearOldMempool() {
+        int oldTxs = 0;
+        int oldBlocks = 0;
         {
             system_clock::time_point tp = system_clock::now();
             tp -= std::chrono::hours(5 * 24);
@@ -202,6 +216,7 @@ public:
             while (it != mempool.end()) {
                 if (it->second.time < clearTime) {
                     it = mempool.erase(it);
+                    oldTxs += 1;
                 } else {
                     ++it;
                 }
@@ -214,10 +229,24 @@ public:
             while (it != blocksSeen.end()) {
                 if (it->second.second < currentHeight - heightCutoff) {
                     it = blocksSeen.erase(it);
+                    oldBlocks += 1;
                 } else {
                     ++it;
                 }
             }
+        }
+        std::stringstream ss;
+        ss << "Removed " << oldBlocks << " old blocks and " << oldTxs << " old transactions.";
+        print_msg(ss.str(), true);
+    }
+
+    // Print info and debug messages to std::cout
+    void print_msg(std::string msg, bool verbose_only=false) {
+        if(!verbose_only || verbose) {
+            std::stringstream ss;
+            auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+            ss << std::put_time(std::localtime(&time), "%Y-%m-%d %X");
+            std::cout << ss.str() << ":\t" << msg << std::endl;
         }
     }
 };
@@ -230,7 +259,11 @@ int main(int argc, char * argv[]) {
     sigaction(SIGTERM, &action, nullptr);
     
     std::string configFilePathString;
-    auto cli = clipp::group{clipp::value("config file", configFilePathString) % "Path to config file"};
+    auto configFileOption = clipp::value("config file", configFilePathString) % "Path to config file";
+    auto cli = (
+                clipp::value("config file", configFilePathString) % "Path to config file",
+                clipp::option("-v", "--verbose").set(verbose).doc("run in verbose mode")
+                );
     
     auto res = parse(argc, argv, cli);
     if (res.any_error()) {
@@ -268,10 +301,10 @@ int main(int argc, char * argv[]) {
         std::this_thread::sleep_for(std::chrono::milliseconds(250));
         recorder.updateMempool();
         updateCount++;
-        if (updateCount % 5 == 0) {
+        if (updateCount % (4 * 60) == 0) { // every minute
             recorder.recordMempool();
         }
-        if (updateCount % (4 * 60 * 60 * 24) == 0) {
+        if (updateCount % (4 * 60 * 60 * 24) == 0) { // once per day
             recorder.clearOldMempool();
             updateCount = 0;
         }
