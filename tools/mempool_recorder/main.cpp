@@ -141,7 +141,6 @@ public:
             auto it = mempool.find(txHash);
             if (it == mempool.end()) {
                 mempool[txHash] = {time};
-                newTxs += 1;
             }
         }
     }
