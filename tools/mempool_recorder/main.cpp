@@ -153,6 +153,11 @@ public:
     
     void recordMempool() {
         chain.reload();
+
+        int newBlocks = chain.size() - lastHeight;
+        int txWithTimestamp = 0;
+        int allTxs = 0;
+
         auto blockCount = static_cast<BlockHeight>(chain.size());
         for (; lastHeight < blockCount; lastHeight++) {
             auto block = chain[lastHeight];
@@ -166,8 +171,10 @@ public:
             }
             files.blockTimeFile.write({time});
             RANGES_FOR(auto tx, chain[lastHeight]) {
+                allTxs += 1;
                 auto it = mempool.find(tx.getHash());
                 if (it != mempool.end()) {
+                    txWithTimestamp += 1;
                     auto &txData = it->second;
                     files.txTimeFile.write(txData);
                     mempool.erase(it);
@@ -176,6 +183,12 @@ public:
                 }
             }
         }
+
+        if(newBlocks > 0) {
+            std::cout << "Added mempool data for " << newBlocks << " blocks and "
+            << txWithTimestamp << " out of " << allTxs << " transactions." << std::endl;
+        }
+        
         files.txTimeFile.flush();
         files.blockTimeFile.flush();
     }
@@ -238,6 +251,7 @@ int main(int argc, char * argv[]) {
         try {
             bitcoinAPI.getrawmempool();
             connected = true;
+            std::cout << "Successfully connected to bitcoin node." << std::endl;
         } catch (BitcoinException &) {
             std::cerr << "Mempool recorder failed to connect to bitcoin node with {username = " << rpcConfig.username
             << ", password = " << rpcConfig.password
