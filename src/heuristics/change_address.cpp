@@ -14,6 +14,7 @@
 #include <blocksci/scripts/script_variant.hpp>
 
 #include <range/v3/range_for.hpp>
+#include <range/v3/view/filter.hpp>
 
 #include <unordered_set>
 #include <cmath>
@@ -24,15 +25,9 @@
 
 namespace blocksci { namespace heuristics {
     
-    // Remove OP_RETURN outputs from candidate set
-    std::unordered_set<Output> removeOpReturnOutputs(std::unordered_set<Output> candidates) {
-        std::unordered_set<Output> filtered_candidates;
-        for(auto output : candidates) {
-            if(output.getAddress().isSpendable()) {
-                filtered_candidates.insert(output);
-            }
-        }
-        return filtered_candidates;
+    // Remove OP_RETURN outputs from candidate set    
+    bool filterOpReturn(Output o) {
+        return o.getAddress().isSpendable();
     }
     
     // Peeling chains have one input and two outputs
@@ -43,16 +38,16 @@ namespace blocksci { namespace heuristics {
     // A transaction is considered a peeling chain if it has one input and two outputs,
     // and either the previous or one of the next transactions looks like a peeling chain.
     bool isPeelingChain(const Transaction &tx) {
-        if(!looksLikePeelingChain(tx)) {
+        if (!looksLikePeelingChain(tx)) {
             return false;
         }
         // Check if past transaction is peeling chain
-        if(looksLikePeelingChain(tx.inputs()[0].getSpentTx())) {
+        if (looksLikePeelingChain(tx.inputs()[0].getSpentTx())) {
             return true;
         }
         // Check if any future transaction is peeling chain
         RANGES_FOR(auto output, tx.outputs()) {
-            if(output.isSpent() && looksLikePeelingChain(*output.getSpendingTx())) {
+            if (output.isSpent() && looksLikePeelingChain(*output.getSpendingTx())) {
                 return true;
             }
         }
@@ -63,89 +58,69 @@ namespace blocksci { namespace heuristics {
     // This heuristic depends on the outputs being spent to detect change.
     // If an output has not been spent, it is considered a potential change output.
     template<>
-    std::unordered_set<Output> ChangeHeuristicImpl<ChangeType::PeelingChain>::operator()(const Transaction &tx) const {
-        std::unordered_set<Output> candidates;
-        
+    ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::PeelingChain>::operator()(const Transaction &tx) const {
         // If current tx is not a peeling chain, return an empty set
-        if(!isPeelingChain(tx)) {
-            return candidates;
+        if (!isPeelingChain(tx)) {
+            return ranges::view::empty<Output>();
         }
         
         // Check which output(s) continue the peeling chain
-        RANGES_FOR(auto output, tx.outputs()) {
-            if(output.isSpent()) {
-                if(isPeelingChain(*output.getSpendingTx())) {
-                    candidates.insert(output);
-                }
-            } else { // not spent, hence unknown
-                candidates.insert(output);
+        return tx.outputs() | ranges::view::filter([](Output o){return !o.isSpent() || isPeelingChain(*o.getSpendingTx());}) | ranges::view::filter(filterOpReturn);
+    }
+    
+    int64_t int_pow_ten(int digits) {
+        if (digits < 16) {
+            int64_t values[16] = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000, 100000000000, 1000000000000, 10000000000000, 100000000000000, 1000000000000000};
+            return values[digits];
+        } else {
+            int64_t value = 1000000000000000;
+            for (int i = 15; i < digits; ++i) {
+                value *= 10;
             }
+            return value;
         }
-        
-        return removeOpReturnOutputs(candidates);
     }
     
     // When users transfer bitcoins between wallets, they often do so with values that are powers of ten.
     // On the other hand, it is extremly unlikely that you receive power of ten change due to a wallet's coin selection.
     // Default for digits is 6 (i.e. 0.01 BTC)
-    std::unordered_set<Output> ChangeHeuristicImpl<ChangeType::PowerOfTen>::operator()(const Transaction &tx) const {
-        std::unordered_set<Output> candidates;
-        int64_t value = 1;
-        for (int i = 0; i < digits; ++i)
-        {
-            value *= 10;
-        }
-        RANGES_FOR(auto output, tx.outputs()) {
-            if(output.getValue() % value != 0) {
-                candidates.insert(output);
-            }
-        }
-        return removeOpReturnOutputs(candidates);
+    ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::PowerOfTen>::operator()(const Transaction &tx) const {
+        int64_t value = int_pow_ten(digits);
+        return tx.outputs() | ranges::view::filter([value](Output o){return o.getValue() % value != 0;}) | ranges::view::filter(filterOpReturn);
     }
+    
     
     // If there exists an output that is smaller than any of the inputs it is likely the change.
     // If a change output was larger than the smallest input, then the coin selection algorithm
     // wouldn't need to add the input in the first place.
     template<>
-    std::unordered_set<Output> ChangeHeuristicImpl<ChangeType::OptimalChange>::operator()(const Transaction &tx) const {
-        std::unordered_set<Output> candidates;
-        
+    ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::OptimalChange>::operator()(const Transaction &tx) const {
         auto smallestInputValue = tx.inputs()[0].getValue();
-        RANGES_FOR (auto input, tx.inputs()) {
+        RANGES_FOR(auto input, tx.inputs()) {
             smallestInputValue = std::min(smallestInputValue, input.getValue());
         }
-        
-        RANGES_FOR(Output output, tx.outputs()) {
-            if(output.getValue() < smallestInputValue) {
-                candidates.insert(output);
-            }
-        }
-        return removeOpReturnOutputs(candidates);
+        return tx.outputs() | ranges::view::filter([smallestInputValue](Output o){return o.getValue() < smallestInputValue;}) | ranges::view::filter(filterOpReturn);
     }
     
     // If all inputs are of one address type (e.g., P2PKH or P2SH),
     // it is likely that the change output has the same type.
     template<>
-    std::unordered_set<Output> ChangeHeuristicImpl<ChangeType::AddressType>::operator()(const Transaction &tx) const {
-        std::unordered_set<Output> candidates;
-        
+    ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::AddressType>::operator()(const Transaction &tx) const {
         // check whether all inputs have the same type (e.g., P2SH)
         bool allInputsSameType = true;
         AddressType::Enum inputType = tx.inputs()[0].getType();
-        RANGES_FOR (auto input, tx.inputs()) {
-            if(input.getType() != inputType) {
+        RANGES_FOR(auto input, tx.inputs()) {
+            if (input.getType() != inputType) {
                 allInputsSameType = false;
                 break;
             }
         }
-        if(allInputsSameType) {
-            RANGES_FOR (auto output, tx.outputs()) {
-                if(output.getType() == inputType) {
-                    candidates.insert(output);
-                }
-            }
+        
+        if (allInputsSameType) {
+            return tx.outputs() | ranges::view::filter([inputType](Output o){return o.getType() == inputType;}) | ranges::view::filter(filterOpReturn);
+        } else {
+            return ranges::view::empty<Output>();
         }
-        return removeOpReturnOutputs(candidates);
     }
     
     // Bitcoin Core sets the locktime to the current block height to prevent fee sniping.
@@ -154,57 +129,28 @@ namespace blocksci { namespace heuristics {
     // This heuristic depends on the outputs being spent to detect change.
     // If an output has not been spent, it is considered a potential change output.
     template<>
-    std::unordered_set<Output> ChangeHeuristicImpl<ChangeType::Locktime>::operator()(const Transaction &tx) const {
-        std::unordered_set<Output> candidates;
-        
-        // locktime of tx
+    ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::Locktime>::operator()(const Transaction &tx) const {
         bool locktimeGreaterZero = tx.locktime() > 0;
-        
-        RANGES_FOR(auto output, tx.outputs()) {
-            // output has been spent, check if locktime is consistent
-            if(output.isSpent()) {
-                Transaction nextTx = *output.getSpendingTx();
-                if((nextTx.locktime() > 0) == locktimeGreaterZero) {
-                    candidates.insert(output);
-                }
-            } else { // not spent, hence unknown
-                candidates.insert(output);
-            }
-        }
-        return removeOpReturnOutputs(candidates);
+        return tx.outputs() | ranges::view::filter([locktimeGreaterZero](Output o){return !o.isSpent() || (o.getSpendingTx().value().locktime() > 0) == locktimeGreaterZero;}) | ranges::view::filter(filterOpReturn);
     }
     
     // If input addresses appear as an output address,
     // the client might have reused addresses for change.
     template<>
-    std::unordered_set<Output> ChangeHeuristicImpl<ChangeType::AddressReuse>::operator()(const Transaction &tx) const {
-        std::unordered_set<Output> candidates;
-        
+    ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::AddressReuse>::operator()(const Transaction &tx) const {
         std::unordered_set<Address> inputAddresses;
-        RANGES_FOR (auto input, tx.inputs()) {
+        RANGES_FOR(auto input, tx.inputs()) {
             inputAddresses.insert(input.getAddress());
         }
         
-        RANGES_FOR (auto output, tx.outputs()) {
-            if(inputAddresses.find(output.getAddress()) != inputAddresses.end()) {
-                candidates.insert(output);
-            }
-        }
-        return removeOpReturnOutputs(candidates);
+        return tx.outputs() | ranges::view::filter([inputAddresses](Output o){return inputAddresses.find(o.getAddress()) != inputAddresses.end();}) | ranges::view::filter(filterOpReturn);
     }
-   
+
     // Most clients will generate a fresh address for the change.
     // If an output is the first to send value to an address, it is potentially the change.
     template<>
-    std::unordered_set<Output> ChangeHeuristicImpl<ChangeType::ClientChangeAddressBehavior>::operator()(const Transaction &tx) const {
-        std::unordered_set<Output> candidates;
-        
-        RANGES_FOR (auto output, tx.outputs()) {
-            if (output.getAddress().isSpendable() && output.getAddress().getBaseScript().getFirstTxIndex() == tx.txNum) {
-                candidates.insert(output);
-            }
-        }
-        return removeOpReturnOutputs(candidates);
+    ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::ClientChangeAddressBehavior>::operator()(const Transaction &tx) const {
+        return tx.outputs() | ranges::view::filter([tx](Output o){return o.getAddress().isSpendable() && o.getAddress().getBaseScript().getFirstTxIndex() == tx.txNum;}) | ranges::view::filter(filterOpReturn);
     }
     
     // Legacy heuristic used in previous versions of BlockSci
@@ -214,13 +160,13 @@ namespace blocksci { namespace heuristics {
         }
         
         auto smallestInput = std::numeric_limits<int64_t>::max();
-        RANGES_FOR (auto input, tx.inputs()) {
+        RANGES_FOR(auto input, tx.inputs()) {
             smallestInput = std::min(smallestInput, input.getValue());
         }
         
         uint16_t spendableCount = 0;
         ranges::optional<Output> change;
-        RANGES_FOR (auto output, tx.outputs()) {
+        RANGES_FOR(auto output, tx.outputs()) {
             if (output.getAddress().isSpendable()) {
                 spendableCount++;
                 if (output.getValue() < smallestInput && output.getAddress().getBaseScript().getFirstTxIndex() == tx.txNum) {
@@ -241,35 +187,25 @@ namespace blocksci { namespace heuristics {
     // This function mostly exists to ensure a consistent API.
     // The set it returns will never contain more than one output.
     template<>
-    std::unordered_set<Output> ChangeHeuristicImpl<ChangeType::Legacy>::operator()(const Transaction &tx) const {
-        std::unordered_set<Output> candidates;
-        auto candidate = uniqueChangeByLegacyHeuristic(tx);
-        if(candidate) {
-            candidates.insert(*candidate);
+    ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::Legacy>::operator()(const Transaction &tx) const {
+        auto c = uniqueChangeByLegacyHeuristic(tx);
+        if (c.has_value()) {
+            return ranges::view::single(c.value());
         }
-        return removeOpReturnOutputs(candidates);
+        return ranges::view::empty<Output>();
     }
     
     // Disables change address clustering by returning an empty set.
     template<>
-    std::unordered_set<Output> ChangeHeuristicImpl<ChangeType::None>::operator()(const Transaction &) const {
-        std::unordered_set<Output> candidates;
-        return candidates;
+    ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::None>::operator()(const Transaction &) const {
+        return ranges::view::empty<Output>();
     }
     
     // Returns all outputs that have been spent. Useful in combination with change address heuristics that return unspent outputs as candidates.
     template<>
-    std::unordered_set<Output> ChangeHeuristicImpl<ChangeType::Spent>::operator()(const Transaction &tx) const {
-        std::unordered_set<Output> candidates;
-        
-        RANGES_FOR (auto output, tx.outputs()) {
-            if (output.isSpent()) {
-                candidates.insert(output);
-            }
-        }
-        return removeOpReturnOutputs(candidates);
+    ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::Spent>::operator()(const Transaction &tx) const {
+        return tx.outputs() | ranges::view::filter([](Output o){return o.isSpent();});
     }
-    
-} // namespace heuristics
-} // namespace blocksci
+}  // namespace heuristics
+}  // namespace blocksci
 

@@ -21,7 +21,6 @@
 struct AddInputMethods {
     template <typename FuncApplication>
     void operator()(FuncApplication func) {
-        namespace py = pybind11;
         using namespace blocksci;
         func(property_tag, "address", &Input::getAddress, "The address linked to this input");
         func(property_tag, "value", &Input::getValue, "The value in base currency attached to this input");

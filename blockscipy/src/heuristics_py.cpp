@@ -66,30 +66,37 @@ void init_heuristics(py::module &m) {
     py::class_<Change> s2(cl, "change");
 
     py::class_<ChangeHeuristic>(s2, "ChangeHeuristic", "Class representing a change heuristic")
+    .def(py::init([](Proxy<ranges::any_view<Output>> &heuristic) {
+        std::function<ranges::any_view<Output>(const Transaction &tx)> changeFunc = [heuristic](const Transaction &tx) {
+            return heuristic(tx);
+        };
+        return ChangeHeuristic(changeFunc);
+    }))
     .def("__and__", &ChangeHeuristic::setIntersection, py::arg("other_heuristic"), "Return a new heuristic matching outputs that match both of the given heuristics")
     .def("__or__", &ChangeHeuristic::setUnion, py::arg("other_heuristic"), "Return a new heuristic matching outputs that match either of the given heuristics")
     .def("__sub__", &ChangeHeuristic::setDifference, py::arg("other_heuristic"), "Return a new heuristic matching outputs matched by the first heuristic unless they're matched by the second heuristic")
-    .def("__call__", &ChangeHeuristic::operator(), py::arg("tx"), "Return all outputs matching the change heuristic")
-    .def("change", &ChangeHeuristic::operator(), py::arg("tx"), "Return all outputs matching the change heuristic")
-    .def_property_readonly("unique_change", [](ChangeHeuristic &ch) -> Proxy<ranges::optional<Output>> {
+    .def_property_readonly("__call__", [](ChangeHeuristic &ch) -> Proxy<ranges::any_view<Output>> {
         return lift(makeSimpleProxy<Transaction>(), [ch](const Transaction &tx) {
-            return ch.uniqueChange(tx);
+            return ch(tx);
         });
-    }, "Returns a proxy object which takes a tx as input. If the change heuristic only matches one output return it, otherwise return none")
+    }, "Return all outputs matching the change heuristic")
+    .def_property_readonly("unique_change", &ChangeHeuristic::uniqueChange, "Return a new heuristic that will return a single output if it's the only candidate output, and no outputs otherwise.");
     ;
 
+    // Manual documentation is necessary for the following properties
+    // https://github.com/pybind/pybind11/issues/1111
     s2
     .def_property_readonly_static("peeling_chain", [](pybind11::object &) { return ChangeHeuristic{PeelingChainChange{}}; }, 
                                   "Return a ChangeHeuristic object implementing the peeling chain heuristic: If tx is a peeling chain, returns the outputs that continue the peeling chain. Note: This heuristic depends on the outputs being spent and will return unspent outputs as potential candidates.")
-    
-    .def_static("power_of_ten_value", [](int digits) { return ChangeHeuristic{PowerOfTenChange{digits}}; }, py::arg("digits") = 6, 
+    // API of the power_of_ten_value heuristic is redefined in blockscipy/__init__.py
+    .def_static("power_of_ten_value", [](int digits) { return ChangeHeuristic{PowerOfTenChange{digits}}; }, py::arg("digits") = 6,
         "Return a ChangeHeuristic object implementing the power of ten value heuristic: Detects possible change outputs by checking for output values that are multiples of 10^digits.")
     
     .def_property_readonly_static("optimal_change", [](pybind11::object &) { return ChangeHeuristic{OptimalChangeChange{}}; },
         "Return a ChangeHeuristic object implementing the optimal change heuristic: If there exists an output that is smaller than any of the inputs it is likely the change. If a change output was larger than the smallest input, then the coin selection algorithm wouldn't need to add the input in the first place.")
     
     .def_property_readonly_static("address_type", [](pybind11::object &) { return ChangeHeuristic{AddressTypeChange{}}; },
-        "Return a ChangeHeuristic object implementing the address type heuristic: If all inputs are of one address type (e.g., P2PKH or P2SH), it is likely that the change output has the same type")
+        "Return a ChangeHeuristic object implementing the address type heuristic: If all inputs are of one address type (e.g., P2PKH or P2SH), it is likely that the change output has the same type.")
 
     .def_property_readonly_static("locktime", [](pybind11::object &) { return ChangeHeuristic{LocktimeChange{}}; },
         "Return a ChangeHeuristic object implementing the locktime heuristic: Bitcoin Core sets the locktime to the current block height to prevent fee sniping. If all outpus have been spent, and there is only one output that has been spent in a transaction that matches this transaction's locktime behavior, it is the change. Note: This heuristic depends on the outputs being spent and will return unspent outputs as potential candidates.")
@@ -101,7 +108,7 @@ void init_heuristics(py::module &m) {
         "Return a ChangeHeuristic object implementing the client change address behavior heuristic: Most clients will generate a fresh address for the change. If an output is the first to send value to an address, it is potentially the change.")
 
     .def_property_readonly_static("legacy", [](pybind11::object &) { return ChangeHeuristic{LegacyChange{}}; },
-        "Return a ChangeHeuristic object implementing the legacy heuristic: The original change address heuristic used in blocksci consisting of the intersection of the optimal change heuristic and the client address behavior heuristic")
+        "Return a ChangeHeuristic object implementing the legacy heuristic: The original change address heuristic used in blocksci consisting of the intersection of the optimal change heuristic and the client address behavior heuristic.")
     
     .def_property_readonly_static("none", [](pybind11::object &) { return ChangeHeuristic{NoChange{}}; },
         "Return a ChangeHeuristic object implementing no change address heuristic: This effectively disables change address clustering.")
