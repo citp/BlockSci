@@ -14,8 +14,8 @@ If you have previously had BlockSci v0.4.5 or below installed you must first rem
 	rm /usr/local/bin/blocksci*
 	rm /usr/local/bin/mempool_recorder
 
-Ubuntu 16.04
---------------
+Ubuntu 18.04 / 16.04
+---------------------
 
 ..  code-block:: bash
 
@@ -36,7 +36,12 @@ Ubuntu 16.04
 
 	cd ..
 	CC=gcc-7 CXX=g++-7 sudo -H pip3 install -e blockscipy
-	
+
+
+If you get any errors about "Too many open files", you may need to increase_ the open files limit.
+
+.. _increase: https://ro-che.info/articles/2017-03-26-increase-open-files-limit
+
 
 Mac OS 10.13
 --------------
