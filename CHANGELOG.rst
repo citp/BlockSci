@@ -2,7 +2,89 @@
    :language: python
 
 Release notes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Version 0.6 (in development)
+=============================
+
+*Work in progress. Version 0.6 has NOT BEEN OFFICIALLY RELEASED.*
+
+We encourage you to try this development version of BlockSci, available on the v0.6 branch.
+However, since it is actively being developed it can be unstable at times.
+Furthermore, API-breaking changes are possible until v0.6 is released.
+Please read the changelog and commit messages to stay updated about these changes.
+
+Note: version 0.6 requires a full re-parse of the blockchain and includes many API-breaking changes.
+
+Major Changes
+------------------------
+
+- Python: Major performance enhancements due to new proxy interface
+
+  The Python interface has been rewritten to execute many instructions (such as filtering for certain transactions) lazily in C++, resulting in a major performance increase.
+
+- Parser and Libraries: New config file system to store configuration options for different blockchains
+
+  Settings for different blockchains are now stored in a JSON config file. Find more information in the `setup instructions`_
+
+- Parser: Support for CTOR (Canonical Transaction Ordering Rule)
+
+  Bitcoin Cash has implemented a different transaction ordering mechanism called CTOR, where transactions are no longer stored in topological order, but are sorted based on their TXID instead.
+  BlockSci's parser has been updated and now supports arbitrary transaction ordering rules (including topological ordering and CTOR) within a block.
+
+- Parser: Transaction Input<->Output mapping
+
+  Inputs now reference the output they are spending, and vice versa. These can be looked up using :attr:`blocksci.Output.spending_input` and :attr:`blocksci.Input.spent_output`
+
+- Testing and CI: A Python test suite and continuous integration have been added
+
+  We've developed a test suite containing both functional and regression tests for the Python interface. We've also added Travis CI continuous integration, such that all new commits and pull requests will be automatically built and tested.
+  The test suite makes use of special regtest blockchains created using our `testchain-generator`_
+
+.. _testchain-generator: https://github.com/citp/testchain-generator
+.. _setup instructions: https://github.com/citp/BlockSci/blob/v0.6/docs/setup.rst
+
+
+Notable changes and bug fixes
+-----------------------------
+
+- :attr:`blocksci.Address.[ins|outs|in_txes|out_txes|txes]` now return iterators
+
+- The :class:`blocksci.heuristics.change.ChangeHeuristic` interface has been rewritten.
+
+  - Heuristics now return an :class:`blocksci.OutputIterator` instead of a set of outputs.
+  - `ChangeHeuristic.unique_change` now returns a new :class:`ChangeHeuristic` object, allowing to use it to compose with other change heuristics.
+  - A new `none` heuristic has been added and is also the default heuristic for change address clustering (effectively disabling it).
+  - A new `spent` heuristic allows to refine heuristics that return unspent outputs as potential change outputs.
+  - Clustering no longer performs change address clustering by default. You can still specify a change address heuristic to enable it.
+
+- Various improvements to the clusterer should result in faster and more reliable clustering
+
+- :func:`chain.cpp.filter_tx` has been removed in favor of the new proxy interface (`Issue #254`_)
+
+- BlockSci now recognizes addresses that use more than one version byte (`Issue #246`_)
+
+- The parser will detect if another instance is already running on the same data directory to prevent data corruption (`Issue #211`_)
+
+- :func:`chain.most_valuable_addresses` has been re-implemented using the new proxy interface (`Issue #192`_), the previous C++ implementation has been removed.
+
+- :func:`~blocksci.cluster.ClusterManager.create_clustering` now accepts a start and end height for clustering only a specific block range (`Issue #118`_)
+
+- Fixed rounding inconsistencies for values in Zcash (`Issue #117`_)
+
+- Added *Witness Unknown* address type support (`Issue #112`_)
+
+- Added support for nested P2SH in the parser (`Issue #68`_)
+
+.. _Issue #68: https://github.com/citp/BlockSci/issues/68
+.. _Issue #112: https://github.com/citp/BlockSci/issues/112
+.. _Issue #117: https://github.com/citp/BlockSci/issues/117
+.. _Issue #118: https://github.com/citp/BlockSci/issues/118
+.. _Issue #192: https://github.com/citp/BlockSci/issues/192
+.. _Issue #211: https://github.com/citp/BlockSci/issues/211
+.. _Issue #246: https://github.com/citp/BlockSci/issues/246
+.. _Issue #254: https://github.com/citp/BlockSci/issues/254
+
 
 Version 0.5.0
 ========================
@@ -40,7 +122,7 @@ Feature Enhancements
 
   For instructions on running the mempool recorder and using the data it produces, see the setup_ section.
 
-- Improve and clean up auto generated API reference. 
+- Improve and clean up auto generated API reference.
 
   All method signatures display correct types and all properties display the type of the returned value. Further, all types link to their definition in the documentation.
 
@@ -158,7 +240,7 @@ SegWit support & API changes
   Version 0.3 introduces a distinction between two outputs which are sent the same way and two outputs that can be spent
   using the same information. This difference comes up in multiple circumstances including when a the same public key is used
   is a pay to public key hash output and inside a multisignature output.
-  
+
   Inside the BlockSci interface these two related concepts map to the Address and Script types respectively. Both objects
   possess very similar APIs, but operate somewhat differently. As an example, given a specific P2PKH address, :python:`address`, the
   then :python:`address.outs()` will return all outputs sent to that specific address. If the pubkey used in that address
@@ -173,20 +255,20 @@ SegWit support & API changes
   The heuristics library contains two main types of heuristics: change address identification and transaction labeling.
   In the previous version these functionalities were included in the main functionality of the library making it difficult to
   distinguish between functions which are guaranteed to be correct and functions which only produce guesses.
-  
-  New versions of the API are accessable by using 
-  
+
+  New versions of the API are accessable by using
+
   .. code-block:: python
 
         blocksci.heuristics.change_by_client_change_address_behavior(tx)
         blocksci.heuristics.is_coinjoin(tx)
-  
+
 Additional index lookup
 ------------------------
 We have added an index to allow the lookup of transactions by hash and addresses by address string.
 
 Transactions can be looked up via :python:`blocksci.Tx(hash_string)` and addresses can be looked up via :python:`blocksci.Address.from_string(address_string)`.
-   
+
 Bug fixes
 ---------------------
  - Many causes of crashes and instability have now been resolved.
@@ -205,10 +287,10 @@ Bug fixes
  .. _Issue #15: https://github.com/citp/BlockSci/issues/15
  .. _Issue #25: https://github.com/citp/BlockSci/issues/25
  .. _Issue #26: https://github.com/citp/BlockSci/issues/26
- 
+
 Limitations
 -------------------
-Incremental updating of the blockchain is currently not supported due to some continuing bugs in blockchain reorg handling. 
+Incremental updating of the blockchain is currently not supported due to some continuing bugs in blockchain reorg handling.
 Rerunning the parser in the uncommon situation that a previously parsed block has been orphaned may cause data corruption.
 
 Version 0.2
