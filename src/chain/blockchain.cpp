@@ -47,6 +47,10 @@ namespace blocksci {
         access->reload();
         sl.stop = access->getChain().blockCount();
     }
+
+    bool Blockchain::isParserRunning() {
+        return access->config.pidFilePath().exists();
+    }
     
     uint32_t txCount(Blockchain &chain) {
         auto lastBlock = chain[static_cast<int>(chain.size()) - BlockHeight{1}];

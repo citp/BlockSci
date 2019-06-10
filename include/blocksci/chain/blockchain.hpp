@@ -37,6 +37,7 @@ namespace blocksci {
         std::string configLocation() const;
 
         void reload();
+        bool isParserRunning();
         
         uint32_t addressCount(AddressType::Enum type) const;
     };

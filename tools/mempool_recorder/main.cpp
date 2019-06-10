@@ -157,6 +157,11 @@ public:
 
     // Write timestamps for transactions and blocks that were observed in the mempool
     void recordMempool() {
+        // Wait until parser stopped updating the chain
+        if(chain.isParserRunning()) {
+            return;
+        }
+
         chain.reload();
 
         int newBlocks = chain.size() - lastHeight;
