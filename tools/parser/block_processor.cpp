@@ -73,10 +73,10 @@ class BlockFileReader;
 
 template <>
 class BlockFileReader<FileTag> : public BlockFileReaderBase {
-    // Map of (blkXXXXX.dat file number) -> pair(SafeMemReader for blkXXXXX.dat file, last tx number of this blkXXXXX.dat file)
+    /** Map of (blkXXXXX.dat file number) -> pair(SafeMemReader for blkXXXXX.dat file, last tx number of this blkXXXXX.dat file) */
     std::unordered_map<int, std::pair<SafeMemReader, uint32_t>> files;
 
-    // Map of (blkXXXXX.dat file number) -> (last tx number of this blkXXXXX.dat file)
+    /** Map of (blkXXXXX.dat file number) -> (last tx number of this blkXXXXX.dat file) */
     std::unordered_map<int, uint32_t> lastTxRequired;
 
     const ParserConfiguration<FileTag> &config;
@@ -210,7 +210,7 @@ public:
 
 #endif
 
-// Process single block and its transactions
+/** Process single block and its transactions */
 blocksci::RawBlock readNewBlock(uint32_t firstTxNum, uint64_t firstInputNum, uint64_t firstOutputNum, const BlockInfoBase &block, BlockFileReaderBase &fileReader, NewBlocksFiles &files, const std::function<bool(RawTransaction *&tx)> &loadFunc, const std::function<void(RawTransaction *tx)> &outFunc, bool isSegwit) {
     std::vector<unsigned char> coinbase;
     blocksci::uint256 nullHash;
@@ -278,8 +278,8 @@ blocksci::RawBlock readNewBlock(uint32_t firstTxNum, uint64_t firstInputNum, uin
 
 // Definition of all functions for the processing pipeline
 
-// 1. Step: Calculate hash of transaction and write it to the hash file (chain/tx_hashes.dat)
-
+/** 1. step of the processing pipeline
+ * Calculate hash of transaction and write it to the hash file (chain/tx_hashes.dat) */
 std::vector<std::function<void(RawTransaction &tx)>> CalculateHashStep::steps() {
     return {[&](RawTransaction &tx) {
         tx.calculateHash();
@@ -287,8 +287,8 @@ std::vector<std::function<void(RawTransaction &tx)>> CalculateHashStep::steps() 
     }};
 }
 
-// 2. Step: Parse the output scripts (into CScriptView) of the transaction in order to identify address types and extract relevant information.
-
+/** 2. step of the processing pipeline
+ * Parse the output scripts (into CScriptView) of the transaction in order to identify address types and extract relevant information. */
 std::vector<std::function<void(RawTransaction &tx)>> GenerateScriptOutputsStep::steps() {
     return {[&](RawTransaction &tx) {
         tx.scriptOutputs.clear();
@@ -301,9 +301,8 @@ std::vector<std::function<void(RawTransaction &tx)>> GenerateScriptOutputsStep::
     }};
 }
 
-// 3. Step: Store information about the spent output with each input of the transaction. Then store information about each output for future lookup.
-
-
+/** 3. step of the processing pipeline
+ * Store information about the spent output with each input of the transaction. Then store information about each output for future lookup. */
 std::vector<std::function<void(RawTransaction &tx)>> ConnectUTXOsStep::steps() {
     return {[&](RawTransaction &tx) {
         // Fill UTXOState (SerializableMap<RawOutputPointer, UTXO>) with mapping tx output ->  UTXO(output.value, txNum, type)
@@ -325,9 +324,9 @@ std::vector<std::function<void(RawTransaction &tx)>> ConnectUTXOsStep::steps() {
     }};
 }
 
-/* 4. Step: Parse the input script of each input based information about the associated output script.
- *    Then store information about each output address for future lookup. */
-
+/** 4. step of the processing pipeline
+ * Parse the input script of each input based information about the associated output script.
+ * Then store information about each output address for future lookup. */
 std::vector<std::function<void(RawTransaction &tx)>> GenerateScriptInputStep::steps() {
     return {[&](RawTransaction &tx) {
         uint16_t i = 0;
@@ -348,10 +347,10 @@ std::vector<std::function<void(RawTransaction &tx)>> GenerateScriptInputStep::st
     }};
 }
 
-/* 5. Step: Attach a scriptNum to each script in the transaction. For address types which are
-      deduplicated (Pubkey, ScriptHash, Multisig and their varients) use the previously allocated
-      scriptNum if the address was seen before. Increment the scriptNum counter for newly seen addresses. */
-
+/** 5. step of the processing pipeline
+ * Attach a scriptNum to each script in the transaction. For address types which are
+ * deduplicated (Pubkey, ScriptHash, Multisig and their varients) use the previously allocated
+ * scriptNum if the address was seen before. Increment the scriptNum counter for newly seen addresses. */
 std::vector<std::function<void(RawTransaction &tx)>> ProcessAddressesStep::steps() {
     return {[&](RawTransaction &tx) {
         for (auto &scriptOutput : tx.scriptOutputs) {
@@ -363,9 +362,9 @@ std::vector<std::function<void(RawTransaction &tx)>> ProcessAddressesStep::steps
     }};
 }
 
-/* 6. Step: Record the scriptNum for each output for later reference. Assign each spent input with
-            the scriptNum of the output its spending */
-
+/* 6. step of the processing pipeline
+ * Record the scriptNum for each output for later reference. Assign each spent input with
+ * the scriptNum of the output its spending. */
 std::vector<std::function<void(RawTransaction &tx)>> RecordAddressesStep::steps() {
     return {[&](RawTransaction &tx) {
         uint16_t i = 0;
@@ -386,8 +385,8 @@ std::vector<std::function<void(RawTransaction &tx)>> RecordAddressesStep::steps(
     }};
 }
 
-// 7. Step: Serialize transaction data, inputs, and outputs and write them to the txFile
-
+/** 7. step of the processing pipeline
+ * Serialize transaction data, inputs, and outputs and write them to the txFile */
 std::vector<std::function<void(RawTransaction &tx)>> SerializeTransactionStep::steps() {
     return {[&](RawTransaction &tx) {
         txFile.writeIndexGroup();
@@ -412,8 +411,8 @@ std::vector<std::function<void(RawTransaction &tx)>> SerializeTransactionStep::s
     }};
 }
 
-// 8. Step: Save address data into files for the analysis library
-
+/** 8. step of the processing pipeline
+ * Save address data into files for the analysis library */
 std::vector<std::function<void(RawTransaction &tx)>> SerializeAddressesStep::steps() {
     return {[&](RawTransaction &tx) {        
         for (auto &scriptOutput : tx.scriptOutputs) {

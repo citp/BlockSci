@@ -372,7 +372,7 @@ namespace blocksci {
         }
     };
 
-    /* Implements a memory-mapped file that contains elements of fixed-size
+    /** Implements a memory-mapped file that contains elements of fixed-size
      *
      * File(s): data file, no index file
      *     - data file: stores all elements, eg. chain/block.dat that stores RawBlock objects; implemented as SimpleFileMapper
@@ -489,7 +489,7 @@ namespace blocksci {
     }
 
 
-    /* Implements a memory-mapped file that contains elements of variable size
+    /** Implements a memory-mapped file that contains elements of variable size
      *
      * File(s): data file and index file
      *     - data file: stores all elements, eg. chain/tx_data.dat that stores RawTransaction (and Inout) elements; implemented as SimpleFileMapper

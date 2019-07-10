@@ -26,7 +26,7 @@ namespace std {
 
 namespace blocksci {
 
-    /* Represents an input or output with the following data:
+    /** Represents an input or output with the following data:
      *     - linked tx num, addressNum (=scriptNum), address type, value of the input/output
      *
      * Actual Input and Output objects can be constructed from Inout objects @see blocksci::Transaction::outputs() and blocksci::Transaction::inputs()
@@ -84,16 +84,16 @@ namespace blocksci {
         }
         
     private:
-        /* Number of the transaction associated with this input or output:
+        /** Number of the transaction associated with this input or output:
          *     - for inputs, references back to the tx number of the tx that contains the output spent by the input
          *     - for outputs, references forward to the tx number of the tx that contains the spending input, if any
          */
         uint32_t linkedTxNum;
 
-        // Number of the address (scriptNum) that is contained in this input/output
+        /** Number of the address (scriptNum) that is contained in this input/output */
         uint32_t toAddressNum;
 
-        // Other is used to store the value (60 bit) and the address type (4 bit) of the wrapped input/output
+        /** Other is used to store the value (60 bit) and the address type (4 bit) of the wrapped input/output */
         uint64_t other;
         
         friend size_t std::hash<Inout>::operator()(const Inout &inout) const;

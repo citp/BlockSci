@@ -12,7 +12,7 @@
 #include <blocksci/chain/transaction.hpp>
 
 namespace blocksci {
-    // Represents an iterable collection of contiguous Transaction objects
+    /** Represents an iterable collection of contiguous Transaction objects */
     class BLOCKSCI_EXPORT TransactionRange {
     public:
         class iterator {

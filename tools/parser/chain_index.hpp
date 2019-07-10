@@ -140,7 +140,7 @@ struct BlockInfo<RPCTag> : BlockInfoBase {
     }
 };
 
-/* Holds the current set/state of blocks for the parser
+/** Holds the current set/state of blocks for the parser
  *
  * File: parser/blockList.dat
  * Raw data format: ChainIndex object serialized using cereal library @see: https://uscilab.github.io/cereal/

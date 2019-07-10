@@ -19,9 +19,9 @@
 
 namespace blocksci {
 
-    // Represents one Block of the blockchain
+    /** Represents one Block of the blockchain */
     class BLOCKSCI_EXPORT Block : public TransactionRange {
-        // Contains raw block data from the chain/block.dat file
+        /** Contains raw block data from the chain/block.dat file */
         const RawBlock *rawBlock;
         
         Block(const RawBlock *rawBlock_, BlockHeight blockNum_, DataAccess &access_);

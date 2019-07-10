@@ -16,7 +16,7 @@
 
 namespace blocksci {
 
-    // Contains data to uniquely identify one input using txNum and inoutNum
+    /** Contains data to uniquely identify one input using txNum and inoutNum */
     struct BLOCKSCI_EXPORT InputPointer : public InoutPointer {
         using InoutPointer::InoutPointer;
                 

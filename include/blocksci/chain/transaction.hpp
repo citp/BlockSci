@@ -30,7 +30,7 @@ namespace blocksci {
         InvalidHashException() : std::runtime_error("No Match for hash") {}
     };
 
-    /* Represents a Transaction of the blockchain
+    /** Represents a Transaction of the blockchain
      *
      * Transaction data is stored as RawTransaction in chain/tx_data.dat. Inputs and outputs are stored as
      * Inout objects in the same file, see ChainAccess for details.
@@ -43,7 +43,7 @@ namespace blocksci {
         mutable BlockHeight blockHeight;
         friend TransactionRange;
     public:
-        // Blockchain-wide transaction number in the same order they appear in the blockchain, also called transaction index
+        /** Blockchain-wide transaction number in the same order they appear in the blockchain, also called transaction index */
         uint32_t txNum;
         
         

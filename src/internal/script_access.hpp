@@ -58,7 +58,7 @@ namespace blocksci {
     using ScriptFile = ScriptFileType_t<typename ScriptInfo<type>::storage>;
 
 
-    /* Provides access to script data of all address types
+    /** Provides access to script data of all address types
      *
      * BlockSci supports the parsing of all standard Bitcoin address types in order to extract relevant data.
      * Each address type has its own file/s storing this data.
