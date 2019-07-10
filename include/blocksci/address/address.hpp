@@ -23,6 +23,7 @@
 #include <unordered_set>
 #include <vector>
 
+/** Namespace of the analysis library */
 namespace blocksci {
     class DataAccess;
 
