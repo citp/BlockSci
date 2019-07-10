@@ -25,7 +25,7 @@ namespace blocksci {
     nlohmann::json loadConfig(const std::string &configFilePath);
     void checkVersion(const nlohmann::json &jsonConf);
 
-    // Loads and holds blockchain configuration files, needed to load blockchains
+    /** Loads and holds blockchain configuration files, needed to load blockchains */
     struct DataConfiguration {
         DataConfiguration() {}
         DataConfiguration(const std::string &configPath, ChainConfiguration &config, bool errorOnReorg, BlockHeight blocksIgnored);
@@ -33,11 +33,11 @@ namespace blocksci {
         std::string configPath;
         bool errorOnReorg;
 
-        /* Block height that BlockSci should load up to as a 1-indexed number
+        /** Block height that BlockSci should load up to as a 1-indexed number
          * Eg. 10 loads blocks [0, 9], and -6 loads all but the last 6 blocks */
         BlockHeight blocksIgnored;
 
-        // Configuration of an individual chain, eg. coinName, dataDirectory, segwitActivationHeight etc.
+        /** Configuration of an individual chain, eg. coinName, dataDirectory, segwitActivationHeight etc. */
         ChainConfiguration chainConfig;
         
         bool isNull() const {

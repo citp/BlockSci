@@ -13,7 +13,7 @@
 #include <iostream>
 
 namespace blocksci {
-    /* Helper class to output the progress of an ongoing action, eg. the parser process. */
+    /** Helper class to output the progress of an ongoing action, eg. the parser process. */
     template<typename UpdateFunc>
     class ProgressBar {
         uint64_t total;

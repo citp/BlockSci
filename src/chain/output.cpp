@@ -41,7 +41,7 @@ namespace blocksci {
         }
     }
 
-    // Get the Input that spends this Output, if it was spent yet
+    /** Get the Input that spends this Output, if it was spent yet */
     ranges::optional<Input> Output::getSpendingInput() const {
         auto spendingTx = getSpendingTx();
         if (spendingTx) {

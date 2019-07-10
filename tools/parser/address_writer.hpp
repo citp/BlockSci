@@ -108,10 +108,10 @@ public:
         auto &file = std::get<ScriptFile<dedupType(type)>>(scriptFiles);
         auto data = file.getDataAtIndex(input.scriptNum - 1);
 
-        // Default value of ScriptDataBase.txFirstSpent is (std::numeric_limits<uint32_t>::max())
+        /** Default value of ScriptDataBase.txFirstSpent is (std::numeric_limits<uint32_t>::max()) */
         bool isFirstSpend = data->txFirstSpent == std::numeric_limits<uint32_t>::max();
 
-        // Default value of ScriptDataBase.txFirstSeen is the txNum of the transaction that contained the script
+        /** Default value of ScriptDataBase.txFirstSeen is the txNum of the transaction that contained the script */
         bool isNewerFirstSeen = outputTxNum < data->txFirstSeen;
 
         if (isNewerFirstSeen) {

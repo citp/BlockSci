@@ -54,7 +54,7 @@ namespace blocksci {
         }
     }
 
-    // Represents an iterable collection of contiguous Block objects
+    /** Represents an iterable collection of contiguous Block objects */
     class BLOCKSCI_EXPORT BlockRange {
     public:
         class iterator {

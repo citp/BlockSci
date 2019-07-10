@@ -203,7 +203,7 @@ namespace blocksci {
         return tx.fee();
     }
 
-    // Calculate the total balance of a collection of outputs, optionally only upto a given block height
+    /** Calculate the total balance of a collection of outputs, optionally only upto a given block height */
     template <typename T>
     inline int64_t BLOCKSCI_EXPORT balance(BlockHeight height, T && t) {
         int64_t value = 0;

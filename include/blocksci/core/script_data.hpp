@@ -63,10 +63,10 @@ namespace blocksci {
     };
     
     struct BLOCKSCI_EXPORT ScriptDataBase {
-        // Transaction number where this script has first occurred in the blockchain
+        /** Transaction number where this script has first occurred in the blockchain */
         uint32_t txFirstSeen;
 
-        // Transaction number where this script has been spent first; if not spent yet, defaults to std::numeric_limits<uint32_t>::max()
+        /** Transaction number where this script has been spent first; if not spent yet, defaults to std::numeric_limits<uint32_t>::max() */
         uint32_t txFirstSpent;
 
         uint32_t typesSeen;

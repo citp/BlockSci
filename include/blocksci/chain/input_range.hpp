@@ -19,25 +19,25 @@ namespace blocksci {
     class DataAccess;
     
     struct BLOCKSCI_EXPORT InputRange {
-        // Pointer to the Inout of the first input in the range, more <Inout>s follow and can be accessed like inouts[number]
+        /** Pointer to the Inout of the first input in the range, more <Inout>s follow and can be accessed like inouts[number] */
         const Inout *inouts;
 
-        // Pointer to the tx-internal output number that the first input in the range spends
+        /** Pointer to the tx-internal output number that the first input in the range spends */
         const uint16_t *spentOutputNums;
 
-        // Pointer to the blockchain field sequence number of the first input in the range
+        /** Pointer to the blockchain field sequence number of the first input in the range */
         const uint32_t *sequenceNumbers;
 
-        // Block height of the transaction whose inputs are part of the range
+        /** Block height of the transaction whose inputs are part of the range */
         BlockHeight height;
 
-        // Transaction number of the inputs that are part of the range
+        /** Transaction number of the inputs that are part of the range */
         uint32_t txIndex;
 
-        // Maximum tx-internal input number that is part of the range
+        /** Maximum tx-internal input number that is part of the range */
         uint16_t maxInputNum;
 
-        // Needed to create Input objects in the iterator struct
+        /** Needed to create Input objects in the iterator struct */
         uint32_t maxTxCount;
 
         DataAccess *access = nullptr;
@@ -68,7 +68,7 @@ namespace blocksci {
             self_type operator+(difference_type i) const {  self_type tmp = *this; tmp += i; return tmp; }
             self_type operator-(difference_type i) const { self_type tmp = *this; tmp -= i; return tmp; }
 
-            // Parameters of Input constructor: InputPointer &pointer_, BlockHeight blockHeight_, Inout &inout_, uint16_t *spentOutputNum_, uint32_t *sequenceNum_, uint32_t maxTxCount_, DataAccess &access_
+            /** Parameters of Input constructor: InputPointer &pointer_, BlockHeight blockHeight_, Inout &inout_, uint16_t *spentOutputNum_, uint32_t *sequenceNum_, uint32_t maxTxCount_, DataAccess &access_ */
             value_type operator*() const { return {{txIndex, inputNum}, height, inouts[inputNum], &spentOutputNums[inputNum], &sequenceNumbers[inputNum], maxTxCount, *access}; }
             value_type operator[](difference_type i) const {
                 auto index = static_cast<uint16_t>(static_cast<int>(inputNum) + i);

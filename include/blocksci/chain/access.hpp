@@ -17,7 +17,7 @@ namespace blocksci {
     struct DataConfiguration;
     class DataAccess;
 
-    // Wrapper class that manages all data access for a blockchain
+    /** Wrapper class that manages all data access for a blockchain */
     class BLOCKSCI_EXPORT Access {
         DataAccess *access;
     public:

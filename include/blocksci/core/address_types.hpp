@@ -20,7 +20,7 @@
 namespace blocksci {
     struct BLOCKSCI_EXPORT AddressType {
 
-        // enum that holds all address types as listed in ADDRESS_TYPE_LIST
+        /** enum that holds all address types as listed in ADDRESS_TYPE_LIST */
         enum Enum {
             // After preprocessing: NONSTANDARD, PUBKEY, PUBKEYHASH, MULTISIG_PUBKEY, SCRIPTHASH, MULTISIG, NULL_DATA, WITNESS_PUBKEYHASH, WITNESS_SCRIPTHASH, WITNESS_UNKNOWN
             #define VAL(x) x

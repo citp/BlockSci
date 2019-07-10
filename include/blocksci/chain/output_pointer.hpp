@@ -18,7 +18,7 @@
 
 namespace blocksci {
     class DataAccess;
-    // Contains data to uniquely identify one output using txNum and inoutNum
+    /** Contains data to uniquely identify one output using txNum and inoutNum */
     struct BLOCKSCI_EXPORT OutputPointer : public InoutPointer {
         using InoutPointer::InoutPointer;
         

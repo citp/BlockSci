@@ -25,7 +25,7 @@ struct ParserConfigurationBase {
     ParserConfigurationBase();
     ParserConfigurationBase(const blocksci::DataConfiguration &config);
 
-    // Directory that stores all files that are needed during the parsing process, see methods below
+    /** Directory that stores all files that are needed during the parsing process, see methods below */
     filesystem::path parserDirectory() const {
         return filesystem::path{dataConfig.chainConfig.dataDirectory}/"parser";
     }
@@ -53,7 +53,7 @@ struct ParserConfigurationBase {
         return parserDirectory()/"address";
     }
 
-    /* Stores the serialized ChainIndex<ParserTag> object
+    /** Stores the serialized ChainIndex<ParserTag> object
      *
      * Main content is ChainIndex's std::unordered_map<blocksci::uint256, BlockType> blockList property
      * BlockType contains block data like the hash, height, size, no. of txes, inputCount, outputcount, CBlockHeader object
@@ -62,7 +62,7 @@ struct ParserConfigurationBase {
         return parserDirectory()/"blockList.dat";
     }
 
-    /* Stores serialized OutputLinkData, memory-mapped as blocksci::FixedSizeFileMapper<OutputLinkData>
+    /** Stores serialized OutputLinkData, memory-mapped as blocksci::FixedSizeFileMapper<OutputLinkData>
      *
      * OutputLinkData links an output (InoutPointer) with the spending transaction (tx number)
      */
