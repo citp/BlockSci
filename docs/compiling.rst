@@ -38,7 +38,7 @@ Ubuntu 18.04 / 16.04
 	CC=gcc-7 CXX=g++-7 sudo -H pip3 install -e blockscipy
 
 
-If you get any errors about "Too many open files", you may need to increase_ the open files limit.
+You will also need to increase_ the open files limit on your system.
 
 .. _increase: https://ro-che.info/articles/2017-03-26-increase-open-files-limit
 
