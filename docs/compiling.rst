@@ -36,7 +36,11 @@ Ubuntu 16.04
 
 	cd ..
 	CC=gcc-7 CXX=g++-7 sudo -H pip3 install -e blockscipy
-	
+
+
+You will also need to increase_ the open files limit on your system.
+
+.. _increase: https://ro-che.info/articles/2017-03-26-increase-open-files-limit
 
 Mac OS 10.13
 --------------
