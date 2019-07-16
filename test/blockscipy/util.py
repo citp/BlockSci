@@ -8,6 +8,11 @@ def correct_timestamp(ts):
     tz = get_localzone()
     ts_local = tz.localize(ts)
     return ts_local.astimezone(pytz.utc)
+def sorted_tx_list(it):
+    lst = it
+    if not isinstance(it, list):
+        lst = it.to_list()
+    return sorted(lst, key=lambda tx: tx.index)
 
 
 def reward(height):

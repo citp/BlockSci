@@ -1,4 +1,5 @@
 import blocksci
+from util import sorted_tx_list
 
 
 def test_clustering_default_heuristic(chain, tmpdir_factory):
@@ -54,11 +55,11 @@ def test_clustering_no_change(chain, json_data, regtest, tmpdir_factory):
     print(cluster.count_of_type(blocksci.address_type.scripthash), file=regtest)
     print(cluster.count_of_type(blocksci.address_type.witness_pubkeyhash), file=regtest)
     print(cluster.count_of_type(blocksci.address_type.witness_scripthash), file=regtest)
-    print(cluster.in_txes(), file=regtest)
+    print(sorted_tx_list(cluster.in_txes()), file=regtest)
     print(cluster.in_txes_count(), file=regtest)
     print(cluster.ins().to_list(), file=regtest)
-    print(cluster.txes(), file=regtest)
-    print(cluster.out_txes(), file=regtest)
+    print(sorted_tx_list(cluster.txes()), file=regtest)
+    print(sorted_tx_list(cluster.out_txes()), file=regtest)
     print(cluster.out_txes_count(), file=regtest)
     print(cluster.outs().to_list(), file=regtest)
     print(cluster.address_count(), file=regtest)

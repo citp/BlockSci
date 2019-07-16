@@ -1,6 +1,6 @@
 import blocksci
 import pytest
-from util import Coin
+from util import Coin, sorted_tx_list
 
 
 def address_types(chain_name):
@@ -101,8 +101,3 @@ def test_address_regression(chain, json_data, regtest, chain_name):
             print(addr.total, file=regtest)
         if "p2sh" in addr_type or addr_type == "p2wsh":
             print(addr.wrapped_address, file=regtest)
-
-
-def sorted_tx_list(it):
-    l = it.to_list()
-    return sorted(l, key=lambda tx: tx.index)
