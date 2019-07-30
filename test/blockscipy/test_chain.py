@@ -1,3 +1,4 @@
+import os
 import pytest
 import blocksci
 from util import correct_timestamp
@@ -64,3 +65,16 @@ def block_regression(block, regtest):
     print(block.version, file=regtest)
     print(block.virtual_size, file=regtest)
     print(block.weight, file=regtest)
+
+
+def test_parser_running(chain):
+    assert not chain.is_parser_running()
+
+    pid_file = chain.data_location + "/blocksci_parser.pid"
+    open(pid_file, "w").close()
+
+    assert chain.is_parser_running()
+
+    os.remove(pid_file)
+
+    assert not chain.is_parser_running()

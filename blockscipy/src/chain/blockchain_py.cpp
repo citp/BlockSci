@@ -70,12 +70,13 @@ void init_blockchain(py::class_<Blockchain> &cl) {
     .def(py::init<std::string, BlockHeight>())
     .def_property_readonly("data_location", &Blockchain::dataLocation, "Returns the location of the data directory that this Blockchain object represents.")
     .def_property_readonly("config_location", &Blockchain::configLocation, "Returns the location of the configuration file that this Blockchain object represents.")
-    .def("reload", &Blockchain::reload, "Reload the blockchain to make new blocks visible (Invalidates current BlockSci objects)")
+    .def("reload", &Blockchain::reload, "Reload the blockchain to make new blocks visible (Invalidates current BlockSci objects).")
+    .def("is_parser_running", &Blockchain::isParserRunning, "Returns whether the parser is currently operating on this chain's data directory.")
     .def("addresses", [](Blockchain &chain, AddressType::Enum type) {
         static constexpr auto table = make_dynamic_table<AddressType, PythonScriptRangeFunctor>();
         auto index = static_cast<size_t>(type);
         return table.at(index)(chain.getAccess());
-    }, py::arg("address_type"), "Return a range of all addresses of the given type")
+    }, py::arg("address_type"), "Return a range of all addresses of the given type.")
     
     .def("address_count",
         &Blockchain::addressCount,
