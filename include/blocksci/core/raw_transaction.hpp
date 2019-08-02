@@ -13,7 +13,7 @@
 #include <blocksci/core/typedefs.hpp>
 
 namespace blocksci {
-    /* Represents raw transaction data as stored in the chain/tx_data.dat file.
+    /** Represents raw transaction data as stored in the chain/tx_data.dat file.
      *
      * The chain/tx_data.dat file is implemented as IndexedFileMapper<mio::access_mode, RawTransaction> and is
      * accessible via ChainAccess' txFile property.

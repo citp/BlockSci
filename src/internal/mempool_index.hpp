@@ -85,7 +85,7 @@ namespace blocksci {
         }
     };
 
-    /* Provides access to the mempool index, which stores the timestamp of when a transaction has been
+    /** Provides access to the mempool index, which stores the timestamp of when a transaction has been
      * first seen. Only relevant when BlockSci's mempool_recorder is enabled (= running).
      *
      * Directory: mempool/

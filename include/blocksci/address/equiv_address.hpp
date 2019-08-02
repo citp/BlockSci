@@ -23,7 +23,7 @@
 namespace blocksci {
     class DataAccess;
 
-    /* Represents all equivalent addresses for a given Address object
+    /** Represents all equivalent addresses for a given Address object
      *
      * @see https://citp.github.io/BlockSci/reference/addresses/equiv_address.html
      */
@@ -32,7 +32,7 @@ namespace blocksci {
 
         DataAccess *access;
 
-        // Set of equivalent addresses
+        /** Set of equivalent addresses */
         std::unordered_set<Address> addresses;
         
         friend struct std::hash<EquivAddress>;

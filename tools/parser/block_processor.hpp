@@ -115,13 +115,13 @@ struct SerializeAddressesStep : public ProcessorStep {
 void backUpdateTxes(const ParserConfigurationBase &config);
 
 
-// BlockProcessor handles parsing blocks and their transactions, inputs, outputs etc. using a processing pipeline
+/** BlockProcessor handles parsing blocks and their transactions, inputs, outputs etc. using a processing pipeline */
 class BlockProcessor {
-    // Blockchain-wide transaction numbers of the first and current transaction to process
+    /** Blockchain-wide transaction numbers of the first and current transaction to process */
     uint32_t startingTxCount = 0;
     uint32_t currentTxNum = 0;
 
-    // Blockchain-wide current input and output numbers to process
+    /** Blockchain-wide current input and output numbers to process */
     uint64_t currentInputNum = 0;
     uint64_t currentOutputNum = 0;
 
