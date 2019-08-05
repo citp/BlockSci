@@ -31,7 +31,7 @@ Quick setup using Amazon EC2
 
 AMI Last updated on May 8, 2018.
 
-If you want to start using BlockSci immediately, we have made available an EC2 image: ami-0d0091e593d44cce1_. We recommend using an instance with 60 GB of memory or more for optimal performance (r4.2xlarge). On boot, a Jupyter Notebook running BlockSci will launch immediately. To access the notebook, you must set up port forwarding to your computer. Inserting the name of your private key file and the domain of your ec2 instance into the following command will make the Notebook available on your machine.
+If you want to start using BlockSci immediately, we have made available an EC2 image: ami-0d0091e593d44cce1_. We recommend using an instance with 60 GB of memory or more for optimal performance (r5.2xlarge). As of August 2019 the default disk size of 500GB may not suffice anymore, we therefore recommend choosing a larger disk size (e.g., 600 GB) when you first create the instance. On boot, a Jupyter Notebook running BlockSci will launch immediately. To access the notebook, you must set up port forwarding to your computer. Inserting the name of your private key file and the domain of your ec2 instance into the following command will make the Notebook available on your machine.
 
 .. code-block:: bash
 
