@@ -10,6 +10,7 @@ import importlib
 import subprocess
 import sys
 import os
+import logging
 import inspect
 import copy
 import io
@@ -46,6 +47,14 @@ class _NoDefault:
 
 
 MISSING_PARAM = _NoDefault()
+
+
+# Alert the user if the disk space is getting full
+disk_info = os.statvfs("/")
+free_space = (disk_info.f_frsize * disk_info.f_bavail) // (1024**3)
+if free_space < 20:
+    logger = logging.getLogger()
+    logger.warning("Warning: You only have {}GB of free disk space left. Running out of disk space may crash the parser and corrupt the BlockSci data files.".format(free_space))
 
 
 def mapreduce_block_ranges(chain, map_func, reduce_func, init=MISSING_PARAM, start=None, end=None, cpu_count=psutil.cpu_count()):
