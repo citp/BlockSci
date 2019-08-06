@@ -58,6 +58,7 @@ namespace blocksci {
         
         // Mempool data
         ranges::optional<std::chrono::system_clock::time_point> getTimeSeen() const;
+        ranges::optional<uint32_t> getTimestampSeen() const;
         
         uint32_t bits() const {
             return rawBlock->bits;

@@ -33,10 +33,19 @@ namespace blocksci {
         
         explicit TimestampIndex(const filesystem::path &path, uint32_t firstTxIndex_) : timestampFile(path), firstTxIndex(firstTxIndex_) {}
         
-        ranges::optional<std::chrono::system_clock::time_point> getTimestamp(uint32_t index) const {
+        ranges::optional<std::chrono::system_clock::time_point> getTime(uint32_t index) const {
+            auto record = getTimestamp(index);
+            if (record.has_value()) {
+                return std::chrono::system_clock::from_time_t(record.value());
+            } else {
+                return ranges::nullopt;
+            }
+        }
+
+        ranges::optional<time_t> getTimestamp(uint32_t index) const {
             auto record = timestampFile[index - firstTxIndex];
             if (record->time > 1) {
-                return std::chrono::system_clock::from_time_t(record->time);
+                return record->time;
             } else {
                 return ranges::nullopt;
             }
@@ -66,11 +75,20 @@ namespace blocksci {
         
         explicit BlocktimeIndex(const filesystem::path &path, int firstBlockNum_) : timestampFile(path), firstBlockNum(firstBlockNum_) {}
         
-        ranges::optional<std::chrono::system_clock::time_point> getTimestamp(OffsetType index) const {
+        ranges::optional<std::chrono::system_clock::time_point> getTime(OffsetType index) const {
+            auto record = getTimestamp(index);
+            if (record) {
+                return std::chrono::system_clock::from_time_t(record.value());
+            } else {
+                return ranges::nullopt;
+            }
+        }
+
+        ranges::optional<time_t> getTimestamp(OffsetType index) const {
             assert(index - firstBlockNum >= 0);
             auto record = timestampFile[index - firstBlockNum];
             if (record->observationTime > 0) {
-                return std::chrono::system_clock::from_time_t(record->observationTime);
+                return record->observationTime;
             } else {
                 return ranges::nullopt;
             }
@@ -155,7 +173,16 @@ namespace blocksci {
             return ranges::nullopt;
         }
 
-        ranges::optional<std::chrono::system_clock::time_point> getTxTimestamp(uint32_t index) const {
+        ranges::optional<std::chrono::system_clock::time_point> getTxTime(uint32_t index) const {
+            auto possibleFile = selectPossibleTxRecording(index);
+            if (possibleFile) {
+                return (*possibleFile).get().getTime(index);
+            } else {
+                return ranges::nullopt;
+            }
+        }
+
+        ranges::optional<time_t> getTxTimestamp(uint32_t index) const {
             auto possibleFile = selectPossibleTxRecording(index);
             if (possibleFile) {
                 return (*possibleFile).get().getTimestamp(index);
@@ -173,7 +200,16 @@ namespace blocksci {
             }
         }
         
-        ranges::optional<std::chrono::system_clock::time_point> getBlockTimestamp(int height) const {
+        ranges::optional<std::chrono::system_clock::time_point> getBlockTime(int height) const {
+            auto possibleFile = selectPossibleBlockRecording(height);
+            if (possibleFile) {
+                return (*possibleFile).get().getTime(height);
+            } else {
+                return ranges::nullopt;
+            }
+        }
+
+        ranges::optional<time_t> getBlockTimestamp(int height) const {
             auto possibleFile = selectPossibleBlockRecording(height);
             if (possibleFile) {
                 return (*possibleFile).get().getTimestamp(height);

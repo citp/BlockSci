@@ -77,7 +77,16 @@ namespace blocksci {
     }
     
     ranges::optional<std::chrono::system_clock::time_point> Transaction::getTimeSeen() const {
-        return access->getMempoolIndex().getTxTimestamp(txNum);
+        return access->getMempoolIndex().getTxTime(txNum);
+    }
+
+    ranges::optional<uint32_t> Transaction::getTimestampSeen() const {
+        auto ts = access->getMempoolIndex().getTxTimestamp(txNum);
+        if (ts) {
+            return static_cast<uint32_t>(ts.value());
+        } else {
+            return ranges::nullopt;
+        }
     }
     
     bool Transaction::observedInMempool() const {
