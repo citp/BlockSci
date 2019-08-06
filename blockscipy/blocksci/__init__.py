@@ -564,6 +564,7 @@ def setup_iterator_proxy_methods(iterator_proxy):
 def setup_range_methods(blocksci_range, nested_proxy_cl=None, sample_proxy=None):
     setup_iterator_methods(blocksci_range, fix_range_doc_def, nested_proxy_cl, sample_proxy)
     blocksci_range.__getitem__ = lambda rng, index: rng._self_proxy[index](rng)
+    blocksci_range.size = property(lambda rng: rng._self_proxy.size(rng))
 
 def setup_iterator_and_proxy_methods(iterator):
     setup_iterator_methods(iterator)
@@ -797,7 +798,7 @@ def get_miner(block) -> str:
     for txout in block.coinbase_tx.outs:
         if txout.address in tagged_addresses:
             return tagged_addresses[txout.address]["name"]
-    
+
     additional_miners = {
         "EclipseMC": "EclipseMC",
         "poolserverj": "poolserverj",
