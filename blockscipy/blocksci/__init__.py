@@ -561,18 +561,23 @@ def setup_iterator_proxy_methods(iterator_proxy):
     for proxy_func in _get_core_functions_methods(nested_proxy_cl):
         setattr(proxy_cl, proxy_func, iterator_proxy_method_creator(proxy_func))
 
+def setup_size_property(iterator):
+    iterator.size = property(lambda rng: rng._self_proxy.size(rng))
+
+
 def setup_range_methods(blocksci_range, nested_proxy_cl=None, sample_proxy=None):
     setup_iterator_methods(blocksci_range, fix_range_doc_def, nested_proxy_cl, sample_proxy)
     blocksci_range.__getitem__ = lambda rng, index: rng._self_proxy[index](rng)
-    blocksci_range.size = property(lambda rng: rng._self_proxy.size(rng))
 
 def setup_iterator_and_proxy_methods(iterator):
     setup_iterator_methods(iterator)
     setup_iterator_proxy_methods(iterator._self_proxy)
+    setup_size_property(iterator)
 
 def setup_range_and_proxy_methods(blocksci_range):
     setup_range_methods(blocksci_range)
     setup_iterator_proxy_methods(blocksci_range._self_proxy)
+    setup_size_property(blocksci_range)
 
 setup_optional_proxy_map_funcs()
 setup_sequence_proxy_map_funcs()
