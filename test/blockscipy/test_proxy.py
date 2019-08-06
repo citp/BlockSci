@@ -93,3 +93,20 @@ def test_where_address(chain):
         lambda tx: tx.inputs.address.any(lambda a: a == a1) | tx.outputs.address.any(lambda b: b == a1))
 
     assert set(a1.txes) == set(proxy_txes)
+
+
+def check_iterator_range(rng, regtest):
+    s = rng.size
+    assert s == len(rng.to_list())
+    print(s, file=regtest)
+
+
+def test_size(chain, regtest):
+    check_iterator_range(chain.blocks, regtest)
+    check_iterator_range(chain.blocks.txes, regtest)
+    check_iterator_range(chain.blocks.txes.inputs, regtest)
+    check_iterator_range(chain.blocks.txes.outputs, regtest)
+
+    check_iterator_range(chain[121].txes, regtest)
+    check_iterator_range(chain[121].txes.inputs, regtest)
+    check_iterator_range(chain[121].txes.outputs, regtest)
