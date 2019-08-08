@@ -23,7 +23,16 @@ namespace blocksci {
     Block::Block(BlockHeight blockNum_, DataAccess &access_) : Block(access_.getChain().getBlock(blockNum_), blockNum_, access_) {}
     
     ranges::optional<std::chrono::system_clock::time_point> Block::getTimeSeen() const {
-        return getAccess().getMempoolIndex().getBlockTimestamp(height());
+        return getAccess().getMempoolIndex().getBlockTime(height());
+    }
+
+    ranges::optional<uint32_t> Block::getTimestampSeen() const {
+        auto ts = getAccess().getMempoolIndex().getBlockTimestamp(height());
+        if (ts) {
+            return static_cast<uint32_t>(ts.value());
+        } else {
+            return ranges::nullopt;
+        }
     }
     
     std::vector<unsigned char> Block::getCoinbase() const {

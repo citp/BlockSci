@@ -81,6 +81,7 @@ namespace blocksci {
         
         // Mempool data access
         ranges::optional<std::chrono::system_clock::time_point> getTimeSeen() const;
+        ranges::optional<uint32_t> getTimestampSeen() const;
         bool observedInMempool() const;
         
         std::string toString() const;

@@ -42,6 +42,7 @@ struct AddTransactionMethods {
         }, "The time that the block containing this transaction arrived");
         func(property_tag, "observed_in_mempool", &Transaction::observedInMempool, "Returns whether this transaction was seen in the mempool by the recorder");
         func(property_tag, "time_seen", &Transaction::getTimeSeen, "If recorded by the mempool recorder, the time that this transaction was first seen by your node");
+        func(property_tag, "timestamp_seen", &Transaction::getTimestampSeen, "If recorded by the mempool recorder, the time that this transaction was first seen by your node");
         func(property_tag, "block", &Transaction::block, "The block that this transaction was in");
         func(property_tag, "index", +[](const Transaction &tx) { return tx.txNum; }, "The internal index of this transaction");
         func(property_tag, "hash", &Transaction::getHash, "The 256-bit hash of this transaction");

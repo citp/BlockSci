@@ -38,6 +38,7 @@ struct AddBlockMethods {
         func(property_tag, "timestamp", &Block::timestamp, "Creation timestamp specified in block header");
         func(property_tag, "time", &Block::getTime, "Datetime object created from creation timestamp");
         func(property_tag, "time_seen", &Block::getTimeSeen, "If recorded by the mempool recorder, the time that this block was first seen by your node");
+        func(property_tag, "timestamp_seen", &Block::getTimestampSeen, "If recorded by the mempool recorder, the timestamp that this block was first seen by your node");
         func(property_tag, "bits", &Block::bits, "Difficulty threshold specified in block header");
         func(property_tag, "nonce", &Block::nonce, "Nonce specified in block header");
         func(property_tag, "height", &Block::height, "Height of the block in the blockchain");
