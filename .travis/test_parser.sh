@@ -1,3 +1,4 @@
+set -ev
 cd "$TRAVIS_BUILD_DIR"
 cd test
 blocksci_parser btc.json generate-config bitcoin_regtest bitcoin_regtest --disk files/btc/regtest/

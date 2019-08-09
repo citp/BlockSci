@@ -1,3 +1,4 @@
+set -ev
 cd "$TRAVIS_BUILD_DIR"
 cd test/blockscipy
 pytest -v
