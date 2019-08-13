@@ -7,6 +7,8 @@ from collections import namedtuple
 MemoRecord = namedtuple("MemoRecord", "key, task")
 
 class Pickler(pickle.Pickler):
+    """Custom Pickler for BlockSci objects"""
+
     def persistent_id(self, obj):
         # Instead of pickling MemoRecord as a regular class instance, we emit a
         # persistent ID.
@@ -32,6 +34,7 @@ class Pickler(pickle.Pickler):
 
 
 class Unpickler(pickle.Unpickler):
+    """Custom Unpickler for BlockSci objects"""
 
     def __init__(self, file, chain):
         super().__init__(file)
