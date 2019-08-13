@@ -635,11 +635,13 @@ int main(int argc, char * argv[]) {
         }
 
         case mode::doctor: {
+            // Check the BlockSci configuration for issues
             auto config = getBaseConfig(configFilePath);
             auto jsonConf = blocksci::loadConfig(configFilePath.str());
+            blocksci::checkVersion(jsonConf);
 
             // Info messages
-            std::cout << "Checking configuration file for issues." << std::endl << std::endl;
+            std::cout << "Checking configuration for issues." << std::endl << std::endl;
 
             int warnings = 0;
             int errors = 0;
@@ -656,36 +658,75 @@ int main(int argc, char * argv[]) {
                     std::cout << "Error: cannot create directory for path " << dataDirectory << ". Check file permissions." << std::endl;
                     errors += 1;
                 }
+            } else {
+                std::cout << "OK: found data directory on disk." << std::endl;
             }
 
             // Parser
             auto parserConf = jsonConf.at("parser");
-            if (parserConf.find("disk") == parserConf.end() && parserConf.find("rpc") == parserConf.end()) {
+            bool hasRPCConfig = parserConf.find("rpc") != parserConf.end();
+            bool hasDiskConfig = parserConf.find("disk") != parserConf.end();
+
+            if (!hasRPCConfig && !hasDiskConfig) {
                 std::cout << "Error: config contains neither disk nor RPC parsing settings." << std::endl;
                 errors += 1;
             }
+            if (hasDiskConfig){
+                std::cout << "OK: found disk parser settings in config." << std::endl;
+            }
+            if (hasRPCConfig) {
+                std::cout << "OK: found RCP parser settings in config." << std::endl;
+            }
 
             // Disk parser
-            if (parserConf.find("disk") != parserConf.end()) {
+            if (hasDiskConfig) {
                 ChainDiskConfiguration diskConfig = parserConf.at("disk");
+
                 auto coinDirectory = diskConfig.coinDirectory;
+                auto blockDirectory = coinDirectory/"blocks";
+
                 if(!coinDirectory.exists()) {
                     std::cout << "Error: coin directory does not exist." << std::endl;
                     errors += 1;
-                }
-                auto blockDirectory = coinDirectory/"blocks";
-                if(coinDirectory.exists() && !blockDirectory.exists()) {
-                    std::cout << "Error: Coin directory does not contain blocks subdirectory." << std::endl;
+                } else if(coinDirectory.exists() && !blockDirectory.exists()) {
+                    std::cout << "Error: coin directory does not contain blocks subdirectory." << std::endl;
                     errors += 1;
+                } else {
+                    auto parserConf = jsonConf.at("parser");
+                    blocksci::BlockHeight maxBlock = parserConf.at("maxBlockNum");
+                    ChainDiskConfiguration diskConfig = parserConf.at("disk");
+
+                    blocksci::DataConfiguration dataConfig{configFilePath.str(), chainConfig, true, 0};
+                    ParserConfiguration<FileTag> config{dataConfig, diskConfig};
+
+                    ChainIndex<FileTag> index = ChainIndex<FileTag>{};
+
+                    std::cout << std::endl << "Constructing chain index from scratch. This may take a while." << std::endl;
+
+                    index.update(config, maxBlock);
+                    auto blocks = index.generateChain(maxBlock);
+                    if(blocks.size() > 0) {
+                        auto lastBlock = blocks.back();
+                        std::cout << "OK: most recent block found in coin directory has height " << lastBlock.height << " (in file " << lastBlock.nFile << ")" << std::endl;
+
+                        if(maxBlock > 0 && (unsigned int) maxBlock > blocks.size()) {
+                            std::cout << "Warning: maxBlock in config is larger than number of blocks found on disk." << std::endl;
+                            warnings += 1;
+                        }
+                    } else {
+                        std::cout << "Error: no blocks found in block files." << std::endl;
+                        errors += 1;
+                    }
                 }
             }
 
             // Results
+            std::cout << std::endl;
             if(warnings + errors > 0) {
                 std::cout << std::endl << "Found " << warnings << " warnings and " << errors << " errors." << std::endl;
                 std::cout << "Warnings may be bening, errors must be resolved for BlockSci to run." << std::endl;
             } else {
-                std::cout << "No issues detected." << std::endl;
+                std::cout << "No significant issues detected." << std::endl;
             }
 
             break;
