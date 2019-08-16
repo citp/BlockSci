@@ -78,3 +78,17 @@ def test_parser_running(chain):
     os.remove(pid_file)
 
     assert not chain.is_parser_running()
+
+
+def test_filter_blocks(chain):
+    blocks1 = [b for b in chain.blocks if b.height % 3 == 0]
+    blocks2 = chain.filter_blocks(lambda b: b.height % 3 == 0)
+
+    assert blocks1 == blocks2
+
+
+def test_filter_txes(chain):
+    txs1 = [tx for block in chain for tx in block if tx.block.height % 3 == 0]
+    txs2 = chain.filter_txes(lambda tx: tx.block.height % 3 == 0)
+    assert txs1 == txs2
+
