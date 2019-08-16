@@ -170,7 +170,7 @@ def filter_blocks(self, filter_func, start=None, end=None, cpu_count=psutil.cpu_
     """Return all blocks in range which match the given criteria
     """
     def map_func(blocks):
-        return [block for block in blocks if filter_func(block)]
+        return blocks.where(filter_func).to_list()
 
     def reduce_func(accum, new_val):
         accum.extend(new_val)
@@ -190,7 +190,7 @@ def filter_txes(self, filter_func, start=None, end=None, cpu_count=psutil.cpu_co
     """Return all transactions in range which match the given criteria
     """
     def map_func(blocks):
-        return [tx for block in blocks for tx in block if filter_func(tx)]
+        return blocks.txes.where(filter_func).to_list()
 
     def reduce_func(accum, new_val):
         accum.extend(new_val)
