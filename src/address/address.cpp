@@ -308,7 +308,7 @@ namespace blocksci {
             }
             case DedupAddressType::MULTISIG: {
                 auto script = script::Multisig(address.scriptNum, access);
-                ss << int(script.getRequired()) << "Of" << int(script.getTotal());
+                ss << int(script.getRequired()) << "of" << int(script.getTotal());
                 break;
             }
             case DedupAddressType::PUBKEY: {

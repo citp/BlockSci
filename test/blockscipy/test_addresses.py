@@ -96,6 +96,7 @@ def test_address_regression(chain, json_data, regtest, chain_name):
         print(addr.raw_type, file=regtest)
         print(addr.revealed_tx, file=regtest)
         print(addr.type, file=regtest)
+        print(addr.full_type, file=regtest)
         if addr.type == blocksci.address_type.multisig:
             print(addr.required, file=regtest)
             print(addr.total, file=regtest)

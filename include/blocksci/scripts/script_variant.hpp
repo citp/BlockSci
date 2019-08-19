@@ -35,6 +35,10 @@ namespace blocksci {
         AddressType::Enum getType() const {
             return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getType(); }, wrapped);
         }
+
+        std::string fullType() const {
+            return mpark::visit([&](auto &scriptAddress) { return scriptAddress.fullType(); }, wrapped);
+        }
         
         bool operator==(const AnyScript& other) const {
             return std::make_tuple(getType(), getScriptNum()) == std::make_tuple(other.getType(), other.getScriptNum());

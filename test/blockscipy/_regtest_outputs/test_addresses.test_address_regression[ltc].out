@@ -13,6 +13,7 @@ None
 2
 None
 Pay to pubkey hash
+pubkeyhash
 mrPRMELJcGsbKmuFiGwUgNCX9Wo4iSy44T
 0
 EquivAddress(PubkeyHashAddress(mrPRMELJcGsbKmuFiGwUgNCX9Wo4iSy44T))
@@ -28,6 +29,7 @@ dd9f85e63f3e6f87bb9ee130bb2c8a62dea33c77
 2
 Tx(len(txins)=1, len(txouts)=1, size_bytes=192, block_height=112, tx_index=115)
 Pay to pubkey hash
+pubkeyhash
 mk7GYZDvnyyTyi2anTr5w5sTqW3r18WQWb
 0
 EquivAddress(PubkeyHashAddress(mk7GYZDvnyyTyi2anTr5w5sTqW3r18WQWb))
@@ -43,6 +45,7 @@ b'\x03\x08\xde\xe8\xbb\xccv\xa7\xad\xdfm\xd7\xa2\xdam\xbf\xa8\xa0N(\x03\xd1\r\x9
 2
 Tx(len(txins)=1, len(txouts)=1, size_bytes=192, block_height=113, tx_index=118)
 Pay to pubkey hash
+pubkeyhash
 QM4W44aKWiivLwrJCQNyR94sZ5tXEFtUAU
 100000000
 EquivAddress(ScriptHashAddress(QM4W44aKWiivLwrJCQNyR94sZ5tXEFtUAU))
@@ -56,6 +59,7 @@ False
 4
 None
 Pay to script hash
+scripthash
 None
 QUCUt8UHUHouaAbaPH44JDy3uQE7L1TsjT
 0
@@ -70,6 +74,7 @@ True
 4
 Tx(len(txins)=1, len(txouts)=1, size_bytes=193, block_height=115, tx_index=125)
 Pay to script hash
+scripthash/pubkey
 PubkeyAddress(mr6VKoQ9zMau7CSNaf1QBzy6Pw3DmMPrWm)
 QVAf2inEFpzWnz6tTxLLYSXYJR2KzA4kEE
 0
@@ -84,6 +89,7 @@ True
 4
 Tx(len(txins)=1, len(txouts)=1, size_bytes=193, block_height=116, tx_index=128)
 Pay to script hash
+scripthash/pubkey
 PubkeyAddress(mjAzMtZc7UFuvuRqJyhrrVXHQKoY5UhG6R)
 0
 EquivAddress(MultisigAddress(2 of 3))
@@ -97,6 +103,7 @@ True
 5
 Tx(len(txins)=1, len(txouts)=1, size_bytes=231, block_height=189, tx_index=325)
 Multisig
+multisig2of3
 2
 3
 0
@@ -111,4 +118,5 @@ True
 4
 Tx(len(txins)=1, len(txouts)=1, size_bytes=337, block_height=190, tx_index=329)
 Pay to script hash
+scripthash/multisig2of3
 MultisigAddress(2 of 3 multisig with addresses mrfx8rZk4kfkce2Dvxy1m5rcGVRmyZGn1U, n2vmQHZ1wK4meS4wvLpMNhdgwaderv8Uij, mr9KKBWmDqCWb7hpELAGnUyvYPbbMGpiSM)

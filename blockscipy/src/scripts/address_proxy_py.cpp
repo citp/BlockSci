@@ -49,6 +49,7 @@ struct AddAddressMethods {
     void operator()(FuncApplication func) {
         func(property_tag, "address_num", &AnyScript::getScriptNum, "The internal identifier of the address");
         func(property_tag, "type", &AnyScript::getType, "The type of address");
+        func(property_tag, "full_type", &AnyScript::fullType, "The full type of the address");
         func(property_tag, "raw_type", +[](AnyScript &address) {
             return static_cast<int64_t>(address.getType());
         }, "The type of address");
