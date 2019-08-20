@@ -32,6 +32,7 @@ def transaction_regression(tx, regtest):
     print(correct_timestamp(tx.block_time), file=regtest)
     print(tx.fee, file=regtest)
     print(tx.fee_per_byte(), file=regtest)
+    print(tx.fee_per_kbyte(), file=regtest)
     print(tx.hash, file=regtest)
     print(tx.index, file=regtest)
     print(tx.is_coinbase, file=regtest)

@@ -64,7 +64,21 @@ struct AddTransactionMethods {
             } else {
                 throw std::invalid_argument{"Size measure must be one of total, base, weight, or virtual"};
             }
-        }, "The ratio of fee paid to size of this transaction. By default this uses veritual size, but passing total, base, weight, or virtual let's you choose what measure of size you want", pybind11::arg("size_measure") = "virtual");
+        }, "The (rounded) ratio of fee paid to size of this transaction (in byte). By default this uses virtual size, but passing total, base, weight, or virtual let's you choose a different size measure", pybind11::arg("size_measure") = "virtual");
+        func(method_tag, "fee_per_kbyte", +[](const Transaction &tx, const std::string &sizeMeasure) -> int64_t {
+            auto txFee = fee(tx);
+            if (sizeMeasure == "total") {
+                return txFee * 1000 / tx.totalSize();
+            } else if (sizeMeasure == "base") {
+                return txFee * 1000 / tx.baseSize();
+            } else if(sizeMeasure == "weight") {
+                return txFee * 1000 / tx.weight();
+            } else if(sizeMeasure == "virtual") {
+                return txFee * 1000 / tx.virtualSize();
+            } else {
+                throw std::invalid_argument{"Size measure must be one of total, base, weight, or virtual"};
+            }
+        }, "The (rounded) ratio of fee paid to size of this transaction (in kbyte). By default this uses virtual size, but passing total, base, weight, or virtual let's you choose a different size measure", pybind11::arg("size_measure") = "virtual");
         func(property_tag, "op_return", +[](const Transaction &tx) -> ranges::optional<Output> {
             return getOpReturn(tx);
         }, "If this transaction included a null data address, return its output. Otherwise return None");
