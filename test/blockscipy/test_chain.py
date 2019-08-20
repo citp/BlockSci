@@ -24,14 +24,14 @@ def test_empty_block(chain, regtest):
 
 
 def test_block_with_p2pkh_tx(chain, json_data, regtest):
-    height = json_data['address-p2pkh-spend-1-height']
+    height = json_data["address-p2pkh-spend-1-height"]
     block_regression(chain[height], regtest)
 
 
 @pytest.mark.btc
 @pytest.mark.ltc
 def test_block_with_p2wsh_tx(chain, json_data, regtest):
-    height = json_data['address-p2wsh-spend-2-height']
+    height = json_data["address-p2wsh-spend-2-height"]
     block_regression(chain[height], regtest)
 
 
@@ -91,4 +91,3 @@ def test_filter_txes(chain):
     txs1 = [tx for block in chain for tx in block if tx.block.height % 3 == 0]
     txs2 = chain.filter_txes(lambda tx: tx.block.height % 3 == 0)
     assert txs1 == txs2
-

@@ -5,21 +5,23 @@ from util import Coin, sorted_tx_list
 
 def address_types(chain_name):
     if chain_name == "btc":
-        return ['p2pkh', 'p2sh', 'p2wpkh', 'p2wsh']
+        return ["p2pkh", "p2sh", "p2wpkh", "p2wsh"]
     else:
-        return ['p2pkh', 'p2sh']
+        return ["p2pkh", "p2sh"]
 
 
 def addresses(chain, json_data, chain_name):
     for addr_type in address_types(chain_name):
         for i in range(3):
-            addr = chain.address_from_string(json_data["address-{}-spend-{}".format(addr_type, i)])
+            addr = chain.address_from_string(
+                json_data["address-{}-spend-{}".format(addr_type, i)]
+            )
             yield addr, addr_type
 
-    raw_multisig_tx = chain.tx_with_hash(json_data['raw-multisig-tx'])
+    raw_multisig_tx = chain.tx_with_hash(json_data["raw-multisig-tx"])
     yield raw_multisig_tx.outputs[0].address, "raw-multisig"
 
-    p2sh_multisig_tx = chain.tx_with_hash(json_data['p2sh-multisig-tx'])
+    p2sh_multisig_tx = chain.tx_with_hash(json_data["p2sh-multisig-tx"])
     yield p2sh_multisig_tx.outputs[0].address, "p2sh-multisig"
 
 
@@ -30,50 +32,50 @@ def address_received_test(addr, address_type, balance, ntxes):
 
 
 def test_p2pkh_address(chain, json_data):
-    addr = chain.address_from_string(json_data['address-p2pkh-spend-0'])
+    addr = chain.address_from_string(json_data["address-p2pkh-spend-0"])
     address_received_test(addr, blocksci.address_type.pubkeyhash, 1, 1)
 
-    addr = chain.address_from_string(json_data['address-p2pkh-spend-1'])
+    addr = chain.address_from_string(json_data["address-p2pkh-spend-1"])
     address_received_test(addr, blocksci.address_type.pubkeyhash, 0, 2)
 
-    addr = chain.address_from_string(json_data['address-p2pkh-spend-2'])
+    addr = chain.address_from_string(json_data["address-p2pkh-spend-2"])
     address_received_test(addr, blocksci.address_type.pubkeyhash, 0, 4)
 
 
 def test_p2sh_address(chain, json_data):
-    addr = chain.address_from_string(json_data['address-p2sh-spend-0'])
+    addr = chain.address_from_string(json_data["address-p2sh-spend-0"])
     address_received_test(addr, blocksci.address_type.scripthash, 1, 1)
 
-    addr = chain.address_from_string(json_data['address-p2sh-spend-1'])
+    addr = chain.address_from_string(json_data["address-p2sh-spend-1"])
     address_received_test(addr, blocksci.address_type.scripthash, 0, 2)
 
-    addr = chain.address_from_string(json_data['address-p2sh-spend-2'])
+    addr = chain.address_from_string(json_data["address-p2sh-spend-2"])
     address_received_test(addr, blocksci.address_type.scripthash, 0, 4)
 
 
 @pytest.mark.btc
 @pytest.mark.ltc
 def test_p2wpkh_address(chain, json_data):
-    addr = chain.address_from_string(json_data['address-p2wpkh-spend-0'])
+    addr = chain.address_from_string(json_data["address-p2wpkh-spend-0"])
     address_received_test(addr, blocksci.address_type.witness_pubkeyhash, 1, 1)
 
-    addr = chain.address_from_string(json_data['address-p2wpkh-spend-1'])
+    addr = chain.address_from_string(json_data["address-p2wpkh-spend-1"])
     address_received_test(addr, blocksci.address_type.witness_pubkeyhash, 0, 2)
 
-    addr = chain.address_from_string(json_data['address-p2wpkh-spend-2'])
+    addr = chain.address_from_string(json_data["address-p2wpkh-spend-2"])
     address_received_test(addr, blocksci.address_type.witness_pubkeyhash, 0, 4)
 
 
 @pytest.mark.btc
 @pytest.mark.ltc
 def test_p2wsh_address(chain, json_data):
-    addr = chain.address_from_string(json_data['address-p2wsh-spend-0'])
+    addr = chain.address_from_string(json_data["address-p2wsh-spend-0"])
     address_received_test(addr, blocksci.address_type.witness_scripthash, 1, 1)
 
-    addr = chain.address_from_string(json_data['address-p2wsh-spend-1'])
+    addr = chain.address_from_string(json_data["address-p2wsh-spend-1"])
     address_received_test(addr, blocksci.address_type.witness_scripthash, 0, 2)
 
-    addr = chain.address_from_string(json_data['address-p2wsh-spend-2'])
+    addr = chain.address_from_string(json_data["address-p2wsh-spend-2"])
     address_received_test(addr, blocksci.address_type.witness_scripthash, 0, 4)
 
 

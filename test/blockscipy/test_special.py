@@ -10,7 +10,7 @@ from util import Coin
 
 @pytest.mark.btc
 def test_reward_partially_claimed(chain, json_data):
-    height = json_data['block-partial-reward-height']
+    height = json_data["block-partial-reward-height"]
     coinbase = chain[height].txes[0]
     reward = Coin(50 - 10) if height < 150 else Coin(25 - 10)
     assert reward == sum(output.value for output in coinbase.outputs)
@@ -18,7 +18,7 @@ def test_reward_partially_claimed(chain, json_data):
 
 @pytest.mark.btc
 def test_fees_not_claimed(chain, json_data):
-    height = json_data['block-fee-unclaimed-height']
+    height = json_data["block-fee-unclaimed-height"]
     coinbase = chain[height].txes[0]
     reward = Coin(50) if height < 150 else Coin(25)
     assert reward == sum(output.value for output in coinbase.outputs)
@@ -34,13 +34,13 @@ def test_positive_locktime(chain, json_data):
 
 
 def test_non_max_nsequence_no(chain, json_data):
-    tx = chain.tx_with_hash(json_data['nsequence-fffffffe-tx'])
+    tx = chain.tx_with_hash(json_data["nsequence-fffffffe-tx"])
     inpt = tx.inputs[0]
     assert 2 ** 32 - 2 == inpt.sequence_num
 
 
 def test_op_return(chain, json_data):
-    tx = chain.tx_with_hash(json_data['op-return-tx'])
+    tx = chain.tx_with_hash(json_data["op-return-tx"])
     out = tx.outputs[0]
     op_return = tx.op_return
 

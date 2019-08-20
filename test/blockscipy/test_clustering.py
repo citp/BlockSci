@@ -4,7 +4,9 @@ from util import sorted_tx_list
 
 def test_clustering_default_heuristic(chain, tmpdir_factory):
     """Tests that we can run create_clustering with path and chain only"""
-    blocksci.cluster.ClusterManager.create_clustering(str(tmpdir_factory.mktemp("clustering_default_heuristic")), chain)
+    blocksci.cluster.ClusterManager.create_clustering(
+        str(tmpdir_factory.mktemp("clustering_default_heuristic")), chain
+    )
 
 
 def test_clustering_proxy_heuristic(chain, tmpdir_factory):
@@ -12,9 +14,13 @@ def test_clustering_proxy_heuristic(chain, tmpdir_factory):
 
     # output index 0
     heuristic = blocksci.heuristics.change.ChangeHeuristic(
-        blocksci.Tx._self_proxy.outputs.where(lambda o: o.index == 0))
-    cm = blocksci.cluster.ClusterManager.create_clustering(str(tmpdir_factory.mktemp("clustering_proxy_heuristic_0")),
-                                                           chain, heuristic=heuristic)
+        blocksci.Tx._self_proxy.outputs.where(lambda o: o.index == 0)
+    )
+    cm = blocksci.cluster.ClusterManager.create_clustering(
+        str(tmpdir_factory.mktemp("clustering_proxy_heuristic_0")),
+        chain,
+        heuristic=heuristic,
+    )
     for tx in chain.blocks.txes:
         if tx.input_count > 0 and not blocksci.heuristics.is_coinjoin(tx):
             cluster = cm.cluster_with_address(tx.inputs[0].address)
@@ -23,27 +29,49 @@ def test_clustering_proxy_heuristic(chain, tmpdir_factory):
 
     # output index 1
     heuristic = blocksci.heuristics.change.ChangeHeuristic(
-        blocksci.Tx._self_proxy.outputs.where(lambda o: o.index == 1))
-    cm = blocksci.cluster.ClusterManager.create_clustering(str(tmpdir_factory.mktemp("clustering_proxy_heuristic_1")),
-                                                           chain, heuristic=heuristic)
+        blocksci.Tx._self_proxy.outputs.where(lambda o: o.index == 1)
+    )
+    cm = blocksci.cluster.ClusterManager.create_clustering(
+        str(tmpdir_factory.mktemp("clustering_proxy_heuristic_1")),
+        chain,
+        heuristic=heuristic,
+    )
     for tx in chain.blocks.txes:
-        if tx.input_count > 0 and tx.output_count > 1 and not blocksci.heuristics.is_coinjoin(tx):
+        if (
+            tx.input_count > 0
+            and tx.output_count > 1
+            and not blocksci.heuristics.is_coinjoin(tx)
+        ):
             cluster = cm.cluster_with_address(tx.inputs[0].address)
             addresses = cluster.addresses.to_list()
             assert tx.outputs[1].address in addresses
 
 
 def test_clustering_no_change(chain, json_data, regtest, tmpdir_factory):
-    cm = blocksci.cluster.ClusterManager.create_clustering(str(tmpdir_factory.mktemp("clustering")), chain,
-                                                           heuristic=blocksci.heuristics.change.none)
-    cluster = cm.cluster_with_address(chain.address_from_string(json_data['merge-addr-1']))
+    cm = blocksci.cluster.ClusterManager.create_clustering(
+        str(tmpdir_factory.mktemp("clustering")),
+        chain,
+        heuristic=blocksci.heuristics.change.none,
+    )
+    cluster = cm.cluster_with_address(
+        chain.address_from_string(json_data["merge-addr-1"])
+    )
 
     assert 3 == len(cluster.addresses.to_list())
     assert 3 == cluster.address_count()
 
-    assert chain.address_from_string(json_data['merge-addr-1']) in cluster.addresses.to_list()
-    assert chain.address_from_string(json_data['merge-addr-2']) in cluster.addresses.to_list()
-    assert chain.address_from_string(json_data['merge-addr-3']) in cluster.addresses.to_list()
+    assert (
+        chain.address_from_string(json_data["merge-addr-1"])
+        in cluster.addresses.to_list()
+    )
+    assert (
+        chain.address_from_string(json_data["merge-addr-2"])
+        in cluster.addresses.to_list()
+    )
+    assert (
+        chain.address_from_string(json_data["merge-addr-3"])
+        in cluster.addresses.to_list()
+    )
 
     assert cluster.cluster_num >= 0
     assert cluster.index >= 0
@@ -85,19 +113,31 @@ def test_clustering_with_change(chain, json_data, tmpdir_factory, regtest):
         blocksci.heuristics.change.address_reuse.unique_change,
         blocksci.heuristics.change.client_change_address_behavior.unique_change,
         blocksci.heuristics.change.legacy.unique_change,
-        blocksci.heuristics.change.none
+        blocksci.heuristics.change.none,
     ]
 
     for f in heuristics:
-        cm = blocksci.cluster.ClusterManager.create_clustering(str(tmpdir_factory.mktemp("clustering")), chain,
-                                                               heuristic=f)
-        cluster = cm.cluster_with_address(chain.address_from_string(json_data['merge-addr-1']))
+        cm = blocksci.cluster.ClusterManager.create_clustering(
+            str(tmpdir_factory.mktemp("clustering")), chain, heuristic=f
+        )
+        cluster = cm.cluster_with_address(
+            chain.address_from_string(json_data["merge-addr-1"])
+        )
 
         assert 3 <= len(cluster.addresses.to_list())
 
-        assert chain.address_from_string(json_data['merge-addr-1']) in cluster.addresses.to_list()
-        assert chain.address_from_string(json_data['merge-addr-2']) in cluster.addresses.to_list()
-        assert chain.address_from_string(json_data['merge-addr-3']) in cluster.addresses.to_list()
+        assert (
+            chain.address_from_string(json_data["merge-addr-1"])
+            in cluster.addresses.to_list()
+        )
+        assert (
+            chain.address_from_string(json_data["merge-addr-2"])
+            in cluster.addresses.to_list()
+        )
+        assert (
+            chain.address_from_string(json_data["merge-addr-3"])
+            in cluster.addresses.to_list()
+        )
 
         assert cluster.cluster_num >= 0
         assert cluster.index >= 0
@@ -107,12 +147,16 @@ def test_clustering_with_change(chain, json_data, tmpdir_factory, regtest):
 
 def test_clustering_composability(chain, tmpdir_factory):
     nofunc = blocksci.heuristics.change.none
-    compfunc = (blocksci.heuristics.change.legacy - blocksci.heuristics.change.legacy).unique_change
+    compfunc = (
+        blocksci.heuristics.change.legacy - blocksci.heuristics.change.legacy
+    ).unique_change
 
-    cm1 = blocksci.cluster.ClusterManager.create_clustering(str(tmpdir_factory.mktemp("clustering")), chain,
-                                                            heuristic=nofunc)
-    cm2 = blocksci.cluster.ClusterManager.create_clustering(str(tmpdir_factory.mktemp("clustering")), chain,
-                                                            heuristic=compfunc)
+    cm1 = blocksci.cluster.ClusterManager.create_clustering(
+        str(tmpdir_factory.mktemp("clustering")), chain, heuristic=nofunc
+    )
+    cm2 = blocksci.cluster.ClusterManager.create_clustering(
+        str(tmpdir_factory.mktemp("clustering")), chain, heuristic=compfunc
+    )
 
     for cl in cm1.clusters():
         if cl.address_count() > 0:
@@ -123,11 +167,18 @@ def test_clustering_composability(chain, tmpdir_factory):
 
 
 def test_clustering_ignore_coinjoin(chain, json_data, tmpdir_factory, regtest):
-    addresses = chain.tx_with_hash(json_data['simple-coinjoin-tx']).inputs.map(lambda i: i.address).to_list()
+    addresses = (
+        chain.tx_with_hash(json_data["simple-coinjoin-tx"])
+        .inputs.map(lambda i: i.address)
+        .to_list()
+    )
 
-    cm = blocksci.cluster.ClusterManager.create_clustering(str(tmpdir_factory.mktemp("clustering")), chain,
-                                                           heuristic=blocksci.heuristics.change.none,
-                                                           ignore_coinjoin=True)
+    cm = blocksci.cluster.ClusterManager.create_clustering(
+        str(tmpdir_factory.mktemp("clustering")),
+        chain,
+        heuristic=blocksci.heuristics.change.none,
+        ignore_coinjoin=True,
+    )
     cluster = cm.cluster_with_address(addresses[0])
     cluster_addresses = cluster.addresses.to_list()
     assert 1 == len(cluster)
@@ -136,22 +187,40 @@ def test_clustering_ignore_coinjoin(chain, json_data, tmpdir_factory, regtest):
         assert addr not in cluster_addresses
 
     # Normal clustering should still work as expected
-    cluster = cm.cluster_with_address(chain.address_from_string(json_data['merge-addr-1']))
+    cluster = cm.cluster_with_address(
+        chain.address_from_string(json_data["merge-addr-1"])
+    )
     assert 3 <= len(cluster.addresses.to_list())
 
-    assert chain.address_from_string(json_data['merge-addr-1']) in cluster.addresses.to_list()
-    assert chain.address_from_string(json_data['merge-addr-2']) in cluster.addresses.to_list()
-    assert chain.address_from_string(json_data['merge-addr-3']) in cluster.addresses.to_list()
+    assert (
+        chain.address_from_string(json_data["merge-addr-1"])
+        in cluster.addresses.to_list()
+    )
+    assert (
+        chain.address_from_string(json_data["merge-addr-2"])
+        in cluster.addresses.to_list()
+    )
+    assert (
+        chain.address_from_string(json_data["merge-addr-3"])
+        in cluster.addresses.to_list()
+    )
 
     cluster_regtest(chain, json_data, regtest, cm)
 
 
 def test_clustering_cluster_coinjoin(chain, json_data, tmpdir_factory, regtest):
-    addresses = chain.tx_with_hash(json_data['simple-coinjoin-tx']).inputs.map(lambda i: i.address).to_list()
+    addresses = (
+        chain.tx_with_hash(json_data["simple-coinjoin-tx"])
+        .inputs.map(lambda i: i.address)
+        .to_list()
+    )
 
-    cm = blocksci.cluster.ClusterManager.create_clustering(str(tmpdir_factory.mktemp("clustering")), chain,
-                                                           heuristic=blocksci.heuristics.change.none,
-                                                           ignore_coinjoin=False)
+    cm = blocksci.cluster.ClusterManager.create_clustering(
+        str(tmpdir_factory.mktemp("clustering")),
+        chain,
+        heuristic=blocksci.heuristics.change.none,
+        ignore_coinjoin=False,
+    )
     cluster = cm.cluster_with_address(addresses[0])
     cluster_addresses = cluster.addresses.to_list()
     assert 1 < len(cluster)
@@ -160,20 +229,42 @@ def test_clustering_cluster_coinjoin(chain, json_data, tmpdir_factory, regtest):
         assert addr in cluster_addresses
 
     # Normal clustering should still work as expected
-    cluster = cm.cluster_with_address(chain.address_from_string(json_data['merge-addr-1']))
+    cluster = cm.cluster_with_address(
+        chain.address_from_string(json_data["merge-addr-1"])
+    )
     assert 3 <= len(cluster.addresses.to_list())
 
-    assert chain.address_from_string(json_data['merge-addr-1']) in cluster.addresses.to_list()
-    assert chain.address_from_string(json_data['merge-addr-2']) in cluster.addresses.to_list()
-    assert chain.address_from_string(json_data['merge-addr-3']) in cluster.addresses.to_list()
+    assert (
+        chain.address_from_string(json_data["merge-addr-1"])
+        in cluster.addresses.to_list()
+    )
+    assert (
+        chain.address_from_string(json_data["merge-addr-2"])
+        in cluster.addresses.to_list()
+    )
+    assert (
+        chain.address_from_string(json_data["merge-addr-3"])
+        in cluster.addresses.to_list()
+    )
 
     cluster_regtest(chain, json_data, regtest, cm)
 
 
 def cluster_regtest(chain, json_data, regtest, cm):
-    ids = ["address-p2pkh-spend-1", "address-p2sh-spend-2", "addr-2-in-2-out", "addr-peeling-chain", "addr-merge-0",
-           "addr-merge-2", "merge-addr-1", "merge-addr-2"]
+    ids = [
+        "address-p2pkh-spend-1",
+        "address-p2sh-spend-2",
+        "addr-2-in-2-out",
+        "addr-peeling-chain",
+        "addr-merge-0",
+        "addr-merge-2",
+        "merge-addr-1",
+        "merge-addr-2",
+    ]
     addresses = [chain.address_from_string(json_data[x]) for x in ids]
     for addr in addresses:
         cluster = cm.cluster_with_address(addr)
-        print(sorted(cluster.addresses.to_list(), key=lambda x: x.address_num), file=regtest)
+        print(
+            sorted(cluster.addresses.to_list(), key=lambda x: x.address_num),
+            file=regtest,
+        )

@@ -7,7 +7,9 @@ def test_power_of_ten_change(chain, json_data):
         txid = json_data["change-ten-{}-tx".format(i)]
         tx = chain.tx_with_hash(txid)
         result = blocksci.heuristics.change.power_of_ten_value(8 - i, tx).to_list()
-        assert 1 == len(result), "Incorrect number of outputs identified with {} digits".format(i)
+        assert 1 == len(
+            result
+        ), "Incorrect number of outputs identified with {} digits".format(i)
 
         idx = json_data["change-ten-{}-position".format(i)]
         assert idx == list(result)[0].index, "Incorrect index of change output"
@@ -17,7 +19,10 @@ def test_peeling_chain_change(chain, json_data):
     for i in range(3, 8):
         txid = json_data["peeling-chain-{}-tx".format(i)]
         tx = chain.tx_with_hash(txid)
-        heuristic = blocksci.heuristics.change.peeling_chain and blocksci.heuristics.change.spent
+        heuristic = (
+            blocksci.heuristics.change.peeling_chain
+            and blocksci.heuristics.change.spent
+        )
         result = heuristic(tx).to_list()
         assert 1 == len(result)
 
@@ -87,7 +92,11 @@ def test_client_behavior_change(chain, json_data):
 
 
 def test_no_change(chain, json_data):
-    test_txs = ['change-reuse-tx-{}', 'change-locktime-tx-{}', 'change-address-type-tx-{}']
+    test_txs = [
+        "change-reuse-tx-{}",
+        "change-locktime-tx-{}",
+        "change-address-type-tx-{}",
+    ]
     for test in test_txs:
         for i in range(3):
             txid = json_data[test.format(i)]
@@ -102,18 +111,20 @@ def test_unique_change(chain, json_data):
         txid = json_data["change-client-behavior-tx-{}".format(i)]
         tx = chain.tx_with_hash(txid)
 
-        result = blocksci.heuristics.change.client_change_address_behavior.unique_change(tx).to_list()
+        result = blocksci.heuristics.change.client_change_address_behavior.unique_change(
+            tx
+        ).to_list()
         assert 1 == len(result)
 
 
 def test_negative_testcase(chain, json_data):
-    tx = chain.tx_with_hash(json_data['change-negative-testcase-tx'])
+    tx = chain.tx_with_hash(json_data["change-negative-testcase-tx"])
     empty_heuristics = [
         blocksci.heuristics.change.peeling_chain,
         blocksci.heuristics.change.optimal_change,
         blocksci.heuristics.change.address_reuse,
         blocksci.heuristics.change.legacy,
-        blocksci.heuristics.change.none
+        blocksci.heuristics.change.none,
     ]
     for h in empty_heuristics:
         result = h(tx).to_list()
@@ -122,7 +133,7 @@ def test_negative_testcase(chain, json_data):
     full_heuristics = [
         blocksci.heuristics.change.address_type,
         blocksci.heuristics.change.locktime,
-        blocksci.heuristics.change.client_change_address_behavior
+        blocksci.heuristics.change.client_change_address_behavior,
     ]
     for h in full_heuristics:
         result = h(tx).to_list()
@@ -138,11 +149,20 @@ def test_change_regression(chain, json_data, regtest):
         blocksci.heuristics.change.optimal_change,
         blocksci.heuristics.change.address_reuse,
         blocksci.heuristics.change.legacy,
-        blocksci.heuristics.change.none
+        blocksci.heuristics.change.none,
     ]
-    identifiers = ['change-negative-testcase-tx', 'change-reuse-tx-1', "change-locktime-tx-1", "change-optimal-0-tx",
-                   "peeling-chain-5-tx", "change-ten-2-tx", 'fan-8-tx', 'peeling-chain-4-tx', 'tx-chain-10-tx-1',
-                   'funding-tx-2-in-2-out']
+    identifiers = [
+        "change-negative-testcase-tx",
+        "change-reuse-tx-1",
+        "change-locktime-tx-1",
+        "change-optimal-0-tx",
+        "peeling-chain-5-tx",
+        "change-ten-2-tx",
+        "fan-8-tx",
+        "peeling-chain-4-tx",
+        "tx-chain-10-tx-1",
+        "funding-tx-2-in-2-out",
+    ]
     txs = [chain.tx_with_hash(json_data[identifier]) for identifier in identifiers]
     for h in heuristics:
         for tx in txs:
@@ -156,7 +176,7 @@ heuristics = [
     blocksci.heuristics.change.optimal_change,
     blocksci.heuristics.change.power_of_ten_value(5),
     blocksci.heuristics.change.power_of_ten_value(7),
-    blocksci.heuristics.change.none
+    blocksci.heuristics.change.none,
 ]
 
 

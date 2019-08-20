@@ -2,7 +2,9 @@ def test_block_range(chain):
     blocks = [chain[idx] for idx in range(len(chain))]
     assert set(chain.blocks) == set(blocks)
     assert list(chain.blocks.fee) == [sum(tx.fee for tx in block) for block in blocks]
-    assert list(chain.blocks.output_count) == [sum(tx.output_count for tx in block) for block in blocks]
+    assert list(chain.blocks.output_count) == [
+        sum(tx.output_count for tx in block) for block in blocks
+    ]
 
 
 def test_tx_range(chain):

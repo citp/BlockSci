@@ -54,15 +54,15 @@ def test_min(chain):
 
 
 def test_all(chain, json_data):
-    tx = chain.tx_with_hash(json_data['change-address-type-tx-0'])
+    tx = chain.tx_with_hash(json_data["change-address-type-tx-0"])
     value = tx.outputs[0].value
     assert tx.outputs.any(lambda o: o.value == value)
     assert tx.outputs.all(lambda o: o.value == value)
 
 
 def test_any(chain, json_data):
-    tx = chain.tx_with_hash(json_data['change-negative-testcase-tx'])
-    value = int(json_data['change-negative-testcase-value-0'])
+    tx = chain.tx_with_hash(json_data["change-negative-testcase-tx"])
+    value = int(json_data["change-negative-testcase-value-0"])
     assert tx.outputs.any(lambda o: o.value == value)
     assert not tx.outputs.all(lambda o: o.value == value)
 
@@ -72,9 +72,14 @@ def test_any(chain, json_data):
 
 def test_where_block_height(chain):
     assert set(range(120)) == set(chain.blocks.where(lambda b: b.height < 120).height)
-    assert set(range(120, 140)) == set(chain.blocks.where(lambda b: (b.height >= 120) & (b.height < 140)).height)
     assert set(range(120, 140)) == set(
-        chain.blocks.where(lambda b: b.height >= 120).where(lambda b: b.height < 140).height)
+        chain.blocks.where(lambda b: (b.height >= 120) & (b.height < 140)).height
+    )
+    assert set(range(120, 140)) == set(
+        chain.blocks.where(lambda b: b.height >= 120)
+        .where(lambda b: b.height < 140)
+        .height
+    )
 
 
 def test_where_tx_locktime(chain):
@@ -90,7 +95,9 @@ def test_where_address(chain):
     a1 = chain.blocks[1].txes[0].outputs[0].address
 
     proxy_txes = chain.blocks.txes.where(
-        lambda tx: tx.inputs.address.any(lambda a: a == a1) | tx.outputs.address.any(lambda b: b == a1))
+        lambda tx: tx.inputs.address.any(lambda a: a == a1)
+        | tx.outputs.address.any(lambda b: b == a1)
+    )
 
     assert set(a1.txes) == set(proxy_txes)
 
