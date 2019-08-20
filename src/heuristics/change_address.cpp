@@ -82,7 +82,7 @@ namespace blocksci { namespace heuristics {
     }
     
     // When users transfer bitcoins between wallets, they often do so with values that are powers of ten.
-    // On the other hand, it is extremly unlikely that you receive power of ten change due to a wallet's coin selection.
+    // On the other hand, it is extremely unlikely that you receive power of ten change due to a wallet's coin selection.
     // Default for digits is 6 (i.e. 0.01 BTC)
     ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::PowerOfTen>::operator()(const Transaction &tx) const {
         int64_t value = int_pow_ten(digits);
