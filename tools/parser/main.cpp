@@ -21,6 +21,7 @@
 #include "block_replayer.hpp"
 #include "address_writer.hpp"
 #include "utxo_address_state.hpp"
+#include "doctor.hpp"
 
 #include <internal/bitcoin_uint256_hex.hpp>
 #include <internal/data_configuration.hpp>
@@ -36,6 +37,8 @@
 #include <cereal/archives/binary.hpp>
 
 #include <nlohmann/json.hpp>
+
+#include <sys/resource.h>
 
 #include <fstream>
 #include <future>
@@ -583,6 +586,13 @@ int main(int argc, char * argv[]) {
         }
         case mode::update:
         case mode::updateCore: {
+            // Make sure disk space and open files limit are sufficient
+            // For more tests run: blocksci_parser <config_file> doctor
+            auto doctor = BlockSciDoctor(configFilePath);
+            doctor.checkDiskSpace();
+            doctor.checkOpenFilesLimit();
+            std::cout << std::endl;
+
             auto config = getBaseConfig(configFilePath);
             lockDataDirectory(config);
             updateChain(configFilePath, selected == mode::update);
@@ -635,100 +645,15 @@ int main(int argc, char * argv[]) {
         }
 
         case mode::doctor: {
-            // Check the BlockSci configuration for issues
-            auto config = getBaseConfig(configFilePath);
-            auto jsonConf = blocksci::loadConfig(configFilePath.str());
-            blocksci::checkVersion(jsonConf);
-
-            // Info messages
-            std::cout << "Checking configuration for issues." << std::endl << std::endl;
-
-            int warnings = 0;
-            int errors = 0;
-
-            // Chain config
-            blocksci::ChainConfiguration chainConfig = jsonConf.at("chainConfig");
-
-            auto dataDirectory = chainConfig.dataDirectory;
-            if(!dataDirectory.exists()) {
-                std::cout << "Warning: data directory does not exist." << std::endl;
-                warnings += 1;
-
-                if(!filesystem::create_directory(dataDirectory)) {
-                    std::cout << "Error: cannot create directory for path " << dataDirectory << ". Check file permissions." << std::endl;
-                    errors += 1;
-                }
-            } else {
-                std::cout << "OK: found data directory on disk." << std::endl;
-            }
-
-            // Parser
-            auto parserConf = jsonConf.at("parser");
-            bool hasRPCConfig = parserConf.find("rpc") != parserConf.end();
-            bool hasDiskConfig = parserConf.find("disk") != parserConf.end();
-
-            if (!hasRPCConfig && !hasDiskConfig) {
-                std::cout << "Error: config contains neither disk nor RPC parsing settings." << std::endl;
-                errors += 1;
-            }
-            if (hasDiskConfig){
-                std::cout << "OK: found disk parser settings in config." << std::endl;
-            }
-            if (hasRPCConfig) {
-                std::cout << "OK: found RCP parser settings in config." << std::endl;
-            }
-
-            // Disk parser
-            if (hasDiskConfig) {
-                ChainDiskConfiguration diskConfig = parserConf.at("disk");
-
-                auto coinDirectory = diskConfig.coinDirectory;
-                auto blockDirectory = coinDirectory/"blocks";
-
-                if(!coinDirectory.exists()) {
-                    std::cout << "Error: coin directory does not exist." << std::endl;
-                    errors += 1;
-                } else if(coinDirectory.exists() && !blockDirectory.exists()) {
-                    std::cout << "Error: coin directory does not contain blocks subdirectory." << std::endl;
-                    errors += 1;
-                } else {
-                    auto parserConf = jsonConf.at("parser");
-                    blocksci::BlockHeight maxBlock = parserConf.at("maxBlockNum");
-                    ChainDiskConfiguration diskConfig = parserConf.at("disk");
-
-                    blocksci::DataConfiguration dataConfig{configFilePath.str(), chainConfig, true, 0};
-                    ParserConfiguration<FileTag> config{dataConfig, diskConfig};
-
-                    ChainIndex<FileTag> index = ChainIndex<FileTag>{};
-
-                    std::cout << std::endl << "Constructing chain index from scratch. This may take a while." << std::endl;
-
-                    index.update(config, maxBlock);
-                    auto blocks = index.generateChain(maxBlock);
-                    if(blocks.size() > 0) {
-                        auto lastBlock = blocks.back();
-                        std::cout << "OK: most recent block found in coin directory has height " << lastBlock.height << " (in file " << lastBlock.nFile << ")" << std::endl;
-
-                        if(maxBlock > 0 && (unsigned int) maxBlock > blocks.size()) {
-                            std::cout << "Warning: maxBlock in config is larger than number of blocks found on disk." << std::endl;
-                            warnings += 1;
-                        }
-                    } else {
-                        std::cout << "Error: no blocks found in block files." << std::endl;
-                        errors += 1;
-                    }
-                }
-            }
-
-            // Results
+            auto doctor = BlockSciDoctor(configFilePath);
+            doctor.checkDiskSpace();
+            doctor.checkOpenFilesLimit();
             std::cout << std::endl;
-            if(warnings + errors > 0) {
-                std::cout << std::endl << "Found " << warnings << " warnings and " << errors << " errors." << std::endl;
-                std::cout << "Warnings may be bening, errors must be resolved for BlockSci to run." << std::endl;
-            } else {
-                std::cout << "No significant issues detected." << std::endl;
-            }
-
+            doctor.checkConfigFile();
+            std::cout << std::endl;
+            doctor.rebuildChainIndex();
+            std::cout << std::endl;
+            doctor.printResults();
             break;
         }
 
