@@ -73,7 +73,6 @@ def test_clustering_no_change(chain, json_data, regtest, tmpdir_factory):
         in cluster.addresses.to_list()
     )
 
-    assert cluster.cluster_num >= 0
     assert cluster.index >= 0
 
     print(cluster.addresses.to_list(), file=regtest)
@@ -139,7 +138,6 @@ def test_clustering_with_change(chain, json_data, tmpdir_factory, regtest):
             in cluster.addresses.to_list()
         )
 
-        assert cluster.cluster_num >= 0
         assert cluster.index >= 0
 
         cluster_regtest(chain, json_data, regtest, cm)

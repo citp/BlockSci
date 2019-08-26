@@ -6,6 +6,8 @@
 //
 
 #include "output_py.hpp"
+#include "output_properties_py.hpp"
+#include "self_apply_py.hpp"
 #include "ranges_py.hpp"
 #include "caster_py.hpp"
 
@@ -19,6 +21,8 @@ namespace py = pybind11;
 using namespace blocksci;
 
 void init_output(py::class_<Output> &cl) {
+    applyMethodsToSelf(cl, AddOutputMethods{});
+
     cl
     .def("__repr__", &Output::toString)
     .def(py::self == py::self)

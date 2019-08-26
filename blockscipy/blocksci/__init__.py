@@ -514,11 +514,14 @@ def fix_range_doc_def(doc):
     doc = re.sub(r"(blocksci\.proxy\.)([a-zA-Z]+)(Proxy)", r"blocksci\.\2Range", doc)
     return doc
 
-def setup_self_methods(main, proxy_obj_type = None, sample_proxy = None):
+def setup_self_methods(main, proxy_obj_type=None, sample_proxy=None):
     if proxy_obj_type is None:
         proxy_obj_type = type(main._self_proxy)
     if sample_proxy is None:
         sample_proxy = main._self_proxy
+
+    # ignore properties that already exist (normal pybind11 binding)
+    existing_properties = set(dir(main))
 
     def self_property_creator(name):
         prop = property(lambda s: getattr(s._self_proxy, name)(s))
@@ -534,10 +537,13 @@ def setup_self_methods(main, proxy_obj_type = None, sample_proxy = None):
         method.__doc__ = fix_self_doc_def(split[0]) + '\n\n' + split[1]
         return method
 
-    for proxy_func in _get_core_properties_methods(proxy_obj_type):
+    core_properties_methods = set(_get_core_properties_methods(proxy_obj_type)) - existing_properties
+    core_functions_methods = set(_get_core_functions_methods(proxy_obj_type)) - existing_properties
+
+    for proxy_func in core_properties_methods:
         setattr(main, proxy_func, self_property_creator(proxy_func))
 
-    for proxy_func in _get_core_functions_methods(proxy_obj_type):
+    for proxy_func in core_functions_methods:
         setattr(main, proxy_func, self_method_creator(proxy_func))
 
 

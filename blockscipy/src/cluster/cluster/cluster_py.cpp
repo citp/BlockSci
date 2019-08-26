@@ -7,16 +7,17 @@
 //
 
 #include "cluster_py.hpp"
+#include "cluster_properties_py.hpp"
 #include "ranges_py.hpp"
 #include "caster_py.hpp"
 #include "proxy_utils.hpp"
+#include "self_apply_py.hpp"
 
 #include <blocksci/cluster/cluster_manager.hpp>
 #include <blocksci/heuristics/change_address.hpp>
 
 #include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/block.hpp>
-#include <blocksci/cluster/cluster.hpp>
 
 #include <range/v3/range_for.hpp>
 
@@ -77,8 +78,10 @@ void init_cluster_manager(pybind11::module &s) {
 }
 
 void init_cluster(py::class_<Cluster> &cl) {
+
+    applyMethodsToSelf(cl, AddClusterMethods{});
+
     cl
-    .def_readonly("cluster_num", &Cluster::clusterNum)
     .def("__len__", &Cluster::getSize)
     .def("__hash__", [] (const Cluster &cluster) {
         return cluster.clusterNum;
