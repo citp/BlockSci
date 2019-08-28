@@ -166,49 +166,81 @@ def map_blocks(self, block_func, start=None, end=None, cpu_count=psutil.cpu_coun
     )
 
 
-def filter_blocks(self, filter_func, start=None, end=None, cpu_count=psutil.cpu_count()):
+def filter_blocks(
+    self, filter_func, start=None, end=None, cpu_count=psutil.cpu_count()
+):
     """Return all blocks in range which match the given criteria
     """
+
     def map_func(blocks):
         return blocks.where(filter_func).to_list()
 
     def reduce_func(accum, new_val):
         accum.extend(new_val)
         return accum
+
     return mapreduce_block_ranges(
-        self,
-        map_func,
-        reduce_func,
-        MISSING_PARAM,
-        start,
-        end,
-        cpu_count=cpu_count
+        self, map_func, reduce_func, MISSING_PARAM, start, end, cpu_count=cpu_count
+    )
+
+
+def filter_blocks_legacy(
+    self, filter_func, start=None, end=None, cpu_count=psutil.cpu_count()
+):
+    """Return all blocks in range which match the given criteria
+    """
+
+    def map_func(blocks):
+        return [block for block in blocks if filter_func(block)]
+
+    def reduce_func(accum, new_val):
+        accum.extend(new_val)
+        return accum
+
+    return mapreduce_block_ranges(
+        self, map_func, reduce_func, MISSING_PARAM, start, end, cpu_count=cpu_count
     )
 
 
 def filter_txes(self, filter_func, start=None, end=None, cpu_count=psutil.cpu_count()):
     """Return all transactions in range which match the given criteria
     """
+
     def map_func(blocks):
         return blocks.txes.where(filter_func).to_list()
 
     def reduce_func(accum, new_val):
         accum.extend(new_val)
         return accum
+
     return mapreduce_block_ranges(
-        self,
-        map_func,
-        reduce_func,
-        MISSING_PARAM,
-        start,
-        end,
-        cpu_count
+        self, map_func, reduce_func, MISSING_PARAM, start, end, cpu_count
+    )
+
+
+def filter_txes_legacy(
+    self, filter_func, start=None, end=None, cpu_count=psutil.cpu_count()
+):
+    """Return all transactions in range which match the given criteria
+    """
+
+    def map_func(blocks):
+        return [tx for block in blocks for tx in block if filter_func(tx)]
+
+    def reduce_func(accum, new_val):
+        accum.extend(new_val)
+        return accum
+
+    return mapreduce_block_ranges(
+        self, map_func, reduce_func, MISSING_PARAM, start, end, cpu_count
     )
 
 
 Blockchain.map_blocks = map_blocks
 Blockchain.filter_blocks = filter_blocks
+Blockchain.filter_blocks_legacy = filter_blocks_legacy
 Blockchain.filter_txes = filter_txes
+Blockchain.filter_txes_legacy = filter_txes_legacy
 Blockchain.mapreduce_block_ranges = mapreduce_block_ranges
 Blockchain.mapreduce_blocks = mapreduce_blocks
 Blockchain.mapreduce_txes = mapreduce_txes
