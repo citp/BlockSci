@@ -8,7 +8,6 @@
 #include "doctor.hpp"
 #include "chain_index.hpp"
 
-#include <sys/resource.h>
 #include <sys/statvfs.h>
 
 #include <iostream>

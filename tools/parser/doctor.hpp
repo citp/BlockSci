@@ -10,6 +10,8 @@
 
 #include "parser_configuration.hpp"
 
+#include <sys/resource.h>
+
 #include <wjfilesystem/path.h>
 #include <nlohmann/json.hpp>
 
