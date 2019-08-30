@@ -146,14 +146,16 @@ namespace blocksci { namespace heuristics {
         return tx.outputs() | ranges::view::filter([inputAddresses](Output o){return inputAddresses.find(o.getAddress()) != inputAddresses.end();}) | ranges::view::filter(filterOpReturn);
     }
 
-    // Most clients will generate a fresh address for the change.
-    // If an output is the first to send value to an address, it is potentially the change.
+    /** Most clients will generate a fresh address for the change.
+     * If an output is the first to send value to an address, it is potentially the change.
+     */
     template<>
     ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::ClientChangeAddressBehavior>::operator()(const Transaction &tx) const {
         return tx.outputs() | ranges::view::filter([tx](Output o){return o.getAddress().isSpendable() && o.getAddress().getBaseScript().getFirstTxIndex() == tx.txNum;}) | ranges::view::filter(filterOpReturn);
     }
     
-    // Legacy heuristic used in previous versions of BlockSci
+    /** Legacy heuristic used in previous versions of BlockSci
+     */
     ranges::optional<Output> uniqueChangeByLegacyHeuristic(const Transaction &tx) {
         if (isCoinjoin(tx)) {
             return ranges::nullopt;
@@ -183,6 +185,14 @@ namespace blocksci { namespace heuristics {
             return ranges::nullopt;
         }
     }
+
+    /** Clients may choose a fixed fee per kb instead of using one based on the current fee market.
+     */
+    template<>
+    ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::FixedFee>::operator()(const Transaction &tx) const {
+        auto fee = tx.fee() * 1000 / tx.virtualSize();
+        return tx.outputs() | ranges::view::filter([fee](Output o) {return !o.isSpent() || (o.getSpendingTx()->fee() * 1000 / o.getSpendingTx()->virtualSize()) == fee;}) | ranges::view::filter(filterOpReturn);
+    }
     
     // This function mostly exists to ensure a consistent API.
     // The set it returns will never contain more than one output.
@@ -208,4 +218,3 @@ namespace blocksci { namespace heuristics {
     }
 }  // namespace heuristics
 }  // namespace blocksci
-
