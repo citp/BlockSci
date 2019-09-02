@@ -1,3 +1,4 @@
+set -ev
 cd "$TRAVIS_BUILD_DIR"
 mkdir -p release
 cd release
