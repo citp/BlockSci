@@ -347,10 +347,14 @@ namespace heuristics {
     
     namespace {
         ranges::optional<Address> getInsidePointer(const ranges::optional<Address> &address, DataAccess &access);
+
         ranges::optional<Address> getInsidePointer(const Address &pointer, DataAccess &access) {
             if (pointer.type == AddressType::Enum::SCRIPTHASH) {
                 script::ScriptHash scriptHashAddress(pointer.scriptNum, access);
                 return getInsidePointer(scriptHashAddress.getWrappedAddress(), access);
+            } else if(pointer.type == AddressType::Enum::WITNESS_SCRIPTHASH) {
+                script::WitnessScriptHash witnessScriptHashAddress(pointer.scriptNum, access);
+                return getInsidePointer(witnessScriptHashAddress.getWrappedAddress(), access);
             } else {
                 return pointer;
             }
@@ -393,7 +397,9 @@ namespace heuristics {
             if (mainType == AddressType::Enum::SCRIPTHASH && (!hasSubtype || !other.hasSubtype)) {
                 return false;
             }
-            
+            if (mainType == AddressType::Enum::WITNESS_SCRIPTHASH && (!hasSubtype || !other.hasSubtype)) {
+                return false;
+            }
             if (subType == AddressType::Enum::MULTISIG && (i != other.i || j != other.j)) {
                 return false;
             }
