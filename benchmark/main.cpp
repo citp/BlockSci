@@ -28,7 +28,7 @@ uint32_t calculateNonzeroLocktimeMultithreaded(BlockRange &chain);
 uint32_t calculateUniqueLocktimeChangeSingleThreaded(BlockRange &chain);
 uint32_t calculateUniqueLocktimeChangeMultithreaded(BlockRange &chain);
 
-int64_t calculateSatoshiDiceMaxOutputValue(BlockRange &chain, uint32_t addressNum, AddressType::Enum type);
+int64_t calculateSatoshiDiceTotalOutputValue(BlockRange &chain, uint32_t addressNum, AddressType::Enum type);
 
 uint32_t calculateNonzeroLocktimeRandom(Blockchain &chain, const std::vector<uint32_t> &indexes);
 int64_t calculateMaxFeeRandom(Blockchain &chain, const std::vector<uint32_t> &indexes);
@@ -82,7 +82,7 @@ int main(int argc, char * argv[]) {
     auto satoshiDiceAddress = getAddressFromString("1dice97ECuByXAvqXpaYzSaQuPVvrtmz6", chain.getAccess());
     int64_t maxSatoshiDiceOutput = -1;
     if(satoshiDiceAddress) {
-        maxSatoshiDiceOutput = timeFunc("calculateSatoshiDiceMaxOutputValueSingleThreaded", calculateSatoshiDiceMaxOutputValue, range, satoshiDiceAddress->scriptNum, satoshiDiceAddress->type);
+        maxSatoshiDiceOutput = timeFunc("calculateSatoshiDiceTotalOutputValueSingleThreaded", calculateSatoshiDiceTotalOutputValue, range, satoshiDiceAddress->scriptNum, satoshiDiceAddress->type);
     }
 
     if (includeRandom) {
@@ -216,13 +216,13 @@ uint32_t calculateNonzeroLocktimeRandom(Blockchain &chain, const std::vector<uin
     return nonzeroCount;
 }
 
-int64_t calculateSatoshiDiceMaxOutputValue(BlockRange &chain, uint32_t addressNum, AddressType::Enum type) {
+int64_t calculateSatoshiDiceTotalOutputValue(BlockRange &chain, uint32_t addressNum, AddressType::Enum type) {
     auto address = Address{addressNum, type, chain.getAccess()};
-    int64_t maxValue = 0;
+    int64_t total = 0;
     RANGES_FOR(auto out, address.getOutputs()) {
-        maxValue = std::max(maxValue, out.getValue());
+        total += out.getValue();
     }
-    return maxValue;
+    return total;
 }
 
 uint32_t calculateUniqueLocktimeChangeSingleThreaded(BlockRange &chain) {
