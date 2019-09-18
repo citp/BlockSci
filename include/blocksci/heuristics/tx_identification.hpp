@@ -19,7 +19,8 @@ namespace blocksci {
     enum class BLOCKSCI_EXPORT CoinJoinResult {
         True, False, Timeout
     };
-    
+
+    bool BLOCKSCI_EXPORT isPeelingChain(const Transaction &tx);
     bool BLOCKSCI_EXPORT isCoinjoin(const Transaction &tx);
     CoinJoinResult BLOCKSCI_EXPORT isPossibleCoinjoin(const Transaction &tx, int64_t minBaseFee, double percentageFee, size_t maxDepth);
     CoinJoinResult BLOCKSCI_EXPORT isCoinjoinExtra(const Transaction &tx, int64_t minBaseFee, double percentageFee, size_t maxDepth);

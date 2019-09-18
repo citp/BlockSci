@@ -19,6 +19,31 @@
 
 namespace blocksci {
 namespace heuristics {
+
+
+    // Peeling chains have one input and two outputs
+    bool looksLikePeelingChain(const Transaction &tx) {
+        return (tx.outputCount() == 2 && tx.inputCount() == 1);
+    }
+
+    // A transaction is considered a peeling chain if it has one input and two outputs,
+    // and either the previous or one of the next transactions looks like a peeling chain.
+    bool isPeelingChain(const Transaction &tx) {
+        if (!looksLikePeelingChain(tx)) {
+            return false;
+        }
+        // Check if past transaction is peeling chain
+        if (looksLikePeelingChain(tx.inputs()[0].getSpentTx())) {
+            return true;
+        }
+        // Check if any spending transaction is peeling chain
+        RANGES_FOR(auto output, tx.outputs()) {
+            if (output.isSpent() && looksLikePeelingChain(*output.getSpendingTx())) {
+                return true;
+            }
+        }
+        return false;
+    }
     
     bool isCoinjoin(const Transaction &tx) {
         if (tx.inputCount() < 2 || tx.outputCount() < 3) {

@@ -32,6 +32,9 @@ void init_heuristics(py::module &m) {
     py::class_<Heuristics> cl(m, "heuristics");
 
     cl
+    .def_property_readonly_static("is_peeling_chain", [](pybind11::object &) -> Proxy<bool> {
+        return lift(makeSimpleProxy<Transaction>(), heuristics::isPeelingChain);
+    }, "Uses basic structural features to quickly decide whether this transaction might be part of a peeling chain")
     .def_property_readonly_static("is_coinjoin", [](pybind11::object &) -> Proxy<bool> {
         return lift(makeSimpleProxy<Transaction>(), heuristics::isCoinjoin);
     }, "Uses basic structural features to quickly decide whether this transaction might be a JoinMarket coinjoin transaction")

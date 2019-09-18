@@ -20,43 +20,22 @@
 #include <cmath>
 
 
-// Common change address heuristics
-// Every heuristic returns the set of outputs it cannot rule out as change
-
+/** Change address heuristics
+ *
+ * Every heuristic returns the set of outputs it cannot rule out as change.
+ */
 namespace blocksci { namespace heuristics {
     
-    // Remove OP_RETURN outputs from candidate set    
+    /** Remove OP_RETURN outputs from candidate set */
     bool filterOpReturn(Output o) {
         return o.getAddress().isSpendable();
     }
     
-    // Peeling chains have one input and two outputs
-    bool looksLikePeelingChain(const Transaction &tx) {
-        return (tx.outputCount() == 2 && tx.inputCount() == 1);
-    }
-    
-    // A transaction is considered a peeling chain if it has one input and two outputs,
-    // and either the previous or one of the next transactions looks like a peeling chain.
-    bool isPeelingChain(const Transaction &tx) {
-        if (!looksLikePeelingChain(tx)) {
-            return false;
-        }
-        // Check if past transaction is peeling chain
-        if (looksLikePeelingChain(tx.inputs()[0].getSpentTx())) {
-            return true;
-        }
-        // Check if any future transaction is peeling chain
-        RANGES_FOR(auto output, tx.outputs()) {
-            if (output.isSpent() && looksLikePeelingChain(*output.getSpendingTx())) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    // In a peeling chain, the change output is the output that continues the chain
-    // This heuristic depends on the outputs being spent to detect change.
-    // If an output has not been spent, it is considered a potential change output.
+    /** In a peeling chain, the change output is the output that continues the chain
+     *
+     * Note: This heuristic depends on the outputs being spent to detect change.
+     * If an output has not been spent, it is considered a potential change output.
+     */
     template<>
     ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::PeelingChain>::operator()(const Transaction &tx) const {
         // If current tx is not a peeling chain, return an empty set
@@ -67,7 +46,8 @@ namespace blocksci { namespace heuristics {
         // Check which output(s) continue the peeling chain
         return tx.outputs() | ranges::view::filter([](Output o){return !o.isSpent() || isPeelingChain(*o.getSpendingTx());}) | ranges::view::filter(filterOpReturn);
     }
-    
+
+    /** Returns 10^{digits} */
     int64_t int_pow_ten(int digits) {
         if (digits < 16) {
             int64_t values[16] = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000, 100000000000, 1000000000000, 10000000000000, 100000000000000, 1000000000000000};
@@ -81,18 +61,22 @@ namespace blocksci { namespace heuristics {
         }
     }
     
-    // When users transfer bitcoins between wallets, they often do so with values that are powers of ten.
-    // On the other hand, it is extremely unlikely that you receive power of ten change due to a wallet's coin selection.
-    // Default for digits is 6 (i.e. 0.01 BTC)
+    /** When users transfer bitcoins between their own wallets, they are likely to choose values that are powers of ten.
+     *
+     * On the other hand, it is extremely unlikely that you receive power of ten change due to a wallet's coin selection.
+     * Default for digits is 6 (i.e. it selects outputs with a value that is a multiple of 0.01 BTC)
+     */
     ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::PowerOfTen>::operator()(const Transaction &tx) const {
         int64_t value = int_pow_ten(digits);
         return tx.outputs() | ranges::view::filter([value](Output o){return o.getValue() % value != 0;}) | ranges::view::filter(filterOpReturn);
     }
     
     
-    // If there exists an output that is smaller than any of the inputs it is likely the change.
-    // If a change output was larger than the smallest input, then the coin selection algorithm
-    // wouldn't need to add the input in the first place.
+    /** If there exists an output that is smaller than any of the inputs it is likely the change.
+     *
+     * If a change output was larger than the smallest input, then the coin selection algorithm
+     * wouldn't need to add the input in the first place.
+     */
     template<>
     ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::OptimalChange>::operator()(const Transaction &tx) const {
         auto smallestInputValue = tx.inputs()[0].getValue();
@@ -102,8 +86,7 @@ namespace blocksci { namespace heuristics {
         return tx.outputs() | ranges::view::filter([smallestInputValue](Output o){return o.getValue() < smallestInputValue;}) | ranges::view::filter(filterOpReturn);
     }
     
-    // If all inputs are of one address type (e.g., P2PKH or P2SH),
-    // it is likely that the change output has the same type.
+    /** If all inputs are of one address type (e.g., P2PKH or P2SH), it is likely that the change output has the same type. */
     template<>
     ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::AddressType>::operator()(const Transaction &tx) const {
         // check whether all inputs have the same type (e.g., P2SH)
@@ -123,19 +106,21 @@ namespace blocksci { namespace heuristics {
         }
     }
     
-    // Bitcoin Core sets the locktime to the current block height to prevent fee sniping.
-    // If all outputs have been spent, and there is only one output that has been spent
-    // in a transaction that matches this transaction's locktime behavior, it is the change.
-    // This heuristic depends on the outputs being spent to detect change.
-    // If an output has not been spent, it is considered a potential change output.
+    /** Detects change based on a transaction's locktime
+     *
+     * Bitcoin Core sets the locktime to the current block height to prevent fee sniping.
+     * If all outputs have been spent, and there is only one output that has been spent
+     * in a transaction that matches this transaction's locktime behavior, it is the change.
+     * This heuristic depends on the outputs being spent to detect change.
+     * If an output has not been spent, it is considered a potential change output.
+     */
     template<>
     ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::Locktime>::operator()(const Transaction &tx) const {
         bool locktimeGreaterZero = tx.locktime() > 0;
         return tx.outputs() | ranges::view::filter([locktimeGreaterZero](Output o){return !o.isSpent() || (o.getSpendingTx().value().locktime() > 0) == locktimeGreaterZero;}) | ranges::view::filter(filterOpReturn);
     }
-    
-    // If input addresses appear as an output address,
-    // the client might have reused addresses for change.
+
+    /** If input addresses appear as an output address, the client might have reused addresses for change. */
     template<>
     ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::AddressReuse>::operator()(const Transaction &tx) const {
         std::unordered_set<Address> inputAddresses;
@@ -147,6 +132,7 @@ namespace blocksci { namespace heuristics {
     }
 
     /** Most clients will generate a fresh address for the change.
+     *
      * If an output is the first to send value to an address, it is potentially the change.
      */
     template<>
@@ -154,8 +140,7 @@ namespace blocksci { namespace heuristics {
         return tx.outputs() | ranges::view::filter([tx](Output o){return o.getAddress().isSpendable() && o.getAddress().getBaseScript().getFirstTxIndex() == tx.txNum;}) | ranges::view::filter(filterOpReturn);
     }
     
-    /** Legacy heuristic used in previous versions of BlockSci
-     */
+    /** Legacy heuristic used in previous versions of BlockSci */
     ranges::optional<Output> uniqueChangeByLegacyHeuristic(const Transaction &tx) {
         if (isCoinjoin(tx)) {
             return ranges::nullopt;
@@ -185,14 +170,6 @@ namespace blocksci { namespace heuristics {
             return ranges::nullopt;
         }
     }
-
-    /** Clients may choose a fixed fee per kb instead of using one based on the current fee market.
-     */
-    template<>
-    ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::FixedFee>::operator()(const Transaction &tx) const {
-        auto fee = tx.fee() * 1000 / tx.virtualSize();
-        return tx.outputs() | ranges::view::filter([fee](Output o) {return !o.isSpent() || (o.getSpendingTx()->fee() * 1000 / o.getSpendingTx()->virtualSize()) == fee;}) | ranges::view::filter(filterOpReturn);
-    }
     
     // This function mostly exists to ensure a consistent API.
     // The set it returns will never contain more than one output.
@@ -204,14 +181,24 @@ namespace blocksci { namespace heuristics {
         }
         return ranges::view::empty<Output>();
     }
+
+    /** Clients may choose a fixed fee per kb instead of using one based on the current fee market. */
+    template<>
+    ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::FixedFee>::operator()(const Transaction &tx) const {
+        auto fee = tx.fee() * 1000 / tx.virtualSize();
+        return tx.outputs() | ranges::view::filter([fee](Output o) {return !o.isSpent() || (o.getSpendingTx()->fee() * 1000 / o.getSpendingTx()->virtualSize()) == fee;}) | ranges::view::filter(filterOpReturn);
+    }
     
-    // Disables change address clustering by returning an empty set.
+    /** Disables change address clustering by returning an empty set. */
     template<>
     ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::None>::operator()(const Transaction &) const {
         return ranges::view::empty<Output>();
     }
     
-    // Returns all outputs that have been spent. Useful in combination with change address heuristics that return unspent outputs as candidates.
+    /** Returns all outputs that have been spent.
+     *
+     * This is useful in combination with change address heuristics that return unspent outputs as candidates.
+     */
     template<>
     ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::Spent>::operator()(const Transaction &tx) const {
         return tx.outputs() | ranges::view::filter([](Output o){return o.isSpent();});
