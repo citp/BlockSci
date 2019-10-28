@@ -33,7 +33,7 @@ target_include_directories(secp256k1 INTERFACE ${install_dir}/include)
 target_link_libraries(secp256k1 INTERFACE ${install_dir}/lib/libsecp256k1.a)
 
 set(saved_flags "${CMAKE_CXX_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wno-error=class-memaccess -Wno-error=stringop-truncation")
 set(WITH_TESTS OFF)
 set(WITH_TOOLS OFF)
 set(WITH_GFLAGS OFF)
