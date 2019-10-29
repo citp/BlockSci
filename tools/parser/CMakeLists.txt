@@ -27,6 +27,5 @@ target_link_libraries( blocksci_parser clipp)
 target_link_libraries( blocksci_parser blocksci)
 target_link_libraries( blocksci_parser Boost::serialization Boost::iostreams Boost::filesystem)
 target_link_libraries( blocksci_parser secp256k1)
-target_link_libraries( blocksci_parser sparsehash)
 
 install(TARGETS blocksci_parser DESTINATION bin)
