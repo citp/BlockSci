@@ -1,0 +1,18 @@
+language: cpp
+sudo: required
+git:
+  depth: 3
+cache:
+  directories:
+    - release
+    - blockscipy/build
+    - .mtime_cache
+    - $HOME/.local
+    - $HOME/.cache/pip
+matrix:
+  include:
+    - stage: Build C++ Library
+      dist: xenial
+      before_install: .travis/build_ubuntu_cpp.sh
+      script: .travis/compile_ubuntu_cpp.sh
+
