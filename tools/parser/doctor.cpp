@@ -96,6 +96,11 @@ void BlockSciDoctor::rebuildChainIndex() {
     blocksci::ChainConfiguration chainConfig = jsonConf.at("chainConfig");
     auto parserConf = jsonConf.at("parser");
 
+    if(parserConf.find("disk") == parserConf.end()) {
+        printInfo("Disk parser settings not found. Skipping chain index check.");
+        return;
+    }
+
     blocksci::BlockHeight maxBlock = parserConf.at("maxBlockNum");
     ChainDiskConfiguration diskConfig = parserConf.at("disk");
 
