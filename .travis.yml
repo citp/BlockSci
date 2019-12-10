@@ -26,4 +26,17 @@ matrix:
         - CXX=g++-7
       before_install: .travis/build_ubuntu_cpp.sh
       script: .travis/compile_ubuntu_cpp.sh
-
+    - dist: xenial
+      compiler: gcc-8
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-8
+            - g++-8
+      env:
+        - CC=gcc-8
+        - CXX=g++-8
+      before_install: .travis/build_ubuntu_cpp.sh
+      script: .travis/compile_ubuntu_cpp.sh

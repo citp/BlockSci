@@ -1,4 +1,6 @@
 
+include(CheckCXXCompilerFlag)
+
 execute_process(COMMAND git submodule update --init --recursive)
 
 set_property(GLOBAL PROPERTY ranges_headers "${CMAKE_CURRENT_SOURCE_DIR}/range-v3/include/")
@@ -16,7 +18,7 @@ ExternalProject_Add(project_secp256k1
   GIT_TAG "master"
   PREFIX "${CMAKE_CURRENT_BINARY_DIR}/secp256k1"
   CONFIGURE_COMMAND CFLAGS=-fPIC CPPFLAGS=-fPIC <SOURCE_DIR>/configure --disable-shared --disable-benchmark --disable-tests --disable-exhaustive-tests --enable-module-recovery --with-bignum=no --prefix <INSTALL_DIR>
-  UPDATE_COMMAND "" 
+  UPDATE_COMMAND ""
 )
 
 ExternalProject_Add_Step(project_secp256k1 autogen
@@ -34,6 +36,12 @@ target_link_libraries(secp256k1 INTERFACE ${install_dir}/lib/libsecp256k1.a)
 
 set(saved_flags "${CMAKE_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+
+check_cxx_compiler_flag(-Wclass-memaccess HAS_CLASS_MEMACCESS)
+if(HAS_CLASS_MEMACCESS)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=class-memaccess")
+endif()
+
 set(WITH_TESTS OFF)
 set(WITH_TOOLS OFF)
 set(WITH_GFLAGS OFF)
