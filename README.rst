@@ -7,13 +7,17 @@ Current tools for blockchain analysis depend on general-purpose databases that p
 
 Documentation
 =====================
-Documentation_ is available for the Python interface.
+- Documentation_ is available for the Python interface.
 
 .. _Documentation: https://citp.github.io/BlockSci/
 
-Additionally, a demonstration Notebook_ is available in the Notebooks folder.
+- A demonstration Notebook_ is available in the Notebooks folder.
 
 .. _Notebook: https://citp.github.io/BlockSci/demo.html
+
+- Our FAQ_ contains many useful examples and tips.
+
+.. _FAQ: https://github.com/citp/BlockSci/wiki
 
 For installation instructions, see below. 
 
