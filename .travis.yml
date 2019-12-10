@@ -13,6 +13,17 @@ matrix:
   include:
     - stage: Build C++ Library
       dist: xenial
+      compiler: gcc-7
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-7
+            - g++-7
+      env:
+        - CC=gcc-7
+        - CXX=g++-7
       before_install: .travis/build_ubuntu_cpp.sh
       script: .travis/compile_ubuntu_cpp.sh
 
