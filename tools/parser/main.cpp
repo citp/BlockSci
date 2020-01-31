@@ -18,7 +18,6 @@
 #include "address_db.hpp"
 #include "parser_index_creator.hpp"
 #include "hash_index_creator.hpp"
-#include "block_replayer.hpp"
 #include "address_writer.hpp"
 #include "utxo_address_state.hpp"
 #include "doctor.hpp"
