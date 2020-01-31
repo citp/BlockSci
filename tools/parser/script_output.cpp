@@ -165,10 +165,6 @@ blocksci::AddressType::Enum AnyScriptOutput::type() const {
     return mpark::visit([&](auto &output) { return output.address_v; }, wrapped);
 }
 
-void AnyScriptOutput::check(AddressState &state) {
-    mpark::visit([&](auto &output) { return output.check(state); }, wrapped);
-}
-
 uint32_t AnyScriptOutput::resolve(AddressState &state) {
     return mpark::visit([&](auto &output) { return output.resolve(state); }, wrapped);
 }
