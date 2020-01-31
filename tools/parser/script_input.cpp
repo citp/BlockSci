@@ -104,48 +104,6 @@ ScriptInputData<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInputData(const 
 }
 
 ScriptInputData<blocksci::AddressType::Enum::MULTISIG>::ScriptInputData(const InputView &, const blocksci::CScriptView &, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::MULTISIG> &) {
-    // Prelimary work on code to track multisig spend sets
-//    auto multisig = blocksci::CScript() << blocksci::OP_2;
-//    for (uint32_t i = 0; i < spendData.addressCount; i++) {
-//        std::vector<unsigned char> pubkeyData(spendData.addresses[i].begin(), spendData.addresses[i].end());
-//        multisig << pubkeyData;
-//    }
-//    multisig << blocksci::OP_3 << blocksci::OP_CHECKMULTISIG;
-//
-//    blocksci::CScriptView::const_iterator pc1 = scriptView.begin();
-//    blocksci::opcodetype opcode1;
-//    ranges::iterator_range<const unsigned char *> vchSig;
-//    scriptView.GetOp(pc1, opcode1, vchSig);
-//
-//    size_t pubkeyNum = 0;
-//
-//    while(true) {
-//        if(!scriptView.GetOp(pc1, opcode1, vchSig)) {
-//            break;
-//        }
-//        if (vchSig.size() > 0) {
-//            int hashType = vchSig.back();
-//            blocksci::CScriptView multisigView(multisig.data(), multisig.data() + multisig.size());
-//            auto txHash = rawTx.getHash(inputView, multisigView, hashType);
-//
-//            while (pubkeyNum < spendData.addressCount) {
-//                std::vector<unsigned char> sig{vchSig.begin(), vchSig.end() - 1};
-//                if (spendData.addresses[pubkeyNum].Verify(txHash, sig)) {
-//                    spendSet[pubkeyNum] = 1;
-//                    pubkeyNum++;
-//                    break;
-//                } else {
-//                    spendSet[pubkeyNum] = 0;
-//                    pubkeyNum++;
-//                }
-//            }
-//        }
-//    }
-//
-//    while (pubkeyNum < spendData.addressCount) {
-//        spendSet[pubkeyNum] = 0;
-//        pubkeyNum++;
-//    }
 }
 
 ScriptInputData<blocksci::AddressType::Enum::NONSTANDARD>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::NONSTANDARD> &) {
