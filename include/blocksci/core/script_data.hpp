@@ -12,6 +12,7 @@
 #include <blocksci/blocksci_export.h>
 #include <blocksci/core/bitcoin_uint256.hpp>
 #include <blocksci/core/raw_address.hpp>
+#include <blocksci/scripts/bitcoin_pubkey.hpp>
 
 #include <array>
 #include <limits>
@@ -107,8 +108,16 @@ namespace blocksci {
         };
         bool hasPubkey;
         
-        PubkeyData(uint32_t txNum, const RawPubkey &pubkey_) : ScriptDataBase(txNum), pubkey(pubkey_), hasPubkey(true) {}
-        PubkeyData(uint32_t txNum, const uint160 &address_) : ScriptDataBase(txNum), address(address_), hasPubkey(false) {}
+        PubkeyData(uint32_t txNum, const RawPubkey &pubkey_) : ScriptDataBase(txNum), hasPubkey(true) {
+            pubkey.fill(0);
+            auto itBegin = pubkey_.begin();
+            auto itEnd = itBegin + blocksci::CPubKey::GetLen(pubkey_[0]);
+            std::copy(itBegin, itEnd, pubkey.begin());
+        }
+        PubkeyData(uint32_t txNum, const uint160 &address_) : ScriptDataBase(txNum), hasPubkey(false) {
+            pubkey.fill(0);
+            address = address_;
+        }
         
         size_t size() {
             return sizeof(PubkeyData);
@@ -123,7 +132,10 @@ namespace blocksci {
         RawAddress wrappedAddress;
         bool isSegwit;
         
-        ScriptHashData(uint32_t txNum, uint160 hash160_, const RawAddress &wrappedAddress_) : ScriptDataBase(txNum), hash160(hash160_), wrappedAddress(wrappedAddress_), isSegwit(false) {}
+        ScriptHashData(uint32_t txNum, uint160 hash160_, const RawAddress &wrappedAddress_) : ScriptDataBase(txNum), wrappedAddress(wrappedAddress_), isSegwit(false) {
+            hash256.SetNull();
+            hash160 = hash160_;
+        }
         
         ScriptHashData(uint32_t txNum, uint256 hash256_, const RawAddress &wrappedAddress_) : ScriptDataBase(txNum), hash256(hash256_), wrappedAddress(wrappedAddress_), isSegwit(true) {}
         
