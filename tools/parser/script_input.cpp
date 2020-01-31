@@ -89,6 +89,7 @@ void ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH>::check(AddressStat
 }
 
 ScriptInputData<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::PUBKEYHASH> &) {
+    pubkey.fill(0);
     if (scriptView.size() > 0) {
         auto pc = scriptView.begin();
         blocksci::opcodetype opcode = blocksci::OP_0;
@@ -173,6 +174,7 @@ ScriptInputData<blocksci::AddressType::Enum::NULL_DATA>::ScriptInputData(const I
 }
 
 ScriptInputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> &) {
+    pubkey.fill(0);
     auto &pubkeyWitness = inputView.witnessStack[1];
     std::copy(reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin), reinterpret_cast<const unsigned char *>(pubkeyWitness.itemBegin) + pubkeyWitness.length, pubkey.begin());
 }
