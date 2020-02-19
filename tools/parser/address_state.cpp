@@ -66,17 +66,6 @@ uint32_t AddressState::getNewAddressIndex(blocksci::DedupAddressType::Enum type)
     return scriptNum;
 }
 
-void AddressState::rollback(const blocksci::State &state) {
-    blocksci::for_each(multiAddressMaps, [&](auto &multiAddressMap) {
-        for (auto multiAddressIt = multiAddressMap.begin(); multiAddressIt != multiAddressMap.end(); ++multiAddressIt) {
-            auto count = state.scriptCounts[static_cast<size_t>(multiAddressMap.type)];
-            if (multiAddressIt->second >= count) {
-                multiAddressMap.erase(multiAddressIt);
-            }
-        }
-    });
-}
-
 void AddressState::reset(const blocksci::State &state) {
     reloadBloomFilters();
     scriptIndexes.clear();

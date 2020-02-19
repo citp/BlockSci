@@ -124,10 +124,3 @@ void AddressWriter::serializeInputImp(const ScriptInput<AddressType::WITNESS_UNK
     data.add(input.data.script.begin(), input.data.script.end());
     file.write<1>(input.scriptNum - 1, data);
 }
-
-void AddressWriter::rollback(const blocksci::State &state) {
-    blocksci::for_each(blocksci::DedupAddressType::all(), [&](auto tag) {
-        auto &file = std::get<ScriptFile<tag()>>(scriptFiles);
-        file.truncate(state.scriptCounts[static_cast<size_t>(tag)]);
-    });
-}

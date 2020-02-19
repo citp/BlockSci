@@ -139,40 +139,6 @@ namespace blocksci {
         addAddresses(type, dataViews);
     }
     
-    void HashIndex::rollback(uint32_t txCount, const std::array<uint32_t, DedupAddressType::size> &scriptCounts) {
-        // foreach over all ADDRESS_TYPE_LIST items (= a list of integers from AddressType::Enum)
-        blocksci::for_each(AddressType::all(), [&](auto tag) {
-            auto &column = getColumn(tag);
-            rocksdb::WriteBatch batch;
-            auto it = getIterator(tag);
-            for (it->SeekToFirst(); it->Valid(); it->Next()) {
-                uint32_t destNum;
-                memcpy(&destNum, it->value().data(), sizeof(destNum));
-                auto count = scriptCounts[static_cast<size_t>(tag)];
-                if (destNum >= count) {
-                    batch.Delete(column.get(), it->key());
-                }
-            }
-            assert(it->status().ok());
-            writeBatch(batch);
-        });
-
-        // Delete all entries with value higher than txCount
-        {
-            auto it = getTxIterator();
-            rocksdb::WriteBatch batch;
-            for (it->SeekToFirst(); it->Valid(); it->Next()) {
-                uint32_t value;
-                memcpy(&value, it->value().data(), sizeof(value));
-                if (value >= txCount) {
-                    batch.Delete(getTxColumn().get(), it->key());
-                }
-            }
-            writeBatch(batch);
-            assert(it->status().ok());  // Check for errors found during the scan
-        }
-    }
-    
     template<AddressType::Enum type>
     ranges::any_view<std::pair<uint32_t, typename blocksci::AddressInfo<type>::IDType>> HashIndex::getAddressRange() {
         using IDType = typename blocksci::AddressInfo<type>::IDType;

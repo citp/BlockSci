@@ -108,8 +108,6 @@ namespace blocksci {
 
         /** Compact the underlying RocksDB database */
         void compactDB();
-        
-        void rollback(uint32_t txNum);
     };
 }
 
