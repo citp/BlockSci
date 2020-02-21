@@ -29,7 +29,7 @@ namespace {
     struct PythonScriptRangeFunctor {
         static PythonScriptRangeVariant f(blocksci::DataAccess &access) {
             auto scriptCount = getScriptCount(type, access);
-            return PythonScriptRange<type>{ranges::view::ints(uint32_t{1}, scriptCount + 1) | ranges::view::transform([&](uint32_t scriptNum) {
+            return PythonScriptRange<type>{ranges::views::ints(uint32_t{1}, scriptCount + 1) | ranges::views::transform([&](uint32_t scriptNum) {
                 return ScriptAddress<type>(scriptNum, access);
             })};
         }

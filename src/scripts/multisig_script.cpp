@@ -28,13 +28,13 @@ namespace blocksci {
     ranges::any_view<Address, ranges::category::random_access | ranges::category::sized> ScriptAddress<AddressType::MULTISIG>::getAddresses() const {
         auto access_ = &getAccess();
         auto data = getData();
-        return data->addresses | ranges::view::transform([access_](uint32_t scriptNum) -> Address {
+        return data->addresses | ranges::views::transform([access_](uint32_t scriptNum) -> Address {
             return {scriptNum, AddressType::Enum::MULTISIG_PUBKEY, *access_};
         });
     }
     
     ranges::any_view<script::MultisigPubkey, ranges::category::random_access | ranges::category::sized> ScriptAddress<AddressType::MULTISIG>::pubkeyScripts() const {
-        return getAddresses() | ranges::view::transform([](Address address) -> script::MultisigPubkey {
+        return getAddresses() | ranges::views::transform([](Address address) -> script::MultisigPubkey {
             return {address.scriptNum, address.getAccess()};
         });
     }

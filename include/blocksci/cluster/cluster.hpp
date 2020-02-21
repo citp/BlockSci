@@ -75,7 +75,7 @@ namespace blocksci {
         TagChecker tagCheck;
         
         auto operator()(ranges::transform_view<ranges::subrange<const AddressType::Enum *>, ClusterAddressCreator> && rng) const {
-            return std::move(rng) | ranges::view::transform(tagCheck)  | flatMapOptionals();
+            return std::move(rng) | ranges::views::transform(tagCheck)  | flatMapOptionals();
         }
     };
     

@@ -35,7 +35,7 @@ namespace blocksci {
     
     ranges::any_view<OutputPointer> Address::getOutputPointers() const {
         return access->getAddressIndex().getOutputPointers(*this)
-        | ranges::view::transform([](const InoutPointer &pointer) { return OutputPointer(pointer.txNum, pointer.inoutNum); });
+        | ranges::views::transform([](const InoutPointer &pointer) { return OutputPointer(pointer.txNum, pointer.inoutNum); });
     }
     
     ranges::any_view<Output> Address::getOutputs() const {
@@ -45,23 +45,23 @@ namespace blocksci {
     ranges::any_view<Input> Address::getInputs() const {
         auto _access = access;
         return getOutputPointers()
-        | ranges::view::transform([_access](const OutputPointer &pointer) { return Output(pointer, *_access).getSpendingInput(); })
+        | ranges::views::transform([_access](const OutputPointer &pointer) { return Output(pointer, *_access).getSpendingInput(); })
         | flatMapOptionals();
     }
 
     ranges::any_view<Transaction> Address::getOutputTransactions() const {
         auto _access = access;
         return _access->getAddressIndex().getOutputPointers(*this)
-        | ranges::view::transform([](const InoutPointer &pointer) -> uint32_t { return pointer.txNum; })
-        | ranges::view::unique
-        | ranges::view::transform([_access](uint32_t txNum) { return Transaction(txNum, _access->getChain().getBlockHeight(txNum), *_access); });
+        | ranges::views::transform([](const InoutPointer &pointer) -> uint32_t { return pointer.txNum; })
+        | ranges::views::unique
+        | ranges::views::transform([_access](uint32_t txNum) { return Transaction(txNum, _access->getChain().getBlockHeight(txNum), *_access); });
     }
     
     ranges::any_view<Transaction> Address::getInputTransactions() const {
         auto _access = access;
         Address searchAddress = *this;
         return getOutputPointers()
-        | ranges::view::transform([_access, searchAddress](auto pointer) -> ranges::optional<Transaction> {
+        | ranges::views::transform([_access, searchAddress](auto pointer) -> ranges::optional<Transaction> {
             auto spendingTx = Output(std::forward<decltype(pointer)>(pointer), *_access).getSpendingTx();
             if (spendingTx) {
                 RANGES_FOR(auto input, spendingTx->inputs()) {
@@ -194,7 +194,7 @@ namespace blocksci {
         AddressAllTxRange(const Address &searchAddress_, DataAccess *access_) :
         access(access_), searchAddress(searchAddress_),
         pointers(access_->getAddressIndex().getOutputPointers(searchAddress_)
-        | ranges::view::transform([](const InoutPointer &pointer) {
+        | ranges::views::transform([](const InoutPointer &pointer) {
             return OutputPointer(pointer.txNum, pointer.inoutNum);
         })) {}
     };

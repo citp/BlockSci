@@ -44,7 +44,7 @@ namespace blocksci {
             }
         }
         return allPointers
-        | ranges::view::transform([&access](const InputPointer &pointer) { return Input(pointer, access); })
+        | ranges::views::transform([&access](const InputPointer &pointer) { return Input(pointer, access); })
         | ranges::to_vector;
     }
     
@@ -62,13 +62,13 @@ namespace blocksci {
     }
     
     std::vector<Transaction> getOutputTransactions(const std::vector<OutputPointer> &pointers, DataAccess &access) {
-        auto txNums = pointers | ranges::view::transform([](const OutputPointer &pointer) { return pointer.txNum; }) | ranges::to_vector;
+        auto txNums = pointers | ranges::views::transform([](const OutputPointer &pointer) { return pointer.txNum; }) | ranges::to_vector;
         txNums |= ranges::action::sort | ranges::action::unique;
-        return txNums | ranges::view::transform([&access](uint32_t txNum) { return Transaction(txNum, access.getChain().getBlockHeight(txNum), access); }) | ranges::to_vector;
+        return txNums | ranges::views::transform([&access](uint32_t txNum) { return Transaction(txNum, access.getChain().getBlockHeight(txNum), access); }) | ranges::to_vector;
     }
     
     std::vector<Transaction> getInputTransactions(const std::vector<OutputPointer> &pointers, DataAccess &access) {
-        auto txes = pointers | ranges::view::transform([&access](const OutputPointer &pointer) { return Output(pointer, access).getSpendingTx(); }) | flatMapOptionals() | ranges::to_vector;
+        auto txes = pointers | ranges::views::transform([&access](const OutputPointer &pointer) { return Output(pointer, access).getSpendingTx(); }) | flatMapOptionals() | ranges::to_vector;
         txes |= ranges::action::sort | ranges::action::unique;
         return txes;
     }

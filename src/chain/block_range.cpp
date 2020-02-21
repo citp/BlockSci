@@ -51,7 +51,7 @@ namespace blocksci {
     
     std::vector<Block> BlockRange::filter(std::function<bool(const Block &block)> testFunc)  {
         auto mapFunc = [&testFunc](const BlockRange &segment) -> std::vector<Block> {
-            return segment | ranges::view::filter(testFunc) | ranges::to_vector;
+            return segment | ranges::views::filter(testFunc) | ranges::to_vector;
         };
         
         auto reduceFunc = [] (std::vector<Block> &vec1, std::vector<Block> &vec2) -> std::vector<Block> & {
@@ -67,7 +67,7 @@ namespace blocksci {
         auto mapFunc = [&testFunc](const BlockRange &segment) -> std::vector<Transaction> {
             std::vector<Transaction> txes;
             for (auto block : segment) {
-                txes |= ranges::action::push_back(block | ranges::view::filter(testFunc));
+                txes |= ranges::action::push_back(block | ranges::views::filter(testFunc));
             }
             return txes;
         };

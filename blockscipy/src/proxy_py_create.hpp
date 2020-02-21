@@ -61,9 +61,9 @@ AllProxyClasses<T, SimpleBase> createProxyClasses(pybind11::module &m) {
         return {std::function<RawRange<T>(std::any &)>{[p](std::any & v) -> RawRange<T> {
             auto val = p(v);
             if (val) {
-                return ranges::view::single(*val);
+                return ranges::views::single(*val);
             } else {
-                return ranges::view::empty<T>();
+                return ranges::views::empty<T>;
             }
         }}, p.sourceType};
     }))

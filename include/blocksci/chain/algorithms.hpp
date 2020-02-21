@@ -68,7 +68,7 @@ namespace blocksci {
     
     CPP_template(typename B)(requires isBlockRange<B>)
     inline auto BLOCKSCI_EXPORT txes(B && b) {
-        return std::forward<B>(b) | ranges::view::join;
+        return std::forward<B>(b) | ranges::views::join;
     }
     
     inline auto BLOCKSCI_EXPORT inputs(const Transaction &tx) {
@@ -86,7 +86,7 @@ namespace blocksci {
     
     CPP_template(typename B)(requires isTxRange<B> || isBlockRange<B>)
     inline auto BLOCKSCI_EXPORT inputs(B && b) {
-        return txes(std::forward<B>(b)) | ranges::view::transform([](const Transaction &tx) { return tx.inputs(); }) | ranges::view::join;
+        return txes(std::forward<B>(b)) | ranges::views::transform([](const Transaction &tx) { return tx.inputs(); }) | ranges::views::join;
     }
     
     inline auto BLOCKSCI_EXPORT outputs(const Transaction &tx) {
@@ -104,98 +104,98 @@ namespace blocksci {
     
     CPP_template(typename B)(requires isTxRange<B> || isBlockRange<B>)
     inline auto BLOCKSCI_EXPORT outputs(B && b) {
-        return txes(std::forward<B>(b)) | ranges::view::transform([](const Transaction &tx) { return tx.outputs(); }) | ranges::view::join;
+        return txes(std::forward<B>(b)) | ranges::views::transform([](const Transaction &tx) { return tx.outputs(); }) | ranges::views::join;
     }
     
     CPP_template(typename B)(requires isOutputPointerRange<B>)
     inline auto BLOCKSCI_EXPORT outputs(B && b, DataAccess &access) {
-        return std::forward<B>(b) | ranges::view::transform([&access](const OutputPointer &pointer) { return Output(pointer, access); });
+        return std::forward<B>(b) | ranges::views::transform([&access](const OutputPointer &pointer) { return Output(pointer, access); });
     }
     
     template <typename T>
     inline auto BLOCKSCI_EXPORT outputsUnspent(T && t) {
-        return outputs(std::forward<T>(t)) | ranges::view::remove_if([](const Output &output) { return output.isSpent(); });
+        return outputs(std::forward<T>(t)) | ranges::views::remove_if([](const Output &output) { return output.isSpent(); });
     }
     
     template <typename T>
     inline auto BLOCKSCI_EXPORT outputsSpentBeforeHeight(T && t, blocksci::BlockHeight blockHeight) {
-        return outputs(std::forward<T>(t)) | ranges::view::filter([=](const Output &output) { return output.isSpent() && output.getSpendingTx()->getBlockHeight() < blockHeight; });
+        return outputs(std::forward<T>(t)) | ranges::views::filter([=](const Output &output) { return output.isSpent() && output.getSpendingTx()->getBlockHeight() < blockHeight; });
     }
     
     template <typename T>
     inline auto BLOCKSCI_EXPORT outputsSpentAfterHeight(T && t, blocksci::BlockHeight blockHeight) {
-        return outputs(std::forward<T>(t)) | ranges::view::filter([=](const Output &output) { return output.isSpent() && output.getSpendingTx()->getBlockHeight() >= blockHeight; });
+        return outputs(std::forward<T>(t)) | ranges::views::filter([=](const Output &output) { return output.isSpent() && output.getSpendingTx()->getBlockHeight() >= blockHeight; });
     }
     
     template <typename T>
     inline auto BLOCKSCI_EXPORT inputsCreatedAfterHeight(T && t, blocksci::BlockHeight blockHeight) {
-        return inputs(std::forward<T>(t)) | ranges::view::filter([=](const Input &input) { return input.getSpentTx().getBlockHeight() >= blockHeight; });
+        return inputs(std::forward<T>(t)) | ranges::views::filter([=](const Input &input) { return input.getSpentTx().getBlockHeight() >= blockHeight; });
     }
     
     template <typename T>
     inline auto BLOCKSCI_EXPORT inputsCreatedBeforeHeight(T && t, blocksci::BlockHeight blockHeight) {
-        return inputs(std::forward<T>(t)) | ranges::view::filter([=](const Input &input) { return input.getSpentTx().getBlockHeight() < blockHeight; });
+        return inputs(std::forward<T>(t)) | ranges::views::filter([=](const Input &input) { return input.getSpentTx().getBlockHeight() < blockHeight; });
     }
 
     template <typename T>
     inline auto BLOCKSCI_EXPORT outputsSpentWithinRelativeHeight(T && t, blocksci::BlockHeight difference) {
-        return outputs(std::forward<T>(t)) | ranges::view::filter([=](const Output &output) { 
+        return outputs(std::forward<T>(t)) | ranges::views::filter([=](const Output &output) {
             return output.isSpent() && output.getSpendingTx()->getBlockHeight() - output.getBlockHeight() < difference;
         });
     }
     
     template <typename T>
     inline auto BLOCKSCI_EXPORT outputsSpentOutsideRelativeHeight(T && t, blocksci::BlockHeight difference) {
-        return outputs(std::forward<T>(t)) | ranges::view::filter([=](const Output &output) { 
+        return outputs(std::forward<T>(t)) | ranges::views::filter([=](const Output &output) {
             return output.isSpent() && output.getSpendingTx()->getBlockHeight() - output.getBlockHeight() >= difference;
         });
     }
     
     template <typename T>
     inline auto BLOCKSCI_EXPORT inputsCreatedWithinRelativeHeight(T && t, blocksci::BlockHeight difference) {
-        return inputs(std::forward<T>(t)) | ranges::view::filter([=](const Input &input) {
+        return inputs(std::forward<T>(t)) | ranges::views::filter([=](const Input &input) {
             return input.blockHeight - input.getSpentTx().getBlockHeight() < difference;
         });
     }
     
     template <typename T>
     inline auto BLOCKSCI_EXPORT inputsCreatedOutsideRelativeHeight(T && t, blocksci::BlockHeight difference) {
-        return inputs(std::forward<T>(t)) | ranges::view::filter([=](const Input &input) {
+        return inputs(std::forward<T>(t)) | ranges::views::filter([=](const Input &input) {
             return input.blockHeight - input.getSpentTx().getBlockHeight() >= difference;
         });
     }
     
     template <typename T>
     inline auto BLOCKSCI_EXPORT outputsOfType(T && t, AddressType::Enum type) {
-        return outputs(std::forward<T>(t)) | ranges::view::filter([=](const Output &output) { return output.getType() == type; });
+        return outputs(std::forward<T>(t)) | ranges::views::filter([=](const Output &output) { return output.getType() == type; });
     }
     
     template <typename T>
     inline auto BLOCKSCI_EXPORT inputsOfType(T && t, AddressType::Enum type) {
-        return inputs(std::forward<T>(t)) | ranges::view::filter([=](const Input &input) { return input.getType() == type; });
+        return inputs(std::forward<T>(t)) | ranges::views::filter([=](const Input &input) { return input.getType() == type; });
     }
     
     template <typename T>
     inline uint64_t BLOCKSCI_EXPORT inputCount(T && t) {
-        auto values = txes(std::forward<T>(t)) | ranges::view::transform([](const Transaction &tx) { return tx.inputCount(); });
+        auto values = txes(std::forward<T>(t)) | ranges::views::transform([](const Transaction &tx) { return tx.inputCount(); });
         return ranges::accumulate(values, uint64_t{0});
     }
     
     template <typename T>
     inline uint64_t BLOCKSCI_EXPORT outputCount(T && t) {
-        auto values = txes(std::forward<T>(t)) | ranges::view::transform([](const Transaction &tx) { return tx.outputCount(); });
+        auto values = txes(std::forward<T>(t)) | ranges::views::transform([](const Transaction &tx) { return tx.outputCount(); });
         return ranges::accumulate(values, uint64_t{0});
     }
     
     template <typename T>
     inline int64_t BLOCKSCI_EXPORT totalInputValue(T && t) {
-        auto values = inputs(std::forward<T>(t)) | ranges::view::transform([](const Input &a) { return a.getValue(); });
+        auto values = inputs(std::forward<T>(t)) | ranges::views::transform([](const Input &a) { return a.getValue(); });
         return ranges::accumulate(values, int64_t{0});
     }
     
     template <typename T>
     inline int64_t BLOCKSCI_EXPORT totalOutputValue(T && t) {
-        auto values = outputs(std::forward<T>(t)) | ranges::view::transform([](const Output &a) { return a.getValue(); });
+        auto values = outputs(std::forward<T>(t)) | ranges::views::transform([](const Output &a) { return a.getValue(); });
         return ranges::accumulate(values, int64_t{0});
     }
     
@@ -225,21 +225,21 @@ namespace blocksci {
 
     template <typename T>
     inline auto BLOCKSCI_EXPORT feeLessThan(T &t, int64_t value) {
-        return txes(t) | ranges::view::filter([=](const Transaction &tx) {
+        return txes(t) | ranges::views::filter([=](const Transaction &tx) {
             return fee(tx) < value;
         });
     }
 
     template <typename T>
     inline auto BLOCKSCI_EXPORT feeGreaterThan(T &t, int64_t value) {
-        return txes(t) | ranges::view::filter([=](const Transaction &tx) {
+        return txes(t) | ranges::views::filter([=](const Transaction &tx) {
             return fee(tx) > value;
         });
     }
     
     template <typename T>
     inline auto BLOCKSCI_EXPORT fees(T &t) {
-        return ranges::view::transform(txes(t), [](Transaction && tx) {
+        return ranges::views::transform(txes(t), [](Transaction && tx) {
             return fee(tx);
         });
     }
@@ -250,7 +250,7 @@ namespace blocksci {
     
     template <typename T>
     inline auto BLOCKSCI_EXPORT feesPerByte(T &t) {
-        return ranges::view::transform(txes(t), feePerByte);
+        return ranges::views::transform(txes(t), feePerByte);
     }
     
     template <typename T>

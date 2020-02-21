@@ -101,8 +101,8 @@ namespace blocksci {
     
     ranges::any_view<OutputPointer> EquivAddress::getOutputPointers() const {
         return addresses
-        | ranges::view::transform([](const Address &address) { return address.getOutputPointers(); })
-        | ranges::view::join
+        | ranges::views::transform([](const Address &address) { return address.getOutputPointers(); })
+        | ranges::views::join
         ;
     }
     
@@ -112,15 +112,15 @@ namespace blocksci {
     
     ranges::any_view<Output> EquivAddress::getOutputs() const {
         return addresses
-        | ranges::view::transform([](const Address &address) { return address.getOutputs(); })
-        | ranges::view::join
+        | ranges::views::transform([](const Address &address) { return address.getOutputs(); })
+        | ranges::views::join
         ;
     }
     
     ranges::any_view<Input> EquivAddress::getInputs() const {
         return addresses
-        | ranges::view::transform([](const Address &address) { return address.getInputs(); })
-        | ranges::view::join
+        | ranges::views::transform([](const Address &address) { return address.getInputs(); })
+        | ranges::views::join
         ;
     }
     

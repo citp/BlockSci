@@ -34,7 +34,7 @@ struct AddWitnessUnknownMethods {
             if (stack) {
                 py::list list;
                 RANGES_FOR(auto && item, *stack) {
-                    auto charVector = item | ranges::view::transform([](auto && c) -> char { return c; } ) | ranges::to_vector;
+                    auto charVector = item | ranges::views::transform([](auto && c) -> char { return c; } ) | ranges::to_vector;
                     list.append(py::bytes(std::string{charVector.begin(), charVector.end()}));
                 }
                 return list;

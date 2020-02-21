@@ -26,7 +26,7 @@ namespace blocksci {
     
     ranges::optional<ranges::any_view<ranges::any_view<unsigned char>>> ScriptAddress<AddressType::WITNESS_UNKNOWN>::getWitnessStack() const {
         if (rawInputData != nullptr) {
-            return rawInputData->scriptData | ranges::view::split(0xfe);
+            return rawInputData->scriptData | ranges::views::split(0xfe);
         } else {
             return ranges::nullopt;
         }

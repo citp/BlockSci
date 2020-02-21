@@ -40,11 +40,11 @@ namespace blocksci { namespace heuristics {
     ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::PeelingChain>::operator()(const Transaction &tx) const {
         // If current tx is not a peeling chain, return an empty set
         if (!isPeelingChain(tx)) {
-            return ranges::view::empty<Output>;
+            return ranges::views::empty<Output>;
         }
         
         // Check which output(s) continue the peeling chain
-        return tx.outputs() | ranges::view::filter([](Output o){return !o.isSpent() || isPeelingChain(*o.getSpendingTx());}) | ranges::view::filter(filterOpReturn);
+        return tx.outputs() | ranges::views::filter([](Output o){return !o.isSpent() || isPeelingChain(*o.getSpendingTx());}) | ranges::views::filter(filterOpReturn);
     }
 
     /** Returns 10^{digits} */
@@ -68,7 +68,7 @@ namespace blocksci { namespace heuristics {
      */
     ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::PowerOfTen>::operator()(const Transaction &tx) const {
         int64_t value = int_pow_ten(digits);
-        return tx.outputs() | ranges::view::filter([value](Output o){return o.getValue() % value != 0;}) | ranges::view::filter(filterOpReturn);
+        return tx.outputs() | ranges::views::filter([value](Output o){return o.getValue() % value != 0;}) | ranges::views::filter(filterOpReturn);
     }
     
     
@@ -83,7 +83,7 @@ namespace blocksci { namespace heuristics {
         RANGES_FOR(auto input, tx.inputs()) {
             smallestInputValue = std::min(smallestInputValue, input.getValue());
         }
-        return tx.outputs() | ranges::view::filter([smallestInputValue](Output o){return o.getValue() < smallestInputValue;}) | ranges::view::filter(filterOpReturn);
+        return tx.outputs() | ranges::views::filter([smallestInputValue](Output o){return o.getValue() < smallestInputValue;}) | ranges::views::filter(filterOpReturn);
     }
     
     /** If all inputs are of one address type (e.g., P2PKH or P2SH), it is likely that the change output has the same type. */
@@ -100,9 +100,9 @@ namespace blocksci { namespace heuristics {
         }
         
         if (allInputsSameType) {
-            return tx.outputs() | ranges::view::filter([inputType](Output o){return o.getType() == inputType;}) | ranges::view::filter(filterOpReturn);
+            return tx.outputs() | ranges::views::filter([inputType](Output o){return o.getType() == inputType;}) | ranges::views::filter(filterOpReturn);
         } else {
-            return ranges::view::empty<Output>;
+            return ranges::views::empty<Output>;
         }
     }
     
@@ -117,7 +117,7 @@ namespace blocksci { namespace heuristics {
     template<>
     ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::Locktime>::operator()(const Transaction &tx) const {
         bool locktimeGreaterZero = tx.locktime() > 0;
-        return tx.outputs() | ranges::view::filter([locktimeGreaterZero](Output o){return !o.isSpent() || (o.getSpendingTx().value().locktime() > 0) == locktimeGreaterZero;}) | ranges::view::filter(filterOpReturn);
+        return tx.outputs() | ranges::views::filter([locktimeGreaterZero](Output o){return !o.isSpent() || (o.getSpendingTx().value().locktime() > 0) == locktimeGreaterZero;}) | ranges::views::filter(filterOpReturn);
     }
 
     /** If input addresses appear as an output address, the client might have reused addresses for change. */
@@ -128,7 +128,7 @@ namespace blocksci { namespace heuristics {
             inputAddresses.insert(input.getAddress());
         }
         
-        return tx.outputs() | ranges::view::filter([inputAddresses](Output o){return inputAddresses.find(o.getAddress()) != inputAddresses.end();}) | ranges::view::filter(filterOpReturn);
+        return tx.outputs() | ranges::views::filter([inputAddresses](Output o){return inputAddresses.find(o.getAddress()) != inputAddresses.end();}) | ranges::views::filter(filterOpReturn);
     }
 
     /** Most clients will generate a fresh address for the change.
@@ -137,7 +137,7 @@ namespace blocksci { namespace heuristics {
      */
     template<>
     ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::ClientChangeAddressBehavior>::operator()(const Transaction &tx) const {
-        return tx.outputs() | ranges::view::filter([tx](Output o){return o.getAddress().isSpendable() && o.getAddress().getBaseScript().getFirstTxIndex() == tx.txNum;}) | ranges::view::filter(filterOpReturn);
+        return tx.outputs() | ranges::views::filter([tx](Output o){return o.getAddress().isSpendable() && o.getAddress().getBaseScript().getFirstTxIndex() == tx.txNum;}) | ranges::views::filter(filterOpReturn);
     }
     
     /** Legacy heuristic used in previous versions of BlockSci */
@@ -177,22 +177,22 @@ namespace blocksci { namespace heuristics {
     ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::Legacy>::operator()(const Transaction &tx) const {
         auto c = uniqueChangeByLegacyHeuristic(tx);
         if (c.has_value()) {
-            return ranges::view::single(c.value());
+            return ranges::views::single(c.value());
         }
-        return ranges::view::empty<Output>;
+        return ranges::views::empty<Output>;
     }
 
     /** Clients may choose a fixed fee per kb instead of using one based on the current fee market. */
     template<>
     ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::FixedFee>::operator()(const Transaction &tx) const {
         auto fee = tx.fee() * 1000 / tx.virtualSize();
-        return tx.outputs() | ranges::view::filter([fee](Output o) {return !o.isSpent() || (o.getSpendingTx()->fee() * 1000 / o.getSpendingTx()->virtualSize()) == fee;}) | ranges::view::filter(filterOpReturn);
+        return tx.outputs() | ranges::views::filter([fee](Output o) {return !o.isSpent() || (o.getSpendingTx()->fee() * 1000 / o.getSpendingTx()->virtualSize()) == fee;}) | ranges::views::filter(filterOpReturn);
     }
     
     /** Disables change address clustering by returning an empty set. */
     template<>
     ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::None>::operator()(const Transaction &) const {
-        return ranges::view::empty<Output>;
+        return ranges::views::empty<Output>;
     }
     
     /** Returns all outputs that have been spent.
@@ -201,7 +201,7 @@ namespace blocksci { namespace heuristics {
      */
     template<>
     ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::Spent>::operator()(const Transaction &tx) const {
-        return tx.outputs() | ranges::view::filter([](Output o){return o.isSpent();});
+        return tx.outputs() | ranges::views::filter([](Output o){return o.isSpent();});
     }
 }  // namespace heuristics
 }  // namespace blocksci

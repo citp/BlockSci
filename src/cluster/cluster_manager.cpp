@@ -95,12 +95,12 @@ namespace blocksci {
     }
     
     ranges::any_view<Cluster, ranges::category::random_access | ranges::category::sized> ClusterManager::getClusters() const {
-        return ranges::view::ints(0u, clusterCount)
-        | ranges::view::transform([&](uint32_t clusterNum) { return Cluster(clusterNum, *access); });
+        return ranges::views::ints(0u, clusterCount)
+        | ranges::views::transform([&](uint32_t clusterNum) { return Cluster(clusterNum, *access); });
     }
     
     ranges::any_view<TaggedCluster> ClusterManager::taggedClusters(const std::unordered_map<Address, std::string> &tags) const {
-        return getClusters() | ranges::view::transform([tags](Cluster && cluster) -> ranges::optional<TaggedCluster> {
+        return getClusters() | ranges::views::transform([tags](Cluster && cluster) -> ranges::optional<TaggedCluster> {
             return cluster.getTaggedUnsafe(tags);
         }) | flatMapOptionals();
     }

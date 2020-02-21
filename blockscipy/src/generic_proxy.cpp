@@ -50,7 +50,7 @@ std::function<ranges::optional<BlocksciType>(std::any &)> SimpleProxy::getGeneri
 std::function<BlocksciRangeType(std::any &)> SimpleProxy::getGenericRange() const {
 	return [generic = getGenericSimple()](std::any &v) -> BlocksciRangeType {
 		return mpark::visit([](auto && val) -> BlocksciRangeType {
-			return BlocksciRangeType{RawRange<std::decay_t<decltype(val)>>{ranges::view::single(std::forward<decltype(val)>(val))}};
+			return BlocksciRangeType{RawRange<std::decay_t<decltype(val)>>{ranges::views::single(std::forward<decltype(val)>(val))}};
 		}, generic(v).var);
 	};
 }

@@ -30,8 +30,8 @@ namespace blocksci {
     };
     
 	inline auto BLOCKSCI_EXPORT flatMapOptionals() {
-        return  ranges::view::filter(FlatMapOptionalsFilter{})
-        | ranges::view::transform(FlatMapOptionalsTransform{});
+        return  ranges::views::filter(FlatMapOptionalsFilter{})
+        | ranges::views::transform(FlatMapOptionalsTransform{});
     }
     
 } // namespace blocksci

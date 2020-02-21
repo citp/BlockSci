@@ -90,7 +90,7 @@ namespace blocksci {
         auto prefixData = reinterpret_cast<const char *>(&address.scriptNum);
         std::vector<char> prefix(prefixData, prefixData + sizeof(address.scriptNum));  // vector with scriptNum bytes
         auto rawOutputPointerRange = ColumnIterator(db.get(), getOutputColumn(address.type).get(), prefix);
-        return rawOutputPointerRange | ranges::view::transform([](std::pair<MemoryView, MemoryView> pair) -> InoutPointer {
+        return rawOutputPointerRange | ranges::views::transform([](std::pair<MemoryView, MemoryView> pair) -> InoutPointer {
             InoutPointer outPoint;
             uint8_t txNumData[4];
             uint8_t outputNumData[2];
@@ -114,7 +114,7 @@ namespace blocksci {
         auto prefixData = reinterpret_cast<const char *>(&searchAddress.scriptNum);
         std::vector<char> prefix(prefixData, prefixData + sizeof(searchAddress.scriptNum));
         auto rawDedupAddressRange = ColumnIterator(db.get(), getNestedColumn(AddressType::MULTISIG_PUBKEY).get(), prefix);
-        return rawDedupAddressRange | ranges::view::transform([](std::pair<MemoryView, MemoryView> pair) -> RawAddress {
+        return rawDedupAddressRange | ranges::views::transform([](std::pair<MemoryView, MemoryView> pair) -> RawAddress {
             auto &key = pair.first;
             key.data += sizeof(uint32_t);
             DedupAddress rawParent;

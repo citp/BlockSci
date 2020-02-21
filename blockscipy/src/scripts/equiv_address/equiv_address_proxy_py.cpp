@@ -29,21 +29,21 @@ struct AddEquivAddressMethods {
         func(property_tag, "is_script_equiv", &EquivAddress::isScriptEquiv, "Returns whether this equiv address is script equivalent or not");
         func(method_tag, "balance", &EquivAddress::calculateBalance, "Calculates the balance held by these equivalent addresses at the height (Defaults to the full chain)", py::arg("height") = -1);
         func(property_tag, "addresses", +[](const EquivAddress &address) -> RawIterator<AnyScript> {
-            return ranges::view::ints(0, 1) | ranges::view::transform([address](int) {
-                return address | ranges::view::transform([](const Address &address) {
+            return ranges::views::ints(0, 1) | ranges::views::transform([address](int) {
+                return address | ranges::views::transform([](const Address &address) {
                     return address.getScript();
                 });
-            }) | ranges::view::join;
+            }) | ranges::views::join;
         }, "Calculate balance");
         func(property_tag, "outs", +[](const EquivAddress &address) -> RawIterator<Output> {
-            return ranges::view::ints(0, 1) | ranges::view::transform([address](int) {
+            return ranges::views::ints(0, 1) | ranges::views::transform([address](int) {
                 return address.getOutputs();
-            }) | ranges::view::join;
+            }) | ranges::views::join;
         }, "Returns an iterator over all outputs sent to these equivalent addresses");
         func(property_tag, "ins", +[](EquivAddress &address) -> RawIterator<Input> {
-            return ranges::view::ints(0, 1) | ranges::view::transform([address](int) {
+            return ranges::views::ints(0, 1) | ranges::views::transform([address](int) {
                 return address.getInputs();
-            }) | ranges::view::join;
+            }) | ranges::views::join;
         }, "Returns an iterator over all inputs spent from these equivalent addresses");
         func(method_tag, "out_txes_count", +[](EquivAddress &address) -> int64_t {
             return address.getOutputTransactions().size();
