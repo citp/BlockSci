@@ -12,7 +12,7 @@
 #include <blocksci/blocksci_export.h>
 #include <blocksci/chain/output.hpp>
 
-#include <range/v3/range_concepts.hpp>
+#include <range/v3/range/concepts.hpp>
 
 namespace blocksci {
     class ChainAccess;
@@ -97,13 +97,13 @@ namespace blocksci {
         return it + i;
     }
     
-    CONCEPT_ASSERT(ranges::BidirectionalRange<OutputRange>());
-    CONCEPT_ASSERT(ranges::BidirectionalIterator<OutputRange::iterator>());
-    CONCEPT_ASSERT(ranges::SizedSentinel<OutputRange::iterator, OutputRange::iterator>());
-    CONCEPT_ASSERT(ranges::TotallyOrdered<OutputRange::iterator>());
-    CONCEPT_ASSERT(ranges::RandomAccessIterator<OutputRange::iterator>());
-    CONCEPT_ASSERT(ranges::RandomAccessRange<OutputRange>());
-    CONCEPT_ASSERT(ranges::SizedRange<OutputRange>());
+    CPP_assert(ranges::bidirectional_range<OutputRange>);
+    CPP_assert(ranges::bidirectional_iterator<OutputRange::iterator>);
+    CPP_assert(ranges::sized_sentinel_for<OutputRange::iterator, OutputRange::iterator>);
+    CPP_assert(ranges::totally_ordered<OutputRange::iterator>);
+    CPP_assert(ranges::random_access_iterator<OutputRange::iterator>);
+    CPP_assert(ranges::random_access_range<OutputRange>);
+    CPP_assert(ranges::sized_range<OutputRange>);
 }
 
 #endif /* blocksci_output_range_hpp */

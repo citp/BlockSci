@@ -67,14 +67,14 @@ namespace blocksci {
     struct PossibleAddressesGetter {
         DataAccess *access;
         
-        ranges::transform_view<ranges::iterator_range<const AddressType::Enum *>, ClusterAddressCreator>
+        ranges::transform_view<ranges::subrange<const AddressType::Enum *>, ClusterAddressCreator>
         operator()(const DedupAddress &dedupAddress) const;
     };
     
     struct AddressRangeTagChecker {
         TagChecker tagCheck;
         
-        auto operator()(ranges::transform_view<ranges::iterator_range<const AddressType::Enum *>, ClusterAddressCreator> && rng) const {
+        auto operator()(ranges::transform_view<ranges::subrange<const AddressType::Enum *>, ClusterAddressCreator> && rng) const {
             return std::move(rng) | ranges::view::transform(tagCheck)  | flatMapOptionals();
         }
     };
@@ -82,7 +82,7 @@ namespace blocksci {
     class BLOCKSCI_EXPORT Cluster {
         const ClusterAccess *clusterAccess;
         
-        ranges::iterator_range<const blocksci::DedupAddress *> getDedupAddresses() const;
+        ranges::subrange<const blocksci::DedupAddress *> getDedupAddresses() const;
         
         // Only holds tags by reference so it must remain alive while this range exists
         ranges::any_view<TaggedAddress> taggedAddressesUnsafe(const std::unordered_map<blocksci::Address, std::string> &tags) const;
@@ -97,7 +97,7 @@ namespace blocksci {
         
         ranges::any_view<TaggedAddress> taggedAddresses(const std::unordered_map<blocksci::Address, std::string> &tags) const;
         
-        ranges::transform_view<ranges::transform_view<ranges::iterator_range<const DedupAddress *>, PossibleAddressesGetter>, AddressRangeTagChecker>
+        ranges::transform_view<ranges::transform_view<ranges::subrange<const DedupAddress *>, PossibleAddressesGetter>, AddressRangeTagChecker>
         taggedAddressesNested(const std::unordered_map<blocksci::Address, std::string> &tags) const;
         
         ranges::optional<TaggedCluster> getTaggedUnsafe(const std::unordered_map<blocksci::Address, std::string> &tags) const;

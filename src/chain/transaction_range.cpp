@@ -10,7 +10,7 @@
 #include <internal/chain_access.hpp>
 #include <internal/data_access.hpp>
 
-#include <range/v3/range_concepts.hpp>
+#include <range/v3/range/concepts.hpp>
 
 namespace blocksci {
     
@@ -46,11 +46,11 @@ namespace blocksci {
         return {data, index, height, firstTx.maxTxCount, firstTx.getAccess()};
     }
     
-    CONCEPT_ASSERT(ranges::BidirectionalRange<TransactionRange>());
-    CONCEPT_ASSERT(ranges::BidirectionalIterator<TransactionRange::iterator>());
-    CONCEPT_ASSERT(ranges::SizedSentinel<TransactionRange::iterator, TransactionRange::iterator>());
-    CONCEPT_ASSERT(ranges::TotallyOrdered<TransactionRange::iterator>());
-    CONCEPT_ASSERT(ranges::RandomAccessIterator<TransactionRange::iterator>());
-    CONCEPT_ASSERT(ranges::RandomAccessRange<TransactionRange>());
-    CONCEPT_ASSERT(ranges::SizedRange<TransactionRange>());
+    CPP_assert(ranges::bidirectional_range<TransactionRange>);
+    CPP_assert(ranges::bidirectional_iterator<TransactionRange::iterator>);
+    CPP_assert(ranges::sized_sentinel_for<TransactionRange::iterator, TransactionRange::iterator>);
+    CPP_assert(ranges::totally_ordered<TransactionRange::iterator>);
+    CPP_assert(ranges::random_access_iterator<TransactionRange::iterator>);
+    CPP_assert(ranges::random_access_range<TransactionRange>);
+    CPP_assert(ranges::sized_range<TransactionRange>);
 } // namespace blocksci

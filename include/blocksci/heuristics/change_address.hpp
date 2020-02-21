@@ -14,7 +14,7 @@
 #include <blocksci/scripts/scripts_fwd.hpp>
 
 #include <range/v3/utility/optional.hpp>
-#include <range/v3/distance.hpp>
+#include <range/v3/iterator/operations.hpp>
 #include <range/v3/view.hpp>
 #include <range/v3/view/set_algorithm.hpp>
 
@@ -83,7 +83,7 @@ namespace heuristics {
                 if (ranges::distance(c) == 1) {
                     return c;
                 } else {
-                    ranges::any_view<Output> empty = ranges::view::empty<Output>();
+                    ranges::any_view<Output> empty = ranges::view::empty<Output>;
                     return empty;
                 }
             }}};

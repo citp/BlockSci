@@ -67,13 +67,13 @@ void HashIndexCreator::processTx(const blocksci::RawTransaction *tx, uint32_t tx
             return false;
         }
     };
-    auto inputs = ranges::make_iterator_range(tx->beginInputs(), tx->endInputs());
+    auto inputs = ranges::make_subrange(tx->beginInputs(), tx->endInputs());
     for (auto input : inputs) {
         insideP2SH = false;
         visit(blocksci::RawAddress{input.getAddressNum(), input.getType()}, inputVisitFunc, scripts);
     }
     
-    auto outputs = ranges::make_iterator_range(tx->beginOutputs(), tx->endOutputs());
+    auto outputs = ranges::make_subrange(tx->beginOutputs(), tx->endOutputs());
     for (auto &txout : outputs) {
         if (txout.getType() == blocksci::AddressType::WITNESS_SCRIPTHASH) {
             auto script = scripts.getScriptData<blocksci::DedupAddressType::SCRIPTHASH>(txout.getAddressNum());

@@ -16,7 +16,7 @@
 
 using namespace blocksci;
 
-bool isValidPubkey(ranges::iterator_range<const unsigned char *> &vch1) {
+bool isValidPubkey(ranges::subrange<const unsigned char *> &vch1) {
     if (vch1.size() < 33 || vch1.size() > 65) {
         return false;
     }
@@ -32,17 +32,17 @@ bool isValidPubkey(ranges::iterator_range<const unsigned char *> &vch1) {
 }
 
 using ScriptOutputDataType = blocksci::to_variadic_t<blocksci::to_address_tuple_t<ScriptOutputData>, mpark::variant>;
-using valtype = ranges::iterator_range<const unsigned char *>;
+using valtype = ranges::subrange<const unsigned char *>;
 
 static bool MatchPayToPubkey(const CScriptView& script, valtype& pubkey)
 {
     if (script.size() == CPubKey::PUBLIC_KEY_SIZE + 2 && script[0] == CPubKey::PUBLIC_KEY_SIZE && script.back() == OP_CHECKSIG) {
         pubkey = valtype(script.begin() + 1, script.begin() + blocksci::CPubKey::PUBLIC_KEY_SIZE + 1);
-        return CPubKey::ValidSize(pubkey);
+        return CPubKey::ValidSize(pubkey | ranges::to_vector);
     }
     if (script.size() == CPubKey::COMPRESSED_PUBLIC_KEY_SIZE + 2 && script[0] == CPubKey::COMPRESSED_PUBLIC_KEY_SIZE && script.back() == OP_CHECKSIG) {
         pubkey = valtype(script.begin() + 1, script.begin() + CPubKey::COMPRESSED_PUBLIC_KEY_SIZE + 1);
-        return CPubKey::ValidSize(pubkey);
+        return CPubKey::ValidSize(pubkey | ranges::to_vector);
     }
     return false;
 }
@@ -66,12 +66,12 @@ static bool MatchMultisig(const CScriptView& script, ScriptOutputData<blocksci::
 {
     opcodetype opcode;
     valtype data;
-    CScriptView::const_iterator it = script.begin();
+    CScriptView::iterator it = script.begin();
     if (script.size() < 1 || script.back() != OP_CHECKMULTISIG) return false;
     
     if (!script.GetOp(it, opcode, data) || !IsSmallInteger(opcode)) return false;
     multisig.numRequired = CScript::DecodeOP_N(opcode);
-    while (script.GetOp(it, opcode, data) && CPubKey::ValidSize(data)) {
+    while (script.GetOp(it, opcode, data) && CPubKey::ValidSize(data | ranges::to_vector)) {
         multisig.addAddress(data);
     }
     if (!IsSmallInteger(opcode)) return false;
@@ -96,7 +96,7 @@ ScriptOutputDataType extractScriptData(const blocksci::CScriptView &scriptPubKey
     }
     
     uint8_t witnessversion;
-    ranges::iterator_range<const unsigned char *> witnessprogram;
+    ranges::subrange<const unsigned char *> witnessprogram;
     if (witnessActivated && scriptPubKey.IsWitnessProgram(witnessversion, witnessprogram)) {
         if (witnessversion == 0) {
             if (witnessprogram.size() == 20) {
@@ -122,7 +122,7 @@ ScriptOutputDataType extractScriptData(const blocksci::CScriptView &scriptPubKey
         return ScriptOutputData<AddressType::Enum::NULL_DATA>{scriptPubKey};
     }
     
-    ranges::iterator_range<const unsigned char *> data;
+    ranges::subrange<const unsigned char *> data;
     if (MatchPayToPubkey(scriptPubKey, data)) {
         return ScriptOutputData<AddressType::Enum::PUBKEY>{data};
     }
@@ -171,7 +171,7 @@ uint32_t AnyScriptOutput::resolve(AddressState &state) {
 
 // MARK: TX_PUBKEY
 
-ScriptOutputData<blocksci::AddressType::Enum::PUBKEY>::ScriptOutputData(const ranges::iterator_range<const unsigned char *> &vch1) {
+ScriptOutputData<blocksci::AddressType::Enum::PUBKEY>::ScriptOutputData(const ranges::subrange<const unsigned char *> &vch1) {
     pubkey.fill(0);
     std::copy(vch1.begin(), vch1.end(), pubkey.begin());
 }
@@ -201,7 +201,7 @@ blocksci::PubkeyData ScriptOutputData<blocksci::AddressType::Enum::PUBKEYHASH>::
 
 // MARK: MULTISIG_PUBKEY
 
-ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY>::ScriptOutputData(const ranges::iterator_range<const unsigned char *> &vch1) {
+ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY>::ScriptOutputData(const ranges::subrange<const unsigned char *> &vch1) {
     std::copy(vch1.begin(), vch1.end(), pubkey.begin());
 }
 
@@ -279,7 +279,7 @@ blocksci::uint160 ScriptOutputData<blocksci::AddressType::Enum::MULTISIG>::getHa
     return ripemd160(sigData.data(), sigData.size());
 }
 
-void ScriptOutputData<blocksci::AddressType::Enum::MULTISIG>::addAddress(const ranges::iterator_range<const unsigned char *> &vch1) {
+void ScriptOutputData<blocksci::AddressType::Enum::MULTISIG>::addAddress(const ranges::subrange<const unsigned char *> &vch1) {
     blocksci::RawPubkey pubkey;
     pubkey.fill(0);
     std::copy(vch1.begin(), vch1.end(), pubkey.begin());
@@ -312,9 +312,9 @@ blocksci::ArbitraryLengthData<blocksci::NonstandardScriptData> ScriptOutputData<
 // MARK: TX_NULL_DATA
 
 ScriptOutputData<blocksci::AddressType::Enum::NULL_DATA>::ScriptOutputData(const blocksci::CScriptView &script){
-    blocksci::CScriptView::const_iterator pc1 = script.begin();
+    blocksci::CScriptView::iterator pc1 = script.begin();
     blocksci::opcodetype opcode1;
-    ranges::iterator_range<const unsigned char *> vch1;
+    ranges::subrange<const unsigned char *> vch1;
     while(true) {
         if(!script.GetOp(pc1, opcode1, vch1)) {
             break;
@@ -333,7 +333,7 @@ blocksci::ArbitraryLengthData<blocksci::RawData> ScriptOutputData<blocksci::Addr
 
 // MARK: WITNESS_UNKNOWN
 
-ScriptOutputData<blocksci::AddressType::Enum::WITNESS_UNKNOWN>::ScriptOutputData(uint8_t witnessVersion_, const ranges::iterator_range<const unsigned char *> &witnessData_) : witnessVersion(witnessVersion_) {
+ScriptOutputData<blocksci::AddressType::Enum::WITNESS_UNKNOWN>::ScriptOutputData(uint8_t witnessVersion_, const ranges::subrange<const unsigned char *> &witnessData_) : witnessVersion(witnessVersion_) {
     witnessData.assign(witnessData_.begin(), witnessData_.end());
 }
 

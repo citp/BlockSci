@@ -167,7 +167,7 @@ namespace blocksci {
                 }
             }
             
-            bool equal(ranges::default_sentinel) const {
+            bool equal(ranges::default_sentinel_t) const {
                 return it == end;
             }
             
@@ -184,7 +184,7 @@ namespace blocksci {
             return cursor{pointers.begin(), pointers.end(), searchAddress, access};
         }
         
-        ranges::default_sentinel end_cursor() {
+        ranges::default_sentinel_t end_cursor() {
             return {};
         }
         

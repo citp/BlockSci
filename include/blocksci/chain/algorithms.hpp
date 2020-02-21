@@ -24,49 +24,49 @@
 
 namespace blocksci {
     
-    template <typename B>
-    constexpr bool isOutputPointerRange = std::is_same<ranges::range_value_type_t<B>, OutputPointer>::value;
+    CPP_template(typename B)(requires ranges::range<B>)
+    CPP_concept_bool isOutputPointerRange = std::is_same<ranges::range_value_t<B>, OutputPointer>::value;
+    
+    CPP_template(typename B)(requires ranges::range<B>)
+    CPP_concept_bool isInputRange = std::is_same<ranges::range_value_t<B>, Input>::value;
+    
+    CPP_template(typename B)(requires ranges::range<B>)
+    CPP_concept_bool isOutputRange = std::is_same<ranges::range_value_t<B>, Output>::value;
+    
+    CPP_template(typename B)(requires ranges::range<B>)
+    CPP_concept_bool isTxRange = std::is_same<ranges::range_value_t<B>, Transaction>::value;
+    
+    CPP_template(typename B)(requires ranges::range<B>)
+    CPP_concept_bool isBlockRange = std::is_same<ranges::range_value_t<B>, Block>::value;
     
     template <typename B>
-    constexpr bool isInputRange = std::is_same<ranges::range_value_type_t<B>, Input>::value;
+    CPP_concept_bool isTx = std::is_same<B, Transaction>::value;
     
     template <typename B>
-    constexpr bool isOutputRange = std::is_same<ranges::range_value_type_t<B>, Output>::value;
+    CPP_concept_bool isBlockchain = std::is_same<B, Blockchain>::value;
     
-    template <typename B>
-    constexpr bool isTxRange = std::is_same<ranges::range_value_type_t<B>, Transaction>::value;
+    CPP_template(typename B)(requires ranges::range<B>)
+    CPP_concept_bool isOptionalInputRange = std::is_same<ranges::range_value_t<B>, ranges::optional<Input>>::value;
     
-    template <typename B>
-    constexpr bool isBlockRange = std::is_same<ranges::range_value_type_t<B>, Block>::value;
+    CPP_template(typename B)(requires ranges::range<B>)
+    CPP_concept_bool isOptionalOutputRange = std::is_same<ranges::range_value_t<B>, ranges::optional<Output>>::value;
     
-    template <typename B>
-    constexpr bool isTx = std::is_same<B, Transaction>::value;
+    CPP_template(typename B)(requires ranges::range<B>)
+    CPP_concept_bool isOptionalTxRange = std::is_same<ranges::range_value_t<B>, ranges::optional<Transaction>>::value;
     
-    template <typename B>
-    constexpr bool isBlockchain = std::is_same<B, Blockchain>::value;
-    
-    template <typename B>
-    constexpr bool isOptionalInputRange = std::is_same<ranges::range_value_type_t<B>, ranges::optional<Input>>::value;
-    
-    template <typename B>
-    constexpr bool isOptionalOutputRange = std::is_same<ranges::range_value_type_t<B>, ranges::optional<Output>>::value;
-    
-    template <typename B>
-    constexpr bool isOptionalTxRange = std::is_same<ranges::range_value_type_t<B>, ranges::optional<Transaction>>::value;
-    
-    template <typename B>
-    constexpr bool isOptionalBlockRange = std::is_same<ranges::range_value_type_t<B>, ranges::optional<Block>>::value;
+    CPP_template(typename B)(requires ranges::range<B>)
+    CPP_concept_bool isOptionalBlockRange = std::is_same<ranges::range_value_t<B>, ranges::optional<Block>>::value;
     
     template<typename T>
     struct fail_helper : std::false_type
     { };
     
-    template <typename B, CONCEPT_REQUIRES_(ranges::Range<B>()), std::enable_if_t<isTxRange<B>, int> = 0>
+    CPP_template(typename B)(requires isTxRange<B>)
     inline auto BLOCKSCI_EXPORT txes(B && b) {
         return std::forward<B>(b);
     }
     
-    template <typename B, CONCEPT_REQUIRES_(ranges::Range<B>()), std::enable_if_t<isBlockRange<B>, int> = 0>
+    CPP_template(typename B)(requires isBlockRange<B>)
     inline auto BLOCKSCI_EXPORT txes(B && b) {
         return std::forward<B>(b) | ranges::view::join;
     }
@@ -79,12 +79,12 @@ namespace blocksci {
         return tx.inputs();
     }
     
-    template <typename B, CONCEPT_REQUIRES_(ranges::Range<B>()), std::enable_if_t<isInputRange<B>, int> = 0>
+    CPP_template(typename B)(requires isInputRange<B>)
     inline auto BLOCKSCI_EXPORT inputs(B && b) {
         return std::forward<B>(b);
     }
     
-    template <typename B, CONCEPT_REQUIRES_(ranges::Range<B>()), std::enable_if_t<isTxRange<B> || isBlockRange<B>, int> = 0>
+    CPP_template(typename B)(requires isTxRange<B> || isBlockRange<B>)
     inline auto BLOCKSCI_EXPORT inputs(B && b) {
         return txes(std::forward<B>(b)) | ranges::view::transform([](const Transaction &tx) { return tx.inputs(); }) | ranges::view::join;
     }
@@ -97,17 +97,17 @@ namespace blocksci {
         return tx.outputs();
     }
     
-    template <typename B, CONCEPT_REQUIRES_(ranges::Range<B>()), std::enable_if_t<isOutputRange<B>, int> = 0>
+    CPP_template(typename B)(requires isOutputRange<B>)
     inline auto BLOCKSCI_EXPORT outputs(B && b) {
         return std::forward<B>(b);
     }
     
-    template <typename B, CONCEPT_REQUIRES_(ranges::Range<B>()), std::enable_if_t<isTxRange<B> || isBlockRange<B>, int> = 0>
+    CPP_template(typename B)(requires isTxRange<B> || isBlockRange<B>)
     inline auto BLOCKSCI_EXPORT outputs(B && b) {
         return txes(std::forward<B>(b)) | ranges::view::transform([](const Transaction &tx) { return tx.outputs(); }) | ranges::view::join;
     }
     
-    template <typename B, CONCEPT_REQUIRES_(ranges::Range<B>()), std::enable_if_t<isOutputPointerRange<B>, int> = 0>
+    CPP_template(typename B)(requires isOutputPointerRange<B>)
     inline auto BLOCKSCI_EXPORT outputs(B && b, DataAccess &access) {
         return std::forward<B>(b) | ranges::view::transform([&access](const OutputPointer &pointer) { return Output(pointer, access); });
     }

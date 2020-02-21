@@ -22,7 +22,7 @@
 #include <internal/dedup_address_info.hpp>
 #include <internal/script_access.hpp>
 
-#include <range/v3/distance.hpp>
+#include <range/v3/iterator/operations.hpp>
 #include <range/v3/view/join.hpp>
 
 namespace {
@@ -30,13 +30,13 @@ namespace {
     
     template<DedupAddressType::Enum type>
     struct DedupAddressTypesRangeFunctor {
-        static ranges::iterator_range<const AddressType::Enum *> f() {
+        static ranges::subrange<const AddressType::Enum *> f() {
             auto &types = DedupAddressInfo<type>::equivTypes;
-            return ranges::iterator_range<const AddressType::Enum *>{types.begin(), types.end()};
+            return ranges::subrange<const AddressType::Enum *>{types.begin(), types.end()};
         }
     };
     
-    inline ranges::iterator_range<const AddressType::Enum *> addressTypesRange(DedupAddressType::Enum t) {
+    inline ranges::subrange<const AddressType::Enum *> addressTypesRange(DedupAddressType::Enum t) {
         static auto &dedupAddressTypesRangeTable = *[]() {
             auto nameTable = make_static_table<DedupAddressType, DedupAddressTypesRangeFunctor>();
             return new decltype(nameTable){nameTable};
@@ -48,11 +48,11 @@ namespace {
 
 namespace blocksci {
     
-    ranges::iterator_range<const blocksci::DedupAddress *> Cluster::getDedupAddresses() const {
+    ranges::subrange<const blocksci::DedupAddress *> Cluster::getDedupAddresses() const {
         return clusterAccess->getClusterScripts(clusterNum);
     }
     
-    ranges::transform_view<ranges::iterator_range<const AddressType::Enum *>, ClusterAddressCreator>
+    ranges::transform_view<ranges::subrange<const AddressType::Enum *>, ClusterAddressCreator>
     PossibleAddressesGetter::operator()(const DedupAddress &dedupAddress) const {
         ClusterAddressCreator creator{access, dedupAddress.scriptNum};
         return addressTypesRange(dedupAddress.type) | ranges::view::transform(creator);
@@ -173,7 +173,7 @@ namespace blocksci {
         }) | flatMapOptionals();
     }
     
-    ranges::transform_view<ranges::transform_view<ranges::iterator_range<const DedupAddress *>, PossibleAddressesGetter>, AddressRangeTagChecker>
+    ranges::transform_view<ranges::transform_view<ranges::subrange<const DedupAddress *>, PossibleAddressesGetter>, AddressRangeTagChecker>
     Cluster::taggedAddressesNested(const std::unordered_map<blocksci::Address, std::string> &tags) const {
         AddressRangeTagChecker tagCheck{tags};
         

@@ -10,7 +10,7 @@
 
 #include "memory_view.hpp"
 
-#include <range/v3/view_facade.hpp>
+#include <range/v3/view/facade.hpp>
 
 #include <rocksdb/db.h>
 
@@ -54,7 +54,7 @@ namespace blocksci {
                 return {{key.data(), key.size()}, {value.data(), value.size()}};
             }
             
-            bool equal(ranges::default_sentinel) const {
+            bool equal(ranges::default_sentinel_t) const {
                 rocksdb::Slice key(prefixBytes.data(), prefixBytes.size());
                 return !it->Valid() || !it->key().starts_with(key);
             }
@@ -77,7 +77,7 @@ namespace blocksci {
             return cursor{db, column, prefixBytes};
         }
         
-        ranges::default_sentinel end_cursor() const {
+        ranges::default_sentinel_t end_cursor() const {
             return {};
         }
         

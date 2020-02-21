@@ -47,7 +47,7 @@ void AddressDB::processTx(const blocksci::RawTransaction *tx, uint32_t txNum, co
             return false;
         }
     };
-    auto inputs = ranges::make_iterator_range(tx->beginInputs(), tx->endInputs());
+    auto inputs = ranges::make_subrange(tx->beginInputs(), tx->endInputs());
     for (auto &input : inputs) {
         visit(RawAddress{input.getAddressNum(), input.getType()}, visitFunc, scripts);
     }

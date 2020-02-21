@@ -40,7 +40,7 @@ namespace blocksci { namespace heuristics {
     ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::PeelingChain>::operator()(const Transaction &tx) const {
         // If current tx is not a peeling chain, return an empty set
         if (!isPeelingChain(tx)) {
-            return ranges::view::empty<Output>();
+            return ranges::view::empty<Output>;
         }
         
         // Check which output(s) continue the peeling chain
@@ -102,7 +102,7 @@ namespace blocksci { namespace heuristics {
         if (allInputsSameType) {
             return tx.outputs() | ranges::view::filter([inputType](Output o){return o.getType() == inputType;}) | ranges::view::filter(filterOpReturn);
         } else {
-            return ranges::view::empty<Output>();
+            return ranges::view::empty<Output>;
         }
     }
     
@@ -179,7 +179,7 @@ namespace blocksci { namespace heuristics {
         if (c.has_value()) {
             return ranges::view::single(c.value());
         }
-        return ranges::view::empty<Output>();
+        return ranges::view::empty<Output>;
     }
 
     /** Clients may choose a fixed fee per kb instead of using one based on the current fee market. */
@@ -192,7 +192,7 @@ namespace blocksci { namespace heuristics {
     /** Disables change address clustering by returning an empty set. */
     template<>
     ranges::any_view<Output> ChangeHeuristicImpl<ChangeType::None>::operator()(const Transaction &) const {
-        return ranges::view::empty<Output>();
+        return ranges::view::empty<Output>;
     }
     
     /** Returns all outputs that have been spent.

@@ -13,6 +13,7 @@
 #include <blocksci/core/core_fwd.hpp>
 
 #include <range/v3/view/any_view.hpp>
+#include <range/v3/utility/optional.hpp>
 
 #include <rocksdb/db.h>
 

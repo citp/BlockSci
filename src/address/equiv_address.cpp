@@ -125,15 +125,15 @@ namespace blocksci {
     }
     
     std::vector<Transaction> EquivAddress::getTransactions() const {
-        return blocksci::getTransactions(getOutputPointers(), *access);
+        return blocksci::getTransactions(getOutputPointers() | ranges::to_vector, *access);
     }
     
     std::vector<Transaction> EquivAddress::getOutputTransactions() const {
-        return blocksci::getOutputTransactions(getOutputPointers(), *access);
+        return blocksci::getOutputTransactions(getOutputPointers() | ranges::to_vector, *access);
     }
     
     std::vector<Transaction> EquivAddress::getInputTransactions() const {
-        return blocksci::getInputTransactions(getOutputPointers(), *access);
+        return blocksci::getInputTransactions(getOutputPointers() | ranges::to_vector, *access);
     }
 }
 
