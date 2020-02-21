@@ -22,7 +22,7 @@ void setupRangesProxy(AllProxyClasses<T, BaseSimple> &cls) {
 	cls.sequence
 	.def("_where", [](SequenceProxy<T> &p, Proxy<bool> &p2) -> Proxy<RawIterator<T>> {
 		return liftSequence(p, [p2](auto && seq) -> RawIterator<T> {
-			return ranges::view::filter(std::forward<decltype(seq)>(seq), [p2](T item) {
+			return ranges::views::filter(std::forward<decltype(seq)>(seq), [p2](T item) {
 				return p2(std::move(item));
 			});
 		});
@@ -86,13 +86,12 @@ void setupRangesProxy(AllProxyClasses<T, BaseSimple> &cls) {
     .def("__getitem__", [](Proxy<RawRange<T>> &p, pybind11::slice slice) -> Proxy<RawRange<T>> {
     	return lift(p, [slice](auto && range) -> RawRange<T> {
     		size_t start, stop, step, slicelength;
-	        const auto &constRange = range;
-	        auto chainSize = ranges::size(constRange);
+	        auto chainSize = ranges::size(range);
 	        if (!slice.compute(chainSize, &start, &stop, &step, &slicelength))
 	            throw pybind11::error_already_set();
 	        
 	        auto subset =  range[{static_cast<ranges::range_size_type_t<RawRange<T>>>(start), static_cast<ranges::range_size_type_t<RawRange<T>>>(stop)}];
-	        return subset | ranges::view::stride(step);
+	        return subset | ranges::views::stride(step);
     	});
     }, pybind11::arg("slice"))
 	;

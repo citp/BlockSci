@@ -11,6 +11,7 @@
 #include "python_fwd.hpp"
 
 #include <blocksci/scripts/scripts_fwd.hpp>
+#include <range/v3/utility/optional.hpp>
 
 #include <any>
 #include <functional>

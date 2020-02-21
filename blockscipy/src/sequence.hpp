@@ -28,11 +28,11 @@ struct Range : public Sequence<T>, public GenericRange {
 		return BlocksciRangeType{rng};
 	}
 
-	int64_t size() const override {
+	int64_t size() override {
 		return rng.size();
 	}
 
-	bool empty() const override {
+	bool empty() override {
 		return ranges::empty(rng);
 	}
 };
@@ -54,11 +54,11 @@ struct Range<blocksci::AnyScript> : public Sequence<blocksci::AnyScript>, public
 		return BlocksciRangeType{rng};
 	}
 
-	int64_t size() const override {
+	int64_t size() override {
 		return rng.size();
 	}
 
-	bool empty() const override {
+	bool empty() override {
 		return ranges::empty(rng);
 	}
 };
@@ -80,11 +80,11 @@ struct Range<blocksci::ScriptAddress<type>> : public Sequence<blocksci::ScriptAd
 		return BlocksciRangeType{rng};
 	}
 
-	int64_t size() const override {
+	int64_t size() override {
 		return rng.size();
 	}
 
-	bool empty() const override {
+	bool empty() override {
 		return ranges::empty(rng);
 	}
 };

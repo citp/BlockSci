@@ -16,6 +16,7 @@
 
 #include <range/v3/view/any_view.hpp>
 #include <range/v3/view/transform.hpp>
+#include <range/v3/utility/optional.hpp>
 
 struct BlockSciTypeConverter {
 
@@ -62,12 +63,12 @@ struct BlockSciTypeConverter {
 
     template <typename T>
     auto operator()(Iterator<T> &val) -> Iterator<decltype(this->operator()(*val))> {
-        return val | ranges::view::transform(this);
+        return val | ranges::views::transform(this);
     }
 
     template <typename T>
     auto operator()(Range<T> &val) -> Range<decltype(this->operator()(*val))> {
-        return val | ranges::view::transform(this);
+        return val | ranges::views::transform(this);
     }
 };
 

@@ -46,8 +46,8 @@ struct GenericIterator {
 
 struct GenericRange : public GenericIterator {
 	virtual BlocksciRangeType getGenericRange() = 0;
-	virtual int64_t size() const = 0;
-	virtual bool empty() const = 0;
+	virtual int64_t size() = 0;
+	virtual bool empty() = 0;
 	virtual ~GenericRange() = default;
 
 	BlocksciIteratorType getGenericIterator() override;
