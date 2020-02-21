@@ -20,13 +20,13 @@
 namespace pybind11 { namespace detail {
     template <>
     struct npy_format_descriptor<NumpyDatetime> { 
-        static PYBIND11_DESCR name() { return _("datetime64[ns]"); }
+        static constexpr auto name = _("datetime64[ns]");
         static pybind11::dtype dtype() { return pybind11::dtype(std::string("datetime64[ns]")); }
     };
 
     template <>
     struct npy_format_descriptor<NumpyBool> { 
-        static PYBIND11_DESCR name() { return _("bool"); }
+        static constexpr auto name = _("bool");
         static pybind11::dtype dtype() { return pybind11::dtype(std::string("bool")); }
     };
 }}
