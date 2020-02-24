@@ -194,7 +194,7 @@ void ChainIndex<RPCTag>::update(const ConfigType &config, blocksci::BlockHeight 
         
         
         auto maxBlockHeight = static_cast<blocksci::BlockHeight>(bapi.getblockcount());
-        if (blockHeight < 0) {
+        if (blockHeight <= 0) {
             blockHeight = maxBlockHeight + blockHeight;
         }
         if (blockHeight > maxBlockHeight) {
