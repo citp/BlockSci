@@ -33,6 +33,8 @@ Version 0.5.0 focuses mainly on improvements and cleanups in the Python interfac
 Quick setup using Amazon EC2
 ==============================
 
+Note: The AMI is temporarily unavailable. We are currently working on a new version on the v0.6 development branch and will make a new AMI available soon.
+
 AMI Last updated on May 8, 2018.
 
 If you want to start using BlockSci immediately, we have made available an EC2 image: ami-0d0091e593d44cce1_. We recommend using an instance with 60 GB of memory or more for optimal performance (r5.2xlarge). As of August 2019 the default disk size of 500GB may not suffice anymore, we therefore recommend choosing a larger disk size (e.g., 600 GB) when you first create the instance. On boot, a Jupyter Notebook running BlockSci will launch immediately. To access the notebook, you must set up port forwarding to your computer. Inserting the name of your private key file and the domain of your ec2 instance into the following command will make the Notebook available on your machine.
@@ -50,7 +52,6 @@ There is no need for user intervention to resolve this issue since the machine w
 The AMI contains a fully updated version of the Bitcoin blockchain as of the creation date of the AMI (May 8, 2018). Additionally it will automatically start a Bitcoin full node and update the blockchain once every hour to the latest version of the chain.
 When you start the AMI for the first time, it will take a few hours for the full node to synchronize with the Bitcoin network and for new blocks (after May 2018) to become available in BlockSci.
 
-.. _ami-0d0091e593d44cce1: https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-0d0091e593d44cce1
 .. _known performance issue: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-initialize.html
 
 Using the analysis library
