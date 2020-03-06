@@ -1,5 +1,6 @@
 import pytest
 import subprocess
+import os
 
 
 def pytest_addoption(parser):
@@ -35,6 +36,7 @@ def pytest_runtest_call(item):
 def chain(tmpdir_factory, chain_name):
     temp_dir = tmpdir_factory.mktemp(chain_name)
     chain_dir = str(temp_dir)
+    self_dir = os.path.dirname(os.path.realpath(__file__))
 
     if chain_name == "btc":
         blocksci_chain_name = "bitcoin_regtest"
@@ -52,7 +54,7 @@ def chain(tmpdir_factory, chain_name):
         blocksci_chain_name,
         chain_dir,
         "--disk",
-        "../files/{}/regtest/".format(chain_name),
+        "{}/../files/{}/regtest/".format(self_dir, chain_name),
         "--max-block",
         "100",
     ]
@@ -67,7 +69,6 @@ def chain(tmpdir_factory, chain_name):
     subprocess.run(parse_cmd, check=True)
 
     import blocksci
-
     chain = blocksci.Blockchain(chain_dir + "/config.json")
     return chain
 

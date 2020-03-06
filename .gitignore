@@ -14,3 +14,4 @@ python/blocksci/pybind11
 blockscipy/dist/*
 .pytest_cache
 .idea
+.benchmarks
