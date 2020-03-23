@@ -23,7 +23,11 @@
 
 namespace {
     using namespace blocksci;
-    
+
+    /**
+     Returns the script-equivalent addresses from a script-hash address.
+     Note, this only returns nested addresses of a script-hash address, not the reverse (i.e., it doesn't look up potential wrapping addresses for non-script-hash addresses)
+     */
     std::vector<DedupAddress> getScriptNestedEquivalents(const DedupAddress &searchAddress, DataAccess &access) {
         std::vector<DedupAddress> nestedAddressed;
         auto address = searchAddress;
@@ -40,7 +44,11 @@ namespace {
         nestedAddressed.emplace_back(address);
         return nestedAddressed;
     }
-    
+
+    /**
+     Returns addresses that are equivalent (i.e., use the same public key)
+     @param scriptEquivalent whether nested addresses should be returned for script-hash addresses
+     */
     std::unordered_set<Address> initAddresses(const DedupAddress &dedup, bool scriptEquivalent, DataAccess &access) {
         std::unordered_set<DedupAddress> equiv;
         equiv.insert(dedup);
