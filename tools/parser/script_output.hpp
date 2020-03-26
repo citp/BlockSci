@@ -36,13 +36,6 @@ struct ScriptOutput {
         }
         return scriptNum;
     }
-    
-    void check(AddressState &state) {
-        auto addressInfo = state.findAddress(data);
-        scriptNum = addressInfo.addressNum;
-        isNew = addressInfo.addressNum == 0;
-        data.visitWrapped([&](auto &output) { output.check(state); });
-    }
 };
 
 struct ScriptOutputDataBase {
@@ -218,8 +211,7 @@ public:
     
     AnyScriptOutput() = default;
     AnyScriptOutput(const blocksci::CScriptView &scriptPubKey, bool p2shActivated, bool witnessActivated);
-    
-    void check(AddressState &state);
+
     uint32_t resolve(AddressState &state);
     bool isValid() const;
 };

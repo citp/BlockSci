@@ -34,10 +34,6 @@ void AnyScriptInput::process(AddressState &state) {
     mpark::visit([&](auto &scriptInput) { scriptInput.process(state); }, wrapped);
 }
 
-void AnyScriptInput::check(AddressState &state) {
-    mpark::visit([&](auto &scriptInput) { scriptInput.check(state); }, wrapped);
-}
-
 void AnyScriptInput::setScriptNum(uint32_t scriptNum) {
     mpark::visit([&](auto &input) { input.scriptNum = scriptNum; }, wrapped);
 }
@@ -83,11 +79,6 @@ void ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH>::process(AddressSt
     wrappedScriptInput->setScriptNum(scriptNum);
 }
 
-void ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH>::check(AddressState &state) {
-    wrappedScriptOutput.check(state);
-    wrappedScriptInput->check(state);
-}
-
 ScriptInputData<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::PUBKEYHASH> &) {
     pubkey.fill(0);
     if (scriptView.size() > 0) {
@@ -114,48 +105,6 @@ ScriptInputData<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInputData(const 
 }
 
 ScriptInputData<blocksci::AddressType::Enum::MULTISIG>::ScriptInputData(const InputView &, const blocksci::CScriptView &, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::MULTISIG> &) {
-    // Prelimary work on code to track multisig spend sets
-//    auto multisig = blocksci::CScript() << blocksci::OP_2;
-//    for (uint32_t i = 0; i < spendData.addressCount; i++) {
-//        std::vector<unsigned char> pubkeyData(spendData.addresses[i].begin(), spendData.addresses[i].end());
-//        multisig << pubkeyData;
-//    }
-//    multisig << blocksci::OP_3 << blocksci::OP_CHECKMULTISIG;
-//
-//    blocksci::CScriptView::const_iterator pc1 = scriptView.begin();
-//    blocksci::opcodetype opcode1;
-//    ranges::iterator_range<const unsigned char *> vchSig;
-//    scriptView.GetOp(pc1, opcode1, vchSig);
-//
-//    size_t pubkeyNum = 0;
-//
-//    while(true) {
-//        if(!scriptView.GetOp(pc1, opcode1, vchSig)) {
-//            break;
-//        }
-//        if (vchSig.size() > 0) {
-//            int hashType = vchSig.back();
-//            blocksci::CScriptView multisigView(multisig.data(), multisig.data() + multisig.size());
-//            auto txHash = rawTx.getHash(inputView, multisigView, hashType);
-//
-//            while (pubkeyNum < spendData.addressCount) {
-//                std::vector<unsigned char> sig{vchSig.begin(), vchSig.end() - 1};
-//                if (spendData.addresses[pubkeyNum].Verify(txHash, sig)) {
-//                    spendSet[pubkeyNum] = 1;
-//                    pubkeyNum++;
-//                    break;
-//                } else {
-//                    spendSet[pubkeyNum] = 0;
-//                    pubkeyNum++;
-//                }
-//            }
-//        }
-//    }
-//
-//    while (pubkeyNum < spendData.addressCount) {
-//        spendSet[pubkeyNum] = 0;
-//        pubkeyNum++;
-//    }
 }
 
 ScriptInputData<blocksci::AddressType::Enum::NONSTANDARD>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::NONSTANDARD> &) {
@@ -197,11 +146,6 @@ void ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::process(A
     uint32_t scriptNum = wrappedScriptOutput.resolve(state);
     wrappedScriptInput->process(state);
     wrappedScriptInput->setScriptNum(scriptNum);
-}
-
-void ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH>::check(AddressState &state) {
-    wrappedScriptOutput.check(state);
-    wrappedScriptInput->check(state);
 }
 
 ScriptInputData<blocksci::AddressType::Enum::WITNESS_UNKNOWN>::ScriptInputData(const InputView &inputView, const blocksci::CScriptView &, const RawTransaction &, const SpendData<blocksci::AddressType::Enum::WITNESS_UNKNOWN> &) {
