@@ -191,7 +191,7 @@ namespace blocksci {
         InPlaceArray<unsigned char> scriptData;
         
         size_t realSize() const {
-            return sizeof(NonstandardScriptData) + scriptData.extraSize();
+            return sizeof(NonstandardSpendScriptData) + scriptData.extraSize();
         }
         
         explicit NonstandardSpendScriptData(uint32_t scriptLength) : scriptData(scriptLength) {}
