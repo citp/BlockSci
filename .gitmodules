@@ -1,6 +1,6 @@
 [submodule "libs/pybind11"]
 	path = blockscipy/blocksci/pybind11
-	url = https://github.com/pybind/pybind11/
+	url = https://github.com/pybind/pybind11.git
 [submodule "libs/bitcoin-api-cpp"]
 	path = external/bitcoin-api-cpp
 	url = https://github.com/hkalodner/bitcoin-api-cpp.git
