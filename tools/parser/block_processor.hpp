@@ -111,6 +111,14 @@ struct RecordAddressesStep : public ProcessorStep {
     std::vector<std::function<void(RawTransaction &tx)>> steps() override;
 };
 
+struct LookupInputScriptNumStep : public ProcessorStep {
+    UTXOScriptState &state;
+
+    LookupInputScriptNumStep(UTXOScriptState &state_) : state(state_) {}
+
+    std::vector<std::function<void(RawTransaction &tx)>> steps() override;
+};
+
 struct SerializeTransactionStep : public ProcessorStep {
     IndexedFileWriter<1> &txFile;
     FixedSizeFileWriter<OutputLinkData> &linkDataFile;

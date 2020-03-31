@@ -377,8 +377,7 @@ std::vector<std::function<void(RawTransaction &tx)>> ProcessAddressesStep::steps
 }
 
 /** 7. step of the processing pipeline
- * Record the scriptNum for each output for later reference. Assign each spent input with
- * the scriptNum of the output its spending. */
+ * Record the scriptNum for each output. */
 std::vector<std::function<void(RawTransaction &tx)>> RecordAddressesStep::steps() {
     return {[&](RawTransaction &tx) {
         uint16_t i = 0;
@@ -388,7 +387,13 @@ std::vector<std::function<void(RawTransaction &tx)>> RecordAddressesStep::steps(
             state.add({tx.txNum, i}, scriptNum);
             i++;
         }
-    }, [&](RawTransaction &tx) {
+    }};
+}
+
+/** 8. step of the processing pipeline
+ * Assign each spent input with the scriptNum of the output its spending. */
+std::vector<std::function<void(RawTransaction &tx)>> LookupInputScriptNumStep::steps() {
+    return {[&](RawTransaction &tx) {
         for (size_t i = 0; i < tx.inputs.size(); i++) {
             auto &input = tx.inputs[i];
             auto &scriptInput = tx.scriptInputs[i];
@@ -399,7 +404,7 @@ std::vector<std::function<void(RawTransaction &tx)>> RecordAddressesStep::steps(
     }};
 }
 
-/** 8. step of the processing pipeline
+/** 9. step of the processing pipeline
  * Serialize transaction data, inputs, and outputs and write them to the txFile */
 std::vector<std::function<void(RawTransaction &tx)>> SerializeTransactionStep::steps() {
     return {[&](RawTransaction &tx) {
@@ -425,7 +430,7 @@ std::vector<std::function<void(RawTransaction &tx)>> SerializeTransactionStep::s
     }};
 }
 
-/** 9. step of the processing pipeline
+/** 10. step of the processing pipeline
  * Save address data into files for the analysis library */
 std::vector<std::function<void(RawTransaction &tx)>> SerializeAddressesStep::steps() {
     return {[&](RawTransaction &tx) {        
@@ -457,6 +462,9 @@ std::vector<std::function<void(RawTransaction &tx)>> SerializeAddressesStep::ste
     }};
 }
 
+/**
+ Updated outputs that have been spent.
+ */
 void backUpdateTxes(const ParserConfigurationBase &config) {
     std::vector<OutputLinkData> updates;
     
@@ -894,35 +902,37 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfigu
           scriptNum if the address was seen before. Increment the scriptNum counter for newly seen addresses. */
     processQueue.addStep(makeStandardProcessStep(std::make_unique<ProcessAddressesStep>(addressState), discardFunc, discardFunc));
 
-    /* 7. Step: Record the scriptNum for each output for later reference. Assign each spent input with
-     the scriptNum of the output its spending */
+    // 7. Step: Record the scriptNum for each output for later reference.
     processQueue.addStep(makeStandardProcessStep(std::make_unique<RecordAddressesStep>(utxoScriptState), discardFunc, discardFunc));
 
-    // 8. Step: Serialize transaction data, inputs, and outputs and write them to the txFile
+    // 8. Step: Assign each spent input with the scriptNum of the output its spending
+    processQueue.addStep(makeStandardProcessStep(std::make_unique<LookupInputScriptNumStep>(utxoScriptState), discardFunc, discardFunc));
+
+    // 9. Step: Serialize transaction data, inputs, and outputs and write them to the txFile
     processQueue.addStep(makeStandardProcessStep(std::make_unique<SerializeTransactionStep>(txFile, linkDataFile), discardFunc, discardFunc));
 
-    // 9. Step: Save address data into files for the analysis library
+    // 10. Step: Save address data into files for the analysis library
     processQueue.addStep(makeStandardProcessStep(std::make_unique<SerializeAddressesStep>(addressWriter), discardFunc, serializeAddressDiscardFunc, false, true));
     
     // Two hold stages for ATOR
-    processQueue.addStep(makeHoldTxStep()); // 9
-    processQueue.addStep(makeHoldTxStep()); // 10
+    processQueue.addStep(makeHoldTxStep()); // 11
+    processQueue.addStep(makeHoldTxStep()); // 12
     
     processQueue.setStepOrder({
         {0, 0}, // calculate tx hash
         {1, 0}, // parse outputs into CScriptView
         {2, 0}, // store UTXOs
         {4, 0}, // store scripts
-        {8, 0}, // ---
+        {11, 0}, // ---
         {3, 0}, // connect inputs to outputs
         {5, 0}, // parse input scripts using output data
         {6, 0}, // attach scriptNum to outputs and inputs
         {7, 0}, // store scriptNum of each output for lookup
-        {9, 0}, // serialize new scripts in outputs and wrapped inputs
-        {11, 0}, // ---
-        {7, 1}, // look up scriptNum of each input from output
-        {8, 0}, // serialize transaction data
-        {9, 1}  // update scripts
+        {10, 0}, // serialize new scripts in outputs and wrapped inputs
+        {12, 0}, // ---
+        {8, 0}, // look up scriptNum of each input from output
+        {9, 0}, // serialize transaction data
+        {10, 1}  // update scripts
     });
     
     int64_t nextWaitCount = 0;
