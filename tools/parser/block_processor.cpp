@@ -389,6 +389,25 @@ std::vector<std::function<void(RawTransaction &tx)>> RecordAddressesStep::steps(
 }
 
 /** 8. step of the processing pipeline
+ * Save address data into files for the analysis library */
+std::vector<std::function<void(RawTransaction &tx)>> SerializeNewScriptsStep::steps() {
+    return {[&](RawTransaction &tx) {
+        for (auto &scriptOutput : tx.scriptOutputs) {
+            if (scriptOutput.isNew()) {
+                // serialize new script to file
+                addressWriter.serializeNewOutput(scriptOutput, tx.txNum, true);
+            }
+        }
+
+        for (size_t i = 0; i < tx.inputs.size(); i++) {
+            auto &input = tx.inputs[i];
+            auto &scriptInput = tx.scriptInputs[i];
+            addressWriter.serializeWrappedScript(scriptInput, tx.txNum, input.utxo.txNum);
+        }
+    }};
+}
+
+/** 9. step of the processing pipeline
  * Assign each spent input with the scriptNum of the output its spending. */
 std::vector<std::function<void(RawTransaction &tx)>> LookupInputScriptNumStep::steps() {
     return {[&](RawTransaction &tx) {
@@ -402,7 +421,7 @@ std::vector<std::function<void(RawTransaction &tx)>> LookupInputScriptNumStep::s
     }};
 }
 
-/** 9. step of the processing pipeline
+/** 10. step of the processing pipeline
  * Serialize transaction data, inputs, and outputs and write them to the txFile */
 std::vector<std::function<void(RawTransaction &tx)>> SerializeTransactionStep::steps() {
     return {[&](RawTransaction &tx) {
@@ -424,25 +443,6 @@ std::vector<std::function<void(RawTransaction &tx)>> SerializeTransactionStep::s
             auto address = scriptOutput.address();
             blocksci::Inout blocksciOutput{0, address.scriptNum, address.type, output.value};
             txFile.write(blocksciOutput);
-        }
-    }};
-}
-
-/** 10. step of the processing pipeline
- * Save address data into files for the analysis library */
-std::vector<std::function<void(RawTransaction &tx)>> SerializeNewScriptsStep::steps() {
-    return {[&](RawTransaction &tx) {        
-        for (auto &scriptOutput : tx.scriptOutputs) {
-            if (scriptOutput.isNew()) {
-                // serialize new script to file
-                addressWriter.serializeNewOutput(scriptOutput, tx.txNum, true);
-            }
-        }
-        
-        for (size_t i = 0; i < tx.inputs.size(); i++) {
-            auto &input = tx.inputs[i];
-            auto &scriptInput = tx.scriptInputs[i];
-            addressWriter.serializeWrappedScript(scriptInput, tx.txNum, input.utxo.txNum);
         }
     }};
 }
@@ -909,14 +909,14 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfigu
     // 7. Step: Record the scriptNum for each output for later reference.
     processQueue.addStep(makeStandardProcessStep(std::make_unique<RecordAddressesStep>(utxoScriptState), discardFunc, discardFunc));
 
-    // 8. Step: Assign each spent input with the scriptNum of the output its spending
+    // 8. Step: Save new script data
+    processQueue.addStep(makeStandardProcessStep(std::make_unique<SerializeNewScriptsStep>(addressWriter), discardFunc, discardFunc));
+
+    // 9. Step: Assign each spent input with the scriptNum of the output its spending
     processQueue.addStep(makeStandardProcessStep(std::make_unique<LookupInputScriptNumStep>(utxoScriptState), discardFunc, discardFunc));
 
-    // 9. Step: Serialize transaction data, inputs, and outputs and write them to the txFile
+    // 10. Step: Serialize transaction data, inputs, and outputs and write them to the txFile
     processQueue.addStep(makeStandardProcessStep(std::make_unique<SerializeTransactionStep>(txFile, linkDataFile), discardFunc, discardFunc));
-
-    // 10. Step: Save new script data
-    processQueue.addStep(makeStandardProcessStep(std::make_unique<SerializeNewScriptsStep>(addressWriter), discardFunc, discardFunc));
 
     // 11. Step: Update existing script data
     processQueue.addStep(makeStandardProcessStep(std::make_unique<SerializeExistingScriptsStep>(addressWriter), serializeAddressDiscardFunc, discardFunc, true, false));
@@ -935,10 +935,10 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfigu
         {5, 0}, // parse input scripts using output data
         {6, 0}, // attach scriptNum to outputs and inputs
         {7, 0}, // store scriptNum of each output for lookup
-        {10, 0}, // serialize new scripts in outputs and wrapped inputs
+        {8, 0}, // serialize new scripts in outputs and wrapped inputs
         {13, 0}, // ---
-        {8, 0}, // look up scriptNum of each input from output
-        {9, 0}, // serialize transaction data
+        {9, 0}, // look up scriptNum of each input from output
+        {10, 0}, // serialize transaction data
         {11, 0}  // update scripts
     });
     
