@@ -566,7 +566,6 @@ struct QueueStage {
     std::atomic<bool> *nextDone = nullptr;
     
     int64_t nextWaitCount;
-    StepNum stepNum;
     
     void push(RawTransaction *tx) {
         using namespace std::chrono_literals;
@@ -773,34 +772,10 @@ struct ProcessStepQueue {
         steps.emplace_back(std::move(step));
     }
     
-    void setStepOrder(const std::vector<StepNum> &subStepList) {
-        std::unordered_set<StepNum> allSubSteps;
-        size_t j = 0;
-        for (auto &step : steps) {
-            for (size_t i = 0; i < step.stages.size(); i++) {
-                allSubSteps.insert({j, i});
-            }
-            j++;
-        }
-        
-        // Make sure that subStepList includes every step once
-        for (const auto &stepNum : subStepList) {
-            auto it = allSubSteps.find(stepNum);
-            if (it != allSubSteps.end()) {
-                allSubSteps.erase(it);
-            } else {
-                throw std::runtime_error("Queue step order cannot include substep multiple times");
-            }
-        }
-        
-        if (!allSubSteps.empty()) {
-            throw std::runtime_error("Queue step order list must include all defined steps");
-        }
-        
+    void setStepOrder() {
         QueueStage *prevStage = nullptr;
-        for (const auto &stepNum : subStepList) {
-            auto &stage = steps[stepNum.threadNum].stages[stepNum.subStepNum];
-            stage->stepNum = stepNum;
+        for (const auto &step : steps) {
+            auto &stage = step.stages[0];
             if (prevStage != nullptr) {
                 stage->linkBack(*prevStage);
             } else {
@@ -808,16 +783,14 @@ struct ProcessStepQueue {
             }
             prevStage = stage.get();
         }
-        
-        auto lastStepNum = subStepList.back();
-        auto &lastStage = steps[lastStepNum.threadNum].stages[lastStepNum.subStepNum];
+
+        auto &lastStage = steps.back().stages[0];
         
         // Add finishedQueue as the last queue after the last actual processing step
         lastStage->nextQueue = &finishedQueue;
         lastStage->nextDone = &processingDone;
         
-        auto firstStepNum = subStepList.front();
-        firstStage = steps[firstStepNum.threadNum].stages[firstStepNum.subStepNum].get();
+        firstStage = steps.front().stages[0].get();
     }
     
     TxQueue &inputQueue() {
@@ -895,6 +868,9 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfigu
     // 3. Step: Store information about each output address for future lookup.
     processQueue.addStep(makeStandardProcessStep(std::make_unique<StoreAddressDataStep>(utxoAddressState), discardFunc, discardFunc));
 
+    // --- hold stage for ATOR
+    processQueue.addStep(makeHoldTxStep());
+
     // 4. Step: Connect each input with the UTXO it spends.
     processQueue.addStep(makeStandardProcessStep(std::make_unique<ConnectUTXOsStep>(utxoState), discardFunc, discardFunc));
 
@@ -912,6 +888,9 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfigu
     // 8. Step: Save new script data
     processQueue.addStep(makeStandardProcessStep(std::make_unique<SerializeNewScriptsStep>(addressWriter), discardFunc, discardFunc));
 
+    // --- hold stage for ATOR
+    processQueue.addStep(makeHoldTxStep());
+
     // 9. Step: Assign each spent input with the scriptNum of the output its spending
     processQueue.addStep(makeStandardProcessStep(std::make_unique<LookupInputScriptNumStep>(utxoScriptState), discardFunc, discardFunc));
 
@@ -921,26 +900,7 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfigu
     // 11. Step: Update existing script data
     processQueue.addStep(makeStandardProcessStep(std::make_unique<SerializeExistingScriptsStep>(addressWriter), serializeAddressDiscardFunc, discardFunc, true, false));
     
-    // Two hold stages for ATOR
-    processQueue.addStep(makeHoldTxStep()); // 12
-    processQueue.addStep(makeHoldTxStep()); // 13
-    
-    processQueue.setStepOrder({
-        {0, 0}, // calculate tx hash
-        {1, 0}, // parse outputs into CScriptView
-        {2, 0}, // store UTXOs
-        {3, 0}, // store scripts
-        {12, 0}, // ---
-        {4, 0}, // connect inputs to outputs
-        {5, 0}, // parse input scripts using output data
-        {6, 0}, // attach scriptNum to outputs and inputs
-        {7, 0}, // store scriptNum of each output for lookup
-        {8, 0}, // serialize new scripts in outputs and wrapped inputs
-        {13, 0}, // ---
-        {9, 0}, // look up scriptNum of each input from output
-        {10, 0}, // serialize transaction data
-        {11, 0}  // update scripts
-    });
+    processQueue.setStepOrder();
     
     int64_t nextWaitCount = 0;
     
