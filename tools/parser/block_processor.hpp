@@ -128,11 +128,19 @@ struct SerializeTransactionStep : public ProcessorStep {
     std::vector<std::function<void(RawTransaction &tx)>> steps() override;
 };
 
-struct SerializeAddressesStep : public ProcessorStep {
+struct SerializeNewScriptsStep : public ProcessorStep {
     AddressWriter &addressWriter;
     
-    SerializeAddressesStep(AddressWriter &addressWriter_) : addressWriter(addressWriter_) {}
+    SerializeNewScriptsStep(AddressWriter &addressWriter_) : addressWriter(addressWriter_) {}
     
+    std::vector<std::function<void(RawTransaction &tx)>> steps() override;
+};
+
+struct SerializeExistingScriptsStep : public ProcessorStep {
+    AddressWriter &addressWriter;
+
+    SerializeExistingScriptsStep(AddressWriter &addressWriter_) : addressWriter(addressWriter_) {}
+
     std::vector<std::function<void(RawTransaction &tx)>> steps() override;
 };
 
