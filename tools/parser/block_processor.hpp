@@ -63,6 +63,14 @@ struct GenerateScriptOutputsStep : public ProcessorStep {
     std::vector<std::function<void(RawTransaction &tx)>> steps() override;
 };
 
+struct StoreUTXOsStep : public ProcessorStep {
+    UTXOState &utxoState;
+
+    StoreUTXOsStep(UTXOState &utxoState_) : utxoState(utxoState_) {}
+
+    std::vector<std::function<void(RawTransaction &tx)>> steps() override;
+};
+
 struct ConnectUTXOsStep : public ProcessorStep {
     UTXOState &utxoState;
     

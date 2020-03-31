@@ -302,8 +302,8 @@ std::vector<std::function<void(RawTransaction &tx)>> GenerateScriptOutputsStep::
 }
 
 /** 2. step of the processing pipeline
- * Store information about the spent output with each input of the transaction. Then store information about each output for future lookup. */
-std::vector<std::function<void(RawTransaction &tx)>> ConnectUTXOsStep::steps() {
+ * Store information about each output for future lookup. */
+std::vector<std::function<void(RawTransaction &tx)>> StoreUTXOsStep::steps() {
     return {[&](RawTransaction &tx) {
         // Fill UTXOState (SerializableMap<RawOutputPointer, UTXO>) with mapping tx output ->  UTXO(output.value, txNum, type)
         for (uint16_t i = 0; i < tx.outputs.size(); i++) {
@@ -316,7 +316,13 @@ std::vector<std::function<void(RawTransaction &tx)>> ConnectUTXOsStep::steps() {
                 utxoState.add(pointer, utxo);
             }
         }
-    }, [&](RawTransaction &tx) {
+    }};
+}
+
+/** 3. step of the processing pipeline
+ * Connect each input with the UTXO it is spending. */
+std::vector<std::function<void(RawTransaction &tx)>> ConnectUTXOsStep::steps() {
+    return {[&](RawTransaction &tx) {
         for (auto &input : tx.inputs) {
             // remove the output that this input spends from the UTXOState and assign it to the input
             input.utxo = utxoState.erase(input.rawOutputPointer);
@@ -324,7 +330,9 @@ std::vector<std::function<void(RawTransaction &tx)>> ConnectUTXOsStep::steps() {
     }};
 }
 
-/** 3. step of the processing pipeline
+
+
+/** 4. step of the processing pipeline
  * Parse the input script of each input based information about the associated output script.
  * Then store information about each output address for future lookup. */
 std::vector<std::function<void(RawTransaction &tx)>> GenerateScriptInputStep::steps() {
@@ -347,7 +355,7 @@ std::vector<std::function<void(RawTransaction &tx)>> GenerateScriptInputStep::st
     }};
 }
 
-/** 4. step of the processing pipeline
+/** 5. step of the processing pipeline
  * Attach a scriptNum to each script in the transaction. For address types which are
  * deduplicated (Pubkey, ScriptHash, Multisig and their varients) use the previously allocated
  * scriptNum if the address was seen before. Increment the scriptNum counter for newly seen addresses. */
@@ -362,7 +370,7 @@ std::vector<std::function<void(RawTransaction &tx)>> ProcessAddressesStep::steps
     }};
 }
 
-/* 5. step of the processing pipeline
+/** 6. step of the processing pipeline
  * Record the scriptNum for each output for later reference. Assign each spent input with
  * the scriptNum of the output its spending. */
 std::vector<std::function<void(RawTransaction &tx)>> RecordAddressesStep::steps() {
@@ -385,7 +393,7 @@ std::vector<std::function<void(RawTransaction &tx)>> RecordAddressesStep::steps(
     }};
 }
 
-/** 6. step of the processing pipeline
+/** 7. step of the processing pipeline
  * Serialize transaction data, inputs, and outputs and write them to the txFile */
 std::vector<std::function<void(RawTransaction &tx)>> SerializeTransactionStep::steps() {
     return {[&](RawTransaction &tx) {
@@ -411,7 +419,7 @@ std::vector<std::function<void(RawTransaction &tx)>> SerializeTransactionStep::s
     }};
 }
 
-/** 7. step of the processing pipeline
+/** 8. step of the processing pipeline
  * Save address data into files for the analysis library */
 std::vector<std::function<void(RawTransaction &tx)>> SerializeAddressesStep::steps() {
     return {[&](RawTransaction &tx) {        
@@ -863,47 +871,50 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfigu
     // 1. Step: Parse the output scripts (into CScriptView) of the transaction in order to identify address types and extract relevant information.
     processQueue.addStep(makeStandardProcessStep(std::make_unique<GenerateScriptOutputsStep>(), discardFunc, discardFunc));
 
-    // 2. Step: Store information about the spent output with each input of the transaction. Then store information about each output for future lookup.
+    // 2. Step: Store information about each output for future lookup.
+    processQueue.addStep(makeStandardProcessStep(std::make_unique<StoreUTXOsStep>(utxoState), discardFunc, discardFunc));
+
+    // 3. Step: Connect each input with the UTXO it spends.
     processQueue.addStep(makeStandardProcessStep(std::make_unique<ConnectUTXOsStep>(utxoState), discardFunc, discardFunc));
 
-    /* 3. Step: Parse the input script of each input based information about the associated output script.
+    /* 4. Step: Parse the input script of each input based information about the associated output script.
      *    Then store information about each output address for future lookup. */
     processQueue.addStep(makeStandardProcessStep(std::make_unique<GenerateScriptInputStep>(utxoAddressState), discardFunc, discardFunc));
 
-    /* 4. Step: Attach a scriptNum to each script in the transaction. For address types which are
+    /* 5. Step: Attach a scriptNum to each script in the transaction. For address types which are
           deduplicated (Pubkey, ScriptHash, Multisig and their varients) use the previously allocated
           scriptNum if the address was seen before. Increment the scriptNum counter for newly seen addresses. */
     processQueue.addStep(makeStandardProcessStep(std::make_unique<ProcessAddressesStep>(addressState), discardFunc, discardFunc));
 
-    /* 5. Step: Record the scriptNum for each output for later reference. Assign each spent input with
+    /* 6. Step: Record the scriptNum for each output for later reference. Assign each spent input with
      the scriptNum of the output its spending */
     processQueue.addStep(makeStandardProcessStep(std::make_unique<RecordAddressesStep>(utxoScriptState), discardFunc, discardFunc));
 
-    // 6. Step: Serialize transaction data, inputs, and outputs and write them to the txFile
+    // 7. Step: Serialize transaction data, inputs, and outputs and write them to the txFile
     processQueue.addStep(makeStandardProcessStep(std::make_unique<SerializeTransactionStep>(txFile, linkDataFile), discardFunc, discardFunc));
 
-    // 7. Step: Save address data into files for the analysis library
+    // 8. Step: Save address data into files for the analysis library
     processQueue.addStep(makeStandardProcessStep(std::make_unique<SerializeAddressesStep>(addressWriter), discardFunc, serializeAddressDiscardFunc, false, true));
     
     // Two hold stages for ATOR
-    processQueue.addStep(makeHoldTxStep()); // 8
     processQueue.addStep(makeHoldTxStep()); // 9
+    processQueue.addStep(makeHoldTxStep()); // 10
     
     processQueue.setStepOrder({
         {0, 0}, // calculate tx hash
         {1, 0}, // parse outputs into CScriptView
         {2, 0}, // store UTXOs
-        {3, 0}, // store scripts
-        {8, 0}, // ---
-        {2, 1}, // connect inputs to outputs
-        {3, 1}, // parse input scripts using output data
-        {4, 0}, // attach scriptNum to outputs and inputs
-        {5, 0}, // store scriptNum of each output for lookup
-        {7, 0}, // serialize new scripts in outputs and wrapped inputs
+        {4, 0}, // store scripts
         {9, 0}, // ---
-        {5, 1}, // look up scriptNum of each input from output
-        {6, 0}, // serialize transaction data
-        {7, 1}  // update scripts
+        {3, 0}, // connect inputs to outputs
+        {4, 1}, // parse input scripts using output data
+        {5, 0}, // attach scriptNum to outputs and inputs
+        {6, 0}, // store scriptNum of each output for lookup
+        {8, 0}, // serialize new scripts in outputs and wrapped inputs
+        {10, 0}, // ---
+        {6, 1}, // look up scriptNum of each input from output
+        {7, 0}, // serialize transaction data
+        {8, 1}  // update scripts
     });
     
     int64_t nextWaitCount = 0;
