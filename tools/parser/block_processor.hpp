@@ -79,6 +79,14 @@ struct ConnectUTXOsStep : public ProcessorStep {
     std::vector<std::function<void(RawTransaction &tx)>> steps() override;
 };
 
+struct StoreAddressDataStep : public ProcessorStep {
+    UTXOAddressState &utxoAddressState;
+
+    StoreAddressDataStep(UTXOAddressState &utxoAddressState_) : utxoAddressState(utxoAddressState_) {}
+
+    std::vector<std::function<void(RawTransaction &tx)>> steps() override;
+};
+
 struct GenerateScriptInputStep : public ProcessorStep {
     UTXOAddressState &utxoAddressState;
     

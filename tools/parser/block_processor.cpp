@@ -335,14 +335,20 @@ std::vector<std::function<void(RawTransaction &tx)>> ConnectUTXOsStep::steps() {
 /** 4. step of the processing pipeline
  * Parse the input script of each input based information about the associated output script.
  * Then store information about each output address for future lookup. */
-std::vector<std::function<void(RawTransaction &tx)>> GenerateScriptInputStep::steps() {
+std::vector<std::function<void(RawTransaction &tx)>> StoreAddressDataStep::steps() {
     return {[&](RawTransaction &tx) {
         uint16_t i = 0;
         for (auto &scriptOutput : tx.scriptOutputs) {
             utxoAddressState.addOutput(AnySpendData{scriptOutput}, {tx.txNum, i});
             i++;
         }
-    }, [&](RawTransaction &tx) {
+    }};
+}
+
+/** 5. step of the processing pipeline
+ * Parse the input script of each input based information about the associated output script. */
+std::vector<std::function<void(RawTransaction &tx)>> GenerateScriptInputStep::steps() {
+    return {[&](RawTransaction &tx) {
         tx.scriptInputs.clear();
         tx.scriptInputs.reserve(tx.inputs.size());
         uint16_t i = 0;
@@ -355,7 +361,7 @@ std::vector<std::function<void(RawTransaction &tx)>> GenerateScriptInputStep::st
     }};
 }
 
-/** 5. step of the processing pipeline
+/** 6. step of the processing pipeline
  * Attach a scriptNum to each script in the transaction. For address types which are
  * deduplicated (Pubkey, ScriptHash, Multisig and their varients) use the previously allocated
  * scriptNum if the address was seen before. Increment the scriptNum counter for newly seen addresses. */
@@ -370,7 +376,7 @@ std::vector<std::function<void(RawTransaction &tx)>> ProcessAddressesStep::steps
     }};
 }
 
-/** 6. step of the processing pipeline
+/** 7. step of the processing pipeline
  * Record the scriptNum for each output for later reference. Assign each spent input with
  * the scriptNum of the output its spending. */
 std::vector<std::function<void(RawTransaction &tx)>> RecordAddressesStep::steps() {
@@ -393,7 +399,7 @@ std::vector<std::function<void(RawTransaction &tx)>> RecordAddressesStep::steps(
     }};
 }
 
-/** 7. step of the processing pipeline
+/** 8. step of the processing pipeline
  * Serialize transaction data, inputs, and outputs and write them to the txFile */
 std::vector<std::function<void(RawTransaction &tx)>> SerializeTransactionStep::steps() {
     return {[&](RawTransaction &tx) {
@@ -419,7 +425,7 @@ std::vector<std::function<void(RawTransaction &tx)>> SerializeTransactionStep::s
     }};
 }
 
-/** 8. step of the processing pipeline
+/** 9. step of the processing pipeline
  * Save address data into files for the analysis library */
 std::vector<std::function<void(RawTransaction &tx)>> SerializeAddressesStep::steps() {
     return {[&](RawTransaction &tx) {        
@@ -877,23 +883,25 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfigu
     // 3. Step: Connect each input with the UTXO it spends.
     processQueue.addStep(makeStandardProcessStep(std::make_unique<ConnectUTXOsStep>(utxoState), discardFunc, discardFunc));
 
-    /* 4. Step: Parse the input script of each input based information about the associated output script.
-     *    Then store information about each output address for future lookup. */
+    // 4. Step: Store information about each output address for future lookup.
+    processQueue.addStep(makeStandardProcessStep(std::make_unique<StoreAddressDataStep>(utxoAddressState), discardFunc, discardFunc));
+
+    // 5. Step: Parse the input script of each input based information about the associated output script.
     processQueue.addStep(makeStandardProcessStep(std::make_unique<GenerateScriptInputStep>(utxoAddressState), discardFunc, discardFunc));
 
-    /* 5. Step: Attach a scriptNum to each script in the transaction. For address types which are
+    /* 6. Step: Attach a scriptNum to each script in the transaction. For address types which are
           deduplicated (Pubkey, ScriptHash, Multisig and their varients) use the previously allocated
           scriptNum if the address was seen before. Increment the scriptNum counter for newly seen addresses. */
     processQueue.addStep(makeStandardProcessStep(std::make_unique<ProcessAddressesStep>(addressState), discardFunc, discardFunc));
 
-    /* 6. Step: Record the scriptNum for each output for later reference. Assign each spent input with
+    /* 7. Step: Record the scriptNum for each output for later reference. Assign each spent input with
      the scriptNum of the output its spending */
     processQueue.addStep(makeStandardProcessStep(std::make_unique<RecordAddressesStep>(utxoScriptState), discardFunc, discardFunc));
 
-    // 7. Step: Serialize transaction data, inputs, and outputs and write them to the txFile
+    // 8. Step: Serialize transaction data, inputs, and outputs and write them to the txFile
     processQueue.addStep(makeStandardProcessStep(std::make_unique<SerializeTransactionStep>(txFile, linkDataFile), discardFunc, discardFunc));
 
-    // 8. Step: Save address data into files for the analysis library
+    // 9. Step: Save address data into files for the analysis library
     processQueue.addStep(makeStandardProcessStep(std::make_unique<SerializeAddressesStep>(addressWriter), discardFunc, serializeAddressDiscardFunc, false, true));
     
     // Two hold stages for ATOR
@@ -905,16 +913,16 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfigu
         {1, 0}, // parse outputs into CScriptView
         {2, 0}, // store UTXOs
         {4, 0}, // store scripts
-        {9, 0}, // ---
+        {8, 0}, // ---
         {3, 0}, // connect inputs to outputs
-        {4, 1}, // parse input scripts using output data
-        {5, 0}, // attach scriptNum to outputs and inputs
-        {6, 0}, // store scriptNum of each output for lookup
-        {8, 0}, // serialize new scripts in outputs and wrapped inputs
-        {10, 0}, // ---
-        {6, 1}, // look up scriptNum of each input from output
-        {7, 0}, // serialize transaction data
-        {8, 1}  // update scripts
+        {5, 0}, // parse input scripts using output data
+        {6, 0}, // attach scriptNum to outputs and inputs
+        {7, 0}, // store scriptNum of each output for lookup
+        {9, 0}, // serialize new scripts in outputs and wrapped inputs
+        {11, 0}, // ---
+        {7, 1}, // look up scriptNum of each input from output
+        {8, 0}, // serialize transaction data
+        {9, 1}  // update scripts
     });
     
     int64_t nextWaitCount = 0;
