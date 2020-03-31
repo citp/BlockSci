@@ -320,19 +320,6 @@ std::vector<std::function<void(RawTransaction &tx)>> StoreUTXOsStep::steps() {
 }
 
 /** 3. step of the processing pipeline
- * Connect each input with the UTXO it is spending. */
-std::vector<std::function<void(RawTransaction &tx)>> ConnectUTXOsStep::steps() {
-    return {[&](RawTransaction &tx) {
-        for (auto &input : tx.inputs) {
-            // remove the output that this input spends from the UTXOState and assign it to the input
-            input.utxo = utxoState.erase(input.rawOutputPointer);
-        }
-    }};
-}
-
-
-
-/** 4. step of the processing pipeline
  * Parse the input script of each input based information about the associated output script.
  * Then store information about each output address for future lookup. */
 std::vector<std::function<void(RawTransaction &tx)>> StoreAddressDataStep::steps() {
@@ -341,6 +328,17 @@ std::vector<std::function<void(RawTransaction &tx)>> StoreAddressDataStep::steps
         for (auto &scriptOutput : tx.scriptOutputs) {
             utxoAddressState.addOutput(AnySpendData{scriptOutput}, {tx.txNum, i});
             i++;
+        }
+    }};
+}
+
+/** 4. step of the processing pipeline
+ * Connect each input with the UTXO it is spending. */
+std::vector<std::function<void(RawTransaction &tx)>> ConnectUTXOsStep::steps() {
+    return {[&](RawTransaction &tx) {
+        for (auto &input : tx.inputs) {
+            // remove the output that this input spends from the UTXOState and assign it to the input
+            input.utxo = utxoState.erase(input.rawOutputPointer);
         }
     }};
 }
@@ -894,11 +892,11 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfigu
     // 2. Step: Store information about each output for future lookup.
     processQueue.addStep(makeStandardProcessStep(std::make_unique<StoreUTXOsStep>(utxoState), discardFunc, discardFunc));
 
-    // 3. Step: Connect each input with the UTXO it spends.
-    processQueue.addStep(makeStandardProcessStep(std::make_unique<ConnectUTXOsStep>(utxoState), discardFunc, discardFunc));
-
-    // 4. Step: Store information about each output address for future lookup.
+    // 3. Step: Store information about each output address for future lookup.
     processQueue.addStep(makeStandardProcessStep(std::make_unique<StoreAddressDataStep>(utxoAddressState), discardFunc, discardFunc));
+
+    // 4. Step: Connect each input with the UTXO it spends.
+    processQueue.addStep(makeStandardProcessStep(std::make_unique<ConnectUTXOsStep>(utxoState), discardFunc, discardFunc));
 
     // 5. Step: Parse the input script of each input based information about the associated output script.
     processQueue.addStep(makeStandardProcessStep(std::make_unique<GenerateScriptInputStep>(utxoAddressState), discardFunc, discardFunc));
@@ -931,9 +929,9 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfigu
         {0, 0}, // calculate tx hash
         {1, 0}, // parse outputs into CScriptView
         {2, 0}, // store UTXOs
-        {4, 0}, // store scripts
+        {3, 0}, // store scripts
         {12, 0}, // ---
-        {3, 0}, // connect inputs to outputs
+        {4, 0}, // connect inputs to outputs
         {5, 0}, // parse input scripts using output data
         {6, 0}, // attach scriptNum to outputs and inputs
         {7, 0}, // store scriptNum of each output for lookup
