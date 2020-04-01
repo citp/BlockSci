@@ -280,17 +280,17 @@ blocksci::RawBlock readNewBlock(uint32_t firstTxNum, uint64_t firstInputNum, uin
 
 /** 0. step of the processing pipeline
  * Calculate hash of transaction and write it to the hash file (chain/tx_hashes.dat) */
-std::vector<std::function<void(RawTransaction &tx)>> CalculateTxHashStep::steps() {
-    return {[&](RawTransaction &tx) {
+std::function<void(RawTransaction &tx)> CalculateTxHashStep::step() {
+    return [&](RawTransaction &tx) {
         tx.calculateHash();
         hashFile.write(tx.hash);
-    }};
+    };
 }
 
 /** 1. step of the processing pipeline
  * Parse the output scripts (into CScriptView) of the transaction in order to identify address types and extract relevant information. */
-std::vector<std::function<void(RawTransaction &tx)>> GenerateScriptOutputsStep::steps() {
-    return {[&](RawTransaction &tx) {
+std::function<void(RawTransaction &tx)> GenerateScriptOutputsStep::step() {
+    return [&](RawTransaction &tx) {
         tx.scriptOutputs.clear();
         tx.scriptOutputs.reserve(tx.outputs.size());
         for (auto &output : tx.outputs) {
@@ -298,13 +298,13 @@ std::vector<std::function<void(RawTransaction &tx)>> GenerateScriptOutputsStep::
             // TODO: Add flag to disable p2sh
             tx.scriptOutputs.emplace_back(output.getScriptView(), true, tx.isSegwit);
         }
-    }};
+    };
 }
 
 /** 2. step of the processing pipeline
  * Store information about each output for future lookup. */
-std::vector<std::function<void(RawTransaction &tx)>> StoreUTXOsStep::steps() {
-    return {[&](RawTransaction &tx) {
+std::function<void(RawTransaction &tx)> StoreUTXOsStep::step() {
+    return [&](RawTransaction &tx) {
         // Fill UTXOState (SerializableMap<RawOutputPointer, UTXO>) with mapping tx output ->  UTXO(output.value, txNum, type)
         for (uint16_t i = 0; i < tx.outputs.size(); i++) {
             auto &output = tx.outputs[i];
@@ -316,37 +316,37 @@ std::vector<std::function<void(RawTransaction &tx)>> StoreUTXOsStep::steps() {
                 utxoState.add(pointer, utxo);
             }
         }
-    }};
+    };
 }
 
 /** 3. step of the processing pipeline
  * Parse the input script of each input based information about the associated output script.
  * Then store information about each output address for future lookup. */
-std::vector<std::function<void(RawTransaction &tx)>> StoreAddressDataStep::steps() {
-    return {[&](RawTransaction &tx) {
+std::function<void(RawTransaction &tx)> StoreAddressDataStep::step() {
+    return [&](RawTransaction &tx) {
         uint16_t i = 0;
         for (auto &scriptOutput : tx.scriptOutputs) {
             utxoAddressState.addOutput(AnySpendData{scriptOutput}, {tx.txNum, i});
             i++;
         }
-    }};
+    };
 }
 
 /** 4. step of the processing pipeline
  * Connect each input with the UTXO it is spending. */
-std::vector<std::function<void(RawTransaction &tx)>> ConnectUTXOsStep::steps() {
-    return {[&](RawTransaction &tx) {
+std::function<void(RawTransaction &tx)> ConnectUTXOsStep::step() {
+    return [&](RawTransaction &tx) {
         for (auto &input : tx.inputs) {
             // remove the output that this input spends from the UTXOState and assign it to the input
             input.utxo = utxoState.erase(input.rawOutputPointer);
         }
-    }};
+    };
 }
 
 /** 5. step of the processing pipeline
  * Parse the input script of each input based information about the associated output script. */
-std::vector<std::function<void(RawTransaction &tx)>> GenerateScriptInputStep::steps() {
-    return {[&](RawTransaction &tx) {
+std::function<void(RawTransaction &tx)> GenerateScriptInputStep::step() {
+    return [&](RawTransaction &tx) {
         tx.scriptInputs.clear();
         tx.scriptInputs.reserve(tx.inputs.size());
         uint16_t i = 0;
@@ -356,28 +356,28 @@ std::vector<std::function<void(RawTransaction &tx)>> GenerateScriptInputStep::st
             tx.scriptInputs.emplace_back(inputView, input.getScriptView(), tx, spendData);
             i++;
         }
-    }};
+    };
 }
 
 /** 6. step of the processing pipeline
  * Attach a scriptNum to each script in the transaction. For address types which are
  * deduplicated (Pubkey, ScriptHash, Multisig and their varients) use the previously allocated
  * scriptNum if the address was seen before. Increment the scriptNum counter for newly seen addresses. */
-std::vector<std::function<void(RawTransaction &tx)>> ProcessAddressesStep::steps() {
-    return {[&](RawTransaction &tx) {
+std::function<void(RawTransaction &tx)> ProcessAddressesStep::step() {
+    return [&](RawTransaction &tx) {
         for (auto &scriptOutput : tx.scriptOutputs) {
             scriptOutput.resolve(addressState);
         }
         for (auto &scriptInput : tx.scriptInputs) {
             scriptInput.process(addressState);
         }
-    }};
+    };
 }
 
 /** 7. step of the processing pipeline
  * Record the scriptNum for each output. */
-std::vector<std::function<void(RawTransaction &tx)>> RecordAddressesStep::steps() {
-    return {[&](RawTransaction &tx) {
+std::function<void(RawTransaction &tx)> RecordAddressesStep::step() {
+    return [&](RawTransaction &tx) {
         uint16_t i = 0;
         for (auto &scriptOutput : tx.scriptOutputs) {
             auto scriptNum = scriptOutput.address().scriptNum;
@@ -385,13 +385,13 @@ std::vector<std::function<void(RawTransaction &tx)>> RecordAddressesStep::steps(
             state.add({tx.txNum, i}, scriptNum);
             i++;
         }
-    }};
+    };
 }
 
 /** 8. step of the processing pipeline
  * Save address data into files for the analysis library */
-std::vector<std::function<void(RawTransaction &tx)>> SerializeNewScriptsStep::steps() {
-    return {[&](RawTransaction &tx) {
+std::function<void(RawTransaction &tx)> SerializeNewScriptsStep::step() {
+    return [&](RawTransaction &tx) {
         for (auto &scriptOutput : tx.scriptOutputs) {
             if (scriptOutput.isNew()) {
                 // serialize new script to file
@@ -404,13 +404,13 @@ std::vector<std::function<void(RawTransaction &tx)>> SerializeNewScriptsStep::st
             auto &scriptInput = tx.scriptInputs[i];
             addressWriter.serializeWrappedScript(scriptInput, tx.txNum, input.utxo.txNum);
         }
-    }};
+    };
 }
 
 /** 9. step of the processing pipeline
  * Assign each spent input with the scriptNum of the output its spending. */
-std::vector<std::function<void(RawTransaction &tx)>> LookupInputScriptNumStep::steps() {
-    return {[&](RawTransaction &tx) {
+std::function<void(RawTransaction &tx)> LookupInputScriptNumStep::step() {
+    return [&](RawTransaction &tx) {
         for (size_t i = 0; i < tx.inputs.size(); i++) {
             auto &input = tx.inputs[i];
             auto &scriptInput = tx.scriptInputs[i];
@@ -418,13 +418,13 @@ std::vector<std::function<void(RawTransaction &tx)>> LookupInputScriptNumStep::s
             assert(scriptNum > 0);
             scriptInput.setScriptNum(scriptNum);
         }
-    }};
+    };
 }
 
 /** 10. step of the processing pipeline
  * Serialize transaction data, inputs, and outputs and write them to the txFile */
-std::vector<std::function<void(RawTransaction &tx)>> SerializeTransactionStep::steps() {
-    return {[&](RawTransaction &tx) {
+std::function<void(RawTransaction &tx)> SerializeTransactionStep::step() {
+    return [&](RawTransaction &tx) {
         txFile.writeIndexGroup();
         txFile.write(tx.getRawTransaction());
         
@@ -444,13 +444,13 @@ std::vector<std::function<void(RawTransaction &tx)>> SerializeTransactionStep::s
             blocksci::Inout blocksciOutput{0, address.scriptNum, address.type, output.value};
             txFile.write(blocksciOutput);
         }
-    }};
+    };
 }
 
 /** 11. step of the processing pipeline
  * Save address data into files for the analysis library */
-std::vector<std::function<void(RawTransaction &tx)>> SerializeExistingScriptsStep::steps() {
-    return {[&](RawTransaction &tx) {
+std::function<void(RawTransaction &tx)> SerializeExistingScriptsStep::step() {
+    return [&](RawTransaction &tx) {
         // updates the seenTopLevel flag for outputs that have only been seen wrapped in inputs so far
         for (auto &scriptOutput : tx.scriptOutputs) {
             if (!scriptOutput.isNew()) {
@@ -463,7 +463,7 @@ std::vector<std::function<void(RawTransaction &tx)>> SerializeExistingScriptsSte
             auto &scriptInput = tx.scriptInputs[i];
             addressWriter.serializeInput(scriptInput, tx.txNum, input.utxo.txNum);
         }
-    }};
+    };
 }
 
 /**
@@ -734,8 +734,7 @@ public:
 
 ProcessStep makeStandardProcessStep(std::unique_ptr<ProcessorStep> && func, const DiscardCheckFunc &advanceFunc, bool discardIfFull = false) {
     std::vector<std::unique_ptr<QueueStage>> subSteps;
-    auto steps = func->steps();
-    subSteps.push_back(std::make_unique<ProcessSubStep>(steps[0], advanceFunc, discardIfFull));
+    subSteps.push_back(std::make_unique<ProcessSubStep>(func->step(), advanceFunc, discardIfFull));
     return {std::move(func), std::move(subSteps)};
 }
 

@@ -47,7 +47,7 @@ struct OutputLinkData {
 blocksci::RawBlock readNewBlock(uint32_t firstTxNum, uint64_t firstInputNum, uint64_t firstOutputNum, const BlockInfoBase &block, BlockFileReaderBase &fileReader, NewBlocksFiles &files, const std::function<bool(RawTransaction *&tx)> &loadFunc, const std::function<void(RawTransaction *tx)> &outFunc, bool isSegwit);
 
 struct ProcessorStep {
-    virtual std::vector<std::function<void(RawTransaction &tx)>> steps() = 0;
+    virtual std::function<void(RawTransaction &tx)> step() = 0;
     virtual ~ProcessorStep();
 };
 
@@ -56,11 +56,11 @@ struct CalculateTxHashStep : public ProcessorStep {
     
     CalculateTxHashStep(FixedSizeFileWriter<blocksci::uint256> &hashFile_) : hashFile(hashFile_) {}
     
-    std::vector<std::function<void(RawTransaction &tx)>> steps() override;
+    std::function<void(RawTransaction &tx)> step() override;
 };
 
 struct GenerateScriptOutputsStep : public ProcessorStep {
-    std::vector<std::function<void(RawTransaction &tx)>> steps() override;
+    std::function<void(RawTransaction &tx)> step() override;
 };
 
 struct StoreUTXOsStep : public ProcessorStep {
@@ -68,7 +68,7 @@ struct StoreUTXOsStep : public ProcessorStep {
 
     StoreUTXOsStep(UTXOState &utxoState_) : utxoState(utxoState_) {}
 
-    std::vector<std::function<void(RawTransaction &tx)>> steps() override;
+    std::function<void(RawTransaction &tx)> step() override;
 };
 
 struct ConnectUTXOsStep : public ProcessorStep {
@@ -76,7 +76,7 @@ struct ConnectUTXOsStep : public ProcessorStep {
     
     ConnectUTXOsStep(UTXOState &utxoState_) : utxoState(utxoState_) {}
     
-    std::vector<std::function<void(RawTransaction &tx)>> steps() override;
+    std::function<void(RawTransaction &tx)> step() override;
 };
 
 struct StoreAddressDataStep : public ProcessorStep {
@@ -84,7 +84,7 @@ struct StoreAddressDataStep : public ProcessorStep {
 
     StoreAddressDataStep(UTXOAddressState &utxoAddressState_) : utxoAddressState(utxoAddressState_) {}
 
-    std::vector<std::function<void(RawTransaction &tx)>> steps() override;
+    std::function<void(RawTransaction &tx)> step() override;
 };
 
 struct GenerateScriptInputStep : public ProcessorStep {
@@ -92,7 +92,7 @@ struct GenerateScriptInputStep : public ProcessorStep {
     
     GenerateScriptInputStep(UTXOAddressState &utxoAddressState_) : utxoAddressState(utxoAddressState_) {}
     
-    std::vector<std::function<void(RawTransaction &tx)>> steps() override;
+    std::function<void(RawTransaction &tx)> step() override;
 };
 
 struct ProcessAddressesStep : public ProcessorStep {
@@ -100,7 +100,7 @@ struct ProcessAddressesStep : public ProcessorStep {
     
     ProcessAddressesStep(AddressState &addressState_) : addressState(addressState_) {}
     
-    std::vector<std::function<void(RawTransaction &tx)>> steps() override;
+    std::function<void(RawTransaction &tx)> step() override;
 };
 
 struct RecordAddressesStep : public ProcessorStep {
@@ -108,7 +108,7 @@ struct RecordAddressesStep : public ProcessorStep {
     
     RecordAddressesStep(UTXOScriptState &state_) : state(state_) {}
     
-    std::vector<std::function<void(RawTransaction &tx)>> steps() override;
+    std::function<void(RawTransaction &tx)> step() override;
 };
 
 struct LookupInputScriptNumStep : public ProcessorStep {
@@ -116,7 +116,7 @@ struct LookupInputScriptNumStep : public ProcessorStep {
 
     LookupInputScriptNumStep(UTXOScriptState &state_) : state(state_) {}
 
-    std::vector<std::function<void(RawTransaction &tx)>> steps() override;
+    std::function<void(RawTransaction &tx)> step() override;
 };
 
 struct SerializeTransactionStep : public ProcessorStep {
@@ -125,7 +125,7 @@ struct SerializeTransactionStep : public ProcessorStep {
     
     SerializeTransactionStep(IndexedFileWriter<1> &txFile_, FixedSizeFileWriter<OutputLinkData> &linkDataFile_) : txFile(txFile_), linkDataFile(linkDataFile_) {}
     
-    std::vector<std::function<void(RawTransaction &tx)>> steps() override;
+    std::function<void(RawTransaction &tx)> step() override;
 };
 
 struct SerializeNewScriptsStep : public ProcessorStep {
@@ -133,7 +133,7 @@ struct SerializeNewScriptsStep : public ProcessorStep {
     
     SerializeNewScriptsStep(AddressWriter &addressWriter_) : addressWriter(addressWriter_) {}
     
-    std::vector<std::function<void(RawTransaction &tx)>> steps() override;
+    std::function<void(RawTransaction &tx)> step() override;
 };
 
 struct SerializeExistingScriptsStep : public ProcessorStep {
@@ -141,7 +141,7 @@ struct SerializeExistingScriptsStep : public ProcessorStep {
 
     SerializeExistingScriptsStep(AddressWriter &addressWriter_) : addressWriter(addressWriter_) {}
 
-    std::vector<std::function<void(RawTransaction &tx)>> steps() override;
+    std::function<void(RawTransaction &tx)> step() override;
 };
 
 void backUpdateTxes(const ParserConfigurationBase &config);
