@@ -529,28 +529,6 @@ using TxQueue = boost::lockfree::spsc_queue<RawTransaction *, boost::lockfree::c
 
 using DiscardCheckFunc = std::function<bool(RawTransaction &)>;
 
-struct StepNum {
-    size_t threadNum;
-    size_t subStepNum;
-    
-    bool operator==(const StepNum &o) const {
-        return threadNum == o.threadNum && subStepNum == o.subStepNum;
-    }
-};
-
-namespace std {
-    template <>
-    struct hash<StepNum> {
-        size_t operator()(const StepNum &s) const {
-            return s.threadNum + (s.subStepNum << 32);
-        }
-    };
-}
-
-std::ostream& operator<<(std::ostream& ofs, const StepNum& p){
-    return ofs << "(" << p.threadNum << ", " << p.subStepNum << ")";
-}
-
 
 struct QueueStage {
     virtual bool processNext() = 0;
@@ -675,19 +653,17 @@ struct TxHoldSubStep : public QueueStage {
 class ProcessStep {
 public:
     std::unique_ptr<ProcessorStep> func;
-    std::vector<std::unique_ptr<QueueStage>> stages;
+    std::unique_ptr<QueueStage> stage;
     
     int64_t prevWaitCount = 0;
     
     // AdvanceFunc
-    ProcessStep(std::unique_ptr<ProcessorStep> func_, std::vector<std::unique_ptr<QueueStage>> stages_) : func(std::move(func_)), stages(std::move(stages_)) {
+    ProcessStep(std::unique_ptr<ProcessorStep> func_, std::unique_ptr<QueueStage> stage_) : func(std::move(func_)), stage(std::move(stage_)) {
     }
 
     bool anyNotDone() {
-        for (auto &stage : stages) {
-            if (!stage->prevFinished() || !stage->inputQueue.empty()) {
-                return true;
-            }
+        if (!stage->prevFinished() || !stage->inputQueue.empty()) {
+            return true;
         }
         return false;
     }
@@ -696,27 +672,23 @@ public:
         bool success = true;
         while (success) {
             success = false;
-            for (auto &stage : stages) {
-                success |= stage->processNext();
-            }
+            success |= stage->processNext();
         }
-        
-        for (auto &stage : stages) {
-            if (stage->prevFinished() && stage->inputQueue.empty()) {
-                stage->complete();
-                stage->isDone = true;
-            }
+
+        if (stage->prevFinished() && stage->inputQueue.empty()) {
+            stage->complete();
+            stage->isDone = true;
         }
     }
+
     // inputProcessingDone
     void run() {
         using namespace std::chrono_literals;
         // CompletionGuard sets isDone to true in its destructor that is called at the end of this operator() method
         std::list<CompletionGuard> guards;
-        for (auto &stage : stages) {
-            guards.emplace_back(stage->isDone);
-        }
-        
+
+        guards.emplace_back(stage->isDone);
+
         // Consume queued items as long as the previous processing step has not finished
         while (anyNotDone()) {
             doAll();
@@ -726,24 +698,19 @@ public:
 
         // Last call to consume queued items to catch last items
         doAll();
-        for (auto &stage : stages) {
-            stage->complete();
-        }
+        stage->complete();
     }
 };
 
 ProcessStep makeStandardProcessStep(std::unique_ptr<ProcessorStep> && func, const DiscardCheckFunc &advanceFunc, bool discardIfFull = false) {
-    std::vector<std::unique_ptr<QueueStage>> subSteps;
-    subSteps.push_back(std::make_unique<ProcessSubStep>(func->step(), advanceFunc, discardIfFull));
-    return {std::move(func), std::move(subSteps)};
+    std::unique_ptr<QueueStage> stage = std::make_unique<ProcessSubStep>(func->step(), advanceFunc, discardIfFull);
+    return {std::move(func), std::move(stage)};
 }
 
 ProcessStep makeHoldTxStep() {
-    std::vector<std::unique_ptr<QueueStage>> subSteps;
-    subSteps.push_back(std::make_unique<TxHoldSubStep>());
-    
+    std::unique_ptr<QueueStage> stage = std::make_unique<TxHoldSubStep>();
     std::unique_ptr<ProcessorStep> emptyStep;
-    return {std::move(emptyStep), std::move(subSteps)};
+    return {std::move(emptyStep), std::move(stage)};
 }
 
 struct ProcessStepQueue {
@@ -768,7 +735,7 @@ struct ProcessStepQueue {
     void linkSteps() {
         QueueStage *prevStage = nullptr;
         for (const auto &step : steps) {
-            auto &stage = step.stages[0];
+            auto &stage = step.stage;
             if (prevStage != nullptr) {
                 stage->linkBack(*prevStage);
             } else {
@@ -777,13 +744,13 @@ struct ProcessStepQueue {
             prevStage = stage.get();
         }
 
-        auto &lastStage = steps.back().stages[0];
+        auto &lastStage = steps.back().stage;
         
         // Add finishedQueue as the last queue after the last actual processing step
         lastStage->nextQueue = &finishedQueue;
         lastStage->nextDone = &processingDone;
         
-        firstStage = steps.front().stages[0].get();
+        firstStage = steps.front().stage.get();
     }
     
     TxQueue &inputQueue() {
