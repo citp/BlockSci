@@ -732,16 +732,10 @@ public:
     }
 };
 
-ProcessStep makeStandardProcessStep(std::unique_ptr<ProcessorStep> && func, const DiscardCheckFunc &advanceFuncFirst, const DiscardCheckFunc &advanceFuncSecond, bool discardIfFullFirst = false, bool discardIfFullSecond = false) {
+ProcessStep makeStandardProcessStep(std::unique_ptr<ProcessorStep> && func, const DiscardCheckFunc &advanceFunc, bool discardIfFull = false) {
     std::vector<std::unique_ptr<QueueStage>> subSteps;
     auto steps = func->steps();
-    for (size_t i = 0; i < steps.size(); i++) {
-        if (i == steps.size() - 1) {
-            subSteps.push_back(std::make_unique<ProcessSubStep>(steps[i], advanceFuncSecond, discardIfFullSecond));
-        } else {
-            subSteps.push_back(std::make_unique<ProcessSubStep>(steps[i], advanceFuncFirst, discardIfFullFirst));
-        }
-    }
+    subSteps.push_back(std::make_unique<ProcessSubStep>(steps[0], advanceFunc, discardIfFull));
     return {std::move(func), std::move(subSteps)};
 }
 
@@ -772,7 +766,7 @@ struct ProcessStepQueue {
         steps.emplace_back(std::move(step));
     }
     
-    void setStepOrder() {
+    void linkSteps() {
         QueueStage *prevStage = nullptr;
         for (const auto &step : steps) {
             auto &stage = step.stages[0];
@@ -857,50 +851,51 @@ std::vector<blocksci::RawBlock> BlockProcessor::addNewBlocks(const ParserConfigu
     ProcessStepQueue processQueue;
     
     // 0. Step: Calculate hash of transaction and write it to the hash file (chain/tx_hashes.dat)
-    processQueue.addStep(makeStandardProcessStep(std::make_unique<CalculateTxHashStep>(txHashFile), discardFunc, discardFunc));
+    processQueue.addStep(makeStandardProcessStep(std::make_unique<CalculateTxHashStep>(txHashFile), discardFunc));
 
     // 1. Step: Parse the output scripts (into CScriptView) of the transaction in order to identify address types and extract relevant information.
-    processQueue.addStep(makeStandardProcessStep(std::make_unique<GenerateScriptOutputsStep>(), discardFunc, discardFunc));
+    processQueue.addStep(makeStandardProcessStep(std::make_unique<GenerateScriptOutputsStep>(), discardFunc));
 
     // 2. Step: Store information about each output for future lookup.
-    processQueue.addStep(makeStandardProcessStep(std::make_unique<StoreUTXOsStep>(utxoState), discardFunc, discardFunc));
+    processQueue.addStep(makeStandardProcessStep(std::make_unique<StoreUTXOsStep>(utxoState), discardFunc));
 
     // 3. Step: Store information about each output address for future lookup.
-    processQueue.addStep(makeStandardProcessStep(std::make_unique<StoreAddressDataStep>(utxoAddressState), discardFunc, discardFunc));
+    processQueue.addStep(makeStandardProcessStep(std::make_unique<StoreAddressDataStep>(utxoAddressState), discardFunc));
 
     // --- hold stage for ATOR
     processQueue.addStep(makeHoldTxStep());
 
     // 4. Step: Connect each input with the UTXO it spends.
-    processQueue.addStep(makeStandardProcessStep(std::make_unique<ConnectUTXOsStep>(utxoState), discardFunc, discardFunc));
+    processQueue.addStep(makeStandardProcessStep(std::make_unique<ConnectUTXOsStep>(utxoState), discardFunc));
 
     // 5. Step: Parse the input script of each input based information about the associated output script.
-    processQueue.addStep(makeStandardProcessStep(std::make_unique<GenerateScriptInputStep>(utxoAddressState), discardFunc, discardFunc));
+    processQueue.addStep(makeStandardProcessStep(std::make_unique<GenerateScriptInputStep>(utxoAddressState), discardFunc));
 
     /* 6. Step: Attach a scriptNum to each script in the transaction. For address types which are
           deduplicated (Pubkey, ScriptHash, Multisig and their varients) use the previously allocated
           scriptNum if the address was seen before. Increment the scriptNum counter for newly seen addresses. */
-    processQueue.addStep(makeStandardProcessStep(std::make_unique<ProcessAddressesStep>(addressState), discardFunc, discardFunc));
+    processQueue.addStep(makeStandardProcessStep(std::make_unique<ProcessAddressesStep>(addressState), discardFunc));
 
     // 7. Step: Record the scriptNum for each output for later reference.
-    processQueue.addStep(makeStandardProcessStep(std::make_unique<RecordAddressesStep>(utxoScriptState), discardFunc, discardFunc));
+    processQueue.addStep(makeStandardProcessStep(std::make_unique<RecordAddressesStep>(utxoScriptState), discardFunc));
 
     // 8. Step: Save new script data
-    processQueue.addStep(makeStandardProcessStep(std::make_unique<SerializeNewScriptsStep>(addressWriter), discardFunc, discardFunc));
+    processQueue.addStep(makeStandardProcessStep(std::make_unique<SerializeNewScriptsStep>(addressWriter), discardFunc));
 
     // --- hold stage for ATOR
     processQueue.addStep(makeHoldTxStep());
 
     // 9. Step: Assign each spent input with the scriptNum of the output its spending
-    processQueue.addStep(makeStandardProcessStep(std::make_unique<LookupInputScriptNumStep>(utxoScriptState), discardFunc, discardFunc));
+    processQueue.addStep(makeStandardProcessStep(std::make_unique<LookupInputScriptNumStep>(utxoScriptState), discardFunc));
 
     // 10. Step: Serialize transaction data, inputs, and outputs and write them to the txFile
-    processQueue.addStep(makeStandardProcessStep(std::make_unique<SerializeTransactionStep>(txFile, linkDataFile), discardFunc, discardFunc));
+    processQueue.addStep(makeStandardProcessStep(std::make_unique<SerializeTransactionStep>(txFile, linkDataFile), discardFunc));
 
     // 11. Step: Update existing script data
-    processQueue.addStep(makeStandardProcessStep(std::make_unique<SerializeExistingScriptsStep>(addressWriter), serializeAddressDiscardFunc, discardFunc, true, false));
-    
-    processQueue.setStepOrder();
+    processQueue.addStep(makeStandardProcessStep(std::make_unique<SerializeExistingScriptsStep>(addressWriter), serializeAddressDiscardFunc, true));
+
+    // connect steps to each other in the process queue
+    processQueue.linkSteps();
     
     int64_t nextWaitCount = 0;
     
