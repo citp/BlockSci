@@ -467,7 +467,7 @@ std::function<void(RawTransaction &tx)> SerializeExistingScriptsStep::step() {
 }
 
 /**
- Updated outputs that have been spent.
+ * Update outputs that have been spent.
  */
 void backUpdateTxes(const ParserConfigurationBase &config) {
     std::vector<OutputLinkData> updates;
@@ -583,14 +583,11 @@ public:
         if (inputQueue.read_available() && (discardIfFull || nextQueue->write_available() > 0)) {
             RawTransaction *rawTx = nullptr;
             inputQueue.pop(rawTx);
-//            {
-//                static std::mutex m;
-//                std::lock_guard<std::mutex> lock(m);
-//                std::cout << "Step: " << stepNum << " processing tx " << rawTx->txNum << "\n";
-//            }
             assert(rawTx != nullptr);
+
             // Execute processing step on rawTx, eg. calculateHashesFunc or connectUTXOsFunc
             func(*rawTx);
+
             // Check if advanceFunc is successful before further processing the pipeline
             if (nextQueue->write_available() == 0 || shouldDiscard(*rawTx)) {
                 delete rawTx;
