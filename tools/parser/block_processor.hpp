@@ -51,10 +51,10 @@ struct ProcessorStep {
     virtual ~ProcessorStep();
 };
 
-struct CalculateHashStep : public ProcessorStep {
+struct CalculateTxHashStep : public ProcessorStep {
     FixedSizeFileWriter<blocksci::uint256> &hashFile;
     
-    CalculateHashStep(FixedSizeFileWriter<blocksci::uint256> &hashFile_) : hashFile(hashFile_) {}
+    CalculateTxHashStep(FixedSizeFileWriter<blocksci::uint256> &hashFile_) : hashFile(hashFile_) {}
     
     std::vector<std::function<void(RawTransaction &tx)>> steps() override;
 };
