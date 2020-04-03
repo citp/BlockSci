@@ -38,7 +38,7 @@ def test_chain_access_block(chain, benchmark):
 
 
 def iterate_transactions(chain):
-    offset = min(len(chain), 10000)
+    offset = min(len(chain), 100)
     for block in chain[-offset:]:
         for idx in range(0, block.tx_count):
             assert block.txes[idx].locktime >= 0
