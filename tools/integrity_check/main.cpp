@@ -262,7 +262,8 @@ uint256 compute_scriptdata_hash<DedupAddressType::Enum::WITNESS_UNKNOWN>(const D
     for(uint32_t i = 1; i <= scriptCount; ++i) {
         auto data = scripts->getScriptData<dedupType>(i);
         auto script_data = std::get<0>(data);
-        SHA256_Update(&sha256, script_data, script_data->realSize());
+        SHA256_Update(&sha256, &script_data->witnessVersion, sizeof(script_data->witnessVersion));
+        SHA256_Update(&sha256, &script_data->scriptData, script_data->scriptData.extraSize());
         auto spend_script_data = std::get<1>(data);
         if(spend_script_data != nullptr) {
             SHA256_Update(&sha256, spend_script_data, spend_script_data->realSize());
