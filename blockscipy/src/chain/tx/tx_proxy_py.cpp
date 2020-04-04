@@ -36,6 +36,7 @@ struct AddTransactionMethods {
         func(property_tag, "virtual_size", &Transaction::virtualSize, "The weight of the transaction divided by 4");
         func(property_tag, "weight", &Transaction::weight, "Three times the base size plus the total size");
         func(property_tag, "locktime", &Transaction::locktime, "The locktime of this transasction");
+        func(property_tag, "version", &Transaction::getVersion, "The version of this transasction");
         func(property_tag, "block_height", &Transaction::getBlockHeight, "The height of the block that this transaction was in");
         func(property_tag, "block_time", +[](const Transaction &tx) -> std::chrono::system_clock::time_point {
             return tx.block().getTime();
