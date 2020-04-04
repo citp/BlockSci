@@ -44,5 +44,6 @@ def transaction_regression(tx, regtest):
     print(tx.size_bytes, file=regtest)
     print(tx.time_seen, file=regtest)
     print(tx.total_size, file=regtest)
+    print(tx.version, file=regtest)
     print(tx.virtual_size, file=regtest)
     print(tx.weight, file=regtest)
