@@ -35,20 +35,44 @@ struct AddEquivAddressMethods {
                 });
             }) | ranges::views::join;
         }, "Calculate balance");
-        func(property_tag, "outs", +[](const EquivAddress &address) -> RawIterator<Output> {
+
+        func(property_tag, "outputs", +[](const EquivAddress &address) -> RawIterator<Output> {
             return ranges::views::ints(0, 1) | ranges::views::transform([address](int) {
                 return address.getOutputs();
             }) | ranges::views::join;
         }, "Returns an iterator over all outputs sent to these equivalent addresses");
-        func(property_tag, "ins", +[](EquivAddress &address) -> RawIterator<Input> {
+        func(property_tag, "outs", +[](const EquivAddress &address) -> RawIterator<Output> {
+            pybind11::print("Warning: `outs` is deprecated. Use `outputs` instead.");
+            return ranges::views::ints(0, 1) | ranges::views::transform([address](int) {
+                return address.getOutputs();
+            }) | ranges::views::join;
+        }, "Returns an iterator over all outputs sent to these equivalent addresses");
+
+        func(property_tag, "inputs", +[](EquivAddress &address) -> RawIterator<Input> {
             return ranges::views::ints(0, 1) | ranges::views::transform([address](int) {
                 return address.getInputs();
             }) | ranges::views::join;
         }, "Returns an iterator over all inputs spent from these equivalent addresses");
-        func(method_tag, "out_txes_count", +[](EquivAddress &address) -> int64_t {
+        func(property_tag, "ins", +[](EquivAddress &address) -> RawIterator<Input> {
+            pybind11::print("Warning: `ins` is deprecated. Use `inputs` instead.");
+            return ranges::views::ints(0, 1) | ranges::views::transform([address](int) {
+                return address.getInputs();
+            }) | ranges::views::join;
+        }, "Returns an iterator over all inputs spent from these equivalent addresses");
+
+        func(method_tag, "output_txes_count", +[](EquivAddress &address) -> int64_t {
             return address.getOutputTransactions().size();
         }, "Return the number of transactions where these equivalent addresses were an output");
+        func(method_tag, "out_txes_count", +[](EquivAddress &address) -> int64_t {
+            pybind11::print("Warning: `out_txes_count` is deprecated. Use `output_txes_count` instead.");
+            return address.getOutputTransactions().size();
+        }, "Return the number of transactions where these equivalent addresses were an output");
+
+        func(method_tag, "input_txes_count", +[](EquivAddress &address) -> int64_t {
+            return address.getInputTransactions().size();
+        }, "Return the number of transactions where these equivalent addresses were an input");
         func(method_tag, "in_txes_count", +[](EquivAddress &address) -> int64_t {
+            pybind11::print("Warning: `in_txes_count` is deprecated. Use `input_txes_count` instead.");
             return address.getInputTransactions().size();
         }, "Return the number of transactions where these equivalent addresses were an input");
     }

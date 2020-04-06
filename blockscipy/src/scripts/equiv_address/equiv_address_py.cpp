@@ -27,8 +27,16 @@ void init_equiv_address(py::class_<EquivAddress> &cl) {
     .def("__len__", [](const EquivAddress &address) { return address.size(); })
     .def("__bool__", [](const EquivAddress &address) { return address.size() == 0; })
     .def("txes", &EquivAddress::getTransactions, "Returns a list of all transactions involving these equivalent addresses")
-    .def("out_txes", &EquivAddress::getOutputTransactions, "Returns a range of all transaction where these equivalent addresses were an output")
-    .def("in_txes", &EquivAddress::getInputTransactions, "Returns a list of all transaction where these equivalent addresses were an input")
+    .def("output_txes", &EquivAddress::getOutputTransactions, "Returns a range of all transaction where these equivalent addresses were an output")
+    .def("out_txes", [](EquivAddress &address) {
+        pybind11::print("Warning: `out_txes` is deprecated. Use `output_txes` instead.");
+        return address.getOutputTransactions();
+    }, "Returns a range of all transaction where these equivalent addresses were an output")
+    .def("input_txes", &EquivAddress::getInputTransactions, "Returns a list of all transaction where these equivalent addresses were an input")
+    .def("in_txes", [](EquivAddress &address) {
+        pybind11::print("Warning: `in_txes` is deprecated. Use `input_txes` instead.");
+        return address.getInputTransactions();
+    }, "Returns a list of all transaction where these equivalent addresses were an input")
     .def_property_readonly("addresses", +[](EquivAddress &address) -> std::unordered_set<Address> {
         return {address.begin(), address.end()};
     }, "Returns an iterator over the addresses that make up this equivalent address");

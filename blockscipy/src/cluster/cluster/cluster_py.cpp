@@ -84,8 +84,16 @@ void init_cluster(py::class_<Cluster> &cl) {
         return cluster.clusterNum;
     })
     .def("txes", &Cluster::getTransactions, "Returns a list of all transactions involving this cluster")
-    .def("in_txes",&Cluster::getInputTransactions, "Returns a list of all transaction where this cluster was an input")
-    .def("out_txes", &Cluster::getOutputTransactions, "Returns a list of all transaction where this cluster was an output")
+    .def("in_txes", [](Cluster &cluster){
+        pybind11::print("Warning: `in_txes` is deprecated. Use `input_txes` instead.");
+        return cluster.getInputTransactions();
+    }, "Returns a list of all transaction where this cluster was an input")
+    .def("input_txes", &Cluster::getInputTransactions, "Returns a list of all transaction where this cluster was an input")
+    .def("out_txes", [](Cluster &cluster){
+        pybind11::print("Warning: `out_txes` is deprecated. Use `output_txes` instead.");
+        return cluster.getOutputTransactions();
+    }, "Returns a list of all transaction where this cluster was an output")
+    .def("output_txes", &Cluster::getOutputTransactions, "Returns a list of all transaction where this cluster was an output")
     ;
 }
 
