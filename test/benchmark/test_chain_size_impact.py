@@ -2,7 +2,7 @@ import pytest
 
 
 def positive_locktime(chain):
-    return chain.blocks.txes.where(lambda tx: tx.locktime > 0).size
+    return chain.txes.where(lambda tx: tx.locktime > 0).size
 
 
 def test_query_positive_locktime_10(chain, benchmark):
@@ -34,7 +34,7 @@ def test_query_positive_locktime_100k(chain, benchmark):
 
 
 def max_output_value(chain):
-    return chain.blocks.outputs.max(lambda o: o.value).value
+    return chain.outputs.max(lambda o: o.value).value
 
 
 def test_query_max_output_value_10(chain, benchmark):
