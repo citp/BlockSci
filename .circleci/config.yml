@@ -1,0 +1,75 @@
+version: 2
+jobs:
+  build:
+    machine:
+      image: ubuntu-1604:201903-01
+    branches:
+      only:
+        - v0.6
+    environment:
+      CC: gcc-7
+      CXX: g++-7
+    steps:
+      - run:
+          name: Setup Environment Variables
+          command: |
+            echo "export PYENV_ROOT=/opt/circleci/.pyenv"  >> $BASH_ENV
+            echo "export PATH=$PYENV_ROOT/bin:$PYENV_ROOT/libexec:/home/circleci/.local/bin:/home/circleci/cmake-3.17.0-Linux-x86_64/bin:$PATH" >> $BASH_ENV
+            echo "export LD_LIBRARY_PATH=/home/circleci/.local/lib:$LD_LIBRARY_PATH" >> $BASH_ENV
+            source $BASH_ENV
+      - checkout
+      - run:
+          name: Switch to Python v3.7
+          command: |
+            pyenv versions
+            pyenv global 3.7.0
+            pyenv versions
+      - restore_cache:
+          keys:
+            - blocksci-deps-{{ .Branch }}-{{ .BuildNum }}
+            - blocksci-deps-{{ .Branch }}
+            - blocksci-deps-
+      - run:
+          name: Install Packages (C++)
+          command: .circleci/build_ubuntu_cpp.sh
+      - save_cache:
+          paths:
+            - /home/circleci/cmake-3.17.0-Linux-x86_64/
+          key: blocksci-deps-{{ .Branch }}-{{ .BuildNum }}
+      - restore_cache:
+          keys:
+            - blocksci-{{ .Branch }}-
+            - blocksci-
+      - run:
+          name: Compile BlockSci (C++)
+          command: .circleci/compile_ubuntu_cpp.sh
+      - save_cache:
+          paths:
+            - release/
+            - /home/circleci/.local
+            - .mtime_cache/
+          key: blocksci-{{ .Branch }}-{{ epoch }}
+      - run:
+          name: Test Parser Functionality
+          command: .circleci/test_parser.sh
+      - restore_cache:
+          keys:
+            - blockscipy-{{ .Branch }}-
+            - blockscipy-
+      - run:
+          name: Install Packages (Python)
+          command: .circleci/build_ubuntu_python.sh
+      - run:
+          name: Compile BlockSciPy (Python)
+          command: .circleci/compile_ubuntu_python.sh
+      - save_cache:
+          paths:
+            - blockscipy/build
+          key: blockscipy-{{ .Branch }}-{{ epoch }}
+      - run:
+          name: Run Tests
+          command: .circleci/test_python.sh
+      - store_test_results:
+          path: test/test-results
+      - store_artifacts:
+          path: test/test-results
