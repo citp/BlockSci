@@ -35,8 +35,8 @@ jobs:
           key: blocksci-deps-{{ .Branch }}-{{ .BuildNum }}
       - restore_cache:
           keys:
-            - blocksci-{{ .Branch }}-
-            - blocksci-
+            - blocksci-cpp-{{ .Branch }}-
+            - blocksci-cpp-
       - run:
           name: Compile BlockSci (C++)
           command: .circleci/compile_ubuntu_cpp.sh
@@ -45,7 +45,7 @@ jobs:
             - release/
             - /home/circleci/.local
             - .mtime_cache/
-          key: blocksci-{{ .Branch }}-{{ epoch }}
+          key: blocksci-cpp-{{ .Branch }}-{{ epoch }}
       - run:
           name: Test Parser Functionality
           command: .circleci/test_parser.sh
