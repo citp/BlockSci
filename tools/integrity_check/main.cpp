@@ -360,10 +360,24 @@ int main(int argc, char * argv[]) {
     std::cout << additional_data_hash.GetHex()<< std::endl;
 
     std::cout << std::endl << "Scripts:" << std::endl;
-    blocksci::for_each(DedupAddressType::all(), [&](auto dedupType) {
-        auto data_hash = compute_scriptdata_hash<dedupType>(dataAccess);
-        std::cout << data_hash.GetHex() <<  " (" << dedupType << ")" << std::endl;
-    });
+
+    auto scripthash_hash = compute_scriptdata_hash<DedupAddressType::SCRIPTHASH>(dataAccess);
+    std::cout << scripthash_hash.GetHex() <<  " (SCRIPTHASH)" << std::endl;
+
+    auto pubkey_hash = compute_scriptdata_hash<DedupAddressType::PUBKEY>(dataAccess);
+    std::cout << pubkey_hash.GetHex() <<  " (PUBKEY)" << std::endl;
+
+    auto multisig_hash = compute_scriptdata_hash<DedupAddressType::MULTISIG>(dataAccess);
+    std::cout << multisig_hash.GetHex() <<  " (MULTISIG)" << std::endl;
+
+    auto nulldata_hash = compute_scriptdata_hash<DedupAddressType::NULL_DATA>(dataAccess);
+    std::cout << nulldata_hash.GetHex() <<  " (NULL_DATA)" << std::endl;
+
+    auto witnessunknown_hash = compute_scriptdata_hash<DedupAddressType::WITNESS_UNKNOWN>(dataAccess);
+    std::cout << witnessunknown_hash.GetHex() <<  " (WITNESS_UNKNOWN)" << std::endl;
+
+    auto nonstandard_hash = compute_scriptdata_hash<DedupAddressType::NONSTANDARD>(dataAccess);
+    std::cout << nonstandard_hash.GetHex() <<  " (NONSTANDARD)" << std::endl;
 
     std::cout << std::endl << "Hash index:" << std::endl;
     auto hashindex_addressrange_hash = compute_hashindex_addressrange_hash(dataAccess);
