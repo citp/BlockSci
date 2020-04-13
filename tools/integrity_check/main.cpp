@@ -88,7 +88,7 @@ uint256 compute_additional_data_hash(const DataAccess &access) {
         SHA256_Update(&sha256, sequenceFile[i], 4);
     }
 
-    FixedSizeFileMapper<uint32_t> spentOutNumFile(chainAccess.inputSpentOutNumFilePath(chainDirectory));
+    FixedSizeFileMapper<uint16_t> spentOutNumFile(chainAccess.inputSpentOutNumFilePath(chainDirectory));
     for(uint64_t i = 0; i < chainAccess.inputCount(); ++i) {
         SHA256_Update(&sha256, spentOutNumFile[i], 4);
     }
