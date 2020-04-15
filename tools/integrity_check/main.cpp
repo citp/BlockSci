@@ -21,6 +21,7 @@
 #include <clipp.h>
 
 #include <iostream>
+#include <fstream>
 
 using namespace blocksci;
 
@@ -331,13 +332,25 @@ uint256 compute_hashindex_txindex_hash(const DataAccess &access) {
 
 int main(int argc, char * argv[]) {
     std::string configLocation;
+    std::string outputFile;
+    std::ofstream out;
     int endBlock = 0;
 
-    auto cli = clipp::group(clipp::value("config file location", configLocation));
+    auto cli = (
+        clipp::value("config file location", configLocation) % "Path to config file",
+        (clipp::option("--file", "-f") & clipp::value("output file", outputFile)) % "Write to file instead of std::cout"
+    );
+
     auto res = parse(argc, argv, cli);
     if (res.any_error()) {
         std::cout << "Invalid command line parameter\n" << clipp::make_man_page(cli, argv[0]);
         return 0;
+    }
+
+    // Write to file instead of stdout
+    if(!outputFile.empty()) {
+        out.open(outputFile);
+        std::cout.rdbuf(out.rdbuf());
     }
 
     Blockchain chain(configLocation, endBlock);
