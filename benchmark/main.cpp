@@ -17,6 +17,7 @@
 
 using namespace blocksci;
 
+int64_t countBlocks(BlockRange &chain);
 int64_t calculateMaxOutputSingleThreaded(BlockRange &chain);
 int64_t calculateMaxOutputMultithreaded(BlockRange &chain);
 int64_t calculateMaxInputSingleThreaded(BlockRange &chain);
@@ -25,8 +26,12 @@ int64_t calculateMaxFeeSingleThreaded(BlockRange &chain);
 int64_t calculateMaxFeeMultithreaded(BlockRange &chain);
 uint32_t calculateNonzeroLocktimeSingleThreaded(BlockRange &chain);
 uint32_t calculateNonzeroLocktimeMultithreaded(BlockRange &chain);
+uint32_t calculateVersionGreaterOneSingleThreaded(BlockRange &chain);
+uint32_t calculateVersionGreaterOneMultithreaded(BlockRange &chain);
 uint32_t calculateUniqueLocktimeChangeSingleThreaded(BlockRange &chain);
 uint32_t calculateUniqueLocktimeChangeMultithreaded(BlockRange &chain);
+uint32_t calculateZeroConfOutputSingleThreaded(BlockRange &chain);
+uint32_t calculateZeroConfOutputMultithreaded(BlockRange &chain);
 
 int64_t calculateSatoshiDiceTotalOutputValue(BlockRange &chain, uint32_t addressNum, AddressType::Enum type);
 
@@ -34,55 +39,68 @@ uint32_t calculateNonzeroLocktimeRandom(Blockchain &chain, const std::vector<uin
 int64_t calculateMaxFeeRandom(Blockchain &chain, const std::vector<uint32_t> &indexes);
 
 template <typename Func, typename... Args>
-auto timeFunc(std::string name, Func func, Args&& ...args) -> decltype(func(args...));
+auto timeFunc(std::string name, Func func, uint32_t iterations, Args&& ...args) -> decltype(func(args...));
 
 int main(int argc, char * argv[]) {
     bool includeRandom = false;
+    bool includeTraversal = false;
     std::string configLocation;
-    int endBlock = -1;
+    int endBlock = 0;
+    uint32_t iterations = 1;
 
     auto cli = (
-                clipp::value("config file location", configLocation),
-                clipp::option("--with-random").set(includeRandom).doc("Include random order benchmarks"),
-                clipp::option("-m", "--max-block") & clipp::value("Run benchmark up to the given block", endBlock)
-                );
+        clipp::value("config file location", configLocation),
+        clipp::option("-r", "--with-random").set(includeRandom).doc("Include random order benchmarks"),
+        clipp::option("-t", "--with-traversal").set(includeTraversal).doc("Include graph traversal benchmarks"),
+        clipp::option("-m", "--max-block") & clipp::value("Run benchmark up to the given block", endBlock),
+        clipp::option("-i", "--iterations") & clipp::value("Number of iterations for each benchmark", iterations)
+    );
     auto res = parse(argc, argv, cli);
     if (res.any_error()) {
         std::cout << "Invalid command line parameter\n" << clipp::make_man_page(cli, argv[0]);
         return 0;
     }
-    Blockchain chain(configLocation, endBlock);
 
-    int startBlock = 0;
-    if (endBlock == -1) {
-        endBlock = static_cast<int>(chain.size());
+    Blockchain chain(configLocation, endBlock);
+    
+    std::cout << "Heating up cache." << std::endl;
+    timeFunc("heatingUpCache", calculateMaxFeeMultithreaded, 1, chain);
+
+    auto totalBlocks = timeFunc("countBlocks", countBlocks, 1, chain);
+    std::cout << "Running benchmark over " << totalBlocks << " blocks." << std::endl;
+
+    std::cout << std::endl << "Benchmarks:" << std::endl;
+
+    // Sequential transaction graph iteration
+    auto locktime1 = timeFunc("nonzeroLocktimeSingleThreaded", calculateNonzeroLocktimeSingleThreaded, iterations, chain);
+    auto locktime2 = timeFunc("nonzeroLocktimeMultithreaded", calculateNonzeroLocktimeMultithreaded, iterations, chain);
+    auto maxOutput1 = timeFunc("maxOutputSingleThreaded", calculateMaxOutputSingleThreaded, iterations, chain);
+    auto maxOutput2 = timeFunc("maxOutputMultithreaded", calculateMaxOutputMultithreaded, iterations, chain);
+    auto maxInput1 = timeFunc("maxInputSingleThreaded", calculateMaxInputSingleThreaded, iterations, chain);
+    auto maxInput2 = timeFunc("maxInputMultithreaded", calculateMaxInputMultithreaded, iterations, chain);
+    auto maxFee1 = timeFunc("maxFeeSingleThreaded", calculateMaxFeeSingleThreaded, iterations, chain);
+    auto maxFee2 = timeFunc("maxFeeMultithreaded", calculateMaxFeeMultithreaded, iterations, chain);
+
+    auto version1 = timeFunc("versionGreaterOneSingleThreaded", calculateVersionGreaterOneSingleThreaded, iterations, chain);
+    auto version2 = timeFunc("versionGreaterOneMultithreaded", calculateVersionGreaterOneMultithreaded, iterations, chain);
+
+    // Graph traversal queries
+    uint32_t uniqueLocktimeSingle = 0;
+    uint32_t uniqueLocktimeMulti = 0;
+    uint32_t zeroconfSingle = 0;
+    uint32_t zeroconfMulti = 0;
+
+    if(includeTraversal) {
+        uniqueLocktimeSingle = timeFunc("uniqueLocktimeChangeSingleThreaded", calculateUniqueLocktimeChangeSingleThreaded, iterations, chain);
+        uniqueLocktimeMulti = timeFunc("uniqueLocktimeChangeMultithreaded", calculateUniqueLocktimeChangeMultithreaded, iterations, chain);
+        zeroconfSingle = timeFunc("zeroConfOutputSingleThreaded", calculateZeroConfOutputSingleThreaded, iterations, chain);
+        zeroconfMulti = timeFunc("zeroConfOutputMultithreaded", calculateZeroConfOutputMultithreaded, iterations, chain);
     }
 
-    std::cout << "Running performance tests up to block " << endBlock << "\n";
-
-    auto range = chain[{startBlock, endBlock}];
-
-    std::cout << "Heating up cache\n";
-    calculateMaxFeeMultithreaded(range);
-    std::cout << "Finished heating up cache\n";
-
-    auto locktime1 = timeFunc("calculateNonzeroLocktimeSingleThreaded", calculateNonzeroLocktimeSingleThreaded, range);
-    auto locktime2 = timeFunc("calculateNonzeroLocktimeMultithreaded", calculateNonzeroLocktimeMultithreaded, range);
-
-    auto maxOutput1 = timeFunc("calculateMaxOutputSingleThreaded", calculateMaxOutputSingleThreaded, range);
-    auto maxOutput2 = timeFunc("calculateMaxOutputMultithreaded", calculateMaxOutputMultithreaded, range);
-    auto maxInput1 = timeFunc("calculateMaxInputSingleThreaded", calculateMaxInputSingleThreaded, range);
-    auto maxInput2 = timeFunc("calculateMaxInputMultithreaded", calculateMaxInputMultithreaded, range);
-    auto maxFee1 = timeFunc("calculateMaxFeeSingleThreaded", calculateMaxFeeSingleThreaded, range);
-    auto maxFee2 = timeFunc("calculateMaxFeeMultithreaded", calculateMaxFeeMultithreaded, range);
-
-    auto traversal1 = timeFunc("calculateUniqueLocktimeChangeSingleThreaded", calculateUniqueLocktimeChangeSingleThreaded, range);
-    auto traversal2 = timeFunc("calculateUniqueLocktimeChangeMultithreaded", calculateUniqueLocktimeChangeMultithreaded, range);
-
-    auto satoshiDiceAddress = getAddressFromString("1dice97ECuByXAvqXpaYzSaQuPVvrtmz6", chain.getAccess());
     int64_t maxSatoshiDiceOutput = -1;
+    auto satoshiDiceAddress = getAddressFromString("1dice97ECuByXAvqXpaYzSaQuPVvrtmz6", chain.getAccess());
     if(satoshiDiceAddress) {
-        maxSatoshiDiceOutput = timeFunc("calculateSatoshiDiceTotalOutputValueSingleThreaded", calculateSatoshiDiceTotalOutputValue, range, satoshiDiceAddress->scriptNum, satoshiDiceAddress->type);
+        maxSatoshiDiceOutput = timeFunc("satoshiDiceTotalOutputValueSingleThreaded", calculateSatoshiDiceTotalOutputValue, iterations, chain, satoshiDiceAddress->scriptNum, satoshiDiceAddress->type);
     }
 
     if (includeRandom) {
@@ -91,19 +109,33 @@ int main(int argc, char * argv[]) {
         std::iota(indexes.begin(), indexes.end(), 0);
         std::random_shuffle(indexes.begin(), indexes.end());
 
-        timeFunc("calculateMaxFeeRandom", calculateMaxFeeRandom, chain, indexes);
-        timeFunc("calculateNonzeroLocktimeRandom", calculateNonzeroLocktimeRandom, chain, indexes);
+        timeFunc("maxFeeRandom", calculateMaxFeeRandom, iterations, chain, indexes);
+        timeFunc("nonzeroLocktimeRandom", calculateNonzeroLocktimeRandom, iterations, chain, indexes);
     }
 
+    // Print results
+    std::cout << std::endl << "Results:" << std::endl;;
     std::cout << "Nonzero Locktime = (" << locktime1 << ", " << locktime2 << ")" << std::endl;
     std::cout << "Max Output = (" << maxOutput1 << ", " << maxOutput2 << ")" << std::endl;
     std::cout << "Max Input = (" << maxInput1 << ", " << maxInput2 << ")" << std::endl;
     std::cout << "Max Fee = (" << maxFee1 << ", " << maxFee2 << ")" << std::endl;
+    std::cout << "Version > 1 = (" << version1 << ", " << version2 << ")" << std::endl;
     if(maxSatoshiDiceOutput >= 0) {
-        std::cout << "Max SatoshiDice Output = (" << maxSatoshiDiceOutput << ")" << std::endl;
+        std::cout << "SatoshiDice Output Value = (" << maxSatoshiDiceOutput << ")" << std::endl;
     }
-    std::cout << "Unique Change = (" << traversal1 << ", " << traversal2 << ")" << std::endl;
+    if(includeTraversal) {
+        std::cout << "Zeroconf Outputs = (" << zeroconfSingle << ", " << zeroconfMulti << ")" << std::endl;
+        std::cout << "Unique Change = (" << uniqueLocktimeSingle << ", " << uniqueLocktimeMulti << ")" << std::endl;
+    }
     return 0;
+}
+
+int64_t countBlocks(BlockRange &chain) {
+    int64_t count = 0;
+    for (auto block : chain) {
+        count += 1;
+    }
+    return count;
 }
 
 int64_t calculateMaxOutputSingleThreaded(BlockRange &chain) {
@@ -126,9 +158,9 @@ int64_t calculateMaxOutputMultithreaded(BlockRange &chain) {
         }
         return maxValue;
     };
-
+    
     auto combine = [](int64_t &a, int64_t &b) -> int64_t & { a = std::max(a,b); return a; };
-
+    
     return chain.mapReduce<int64_t>(extract, combine);
 }
 
@@ -152,9 +184,9 @@ int64_t calculateMaxInputMultithreaded(BlockRange &chain) {
         }
         return maxValue;
     };
-
+    
     auto combine = [](int64_t &a, int64_t &b) -> int64_t & { a = std::max(a,b); return a; };
-
+    
     return chain.mapReduce<int64_t>(extract, combine);
 }
 
@@ -172,9 +204,9 @@ int64_t calculateMaxFeeMultithreaded(BlockRange &chain) {
     auto extract = [](const Transaction &tx) {
         return fee(tx);
     };
-
+    
     auto combine = [](int64_t &a, int64_t &b) -> int64_t & { a = std::max(a,b); return a; };
-
+    
     return chain.mapReduce<int64_t>(extract, combine);
 }
 
@@ -201,6 +233,26 @@ uint32_t calculateNonzeroLocktimeMultithreaded(BlockRange &chain) {
     auto extract = [](const Transaction &tx) {
         return static_cast<uint32_t>(tx.locktime() > 0);
     };
+    
+    auto combine = [](uint32_t &a, uint32_t &b) -> uint32_t & { a += b; return a; };
+    
+    return chain.mapReduce<uint32_t>(extract, combine);
+}
+
+uint32_t calculateVersionGreaterOneSingleThreaded(BlockRange &chain) {
+    uint32_t count = 0;
+    for (auto block : chain) {
+        RANGES_FOR(auto tx, block) {
+            count += tx.getVersion() > 1;
+        }
+    }
+    return count;
+}
+
+uint32_t calculateVersionGreaterOneMultithreaded(BlockRange &chain) {
+    auto extract = [](const Transaction &tx) {
+        return static_cast<uint32_t>(tx.getVersion() > 1);
+    };
 
     auto combine = [](uint32_t &a, uint32_t &b) -> uint32_t & { a += b; return a; };
 
@@ -214,6 +266,43 @@ uint32_t calculateNonzeroLocktimeRandom(Blockchain &chain, const std::vector<uin
         nonzeroCount += static_cast<uint32_t>(tx.locktime() > 0);
     }
     return nonzeroCount;
+}
+
+uint32_t calculateZeroConfOutputSingleThreaded(BlockRange &chain) {
+    uint32_t count = 0;
+    for (auto block : chain) {
+        RANGES_FOR(auto tx, block) {
+            for(auto output : tx.outputs()) {
+                if(output.isSpent()) {
+                    auto spendingTx = output.getSpendingTx();
+                    if(spendingTx->getBlockHeight() == block.height()) {
+                        count += 1;
+                    }
+                }
+            }
+        }
+    }
+    return count;
+}
+
+uint32_t calculateZeroConfOutputMultithreaded(BlockRange &chain) {
+    auto extract = [&](const Transaction &tx) {
+        uint32_t count = 0;
+        auto blockHeight = tx.getBlockHeight();
+        for(auto output : tx.outputs()) {
+            if(output.isSpent()) {
+                auto spendingTx = output.getSpendingTx();
+                if(spendingTx->getBlockHeight() == blockHeight) {
+                    count += 1;
+                }
+            }
+        }
+        return count;
+    };
+
+    auto combine = [](uint32_t &a, uint32_t &b) -> uint32_t & { a += b; return a; };
+
+    return chain.mapReduce<uint32_t>(extract, combine);
 }
 
 int64_t calculateSatoshiDiceTotalOutputValue(BlockRange &chain, uint32_t addressNum, AddressType::Enum type) {
@@ -265,14 +354,38 @@ uint32_t calculateUniqueLocktimeChangeMultithreaded(BlockRange &chain) {
     return chain.mapReduce<uint32_t>(extract, combine);
 }
 
+
+
 template <typename Func, typename... Args>
-auto timeFunc(std::string name, Func func, Args&& ...args) -> decltype(func(args...)) {
-    auto begin = std::chrono::steady_clock::now();
-    auto ret = func(std::forward<Args>(args)...);
-    auto endTime = std::chrono::steady_clock::now();
+auto timeFunc(std::string name, Func func, uint32_t iterations, Args&& ...args) -> decltype(func(args...)) {
+    std::vector<double> times;
+    int64_t ret = 0;
 
-    double timeSecs = std::chrono::duration_cast<std::chrono::microseconds>(endTime - begin).count() / 1000000.0;
-    std::cout << "Time in secs for " << name << ": " << timeSecs << std::endl;
+    std::cout << "Time in secs for " << name << ": ";
+    for(uint32_t i = 0; i < iterations; ++i) {
+        auto begin = std::chrono::steady_clock::now();
+        ret = func(std::forward<Args>(args)...);
+        auto endTime = std::chrono::steady_clock::now();
+        double timeSecs = std::chrono::duration_cast<std::chrono::microseconds>(endTime - begin).count() / 1000000.0;
+        times.push_back(timeSecs);
+    }
 
+    // compute average over all measurements
+    double average = accumulate(times.begin(), times.end(), 0.0)/times.size();
+    std::cout << average;
+
+    // print individual observations
+    if(iterations > 1) {
+        std::cout << " [";
+        for(uint32_t i = 0; i < iterations; ++i) {
+            std::cout << times[i];
+            if (i < iterations - 1) {
+                std::cout << ", ";
+            }
+        }
+        std::cout << "]";
+    }
+    std::cout << std::endl;
+    
     return ret;
 }
