@@ -364,15 +364,15 @@ int main(int argc, char * argv[]) {
 
     std::cout << std::endl << "Blocks:" << std::endl;
     auto block_hash = compute_block_hash(chainAccess);
-    std::cout << block_hash.GetHex() << std::endl;
+    std::cout << block_hash.GetHex() << " (BLOCKS)" <<  std::endl;
 
     std::cout << std::endl << "Transactions:" << std::endl;
     auto txdata_hash = compute_txdata_hash(chainAccess);
-    std::cout << txdata_hash.GetHex() << std::endl;
+    std::cout << txdata_hash.GetHex() << " (TXES)" << std::endl;
 
     std::cout << std::endl << "Additional data:" << std::endl;
     auto additional_data_hash = compute_additional_data_hash(dataAccess);
-    std::cout << additional_data_hash.GetHex()<< std::endl;
+    std::cout << additional_data_hash.GetHex() << " (ADDITIONAL)" <<  std::endl;
 
     std::cout << std::endl << "Scripts:" << std::endl;
 
@@ -396,7 +396,7 @@ int main(int argc, char * argv[]) {
 
     std::cout << std::endl << "Hash index:" << std::endl;
     auto hashindex_addressrange_hash = compute_hashindex_addressrange_hash(dataAccess);
-    std::cout << hashindex_addressrange_hash.GetHex()<< std::endl;
+    std::cout << hashindex_addressrange_hash.GetHex() << " (ADDRESSINDEX)" <<  std::endl;
 
     // TODO: convert to range query to improve performance
     // auto hashindex_txindex_hash = compute_hashindex_txindex_hash(dataAccess);
