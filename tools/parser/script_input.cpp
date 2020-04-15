@@ -89,11 +89,13 @@ ScriptInputData<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInputData(const 
         // tx 1b008139698117162a9539295ada34fc745f06f733b5f400674f15bf47e720a5 contains a OP_0 before the signature
         // tx bcd1835ebd7e0d44abcab84ec64a488eefd9fa048d2e11a5a24b197838d8af11 (testnet) contains an Push(13) before the real data
         // tx 4c65efdf4e60e9c1bbc1a1a452c3c758789efc7894bff9ed694305eb9c389e7b (testnet) super weird
-        
+        // tx 054291a582fe7f34d8247a8760232ce6ac11d6657c51cb961856029fada2749a (bch mainnet): schnorr signatures can (as pubkeys) have a length of 65 bytes
+
+        // Select last matching item, since BCH's Schnorr signatures can look like valid public keys
         while (scriptView.GetOp(pc, opcode, vchSig2)) {
-            if (vchSig2.size() == 65 || vchSig2.size() == 33) {
+            if ((vchSig2.size() == 65 || vchSig2.size() == 33)
+                && blocksci::CPubKey::GetLen(vchSig2[0]) == vchSig2.size()) {
                 vchSig = vchSig2;
-                break;
             }
         }
         assert(vchSig.size() == 65 || vchSig.size() == 33);
