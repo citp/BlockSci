@@ -334,6 +334,7 @@ int main(int argc, char * argv[]) {
     std::string configLocation;
     std::string outputFile;
     std::ofstream out;
+    std::streambuf *coutbuf = nullptr;
     int endBlock = 0;
 
     auto cli = (
@@ -350,6 +351,7 @@ int main(int argc, char * argv[]) {
     // Write to file instead of stdout
     if(!outputFile.empty()) {
         out.open(outputFile);
+        coutbuf = std::cout.rdbuf();
         std::cout.rdbuf(out.rdbuf());
     }
 
@@ -399,6 +401,12 @@ int main(int argc, char * argv[]) {
     // TODO: convert to range query to improve performance
     // auto hashindex_txindex_hash = compute_hashindex_txindex_hash(dataAccess);
     // std::cout << hashindex_txindex_hash.GetHex()<< std::endl;
+
+
+    if((!outputFile.empty()) && (coutbuf != nullptr)) {
+        std::cout.rdbuf(coutbuf);
+        out.close();
+    }
 
     return 0;
 }
