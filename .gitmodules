@@ -27,7 +27,7 @@
 	url = https://github.com/USCiLab/cereal
 [submodule "external/mio"]
 	path = external/mio
-	url = https://github.com/hkalodner/mio
+	url = https://github.com/mandreyel/mio
 [submodule "external/filesystem"]
 	path = external/filesystem
 	url = https://github.com/hkalodner/filesystem
