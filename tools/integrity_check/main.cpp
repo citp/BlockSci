@@ -90,7 +90,7 @@ uint256 compute_additional_data_hash(const DataAccess &access) {
 
     FixedSizeFileMapper<uint16_t> spentOutNumFile(chainAccess.inputSpentOutNumFilePath(chainDirectory));
     for(uint64_t i = 0; i < chainAccess.inputCount(); ++i) {
-        SHA256_Update(&sha256, spentOutNumFile[i], 4);
+        SHA256_Update(&sha256, spentOutNumFile[i], 2);
     }
 
     FixedSizeFileMapper<int32_t> txVersionFile(chainAccess.txVersionFilePath(chainDirectory));
