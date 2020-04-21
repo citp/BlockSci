@@ -104,7 +104,7 @@ int main(int argc, char * argv[]) {
     }
 
     if (includeRandom) {
-        uint32_t maxTxNum = chain[endBlock - 1].endTxIndex();
+        uint32_t maxTxNum = chain[totalBlocks - 1].endTxIndex();
         std::vector<uint32_t> indexes(maxTxNum);
         std::iota(indexes.begin(), indexes.end(), 0);
         std::random_shuffle(indexes.begin(), indexes.end());
