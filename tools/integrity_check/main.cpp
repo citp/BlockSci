@@ -21,6 +21,7 @@
 #include <clipp.h>
 
 #include <iostream>
+#include <fstream>
 
 using namespace blocksci;
 
@@ -331,13 +332,27 @@ uint256 compute_hashindex_txindex_hash(const DataAccess &access) {
 
 int main(int argc, char * argv[]) {
     std::string configLocation;
+    std::string outputFile;
+    std::ofstream out;
+    std::streambuf *coutbuf = nullptr;
     int endBlock = 0;
 
-    auto cli = clipp::group(clipp::value("config file location", configLocation));
+    auto cli = (
+        clipp::value("config file location", configLocation) % "Path to config file",
+        (clipp::option("--file", "-f") & clipp::value("output file", outputFile)) % "Write to file instead of std::cout"
+    );
+
     auto res = parse(argc, argv, cli);
     if (res.any_error()) {
         std::cout << "Invalid command line parameter\n" << clipp::make_man_page(cli, argv[0]);
         return 0;
+    }
+
+    // Write to file instead of stdout
+    if(!outputFile.empty()) {
+        out.open(outputFile);
+        coutbuf = std::cout.rdbuf();
+        std::cout.rdbuf(out.rdbuf());
     }
 
     Blockchain chain(configLocation, endBlock);
@@ -349,29 +364,49 @@ int main(int argc, char * argv[]) {
 
     std::cout << std::endl << "Blocks:" << std::endl;
     auto block_hash = compute_block_hash(chainAccess);
-    std::cout << block_hash.GetHex() << std::endl;
+    std::cout << block_hash.GetHex() << " (BLOCKS)" <<  std::endl;
 
     std::cout << std::endl << "Transactions:" << std::endl;
     auto txdata_hash = compute_txdata_hash(chainAccess);
-    std::cout << txdata_hash.GetHex() << std::endl;
+    std::cout << txdata_hash.GetHex() << " (TXES)" << std::endl;
 
     std::cout << std::endl << "Additional data:" << std::endl;
     auto additional_data_hash = compute_additional_data_hash(dataAccess);
-    std::cout << additional_data_hash.GetHex()<< std::endl;
+    std::cout << additional_data_hash.GetHex() << " (ADDITIONAL)" <<  std::endl;
 
     std::cout << std::endl << "Scripts:" << std::endl;
-    blocksci::for_each(DedupAddressType::all(), [&](auto dedupType) {
-        auto data_hash = compute_scriptdata_hash<dedupType>(dataAccess);
-        std::cout << data_hash.GetHex() <<  " (" << dedupType << ")" << std::endl;
-    });
+
+    auto scripthash_hash = compute_scriptdata_hash<DedupAddressType::SCRIPTHASH>(dataAccess);
+    std::cout << scripthash_hash.GetHex() <<  " (SCRIPTHASH)" << std::endl;
+
+    auto pubkey_hash = compute_scriptdata_hash<DedupAddressType::PUBKEY>(dataAccess);
+    std::cout << pubkey_hash.GetHex() <<  " (PUBKEY)" << std::endl;
+
+    auto multisig_hash = compute_scriptdata_hash<DedupAddressType::MULTISIG>(dataAccess);
+    std::cout << multisig_hash.GetHex() <<  " (MULTISIG)" << std::endl;
+
+    auto nulldata_hash = compute_scriptdata_hash<DedupAddressType::NULL_DATA>(dataAccess);
+    std::cout << nulldata_hash.GetHex() <<  " (NULL_DATA)" << std::endl;
+
+    auto witnessunknown_hash = compute_scriptdata_hash<DedupAddressType::WITNESS_UNKNOWN>(dataAccess);
+    std::cout << witnessunknown_hash.GetHex() <<  " (WITNESS_UNKNOWN)" << std::endl;
+
+    auto nonstandard_hash = compute_scriptdata_hash<DedupAddressType::NONSTANDARD>(dataAccess);
+    std::cout << nonstandard_hash.GetHex() <<  " (NONSTANDARD)" << std::endl;
 
     std::cout << std::endl << "Hash index:" << std::endl;
     auto hashindex_addressrange_hash = compute_hashindex_addressrange_hash(dataAccess);
-    std::cout << hashindex_addressrange_hash.GetHex()<< std::endl;
+    std::cout << hashindex_addressrange_hash.GetHex() << " (ADDRESSINDEX)" <<  std::endl;
 
     // TODO: convert to range query to improve performance
     // auto hashindex_txindex_hash = compute_hashindex_txindex_hash(dataAccess);
     // std::cout << hashindex_txindex_hash.GetHex()<< std::endl;
+
+
+    if((!outputFile.empty()) && (coutbuf != nullptr)) {
+        std::cout.rdbuf(coutbuf);
+        out.close();
+    }
 
     return 0;
 }
