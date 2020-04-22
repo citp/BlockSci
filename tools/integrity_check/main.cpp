@@ -5,16 +5,21 @@
 //  Created by Malte Möser on 3/6/20.
 //
 
+#include <blocksci/address.hpp>
+#include <blocksci/core/dedup_address.hpp>
 #include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/block.hpp>
-#include <blocksci/address.hpp>
 #include <blocksci/script.hpp>
 
+
+#include <internal/address_index.hpp>
 #include <internal/chain_access.hpp>
 #include <internal/data_access.hpp>
-#include <internal/script_access.hpp>
 #include <internal/dedup_address_info.hpp>
 #include <internal/hash_index.hpp>
+#include <internal/script_access.hpp>
+
+#include <range/v3/utility/optional.hpp>
 
 #include <openssl/sha.h>
 
@@ -330,6 +335,37 @@ uint256 compute_hashindex_txindex_hash(const DataAccess &access) {
     return hash;
 }
 
+
+bool check_nesting_scripthash_index(const DataAccess &access) {
+    auto scripts = &access.getScripts();
+    constexpr DedupAddressType::Enum dedupType = DedupAddressType::SCRIPTHASH;
+    auto scriptCount = scripts->scriptCount(dedupType);
+    auto &addressIndex = access.addressIndex;
+
+    bool allNestingsCorrect = true;
+
+    for(uint32_t i = 1; i <= scriptCount; ++i) {
+        auto data = scripts->getScriptData<dedupType>(i);
+        if(data->hasWrappedAddress()) {
+            RawAddress wrappedAddress = data->wrappedAddress;
+            auto nestingAddress = addressIndex->getNestingScriptHash(wrappedAddress);
+            if(nestingAddress) {
+                if(nestingAddress->scriptNum != i || nestingAddress->type != dedupType) {
+                    allNestingsCorrect = false;
+                    std::cout << "Incorrect nesting scripthash for (" << wrappedAddress.scriptNum << ", " << wrappedAddress.type << "). Is: (" << nestingAddress->scriptNum << ", " << nestingAddress->type << "). Should be: (" << i << ", " << dedupType << ")." << std::endl;
+                }
+            } else {
+                allNestingsCorrect = false;
+                std::cout << "Found no nesting scripthash for (" << wrappedAddress.scriptNum << ", " << wrappedAddress.type << "). Should be: (" << i << ", " << dedupType << ")." << std::endl;
+            }
+        }
+    }
+    if(allNestingsCorrect) {
+        std::cout << "All reverse nested lookups correct for wrapped addresses." << std::endl;
+    }
+    return allNestingsCorrect;
+}
+
 int main(int argc, char * argv[]) {
     std::string configLocation;
     std::string outputFile;
@@ -402,6 +438,8 @@ int main(int argc, char * argv[]) {
     // auto hashindex_txindex_hash = compute_hashindex_txindex_hash(dataAccess);
     // std::cout << hashindex_txindex_hash.GetHex()<< std::endl;
 
+    std::cout << std::endl << "Nesting scripthash index:" << std::endl;
+    check_nesting_scripthash_index(dataAccess);
 
     if((!outputFile.empty()) && (coutbuf != nullptr)) {
         std::cout.rdbuf(coutbuf);
