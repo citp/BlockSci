@@ -327,6 +327,7 @@ bool check_hashindex_txindex(const DataAccess &access) {
     for(uint32_t i = 0; i < chainAccess.txCount(); ++i) {
         auto txindex = hashIndex->getTxIndex(*txHashesFile[i]);
         if(*txindex != i) {
+            allIndexesCorrect = false;
             std::cout << "Incorrect index for transaction " << i << ". Got: " << *txindex << "." << std::endl;
         }
     }
