@@ -5,9 +5,9 @@ sudo apt install gcc-7 g++-7 libtool autoconf libboost-filesystem-dev libboost-i
 sudo apt-get install ruby-full -y  # only needed for caching
 gem install mtime_cache  # only needed for caching
 
-if [ ! -d ~/cmake-3.17.0-Linux-x86_64 ]; then
+if [ ! -d ~/cmake-3.17.1-Linux-x86_64 ]; then
     echo "No cache - downloading CMake"
-    cd ~ && wget --quiet https://github.com/Kitware/CMake/releases/download/v3.17.0/cmake-3.17.0-Linux-x86_64.tar.gz && tar -xf cmake-3.17.0-Linux-x86_64.tar.gz
+    cd ~ && wget --quiet https://github.com/Kitware/CMake/releases/download/v3.17.1/cmake-3.17.1-Linux-x86_64.tar.gz && tar -xf cmake-3.17.1-Linux-x86_64.tar.gz
 else
     echo "Cached CMake found"
 fi
