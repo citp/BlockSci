@@ -12,4 +12,7 @@ blocksci_parser ltc.json generate-config litecoin_regtest litecoin_regtest --dis
 blocksci_parser ltc.json doctor
 blocksci_parser ltc.json update
 blocksci_check_integrity ltc.json -t -n
+
+./../release/test/blocksci/blocksci_unittest btc.json
+
 cd ..
