@@ -37,7 +37,7 @@ void AddressDB::processTx(const blocksci::RawTransaction *tx, uint32_t txNum, co
         if (dedupType(a.type) == DedupAddressType::SCRIPTHASH && addedAddresses.find(a) == addedAddresses.end()) {
             addedAddresses.insert(a);
             auto scriptHash = scripts.getScriptData<DedupAddressType::SCRIPTHASH>(a.scriptNum);
-            if (scriptHash->txFirstSeen == txNum) {
+            if (scriptHash->txFirstSpent == txNum) {
                 addAddressNested(scriptHash->wrappedAddress, DedupAddress{a.scriptNum, DedupAddressType::SCRIPTHASH});
                 return true;
             } else {

@@ -92,7 +92,7 @@ namespace blocksci {
         /** Get InoutPointer objects for all outputs that belong to the given address */
         ranges::any_view<InoutPointer, ranges::category::forward> getOutputPointers(const RawAddress &address) const;
         
-        ranges::optional<DedupAddress> getNestingScriptHash(const RawAddress &searchAddress) const;
+        std::vector<DedupAddress> getNestingScriptHash(const RawAddress &searchAddress) const;
         std::unordered_set<DedupAddress> getPossibleNestedEquivalentUp(const RawAddress &searchAddress) const;
         ranges::any_view<RawAddress> getIncludingMultisigs(const RawAddress &searchAddress) const;
         

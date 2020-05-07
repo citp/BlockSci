@@ -5,16 +5,21 @@
 //  Created by Malte Möser on 3/6/20.
 //
 
+#include <blocksci/address.hpp>
+#include <blocksci/core/dedup_address.hpp>
 #include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/block.hpp>
-#include <blocksci/address.hpp>
 #include <blocksci/script.hpp>
 
+
+#include <internal/address_index.hpp>
 #include <internal/chain_access.hpp>
 #include <internal/data_access.hpp>
-#include <internal/script_access.hpp>
 #include <internal/dedup_address_info.hpp>
 #include <internal/hash_index.hpp>
+#include <internal/script_access.hpp>
+
+#include <range/v3/utility/optional.hpp>
 
 #include <openssl/sha.h>
 
@@ -311,35 +316,78 @@ uint256 compute_hashindex_addressrange_hash(const DataAccess &access) {
 /**
  Compute a checksum over txindex lookup data in hash index.
  */
-uint256 compute_hashindex_txindex_hash(const DataAccess &access) {
-    uint256 hash;
-    SHA256_CTX sha256;
-    SHA256_Init(&sha256);
-
+bool check_hashindex_txindex(const DataAccess &access) {
     const ChainAccess &chainAccess = access.getChain();
     auto chainDirectory = access.config.chainDirectory();
     FixedSizeFileMapper<uint256> txHashesFile(chainAccess.txHashesFilePath(chainDirectory));
     auto &hashIndex = access.hashIndex;
 
+    bool allIndexesCorrect = true;
+
     for(uint32_t i = 0; i < chainAccess.txCount(); ++i) {
         auto txindex = hashIndex->getTxIndex(*txHashesFile[i]);
-        assert(*txindex == i);
-        SHA256_Update(&sha256, &txindex, 4);
+        if(*txindex != i) {
+            allIndexesCorrect = false;
+            std::cout << "Incorrect index for transaction " << i << ". Got: " << *txindex << "." << std::endl;
+        }
     }
-    SHA256_Final(reinterpret_cast<unsigned char *>(&hash), &sha256);
-    return hash;
+    if(allIndexesCorrect) {
+        std::cout << "All txindex lookups correct for transaction hashes." << std::endl;
+    }
+    return allIndexesCorrect;
+}
+
+
+/**
+ Check that we can resolve P2(W)SH addresses from the address they wrap using the address index
+ */
+bool check_nesting_scripthash_index(const DataAccess &access) {
+    auto scripts = &access.getScripts();
+    constexpr DedupAddressType::Enum dedupType = DedupAddressType::SCRIPTHASH;
+    auto scriptCount = scripts->scriptCount(dedupType);
+    auto &addressIndex = access.addressIndex;
+
+    bool allNestingsCorrect = true;
+
+    for(uint32_t i = 1; i <= scriptCount; ++i) {
+        auto data = scripts->getScriptData<dedupType>(i);
+        if(data->hasWrappedAddress()) {
+            RawAddress wrappedAddress = data->wrappedAddress;
+            DedupAddress expectedAddress{i, dedupType};
+            auto nestingAddresses = addressIndex->getNestingScriptHash(wrappedAddress);
+
+            // nesting of multisig addresses might not be unique since keys can appear in arbitrary order
+            if(nestingAddresses.size() > 0) {
+                if(std::find(nestingAddresses.begin(), nestingAddresses.end(), expectedAddress) == nestingAddresses.end()) {
+                    allNestingsCorrect = false;
+                    std::cout << "Incorrect nesting scripthash for (" << wrappedAddress.scriptNum << ", " << wrappedAddress.type << ")." << std::endl;
+                }
+            } else {
+                allNestingsCorrect = false;
+                std::cout << "Found no nesting scripthash for (" << wrappedAddress.scriptNum << ", " << wrappedAddress.type << "). Expected: (" << i << ", " << dedupType << ")." << std::endl;
+            }
+        }
+    }
+    if(allNestingsCorrect) {
+        std::cout << "All reverse nested lookups correct for wrapped addresses." << std::endl;
+    }
+    return allNestingsCorrect;
 }
 
 int main(int argc, char * argv[]) {
     std::string configLocation;
     std::string outputFile;
     std::ofstream out;
+    bool runTxIndexCheck = false;
+    bool runNestingIndexCheck = false;
     std::streambuf *coutbuf = nullptr;
     int endBlock = 0;
 
     auto cli = (
         clipp::value("config file location", configLocation) % "Path to config file",
-        (clipp::option("--file", "-f") & clipp::value("output file", outputFile)) % "Write to file instead of std::cout"
+        (clipp::option("--file", "-f") & clipp::value("output file", outputFile)) % "Write to file instead of std::cout",
+        clipp::option("--txindex", "-t").set(runTxIndexCheck).doc("Run tx index check"),
+        clipp::option("--nestingindex", "-n").set(runNestingIndexCheck).doc("Run nesting address index check")
     );
 
     auto res = parse(argc, argv, cli);
@@ -398,10 +446,16 @@ int main(int argc, char * argv[]) {
     auto hashindex_addressrange_hash = compute_hashindex_addressrange_hash(dataAccess);
     std::cout << hashindex_addressrange_hash.GetHex() << " (ADDRESSINDEX)" <<  std::endl;
 
-    // TODO: convert to range query to improve performance
-    // auto hashindex_txindex_hash = compute_hashindex_txindex_hash(dataAccess);
-    // std::cout << hashindex_txindex_hash.GetHex()<< std::endl;
+    if(runTxIndexCheck) {
+        std::cout << std::endl << "Index: transaction hash->transaction index:" << std::endl;
+        std::cout << "Note: this check will report errors if TXIDs are not unique." << std::endl;
+        check_hashindex_txindex(dataAccess);
+    }
 
+    if(runNestingIndexCheck) {
+        std::cout << std::endl << "Index: nesting address->parent address:" << std::endl;
+        check_nesting_scripthash_index(dataAccess);
+    }
 
     if((!outputFile.empty()) && (coutbuf != nullptr)) {
         std::cout.rdbuf(coutbuf);
