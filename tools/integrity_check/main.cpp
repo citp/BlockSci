@@ -378,14 +378,16 @@ int main(int argc, char * argv[]) {
     std::string configLocation;
     std::string outputFile;
     std::ofstream out;
-    bool runIndexTests = false;
+    bool runTxIndexCheck = false;
+    bool runNestingIndexCheck = false;
     std::streambuf *coutbuf = nullptr;
     int endBlock = 0;
 
     auto cli = (
         clipp::value("config file location", configLocation) % "Path to config file",
         (clipp::option("--file", "-f") & clipp::value("output file", outputFile)) % "Write to file instead of std::cout",
-        clipp::option("--index", "-i").set(runIndexTests).doc("Run additional index tests")
+        clipp::option("--txindex", "-t").set(runTxIndexCheck).doc("Run tx index check"),
+        clipp::option("--nestingindex", "-n").set(runNestingIndexCheck).doc("Run nesting address index check")
     );
 
     auto res = parse(argc, argv, cli);
@@ -444,10 +446,13 @@ int main(int argc, char * argv[]) {
     auto hashindex_addressrange_hash = compute_hashindex_addressrange_hash(dataAccess);
     std::cout << hashindex_addressrange_hash.GetHex() << " (ADDRESSINDEX)" <<  std::endl;
 
-    if(runIndexTests) {
+    if(runTxIndexCheck) {
         std::cout << std::endl << "Index: transaction hash->transaction index:" << std::endl;
+        std::cout << "Note: this check will report errors if TXIDs are not unique." << std::endl;
         check_hashindex_txindex(dataAccess);
+    }
 
+    if(runNestingIndexCheck) {
         std::cout << std::endl << "Index: nesting address->parent address:" << std::endl;
         check_nesting_scripthash_index(dataAccess);
     }
