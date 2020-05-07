@@ -64,7 +64,9 @@ int main(int argc, char * argv[]) {
     Blockchain chain(configLocation, endBlock);
     
     std::cout << "Heating up cache." << std::endl;
-    timeFunc("heatingUpCache", calculateMaxFeeMultithreaded, 1, chain);
+
+    timeFunc("loadingTxData", calculateMaxFeeMultithreaded, 1, chain);
+    timeFunc("loadingVersionNo", calculateVersionGreaterOneSingleThreaded, 1, chain);
 
     auto totalBlocks = timeFunc("countBlocks", countBlocks, 1, chain);
     std::cout << "Running benchmark over " << totalBlocks << " blocks." << std::endl;
