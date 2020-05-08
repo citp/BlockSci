@@ -12,7 +12,7 @@
 	url = https://github.com/mpark/variant.git
 [submodule "libs/range-v3"]
 	path = external/range-v3
-	url = https://github.com/hkalodner/range-v3.git
+	url = https://github.com/ericniebler/range-v3.git
 [submodule "Notebooks/blocksci/Blockchain-Known-Pools"]
 	path = blockscipy/blocksci/Blockchain-Known-Pools
 	url = https://github.com/blockchain/Blockchain-Known-Pools

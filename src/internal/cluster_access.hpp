@@ -15,7 +15,7 @@
 #include <blocksci/core/raw_address.hpp>
 #include <blocksci/core/dedup_address.hpp>
 
-#include <range/v3/iterator_range.hpp>
+#include <range/v3/view/subrange.hpp>
 
 #include <wjfilesystem/path.h>
 
@@ -104,7 +104,7 @@ namespace blocksci {
             return static_cast<uint32_t>(clusterOffsetFile.size()) - 1;
         }
         
-        ranges::iterator_range<const blocksci::DedupAddress *> getClusterScripts(uint32_t clusterNum) const {
+        ranges::subrange<const blocksci::DedupAddress *> getClusterScripts(uint32_t clusterNum) const {
             auto nextClusterOffset = *clusterOffsetFile[clusterNum];
             uint32_t clusterOffset = 0;
             if (clusterNum > 0) {
@@ -114,7 +114,7 @@ namespace blocksci {
             
             auto firstAddressOffset = clusterScriptsFile[clusterOffset];
             
-            return ranges::make_iterator_range(firstAddressOffset, firstAddressOffset + clusterSize);
+            return ranges::make_subrange(firstAddressOffset, firstAddressOffset + clusterSize);
         }
         
         std::vector<uint32_t> getClusterSizes() const {

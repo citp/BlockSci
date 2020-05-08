@@ -36,6 +36,6 @@ namespace blocksci {
     ranges::any_view<Address> PubkeyAddressBase::getIncludingMultisigs() const {
         auto access_ = &getAccess();
         return getAccess().getAddressIndex().getIncludingMultisigs(*this) |
-        ranges::view::transform([access_](const RawAddress &raw) { return Address{raw, *access_}; });
+        ranges::views::transform([access_](const RawAddress &raw) { return Address{raw, *access_}; });
     }
 } // namespace blocksci

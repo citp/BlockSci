@@ -11,7 +11,7 @@
 
 RawIterator<std::any> GenericIterator::getAllIterator() {
     return mpark::visit([](auto && seq) -> RawIterator<std::any> {
-        return ranges::view::transform(std::forward<decltype(seq)>(seq), [](auto && item) -> std::any {
+        return ranges::views::transform(std::forward<decltype(seq)>(seq), [](auto && item) -> std::any {
             return std::forward<decltype(item)>(item);
         });
     }, getGenericIterator().var);
@@ -20,7 +20,7 @@ RawIterator<std::any> GenericIterator::getAllIterator() {
 
 RawRange<std::any> GenericRange::getAllRange() {
     return mpark::visit([](auto && seq) -> RawRange<std::any> {
-        return ranges::view::transform(std::forward<decltype(seq)>(seq), [](auto && item) -> std::any {
+        return ranges::views::transform(std::forward<decltype(seq)>(seq), [](auto && item) -> std::any {
             return std::forward<decltype(item)>(item);
         });
     }, getGenericRange().var);

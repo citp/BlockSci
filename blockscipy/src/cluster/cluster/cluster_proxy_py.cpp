@@ -37,7 +37,7 @@ struct AddClusterMethods {
             return cluster.getInputs();
         }, "Returns an iterator over all inputs spent from this cluster");
         func(property_tag, "addresses", +[](const Cluster &cluster) -> RawIterator<AnyScript> {
-            return ranges::any_view<AnyScript>{ranges::view::transform(cluster.getAddresses(), [](Address && address) -> AnyScript {
+            return ranges::any_view<AnyScript>{ranges::views::transform(cluster.getAddresses(), [](Address && address) -> AnyScript {
                 return address.getScript();
             })};
         }, "Get a iterable over all the addresses in the cluster");

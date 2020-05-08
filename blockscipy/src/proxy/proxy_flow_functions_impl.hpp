@@ -27,7 +27,7 @@ class take_while_range : public ranges::view_facade<take_while_range<T>> {
         return *v;
     }
 
-    bool equal(ranges::default_sentinel) const {
+    bool equal(ranges::default_sentinel_t) const {
         return !v;
     }
 

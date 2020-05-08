@@ -38,7 +38,7 @@ BlocksciIteratorType BlocksciRangeType::toIterator() {
 
 RawRange<BlocksciType> BlocksciRangeType::toGeneric() {
 	return mpark::visit([&](auto &r) -> RawRange<BlocksciType> { 
-		return r | ranges::view::transform([](auto && v) -> BlocksciType {
+		return r | ranges::views::transform([](auto && v) -> BlocksciType {
 			return BlocksciType{std::forward<decltype(v)>(v)};
 		});
 	}, var);
@@ -46,7 +46,7 @@ RawRange<BlocksciType> BlocksciRangeType::toGeneric() {
 
 RawRange<std::any> BlocksciRangeType::toAnySequence() {
     return mpark::visit([&](auto &r) -> RawRange<std::any> { 
-        return r | ranges::view::transform([](auto && v) -> std::any {
+        return r | ranges::views::transform([](auto && v) -> std::any {
             return std::forward<decltype(v)>(v);
         });
     }, var);

@@ -26,7 +26,7 @@ struct AddPubkeyBaseMethods {
     void operator()(FuncApplication func) {
         using namespace blocksci;
         func(method_tag, "find_multisigs", +[](const T &script) -> RawIterator<script::Multisig> {
-            return script.getIncludingMultisigs() | ranges::view::transform([](Address && address) -> script::Multisig {
+            return script.getIncludingMultisigs() | ranges::views::transform([](Address && address) -> script::Multisig {
                 return mpark::get<script::Multisig>(address.getScript().wrapped);
             });
         }, "List of multisigs which include this public key");

@@ -10,7 +10,7 @@
 
 #include <blocksci/core/core_fwd.hpp>
 
-#include <range/v3/view_facade.hpp>
+#include <range/v3/view/facade.hpp>
 
 namespace rocksdb {
     class Iterator;
@@ -41,7 +41,7 @@ namespace blocksci {
             
             std::pair<RawAddress, InoutPointer> read() const;
             
-            bool equal(ranges::default_sentinel) const;
+            bool equal(ranges::default_sentinel_t) const;
             
             bool equal(cursor const &that) const {
                 return rowNum == that.rowNum;
@@ -57,7 +57,7 @@ namespace blocksci {
             return cursor{*index};
         }
         
-        ranges::default_sentinel end_cursor() const {
+        ranges::default_sentinel_t end_cursor() const {
             return {};
         }
         

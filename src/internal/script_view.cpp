@@ -15,7 +15,7 @@ namespace blocksci {
     unsigned int CScriptView::GetSigOpCount(bool fAccurate) const
     {
         unsigned int n = 0;
-        const_iterator pc = begin();
+        iterator pc = begin();
         opcodetype lastOpcode = OP_INVALIDOPCODE;
         while (pc < end())
         {
@@ -46,8 +46,8 @@ namespace blocksci {
         // This is a pay-to-script-hash scriptPubKey;
         // get the last item that the scriptSig
         // pushes onto the stack:
-        const_iterator pc = scriptSig.begin();
-        ranges::iterator_range<const unsigned char *> vData;
+        iterator pc = scriptSig.begin();
+        ranges::subrange<const unsigned char *> vData;
         while (pc < scriptSig.end()) {
             opcodetype opcode;
             if (!scriptSig.GetOp(pc, opcode, vData)) {
@@ -80,7 +80,7 @@ namespace blocksci {
     
     // A witness program is any valid CScript that consists of a 1-byte push opcode
     // followed by a data push between 2 and 40 bytes.
-    bool CScriptView::IsWitnessProgram(uint8_t& version, ranges::iterator_range<const unsigned char *>& program) const {
+    bool CScriptView::IsWitnessProgram(uint8_t& version, ranges::subrange<const unsigned char *>& program) const {
         if (this->size() < 4 || this->size() > 42) {
             return false;
         }
@@ -105,7 +105,7 @@ namespace blocksci {
         return (static_cast<size_t>((*this)[1] + 2) == this->size());
     }
     
-    bool CScriptView::IsPushOnly(const_iterator pc) const {
+    bool CScriptView::IsPushOnly(iterator pc) const {
         while (pc < end()) {
             opcodetype opcode;
             if (!GetOp(pc, opcode)) {
@@ -129,8 +129,8 @@ namespace blocksci {
     std::string ScriptToAsmStr(const CScriptView& script, const bool fAttemptSighashDecode) {
         std::stringstream ss;
         opcodetype opcode;
-        ranges::iterator_range<const unsigned char *> vch;
-        CScriptView::const_iterator pc = script.begin();
+        ranges::subrange<const unsigned char *> vch;
+        CScriptView::iterator pc = script.begin();
         while (pc < script.end()) {
             if (!ss.str().empty()) {
                 ss << " ";
@@ -141,7 +141,7 @@ namespace blocksci {
             }
             if (0 <= opcode && opcode <= OP_PUSHDATA4) {
                 if (vch.size() <= static_cast<std::vector<unsigned char>::size_type>(4)) {
-                    ss << CScriptNum(vch, false).getint();
+                    ss << CScriptNum(vch | ranges::to_vector, false).getint();
                 } else {
                     // the IsUnspendable check makes sure not to try to decode OP_RETURN data that may match the format of a signature
                     if (fAttemptSighashDecode && !script.IsUnspendable()) {

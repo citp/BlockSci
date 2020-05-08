@@ -107,9 +107,9 @@ struct Proxy<ranges::optional<T>> : public OptionalProxy {
 		return [f = this->func](std::any &val) -> BlocksciRangeType {
 			auto v = f(val);
 			if (v) {
-				return BlocksciRangeType{RawRange<T>{ranges::view::single(*v)}};
+				return BlocksciRangeType{RawRange<T>{ranges::views::single(*v)}};
 			} else {
-				return BlocksciRangeType{RawRange<T>{ranges::view::empty<T>()}};
+				return BlocksciRangeType{RawRange<T>{ranges::views::empty<T>}};
 			}
 		};
 	}

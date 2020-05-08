@@ -43,13 +43,13 @@ blocksci::RawAddress AnyScriptInput::address() const {
 }
 
 std::pair<AnyScriptOutput, std::unique_ptr<AnyScriptInput>> p2shGenerate(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::SCRIPTHASH> &) {
-    blocksci::CScriptView::const_iterator pc1 = scriptView.begin();
-    blocksci::CScriptView::const_iterator prevpc = scriptView.begin();
-    blocksci::CScriptView::const_iterator prevprevpc = scriptView.begin();
+    blocksci::CScriptView::iterator pc1 = scriptView.begin();
+    blocksci::CScriptView::iterator prevpc = scriptView.begin();
+    blocksci::CScriptView::iterator prevprevpc = scriptView.begin();
     blocksci::opcodetype opcode1;
-    ranges::iterator_range<const unsigned char *> vch1;
+    ranges::subrange<const unsigned char *> vch1;
     
-    ranges::iterator_range<const unsigned char *> lastScript;
+    ranges::subrange<const unsigned char *> lastScript;
     while(true) {
         prevprevpc = prevpc;
         prevpc = pc1;
@@ -59,7 +59,7 @@ std::pair<AnyScriptOutput, std::unique_ptr<AnyScriptInput>> p2shGenerate(const I
         }
     }
     
-    blocksci::CScriptView::const_iterator begin = scriptView.begin();
+    blocksci::CScriptView::iterator begin = scriptView.begin();
     auto wrappedInputBegin = &*begin;
     auto wrappedInputLength = static_cast<uint32_t>(std::distance(begin, prevprevpc));
     
@@ -84,8 +84,8 @@ ScriptInputData<blocksci::AddressType::Enum::PUBKEYHASH>::ScriptInputData(const 
     if (scriptView.size() > 0) {
         auto pc = scriptView.begin();
         blocksci::opcodetype opcode = blocksci::OP_0;
-        ranges::iterator_range<const unsigned char *> vchSig;
-        ranges::iterator_range<const unsigned char *> vchSig2;
+        ranges::subrange<const unsigned char *> vchSig;
+        ranges::subrange<const unsigned char *> vchSig2;
         // tx 1b008139698117162a9539295ada34fc745f06f733b5f400674f15bf47e720a5 contains a OP_0 before the signature
         // tx bcd1835ebd7e0d44abcab84ec64a488eefd9fa048d2e11a5a24b197838d8af11 (testnet) contains an Push(13) before the real data
         // tx 4c65efdf4e60e9c1bbc1a1a452c3c758789efc7894bff9ed694305eb9c389e7b (testnet) super weird

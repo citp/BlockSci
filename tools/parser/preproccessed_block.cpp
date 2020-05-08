@@ -297,8 +297,8 @@ blocksci::uint256 RawTransaction::getHash(const InputView &info, const blocksci:
             // Blank out other inputs' signatures
             s.serializeCompact(0);
         } else {
-            blocksci::CScriptView::const_iterator it = scriptView.begin();
-            blocksci::CScriptView::const_iterator itBegin = it;
+            blocksci::CScriptView::iterator it = scriptView.begin();
+            blocksci::CScriptView::iterator itBegin = it;
             blocksci::opcodetype opcode;
             unsigned int nCodeSeparators = 0;
             while (scriptView.GetOp(it, opcode)) {

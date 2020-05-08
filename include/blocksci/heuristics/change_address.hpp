@@ -14,7 +14,7 @@
 #include <blocksci/scripts/scripts_fwd.hpp>
 
 #include <range/v3/utility/optional.hpp>
-#include <range/v3/distance.hpp>
+#include <range/v3/iterator/operations.hpp>
 #include <range/v3/view.hpp>
 #include <range/v3/view/set_algorithm.hpp>
 
@@ -83,7 +83,7 @@ namespace heuristics {
                 if (ranges::distance(c) == 1) {
                     return c;
                 } else {
-                    ranges::any_view<Output> empty = ranges::view::empty<Output>();
+                    ranges::any_view<Output> empty = ranges::views::empty<Output>;
                     return empty;
                 }
             }}};
@@ -93,7 +93,7 @@ namespace heuristics {
             return ChangeHeuristic{HeuristicFunc{[=](const Transaction &tx) {
                 auto first = a(tx);
                 auto second = b(tx);
-                return ranges::view::set_intersection(first, second);
+                return ranges::views::set_intersection(first, second);
             }}};
         }
         
@@ -101,7 +101,7 @@ namespace heuristics {
             return ChangeHeuristic{HeuristicFunc{[=](const Transaction &tx) {
                 auto first = a(tx);
                 auto second = b(tx);
-                return ranges::view::set_union(first, second);
+                return ranges::views::set_union(first, second);
             }}};
         }
         
@@ -109,7 +109,7 @@ namespace heuristics {
             return ChangeHeuristic{HeuristicFunc{[=](const Transaction &tx) {
                 auto first = a(tx);
                 auto second = b(tx);
-                return ranges::view::set_difference(first, second);
+                return ranges::views::set_difference(first, second);
             }}};
         }
     };

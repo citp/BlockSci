@@ -176,7 +176,7 @@ namespace blocksci {
     template<AddressType::Enum type>
     ranges::any_view<std::pair<uint32_t, typename blocksci::AddressInfo<type>::IDType>> HashIndex::getAddressRange() {
         using IDType = typename blocksci::AddressInfo<type>::IDType;
-        return getRawAddressRange(type) | ranges::view::transform([](std::pair<MemoryView, MemoryView> pair) -> std::pair<uint32_t, IDType> {
+        return getRawAddressRange(type) | ranges::views::transform([](std::pair<MemoryView, MemoryView> pair) -> std::pair<uint32_t, IDType> {
             auto &key = pair.first;
             auto &value = pair.second;
             uint32_t addressNum;

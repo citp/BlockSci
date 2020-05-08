@@ -28,7 +28,7 @@ namespace blocksci {
     template <AddressType::Enum type>
     ScriptRange<type> BLOCKSCI_EXPORT scriptsRange(DataAccess &access) {
         auto scriptCount = getScriptCount(type, access);
-        return ranges::view::ints(uint32_t{1}, scriptCount + 1) | ranges::view::transform([&](uint32_t scriptNum) {
+        return ranges::views::ints(uint32_t{1}, scriptCount + 1) | ranges::views::transform([&](uint32_t scriptNum) {
             return ScriptAddress<type>(scriptNum, access);
         });
     }

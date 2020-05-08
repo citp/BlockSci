@@ -17,7 +17,7 @@
 #include <internal/address_output_range.hpp>
 
 #include <range/v3/numeric/accumulate.hpp>
-#include <range/v3/front.hpp>
+#include <range/v3/range/operations.hpp>
 #include <range/v3/range_for.hpp>
 #include <range/v3/view/group_by.hpp>
 #include <range/v3/view/transform.hpp>

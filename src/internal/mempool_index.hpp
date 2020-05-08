@@ -149,7 +149,7 @@ namespace blocksci {
         
         ranges::optional<std::reference_wrapper<const TimestampIndex>> selectPossibleTxRecording(uint32_t txIndex) const {
             if (timestampFiles.size() > 0) {
-                auto it = ranges::upper_bound(timestampFiles, txIndex, ranges::ordered_less(), &TimestampIndex::firstTxIndex);
+                auto it = ranges::upper_bound(timestampFiles, txIndex, ranges::less(), &TimestampIndex::firstTxIndex);
                 if (it != timestampFiles.begin()) {
                     --it;
                 }
@@ -162,7 +162,7 @@ namespace blocksci {
         
         ranges::optional<std::reference_wrapper<const BlocktimeIndex>> selectPossibleBlockRecording(int height) const {
             if (blockTimeFiles.size() > 0) {
-                auto it = ranges::upper_bound(blockTimeFiles, height, ranges::ordered_less(), &BlocktimeIndex::firstBlockNum);
+                auto it = ranges::upper_bound(blockTimeFiles, height, ranges::less(), &BlocktimeIndex::firstBlockNum);
                 if (it != blockTimeFiles.begin()) {
                     --it;
                 }

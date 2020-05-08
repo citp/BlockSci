@@ -68,7 +68,7 @@ namespace blocksci {
         }
     }
     
-    bool RawAddressOutputRange::cursor::equal(ranges::default_sentinel) const {
+    bool RawAddressOutputRange::cursor::equal(ranges::default_sentinel_t) const {
         return !it->Valid() && currentTypeIndex == AddressType::size;
     }
     

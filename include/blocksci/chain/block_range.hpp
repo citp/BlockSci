@@ -217,13 +217,13 @@ namespace blocksci {
         return it + i;
     }
     
-    CONCEPT_ASSERT(ranges::BidirectionalRange<BlockRange>());
-    CONCEPT_ASSERT(ranges::BidirectionalIterator<BlockRange::iterator>());
-    CONCEPT_ASSERT(ranges::SizedSentinel<BlockRange::iterator, BlockRange::iterator>());
-    CONCEPT_ASSERT(ranges::TotallyOrdered<BlockRange::iterator>());
-    CONCEPT_ASSERT(ranges::RandomAccessIterator<BlockRange::iterator>());
-    CONCEPT_ASSERT(ranges::RandomAccessRange<BlockRange>());
-    CONCEPT_ASSERT(ranges::SizedRange<BlockRange>());
+    CPP_assert(ranges::bidirectional_range<BlockRange>);
+    CPP_assert(ranges::bidirectional_iterator<BlockRange::iterator>);
+    CPP_assert(ranges::sized_sentinel_for<BlockRange::iterator, BlockRange::iterator>);
+    CPP_assert(ranges::totally_ordered<BlockRange::iterator>);
+    CPP_assert(ranges::random_access_iterator<BlockRange::iterator>);
+    CPP_assert(ranges::random_access_range<BlockRange>);
+    CPP_assert(ranges::sized_range<BlockRange>);
 } // namespace blocksci
 
 

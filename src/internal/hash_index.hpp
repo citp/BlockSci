@@ -13,6 +13,7 @@
 #include "memory_view.hpp"
 
 #include <range/v3/view/any_view.hpp>
+#include <range/v3/utility/optional.hpp>
 
 #include <rocksdb/db.h>
 

@@ -10,7 +10,7 @@
 
 #include "bitcoin_script.hpp"
 
-#include <range/v3/iterator_range.hpp>
+#include <range/v3/view/subrange.hpp>
 
 #include <cassert>
 #include <limits>
@@ -21,26 +21,26 @@
 namespace blocksci {
     
     /** Serialized script, used inside transaction inputs and outputs */
-    class CScriptView : public ranges::iterator_range<const unsigned char *>  {
+    class CScriptView : public ranges::subrange<const unsigned char *>  {
     public:
-        CScriptView() : ranges::iterator_range<const unsigned char *>() {}
-        CScriptView(const unsigned char* pbegin, const unsigned char* pend) : ranges::iterator_range<const unsigned char *>(pbegin, pend) {}
+        CScriptView() : ranges::subrange<const unsigned char *>() {}
+        CScriptView(const unsigned char* pbegin, const unsigned char* pend) : ranges::subrange<const unsigned char *>(pbegin, pend) {}
         
-        bool GetOp(const_iterator& pc, opcodetype& opcodeRet, ranges::iterator_range<const unsigned char *>& vchRet) const
+        bool GetOp(iterator& pc, opcodetype& opcodeRet, ranges::subrange<const unsigned char *>& vchRet) const
         {
             return GetOp2(pc, opcodeRet, &vchRet);
         }
         
-        bool GetOp(const_iterator& pc, opcodetype& opcodeRet) const
+        bool GetOp(iterator& pc, opcodetype& opcodeRet) const
         {
             return GetOp2(pc, opcodeRet, nullptr);
         }
         
-        bool GetOp2(const_iterator& pc, opcodetype& opcodeRet, ranges::iterator_range<const unsigned char *>* pvchRet) const
+        bool GetOp2(iterator& pc, opcodetype& opcodeRet, ranges::subrange<const unsigned char *>* pvchRet) const
         {
             opcodeRet = OP_INVALIDOPCODE;
             if (pvchRet)
-                *pvchRet = ranges::iterator_range<const unsigned char *>();
+                *pvchRet = ranges::subrange<const unsigned char *>();
             if (pc >= end())
                 return false;
             
@@ -84,7 +84,7 @@ namespace blocksci {
                 if (end() - pc < 0 || static_cast<unsigned int>(end() - pc) < nSize)
                     return false;
                 if (pvchRet)
-                    *pvchRet = ranges::iterator_range<const unsigned char *>(pc, pc + nSize);
+                    *pvchRet = ranges::subrange<const unsigned char *>(pc, pc + nSize);
                 pc += nSize;
             }
             
@@ -96,7 +96,7 @@ namespace blocksci {
         {
             int nFound = 0;
             opcodetype opcode = OP_0;
-            for (const_iterator pc = begin(); pc != end() && GetOp(pc, opcode);)
+            for (iterator pc = begin(); pc != end() && GetOp(pc, opcode);)
                 if (opcode == op)
                     ++nFound;
             return nFound;
@@ -119,11 +119,11 @@ namespace blocksci {
         
         bool IsPayToScriptHash() const;
         bool IsPayToWitnessScriptHash() const;
-        bool IsWitnessProgram(uint8_t& version, ranges::iterator_range<const unsigned char *>& program) const;
+        bool IsWitnessProgram(uint8_t& version, ranges::subrange<const unsigned char *>& program) const;
         bool IsWitnessProgram() const;
         
         /** Called by IsStandardTx and P2SH/BIP62 VerifyScript (which makes it consensus-critical). */
-        bool IsPushOnly(const_iterator pc) const;
+        bool IsPushOnly(iterator pc) const;
         bool IsPushOnly() const;
 
         /**

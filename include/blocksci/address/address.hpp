@@ -18,6 +18,7 @@
 #include <blocksci/scripts/scripts_fwd.hpp>
 
 #include <range/v3/view/any_view.hpp>
+#include <range/v3/utility/optional.hpp>
 
 #include <functional>
 #include <unordered_set>

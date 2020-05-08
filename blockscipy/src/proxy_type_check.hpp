@@ -10,6 +10,7 @@
 #define blocksci_proxy_type_check_hpp
 
 #include "python_fwd.hpp"
+#include <range/v3/utility/optional.hpp>
 
 #include <typeinfo>
 

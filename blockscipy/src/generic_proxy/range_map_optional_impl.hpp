@@ -26,14 +26,14 @@ namespace {
 
 	template <typename T>
 	RawIterator<typename ranges::range_value_t<T>::value_type> flattenOptional(T && t) {
-	    return ranges::view::transform(ranges::view::filter(std::forward<T>(t), isOptional), derefOptional);
+	    return ranges::views::transform(ranges::views::filter(std::forward<T>(t), isOptional), derefOptional);
 	}
 }
 
 template<typename R>
 Proxy<RawIterator<R>> mapOptional(IteratorProxy &p, Proxy<ranges::optional<R>> &p2) {
 	return liftGeneric(p, [p2](auto && seq) -> RawIterator<R> {
-		return flattenOptional(ranges::view::transform(std::forward<decltype(seq)>(seq).toAnySequence(), p2));
+		return flattenOptional(ranges::views::transform(std::forward<decltype(seq)>(seq).toAnySequence(), p2));
 	});
 }
 

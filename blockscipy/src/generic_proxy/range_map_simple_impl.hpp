@@ -21,7 +21,7 @@
 template<ranges::category range_cat, typename R>
 Proxy<ranges::any_view<R, range_cat>> mapSimple(proxy_sequence<range_cat> &p, Proxy<R> &p2) {
 	return liftGeneric(p, [p2](auto && seq) -> ranges::any_view<R, range_cat> {
-		return ranges::view::transform(std::forward<decltype(seq)>(seq).toAnySequence(), p2);
+		return ranges::views::transform(std::forward<decltype(seq)>(seq).toAnySequence(), p2);
 	});
 }
 
