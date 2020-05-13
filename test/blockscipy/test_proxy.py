@@ -17,6 +17,25 @@ def test_map_txes(chain):
     assert tx5 == tx0
 
 
+def test_select_txes(chain):
+    tx0 = set()
+    for block in chain:
+        for tx in block:
+            tx0.add(tx.index)
+
+    tx1 = set(chain.blocks.txes.index)
+    tx2 = set(chain.blocks.select(lambda b: b.txes).index)
+    tx3 = set(chain.blocks.select(lambda b: b.txes.index))
+    tx4 = set(chain.blocks.select(lambda b: b.txes.select(lambda tx: tx.index)))
+    tx5 = set(chain.blocks.select(lambda b: b.txes).select(lambda tx: tx.index))
+
+    assert tx1 == tx0
+    assert tx2 == tx0
+    assert tx3 == tx0
+    assert tx4 == tx0
+    assert tx5 == tx0
+
+
 def test_map_outputs(chain):
     o0 = set()
     for block in chain:
@@ -27,6 +46,22 @@ def test_map_outputs(chain):
     o1 = set(chain.blocks.txes.outputs.to_list())
     o2 = set(chain.blocks.map(lambda b: b.txes.outputs).to_list())
     o3 = set(chain.blocks.map(lambda b: b.txes).outputs.to_list())
+
+    assert o1 == o0
+    assert o2 == o0
+    assert o3 == o0
+
+
+def test_select_outputs(chain):
+    o0 = set()
+    for block in chain:
+        for tx in block:
+            for o in tx.outputs:
+                o0.add(o)
+
+    o1 = set(chain.blocks.txes.outputs.to_list())
+    o2 = set(chain.blocks.select(lambda b: b.txes.outputs).to_list())
+    o3 = set(chain.blocks.select(lambda b: b.txes).outputs.to_list())
 
     assert o1 == o0
     assert o2 == o0
@@ -103,9 +138,13 @@ def test_where_address(chain):
 
 
 def check_iterator_range(rng, regtest):
-    s = rng.size
-    assert s == len(rng.to_list())
-    print(s, file=regtest)
+    s1 = rng.size
+    s2 = rng.count
+    ll = len(rng.to_list())
+    assert s1 == ll
+    assert s2 == ll
+    assert s1 == s2
+    print(s1, file=regtest)
 
 
 def test_size(chain, regtest):
@@ -117,3 +156,13 @@ def test_size(chain, regtest):
     check_iterator_range(chain[121].txes, regtest)
     check_iterator_range(chain[121].txes.inputs, regtest)
     check_iterator_range(chain[121].txes.outputs, regtest)
+
+def test_nested_select(chain):
+    txes1 = chain.blocks.txes.where(
+        lambda tx: tx.outputs.where(lambda o: o.is_spent)
+        .any(lambda o: o.spending_tx.map(lambda t: t.fee_per_byte()).or_value(0) > o.tx.fee_per_byte())).to_list()
+    txes2 = chain.blocks.txes.where(
+        lambda tx: tx.outputs.where(lambda o: o.is_spent)
+        .any(lambda o: o.spending_tx.select(lambda t: t.fee_per_byte()).or_value(0) > o.tx.fee_per_byte())).to_list()
+    assert txes1
+    assert txes1 == txes2
