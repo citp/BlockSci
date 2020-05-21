@@ -374,6 +374,7 @@ def setup_sequence_map_funcs():
 
     for cl in iterator_and_range_cls:
         globals()[cl].map = range_map_func
+        globals()[cl].select = range_map_func
         globals()[cl].where = range_where_func
         globals()[cl].group_by = range_group_by_func
         globals()[cl].max = range_max_func
@@ -410,6 +411,7 @@ def setup_sequence_proxy_map_funcs():
 
     for cl in iterator_and_range_cls:
         getattr(proxy, cl).map = range_map_func
+        getattr(proxy, cl).select = range_map_func
         getattr(proxy, cl).where = range_where_func
         getattr(proxy, cl).max = range_max_func
         getattr(proxy, cl).min = range_min_func
@@ -594,6 +596,7 @@ def setup_iterator_proxy_methods(iterator_proxy):
         setattr(proxy_cl, proxy_func, iterator_proxy_method_creator(proxy_func))
 
 def setup_size_property(iterator):
+    iterator.count = property(lambda rng: rng._self_proxy.size(rng))
     iterator.size = property(lambda rng: rng._self_proxy.size(rng))
 
 
