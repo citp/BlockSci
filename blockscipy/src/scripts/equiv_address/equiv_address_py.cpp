@@ -36,10 +36,7 @@ void init_equiv_address(py::class_<EquivAddress> &cl) {
     .def("in_txes", [](EquivAddress &address) {
         pybind11::print("Warning: `in_txes` is deprecated. Use `input_txes` instead.");
         return address.getInputTransactions();
-    }, "Returns a list of all transaction where these equivalent addresses were an input")
-    .def_property_readonly("addresses", +[](EquivAddress &address) -> std::unordered_set<Address> {
-        return {address.begin(), address.end()};
-    }, "Returns an iterator over the addresses that make up this equivalent address");
+    }, "Returns a list of all transaction where these equivalent addresses were an input");
     ;
 }
 
