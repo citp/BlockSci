@@ -29,25 +29,25 @@ ENDMACRO(COPY_FILE_IF_CHANGED)
 
 MACRO(COPY_FILE_INTO_DIRECTORY_IF_CHANGED in_file out_dir target)
   GET_FILENAME_COMPONENT(file_name ${in_file} NAME)
-  COPY_FILE_IF_CHANGED(${in_file} ${out_dir}/${file_name} ${target})  
+  COPY_FILE_IF_CHANGED(${in_file} ${out_dir}/${file_name} ${target})
 ENDMACRO(COPY_FILE_INTO_DIRECTORY_IF_CHANGED)
 
-#Copies all the files from in_file_list into the out_dir. 
+#Copies all the files from in_file_list into the out_dir.
 # sub-trees are ignored (files are stored in same out_dir)
 MACRO(COPY_FILES_INTO_DIRECTORY_IF_CHANGED in_file_list out_dir target)
   FOREACH(in_file ${in_file_list})
     COPY_FILE_INTO_DIRECTORY_IF_CHANGED(${in_file} ${out_dir} ${target})
-  ENDFOREACH(in_file) 
+  ENDFOREACH(in_file)
 ENDMACRO(COPY_FILES_INTO_DIRECTORY_IF_CHANGED)
 
-#Copy all files and directories in in_dir to out_dir. 
+#Copy all files and directories in in_dir to out_dir.
 # Subtrees remain intact.
 MACRO(COPY_DIRECTORY_IF_CHANGED in_dir out_dir target)
   FILE(GLOB_RECURSE in_file_list ${in_dir}/*)
   FOREACH(in_file ${in_file_list})
     STRING(REGEX REPLACE ${in_dir} ${out_dir} out_file ${in_file})
     COPY_FILE_IF_CHANGED(${in_file} ${out_file} ${target})
-  ENDFOREACH(in_file) 
+  ENDFOREACH(in_file)
 ENDMACRO(COPY_DIRECTORY_IF_CHANGED)
 
 COPY_DIRECTORY_IF_CHANGED("${RANGE_HEADERS}" "${BLOCKSCI_HEADER_PREFIX}/external" copy_externals)
@@ -93,11 +93,11 @@ target_compile_features(blocksci PUBLIC ${BLOCKSCI_FEATURE_REQUIREMENTS})
 target_compile_options(blocksci PRIVATE -Wall -Wextra -Wpedantic)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-target_compile_options(blocksci PRIVATE -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-old-style-cast -Wno-documentation-unknown-command -Wno-documentation -Wno-shadow -Wno-covered-switch-default -Wno-missing-prototypes -Wno-weak-vtables -Wno-unused-macros -Wno-padded)
+target_compile_options(blocksci PRIVATE -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-old-style-cast -Wno-documentation-unknown-command -Wno-documentation -Wno-shadow -Wno-covered-switch-default -Wno-missing-prototypes -Wno-weak-vtables -Wno-unused-macros -Wno-padded -Wno-missing-variable-declarations)
 endif()
 
-target_link_libraries( blocksci 
-  PUBLIC 
+target_link_libraries( blocksci
+  PUBLIC
     Threads::Threads
   PRIVATE
     blocksci_internal
@@ -260,7 +260,7 @@ set(CLUSTER_SOURCES
   ${BLOCKSCI_SOURCE_PREFIX}/cluster/cluster.cpp
 )
 
-target_sources(blocksci 
+target_sources(blocksci
   PUBLIC
     $<BUILD_INTERFACE:${CORE_HEADERS}>
     $<BUILD_INTERFACE:${BLOCKSCI_HEADERS}>

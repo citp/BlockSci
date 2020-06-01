@@ -19,7 +19,7 @@ set_target_properties(blocksci_parser PROPERTIES VISIBILITY_INLINES_HIDDEN 1)
 target_compile_options(blocksci_parser PRIVATE -Wall -Wextra -Wpedantic)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-target_compile_options(blocksci_parser PRIVATE -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-old-style-cast -Wno-documentation-unknown-command -Wno-documentation -Wno-shadow -Wno-covered-switch-default -Wno-missing-prototypes -Wno-weak-vtables -Wno-unused-macros -Wno-padded)
+target_compile_options(blocksci_parser PRIVATE -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-old-style-cast -Wno-documentation-unknown-command -Wno-documentation -Wno-shadow -Wno-covered-switch-default -Wno-missing-prototypes -Wno-weak-vtables -Wno-unused-macros -Wno-padded -Wno-missing-variable-declarations)
 endif()
 
 source_group(blocksci_parser FILES ${PARSER_SOURCES} ${PARSER_HEADERS})
