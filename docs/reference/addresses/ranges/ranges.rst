@@ -15,18 +15,4 @@ Range Classes
    ScriptHashAddressRange
    WitnessScriptHashAddressRange
    NonstandardAddressRange
-
-   AddressOptionalRange
-   EquivAddressOptionalRange
-   PubkeyAddressOptionalRange
-   PubkeyHashAddressOptionalRange
-   MultisigPubkeyOptionalRange
-   WitnessPubkeyHashAddressOptionalRange
-   MultisigAddressOptionalRange
-   OpReturnOptionalRange
-   ScriptHashAddressOptionalRange
-   WitnessScriptHashAddressOptionalRange
-   NonstandardAddressOptionalRange
-
-   
    

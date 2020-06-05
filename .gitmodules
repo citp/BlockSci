@@ -1,6 +1,6 @@
 [submodule "libs/pybind11"]
 	path = blockscipy/blocksci/pybind11
-	url = https://github.com/pybind/pybind11/
+	url = https://github.com/pybind/pybind11
 [submodule "libs/bitcoin-api-cpp"]
 	path = external/bitcoin-api-cpp
 	url = https://github.com/hkalodner/bitcoin-api-cpp.git
@@ -12,7 +12,7 @@
 	url = https://github.com/mpark/variant.git
 [submodule "libs/range-v3"]
 	path = external/range-v3
-	url = https://github.com/hkalodner/range-v3.git
+	url = https://github.com/ericniebler/range-v3.git
 [submodule "Notebooks/blocksci/Blockchain-Known-Pools"]
 	path = blockscipy/blocksci/Blockchain-Known-Pools
 	url = https://github.com/blockchain/Blockchain-Known-Pools
@@ -22,3 +22,24 @@
 [submodule "libs/rocksdb"]
 	path = external/rocksdb
 	url = https://github.com/facebook/rocksdb
+[submodule "external/cereal"]
+	path = external/cereal
+	url = https://github.com/USCiLab/cereal
+[submodule "external/mio"]
+	path = external/mio
+	url = https://github.com/hkalodner/mio
+[submodule "external/filesystem"]
+	path = external/filesystem
+	url = https://github.com/hkalodner/filesystem
+[submodule "external/endian"]
+	path = external/endian
+	url = https://github.com/steinwurf/endian
+[submodule "blockscipy/external/date"]
+	path = blockscipy/external/date
+	url = https://github.com/HowardHinnant/date
+[submodule "external/json"]
+	path = external/json
+	url = https://github.com/nlohmann/json
+[submodule "test/testchain-generator"]
+	path = test/testchain-generator
+	url = https://github.com/citp/testchain-generator

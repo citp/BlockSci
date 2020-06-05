@@ -14,8 +14,8 @@ If you have previously had BlockSci v0.4.5 or below installed you must first rem
 	rm /usr/local/bin/blocksci*
 	rm /usr/local/bin/mempool_recorder
 
-Ubuntu 16.04
---------------
+Ubuntu 18.04 / 16.04
+---------------------
 
 ..  code-block:: bash
 
@@ -42,12 +42,13 @@ You will also need to increase_ the open files limit on your system.
 
 .. _increase: https://ro-che.info/articles/2017-03-26-increase-open-files-limit
 
+
 Mac OS 10.13
 --------------
 ..  code-block:: bash
 
     brew install cmake jsoncpp libjson-rpc-cpp boost openssl jemalloc zstd \
-    automake libtool google-sparsehash python3
+    automake libtool google-sparsehash lz4 python3
     sudo xcode-select --reset
 
     git clone https://github.com/citp/BlockSci.git

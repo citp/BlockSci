@@ -1,5 +1,5 @@
 Tagged Address Range
 ====================================
 
-.. autoclass:: blocksci.TaggedAddressRange
+.. autoclass:: blocksci.cluster.TaggedAddressRange
    :members:

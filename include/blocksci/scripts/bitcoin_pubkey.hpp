@@ -17,9 +17,7 @@
 namespace blocksci {
     /**
      * secp256k1:
-     * const unsigned int PRIVATE_KEY_SIZE = 279;
-     * const unsigned int PUBLIC_KEY_SIZE  = 65;
-     * const unsigned int SIGNATURE_SIZE   = 72;
+     *
      *
      * see www.keylength.com
      * script supports up to 75 for single byte push
@@ -40,6 +38,11 @@ namespace blocksci {
     /** An encapsulated public key. */
     class BLOCKSCI_EXPORT CPubKey
     {
+    public:
+        static constexpr unsigned int PUBLIC_KEY_SIZE             = 65;
+        static constexpr unsigned int COMPRESSED_PUBLIC_KEY_SIZE  = 33;
+        static constexpr unsigned int SIGNATURE_SIZE              = 72;
+        static constexpr unsigned int COMPACT_SIGNATURE_SIZE      = 65;
     private:
         
         /**
@@ -48,6 +51,13 @@ namespace blocksci {
          */
         std::array<unsigned char, 65> vch;
         
+        //! Set this key data to be invalid
+        void Invalidate()
+        {
+            vch[0] = 0xFF;
+        }
+        
+    public:
         //! Compute the length of a pubkey with a given first byte.
         unsigned int static GetLen(unsigned char chHeader)
         {
@@ -58,13 +68,10 @@ namespace blocksci {
             return 0;
         }
         
-        //! Set this key data to be invalid
-        void Invalidate()
-        {
-            vch[0] = 0xFF;
+        bool static ValidSize(const std::vector<unsigned char> &vch) {
+            return vch.size() > 0 && GetLen(vch[0]) == vch.size();
         }
         
-    public:
         //! Construct an invalid public key.
         CPubKey() : vch{{0}}
         {
@@ -76,7 +83,7 @@ namespace blocksci {
         void Set(const T pbegin, const T pend)
         {
             unsigned int len = pend == pbegin ? 0 : GetLen(pbegin[0]);
-            if (len && len == (pend - pbegin))
+            if (len && len <= (pend - pbegin))
                 memcpy(vch.data(), reinterpret_cast<const unsigned char*>(&pbegin[0]), len);
             else
                 Invalidate();

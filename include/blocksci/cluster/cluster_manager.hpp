@@ -14,36 +14,33 @@
 
 #include <blocksci/blocksci_export.h>
 
-#include <range/v3/view/transform.hpp>
-#include <range/v3/view/iota.hpp>
-
 namespace blocksci {
     namespace heuristics {
         struct ChangeHeuristic;
     }
+    
+    class ClusterAccess;
 
     class BLOCKSCI_EXPORT ClusterManager {
-        ClusterAccess access;
+        std::unique_ptr<ClusterAccess> access;
+        uint32_t clusterCount;
         
         friend class blocksci::Cluster;
         
     public:
         ClusterManager(const std::string &baseDirectory, DataAccess &access);
+        ClusterManager(ClusterManager && other);
+        ClusterManager &operator=(ClusterManager && other);
+        ~ClusterManager();
         
-        static ClusterManager createClustering(Blockchain &chain, const heuristics::ChangeHeuristic &heuristic, const std::string &outputPath, bool overwrite = false);
+        static ClusterManager createClustering(BlockRange &chain, const heuristics::ChangeHeuristic &heuristic, const std::string &outputPath, bool overwrite = false, bool ignoreCoinJoin = true);
+        static ClusterManager createClustering(BlockRange &chain, const std::function<ranges::any_view<Output>(const Transaction &tx)> &changeHeuristic, const std::string &outputPath, bool overwrite, bool ignoreCoinJoin);
         
         Cluster getCluster(const Address &address) const;
         
-        auto getClusters() const {
-            return ranges::view::ints(0u, access.clusterCount())
-            | ranges::view::transform([&](uint32_t clusterNum) { return Cluster(clusterNum, access); });
-        }
+        ranges::any_view<Cluster, ranges::category::random_access | ranges::category::sized> getClusters() const;
         
-        auto taggedClusters(const std::unordered_map<Address, std::string> &tags) {
-            return getClusters() | ranges::view::transform([tags](Cluster && cluster) -> ranges::optional<TaggedCluster> {
-                return cluster.getTaggedUnsafe(tags);
-            }) | flatMapOptionals();
-        }
+        ranges::any_view<TaggedCluster> taggedClusters(const std::unordered_map<Address, std::string> &tags) const;
     };
     
     using cluster_range = decltype(std::declval<ClusterManager>().getClusters());

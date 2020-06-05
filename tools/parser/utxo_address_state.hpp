@@ -12,11 +12,11 @@
 #include "output_spend_data.hpp"
 #include "serializable_map.hpp"
 
-#include <blocksci/chain/inout_pointer.hpp>
+#include <blocksci/core/inout_pointer.hpp>
 
 template<blocksci::AddressType::Enum addressType>
 class UTXOAddressTypeState {
-    SerializableMap<blocksci::OutputPointer, SpendData<addressType>> map;
+    SerializableMap<blocksci::InoutPointer, SpendData<addressType>> map;
 public:
     
     static constexpr auto type = addressType;
@@ -32,22 +32,22 @@ public:
     }
     
     template<typename T = SpendData<addressType>, std::enable_if_t<std::is_empty<T>::value, int> = 0>
-    SpendData<type> spendOutput(const blocksci::OutputPointer &) {
+    SpendData<type> spendOutput(const blocksci::InoutPointer &) {
         return SpendData<type>();
     }
     
     template<typename T = SpendData<addressType>, std::enable_if_t<!std::is_empty<T>::value, int> = 0>
-    SpendData<type> spendOutput(const blocksci::OutputPointer &pointer) {
+    SpendData<type> spendOutput(const blocksci::InoutPointer &pointer) {
         return map.erase(pointer);
     }
     
     template<typename T = SpendData<addressType>, std::enable_if_t<std::is_empty<T>::value, int> = 0>
-    void addOutput(const SpendData<type> &, const blocksci::OutputPointer &) {
+    void addOutput(const SpendData<type> &, const blocksci::InoutPointer &) {
         
     }
     
     template<typename T = SpendData<addressType>, std::enable_if_t<!std::is_empty<T>::value, int> = 0>
-    void addOutput(const SpendData<type> &spendData, const blocksci::OutputPointer &outputPointer) {
+    void addOutput(const SpendData<type> &spendData, const blocksci::InoutPointer &outputPointer) {
         map.add(outputPointer, spendData);
     }
 };
@@ -64,16 +64,16 @@ public:
     void unserialize(const std::string &path);
     void serialize(const std::string &path);
     
-    AnySpendData spendOutput(const blocksci::OutputPointer &outputPointer, blocksci::AddressType::Enum type);
-    void addOutput(const AnySpendData &spendData, const blocksci::OutputPointer &outputPointer);
+    AnySpendData spendOutput(const blocksci::InoutPointer &outputPointer, blocksci::AddressType::Enum type);
+    void addOutput(const AnySpendData &spendData, const blocksci::InoutPointer &outputPointer);
     
     template<blocksci::AddressType::Enum type>
-    void addOutput(const SpendData<type> &spendData, const blocksci::OutputPointer &outputPointer) {
+    void addOutput(const SpendData<type> &spendData, const blocksci::InoutPointer &outputPointer) {
         std::get<UTXOAddressTypeState<type>>(addressTypeStates).addOutput(spendData, outputPointer);
     }
     
     template<blocksci::AddressType::Enum type>
-    SpendData<type> spendOutput(const blocksci::OutputPointer &outputPointer) {
+    SpendData<type> spendOutput(const blocksci::InoutPointer &outputPointer) {
         return std::get<UTXOAddressTypeState<type>>(addressTypeStates).spendOutput(outputPointer);
     }
 };

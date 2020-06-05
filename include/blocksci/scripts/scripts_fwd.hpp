@@ -10,6 +10,7 @@
 #define scriptsfwd_h
 
 #include <blocksci/core/address_types.hpp>
+#include <blocksci/core/address_type_meta.hpp>
 
 namespace mpark {
     template <typename... Types>
@@ -44,6 +45,7 @@ namespace blocksci {
         using Multisig = ScriptAddress<AddressType::MULTISIG>;
         using OpReturn = ScriptAddress<AddressType::NULL_DATA>;
         using Nonstandard = ScriptAddress<AddressType::NONSTANDARD>;
+        using WitnessUnknown = ScriptAddress<AddressType::WITNESS_UNKNOWN>;
     }
 } // namespace blocksci
 

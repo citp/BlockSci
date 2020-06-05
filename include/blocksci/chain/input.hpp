@@ -9,17 +9,13 @@
 #ifndef raw_input_hpp
 #define raw_input_hpp
 
-#include "chain_access.hpp"
-#include "inout_pointer.hpp"
-
 #include <blocksci/blocksci_export.h>
+#include <blocksci/address/address_fwd.hpp>
+#include <blocksci/chain/chain_fwd.hpp>
+#include <blocksci/chain/input_pointer.hpp>
+#include <blocksci/chain/output_pointer.hpp>
 #include <blocksci/core/inout.hpp>
 #include <blocksci/core/raw_transaction.hpp>
-
-#include <blocksci/address/address.hpp>
-#include <blocksci/util/data_access.hpp>
-
-#include <sstream>
 
 namespace std {
     template<> struct BLOCKSCI_EXPORT hash<blocksci::Input> {
@@ -29,23 +25,32 @@ namespace std {
 
 namespace blocksci {
     
+    class DataAccess;
+    
     class BLOCKSCI_EXPORT Input {
         DataAccess *access;
+        uint32_t maxTxCount;
+
+        /** Pointer to Inout that represents this Input (Inout consists of linkedTxNum, scriptNum, type, and value) */
         const Inout *inout;
+
+        /** Tx-internal number of the output that this Input spends */
+        const uint16_t *spentOutputNum;
+
+        /** Blockchain's sequence number field of the input */
         const uint32_t *sequenceNum;
-        InputPointer pointer;
         
         friend size_t std::hash<Input>::operator()(const Input &) const;
     public:
+        /** Contains data to uniquely identify one input using txNum and inoutNum */
+        InputPointer pointer;
         
         BlockHeight blockHeight;
 
-        Input(const InputPointer &pointer_, BlockHeight blockHeight_, const Inout &inout_, const uint32_t *sequenceNum_, DataAccess &access_) :
-        access(&access_), inout(&inout_), sequenceNum(sequenceNum_), pointer(pointer_), blockHeight(blockHeight_) {
-            assert(pointer.isValid(access_.getChain()));
-        }
-        Input(const InputPointer &pointer_, DataAccess &access_) :
-        Input(pointer_, access_.getChain().getBlockHeight(pointer_.txNum), access_.getChain().getTx(pointer_.txNum)->getInput(pointer_.inoutNum), &access_.getChain().getSequenceNumbers(pointer_.txNum)[pointer_.inoutNum], access_) {}
+        Input(const InputPointer &pointer_, BlockHeight blockHeight_, const Inout &inout_, const uint16_t *spentOutputNum_, const uint32_t *sequenceNum_, uint32_t maxTxCount_, DataAccess &access_) :
+        access(&access_), maxTxCount(maxTxCount_), inout(&inout_), spentOutputNum(spentOutputNum_), sequenceNum(sequenceNum_), pointer(pointer_), blockHeight(blockHeight_) {}
+        
+        Input(const InputPointer &pointer_, DataAccess &access_);
         
         DataAccess &getAccess() const {
             return *access;
@@ -66,20 +71,10 @@ namespace blocksci {
         Transaction transaction() const;
         Block block() const;
         
-        BlockHeight age() const {
-            return blockHeight - access->getChain().getBlockHeight(inout->getLinkedTxNum());
-        }
+        BlockHeight age() const;
 
         bool operator==(const Inout &other) const {
             return *inout == other;
-        }
-        
-        bool operator==(const Input &other) const {
-            return *inout == *other.inout;
-        }
-
-        bool operator!=(const Input &other) const {
-            return !(*inout == *other.inout);
         }
         
         AddressType::Enum getType() const {
@@ -90,26 +85,51 @@ namespace blocksci {
             return inout->getValue();
         }
         
-        Address getAddress() const {
-            return {inout->getAddressNum(), inout->getType(), *access};
-        }
-        
+        Address getAddress() const;
+
+        /** Get the tx number of the tx that contains the output that is spent by this input */
         uint32_t spentTxIndex() const {
             return inout->getLinkedTxNum();
         }
         
-        std::string toString() const {
-            std::stringstream ss;
-            ss << "TxIn(spent_tx_index=" << inout->getLinkedTxNum() << ", address=" << getAddress().toString() <<", value=" << inout->getValue() << ")";
-            return ss.str();
-        }
-        
-        Transaction getSpentTx() const;
-    };
+        std::string toString() const;
 
-    inline std::ostream BLOCKSCI_EXPORT &operator<<(std::ostream &os, const Input &input) { 
-        return os << input.toString();
+        /** Get the Transaction that contains the output that is spent by this input */
+        Transaction getSpentTx() const;
+
+        /** Get OutputPointer of the output that this input spends */
+        OutputPointer getSpentOutputPointer() const {
+            return {inout->getLinkedTxNum(), *spentOutputNum};
+        }
+
+        Output getSpentOutput() const;
+    };
+    
+    inline bool BLOCKSCI_EXPORT operator==(const Input& a, const Input& b) {
+        return a.pointer == b.pointer;
     }
+    
+    inline bool BLOCKSCI_EXPORT operator!=(const Input& a, const Input& b) {
+        return a.pointer != b.pointer;
+    }
+    
+    inline bool BLOCKSCI_EXPORT operator<(const Input& a, const Input& b) {
+        return a.pointer < b.pointer;
+    }
+    
+    inline bool BLOCKSCI_EXPORT operator<=(const Input& a, const Input& b) {
+        return a.pointer <= b.pointer;
+    }
+    
+    inline bool BLOCKSCI_EXPORT operator>(const Input& a, const Input& b) {
+        return a.pointer > b.pointer;
+    }
+    
+    inline bool BLOCKSCI_EXPORT operator>=(const Input& a, const Input& b) {
+        return a.pointer >= b.pointer;
+    }
+
+    std::ostream BLOCKSCI_EXPORT &operator<<(std::ostream &os, const Input &input);
 } // namespace blocksci
 
 namespace std {

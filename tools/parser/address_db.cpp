@@ -8,20 +8,20 @@
 #define BLOCKSCI_WITHOUT_SINGLETON
 
 #include "address_db.hpp"
+#include "raw_address_visitor.hpp"
 
-#include <blocksci/core/address_info.hpp>
-#include <blocksci/scripts/scripts_fwd.hpp>
+#include <blocksci/core/address_type_meta.hpp>
+#include <blocksci/core/inout_pointer.hpp>
 
-using blocksci::Address;
+#include <internal/address_info.hpp>
+
 using blocksci::RawAddress;
 using blocksci::DedupAddress;
-using blocksci::Transaction;
-using blocksci::OutputPointer;
+using blocksci::InoutPointer;
 using blocksci::State;
 using blocksci::DedupAddressType;
-using blocksci::script::ScriptHash;
 
-AddressDB::AddressDB(const ParserConfigurationBase &config_, const std::string &path) : ParserIndex(config_, "addressDB"), db(path, false) {
+AddressDB::AddressDB(const ParserConfigurationBase &config_, const filesystem::path &path) : ParserIndex(config_, "addressDB"), db(path, false) {
     outputCache.reserve(cacheSize);
     nestedCache.reserve(cacheSize);
 }
@@ -32,26 +32,29 @@ AddressDB::~AddressDB() {
 }
 
 void AddressDB::processTx(const blocksci::RawTransaction *tx, uint32_t txNum, const blocksci::ChainAccess &, const blocksci::ScriptAccess &scripts) {
+    std::unordered_set<RawAddress> addedAddresses;
     std::function<bool(const RawAddress &)> visitFunc = [&](const RawAddress &a) {
-        if (dedupType(a.type) == DedupAddressType::SCRIPTHASH) {
+        if (dedupType(a.type) == DedupAddressType::SCRIPTHASH && addedAddresses.find(a) == addedAddresses.end()) {
+            addedAddresses.insert(a);
             auto scriptHash = scripts.getScriptData<DedupAddressType::SCRIPTHASH>(a.scriptNum);
-            if (scriptHash->txFirstSeen == txNum) {
+            if (scriptHash->txFirstSpent == txNum) {
                 addAddressNested(scriptHash->wrappedAddress, DedupAddress{a.scriptNum, DedupAddressType::SCRIPTHASH});
                 return true;
             } else {
                 return false;
             }
+        } else {
+            return false;
         }
-        return false;
     };
-    auto inputs = ranges::make_iterator_range(tx->beginInputs(), tx->endInputs());
+    auto inputs = ranges::make_subrange(tx->beginInputs(), tx->endInputs());
     for (auto &input : inputs) {
         visit(RawAddress{input.getAddressNum(), input.getType()}, visitFunc, scripts);
     }
     
     for (uint16_t i = 0; i < tx->outputCount; i++) {
         auto &output = tx->getOutput(i);
-        auto pointer = OutputPointer{txNum, i};
+        auto pointer = InoutPointer{txNum, i};
         addAddressOutput(blocksci::RawAddress{output.getAddressNum(), output.getType()}, pointer);
     }
 }
@@ -68,7 +71,7 @@ void AddressDB::clearNestedCache() {
     nestedCache.clear();
 }
 
-void AddressDB::addAddressOutput(const blocksci::RawAddress &address, const blocksci::OutputPointer &pointer) {
+void AddressDB::addAddressOutput(const blocksci::RawAddress &address, const blocksci::InoutPointer &pointer) {
     outputCache.emplace_back(address, pointer);
     if (outputCache.size() >= cacheSize) {
         clearOutputCache();

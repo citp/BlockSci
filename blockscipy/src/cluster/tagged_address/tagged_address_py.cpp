@@ -8,11 +8,17 @@
 
 #include "tagged_address_py.hpp"
 #include "caster_py.hpp"
-#include "self_apply_py.hpp"
+#include "ranges_py.hpp"
+
+#include <blocksci/cluster/cluster.hpp>
 
 namespace py = pybind11;
 using namespace blocksci;
 
-void init_tagged_address(py::class_<TaggedAddress> &cl) {
-    applyMethodsToSelf(cl, AddTaggedAddressMethods{});
+void init_tagged_address(py::class_<TaggedAddress> &) {
+
+}
+
+void addTaggedAddressRangeMethods(RangeClasses<TaggedAddress> &classes) {
+    addAllRangeMethods(classes);
 }

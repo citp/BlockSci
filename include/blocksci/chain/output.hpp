@@ -9,17 +9,14 @@
 #ifndef output_hpp
 #define output_hpp
 
-#include "chain_access.hpp"
-#include "inout_pointer.hpp"
-
 #include <blocksci/blocksci_export.h>
+#include <blocksci/address/address_fwd.hpp>
+#include <blocksci/chain/chain_fwd.hpp>
+#include <blocksci/chain/output_pointer.hpp>
 #include <blocksci/core/inout.hpp>
 #include <blocksci/core/raw_transaction.hpp>
 
-#include <blocksci/address/address.hpp>
-#include <blocksci/util/data_access.hpp>
-
-#include <sstream>
+#include <range/v3/utility/optional.hpp>
 
 namespace std {
     template<> struct BLOCKSCI_EXPORT hash<blocksci::Output> {
@@ -30,37 +27,37 @@ namespace std {
 namespace blocksci {
     class BLOCKSCI_EXPORT Output {
         DataAccess *access;
+
+        /** Pointer to Inout that represents this Input (Inout consists of linkedTxNum, scriptNum, type, and value) */
         const Inout *inout;
+
+        /** Tx number of the transaction that spends this Output; 0 if still unspent (at the loaded block height) */
         uint32_t spendingTxIndex;
+
         mutable BlockHeight blockHeight = -1;
         friend size_t std::hash<Output>::operator()(const Output &) const;
     public:
+        /** Contains data to uniquely identify one output using txNum and inoutNum */
         OutputPointer pointer;
         
-        Output(const OutputPointer &pointer_, BlockHeight blockHeight_, const Inout &inout_, DataAccess &access_) :
+        Output(const OutputPointer &pointer_, BlockHeight blockHeight_, const Inout &inout_, uint32_t maxTxLoaded, DataAccess &access_) :
         access(&access_), inout(&inout_), blockHeight(blockHeight_), pointer(pointer_) {
-            assert(pointer.isValid(access_.getChain()));
-            if (inout->getLinkedTxNum() < access->getChain().maxLoadedTx()) {
+            if (inout->getLinkedTxNum() < maxTxLoaded) {
                 spendingTxIndex = inout->getLinkedTxNum();
             } else {
                 spendingTxIndex = 0;
             }
         }
         
-        Output(const OutputPointer &pointer_, DataAccess &access_) :
-        Output(pointer_, -1, access_.getChain().getTx(pointer_.txNum)->getOutput(pointer_.inoutNum), access_) {}
+        Output(const OutputPointer &pointer_, DataAccess &access_);
         
         DataAccess &getAccess() const {
             return *access;
         }
         
-        BlockHeight getBlockHeight() const {
-            if (blockHeight == -1) {
-                blockHeight = access->getChain().getBlockHeight(pointer.txNum);
-            }
-            return blockHeight;
-        }
-        
+        BlockHeight getBlockHeight() const;
+
+        /** Get the tx number of the tx that spends this output (in one of its inputs) */
         ranges::optional<uint32_t> getSpendingTxIndex() const {
             return spendingTxIndex > 0 ? ranges::optional<uint32_t>{spendingTxIndex} : ranges::nullopt;
         }
@@ -80,14 +77,6 @@ namespace blocksci {
             return spendingTxIndex > 0u;
         }
         
-        bool operator==(const Output &other) const {
-            return pointer == other.pointer;
-        }
-
-        bool operator!=(const Output &other) const {
-            return pointer != other.pointer;
-        }
-        
         bool operator==(const Inout &other) const {
             return *inout == other;
         }
@@ -96,26 +85,48 @@ namespace blocksci {
             return inout->getType();
         }
         
-        Address getAddress() const {
-            return {inout->getAddressNum(), inout->getType(), *access};
-        }
+        Address getAddress() const;
         
         int64_t getValue() const {
             return inout->getValue();
         }
 
-        std::string toString() const  {
-            std::stringstream ss;
-            ss << "TxOut(spending_tx_index=" << inout->getLinkedTxNum() << ", address=" << getAddress().toString() << ", value=" << inout->getValue() << ")";
-            return ss.str();
-        }
-        
-        ranges::optional<Transaction> getSpendingTx() const;
-    };
+        std::string toString() const;
 
-    inline std::ostream &operator<<(std::ostream &os, const Output &output) { 
-        return os << output.toString();
+        /** Get the Transaction that spends this output, if it was spent yet (at the loaded block height) */
+        ranges::optional<Transaction> getSpendingTx() const;
+
+        /** Get the Input that spends this Output */
+        ranges::optional<Input> getSpendingInput() const;
+
+        ranges::optional<InputPointer> getSpendingInputPointer() const;
+    };
+    
+    inline bool BLOCKSCI_EXPORT operator==(const Output& a, const Output& b) {
+        return a.pointer == b.pointer;
     }
+    
+    inline bool BLOCKSCI_EXPORT operator!=(const Output& a, const Output& b) {
+        return a.pointer != b.pointer;
+    }
+    
+    inline bool BLOCKSCI_EXPORT operator<(const Output& a, const Output& b) {
+        return a.pointer < b.pointer;
+    }
+    
+    inline bool BLOCKSCI_EXPORT operator<=(const Output& a, const Output& b) {
+        return a.pointer <= b.pointer;
+    }
+    
+    inline bool BLOCKSCI_EXPORT operator>(const Output& a, const Output& b) {
+        return a.pointer > b.pointer;
+    }
+    
+    inline bool BLOCKSCI_EXPORT operator>=(const Output& a, const Output& b) {
+        return a.pointer >= b.pointer;
+    }
+
+    std::ostream BLOCKSCI_EXPORT &operator<<(std::ostream &os, const Output &output);
 } // namespace blocksci
 
 namespace std {

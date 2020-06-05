@@ -8,24 +8,20 @@
 
 #include "multisig_py.hpp"
 #include "caster_py.hpp"
-#include "self_apply_py.hpp"
+#include "ranges_py.hpp"
+
+#include <blocksci/scripts/multisig_script.hpp>
 
 using namespace blocksci;
 namespace py = pybind11;
-
-pybind11::list pyMultisigAddresses(blocksci::script::Multisig &script) {
-    pybind11::list ret;
-    for (auto &address : script.pubkeyScripts()) {
-        ret.append(address);
-    }
-    return ret;
-}
 
 void init_multisig(py::class_<script::Multisig> &cl) {
     cl
     .def("__repr__", &script::Multisig::toString)
     .def("__str__", &script::Multisig::toPrettyString)
     ;
+}
 
-    applyMethodsToSelf(cl, AddMultisigMethods{});
+void addMultisigRangeMethods(RangeClasses<script::Multisig> &classes) {
+	addAllRangeMethods(classes);
 }

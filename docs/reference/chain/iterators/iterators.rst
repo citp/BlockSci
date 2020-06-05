@@ -9,9 +9,3 @@ Iterator Classes
    TxIterator
    InputIterator
    OutputIterator
-
-   BlockOptionalIterator
-   TxOptionalIterator
-   InputOptionalIterator
-   OutputOptionalIterator
-   

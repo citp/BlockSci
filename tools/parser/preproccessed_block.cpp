@@ -13,7 +13,8 @@
 #include "script_input.hpp"
 #include "safe_mem_reader.hpp"
 
-#include <blocksci/util/hash.hpp>
+#include <internal/hash.hpp>
+#include <blocksci/core/inout_pointer.hpp>
 
 #ifdef BLOCKSCI_RPC_PARSER
 #include <bitcoinapi/types.h>
@@ -27,11 +28,12 @@ using SequenceNum = uint32_t;
 using Value = uint64_t;
 using Locktime = uint32_t;
 
-std::vector<unsigned char> hexStringToVec(const std::string &scripthex) {
-    std::vector<unsigned char> scriptBytes;
+template <typename CharType>
+std::vector<CharType> hexStringToVec(const std::string &scripthex) {
+    std::vector<CharType> scriptBytes;
     for (unsigned int i = 0; i < scripthex.size(); i += 2) {
         std::string byteString = scripthex.substr(i, 2);
-        auto byte = static_cast<unsigned char>(strtol(byteString.c_str(), nullptr, 16));
+        auto byte = static_cast<CharType>(strtol(byteString.c_str(), nullptr, 16));
         scriptBytes.push_back(byte);
     }
     return scriptBytes;
@@ -40,11 +42,19 @@ std::vector<unsigned char> hexStringToVec(const std::string &scripthex) {
 #ifdef BLOCKSCI_FILE_PARSER
 RawInput::RawInput(SafeMemReader &reader) : utxo{} {
     rawOutputPointer.hash = reader.readNext<blocksci::uint256>();
-    rawOutputPointer.outputNum = static_cast<uint16_t>(reader.readNext<uint32_t>());
+    uint32_t rawOutputNum = reader.readNext<uint32_t>();
+    rawOutputPointer.outputNum = static_cast<uint16_t>(rawOutputNum);
     scriptLength = reader.readVariableLengthInteger();
     scriptBegin = reinterpret_cast<const unsigned char*>(reader.unsafePos());
     reader.advance(scriptLength);
     sequenceNum = reader.readNext<SequenceNum>();
+}
+
+void RawInput::readWitnessStack(SafeMemReader &reader) {
+    auto stackItemCount = reader.readVariableLengthInteger();
+    for (uint32_t j = 0; j < stackItemCount; j++) {
+        witnessStack.emplace_back(reader);
+    }
 }
 
 RawOutput::RawOutput(SafeMemReader &reader) {
@@ -97,11 +107,7 @@ void RawTransaction::load(SafeMemReader &reader, uint32_t txNum_, blocksci::Bloc
     txHashLength = static_cast<uint32_t>(reader.unsafePos() - txHashStart);
     if (containsSegwit) {
         for (decltype(inputCount) i = 0; i < inputCount; i++) {
-            auto &input = inputs[i];
-            auto stackItemCount = reader.readVariableLengthInteger();
-            for (uint32_t j = 0; j < stackItemCount; j++) {
-                input.witnessStack.emplace_back(reader);
-            }
+            inputs[i].readWitnessStack(reader);
         }
     }
     curOffset = reader.offset();
@@ -174,21 +180,25 @@ void RawTransaction::calculateHash() {
 RawInput::RawInput(const vin_t &vin) {
     rawOutputPointer = {blocksci::uint256S(vin.txid), static_cast<uint16_t>(vin.n)};
     sequenceNum = vin.sequence;
-    scriptBytes = hexStringToVec(vin.scriptSig.hex);
+    scriptBytes = hexStringToVec<unsigned char>(vin.scriptSig.hex);
     scriptLength = 0;
+    rpcWitnessStack.clear();
+    for (const auto &item : vin.txinwitness) {
+        rpcWitnessStack.push_back(hexStringToVec<char>(item));
+    }
 }
 
 RawOutput::RawOutput(std::vector<unsigned char> scriptBytes_, int64_t value_) : scriptBytes(std::move(scriptBytes_)), value(value_)  {
 }
 
-RawOutput::RawOutput(const vout_t &vout) : RawOutput(hexStringToVec(vout.scriptPubKey.hex), static_cast<int64_t>(vout.value * 100000000)) {}
+RawOutput::RawOutput(const vout_t &vout) : RawOutput(hexStringToVec<unsigned char>(vout.scriptPubKey.hex), static_cast<int64_t>(vout.value * 1e8 + (vout.value < 0.0 ? -.5 : .5))) {}
 
 void RawTransaction::load(const getrawtransaction_t &txinfo, uint32_t txNum_, blocksci::BlockHeight blockHeight_, bool witnessActivated) {
     txNum = txNum_;
     isSegwit = witnessActivated;
     blockHeight = blockHeight_;
     version = txinfo.version;
-    locktime = static_cast<uint32_t>(txinfo.locktime);
+    locktime = txinfo.locktime;
     realSize = static_cast<uint32_t>(txinfo.hex.size() / 2);
     auto inputCount = txinfo.vin.size();
     inputs.clear();
@@ -212,7 +222,7 @@ blocksci::RawTransaction RawTransaction::getRawTransaction() const {
     return {realSize, baseSize, locktime, static_cast<uint16_t>(inputs.size()), static_cast<uint16_t>(outputs.size())};
 }
 
-blocksci::OutputPointer RawInput::getOutputPointer() const {
+blocksci::InoutPointer RawInput::getOutputPointer() const {
     return {utxo.txNum, rawOutputPointer.outputNum};
 }
 
@@ -287,8 +297,8 @@ blocksci::uint256 RawTransaction::getHash(const InputView &info, const blocksci:
             // Blank out other inputs' signatures
             s.serializeCompact(0);
         } else {
-            blocksci::CScriptView::const_iterator it = scriptView.begin();
-            blocksci::CScriptView::const_iterator itBegin = it;
+            blocksci::CScriptView::iterator it = scriptView.begin();
+            blocksci::CScriptView::iterator itBegin = it;
             blocksci::opcodetype opcode;
             unsigned int nCodeSeparators = 0;
             while (scriptView.GetOp(it, opcode)) {

@@ -5,8 +5,9 @@
 #include "bitcoin_base58.hpp"
 
 #include <blocksci/core/bitcoin_uint256.hpp>
-#include <blocksci/util/data_configuration.hpp>
-#include <blocksci/util/hash.hpp>
+
+#include <internal/hash.hpp>
+#include <internal/data_configuration.hpp>
 
 #include <cassert>
 #include <string>
@@ -180,9 +181,9 @@ namespace blocksci {
         return true;
     }
 
-    bool CBase58Data::SetString(const std::string& str)
+    bool CBase58Data::SetString(const std::string& str, unsigned int nVersionBytes)
     {
-        return SetString(str.c_str());
+        return SetString(str.c_str(), nVersionBytes);
     }
 
     std::string CBase58Data::ToString() const
@@ -206,7 +207,7 @@ namespace blocksci {
     }
 
 
-    CBitcoinAddress::CBitcoinAddress(const uint160 &dest, AddressType::Enum type, const DataConfiguration &config) {
+    CBitcoinAddress::CBitcoinAddress(const uint160 &dest, AddressType::Enum type, const ChainConfiguration &config) {
         if (type == AddressType::Enum::PUBKEYHASH || type == AddressType::Enum::PUBKEY || type == AddressType::Enum::MULTISIG_PUBKEY) {
             SetData(config.pubkeyPrefix, &dest, sizeof(dest));
         } else if (type == AddressType::Enum::SCRIPTHASH) {
@@ -218,7 +219,7 @@ namespace blocksci {
         SetData(version, &dest, sizeof(dest));
     }
 
-    std::pair<uint160, AddressType::Enum> CBitcoinAddress::Get(const DataConfiguration &config) const {
+    std::pair<uint160, AddressType::Enum> CBitcoinAddress::Get(const ChainConfiguration &config) const {
         uint160 id;
         memcpy(&id, vchData.data(), sizeof(id));
         if (vchVersion == config.pubkeyPrefix)

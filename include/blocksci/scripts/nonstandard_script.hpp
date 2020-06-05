@@ -10,72 +10,50 @@
 #define nonstandard_script_hpp
 
 #include "script.hpp"
-#include "script_access.hpp"
-#include "script_view.hpp"
 
 #include <blocksci/blocksci_export.h>
-#include <blocksci/core/address_info.hpp>
-#include <blocksci/util/data_access.hpp>
+#include <blocksci/core/hash_combine.hpp>
 
 #include <range/v3/utility/optional.hpp>
 
 #include <string>
-#include <sstream>
 
 namespace blocksci {
     template <>
     class BLOCKSCI_EXPORT ScriptAddress<AddressType::NONSTANDARD> : public ScriptBase {
         const NonstandardSpendScriptData *rawInputData;
         
-        ScriptAddress(uint32_t scriptNum_, std::tuple<const NonstandardScriptData *, const NonstandardSpendScriptData *> &&rawData_, DataAccess &access_) : ScriptBase(scriptNum_, addressType, access_, std::get<0>(rawData_)), rawInputData(std::get<1>(rawData_)) {}
-        
         const NonstandardScriptData *getData() const {
             return reinterpret_cast<const NonstandardScriptData *>(ScriptBase::getData());
         }
         
-        ranges::optional<CScriptView> getInputScript() const {
-            if (rawInputData != nullptr) {
-                return CScriptView{rawInputData->scriptData.begin(), rawInputData->scriptData.end()};
-            } else {
-                return ranges::nullopt;
-            }
-        }
+        ranges::optional<CScriptView> getInputScript() const;
         
-        CScriptView getOutputScript() const {
-            return {getData()->scriptData.begin(), getData()->scriptData.end()};
-        }
+        CScriptView getOutputScript() const;
         
     public:
         constexpr static AddressType::Enum addressType = AddressType::NONSTANDARD;
         
         ScriptAddress() = default;
-        ScriptAddress(uint32_t addressNum_, DataAccess &access_) : ScriptAddress(addressNum_, access_.getScripts().getScriptData<dedupType(addressType)>(addressNum_), access_) {}
+        ScriptAddress(uint32_t scriptNum_, std::tuple<const NonstandardScriptData *, const NonstandardSpendScriptData *> &&rawData_, DataAccess &access_) : ScriptBase(scriptNum_, addressType, access_, std::get<0>(rawData_)), rawInputData(std::get<1>(rawData_)) {}
+        ScriptAddress(uint32_t addressNum_, DataAccess &access_);
         
-        std::string inputString() const {
-            auto inputScript = getInputScript();
-            if (inputScript) {
-                return ScriptToAsmStr(*inputScript);
-            } else {
-                return "No input script";
-            }
-        }
+        std::string inputString() const;
+        std::string outputString() const;
         
-        std::string outputString() const {
-            return ScriptToAsmStr(getOutputScript());
-        }
-        
-        std::string toString() const {
-            std::stringstream ss;
-            ss << "NonStandardScript()";
-            return ss.str();
-        }
-        
-        std::string toPrettyString() const {
-            std::stringstream ss;
-            ss << "NonStandardScript(" << inputString() << ", " << outputString() << ")";
-            return ss.str();
-        }
+        std::string toString() const;
+        std::string toPrettyString() const;
     };
 } // namespace blocksci
+
+namespace std {
+    template<> struct BLOCKSCI_EXPORT hash<blocksci::ScriptAddress<blocksci::AddressType::NONSTANDARD>> {
+        size_t operator()(const blocksci::ScriptAddress<blocksci::AddressType::NONSTANDARD> &address) const {
+            std::size_t seed = 1357869;
+            blocksci::hash_combine(seed, static_cast<const blocksci::ScriptBase &>(address));
+            return seed;
+        }
+    };
+} // namespace std
 
 #endif /* nonstandard_script_hpp */

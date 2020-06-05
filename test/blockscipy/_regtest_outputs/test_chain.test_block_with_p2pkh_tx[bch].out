@@ -1,0 +1,29 @@
+[Tx(len(txins)=0, len(txouts)=1, size_bytes=100, block_height=112, tx_index=113), Tx(len(txins)=1, len(txouts)=1, size_bytes=191, block_height=112, tx_index=114), Tx(len(txins)=1, len(txouts)=2, size_bytes=225, block_height=112, tx_index=115)]
+597
+545259519
+b'\x01p\x01\x01\x08/EB32.0/\x01\x00'
+Tx(len(txins)=0, len(txouts)=1, size_bytes=100, block_height=112, tx_index=113)
+20000
+1ad8c12f3af5a7513ea309328dfb68c1e8bb8393c100db6799a02e0b3e5538bc
+112
+2
+5100000000
+Unknown
+[(address_type.pubkeyhash, 5000000000)]
+[('pubkeyhash', 5000000000)]
+Block(tx_count=5, height=113, header_hash=121d93886d8ec313c13465d4cb9421fbf63deea028c0e14315a4120c74750f19, version=536870912, timestamp=1535762400, bits=545259519, nonce=4)
+0
+4
+10100000000
+Block(tx_count=2, height=111, header_hash=7ca20a203a5ba00f52478e578efe069278d664108cabb59cf95a4a3548db2385, version=536870912, timestamp=1535761200, bits=545259519, nonce=3)
+5000020000
+597
+2018-09-01 00:30:00+00:00
+None
+1535761800
+597
+3
+<blocksci.TxRange object at 0x?????????>
+536870912
+597
+2388

@@ -13,16 +13,17 @@
 #include "basic_types.hpp"
 #include "utxo.hpp"
 
-#include <blocksci/chain/inout_pointer.hpp>
+#include <blocksci/core/inout_pointer.hpp>
 
+/** Map of the current UTXO set of the parser */
 class UTXOState : public SerializableMap<RawOutputPointer, UTXO> {
 public:
     UTXOState() : SerializableMap<RawOutputPointer, UTXO>({blocksci::uint256{}, 0}, {blocksci::uint256{}, 1}) {}
 };
 
-class UTXOScriptState : public SerializableMap<blocksci::OutputPointer, uint32_t> {
+class UTXOScriptState : public SerializableMap<blocksci::InoutPointer, uint32_t> {
 public:
-    UTXOScriptState() : SerializableMap<blocksci::OutputPointer, uint32_t>({std::numeric_limits<uint32_t>::max(), 0}, {std::numeric_limits<uint32_t>::max(), 1}) {}
+    UTXOScriptState() : SerializableMap<blocksci::InoutPointer, uint32_t>({std::numeric_limits<uint32_t>::max(), 0}, {std::numeric_limits<uint32_t>::max(), 1}) {}
 };
 
 

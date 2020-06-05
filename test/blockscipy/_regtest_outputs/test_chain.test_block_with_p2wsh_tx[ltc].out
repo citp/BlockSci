@@ -1,0 +1,29 @@
+[Tx(len(txins)=0, len(txouts)=2, size_bytes=145, block_height=122, tx_index=146), Tx(len(txins)=1, len(txouts)=2, size_bytes=235, block_height=122, tx_index=147), Tx(len(txins)=1, len(txouts)=1, size_bytes=113, block_height=122, tx_index=148), Tx(len(txins)=1, len(txouts)=2, size_bytes=235, block_height=122, tx_index=149), Tx(len(txins)=1, len(txouts)=1, size_bytes=113, block_height=122, tx_index=150)]
+857
+545259519
+b'\x01z\x01\x01'
+Tx(len(txins)=0, len(txouts)=2, size_bytes=145, block_height=122, tx_index=146)
+40000
+e07b68182673fff0363a66d7aaca0c46b9a10e3cd196326d0eee1875e01c7400
+122
+4
+10300000000
+Unknown
+[(address_type.pubkeyhash, 5000000000), (address_type.nulldata, 0), (address_type.witness_scripthash, 0)]
+[('nulldata', 0), ('pubkeyhash', 5000000000), ('witness_scripthash/pubkey', 0)]
+Block(tx_count=2, height=123, header_hash=65baade5135cc19665148a2cea1ee9f658ea937fe4c1daa214f50a609757fe66, version=536870912, timestamp=1535768400, bits=545259519, nonce=4)
+1
+8
+15300000000
+Block(tx_count=3, height=121, header_hash=aee604c197849f16df2d4a34db8c952eef11333b805cbe7e4e00967b830b1bd1, version=536870912, timestamp=1535767200, bits=545259519, nonce=3)
+5000040000
+1116
+2018-09-01 02:10:00+00:00
+None
+1535767800
+1116
+5
+<blocksci.TxRange object at 0x?????????>
+536870912
+922
+3687

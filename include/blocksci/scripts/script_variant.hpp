@@ -14,26 +14,18 @@
 #include "pubkey_script.hpp"
 #include "multisig_pubkey_script.hpp"
 #include "scripthash_script.hpp"
+#include "witness_unknown_script.hpp"
 
 #include <blocksci/blocksci_export.h>
 
 #include <mpark/variant.hpp>
 
 namespace blocksci {
-    namespace internal {
-        template<AddressType::Enum type>
-        struct ScriptCreateFunctor {
-            static ScriptVariant f(uint32_t scriptNum, DataAccess &access);
-        };
-        
-        static constexpr auto scriptCreator = make_dynamic_table<AddressType, ScriptCreateFunctor>();
-    }
-    
     class BLOCKSCI_EXPORT AnyScript {
     public:
         AnyScript() = default;
-        AnyScript(const Address &address) : wrapped(internal::scriptCreator.at(static_cast<size_t>(address.type))(address.scriptNum, address.getAccess())) {}
-        AnyScript(uint32_t addressNum, AddressType::Enum type, DataAccess &access) : wrapped(internal::scriptCreator.at(static_cast<size_t>(type))(addressNum, access)) {}
+        AnyScript(const Address &address);
+        AnyScript(uint32_t addressNum, AddressType::Enum type, DataAccess &access);
         AnyScript(const ScriptVariant &var) : wrapped(var) {}
 
         uint32_t getScriptNum() const {
@@ -42,6 +34,34 @@ namespace blocksci {
 
         AddressType::Enum getType() const {
             return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getType(); }, wrapped);
+        }
+
+        std::string fullType() const {
+            return mpark::visit([&](auto &scriptAddress) { return scriptAddress.fullType(); }, wrapped);
+        }
+        
+        bool operator==(const AnyScript& other) const {
+            return std::make_tuple(getType(), getScriptNum()) == std::make_tuple(other.getType(), other.getScriptNum());
+        }
+        
+        bool operator!=(const AnyScript& other) const {
+            return std::make_tuple(getType(), getScriptNum()) != std::make_tuple(other.getType(), other.getScriptNum());
+        }
+        
+        bool operator<(const AnyScript& other) const {
+            return std::make_tuple(getType(), getScriptNum()) < std::make_tuple(other.getType(), other.getScriptNum());
+        }
+        
+        bool operator<=(const AnyScript& other) const {
+            return std::make_tuple(getType(), getScriptNum()) <= std::make_tuple(other.getType(), other.getScriptNum());
+        }
+        
+        bool operator>(const AnyScript& other) const {
+            return std::make_tuple(getType(), getScriptNum()) > std::make_tuple(other.getType(), other.getScriptNum());
+        }
+        
+        bool operator>=(const AnyScript& other) const {
+            return std::make_tuple(getType(), getScriptNum()) >= std::make_tuple(other.getType(), other.getScriptNum());
         }
         
         std::string toString() const {
@@ -77,22 +97,26 @@ namespace blocksci {
             return mpark::visit([&](auto &scriptAddress) { return scriptAddress.getOutputPointers(); }, wrapped);
         }
         
-        int64_t calculateBalance(BlockHeight height);
-        ranges::any_view<Output> getOutputs();
-        std::vector<Input> getInputs();
-        std::vector<Transaction> getTransactions();
-        std::vector<Transaction> getOutputTransactions();
-        std::vector<Transaction> getInputTransactions();
+        int64_t calculateBalance(BlockHeight height) const;
+        ranges::any_view<Output> getOutputs() const;
+        ranges::any_view<Input> getInputs() const;
+        ranges::any_view<Transaction> getTransactions() const;
+        ranges::any_view<Transaction> getOutputTransactions() const;
+        ranges::any_view<Transaction> getInputTransactions() const;
         
         ScriptVariant wrapped;
     };
-    
-    namespace internal {
-        template<AddressType::Enum type>
-        ScriptVariant ScriptCreateFunctor<type>::f(uint32_t scriptNum, DataAccess &access) {
-            return ScriptAddress<type>(scriptNum, access);
-        }
-    }
 } // namespace blocksci
+
+namespace std {
+    template <>
+    struct hash<blocksci::AnyScript> {
+        typedef blocksci::AnyScript argument_type;
+        typedef size_t  result_type;
+        result_type operator()(const argument_type &b) const {
+            return blocksci::hashAddress(b.getScriptNum(), b.getType());
+        }
+    };
+}
 
 #endif /* script_variant_hpp */

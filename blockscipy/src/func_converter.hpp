@@ -10,41 +10,13 @@
 
 #include <functional>
 
-template <typename T, bool = true>
-struct to_func_impl {
-private:
-	using member_func = to_func_impl<decltype(&T::operator()), false>;
-public:
-	using type = typename member_func::type;
-};
+template <typename Derived, typename Return, typename Class, typename... Args>
+auto func_adaptor(Return (Class::*pmf)(Args...)) -> std::function<Return(Derived &, Args...)> { return pmf; }
 
-template <typename ClassType, typename ReturnType, typename... Args>
-struct to_func_impl<ReturnType(ClassType::*)(Args...) const, false> : public to_func_impl<ReturnType(Args...)> {};
+template <typename Derived, typename Return, typename Class, typename... Args>
+auto func_adaptor(Return (Class::*pmf)(Args...) const) -> std::function<Return(Derived &, Args...)> { return pmf; }
 
-template <typename ClassType, typename ReturnType, typename... Args>
-struct to_func_impl<ReturnType(ClassType::*)(Args...) const, true> : public to_func_impl<ReturnType(const ClassType&, Args...)> {};
-
-template <typename ClassType, typename ReturnType, typename... Args>
-struct to_func_impl<ReturnType(ClassType::*)(Args...), false> : public to_func_impl<ReturnType(Args...)> {};
-
-template <typename ClassType, typename ReturnType, typename... Args>
-struct to_func_impl<ReturnType(ClassType::*)(Args...), true> : public to_func_impl<ReturnType(ClassType&, Args...)> {};
-
-
-template <typename ReturnType, typename... Args>
-struct to_func_impl<ReturnType(*)(Args...)> : public to_func_impl<ReturnType(Args...)> {};
-
-template <typename ReturnType, typename... Args>
-struct to_func_impl<ReturnType(Args...)>
-// we specialize for pointers to member function
-{
-	using type = std::function<ReturnType(Args...)>;
-};
-
-
-template <typename F>
-typename to_func_impl<F>::type toFunc(F && f) {
-	return {std::forward<F>(f)};
-}
+template <typename Derived, typename Return, typename First, typename... Args>
+auto func_adaptor(Return (*pmf)(First, Args...)) -> std::function<Return(Derived &, Args...)> { return pmf; }
 
 #endif // function_converter_h

@@ -9,14 +9,12 @@
 #ifndef blocksci_core_fwd_hpp
 #define blocksci_core_fwd_hpp
 
-#include "address_types.hpp"
-#include "dedup_address_type.hpp"
-
 namespace blocksci {
     struct RawBlock;
     struct RawTransaction;
     struct Inout;
-
+    struct InoutPointer;
+    
     struct ScriptDataBase;
     struct PubkeyData;
     struct MultisigData;
@@ -24,20 +22,11 @@ namespace blocksci {
     struct RawData;
     struct NonstandardScriptData;
     struct NonstandardSpendScriptData;
-
-    template <DedupAddressType::Enum>
-    struct ScriptInfo;
+    struct WitnessUnknownScriptData;
+    struct WitnessUnknownSpendScriptData;
 
     struct RawAddress;
-    
-    template <AddressType::Enum>
-    struct AddressInfo;
-    
-    template <DedupAddressType::Enum>
-    struct DedupAddressInfo;
-    
-    template <EquivAddressType::Enum>
-    struct EquivAddressInfo;
+    struct DedupAddress;
 
     class uint256;
     class uint160;

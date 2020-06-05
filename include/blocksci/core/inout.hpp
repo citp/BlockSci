@@ -9,12 +9,14 @@
 #ifndef inout_hpp
 #define inout_hpp
 
-#include "address_types.hpp"
-#include "core_fwd.hpp"
-#include "hash_combine.hpp"
-
 #include <blocksci/blocksci_export.h>
-#include <blocksci/typedefs.hpp>
+#include <blocksci/core/address_types.hpp>
+#include <blocksci/core/hash_combine.hpp>
+#include <blocksci/core/typedefs.hpp>
+
+namespace blocksci {
+    struct Inout;
+}
 
 namespace std {
     template<> struct BLOCKSCI_EXPORT hash<blocksci::Inout> {
@@ -23,6 +25,12 @@ namespace std {
 } // namespace std
 
 namespace blocksci {
+
+    /** Represents an input or output with the following data:
+     *     - linked tx num, addressNum (=scriptNum), address type, value of the input/output
+     *
+     * Actual Input and Output objects can be constructed from Inout objects @see blocksci::Transaction::outputs() and blocksci::Transaction::inputs()
+     */
     struct BLOCKSCI_EXPORT Inout {
         Inout(uint32_t linkedTxNum_, uint32_t addressNum, AddressType::Enum type, int64_t value)  : linkedTxNum(linkedTxNum_), toAddressNum(addressNum), other(0) {
             setValue(value);
@@ -32,13 +40,17 @@ namespace blocksci {
         
         void setValue(int64_t value) {
             uint64_t valueMask = (uint64_t(1) << 60) - 1;
+            // (Re)set 60 lowest bits to 0
             other &= ~valueMask;
+            // Set 60 lowest bits to the passed value
             other |= static_cast<uint64_t>(value) & valueMask;
         }
         
         void setType(AddressType::Enum type) {
             uint8_t intType = static_cast<uint8_t>(type);
+            // (Re)set 4 highest significant bits to 0
             other &= ~(uint64_t(0b1111) << 60);
+            // Set highest 4 bits to the passed type
             other |= (intType & uint64_t(0b1111)) << 60;
         }
         
@@ -72,8 +84,16 @@ namespace blocksci {
         }
         
     private:
+        /** Number of the transaction associated with this input or output:
+         *     - for inputs, references back to the tx number of the tx that contains the output spent by the input
+         *     - for outputs, references forward to the tx number of the tx that contains the spending input, if any
+         */
         uint32_t linkedTxNum;
+
+        /** Number of the address (scriptNum) that is contained in this input/output */
         uint32_t toAddressNum;
+
+        /** Other is used to store the value (60 bit) and the address type (4 bit) of the wrapped input/output */
         uint64_t other;
         
         friend size_t std::hash<Inout>::operator()(const Inout &inout) const;

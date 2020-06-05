@@ -15,11 +15,11 @@
 #include <iostream>
 
 int main(int argc, char * argv[]) {
-    std::string dataLocation;
+    std::string configLocation;
     std::string outputLocation;
     bool overwrite;
     auto cli = (
-                clipp::value("data location", dataLocation),
+                clipp::value("config file location", configLocation),
                 clipp::value("output location", outputLocation),
                 clipp::option("--overwrite").set(overwrite).doc("Overwrite existing cluster files if they exist")
     );
@@ -29,8 +29,8 @@ int main(int argc, char * argv[]) {
         return 0;
     }
     
-    blocksci::Blockchain chain(dataLocation);
+    blocksci::Blockchain chain(configLocation);
     
-    blocksci::ClusterManager::createClustering(chain, blocksci::heuristics::LegacyChange{}, outputLocation, overwrite);
+    blocksci::ClusterManager::createClustering(chain, blocksci::heuristics::NoChange{}, outputLocation, overwrite);
     return 0;
 }

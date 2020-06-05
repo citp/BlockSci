@@ -1,0 +1,25 @@
+[PubkeyHashAddress(muPiDgt2BB8omxzFTVEpATbKU5cpUPo6tr), PubkeyHashAddress(mokMSp4xbaU7rvpZAZyxmonZWQoFnEiPny), PubkeyHashAddress(mhULRhVhUKD23jbao92nUE97DDDFkCVpec)]
+0
+0
+3
+0
+0
+0
+[Tx(len(txins)=3, len(txouts)=1, size_bytes=487, block_height=146, tx_index=198)]
+1
+[TxIn(spent_tx_index=194, address=PubkeyHashAddress(muPiDgt2BB8omxzFTVEpATbKU5cpUPo6tr), value=299990000), TxIn(spent_tx_index=195, address=PubkeyHashAddress(mokMSp4xbaU7rvpZAZyxmonZWQoFnEiPny), value=99990000), TxIn(spent_tx_index=196, address=PubkeyHashAddress(mhULRhVhUKD23jbao92nUE97DDDFkCVpec), value=199990000)]
+[Tx(len(txins)=1, len(txouts)=1, size_bytes=192, block_height=145, tx_index=194), Tx(len(txins)=1, len(txouts)=1, size_bytes=191, block_height=145, tx_index=195), Tx(len(txins)=1, len(txouts)=1, size_bytes=191, block_height=145, tx_index=196), Tx(len(txins)=3, len(txouts)=1, size_bytes=487, block_height=146, tx_index=198)]
+[Tx(len(txins)=1, len(txouts)=1, size_bytes=192, block_height=145, tx_index=194), Tx(len(txins)=1, len(txouts)=1, size_bytes=191, block_height=145, tx_index=195), Tx(len(txins)=1, len(txouts)=1, size_bytes=191, block_height=145, tx_index=196)]
+3
+[TxOut(spending_tx_index=198, address=PubkeyHashAddress(muPiDgt2BB8omxzFTVEpATbKU5cpUPo6tr), value=299990000), TxOut(spending_tx_index=198, address=PubkeyHashAddress(mokMSp4xbaU7rvpZAZyxmonZWQoFnEiPny), value=99990000), TxOut(spending_tx_index=198, address=PubkeyHashAddress(mhULRhVhUKD23jbao92nUE97DDDFkCVpec), value=199990000)]
+3
+[Tx(len(txins)=1, len(txouts)=1, size_bytes=191, block_height=145, tx_index=196), Tx(len(txins)=1, len(txouts)=1, size_bytes=191, block_height=145, tx_index=195), Tx(len(txins)=3, len(txouts)=1, size_bytes=487, block_height=146, tx_index=198), Tx(len(txins)=1, len(txouts)=1, size_bytes=192, block_height=145, tx_index=194)]
+3
+[PubkeyHashAddress(mrPRMELJcGsbKmuFiGwUgNCX9Wo4iSy44T)]
+[ScriptHashAddress(2N1otuhuzEiwReoLqqrJKTk67A2aW5ZXXDW)]
+[PubkeyHashAddress(mkZ9Np6JVYyHC35zEdfUXdM6rwrMKPpTZa)]
+[PubkeyHashAddress(msexSMRCUhqikgCA5FjA1DjMXyv4BWhSbb)]
+[PubkeyHashAddress(muJKkgEiFx6Ws5vcRRtNyaSM96D95X8kRj)]
+[PubkeyHashAddress(mo9cbu8M5YhhLRNMn65tbdrn124uNQDxsL)]
+[PubkeyHashAddress(muPiDgt2BB8omxzFTVEpATbKU5cpUPo6tr), PubkeyHashAddress(mokMSp4xbaU7rvpZAZyxmonZWQoFnEiPny), PubkeyHashAddress(mhULRhVhUKD23jbao92nUE97DDDFkCVpec)]
+[PubkeyHashAddress(muPiDgt2BB8omxzFTVEpATbKU5cpUPo6tr), PubkeyHashAddress(mokMSp4xbaU7rvpZAZyxmonZWQoFnEiPny), PubkeyHashAddress(mhULRhVhUKD23jbao92nUE97DDDFkCVpec)]

@@ -13,8 +13,10 @@
 #include "parser_index.hpp"
 #include "serializable_map.hpp"
 
-#include <blocksci/core/address_info.hpp>
-#include <blocksci/index/hash_index.hpp>
+#include <blocksci/core/address_type_meta.hpp>
+
+#include <internal/address_info.hpp>
+#include <internal/hash_index.hpp>
 
 #include <tuple>
 
@@ -131,6 +133,8 @@ class HashIndexCreator : public ParserIndex<HashIndexCreator> {
     
     void clearTxCache();
     
+public:
+    
     template<blocksci::AddressType::Enum type>
     void clearAddressCache() {
         auto &cache = std::get<HashIndexAddressCache<type>>(addressCache);
@@ -143,11 +147,9 @@ class HashIndexCreator : public ParserIndex<HashIndexCreator> {
         db.addAddresses<type>(std::move(rows));
     }
     
-public:
-    
     blocksci::HashIndex db;
     
-    HashIndexCreator(const ParserConfigurationBase &config, const std::string &path);
+    HashIndexCreator(const ParserConfigurationBase &config, const filesystem::path &path);
     ~HashIndexCreator();
     
     void processTx(const blocksci::RawTransaction *tx, uint32_t txNum, const blocksci::ChainAccess &chain, const blocksci::ScriptAccess &scripts);
@@ -158,7 +160,7 @@ public:
     
     void addTx(const blocksci::uint256 &hash, uint32_t txID);
     
-    uint32_t getTxIndex(const blocksci::uint256 &txHash);
+    ranges::optional<uint32_t> getTxIndex(const blocksci::uint256 &txHash);
     
     template<blocksci::AddressType::Enum type>
     void addAddress(const typename blocksci::AddressInfo<type>::IDType &hash, uint32_t scriptNum) {
@@ -170,7 +172,7 @@ public:
     }
     
     template<blocksci::AddressType::Enum type>
-    uint32_t lookupAddress(const typename blocksci::AddressInfo<type>::IDType &hash) {
+    ranges::optional<uint32_t> lookupAddress(const typename blocksci::AddressInfo<type>::IDType &hash) {
         auto &cache = std::get<HashIndexAddressCache<type>>(addressCache);
         auto it = cache.find(hash);
         if (it != cache.end()) {

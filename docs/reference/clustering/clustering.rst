@@ -3,7 +3,7 @@ Clustering
 
 .. automodule:: blocksci.cluster
 
-The BlockSci clustering module provides users with the ability to apply heuristic based clustering techniques to a Blockchain instance. The cluster_manager is the main entrace into this module. Using it you can open an already produced clustering or create a new clustering based on a change address heuristic of your choice.
+The BlockSci clustering module provides users with the ability to apply heuristic based clustering techniques to a Blockchain instance. The :py:class:`ClusterManager` is the main entrace into this module. Using it you can open an already produced clustering or create a new clustering based on a change address heuristic of your choice.
 
 BlockSci's clustering module is a simple effort to explore heuristic based clustering techniques. Users should not assume that it's results will be correct in practice. Providing a more accurate clustering mechanism is an ongoing research project.
 

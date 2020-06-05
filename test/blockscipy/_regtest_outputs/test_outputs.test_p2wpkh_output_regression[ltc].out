@@ -1,0 +1,22 @@
+WitnessPubkeyAddress(rltc1qxxhhtzpwdfnvckc5w6p89ulje744wfdjnptlx9)
+Pay to witness pubkey hash
+Block(tx_count=3, height=118, header_hash=c791fd0723aae127e0eaea4faae859388cbf2f83316e64ff8be520e06d5ca673, version=536870912, timestamp=1535765400, bits=545259519, nonce=0)
+0
+True
+TxIn(spent_tx_index=134, address=WitnessPubkeyAddress(rltc1qxxhhtzpwdfnvckc5w6p89ulje744wfdjnptlx9), value=100000000)
+Tx(len(txins)=1, len(txouts)=1, size_bytes=113, block_height=118, tx_index=135)
+135
+Tx(len(txins)=1, len(txouts)=2, size_bytes=222, block_height=118, tx_index=134)
+134
+100000000
+PubkeyHashAddress(mjTkW3DjgyZck4KbiRusZsqTgaYTxdSz6z)
+Pay to pubkey hash
+Block(tx_count=3, height=118, header_hash=c791fd0723aae127e0eaea4faae859388cbf2f83316e64ff8be520e06d5ca673, version=536870912, timestamp=1535765400, bits=545259519, nonce=0)
+1
+False
+None
+None
+None
+Tx(len(txins)=1, len(txouts)=2, size_bytes=222, block_height=118, tx_index=134)
+134
+4899990000

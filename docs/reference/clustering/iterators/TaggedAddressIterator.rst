@@ -1,5 +1,5 @@
 Tagged Address Iterator
 ====================================
 
-.. autoclass:: blocksci.TaggedAddressIterator
+.. autoclass:: blocksci.cluster.TaggedAddressIterator
    :members:

@@ -9,18 +9,27 @@
 #include <blocksci/cluster/cluster_manager.hpp>
 #include <blocksci/cluster/cluster.hpp>
 
-#include <blocksci/address/dedup_address.hpp>
 #include <blocksci/chain/blockchain.hpp>
-#include <blocksci/core/address_info.hpp>
+#include <blocksci/chain/input.hpp>
+#include <blocksci/chain/range_util.hpp>
+#include <blocksci/core/dedup_address.hpp>
 #include <blocksci/heuristics/change_address.hpp>
 #include <blocksci/heuristics/tx_identification.hpp>
-#include <blocksci/util/progress_bar.hpp>
+#include <blocksci/scripts/scripthash_script.hpp>
+
+#include <internal/address_info.hpp>
+#include <internal/cluster_access.hpp>
+#include <internal/data_access.hpp>
+#include <internal/progress_bar.hpp>
+#include <internal/script_access.hpp>
 
 #include <dset/dset.h>
 
-#include <boost/filesystem/fstream.hpp>
-#include <boost/filesystem/operations.hpp>
+#include <wjfilesystem/path.h>
 
+#include <range/v3/view/iota.hpp>
+#include <range/v3/range_for.hpp>
+#include <fstream>
 #include <future>
 #include <map>
 
@@ -49,9 +58,8 @@ namespace {
                 segmentsRemaining--;
             }
             uint32_t endSegment = i;
-            segments.emplace_back(startSegment + start, endSegment);
+            segments.emplace_back(startSegment + start, endSegment + start);
         }
-        
         std::vector<std::thread> threads;
         for (uint32_t i = 0; i < segmentCount - 1; i++) {
             auto segment = segments[i];
@@ -74,27 +82,27 @@ namespace {
 }
 
 namespace blocksci {
-    ClusterManager::ClusterManager(const std::string &baseDirectory, DataAccess &access_) : access(baseDirectory, access_) {}
+    ClusterManager::ClusterManager(const std::string &baseDirectory, DataAccess &access_) : access(std::make_unique<ClusterAccess>(baseDirectory, access_)), clusterCount(access->clusterCount()) {}
+    
+    ClusterManager::ClusterManager(ClusterManager && other) = default;
+    
+    ClusterManager &ClusterManager::operator=(ClusterManager && other) = default;
+    
+    ClusterManager::~ClusterManager() = default;
     
     Cluster ClusterManager::getCluster(const Address &address) const {
-        return Cluster(access.getClusterNum(RawAddress{address.scriptNum, address.type}), access);
+        return Cluster(access->getClusterNum(RawAddress{address.scriptNum, address.type}), *access);
     }
     
-    std::vector<std::pair<Address, Address>> processTransaction(const Transaction &tx, const heuristics::ChangeHeuristic &changeHeuristic) {
-        std::vector<std::pair<Address, Address>> pairsToUnion;
-        
-        if (!heuristics::isCoinjoin(tx) && !tx.isCoinbase()) {
-            auto inputs = tx.inputs();
-            auto firstAddress = inputs[0].getAddress();
-            for (uint16_t i = 1; i < inputs.size(); i++) {
-                pairsToUnion.emplace_back(firstAddress, inputs[i].getAddress());
-            }
-            
-            if (auto change = changeHeuristic.uniqueChange(tx)) {
-                pairsToUnion.emplace_back(change->getAddress(), firstAddress);
-            }
-        }
-        return pairsToUnion;
+    ranges::any_view<Cluster, ranges::category::random_access | ranges::category::sized> ClusterManager::getClusters() const {
+        return ranges::views::ints(0u, clusterCount)
+        | ranges::views::transform([&](uint32_t clusterNum) { return Cluster(clusterNum, *access); });
+    }
+    
+    ranges::any_view<TaggedCluster> ClusterManager::taggedClusters(const std::unordered_map<Address, std::string> &tags) const {
+        return getClusters() | ranges::views::transform([tags](Cluster && cluster) -> ranges::optional<TaggedCluster> {
+            return cluster.getTaggedUnsafe(tags);
+        }) | flatMapOptionals();
     }
     
     struct AddressDisjointSets {
@@ -124,14 +132,27 @@ namespace blocksci {
         }
     };
     
-    std::vector<uint32_t> createClusters(Blockchain &chain, std::unordered_map<DedupAddressType::Enum, uint32_t> addressStarts, uint32_t totalScriptCount, const heuristics::ChangeHeuristic &changeHeuristic) {
+    template <typename ChangeFunc>
+    std::vector<std::pair<Address, Address>> processTransaction(const Transaction &tx, ChangeFunc && changeHeuristic,
+                                                                bool ignoreCoinJoin) {
+        std::vector<std::pair<Address, Address>> pairsToUnion;
         
-        AddressDisjointSets ds(totalScriptCount, std::move(addressStarts));
-        
-        auto &access = chain.getAccess();
-        
-        auto scriptHashCount = chain.addressCount(AddressType::SCRIPTHASH);
-        
+        if (!tx.isCoinbase() && (!ignoreCoinJoin || !heuristics::isCoinjoin(tx))) {
+            auto inputs = tx.inputs();
+            auto firstAddress = inputs[0].getAddress();
+            for (uint16_t i = 1; i < inputs.size(); i++) {
+                pairsToUnion.emplace_back(firstAddress, inputs[i].getAddress());
+            }
+            
+            RANGES_FOR(auto change, std::forward<ChangeFunc>(changeHeuristic)(tx)) {
+                pairsToUnion.emplace_back(change.getAddress(), firstAddress);
+            }
+        }
+        return pairsToUnion;
+    }
+    
+    void linkScripthashNested(DataAccess &access, AddressDisjointSets &ds) {
+        auto scriptHashCount = access.getScripts().scriptCount(DedupAddressType::SCRIPTHASH);
         
         segmentWork(1, scriptHashCount + 1, 8, [&ds, &access](uint32_t index) {
             Address pointer(index, AddressType::SCRIPTHASH, access);
@@ -141,24 +162,27 @@ namespace blocksci {
                 ds.link_addresses(pointer, *wrappedAddress);
             }
         });
+    }
+    
+    template <typename ChangeFunc>
+    std::vector<uint32_t> createClusters(BlockRange &chain, std::unordered_map<DedupAddressType::Enum, uint32_t> addressStarts, uint32_t totalScriptCount, ChangeFunc && changeHeuristic, bool ignoreCoinJoin) {
         
+        AddressDisjointSets ds(totalScriptCount, std::move(addressStarts));
         
-        auto extract = [&](const std::vector<Block> &blocks, int threadNum) {
-            uint32_t totalTxCount = 0;
+        auto &access = chain.getAccess();
+        
+        linkScripthashNested(access, ds);
+        
+        auto extract = [&](const BlockRange &blocks, int threadNum) {
             auto progressThread = static_cast<int>(std::thread::hardware_concurrency()) - 1;
-            if (threadNum == progressThread) {
-                for (auto &block : blocks) {
-                    totalTxCount += block.size();
-                }
-            }
-            auto progressBar = makeProgressBar(totalTxCount, [=]() {});
+            auto progressBar = makeProgressBar(blocks.endTxIndex() - blocks.firstTxIndex(), [=]() {});
             if (threadNum != progressThread) {
                 progressBar.setSilent();
             }
             uint32_t txNum = 0;
-            for (auto &block : blocks) {
-                RANGES_FOR(auto tx, block) {
-                    auto pairs = processTransaction(tx, changeHeuristic);
+            for (auto block : blocks) {
+                for (auto tx : block) {
+                    auto pairs = processTransaction(tx, changeHeuristic, ignoreCoinJoin);
                     for (auto &pair : pairs) {
                         ds.link_addresses(pair.first, pair.second);
                     }
@@ -169,7 +193,7 @@ namespace blocksci {
             return 0;
         };
         
-        chain.mapReduce<int>(0, static_cast<int>(chain.size()), extract, [](int &a,int &) -> int & {return a;});
+        chain.mapReduce<int>(extract, [](int &a,int &) -> int & {return a;});
         
         ds.resolveAll();
         
@@ -197,11 +221,17 @@ namespace blocksci {
         return clusterCount;
     }
     
-    void recordOrderedAddresses(const std::vector<uint32_t> &parent, std::vector<uint32_t> &clusterPositions, const std::unordered_map<DedupAddressType::Enum, uint32_t> &scriptStarts, boost::filesystem::ofstream &clusterAddressesFile) {
+    void recordOrderedAddresses(const std::vector<uint32_t> &parent, std::vector<uint32_t> &clusterPositions, const std::unordered_map<DedupAddressType::Enum, uint32_t> &scriptStarts, std::ofstream &clusterAddressesFile) {
         
         std::map<uint32_t, DedupAddressType::Enum> typeIndexes;
         for (auto &pair : scriptStarts) {
-            typeIndexes[pair.second] = pair.first;
+            auto it = typeIndexes.find(pair.second);
+            if(it != typeIndexes.end()) {
+                // If an address type is not used, skip to the next one
+                it->second = std::max(it->second, pair.first);
+            } else {
+                typeIndexes[pair.second] = pair.first;
+            }
         }
         
         std::vector<DedupAddress> orderedScripts;
@@ -220,50 +250,94 @@ namespace blocksci {
         clusterAddressesFile.write(reinterpret_cast<char *>(orderedScripts.data()), static_cast<long>(sizeof(DedupAddress) * orderedScripts.size()));
     }
     
-    
-    ClusterManager ClusterManager::createClustering(Blockchain &chain, const heuristics::ChangeHeuristic &changeHeuristic, const std::string &outputPath, bool overwrite) {
+    void prepareClusterDataLocation(const std::string &outputPath, bool overwrite) {
+        auto outputLocation = filesystem::path{outputPath};
         
-        auto outputLocation = boost::filesystem::path{outputPath};
-        boost::filesystem::path offsetFile = outputLocation/"clusterOffsets.dat";
-        boost::filesystem::path addressesFile = outputLocation/"clusterAddresses.dat";
-        std::vector<boost::filesystem::path> clusterIndexPaths;
+        std::string offsetFile = ClusterAccess::offsetFilePath(outputPath);
+        std::string addressesFile = ClusterAccess::addressesFilePath(outputPath);
+        std::vector<std::string> clusterIndexPaths;
         clusterIndexPaths.resize(DedupAddressType::size);
         for (auto dedupType : DedupAddressType::allArray()) {
-            std::stringstream ss;
-            ss << dedupAddressName(dedupType) << "_cluster_index.dat";
-            clusterIndexPaths[static_cast<size_t>(dedupType)] = outputLocation/ss.str();
+            clusterIndexPaths[static_cast<size_t>(dedupType)] = ClusterAccess::typeIndexFilePath(outputPath, dedupType);
         }
         
-        std::vector<boost::filesystem::path> allPaths = clusterIndexPaths;
+        std::vector<std::string> allPaths = clusterIndexPaths;
         allPaths.push_back(offsetFile);
         allPaths.push_back(addressesFile);
         
         // Prepare cluster folder or fail
-        if (boost::filesystem::exists(outputLocation)) {
-            if (!boost::filesystem::is_directory(outputLocation)) {
+        auto outputLocationPath = filesystem::path{outputLocation};
+        if (outputLocationPath.exists()) {
+            if (!outputLocationPath.is_directory()) {
                 throw std::runtime_error{"Path must be to a directory, not a file"};
             }
             if (!overwrite) {
-                for (const auto &path : allPaths) {
-                    if (boost::filesystem::exists(path)) {
+                for (auto &path : allPaths) {
+                    auto filePath = filesystem::path{path};
+                    if (filePath.exists()) {
                         std::stringstream ss;
-                        ss << "Overwrite is off, but " << path << " exists already";
+                        ss << "Overwrite is off, but " << filePath << " exists already";
                         throw std::runtime_error{ss.str()};
                     }
                 }
             } else {
-                for (const auto &path : allPaths) {
-                    if (boost::filesystem::exists(path)) {
-                        boost::filesystem::remove(path);
+                for (auto &path : allPaths) {
+                    auto filePath = filesystem::path{path};
+                    if (filePath.exists()) {
+                        filePath.remove_file();
                     }
                 }
             }
+        } else {
+            if(!filesystem::create_directory(outputLocationPath)) {
+                std::stringstream ss;
+                ss << "Cannot create directory at path " << outputLocationPath;
+                throw std::runtime_error(ss.str());
+            }
         }
-        boost::filesystem::create_directories(outputLocation);
+    }
+    
+    void serializeClusterData(const ScriptAccess &scripts, const std::string &outputPath, const std::vector<uint32_t> &parent, const std::unordered_map<DedupAddressType::Enum, uint32_t> &scriptStarts, uint32_t clusterCount) {
+        auto outputLocation = filesystem::path{outputPath};
+        std::string offsetFile = ClusterAccess::offsetFilePath(outputPath);
+        std::string addressesFile = ClusterAccess::addressesFilePath(outputPath);
+        std::vector<std::string> clusterIndexPaths;
+        clusterIndexPaths.resize(DedupAddressType::size);
+        for (auto dedupType : DedupAddressType::allArray()) {
+            clusterIndexPaths[static_cast<size_t>(dedupType)] = ClusterAccess::typeIndexFilePath(outputPath, dedupType);
+        }
+
+        // Generate cluster files        
+        std::vector<uint32_t> clusterPositions;
+        clusterPositions.resize(clusterCount + 1);
+        for (auto parentId : parent) {
+            clusterPositions[parentId + 1]++;
+        }
         
-        // Generate cluster files
-        boost::filesystem::ofstream clusterAddressesFile(addressesFile, std::ios::binary);
-        boost::filesystem::ofstream clusterOffsetFile(offsetFile, std::ios::binary);
+        for (size_t i = 1; i < clusterPositions.size(); i++) {
+            clusterPositions[i] += clusterPositions[i-1];
+        }
+        std::ofstream clusterAddressesFile(addressesFile, std::ios::binary);
+        auto recordOrdered = std::async(std::launch::async, recordOrderedAddresses, parent, std::ref(clusterPositions), scriptStarts, std::ref(clusterAddressesFile));
+        
+        segmentWork(0, DedupAddressType::size, DedupAddressType::size, [&](uint32_t index) {
+            auto type = static_cast<DedupAddressType::Enum>(index);
+            uint32_t startIndex = scriptStarts.at(type);
+            uint32_t totalCount = scripts.scriptCount(type);
+            std::ofstream file{clusterIndexPaths[index], std::ios::binary};
+            file.write(reinterpret_cast<const char *>(parent.data() + startIndex), sizeof(uint32_t) * totalCount);
+        });
+        
+        recordOrdered.get();
+        
+        std::ofstream clusterOffsetFile(offsetFile, std::ios::binary);
+        clusterOffsetFile.write(reinterpret_cast<char *>(clusterPositions.data()), static_cast<long>(sizeof(uint32_t) * clusterPositions.size()));
+    }
+    
+    template <typename ChangeFunc>
+    ClusterManager createClusteringImpl(BlockRange &chain, ChangeFunc && changeHeuristic, const std::string &outputPath, bool overwrite, bool ignoreCoinJoin) {
+        prepareClusterDataLocation(outputPath, overwrite);
+        
         // Perform clustering
         
         auto &scripts = chain.getAccess().getScripts();
@@ -280,32 +354,23 @@ namespace blocksci {
             }
         }
         
-        auto parent = createClusters(chain, scriptStarts, static_cast<uint32_t>(totalScriptCount), changeHeuristic);
+        auto parent = createClusters(chain, scriptStarts, static_cast<uint32_t>(totalScriptCount), std::forward<ChangeFunc>(changeHeuristic), ignoreCoinJoin);
         uint32_t clusterCount = remapClusterIds(parent);
-        std::vector<uint32_t> clusterPositions;
-        clusterPositions.resize(clusterCount + 1);
-        for (auto parentId : parent) {
-            clusterPositions[parentId + 1]++;
-        }
+        serializeClusterData(scripts, outputPath, parent, scriptStarts, clusterCount);
+        return {filesystem::path{outputPath}.str(), chain.getAccess()};
+    }
+    
+    ClusterManager ClusterManager::createClustering(BlockRange &chain, const heuristics::ChangeHeuristic &changeHeuristic, const std::string &outputPath, bool overwrite, bool ignoreCoinJoin) {
         
-        for (size_t i = 1; i < clusterPositions.size(); i++) {
-            clusterPositions[i] += clusterPositions[i-1];
-        }
+        auto changeHeuristicL = [&changeHeuristic](const Transaction &tx) -> ranges::any_view<Output> {
+            return changeHeuristic(tx);
+        };
         
-        auto recordOrdered = std::async(std::launch::async, recordOrderedAddresses, parent, std::ref(clusterPositions), scriptStarts, std::ref(clusterAddressesFile));
-        
-        segmentWork(0, DedupAddressType::size, DedupAddressType::size, [&](uint32_t index) {
-            auto type = static_cast<DedupAddressType::Enum>(index);
-            uint32_t startIndex = scriptStarts[type];
-            uint32_t totalCount = scripts.scriptCount(type);
-            boost::filesystem::ofstream file = {clusterIndexPaths[index], std::ios::binary};
-            file.write(reinterpret_cast<char *>(parent.data() + startIndex), sizeof(uint32_t) * totalCount);
-        });
-        
-        recordOrdered.get();
-        
-        clusterOffsetFile.write(reinterpret_cast<char *>(clusterPositions.data()), static_cast<long>(sizeof(uint32_t) * clusterPositions.size()));
-        return ClusterManager{outputLocation.native(), chain.getAccess()};
+        return createClusteringImpl(chain, changeHeuristicL, outputPath, overwrite, ignoreCoinJoin);
+    }
+    
+    ClusterManager ClusterManager::createClustering(BlockRange &chain, const std::function<ranges::any_view<Output>(const Transaction &tx)> &changeHeuristic, const std::string &outputPath, bool overwrite, bool ignoreCoinJoin) {
+        return createClusteringImpl(chain, changeHeuristic, outputPath, overwrite, ignoreCoinJoin);
     }
 } // namespace blocksci
 

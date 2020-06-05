@@ -8,27 +8,35 @@
 #ifndef dedup_address_type_hpp
 #define dedup_address_type_hpp
 
-#include <blocksci/meta.hpp>
+#include <blocksci/blocksci_export.h>
 
-#define DEDUP_ADDRESS_TYPE_LIST VAL(NONSTANDARD), VAL(PUBKEY), VAL(SCRIPTHASH), VAL(MULTISIG), VAL(NULL_DATA)
-#define DEDUP_ADDRESS_TYPE_SET VAL(NONSTANDARD) VAL(PUBKEY) VAL(SCRIPTHASH) VAL(MULTISIG) VAL(NULL_DATA)
+#include <blocksci/core/meta.hpp>
+
+#define DEDUP_ADDRESS_TYPE_LIST VAL(SCRIPTHASH), VAL(PUBKEY), VAL(MULTISIG), VAL(NULL_DATA), VAL(WITNESS_UNKNOWN), VAL(NONSTANDARD)
+
 namespace blocksci {
-    
-    
+
     struct DedupAddressType {
         
         enum Enum {
+            // after preprocessing: SCRIPTHASH, PUBKEY, MULTISIG, NULL_DATA, WITNESS_UNKNOWN, NONSTANDARD
 #define VAL(x) x
             DEDUP_ADDRESS_TYPE_LIST
 #undef VAL
         };
-        static constexpr size_t size = 5;
-        
+        static constexpr size_t size = 6;
+
+        // after preprocessing: using all = std::tuple<std::integral_constant<Enum, SCRIPTHASH>, std::integral_constant<Enum, PUBKEY>, std::integral_constant<Enum, MULTISIG>, std::integral_constant<Enum, NULL_DATA>, std::integral_constant<Enum, WITNESS_UNKNOWN>, std::integral_constant<Enum, NONSTANDARD> >;
         #define VAL(x) std::integral_constant<Enum, x>
         using all = std::tuple<DEDUP_ADDRESS_TYPE_LIST>;
         #undef VAL
         static constexpr Enum example = PUBKEY;
-        
+
+        /* after preprocessing:
+         * static std::array<Enum,size> allArray() {
+         *     return {{SCRIPTHASH, PUBKEY, MULTISIG, NULL_DATA, WITNESS_UNKNOWN, NONSTANDARD}};
+         * }
+         */
         #define VAL(x) x
         static std::array<Enum,size> allArray() {
             return {{DEDUP_ADDRESS_TYPE_LIST}};

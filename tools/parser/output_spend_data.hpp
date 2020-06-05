@@ -10,11 +10,15 @@
 
 #include "parser_fwd.hpp"
 
-#include <blocksci/core/address_info.hpp>
-#include <blocksci/scripts/bitcoin_pubkey.hpp>
-#include <blocksci/scripts/scripts_fwd.hpp>
+#include <blocksci/core/address_type_meta.hpp>
+#include <blocksci/core/core_fwd.hpp>
+#include <blocksci/core/script_data.hpp>
 
 #include <mpark/variant.hpp>
+
+namespace blocksci {
+    class ScriptAccess;
+}
 
 template<blocksci::AddressType::Enum type>
 struct SpendData {
@@ -22,7 +26,6 @@ struct SpendData {
     
     SpendData() = default;
     explicit SpendData(const ScriptOutput<type> &) {}
-    explicit SpendData(const blocksci::ScriptAddress<type> &) {}
     SpendData(const blocksci::RawAddress &, const blocksci::ScriptAccess &) {}
 };
 
@@ -31,11 +34,10 @@ struct SpendData<blocksci::AddressType::Enum::MULTISIG> {
     static constexpr auto address_v = blocksci::AddressType::Enum::MULTISIG;
     
     uint32_t addressCount;
-    std::array<blocksci::CPubKey, 16> addresses;
+    std::array<blocksci::RawPubkey, 16> addresses;
     
     SpendData() = default;
     explicit SpendData(const ScriptOutput<blocksci::AddressType::Enum::MULTISIG> &output);
-    explicit SpendData(const blocksci::ScriptAddress<blocksci::AddressType::Enum::MULTISIG> &output);
     SpendData(const blocksci::RawAddress &address, const blocksci::ScriptAccess &scripts);
 };
 
@@ -48,7 +50,6 @@ public:
     explicit AnySpendData(const SpendDataType &var) : wrapped(var) {}
     
     explicit AnySpendData(const AnyScriptOutput &scriptOutput);
-    explicit AnySpendData(const blocksci::AnyScript &scriptData);
     AnySpendData(const blocksci::RawAddress &address, const blocksci::ScriptAccess &scripts);
 };
 

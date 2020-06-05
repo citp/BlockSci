@@ -9,8 +9,3 @@ Range Classes
    TxRange
    InputRange
    OutputRange
-
-   BlockOptionalRange
-   TxOptionalRange
-   InputOptionalRange
-   OutputOptionalRange

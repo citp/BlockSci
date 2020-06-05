@@ -8,10 +8,11 @@
 
 #include "hash_index_creator.hpp"
 #include "parser_configuration.hpp"
+#include "raw_address_visitor.hpp"
 
 #include <blocksci/core/raw_address.hpp>
 
-HashIndexCreator::HashIndexCreator(const ParserConfigurationBase &config_, const std::string &path) : ParserIndex(config_, "hashIndex"), db(path, false) {}
+HashIndexCreator::HashIndexCreator(const ParserConfigurationBase &config_, const filesystem::path &path) : ParserIndex(config_, "hashIndex"), db(path, false) {}
 
 template <bool, blocksci::AddressType::Enum type>
 struct ClearerFunctor;
@@ -66,13 +67,13 @@ void HashIndexCreator::processTx(const blocksci::RawTransaction *tx, uint32_t tx
             return false;
         }
     };
-    auto inputs = ranges::make_iterator_range(tx->beginInputs(), tx->endInputs());
+    auto inputs = ranges::make_subrange(tx->beginInputs(), tx->endInputs());
     for (auto input : inputs) {
         insideP2SH = false;
         visit(blocksci::RawAddress{input.getAddressNum(), input.getType()}, inputVisitFunc, scripts);
     }
     
-    auto outputs = ranges::make_iterator_range(tx->beginOutputs(), tx->endOutputs());
+    auto outputs = ranges::make_subrange(tx->beginOutputs(), tx->endOutputs());
     for (auto &txout : outputs) {
         if (txout.getType() == blocksci::AddressType::WITNESS_SCRIPTHASH) {
             auto script = scripts.getScriptData<blocksci::DedupAddressType::SCRIPTHASH>(txout.getAddressNum());
@@ -88,7 +89,7 @@ void HashIndexCreator::addTx(const blocksci::uint256 &hash, uint32_t txNum) {
     }
 }
 
-uint32_t HashIndexCreator::getTxIndex(const blocksci::uint256 &txHash) {
+ranges::optional<uint32_t> HashIndexCreator::getTxIndex(const blocksci::uint256 &txHash) {
     auto it = txCache.find(txHash);
     if (it != txCache.end()) {
         return it->second;

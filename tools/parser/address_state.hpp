@@ -14,6 +14,9 @@
 #include "serializable_map.hpp"
 #include "hash_index_creator.hpp"
 
+#include <internal/dedup_address_info.hpp>
+#include <internal/bitcoin_uint256_hex.hpp>
+
 #include <memory>
 
 enum class AddressLocation {
@@ -57,13 +60,13 @@ class AddressState {
     class AddressBloomFilter : public BloomFilter  {
     public:
         static constexpr auto type = scriptType;
-        AddressBloomFilter(const boost::filesystem::path &path) : BloomFilter(boost::filesystem::path(path).concat(dedupAddressName(type)).native(), startingCount<scriptType>, AddressFalsePositiveRate)  {}
+        AddressBloomFilter(const filesystem::path &path) : BloomFilter(filesystem::path(path.str() + dedupAddressName(type)).str(), startingCount<scriptType>, AddressFalsePositiveRate)  {}
     };
 
     template<blocksci::DedupAddressType::Enum scriptType>
     using AddressBloomFilterPointer = std::unique_ptr<AddressBloomFilter<scriptType>>;
     
-    boost::filesystem::path path;
+    filesystem::path path;
     
     HashIndexCreator &db;
     
@@ -82,22 +85,25 @@ class AddressState {
     std::vector<uint32_t> scriptIndexes;
     
     template<blocksci::AddressType::Enum type>
-    void reloadBloomFilter() {
+    void reloadBloomFilter(int sizeIncreaseRatio) {
         auto &addressBloomFilter = std::get<AddressBloomFilterPointer<dedupType(type)>>(addressBloomFilters);
-        addressBloomFilter->reset(addressBloomFilter->getMaxItems(), addressBloomFilter->getFPRate());
-        RANGES_FOR(auto item, db.db.getAddressRange<type>()) {
+        addressBloomFilter->reset(addressBloomFilter->getMaxItems() * sizeIncreaseRatio, addressBloomFilter->getFPRate());
+        
+        db.clearAddressCache<blocksci::DedupAddressInfo<dedupType(type)>::reprType>();
+        
+        RANGES_FOR(auto item, db.db.getAddressRange<blocksci::DedupAddressInfo<dedupType(type)>::reprType>()) {
             addressBloomFilter->add(item.second);
         }
     }
     
     void reloadBloomFilters() {
-        reloadBloomFilter<blocksci::AddressType::PUBKEY>();
-        reloadBloomFilter<blocksci::AddressType::SCRIPTHASH>();
-        reloadBloomFilter<blocksci::AddressType::MULTISIG>();
+        reloadBloomFilter<blocksci::AddressType::PUBKEYHASH>(1);
+        reloadBloomFilter<blocksci::AddressType::SCRIPTHASH>(1);
+        reloadBloomFilter<blocksci::AddressType::MULTISIG>(1);
     }
     
 public:
-    AddressState(boost::filesystem::path path, HashIndexCreator &hashDb);
+    AddressState(filesystem::path path, HashIndexCreator &hashDb);
     AddressState(const AddressState &) = delete;
     AddressState &operator=(const AddressState &) = delete;
     AddressState(AddressState &&) = delete;
@@ -134,10 +140,10 @@ public:
             }
         }
         
-        uint32_t destNum = db.lookupAddress<blocksci::DedupAddressInfo<dedupType(type)>::reprType>(hash);
-        if (destNum != 0) {
+        ranges::optional<uint32_t> destNum = db.lookupAddress<blocksci::DedupAddressInfo<dedupType(type)>::reprType>(hash);
+        if (destNum) {
             dbCount++;
-            return {hash, AddressLocation::LevelDb, destNum};
+            return {hash, AddressLocation::LevelDb, *destNum};
         } else {
             bloomFPCount++;
             // We must have had a false positive
@@ -173,7 +179,7 @@ public:
             addressBloomFilter->add(addressInfo.hash);
             db.addAddress<blocksci::DedupAddressInfo<dedupType(type)>::reprType>(addressInfo.hash, addressNum);
             if (addressBloomFilter->isFull()) {
-                reloadBloomFilter<type>();
+                reloadBloomFilter<type>(2);
             }
         }
         return std::make_pair(addressNum, !existingAddress);

@@ -1,4 +1,3 @@
-
 include(CheckCXXCompilerFlag)
 
 execute_process(COMMAND git submodule update --init --recursive)
@@ -6,11 +5,32 @@ execute_process(COMMAND git submodule update --init --recursive)
 set_property(GLOBAL PROPERTY ranges_headers "${CMAKE_CURRENT_SOURCE_DIR}/range-v3/include/")
 set_property(GLOBAL PROPERTY variant_headers "${CMAKE_CURRENT_SOURCE_DIR}/variant/include/")
 
+add_library(variant INTERFACE)
+target_include_directories(variant INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/variant/include/)
+
+add_library(ranges INTERFACE)
+target_include_directories(ranges INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/range-v3/include/)
+
+add_library(filesystem INTERFACE)
+target_include_directories(filesystem INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/filesystem/include/)
+
+add_library(mio INTERFACE)
+target_include_directories(mio INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/mio/include/)
+
 add_library(dset INTERFACE)
 target_include_directories(dset INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(clipp INTERFACE)
 target_include_directories(clipp SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/clipp/include)
+
+add_library(endian INTERFACE)
+target_include_directories(endian SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/endian/src/)
+
+add_library(json INTERFACE)
+target_include_directories(json SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/json/include/)
+
+add_library(cereal INTERFACE)
+target_include_directories(cereal SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/cereal/include/)
 
 include(ExternalProject)
 ExternalProject_Add(project_secp256k1
@@ -35,23 +55,23 @@ target_include_directories(secp256k1 INTERFACE ${install_dir}/include)
 target_link_libraries(secp256k1 INTERFACE ${install_dir}/lib/libsecp256k1.a)
 
 set(saved_flags "${CMAKE_CXX_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -fvisibility=hidden")
 
 check_cxx_compiler_flag(-Wclass-memaccess HAS_CLASS_MEMACCESS)
 if(HAS_CLASS_MEMACCESS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=class-memaccess")
 endif()
 
-set(WITH_TESTS OFF)
-set(WITH_TOOLS OFF)
-set(WITH_GFLAGS OFF)
+option(WITH_TESTS "" OFF)
+option(WITH_TOOLS "" OFF)
+option(WITH_GFLAGS "" OFF)
 # Turn jemalloc off to fix undefined reference to `malloc_stats_print'
-set(WITH_JEMALLOC OFF)
-set(WITH_SNAPPY ON)
-set(WITH_LZ4 ON)
-set(WITH_ZLIB ON)
-set(WITH_BZ2 ON)
-set(WITH_ZSTD ON)
+option(WITH_JEMALLOC "" OFF)
+option(WITH_SNAPPY "" OFF)
+option(WITH_LZ4 "" ON)
+option(WITH_ZLIB "" OFF)
+option(WITH_BZ2 "" OFF)
+option(WITH_ZSTD "" OFF)
 
 add_subdirectory(rocksdb EXCLUDE_FROM_ALL)
 

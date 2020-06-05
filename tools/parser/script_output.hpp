@@ -13,8 +13,7 @@
 #include "address_state.hpp"
 #include "parser_fwd.hpp"
 
-#include <blocksci/scripts/bitcoin_pubkey.hpp>
-#include <blocksci/scripts/script_view.hpp>
+#include <internal/script_view.hpp>
 
 #include <mpark/variant.hpp>
 
@@ -37,13 +36,6 @@ struct ScriptOutput {
         }
         return scriptNum;
     }
-    
-    void check(AddressState &state) {
-        auto addressInfo = state.findAddress(data);
-        scriptNum = addressInfo.addressNum;
-        isNew = addressInfo.addressNum == 0;
-        data.visitWrapped([&](auto &output) { output.check(state); });
-    }
 };
 
 struct ScriptOutputDataBase {
@@ -62,65 +54,71 @@ template <>
 struct ScriptOutputData<blocksci::AddressType::Enum::PUBKEY> : public ScriptOutputDataBase {
     static constexpr bool maybeUpdate = true;
     
-    blocksci::CPubKey pubkey;
+    blocksci::RawPubkey pubkey;
     
-    ScriptOutputData(const ranges::iterator_range<const unsigned char *> &vch1);
-    ScriptOutputData(const blocksci::CPubKey &pub) : pubkey(pub) {}
+    ScriptOutputData(const ranges::subrange<const unsigned char *> &vch1);
+    ScriptOutputData(const blocksci::RawPubkey &pub) {
+        pubkey.fill(0);
+        pubkey = pub;
+    }
     ScriptOutputData() = default;
     
     blocksci::uint160 getHash() const;
     
-    blocksci::PubkeyData getData(uint32_t txNum) const;
+    blocksci::PubkeyData getData(uint32_t txNum, bool topLevel) const;
 };
 
 template <>
 struct ScriptOutputData<blocksci::AddressType::Enum::PUBKEYHASH> : public ScriptOutputDataBase {
     
-    blocksci::CKeyID hash;
+    blocksci::uint160 hash;
     
     ScriptOutputData(blocksci::uint160 &pubkeyHash) : hash{pubkeyHash} {}
     
     blocksci::uint160 getHash() const;
     
-    blocksci::PubkeyData getData(uint32_t txNum) const;
+    blocksci::PubkeyData getData(uint32_t txNum, bool topLevel) const;
 };
 
 template <>
 struct ScriptOutputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY> : public ScriptOutputDataBase {
     static constexpr bool maybeUpdate = true;
     
-    blocksci::CPubKey pubkey;
+    blocksci::RawPubkey pubkey;
     
-    ScriptOutputData(const ranges::iterator_range<const unsigned char *> &vch1);
-    ScriptOutputData(const blocksci::CPubKey &pub) : pubkey(pub) {}
+    ScriptOutputData(const ranges::subrange<const unsigned char *> &vch1);
+    ScriptOutputData(const blocksci::RawPubkey &pub) {
+        pubkey.fill(0);
+        pubkey = pub;
+    }
     ScriptOutputData() = default;
     
     blocksci::uint160 getHash() const;
     
-    blocksci::PubkeyData getData(uint32_t txNum) const;
+    blocksci::PubkeyData getData(uint32_t txNum, bool topLevel) const;
 };
 
 template <>
 struct ScriptOutputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : public ScriptOutputDataBase {
     
-    blocksci::CKeyID hash;
+    blocksci::uint160 hash;
     
     ScriptOutputData(blocksci::uint160 &&pubkeyHash) : hash{pubkeyHash} {}
     
     blocksci::uint160 getHash() const;
     
-    blocksci::PubkeyData getData(uint32_t txNum) const;
+    blocksci::PubkeyData getData(uint32_t txNum, bool topLevel) const;
 };
 
 template <>
 struct ScriptOutputData<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptOutputDataBase {
-    blocksci::CKeyID hash;
+    blocksci::uint160 hash;
     
     ScriptOutputData(blocksci::uint160 hash_) : hash(hash_) {}
     
     blocksci::uint160 getHash() const;
     
-    blocksci::ScriptHashData getData(uint32_t txNum) const;
+    blocksci::ScriptHashData getData(uint32_t txNum, bool topLevel) const;
 };
 
 template <>
@@ -133,7 +131,7 @@ struct ScriptOutputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> : publi
     
     blocksci::uint160 getHash() const;
     
-    blocksci::ScriptHashData getData(uint32_t txNum) const;
+    blocksci::ScriptHashData getData(uint32_t txNum, bool topLevel) const;
 };
 
 template <>
@@ -147,7 +145,7 @@ struct ScriptOutputData<blocksci::AddressType::Enum::MULTISIG> : public ScriptOu
     
     ScriptOutputData() : addressCount(0) {}
     
-    void addAddress(const ranges::iterator_range<const unsigned char *> &vch1);
+    void addAddress(const ranges::subrange<const unsigned char *> &vch1);
     
     bool isValid() const {
         return numRequired <= numTotal && numTotal == addressCount;
@@ -169,7 +167,7 @@ struct ScriptOutputData<blocksci::AddressType::Enum::MULTISIG> : public ScriptOu
         }
     }
     
-    blocksci::ArbitraryLengthData<blocksci::MultisigData> getData(uint32_t txNum) const;
+    blocksci::ArbitraryLengthData<blocksci::MultisigData> getData(uint32_t txNum, bool topLevel) const;
 };
 
 template <>
@@ -179,7 +177,7 @@ struct ScriptOutputData<blocksci::AddressType::Enum::NONSTANDARD> : public Scrip
     ScriptOutputData() {}
     ScriptOutputData(const blocksci::CScriptView &script);
     
-    blocksci::ArbitraryLengthData<blocksci::NonstandardScriptData> getData(uint32_t txNum) const;
+    blocksci::ArbitraryLengthData<blocksci::NonstandardScriptData> getData(uint32_t txNum, bool topLevel) const;
 };
 
 template <>
@@ -188,7 +186,18 @@ struct ScriptOutputData<blocksci::AddressType::Enum::NULL_DATA> : public ScriptO
     
     ScriptOutputData(const blocksci::CScriptView &script);
     
-    blocksci::ArbitraryLengthData<blocksci::RawData> getData(uint32_t txNum) const;
+    blocksci::ArbitraryLengthData<blocksci::RawData> getData(uint32_t txNum, bool topLevel) const;
+};
+
+template <>
+struct ScriptOutputData<blocksci::AddressType::Enum::WITNESS_UNKNOWN> : public ScriptOutputDataBase {
+    uint8_t witnessVersion;
+    std::vector<unsigned char> witnessData;
+    
+    ScriptOutputData() {}
+    ScriptOutputData(uint8_t witnessVersion, const ranges::subrange<const unsigned char *> &witnessData);
+    
+    blocksci::ArbitraryLengthData<blocksci::WitnessUnknownScriptData> getData(uint32_t txNum, bool topLevel) const;
 };
 
 using ScriptOutputType = blocksci::to_variadic_t<blocksci::to_address_tuple_t<ScriptOutput>, mpark::variant>;
@@ -201,9 +210,8 @@ public:
     blocksci::AddressType::Enum type() const;
     
     AnyScriptOutput() = default;
-    AnyScriptOutput(const blocksci::CScriptView &scriptPubKey, bool witnessActivated);
-    
-    void check(AddressState &state);
+    AnyScriptOutput(const blocksci::CScriptView &scriptPubKey, bool p2shActivated, bool witnessActivated);
+
     uint32_t resolve(AddressState &state);
     bool isValid() const;
 };

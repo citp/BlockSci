@@ -12,7 +12,7 @@
 #include "parser_fwd.hpp"
 #include "script_output.hpp"
 
-#include <blocksci/scripts/script_view.hpp>
+#include <internal/script_view.hpp>
 
 #include <mpark/variant.hpp>
 
@@ -21,10 +21,10 @@
 struct InputView {
     uint32_t inputNum;
     uint32_t txNum;
-    const std::vector<WitnessStackItem> &witnessStack;
+    std::vector<WitnessStackItem> witnessStack;
     bool witnessActivated;
     
-    InputView(uint32_t inputNum_, uint32_t txNum_, const std::vector<WitnessStackItem> &witnessStack_, bool witnessActivated_) : inputNum(inputNum_), txNum(txNum_), witnessStack(witnessStack_), witnessActivated(witnessActivated_) {}
+    InputView(uint32_t inputNum_, uint32_t txNum_, std::vector<WitnessStackItem> && witnessStack_, bool witnessActivated_) : inputNum(inputNum_), txNum(txNum_), witnessStack(std::move(witnessStack_)), witnessActivated(witnessActivated_) {}
 };
 
 template<blocksci::AddressType::Enum type>
@@ -40,14 +40,9 @@ struct ScriptInput {
     void process(AddressState &state) {
         data.process(state);
     }
-    
-    void check(AddressState &state) {
-        data.check(state);
-    }
 };
 
 struct ScriptInputDataBase {
-    void check(AddressState &) {}
     void process(AddressState &) {}
 };
 
@@ -58,7 +53,7 @@ struct ScriptInputData<blocksci::AddressType::Enum::PUBKEY> : public ScriptInput
 
 template<>
 struct ScriptInputData<blocksci::AddressType::Enum::PUBKEYHASH> : public ScriptInputDataBase {
-    blocksci::CPubKey pubkey;
+    blocksci::RawPubkey pubkey;
 
     ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::PUBKEYHASH> &);
 };
@@ -70,7 +65,7 @@ struct ScriptInputData<blocksci::AddressType::Enum::MULTISIG_PUBKEY> : public Sc
 
 template<>
 struct ScriptInputData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> : public ScriptInputDataBase {
-    blocksci::CPubKey pubkey;
+    blocksci::RawPubkey pubkey;
     
     ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::WITNESS_PUBKEYHASH> &);
 };
@@ -96,6 +91,14 @@ struct ScriptInputData<blocksci::AddressType::Enum::MULTISIG> : public ScriptInp
     ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::MULTISIG> &spendData);
 };
 
+template<>
+struct ScriptInputData<blocksci::AddressType::Enum::WITNESS_UNKNOWN> : public ScriptInputDataBase {
+    blocksci::CScript script;
+    
+    ScriptInputData() = default;
+    ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::WITNESS_UNKNOWN> &);
+};
+
 class AnyScriptInput;
 
 template<>
@@ -106,8 +109,7 @@ struct ScriptInputData<blocksci::AddressType::Enum::SCRIPTHASH> : public ScriptI
     ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::SCRIPTHASH> &);
     
     void process(AddressState &state);
-    void check(AddressState &state);
-    
+
 private:
     ScriptInputData(std::pair<AnyScriptOutput, std::unique_ptr<AnyScriptInput>> data);
 };
@@ -120,8 +122,7 @@ struct ScriptInputData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> : public
     ScriptInputData(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const SpendData<blocksci::AddressType::Enum::WITNESS_SCRIPTHASH> &);
     
     void process(AddressState &state);
-    void check(AddressState &state);
-    
+
 private:
     ScriptInputData(std::pair<AnyScriptOutput, std::unique_ptr<AnyScriptInput>> data);
 };
@@ -136,8 +137,7 @@ public:
     AnyScriptInput(const InputView &inputView, const blocksci::CScriptView &scriptView, const RawTransaction &tx, const AnySpendData &spendData);
     
     void process(AddressState &state);
-    void check(AddressState &state);
-    
+
     void setScriptNum(uint32_t scriptNum);
     
     blocksci::RawAddress address() const;

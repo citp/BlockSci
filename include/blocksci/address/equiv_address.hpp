@@ -12,25 +12,30 @@
 
 #include <blocksci/blocksci_export.h>
 #include <blocksci/chain/chain_fwd.hpp>
-#include <blocksci/typedefs.hpp>
 #include <blocksci/address/address.hpp>
+#include <blocksci/core/core_fwd.hpp>
+#include <blocksci/core/typedefs.hpp>
 
 #include <range/v3/view/any_view.hpp>
 
-#include <sstream>
 #include <unordered_set>
 
 namespace blocksci {
     class DataAccess;
-    
+
+    /** Represents all equivalent addresses for a given Address object
+     *
+     * @see https://citp.github.io/BlockSci/reference/addresses/equiv_address.html
+     */
     class BLOCKSCI_EXPORT EquivAddress {
-        std::unordered_set<Address> addresses;
         bool scriptEquivalent;
-        DataAccess &access;
+
+        DataAccess *access;
+
+        /** Set of equivalent addresses */
+        std::unordered_set<Address> addresses;
         
         friend struct std::hash<EquivAddress>;
-        
-        EquivAddress(uint32_t scriptNum, EquivAddressType::Enum type, bool scriptEquivalent_, DataAccess &access_);
     public:
         EquivAddress(const Address &address, bool scriptEquivalent_);
         EquivAddress(const DedupAddress &address, bool scriptEquivalent_, DataAccess &access_);
@@ -60,13 +65,21 @@ namespace blocksci {
             return scriptEquivalent;
         }
         
-        ranges::any_view<OutputPointer> getOutputPointers();
-        int64_t calculateBalance(BlockHeight height);
-        ranges::any_view<Output> getOutputs();
-        std::vector<Input> getInputs();
-        std::vector<Transaction> getTransactions();
-        std::vector<Transaction> getOutputTransactions();
-        std::vector<Transaction> getInputTransactions();
+        ranges::any_view<OutputPointer> getOutputPointers() const;
+        int64_t calculateBalance(BlockHeight height) const;
+        ranges::any_view<Output> getOutputs() const;
+        ranges::any_view<Input> getInputs() const;
+        std::vector<Transaction> getTransactions() const;
+        std::vector<Transaction> getOutputTransactions() const;
+        std::vector<Transaction> getInputTransactions() const;
+        
+        bool operator==(const EquivAddress& b) {
+            return addresses == b.addresses;
+        }
+        
+        bool operator!=(const EquivAddress& b) {
+            return addresses != b.addresses;
+        }
     };
 }
 

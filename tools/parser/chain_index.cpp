@@ -17,9 +17,7 @@
 #include <bitcoinapi/bitcoinapi.h>
 #endif
 
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/filesystem/operations.hpp>
+#include <cereal/archives/binary.hpp>
 
 #include <cmath>
 #include <future>
@@ -27,10 +25,9 @@
 
 #ifdef BLOCKSCI_FILE_PARSER
 
-
 BlockInfoBase::BlockInfoBase(const blocksci::uint256 &hash_, const CBlockHeader &h, uint32_t size_, unsigned int numTxes, uint32_t inputCount_, uint32_t outputCount_) : hash(hash_), header(h), height(-1), size(size_), nTx(numTxes), inputCount(inputCount_), outputCount(outputCount_) {}
 
-BlockInfo<FileTag>::BlockInfo(const CBlockHeader &h, uint32_t size_, unsigned int numTxes, uint32_t inputCount_, uint32_t outputCount_, const ParserConfiguration<FileTag> &config, int fileNum, unsigned int dataPos) : BlockInfoBase(config.workHashFunction(reinterpret_cast<const char *>(&h), sizeof(CBlockHeader)), h, size_, numTxes, inputCount_, outputCount_), nFile(fileNum), nDataPos(dataPos) {}
+BlockInfo<FileTag>::BlockInfo(const CBlockHeader &h, uint32_t size_, unsigned int numTxes, uint32_t inputCount_, uint32_t outputCount_, const ChainDiskConfiguration &config, int fileNum, unsigned int dataPos) : BlockInfoBase(config.workHashFunction(reinterpret_cast<const char *>(&h), sizeof(CBlockHeader)), h, size_, numTxes, inputCount_, outputCount_), nFile(fileNum), nDataPos(dataPos) {}
 
 // The 0 should be replaced with info.bits converted to string
 BlockInfo<RPCTag>::BlockInfo(const blockinfo_t &info, blocksci::BlockHeight height_) : 
@@ -45,17 +42,17 @@ BlockInfoBase(
 
 int maxBlockFileNum(int startFile, const ParserConfiguration<FileTag> &config) {
     int fileNum = startFile;
-    while (boost::filesystem::exists(config.pathForBlockFile(fileNum))) {
+    while (config.pathForBlockFile(fileNum).exists()) {
         fileNum++;
     }
     return fileNum - 1;
 }
 
 namespace {
-    std::vector<BlockInfo<FileTag>> readBlocksImpl(SafeMemReader &reader, int fileNum, const ParserConfiguration<FileTag> &config) {
+    std::vector<BlockInfo<FileTag>> readBlocksImpl(SafeMemReader &reader, int fileNum, const ChainDiskConfiguration &config) {
         try {
             std::vector<BlockInfo<FileTag>> blocks;
-            // read blocks in loop while we can...
+            // Read blocks in loop while we can...
             while (reader.has(sizeof(uint32_t))) {
                 auto magic = reader.readNext<uint32_t>();
                 if (magic != config.blockMagic) {
@@ -99,12 +96,12 @@ namespace {
 
 std::vector<BlockInfo<FileTag>> readBlocksInfo(int fileNum, const ParserConfiguration<FileTag> &config) {
     auto blockFilePath = config.pathForBlockFile(fileNum);
-    SafeMemReader reader{blockFilePath.native()};
-    return readBlocksImpl(reader, fileNum, config);
+    SafeMemReader reader{blockFilePath.str()};
+    return readBlocksImpl(reader, fileNum, config.diskConfig);
 }
 
 template <>
-void ChainIndex<FileTag>::update(const ConfigType &config) {
+void ChainIndex<FileTag>::update(const ConfigType &config, blocksci::BlockHeight /*maxblockHeight*/) {
     int fileNum = 0;
     unsigned int filePos = 0;
 
@@ -135,14 +132,14 @@ void ChainIndex<FileTag>::update(const ConfigType &config) {
             }
             blockFutures.emplace_back(std::async(std::launch::async, [&](int fileNum) {
                 activeThreads++;
-                // determine block file path
+                // Determine block file path
                 auto blockFilePath = localConfig.pathForBlockFile(fileNum);
-                SafeMemReader reader{blockFilePath.native()};
-                // logic for resume from last processed block, note blockStartOffset and length below
+                SafeMemReader reader{blockFilePath.str()};
+                // Logic for resume from last processed block, note blockStartOffset and length below
                 if (fileNum == firstFile) {
                     reader.reset(filePos);
                 }
-                auto blocks = readBlocksImpl(reader, fileNum, localConfig);
+                auto blocks = readBlocksImpl(reader, fileNum, localConfig.diskConfig);
                 
                 if (fileNum == maxFileNum && blocks.size() > 0) {
                     newestBlock = blocks.back();
@@ -164,7 +161,8 @@ void ChainIndex<FileTag>::update(const ConfigType &config) {
     std::cout << std::endl;
     
     std::unordered_multimap<blocksci::uint256, blocksci::uint256> forwardHashes;
-    
+
+    // Fill forwardHashes with pairs of ((prevBlockHash) -> (currentBlockHash)) for every block
     for (auto &pair : blockList) {
         forwardHashes.emplace(pair.second.header.hashPrevBlock, pair.second.hash);
     }
@@ -190,11 +188,18 @@ void ChainIndex<FileTag>::update(const ConfigType &config) {
 }
 
 template<>
-void ChainIndex<RPCTag>::update(const ConfigType &config) {
+void ChainIndex<RPCTag>::update(const ConfigType &config, blocksci::BlockHeight blockHeight) {
     try {
         BitcoinAPI bapi{config.createBitcoinAPI()};
-        auto blockHeight = static_cast<blocksci::BlockHeight>(bapi.getblockcount());
-
+        
+        
+        auto maxBlockHeight = static_cast<blocksci::BlockHeight>(bapi.getblockcount());
+        if (blockHeight < 0) {
+            blockHeight = maxBlockHeight + blockHeight;
+        }
+        if (blockHeight > maxBlockHeight) {
+            blockHeight = maxBlockHeight;
+        }
         
         auto splitPoint = findSplitPointIndex(blockHeight, [&](blocksci::BlockHeight h) {
             return blocksci::uint256S(bapi.getblockhash(static_cast<int>(h)));

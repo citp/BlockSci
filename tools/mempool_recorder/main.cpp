@@ -12,19 +12,25 @@
 
 #include <blocksci/chain/blockchain.hpp>
 #include <blocksci/chain/block.hpp>
-#include <blocksci/index/mempool_index.hpp>
+
+#include <internal/bitcoin_uint256_hex.hpp>
+#include <internal/data_access.hpp>
+#include <internal/mempool_index.hpp>
 
 #include <bitcoinapi/bitcoinapi.h>
 
 #include <clipp.h>
 
+#include <nlohmann/json.hpp>
+
 #include <range/v3/range_for.hpp>
 
-#include <boost/filesystem/operations.hpp>
-
 #include <chrono>
+#include <ctime>
+#include <iomanip>
 #include <iostream>
 #include <future>
+#include <sstream>
 #include <unordered_map>
 
 #include <csignal>
@@ -33,6 +39,7 @@ using namespace blocksci;
 using namespace std::chrono;
 
 static volatile sig_atomic_t done = 0;
+static bool verbose = false;
 
 void term(int)
 {
@@ -41,26 +48,26 @@ void term(int)
 
 int initializeRecordingFile(Blockchain &chain) {
     auto mempoolDir = chain.getAccess().config.mempoolDirectory();
-    if(!(boost::filesystem::exists(mempoolDir))){
-        boost::filesystem::create_directory(mempoolDir);
+    if (!mempoolDir.exists()){
+        filesystem::create_directory(mempoolDir);
     }
     auto mostRecentBlock = chain[static_cast<int>(chain.size()) - 1];
-    blocksci::FixedSizeFileWriter<uint32_t> txIndexFile((boost::filesystem::path{chain.getAccess().config.mempoolDirectory()}/"tx_index").native());
+    FixedSizeFileWriter<uint32_t> txIndexFile(chain.getAccess().config.mempoolDirectory()/"tx_index");
     auto fileNum = static_cast<int>(txIndexFile.size());
     txIndexFile.write(mostRecentBlock.endTxIndex());
-    blocksci::FixedSizeFileWriter<int32_t> blockIndexFile((boost::filesystem::path{chain.getAccess().config.mempoolDirectory()}/"block_index").native());
+    FixedSizeFileWriter<int32_t> blockIndexFile(chain.getAccess().config.mempoolDirectory()/"block_index");
     assert(static_cast<int>(blockIndexFile.size()) == fileNum);
     blockIndexFile.write(mostRecentBlock.height() + 1);
     return fileNum;
 }
 
 struct MempoolFiles {
-    blocksci::FixedSizeFileWriter<MempoolRecord> txTimeFile;
-    blocksci::FixedSizeFileWriter<BlockRecord> blockTimeFile;
+    FixedSizeFileWriter<MempoolRecord> txTimeFile;
+    FixedSizeFileWriter<BlockRecord> blockTimeFile;
     
-    MempoolFiles(const boost::filesystem::path &mempoolPath, int fileNum) :
-    txTimeFile(boost::filesystem::path{mempoolPath/std::to_string(fileNum)}.concat("_tx")),
-    blockTimeFile(boost::filesystem::path{mempoolPath/std::to_string(fileNum)}.concat("_block"))
+    MempoolFiles(const filesystem::path &mempoolPath, int fileNum) :
+    txTimeFile(mempoolPath/(std::to_string(fileNum) + "_tx")),
+    blockTimeFile(mempoolPath/(std::to_string(fileNum) + "_block"))
     {}
 };
 
@@ -72,7 +79,6 @@ class SaferBitcoinApi {
     BitcoinAPI bitcoinAPI;
     
 public:
-    
     SaferBitcoinApi(std::string username_, std::string password_, std::string address_, int port_) :
     username(std::move(username_)), password(std::move(password_)), address(std::move(address_)), port(port_), bitcoinAPI(username, password, address, port) {}
     
@@ -103,9 +109,10 @@ class MempoolRecorder {
     std::unordered_map<std::string, std::pair<BlockRecord, int>> blocksSeen;
     
     static constexpr int heightCutoff = 1000;
+
 public:
-    MempoolRecorder(const std::string &dataLocation, SaferBitcoinApi &bitcoinAPI_) :
-    chain(dataLocation),
+    MempoolRecorder(const std::string &configLocation, SaferBitcoinApi &bitcoinAPI_) :
+    chain(configLocation),
     lastHeight(static_cast<int>(chain.size())),
     bitcoinAPI(bitcoinAPI_),
     files(chain.getAccess().config.mempoolDirectory(), initializeRecordingFile(chain)) {
@@ -137,7 +144,8 @@ public:
             }
         }
     }
-    
+
+    // Update our view of the mempool
     void updateMempool() {
         try {
             updateTxTimes(system_clock::to_time_t(system_clock::now()));
@@ -146,24 +154,41 @@ public:
             std::cerr << "Failed to update mempool with error: " << e.what() << std::endl;
         }
     }
-    
+
+    // Write timestamps for transactions and blocks that were observed in the mempool
     void recordMempool() {
+        // Wait until parser stopped updating the chain
+        if(chain.isParserRunning()) {
+            return;
+        }
+
         chain.reload();
+
+        int newBlocks = chain.size() - lastHeight;
+        int txWithTimestamp = 0;
+        int allTxs = 0;
+
         auto blockCount = static_cast<BlockHeight>(chain.size());
         for (; lastHeight < blockCount; lastHeight++) {
             auto block = chain[lastHeight];
             time_t time;
             auto blockIt = blocksSeen.find(block.getHash().GetHex());
+            std::stringstream ss;
             if (blockIt == blocksSeen.end()) {
+                ss << "Block at height " << lastHeight << " hasn't been observed in the network.";
                 system_clock::time_point tp = system_clock::now();
                 time = system_clock::to_time_t(tp);
             } else {
+                ss << "Block at height " << lastHeight << "has been observed in the network.";
                 time = blockIt->second.first.observationTime;
             }
+            print_msg(ss.str(), true);
             files.blockTimeFile.write({time});
             RANGES_FOR(auto tx, chain[lastHeight]) {
+                allTxs += 1;
                 auto it = mempool.find(tx.getHash());
                 if (it != mempool.end()) {
+                    txWithTimestamp += 1;
                     auto &txData = it->second;
                     files.txTimeFile.write(txData);
                     mempool.erase(it);
@@ -172,11 +197,21 @@ public:
                 }
             }
         }
-        files.txTimeFile.flush();
-        files.blockTimeFile.flush();
+
+        if(newBlocks > 0) {
+            files.txTimeFile.flush();
+            files.blockTimeFile.flush();
+
+            std::stringstream ss;
+            ss << "Added mempool data for " << newBlocks << " blocks and " << txWithTimestamp << " out of " << allTxs << " transactions.";
+            print_msg(ss.str());
+        }
     }
-    
+
+    // Clear transactions and blocks that were not included in the chain in more than 5 days
     void clearOldMempool() {
+        int oldTxs = 0;
+        int oldBlocks = 0;
         {
             system_clock::time_point tp = system_clock::now();
             tp -= std::chrono::hours(5 * 24);
@@ -185,6 +220,7 @@ public:
             while (it != mempool.end()) {
                 if (it->second.time < clearTime) {
                     it = mempool.erase(it);
+                    oldTxs += 1;
                 } else {
                     ++it;
                 }
@@ -197,10 +233,24 @@ public:
             while (it != blocksSeen.end()) {
                 if (it->second.second < currentHeight - heightCutoff) {
                     it = blocksSeen.erase(it);
+                    oldBlocks += 1;
                 } else {
                     ++it;
                 }
             }
+        }
+        std::stringstream ss;
+        ss << "Removed " << oldBlocks << " old blocks and " << oldTxs << " old transactions.";
+        print_msg(ss.str(), true);
+    }
+
+    // Print info and debug messages to std::cout
+    void print_msg(std::string msg, bool verbose_only=false) {
+        if(!verbose_only || verbose) {
+            std::stringstream ss;
+            auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+            ss << std::put_time(std::localtime(&time), "%Y-%m-%d %X");
+            std::cout << ss.str() << ":\t" << msg << std::endl;
         }
     }
 };
@@ -212,53 +262,53 @@ int main(int argc, char * argv[]) {
     action.sa_handler = term;
     sigaction(SIGTERM, &action, nullptr);
     
+    std::string configFilePathString;
+    auto configFileOption = clipp::value("config file", configFilePathString) % "Path to config file";
+    auto cli = (
+                clipp::value("config file", configFilePathString) % "Path to config file",
+                clipp::option("-v", "--verbose").set(verbose).doc("run in verbose mode")
+                );
     
-    std::string username;
-    std::string password;
-    std::string address = "127.0.0.1";
-    int port = 9998;
-    auto rpcOptions = (
-        (clipp::required("--username") & clipp::value("username", username)) % "RPC username",
-        (clipp::required("--password") & clipp::value("password", password)) % "RPC password",
-        (clipp::option("--address") & clipp::value("address", address)) % "RPC address",
-        (clipp::option("--port") & clipp::value("port", port)) % "RPC port"
-    ).doc("RPC options");
-
-    std::string dataLocation;
-    auto cli = (clipp::value("data location", dataLocation), rpcOptions);
     auto res = parse(argc, argv, cli);
     if (res.any_error()) {
         std::cout << "Invalid command line parameter\n" << clipp::make_man_page(cli, argv[0]);
         return 0;
     }
+    
+    filesystem::path configFilePath = {configFilePathString};
+    auto jsonConf = blocksci::loadConfig(configFilePath.str());
+    blocksci::checkVersion(jsonConf);
+    
+    blocksci::ChainRPCConfiguration rpcConfig = jsonConf.at("parser").at("rpc");
 
-    SaferBitcoinApi bitcoinAPI{username, password, address, port};
+    SaferBitcoinApi bitcoinAPI{rpcConfig.username, rpcConfig.password, rpcConfig.address, rpcConfig.port};
     
     auto connected = false;
     while (!connected) {
         try {
             bitcoinAPI.getrawmempool();
             connected = true;
+            std::cout << "Successfully connected to bitcoin node." << std::endl;
         } catch (BitcoinException &) {
-            std::cerr << "Mempool recorder failed to connect to bitcoin node with {username = " << username
-            << ", password = " << password
-            << ", address = " << address
-            << ", port = " << port << "}" << std::endl;
+            std::cerr << "Mempool recorder failed to connect to bitcoin node with {username = " << rpcConfig.username
+            << ", password = " << rpcConfig.password
+            << ", address = " << rpcConfig.address
+            << ", port = " << rpcConfig.port << "}" << std::endl;
             std::this_thread::sleep_for(std::chrono::seconds(30));
         }
     }
     
-    MempoolRecorder recorder{dataLocation, bitcoinAPI};
+    MempoolRecorder recorder{configFilePath.str(), bitcoinAPI};
     
     int updateCount = 0;
     while(!done) {
         std::this_thread::sleep_for(std::chrono::milliseconds(250));
         recorder.updateMempool();
         updateCount++;
-        if (updateCount % 5 == 0) {
+        if (updateCount % (4 * 60) == 0) { // every minute
             recorder.recordMempool();
         }
-        if (updateCount % (4 * 60 * 60 * 24) == 0) {
+        if (updateCount % (4 * 60 * 60 * 24) == 0) { // once per day
             recorder.clearOldMempool();
             updateCount = 0;
         }

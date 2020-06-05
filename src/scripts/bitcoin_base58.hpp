@@ -3,7 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-/**
+/*
  * Why base-58 instead of standard base-64 encoding?
  * - Don't want 0OIl characters that look the same in some fonts and
  *      could be used to create visually identical looking data.
@@ -22,7 +22,7 @@
 
 namespace blocksci {
     
-    struct DataConfiguration;
+    struct ChainConfiguration;
     class uint160;
     
     /**
@@ -85,7 +85,7 @@ namespace blocksci {
         
     public:
         bool SetString(const char* psz, unsigned int nVersionBytes = 1);
-        bool SetString(const std::string& str);
+        bool SetString(const std::string& str, unsigned int nVersionBytes = 1);
         std::string ToString() const;
         int CompareTo(const CBase58Data& b58) const;
         
@@ -104,12 +104,12 @@ namespace blocksci {
      */
     class CBitcoinAddress : public CBase58Data {
     public:
-        CBitcoinAddress(const uint160 &dest, AddressType::Enum type, const DataConfiguration &config);
+        CBitcoinAddress(const uint160 &dest, AddressType::Enum type, const ChainConfiguration &config);
         CBitcoinAddress(const uint160 &dest, const std::vector<unsigned char>& version);
-        CBitcoinAddress(const std::string& strAddress) { SetString(strAddress); }
+        CBitcoinAddress(const std::string& strAddress, unsigned int nVersionBytes) { SetString(strAddress, nVersionBytes); }
         CBitcoinAddress(const char* pszAddress) { SetString(pszAddress); }
         
-        std::pair<uint160, AddressType::Enum> Get(const DataConfiguration &config) const;
+        std::pair<uint160, AddressType::Enum> Get(const ChainConfiguration &config) const;
     };
 } // namespace blocksci
 

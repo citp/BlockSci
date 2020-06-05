@@ -9,58 +9,40 @@
 #ifndef blocksci_address_address_types_hpp
 #define blocksci_address_address_types_hpp
 
-#include <blocksci/meta.hpp>
+#include <blocksci/blocksci_export.h>
 
-#define ADDRESS_TYPE_LIST VAL(NONSTANDARD), VAL(PUBKEY), VAL(PUBKEYHASH), VAL(MULTISIG_PUBKEY), VAL(SCRIPTHASH), VAL(MULTISIG), VAL(NULL_DATA), VAL(WITNESS_PUBKEYHASH), VAL(WITNESS_SCRIPTHASH)
-#define ADDRESS_TYPE_SET VAL(NONSTANDARD) VAL(PUBKEY) VAL(PUBKEYHASH) VAL(MULTISIG_PUBKEY) VAL(SCRIPTHASH) VAL(MULTISIG) VAL(NULL_DATA) VAL(WITNESS_PUBKEYHASH) VAL(WITNESS_SCRIPTHASH)
+#include <cstddef>
+#include <functional>
+#include <tuple>
 
-#define EQUIV_ADDRESS_TYPE_LIST VAL(NONSTANDARD), VAL(PUBKEY), VAL(SCRIPTHASH), VAL(MULTISIG), VAL(NULL_DATA)
-#define EQUIV_ADDRESS_TYPE_SET VAL(NONSTANDARD) VAL(PUBKEY) VAL(SCRIPTHASH) VAL(MULTISIG) VAL(NULL_DATA)
+#define ADDRESS_TYPE_LIST VAL(NONSTANDARD), VAL(PUBKEY), VAL(PUBKEYHASH), VAL(MULTISIG_PUBKEY), VAL(SCRIPTHASH), VAL(MULTISIG), VAL(NULL_DATA), VAL(WITNESS_PUBKEYHASH), VAL(WITNESS_SCRIPTHASH), VAL(WITNESS_UNKNOWN)
 
 namespace blocksci {
-    struct AddressType {
-        
+    struct BLOCKSCI_EXPORT AddressType {
+
+        /** enum that holds all address types as listed in ADDRESS_TYPE_LIST */
         enum Enum {
+            // After preprocessing: NONSTANDARD, PUBKEY, PUBKEYHASH, MULTISIG_PUBKEY, SCRIPTHASH, MULTISIG, NULL_DATA, WITNESS_PUBKEYHASH, WITNESS_SCRIPTHASH, WITNESS_UNKNOWN
             #define VAL(x) x
             ADDRESS_TYPE_LIST
             #undef VAL
         };
-        static constexpr size_t size = 9;
+        static constexpr size_t size = 10;
+
+        /* After preprocessing:
+         * using all = std::tuple<std::integral_constant<Enum, NONSTANDARD>, std::integral_constant<Enum, PUBKEY>, std::integral_constant<Enum, PUBKEYHASH>, std::integral_constant<Enum, MULTISIG_PUBKEY>, std::integral_constant<Enum, SCRIPTHASH>, std::integral_constant<Enum, MULTISIG>, std::integral_constant<Enum, NULL_DATA>, std::integral_constant<Enum, WITNESS_PUBKEYHASH>, std::integral_constant<Enum, WITNESS_SCRIPTHASH>, std::integral_constant<Enum, WITNESS_UNKNOWN> >;
+         */
         #define VAL(x) std::integral_constant<Enum, x>
         using all = std::tuple<ADDRESS_TYPE_LIST>;
         #undef VAL
         
         static constexpr Enum example = PUBKEY;
     };
-    
-    template <template<AddressType::Enum> class K>
-    using to_address_tuple_t = apply_template_t<AddressType::Enum, K, AddressType::all>;
-    
-    struct EquivAddressType {
-        
-        enum Enum {
-            #define VAL(x) x
-            EQUIV_ADDRESS_TYPE_LIST
-            #undef VAL
-        };
-        
-        static constexpr size_t size = 5;
-        #define VAL(x) std::integral_constant<Enum, x>
-        using all = std::tuple<EQUIV_ADDRESS_TYPE_LIST>;
-        #undef VAL
-        static constexpr Enum example = PUBKEY;
-    };
 }
 
 namespace std {
-    template<> struct hash<blocksci::AddressType::Enum> {
+    template<> struct BLOCKSCI_EXPORT hash<blocksci::AddressType::Enum> {
         size_t operator()(blocksci::AddressType::Enum type) const {
-            return static_cast<size_t>(type);
-        }
-    };
-    
-    template<> struct hash<blocksci::EquivAddressType::Enum> {
-        size_t operator()(blocksci::EquivAddressType::Enum type) const {
             return static_cast<size_t>(type);
         }
     };

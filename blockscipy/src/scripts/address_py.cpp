@@ -8,9 +8,13 @@
 
 #include "address_py.hpp"
 #include "caster_py.hpp"
-#include "self_apply_py.hpp"
+#include "ranges_py.hpp"
 
 #include <blocksci/chain/algorithms.hpp>
+#include <blocksci/chain/access.hpp>
+#include <blocksci/chain/block.hpp>
+#include <blocksci/address/equiv_address.hpp>
+#include <blocksci/cluster/cluster.hpp>
 
 #include <pybind11/operators.h>
 
@@ -31,11 +35,13 @@ void init_address_type(py::module &m) {
     .value("nulldata", AddressType::Enum::NULL_DATA)
     .value("witness_pubkeyhash", AddressType::Enum::WITNESS_PUBKEYHASH)
     .value("witness_scripthash", AddressType::Enum::WITNESS_SCRIPTHASH)
-    .def_property_readonly_static("types", [](py::object) -> std::array<AddressType::Enum, 9> {
+    .value("witness_unknown", AddressType::Enum::WITNESS_UNKNOWN)
+    .def_property_readonly_static("types", [](py::object) -> std::array<AddressType::Enum, 10> {
         return {{AddressType::Enum::NONSTANDARD, AddressType::Enum::PUBKEY, AddressType::Enum::PUBKEYHASH, 
             AddressType::Enum::MULTISIG_PUBKEY, AddressType::Enum::SCRIPTHASH,
             AddressType::Enum::MULTISIG, AddressType::Enum::NULL_DATA,
-            AddressType::Enum::WITNESS_PUBKEYHASH, AddressType::Enum::WITNESS_SCRIPTHASH}};
+            AddressType::Enum::WITNESS_PUBKEYHASH, AddressType::Enum::WITNESS_SCRIPTHASH,
+            AddressType::Enum::WITNESS_UNKNOWN}};
         }, "A list of all possible address types")
     .def("__str__", [](AddressType::Enum val) {
         switch (val) {
@@ -57,6 +63,8 @@ void init_address_type(py::module &m) {
                 return "Pay to witness pubkey hash";
             case AddressType::Enum::WITNESS_SCRIPTHASH:
                 return "Pay to witness script hash";
+            case AddressType::Enum::WITNESS_UNKNOWN:
+                return "Pay to witness unknown";
             default:
                 return "Unknown Address Type";
         }
@@ -68,12 +76,12 @@ void init_address(py::class_<blocksci::ScriptBase> &cl) {
     cl
     .def(py::self == py::self)
     .def(hash(py::self))
-    .def_property_readonly("_access", &ScriptBase::getAccess, py::return_value_policy::reference)
-    .def("ins", &ScriptBase::getInputs, "Returns a list of all inputs spent from this address")
-    .def("txes", &ScriptBase::getTransactions, "Returns a list of all transactions involving this address")
-    .def("in_txes",&ScriptBase::getInputTransactions, "Returns a list of all transaction where this address was an input")
-    .def("out_txes", &ScriptBase::getOutputTransactions, "Returns a list of all transaction where this address was an output")
+    .def_property_readonly("_access", [](const ScriptBase &script) {
+        return Access{&script.getAccess()};
+    })
     ;
+}
 
-    applyMethodsToSelf(cl, AddAddressMethods<ScriptBase>{});
+void addAddressRangeMethods(RangeClasses<AnyScript> &classes) {
+    addAllRangeMethods(classes);
 }

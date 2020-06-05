@@ -2,6 +2,7 @@ release
 xcode
 debug
 build
+.mtime_cache
 *.DS_Store
 Notebooks/blocksci
 *.so
@@ -10,3 +11,7 @@ Notebooks/blocksci
 include/blocksci/external
 python/blocksci/pybind11
 *.egg-info
+blockscipy/dist/*
+.pytest_cache
+.idea
+.benchmarks

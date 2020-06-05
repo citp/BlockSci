@@ -10,11 +10,10 @@
 #include "parser_configuration.hpp"
 
 #include <blocksci/core/bitcoin_uint256.hpp>
-#include <blocksci/core/address_info.hpp>
-#include <blocksci/util/hash.hpp>
 
-#include <boost/filesystem/fstream.hpp>
+#include <internal/address_info.hpp>
 
+#include <fstream>
 #include <string>
 #include <sstream>
 
@@ -24,16 +23,16 @@ namespace {
     static constexpr auto scriptCountsFileName = "scriptCounts.txt";
 }
 
-AddressState::AddressState(boost::filesystem::path path_, HashIndexCreator &hashDb) : path(std::move(path_)), db(hashDb), addressBloomFilters(blocksci::apply(blocksci::DedupAddressType::all(), [&] (auto tag) {
+AddressState::AddressState(filesystem::path path_, HashIndexCreator &hashDb) : path(std::move(path_)), db(hashDb), addressBloomFilters(blocksci::apply(blocksci::DedupAddressType::all(), [&] (auto tag) {
     return std::make_unique<AddressBloomFilter<tag>>(path/std::string(bloomFileName));
 }))  {
     blocksci::for_each(multiAddressMaps, [&](auto &multiAddressMap) {
         std::stringstream ss;
         ss << multiAddressFileName << "_" << dedupAddressName(multiAddressMap.type) << ".dat";
-        multiAddressMap.unserialize((path/ss.str()).native());
+        multiAddressMap.unserialize((path/ss.str()).str());
     });
     
-    boost::filesystem::ifstream inputFile(path/std::string(scriptCountsFileName));
+    std::ifstream inputFile((path/std::string(scriptCountsFileName)).str());
     
     if (inputFile) {
         uint32_t value;
@@ -51,10 +50,10 @@ AddressState::~AddressState() {
     blocksci::for_each(multiAddressMaps, [&](auto &multiAddressMap) {
         std::stringstream ss;
         ss << multiAddressFileName << "_" << dedupAddressName(multiAddressMap.type) << ".dat";
-        multiAddressMap.serialize((path/ss.str()).native());
+        multiAddressMap.serialize((path/ss.str()).str());
     });
     
-    boost::filesystem::ofstream outputFile(path/std::string(scriptCountsFileName));
+    std::ofstream outputFile((path/std::string(scriptCountsFileName)).str());
     for (auto value : scriptIndexes) {
         outputFile << value << " ";
     }
