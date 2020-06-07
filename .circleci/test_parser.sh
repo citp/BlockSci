@@ -13,6 +13,6 @@ blocksci_parser ltc.json doctor
 blocksci_parser ltc.json update
 blocksci_check_integrity ltc.json -t -n
 
-./../release/test/blocksci/blocksci_unittest btc.json
+./../release/test/blocksci/blocksci_unittest btc.json --gtest_output="xml:test-results/googletest.xml"
 
 cd ..
