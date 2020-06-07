@@ -3,7 +3,7 @@ Compiling BlockSci
 
 BlockSci supports GCC 7.2 or above and Clang 5 or above.
 
-Note that BlockSci only actively supports python 3.
+Note that BlockSci only actively supports Python 3.
 
 If you have previously had BlockSci v0.4.5 or below installed you must first remove the existing installations
 
@@ -14,7 +14,7 @@ If you have previously had BlockSci v0.4.5 or below installed you must first rem
 	rm /usr/local/bin/blocksci*
 	rm /usr/local/bin/mempool_recorder
 
-Ubuntu 18.04 / 16.04
+Ubuntu 18.04
 ---------------------
 
 ..  code-block:: bash
@@ -45,6 +45,11 @@ You will also need to increase_ the open files limit on your system.
 
 Mac OS 10.13
 --------------
+
+Compiling BlockSci with Xcode 11.5 currently requires a manual patch_.
+
+.. _patch: https://github.com/citp/BlockSci/issues/412
+
 ..  code-block:: bash
 
     brew install cmake jsoncpp libjson-rpc-cpp boost openssl jemalloc zstd \
