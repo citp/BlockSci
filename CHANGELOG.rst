@@ -7,19 +7,14 @@ Release notes
 Version 0.6 (in development)
 =============================
 
-*Work in progress. Version 0.6 has NOT BEEN OFFICIALLY RELEASED.*
+*Work in progress. Version 0.6 has NOT YET BEEN OFFICIALLY RELEASED.*
 
-We encourage you to try this development version of BlockSci, available on the v0.6 branch.
-However, since it is actively being developed it can be unstable at times.
-Furthermore, API-breaking changes are possible until v0.6 is released.
-Please read the changelog and commit messages to stay updated about these changes.
-
-Note: version 0.6 requires a full re-parse of the blockchain and includes many API-breaking changes.
+It is not compatible with v0.5 parsings and requires a full reparse of the blockchain.
 
 Major Changes
 ------------------------
 
-- Python: Major performance enhancements due to new proxy interface
+- Python: Major performance enhancements due to new fluent interface
 
   The Python interface has been rewritten to execute many instructions (such as filtering for certain transactions) lazily in C++, resulting in a major performance increase.
 
@@ -36,10 +31,11 @@ Major Changes
 
   Inputs now reference the output they are spending, and vice versa. These can be looked up using :attr:`blocksci.Output.spending_input` and :attr:`blocksci.Input.spent_output`
 
-- Testing and CI: A Python test suite and continuous integration have been added
+- Testing and Continuous Integration: A Python test suite and continuous integration have been added
 
-  We've developed a test suite containing both functional and regression tests for the Python interface. We've also added Travis CI continuous integration, such that all new commits and pull requests will be automatically built and tested.
+  We've developed a test suite containing both functional and regression tests for the Python interface. We've also added continuous integration, such that all new commits and pull requests will be automatically built and tested.
   The test suite makes use of special regtest blockchains created using our `testchain-generator`_
+  Additionally, we've added the googletest framework for C++ unit testing.
 
 .. _testchain-generator: https://github.com/citp/testchain-generator
 .. _setup instructions: https://github.com/citp/BlockSci/blob/v0.6/docs/setup.rst
@@ -47,6 +43,8 @@ Major Changes
 
 Notable changes and bug fixes
 -----------------------------
+
+- Upgraded dependencies (including range-v3, pybind11 and RocksDB)
 
 - :attr:`blocksci.Address.[ins|outs|in_txes|out_txes|txes]` now return iterators
 
@@ -60,13 +58,23 @@ Notable changes and bug fixes
 
 - Various improvements to the clusterer should result in faster and more reliable clustering
 
-- :func:`chain.cpp.filter_tx` has been removed in favor of the new proxy interface (`Issue #254`_)
+- We've added a new tool that computes checksums over the BlockSci data produced by the parser
+
+- The parser now correctly builds the index to lookup nesting addresses (`PR #402`_)
+
+- Correctly detect Schnorr signatures on Bitcoin Cash with a length of 65 bytes (`PR #395`)
+
+- Changes `in(s)/out(s)` to `input(s)/output(s)` to avoid confusion with incoming and outgoing funds (`PR #392`)
+
+- Fixed a small inconsistency in recording the tx that first spends a script (`PR #385`)
+
+- :func:`chain.cpp.filter_tx` has been removed in favor of the new fluent interface (`Issue #254`_)
 
 - BlockSci now recognizes addresses that use more than one version byte (`Issue #246`_)
 
 - The parser will detect if another instance is already running on the same data directory to prevent data corruption (`Issue #211`_)
 
-- :func:`chain.most_valuable_addresses` has been re-implemented using the new proxy interface (`Issue #192`_), the previous C++ implementation has been removed.
+- :func:`chain.most_valuable_addresses` has been re-implemented using the new fluent interface (`Issue #192`_), the previous C++ implementation has been removed.
 
 - :func:`~blocksci.cluster.ClusterManager.create_clustering` now accepts a start and end height for clustering only a specific block range (`Issue #118`_)
 
@@ -74,9 +82,12 @@ Notable changes and bug fixes
 
 - Added *Witness Unknown* address type support (`Issue #112`_)
 
+- Added transaction version numbers (`Issue #92`_)
+
 - Added support for nested P2SH in the parser (`Issue #68`_)
 
 .. _Issue #68: https://github.com/citp/BlockSci/issues/68
+.. _Issue #92: https://github.com/citp/BlockSci/issues/92
 .. _Issue #112: https://github.com/citp/BlockSci/issues/112
 .. _Issue #117: https://github.com/citp/BlockSci/issues/117
 .. _Issue #118: https://github.com/citp/BlockSci/issues/118
@@ -84,6 +95,11 @@ Notable changes and bug fixes
 .. _Issue #211: https://github.com/citp/BlockSci/issues/211
 .. _Issue #246: https://github.com/citp/BlockSci/issues/246
 .. _Issue #254: https://github.com/citp/BlockSci/issues/254
+.. _PR #367: https://github.com/citp/BlockSci/pull/367
+.. _PR #385: https://github.com/citp/BlockSci/pull/385
+.. _PR #392: https://github.com/citp/BlockSci/pull/392
+.. _PR #395: https://github.com/citp/BlockSci/pull/395
+.. _PR #402: https://github.com/citp/BlockSci/pull/402
 
 
 Version 0.5.0
