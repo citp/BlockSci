@@ -1,7 +1,7 @@
 BlockSci
 ~~~~~~~~~~~~~~~~~~
 
-*Note: We're currently working on a new release, which should be ready within a few weeks. If you've used the development branch `v0.6`, the current master branch is not fully backwards-compatible and requires a reparse. The documentation has not been fully updated yet.*
+**We're currently preparing a new release, which should be ready in a few weeks. If you've used the development branch `v0.6`, the current master branch is not backwards-compatible and requires a reparse. The documentation has not been fully updated yet.**
 
 The Bitcoin blockchain — currently 170 GB and growing — contains a massive amount of data that can give us insights into the Bitcoin ecosystem, including how users, businesses, and miners operate. BlockSci enables fast and expressive analysis of Bitcoin’s and many other blockchains. The accompanying working paper explains its design and applications: https://arxiv.org/pdf/1709.02489.pdf
 
