@@ -47,105 +47,6 @@
 
 using json = nlohmann::json;
 
-blocksci::State rollbackState(const ParserConfigurationBase &config, blocksci::BlockHeight firstDeletedBlock, uint32_t firstDeletedTxNum) {
-    blocksci::State state{
-        blocksci::ChainAccess{config.dataConfig.chainDirectory(), config.dataConfig.blocksIgnored, config.dataConfig.errorOnReorg},
-        blocksci::ScriptAccess{config.dataConfig.scriptsDirectory()}
-    };
-    state.blockCount = static_cast<uint32_t>(static_cast<int>(firstDeletedBlock));
-    state.txCount = firstDeletedTxNum;
-    
-    blocksci::IndexedFileMapper<mio::access_mode::write, blocksci::RawTransaction> txFile{blocksci::ChainAccess::txFilePath(config.dataConfig.chainDirectory())};
-    blocksci::FixedSizeFileMapper<blocksci::uint256, mio::access_mode::write> txHashesFile{blocksci::ChainAccess::txHashesFilePath(config.dataConfig.chainDirectory())};
-    blocksci::ScriptAccess scriptsAccess{config.dataConfig.scriptsDirectory()};
-    
-    UTXOState utxoState;
-    UTXOAddressState utxoAddressState;
-    UTXOScriptState utxoScriptState;
-    
-    utxoAddressState.unserialize(config.utxoAddressStatePath().str());
-    utxoState.unserialize(config.utxoCacheFile().str());
-    utxoScriptState.unserialize(config.utxoScriptStatePath().str());
-    
-    auto totalTxCount = static_cast<uint32_t>(txFile.size());
-    for (uint32_t txNum = totalTxCount - 1; txNum >= firstDeletedTxNum; txNum--) {
-        auto tx = txFile.getData(txNum);
-        auto hash = txHashesFile[txNum];
-        for (uint16_t i = 0; i < tx->outputCount; i++) {
-            auto &output = tx->getOutput(i);
-            auto scriptHeader = scriptsAccess.getScriptHeader(output.getAddressNum(), dedupType(output.getType()));
-            if (scriptHeader->txFirstSeen == txNum) {
-                auto &prevValue = state.scriptCounts.at(static_cast<size_t>(dedupType(output.getType())));
-                if (output.getAddressNum() < prevValue) {
-                    prevValue = output.getAddressNum();
-                }
-            }
-            if (isSpendable(dedupType(output.getType()))) {
-                utxoState.erase({*hash, i});
-                utxoAddressState.spendOutput({txNum, i}, output.getType());
-                utxoScriptState.erase({txNum, i});
-            }
-        }
-        
-        uint32_t inputsAdded = 0;
-        for (uint16_t i = 0; i < tx->inputCount; i++) {
-            auto &input = tx->getInput(i);
-            auto spentTxNum = input.getLinkedTxNum();
-            auto spentTx = txFile.getData(spentTxNum);
-            auto spentHash = txHashesFile[spentTxNum];
-            for (uint16_t j = 0; j < spentTx->outputCount; j++) {
-                auto &output = spentTx->getOutput(j);
-                if (output.getLinkedTxNum() == txNum) {
-                    output.setLinkedTxNum(0);
-                    UTXO utxo(output.getValue(), spentTxNum, output.getType());
-                    utxoState.add({*spentHash, j}, utxo);
-                    blocksci::RawAddress address{output.getAddressNum(), output.getType()};
-                    utxoAddressState.addOutput(AnySpendData{address, scriptsAccess}, {spentTxNum, j});
-                    utxoScriptState.add({spentTxNum, j}, output.getAddressNum());
-                    inputsAdded++;
-                }
-            }
-        }
-        assert(inputsAdded == tx->inputCount);
-    }
-    
-    utxoAddressState.serialize(config.utxoAddressStatePath().str());
-    utxoState.serialize(config.utxoCacheFile().str());
-    utxoScriptState.serialize(config.utxoScriptStatePath().str());
-    
-    return state;
-}
-
-void rollbackTransactions(blocksci::BlockHeight blockKeepCount, HashIndexCreator &hashDb, const ParserConfigurationBase &config) {
-    using blocksci::RawBlock;
-    using blocksci::IndexedFileMapper;
-    using blocksci::SimpleFileMapper;
-    using blocksci::FixedSizeFileMapper;
-    
-    constexpr auto readwrite = mio::access_mode::write;
-    blocksci::FixedSizeFileMapper<RawBlock, readwrite> blockFile(blocksci::ChainAccess::blockFilePath(config.dataConfig.chainDirectory()));
-    
-    if (blockFile.size() > blockKeepCount) {
-        
-        auto firstDeletedBlock = blockFile[blockKeepCount];
-        auto firstDeletedTxNum = firstDeletedBlock->firstTxIndex;
-        
-        auto blocksciState = rollbackState(config, blockKeepCount, firstDeletedTxNum);
-        
-        
-        IndexedFileMapper<readwrite, blocksci::RawTransaction>(blocksci::ChainAccess::txFilePath(config.dataConfig.chainDirectory())).truncate(firstDeletedTxNum);
-        FixedSizeFileMapper<blocksci::uint256, readwrite>(blocksci::ChainAccess::txHashesFilePath(config.dataConfig.chainDirectory())).truncate(firstDeletedTxNum);
-        IndexedFileMapper<readwrite, uint32_t>(blocksci::ChainAccess::sequenceFilePath(config.dataConfig.chainDirectory())).truncate(firstDeletedTxNum);
-        SimpleFileMapper<readwrite>(blocksci::ChainAccess::blockCoinbaseFilePath(config.dataConfig.chainDirectory())).truncate(firstDeletedBlock->coinbaseOffset);
-        blockFile.truncate(blockKeepCount);
-        AddressWriter(config).rollback(blocksciState);
-        
-        AddressState addressState{config.addressPath(), hashDb};
-        hashDb.db.rollback(blocksciState.txCount, blocksciState.scriptCounts);
-        addressState.reset(blocksciState);
-    }
-}
-
 void lockDataDirectory(const blocksci::DataConfiguration &dataConfig) {
     filesystem::path pidFile = dataConfig.pidFilePath();
 
@@ -228,9 +129,13 @@ std::vector<blocksci::RawBlock> updateChain(const ParserConfiguration<ParserTag>
                 break;
             }
         }
+
+        if(static_cast<blocksci::BlockHeight>(oldChain.blockCount()) != splitPoint) {
+            std::cout << "Previously parsed chain is on a different fork than the longest chain. You may need to reparse. Aborting." << std::endl;
+            exit(1);
+        }
         
         std::cout << "Starting with chain of " << oldChain.blockCount() << " blocks" << std::endl;
-        std::cout << "Removing " << static_cast<blocksci::BlockHeight>(oldChain.blockCount()) - splitPoint << " blocks" << std::endl;
         std::cout << "Adding " << static_cast<blocksci::BlockHeight>(chainBlocks.size()) - splitPoint << " blocks" << std::endl;
         
         return splitPoint;
@@ -239,9 +144,6 @@ std::vector<blocksci::RawBlock> updateChain(const ParserConfiguration<ParserTag>
     std::vector<BlockInfo<ParserTag>> blocksToAdd{chainBlocks.begin() + static_cast<int>(splitPoint), chainBlocks.end()};
     
     std::ios::sync_with_stdio(false);
-
-    // If blocks have been removed based on the splitPoint, rollback affected transactions as well
-    rollbackTransactions(splitPoint, hashDb, config);
     
     if (blocksToAdd.size() == 0) {
         return {};  // No new blocks since the last update

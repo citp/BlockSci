@@ -26,7 +26,7 @@
 #include <sstream>
 
 namespace blocksci {
-    
+
     AddressIndex::AddressIndex(const filesystem::path &path, bool readonly) {
         rocksdb::Options options;
         // Optimize RocksDB. This is the easiest way to get RocksDB to perform well
@@ -35,7 +35,7 @@ namespace blocksci {
         // Create the DB if it's not already present
         options.create_if_missing = true;
         options.create_missing_column_families = true;
-        
+
 
         // Initialize RocksDB column families
         std::vector<rocksdb::ColumnFamilyDescriptor> columnDescriptors;
@@ -50,7 +50,7 @@ namespace blocksci {
             columnDescriptors.emplace_back(ss.str(), rocksdb::ColumnFamilyOptions{});
         });
         columnDescriptors.emplace_back(rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions());
-        
+
         rocksdb::DB *dbPtr;
         std::vector<rocksdb::ColumnFamilyHandle *> columnHandlePtrs;
         if (readonly) {
@@ -69,23 +69,23 @@ namespace blocksci {
             columnHandles.emplace_back(std::unique_ptr<rocksdb::ColumnFamilyHandle>(handle));
         }
     }
-    
+
     AddressIndex::~AddressIndex() = default;
-    
+
     void AddressIndex::compactDB() {
         for (auto &column : columnHandles) {
             db->CompactRange(rocksdb::CompactRangeOptions{}, column.get(), nullptr, nullptr);
         }
     }
-    
+
     const std::unique_ptr<rocksdb::ColumnFamilyHandle> &AddressIndex::getOutputColumn(AddressType::Enum type) const {
         return columnHandles[static_cast<size_t>(type)];
     }
-    
+
     const std::unique_ptr<rocksdb::ColumnFamilyHandle> &AddressIndex::getNestedColumn(AddressType::Enum type) const {
         return columnHandles[AddressType::size + static_cast<size_t>(type)];
     }
-    
+
     ranges::any_view<InoutPointer, ranges::category::forward> AddressIndex::getOutputPointers(const RawAddress &address) const {
         auto prefixData = reinterpret_cast<const char *>(&address.scriptNum);
         std::vector<char> prefix(prefixData, prefixData + sizeof(address.scriptNum));  // vector with scriptNum bytes
@@ -94,7 +94,7 @@ namespace blocksci {
             InoutPointer outPoint;
             uint8_t txNumData[4];
             uint8_t outputNumData[2];
-            
+
             auto &key = pair.first;  // Query result
             key.data += sizeof(uint32_t);  // Skip the scriptNum in the key (first 4 bytes), as it is known already
             memcpy(txNumData, key.data, 4);
@@ -105,12 +105,12 @@ namespace blocksci {
             return outPoint;
         });
     }
-    
+
     ranges::any_view<RawAddress> AddressIndex::getIncludingMultisigs(const RawAddress &searchAddress) const {
         if (dedupType(searchAddress.type) != DedupAddressType::PUBKEY) {
             return {};
         }
-        
+
         auto prefixData = reinterpret_cast<const char *>(&searchAddress.scriptNum);
         std::vector<char> prefix(prefixData, prefixData + sizeof(searchAddress.scriptNum));
         auto rawDedupAddressRange = ColumnIterator(db.get(), getNestedColumn(AddressType::MULTISIG_PUBKEY).get(), prefix);
@@ -122,7 +122,7 @@ namespace blocksci {
             return RawAddress{rawParent.scriptNum, AddressType::MULTISIG};
         });
     }
-    
+
     void AddressIndex::addNestedAddresses(std::vector<std::pair<blocksci::RawAddress, blocksci::DedupAddress>> nestedCache) {
         rocksdb::WriteBatch batch;
         for (auto &pair : nestedCache) {
@@ -160,24 +160,6 @@ namespace blocksci {
             batch.Put(outputColumn.get(), key, rocksdb::Slice{});
         }
         writeBatch(batch);
-    }
-    
-    void AddressIndex::rollback(uint32_t txNum) {
-        for_each(AddressType::all(), [&](auto type) {
-            auto &column = getOutputColumn(type);
-            auto it = getOutputIterator(type);
-            rocksdb::WriteBatch batch;
-            for (it->SeekToFirst(); it->Valid(); it->Next()) {
-                auto key = it->key();
-                key.remove_prefix(sizeof(uint32_t));
-                InoutPointer outPoint;
-                memcpy(&outPoint, key.data(), sizeof(outPoint));
-                if (outPoint.txNum >= txNum) {
-                    batch.Delete(column.get(), it->key());
-                }
-            }
-            assert(it->status().ok()); // Check for any errors found during the scan
-        });
     }
 
     /**

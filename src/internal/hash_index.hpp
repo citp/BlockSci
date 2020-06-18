@@ -176,8 +176,6 @@ namespace blocksci {
         /** Add a mapping from tx hash to tx number to the hash index for all given rows */
         void addTxes(std::vector<std::pair<uint256, uint32_t>> rows);
         
-        void rollback(uint32_t txCount, const std::array<uint32_t, DedupAddressType::size> &scriptCounts);
-        
         ranges::any_view<std::pair<MemoryView, MemoryView>> getRawAddressRange(AddressType::Enum type);
         
         template<AddressType::Enum type>

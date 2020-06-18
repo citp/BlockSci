@@ -187,9 +187,6 @@ public:
     
     uint32_t getNewAddressIndex(blocksci::DedupAddressType::Enum type);
     
-    // Called before reseting index
-    void rollback(const blocksci::State &state);
-    
     // Called after resetting index
     void reset(const blocksci::State &state);
 };
