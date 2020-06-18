@@ -6,8 +6,10 @@
 //
 
 #include "input_py.hpp"
+#include "input_properties_py.hpp"
 #include "ranges_py.hpp"
 #include "caster_py.hpp"
+#include "self_apply_py.hpp"
 
 #include <blocksci/chain/access.hpp>
 #include <blocksci/chain/block.hpp>
@@ -19,6 +21,8 @@ namespace py = pybind11;
 using namespace blocksci;
 
 void init_input(py::class_<Input> &cl) {
+    applyMethodsToSelf(cl, AddInputMethods{});
+
     cl
     .def("__repr__", &Input::toString)
     .def(py::self == py::self)

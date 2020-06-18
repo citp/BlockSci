@@ -7,11 +7,13 @@
 //
 
 #include "block_py.hpp"
+#include "block_properties_py.hpp"
 #include "caster_py.hpp"
 #include "ranges_py.hpp"
 
+#include "self_apply_py.hpp"
+
 #include <blocksci/chain/access.hpp>
-#include <blocksci/chain/block.hpp>
 
 #include <pybind11/operators.h>
 
@@ -64,6 +66,9 @@ void init_uint160(py::class_<uint160> &cl) {
 
 void init_block(py::class_<Block> &cl) {
     // addGenericRangeMethods(cl);
+
+    applyMethodsToSelf(cl, AddBlockMethods{});
+
     cl
     .def("__repr__", &Block::toString)
     .def(py::self == py::self)
@@ -81,7 +86,6 @@ void init_block(py::class_<Block> &cl) {
     }, pybind11::keep_alive<0, 1>())
     .def("__bool__", [](Block &range) {
         return !ranges::empty(range);
-        
     })
     .def("__len__", [](Block &range) {
         return range.size();
