@@ -23,6 +23,7 @@ import psutil
 from multiprocess import Pool
 import dateparser
 from dateutil.relativedelta import relativedelta
+import numpy as np
 import pandas as pd
 
 from ._blocksci import *
@@ -683,6 +684,15 @@ setup_range_and_proxy_methods(OpReturnRange)
 setup_range_and_proxy_methods(cluster.ClusterRange)
 setup_range_and_proxy_methods(cluster.TaggedClusterRange)
 setup_range_and_proxy_methods(cluster.TaggedAddressRange)
+
+
+# Fix timestamp difference between normal Pybind11 datetime conversion and numpy arrays
+def new_time(block: Block):
+    return np.datetime64(block.timestamp, "s").astype("datetime64[ns]")
+Block.time = property(new_time)
+def new_tx_time(tx: Tx):
+    return np.datetime64(tx.block_timestamp, "s").astype("datetime64[ns]")
+Tx.block_time = property(new_tx_time)
 
 
 def txes_including_output_of_type(txes, typ):
