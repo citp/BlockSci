@@ -17,6 +17,7 @@ import io
 import re
 import heapq
 import operator
+import time
 from functools import reduce
 
 import psutil
@@ -55,6 +56,12 @@ free_space = (disk_info.f_frsize * disk_info.f_bavail) // (1024**3)
 if free_space < 20:
     logger = logging.getLogger()
     logger.warning("Warning: You only have {}GB of free disk space left. Running out of disk space may crash the parser and corrupt the BlockSci data files.".format(free_space))
+
+# UTC time zone is recommended
+if time.tzname != ('UTC', 'UTC'):
+    logger = logging.getLogger()
+    logger.warning("Warning: Your system is set to a timezone other than UTC, leading to inconsistencies between datetime objects (which are adjusted to your local timezone) and the datetime64 timestamps returned by iterators and ranges, or the fluent interface (which are in UTC).")
+
 
 
 def mapreduce_block_ranges(chain, map_func, reduce_func, init=MISSING_PARAM, start=None, end=None, cpu_count=psutil.cpu_count()):
