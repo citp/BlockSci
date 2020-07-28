@@ -39,3 +39,11 @@ def input_regression(tx, regtest):
         print(inpt.tx, file=regtest)
         print(inpt.tx_index, file=regtest)
         print(inpt.value, file=regtest)
+
+
+def test_input_output_mapping(chain):
+    for block in chain:
+        for tx in block:
+            for inpt in tx.inputs:
+                assert inpt == inpt.spent_output.spending_input
+                assert tx == inpt.spent_output.spending_tx
