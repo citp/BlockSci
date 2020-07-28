@@ -3,7 +3,7 @@ project(blocksci)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
-set(BlockSci_VERSION 0.5.0)
+set(BlockSci_VERSION 0.7.0)
 
 include(GNUInstallDirs)
 

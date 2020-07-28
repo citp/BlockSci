@@ -33,7 +33,7 @@ from .blockchain_info import *
 from .opreturn import label_application
 from .pickler import *
 
-VERSION = "0.6.0"
+VERSION = "0.7.0"
 
 
 sys.modules['blocksci.proxy'] = proxy
