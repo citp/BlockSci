@@ -44,7 +44,7 @@ Our FAQ_ contains additional useful examples and tips.
 Latest release (BlockSci v0.7.0)
 ================================
 
-Version 0.7.0 is based on the development branch 0.6, but requires a full reparse.
+Version 0.7.0 is based on the development branch v0.6, but requires a full reparse.
 
 Version 0.7.0 comes with a new `fluent Python interface`_ for fast and expressive blockchain queries. It contains a number of `important bug fixes`_ as well as many smaller improvements. We recommend upgrading to the latest version of BlockSci and no longer use v0.5.
 
