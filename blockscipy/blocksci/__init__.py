@@ -60,7 +60,7 @@ if free_space < 20:
 # UTC time zone is recommended
 if time.tzname != ('UTC', 'UTC'):
     logger = logging.getLogger()
-    logger.warning("Warning: Your system is set to a timezone other than UTC, leading to inconsistencies between datetime objects (which are adjusted to your local timezone) and the datetime64 timestamps returned by iterators and ranges, or the fluent interface (which are in UTC).")
+    logger.warning("Warning: Your system is set to a timezone other than UTC, leading to inconsistencies between datetime objects (which are adjusted to your local timezone) and datetime64 timestamps returned by iterators and ranges, or the fluent interface (which use UTC).")
 
 
 

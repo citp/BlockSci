@@ -18,7 +18,7 @@ You'll need to install `pytest` and the `pytest-regtest` plugin:
 - `cd blockscipy` (this is important, otherwise pytest won't find the previous results of the regression tests)
 - `pytest` to run all tests, or 
 - `pytest test_xyz.py` to run a single test
-- `pytest test_xyz.py --regtest-reset` to store the current output of the regression tests
+- `pytest test_xyz.py --regtest-reset` to replace the saved output of the regression tests
 
 ### Chain support
 
