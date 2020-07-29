@@ -1,0 +1,40 @@
+Getting Started
+=========================
+
+After installing BlockSci and parsing a compatible blockchain, the analysis library is ready for use.
+
+
+Python
+-----------
+
+To use BlockSci in Python, you only need to import the BlockSci library. Then, you can instantiate a :py:class:`blocksci.Blockchain` object by pointing it to the config file.
+
+.. code-block:: python
+
+    import blocksci
+    chain = blocksci.Blockchain("path/to/your/config.json")
+
+
+
+
+C++
+---------
+
+In order to use the C++ library, you must compile your code against the BlockSci dynamic library and add its headers to your include path. The Blockchain can then be constructed given the path to the config file.
+
+.. code-block:: c++
+
+    #include <blocksci/blocksci.hpp>
+
+    int main(int argc, const char * argv[]) {
+            blocksci::Blockchain chain{"path/to/your/config.json"};
+    }
+
+An easy way to get started is to modify the file ``example/example.cpp``. Then, compile and run it as follows:
+
+.. code-block:: bash
+
+    cd release
+    make blocksci_example
+    ./example/blocksci_example <path to config>
+

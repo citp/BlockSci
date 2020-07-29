@@ -1,0 +1,367 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Fluent Interface (Python) &mdash; BlockSci 0.7.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Python Module Reference" href="reference/reference.html" />
+    <link rel="prev" title="Using BlockSci" href="using-blocksci.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> BlockSci
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.7.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Local Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using-blocksci.html">Using BlockSci</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Fluent Interface (Python)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#available-functions">Available Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#select">Select</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#filter">Filter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#min-and-max">Min and Max</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#aggregation">Aggregation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#working-with-optionals">Working with Optionals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#equality-comparison-and-arithmetic">Equality, Comparison and Arithmetic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#limitations">Limitations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference/reference.html">Python Module Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Release notes</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">BlockSci</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Fluent Interface (Python)</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/fluent-interface.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="fluent-interface-python">
+<h1>Fluent Interface (Python)<a class="headerlink" href="#fluent-interface-python" title="Permalink to this headline">¶</a></h1>
+<p>With currently more than 430 million transactions in the Bitcoin blockchain, analyzing large parts of the blockchain has become largely infeasible using BlockSci’s Python interface.
+With the new version of BlockSci we are providing a new interface that allows for fast selection and filtering of blockchain data.</p>
+<p>The new interface relies on the execution of queries in C++ for significantly better performance.
+Rather than iterating over transactions in Python, the new interface allows the analyst to specify complex queries that are executed in C++.</p>
+<p>Take the anomalous fee query from the BlockSci paper as an example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">tx</span> <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">chain</span> <span class="k">for</span> <span class="n">tx</span> <span class="ow">in</span> <span class="n">block</span> <span class="k">if</span> <span class="n">tx</span><span class="o">.</span><span class="n">fee</span> <span class="o">&gt;</span> <span class="mf">1e7</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>This query evaluates every transaction on the blockchain and selects those with a fee larger than 0.1 BTC. It does so by instantiating Python objects for every single transaction and retrieving the fee for each of them.</p>
+<p>Let’s see how we can express this query using the new interface:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="o">.</span><span class="n">txes</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">tx</span><span class="p">:</span> <span class="n">tx</span><span class="o">.</span><span class="n">fee</span> <span class="o">&gt;</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1e7</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Here, <code class="docutils literal notranslate"><span class="pre">chain.blocks.txes</span></code> selects all transactions in the blockchain. Then, the <cite>where</cite> clause allows to filter those transactions using the lambda syntax.
+<code class="docutils literal notranslate"><span class="pre">where</span></code> is only one of a variety of functions that can be applied to objects in the blockchain.</p>
+<p>Using <code class="docutils literal notranslate"><span class="pre">.select</span></code>, we can retrieve a specific property for each object:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="k">lambda</span> <span class="n">b</span><span class="p">:</span> <span class="n">b</span><span class="o">.</span><span class="n">txes</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The above example returns the number of transactions in each block.</p>
+<div class="section" id="available-functions">
+<h2>Available Functions<a class="headerlink" href="#available-functions" title="Permalink to this headline">¶</a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 77%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Command</p></th>
+<th class="head"><p>Use</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">.select()/.map()</span></code></p></td>
+<td><p>Selecting properties of objects</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">.where()</span></code></p></td>
+<td><p>Filtering</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">.max()</span></code></p></td>
+<td><p>Returns the largest value of a property</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">.min()</span></code></p></td>
+<td><p>Returns the smallest value of a property</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">.any()</span></code></p></td>
+<td><p>Evaluates a boolean expression and returns whether it holds for any item</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">.all()</span></code></p></td>
+<td><p>Evaluates a boolean expression and returns whether it holds for all items</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">.group_by()</span></code></p></td>
+<td><p>Aggregates properties based on another attribute</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">.count/.size</span></code></p></td>
+<td><p>Returns the number of items</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">.to_list()</span></code></p></td>
+<td><p>Returns a list of all items</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="select">
+<h2>Select<a class="headerlink" href="#select" title="Permalink to this headline">¶</a></h2>
+<p>Count the number of transactions in every block (<code class="docutils literal notranslate"><span class="pre">.select</span></code> and <code class="docutils literal notranslate"><span class="pre">.map</span></code> have the exact same functionality):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="k">lambda</span> <span class="n">b</span><span class="p">:</span> <span class="n">b</span><span class="o">.</span><span class="n">txes</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="filter">
+<h2>Filter<a class="headerlink" href="#filter" title="Permalink to this headline">¶</a></h2>
+<p>Select all transactions with a transaction fee greater than 0.1 BTC.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="o">.</span><span class="n">txes</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">tx</span><span class="p">:</span> <span class="n">tx</span><span class="o">.</span><span class="n">fee</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="o">**</span><span class="mi">7</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="min-and-max">
+<h2>Min and Max<a class="headerlink" href="#min-and-max" title="Permalink to this headline">¶</a></h2>
+<p>Find the transaction with the largest fee in the blockchain:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="o">.</span><span class="n">txes</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="k">lambda</span> <span class="n">tx</span><span class="p">:</span> <span class="n">tx</span><span class="o">.</span><span class="n">fee</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Retrieve the largest fee in every block of the blockchain:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">b</span><span class="p">:</span> <span class="n">b</span><span class="o">.</span><span class="n">txes</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="k">lambda</span> <span class="n">tx</span><span class="p">:</span> <span class="n">tx</span><span class="o">.</span><span class="n">fee</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">tx</span><span class="p">:</span> <span class="n">tx</span><span class="o">.</span><span class="n">fee</span><span class="p">)</span><span class="o">.</span><span class="n">or_value</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Finding the block that includes the largest fee in the blockchain:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="k">lambda</span> <span class="n">b</span><span class="p">:</span> <span class="n">b</span><span class="o">.</span><span class="n">txes</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="k">lambda</span> <span class="n">tx</span><span class="p">:</span> <span class="n">tx</span><span class="o">.</span><span class="n">fee</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">tx</span><span class="p">:</span> <span class="n">tx</span><span class="o">.</span><span class="n">fee</span><span class="p">)</span><span class="o">.</span><span class="n">or_value</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="aggregation">
+<h2>Aggregation<a class="headerlink" href="#aggregation" title="Permalink to this headline">¶</a></h2>
+<p>Aggregate the value sent to addresses in a block:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">group_by</span><span class="p">(</span><span class="k">lambda</span> <span class="n">o1</span><span class="p">:</span> <span class="n">o1</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">o2</span><span class="p">:</span> <span class="n">o2</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">sum</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Aggregating the value stored in different types of addresses:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="o">~</span><span class="n">o</span><span class="o">.</span><span class="n">is_spent</span><span class="p">)</span><span class="o">.</span><span class="n">group_by</span><span class="p">(</span>
+  <span class="k">lambda</span> <span class="n">output</span><span class="p">:</span> <span class="n">output</span><span class="o">.</span><span class="n">address</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+  <span class="k">lambda</span> <span class="n">outputs</span><span class="p">:</span> <span class="n">outputs</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">sum</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="working-with-optionals">
+<h2>Working with Optionals<a class="headerlink" href="#working-with-optionals" title="Permalink to this headline">¶</a></h2>
+<p>Some fields return optional properties. For example, an unspent output does not have a spending transaction. Using <code class="docutils literal notranslate"><span class="pre">.or_value</span></code>, we can provide a default value.</p>
+<p>Get the value of all outputs in a block that have been spent after 4320 blocks or more.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">b</span><span class="p">:</span> <span class="n">b</span><span class="o">.</span><span class="n">txes</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+  <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">spending_input</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">i</span><span class="p">:</span> <span class="n">i</span><span class="o">.</span><span class="n">age</span><span class="p">)</span><span class="o">.</span><span class="n">or_value</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">4320</span><span class="p">))</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">sum</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="equality-comparison-and-arithmetic">
+<h2>Equality, Comparison and Arithmetic<a class="headerlink" href="#equality-comparison-and-arithmetic" title="Permalink to this headline">¶</a></h2>
+<p>Most attributes support equality (<cite>==, !=</cite>) and comparison operations (<cite>&gt;, &gt;=, &lt;=, &lt;</cite>). When working with attributes that are represented by integers (e.g., transaction fees) the arithmetic operators <cite>+, -, *, //, %</cite> are supported. Note that only integer division can be used.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">b</span><span class="p">:</span> <span class="n">b</span><span class="o">.</span><span class="n">fee</span> <span class="o">//</span> <span class="n">b</span><span class="o">.</span><span class="n">size_bytes</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="o">.</span><span class="n">txes</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">tx</span><span class="p">:</span> <span class="n">tx</span><span class="o">.</span><span class="n">input_value</span> <span class="o">-</span> <span class="n">tx</span><span class="o">.</span><span class="n">output_value</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="limitations">
+<h2>Limitations<a class="headerlink" href="#limitations" title="Permalink to this headline">¶</a></h2>
+<p>There are a few limitations you need to be aware of when using the interface.</p>
+<ul class="simple">
+<li><p>The fluent interface does not work with Python’s logical boolean operators. Instead of <cite>and</cite>, <cite>or</cite> and <cite>not</cite> you’ll need to use <cite>&amp;</cite>, <cite>|</cite> and <cite>~</cite>.</p></li>
+<li><p>The fluent interface does not support floating point computations (see section “Equality, Comparison and Arithmetic” above).</p></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="reference/reference.html" class="btn btn-neutral float-right" title="Python Module Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="using-blocksci.html" class="btn btn-neutral float-left" title="Using BlockSci" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018-2020, BlockSci Developers
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

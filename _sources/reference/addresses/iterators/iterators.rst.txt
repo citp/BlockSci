@@ -15,18 +15,4 @@ Iterator Classes
    ScriptHashAddressIterator
    WitnessScriptHashAddressIterator
    NonstandardAddressIterator
-
-   AddressOptionalIterator
-   EquivAddressOptionalIterator
-   PubkeyAddressOptionalIterator
-   PubkeyHashAddressOptionalIterator
-   MultisigPubkeyOptionalIterator
-   WitnessPubkeyHashAddressOptionalIterator
-   MultisigAddressOptionalIterator
-   OpReturnOptionalIterator
-   ScriptHashAddressOptionalIterator
-   WitnessScriptHashAddressOptionalIterator
-   NonstandardAddressOptionalIterator
-
-   
    

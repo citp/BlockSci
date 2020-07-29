@@ -1,15 +1,18 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ClusterManager &mdash; BlockSci 0.5.0 documentation</title>
+  <title>ClusterManager &mdash; BlockSci 0.7.0 documentation</title>
   
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
 
   
   
@@ -17,39 +20,38 @@
   
 
   
-
-  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
-  
-
-  
-    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Cluster" href="cluster.html" />
     <link rel="prev" title="Clustering" href="clustering.html" /> 
-
-  
-  <script src="../../_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
-            <a href="../../index.html" class="icon icon-home"> BlockSci
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> BlockSci
           
 
           
@@ -59,7 +61,7 @@
             
             
               <div class="version">
-                0.5.0
+                0.7.0
               </div>
             
           
@@ -76,6 +78,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -83,13 +86,12 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../../readme.html">BlockSci</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Release notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../compiling.html">Compiling BlockSci</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../setup.html">Local setup</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../reference.html">Reference</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../setup.html">Local Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../using-blocksci.html">Using BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fluent-interface.html">Fluent Interface (Python)</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../reference.html">Python Module Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../chain/chain.html">Chain Classes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../addresses/addresses.html">Address Classes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../heuristics/heuristics.html">Heuristics</a></li>
@@ -104,11 +106,15 @@
 <li class="toctree-l2"><a class="reference internal" href="../other/other.html">Other Utility Classes</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Release notes</a></li>
 </ul>
 
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -147,9 +153,9 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
         
-          <li><a href="../reference.html">Reference</a> &raquo;</li>
+          <li><a href="../reference.html">Python Module Reference</a> &raquo;</li>
         
           <li><a href="clustering.html">Clustering</a> &raquo;</li>
         
@@ -174,30 +180,43 @@
             
   <div class="section" id="clustermanager">
 <h1>ClusterManager<a class="headerlink" href="#clustermanager" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<p>The ClusterManager can be used to create new or load existing clusterings.
+The following example will create a new clustering using the legacy heuristic.
+To overwrite an existing clustering, set <code class="docutils literal notranslate"><span class="pre">should_overwrite=True</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">heuristic</span> <span class="o">=</span> <span class="n">blocksci</span><span class="o">.</span><span class="n">heuristics</span><span class="o">.</span><span class="n">change</span><span class="o">.</span><span class="n">legacy</span><span class="o">.</span><span class="n">unique_change</span>
+<span class="n">cm</span> <span class="o">=</span> <span class="n">blocksci</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">ClusterManager</span><span class="o">.</span><span class="n">create_clustering</span><span class="p">(</span><span class="o">&lt;</span><span class="n">cluster_directory</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">chain</span><span class="p">,</span> <span class="n">heuristic</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Instead of creating a new clustering, you can also load a previously created clustering.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cm</span> <span class="o">=</span> <span class="n">blocksci</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">ClusterManager</span><span class="p">(</span><span class="o">&lt;</span><span class="n">cluster_directory</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">chain</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>From the cluster manager you can retrieve all clusters using <a class="reference internal" href="#blocksci.cluster.ClusterManager.clusters" title="blocksci.cluster.ClusterManager.clusters"><code class="xref py py-meth docutils literal notranslate"><span class="pre">clusters()</span></code></a> or retrieve a specific cluster based on an address using <a class="reference internal" href="#blocksci.cluster.ClusterManager.cluster_with_address" title="blocksci.cluster.ClusterManager.cluster_with_address"><code class="xref py py-meth docutils literal notranslate"><span class="pre">cluster_with_address()</span></code></a>.</p>
+<p>Various change address detection heuristics are available in <a class="reference internal" href="../heuristics/change.html#blocksci.heuristics.change" title="blocksci.heuristics.change"><code class="xref py py-mod docutils literal notranslate"><span class="pre">blocksci.heuristics.change</span></code></a>. If you don’t want to include change addresses in your clustering, choose <code class="xref py py-func docutils literal notranslate"><span class="pre">blocksci.heuristics.change.none.unique_change()</span></code> as your heuristic.</p>
+<dl class="py class">
 <dt id="blocksci.cluster.ClusterManager">
-<em class="property">class </em><code class="descclassname">blocksci.cluster.</code><code class="descname">ClusterManager</code><a class="headerlink" href="#blocksci.cluster.ClusterManager" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">blocksci.cluster.</code><code class="sig-name descname">ClusterManager</code><a class="headerlink" href="#blocksci.cluster.ClusterManager" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class managing the cluster dat</p>
-<dl class="method">
+<dl class="py method">
 <dt id="blocksci.cluster.ClusterManager.cluster_with_address">
-<code class="descname">cluster_with_address</code><span class="sig-paren">(</span><em>address: Address</em><span class="sig-paren">)</span> &#x2192; blocksci.cluster.Cluster<a class="headerlink" href="#blocksci.cluster.ClusterManager.cluster_with_address" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">cluster_with_address</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">address</span><span class="p">:</span> <span class="n">Address</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="cluster.html#blocksci.cluster.Cluster" title="blocksci.cluster.Cluster">blocksci.cluster.Cluster</a><a class="headerlink" href="#blocksci.cluster.ClusterManager.cluster_with_address" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the cluster containing the given address</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="blocksci.cluster.ClusterManager.clusters">
-<code class="descname">clusters</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; blocksci.ClusterRange<a class="headerlink" href="#blocksci.cluster.ClusterManager.clusters" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">clusters</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="ranges/ClusterRange.html#blocksci.cluster.ClusterRange" title="blocksci.cluster.ClusterRange">blocksci.cluster.ClusterRange</a><a class="headerlink" href="#blocksci.cluster.ClusterManager.clusters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a list of all clusters (The list is lazy so there is no cost to calling this method)</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="blocksci.cluster.ClusterManager.create_clustering">
-<code class="descname">create_clustering</code><span class="sig-paren">(</span><em>location: str</em>, <em>chain: blocksci.Blockchain</em>, <em>heuristic: blocksci.heuristics.change.ChangeHeuristic=&lt;blocksci.heuristics.change.ChangeHeuristic object at 0x10928e458&gt;</em>, <em>should_overwrite: bool=False</em><span class="sig-paren">)</span> &#x2192; blocksci.cluster.ClusterManager<a class="headerlink" href="#blocksci.cluster.ClusterManager.create_clustering" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="sig-name descname">create_clustering</code><span class="sig-paren">(</span><em class="sig-param">location: str</em>, <em class="sig-param">chain: blocksci.Blockchain</em>, <em class="sig-param">start: int = 0</em>, <em class="sig-param">stop: int = -1</em>, <em class="sig-param">heuristic: blocksci.heuristics.change.ChangeHeuristic = &lt;blocksci.heuristics.change.ChangeHeuristic object at 0x10f303570&gt;</em>, <em class="sig-param">should_overwrite: bool = False</em>, <em class="sig-param">ignore_coinjoin: bool = True</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#blocksci.cluster.ClusterManager" title="blocksci.cluster.ClusterManager">blocksci.cluster.ClusterManager</a><a class="headerlink" href="#blocksci.cluster.ClusterManager.create_clustering" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="blocksci.cluster.ClusterManager.tagged_clusters">
-<code class="descname">tagged_clusters</code><span class="sig-paren">(</span><em>tagged_addresses: Dict[Address,  str]</em><span class="sig-paren">)</span> &#x2192; blocksci.TaggedClusterIterator<a class="headerlink" href="#blocksci.cluster.ClusterManager.tagged_clusters" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">tagged_clusters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tagged_addresses</span><span class="p">:</span> <span class="n">Dict<span class="p">[</span>Address<span class="p">, </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="iterators/TaggedClusterIterator.html#blocksci.cluster.TaggedClusterIterator" title="blocksci.cluster.TaggedClusterIterator">blocksci.cluster.TaggedClusterIterator</a><a class="headerlink" href="#blocksci.cluster.ClusterManager.tagged_clusters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a dictionary of tags, return a list of TaggedCluster objects for any clusters containing tagged scripts</p>
 </dd></dl>
 
@@ -216,7 +235,7 @@
         <a href="cluster.html" class="btn btn-neutral float-right" title="Cluster" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="clustering.html" class="btn btn-neutral" title="Clustering" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="clustering.html" class="btn btn-neutral float-left" title="Clustering" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -225,11 +244,19 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, Harry Kalodner.
+        
+        &copy; Copyright 2018-2020, BlockSci Developers
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -241,37 +268,16 @@
   </div>
   
 
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../../',
-            VERSION:'0.5.0',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../../_static/jquery.js"></script>
-      <script type="text/javascript" src="../../_static/underscore.js"></script>
-      <script type="text/javascript" src="../../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="../../_static/js/theme.js"></script>
-  
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

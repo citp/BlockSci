@@ -1,15 +1,18 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>OpReturn Iterator &mdash; BlockSci 0.5.0 documentation</title>
+  <title>OpReturn Iterator &mdash; BlockSci 0.7.0 documentation</title>
   
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
 
   
   
@@ -17,39 +20,38 @@
   
 
   
-
-  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
-  
-
-  
-    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="Scripthash Address Iterator" href="ScriptHashAddressIterator.html" />
     <link rel="prev" title="Multisig Address Iterator" href="MultisigAddressIterator.html" /> 
-
-  
-  <script src="../../../_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
-            <a href="../../../index.html" class="icon icon-home"> BlockSci
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> BlockSci
           
 
           
@@ -59,7 +61,7 @@
             
             
               <div class="version">
-                0.5.0
+                0.7.0
               </div>
             
           
@@ -76,6 +78,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -83,13 +86,12 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">BlockSci</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Release notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../compiling.html">Compiling BlockSci</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../setup.html">Local setup</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../../reference.html">Reference</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../setup.html">Local Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../using-blocksci.html">Using BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../fluent-interface.html">Fluent Interface (Python)</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../reference.html">Python Module Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../../chain/chain.html">Chain Classes</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../addresses.html">Address Classes</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="../address.html">Addresses</a></li>
@@ -108,17 +110,6 @@
 <li class="toctree-l4"><a class="reference internal" href="ScriptHashAddressIterator.html">Scripthash Address Iterator</a></li>
 <li class="toctree-l4"><a class="reference internal" href="WitnessScriptHashAddressIterator.html">Witness Scripthash Address Iterator</a></li>
 <li class="toctree-l4"><a class="reference internal" href="NonstandardAddressIterator.html">Nonstandard Address Iterator</a></li>
-<li class="toctree-l4"><a class="reference internal" href="AddressOptionalIterator.html">Optional Address Iterator</a></li>
-<li class="toctree-l4"><a class="reference internal" href="EquivAddressOptionalIterator.html">Optional Equiv Address Iterator</a></li>
-<li class="toctree-l4"><a class="reference internal" href="PubkeyAddressOptionalIterator.html">Optional Pubkey Address Iterator</a></li>
-<li class="toctree-l4"><a class="reference internal" href="PubkeyHashAddressOptionalIterator.html">Optional Pubkey Hash Address Iterator</a></li>
-<li class="toctree-l4"><a class="reference internal" href="MultisigPubkeyOptionalIterator.html">Optional Multisig Pubkey Iterator</a></li>
-<li class="toctree-l4"><a class="reference internal" href="WitnessPubkeyHashAddressOptionalIterator.html">Optional Witness Pubkey Hash Address Iterator</a></li>
-<li class="toctree-l4"><a class="reference internal" href="MultisigAddressOptionalIterator.html">Optional Multisig Address Iterator</a></li>
-<li class="toctree-l4"><a class="reference internal" href="OpReturnOptionalIterator.html">Optional OpReturn Iterator</a></li>
-<li class="toctree-l4"><a class="reference internal" href="ScriptHashAddressOptionalIterator.html">Optional Scripthash Address Iterator</a></li>
-<li class="toctree-l4"><a class="reference internal" href="WitnessScriptHashAddressOptionalIterator.html">Optional Witness Scripthash Address Iterator</a></li>
-<li class="toctree-l4"><a class="reference internal" href="NonstandardAddressOptionalIterator.html">Optional Nonstandard Address Iterator</a></li>
 </ul>
 </li>
 </ul>
@@ -128,11 +119,15 @@
 <li class="toctree-l2"><a class="reference internal" href="../../other/other.html">Other Utility Classes</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../../troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Release notes</a></li>
 </ul>
 
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -171,9 +166,9 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
         
-          <li><a href="../../reference.html">Reference</a> &raquo;</li>
+          <li><a href="../../reference.html">Python Module Reference</a> &raquo;</li>
         
           <li><a href="../addresses.html">Address Classes</a> &raquo;</li>
         
@@ -200,181 +195,18 @@
             
   <div class="section" id="opreturn-iterator">
 <h1>OpReturn Iterator<a class="headerlink" href="#opreturn-iterator" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="blocksci.OpReturnIterator">
-<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">OpReturnIterator</code><a class="headerlink" href="#blocksci.OpReturnIterator" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="attribute">
-<dt id="blocksci.OpReturnIterator.address_num">
-<code class="descname">address_num</code><a class="headerlink" href="#blocksci.OpReturnIterator.address_num" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each item: The internal identifier of the address</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[uint32]</span></code></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="blocksci.OpReturnIterator.all">
-<code class="descname">all</code><a class="headerlink" href="#blocksci.OpReturnIterator.all" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a list of all of the objects in the range</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="blocksci.OpReturnIterator.balance">
-<code class="descname">balance</code><span class="sig-paren">(</span><em>height: int=-1</em><span class="sig-paren">)</span> &#x2192; numpy.ndarray[int64]<a class="headerlink" href="#blocksci.OpReturnIterator.balance" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each item: Calculates the balance held by this address at the height (Defaults to the full chain)</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int64]</span></code></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
+<em class="property">class </em><code class="sig-prename descclassname">blocksci.</code><code class="sig-name descname">OpReturnIterator</code><a class="headerlink" href="#blocksci.OpReturnIterator" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
 <dt id="blocksci.OpReturnIterator.data">
-<code class="descname">data</code><a class="headerlink" href="#blocksci.OpReturnIterator.data" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">data</code><a class="headerlink" href="#blocksci.OpReturnIterator.data" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: Data contained inside this address</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="blocksci.OpReturnIterator.equiv">
-<code class="descname">equiv</code><span class="sig-paren">(</span><em>equiv_script: bool=True</em><span class="sig-paren">)</span> &#x2192; blocksci.EquivAddressIterator<a class="headerlink" href="#blocksci.OpReturnIterator.equiv" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each item: Returns a list of all addresses equivalent to this address</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="EquivAddressIterator.html#blocksci.EquivAddressIterator" title="blocksci.EquivAddressIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.EquivAddressIterator</span></code></a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="blocksci.OpReturnIterator.first_tx">
-<code class="descname">first_tx</code><a class="headerlink" href="#blocksci.OpReturnIterator.first_tx" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each item: Get the first transaction that was sent to a type equivalent address</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../chain/iterators/TxIterator.html#blocksci.TxIterator" title="blocksci.TxIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.TxIterator</span></code></a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="blocksci.OpReturnIterator.has_been_spent">
-<code class="descname">has_been_spent</code><a class="headerlink" href="#blocksci.OpReturnIterator.has_been_spent" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each item: Check if a type equivalent address has ever been spent</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[NumpyBool]</span></code></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="blocksci.OpReturnIterator.in_txes_count">
-<code class="descname">in_txes_count</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; numpy.ndarray[int64]<a class="headerlink" href="#blocksci.OpReturnIterator.in_txes_count" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each item: Return the number of transactions where this address was an input</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int64]</span></code></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="blocksci.OpReturnIterator.out_txes_count">
-<code class="descname">out_txes_count</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; numpy.ndarray[int64]<a class="headerlink" href="#blocksci.OpReturnIterator.out_txes_count" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each item: Return the number of transactions where this address was an output</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int64]</span></code></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="blocksci.OpReturnIterator.outs">
-<code class="descname">outs</code><a class="headerlink" href="#blocksci.OpReturnIterator.outs" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each item: Returns a range of all outputs sent to this address</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../chain/iterators/OutputIterator.html#blocksci.OutputIterator" title="blocksci.OutputIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.OutputIterator</span></code></a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="blocksci.OpReturnIterator.raw_type">
-<code class="descname">raw_type</code><a class="headerlink" href="#blocksci.OpReturnIterator.raw_type" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each item: The type of address</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int64]</span></code></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="blocksci.OpReturnIterator.revealed_tx">
-<code class="descname">revealed_tx</code><a class="headerlink" href="#blocksci.OpReturnIterator.revealed_tx" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each item: The transaction where a type equivalent address was first revealed</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../chain/iterators/TxOptionalIterator.html#blocksci.TxOptionalIterator" title="blocksci.TxOptionalIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.TxOptionalIterator</span></code></a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="blocksci.OpReturnIterator.type">
-<code class="descname">type</code><a class="headerlink" href="#blocksci.OpReturnIterator.type" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each item: The type of address</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -392,7 +224,7 @@
         <a href="ScriptHashAddressIterator.html" class="btn btn-neutral float-right" title="Scripthash Address Iterator" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="MultisigAddressIterator.html" class="btn btn-neutral" title="Multisig Address Iterator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="MultisigAddressIterator.html" class="btn btn-neutral float-left" title="Multisig Address Iterator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -401,11 +233,19 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, Harry Kalodner.
+        
+        &copy; Copyright 2018-2020, BlockSci Developers
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -417,37 +257,16 @@
   </div>
   
 
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../../../',
-            VERSION:'0.5.0',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../../../_static/jquery.js"></script>
-      <script type="text/javascript" src="../../../_static/underscore.js"></script>
-      <script type="text/javascript" src="../../../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
-  
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

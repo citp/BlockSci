@@ -1,15 +1,18 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Blockchain &mdash; BlockSci 0.5.0 documentation</title>
+  <title>Blockchain &mdash; BlockSci 0.7.0 documentation</title>
   
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
 
   
   
@@ -17,39 +20,38 @@
   
 
   
-
-  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
-  
-
-  
-    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Block" href="block.html" />
     <link rel="prev" title="Chain Classes" href="chain.html" /> 
-
-  
-  <script src="../../_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
-            <a href="../../index.html" class="icon icon-home"> BlockSci
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> BlockSci
           
 
           
@@ -59,7 +61,7 @@
             
             
               <div class="version">
-                0.5.0
+                0.7.0
               </div>
             
           
@@ -76,6 +78,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -83,13 +86,12 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../../readme.html">BlockSci</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Release notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../compiling.html">Compiling BlockSci</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../setup.html">Local setup</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../reference.html">Reference</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../setup.html">Local Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../using-blocksci.html">Using BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fluent-interface.html">Fluent Interface (Python)</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../reference.html">Python Module Reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="chain.html">Chain Classes</a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Blockchain</a></li>
 <li class="toctree-l3"><a class="reference internal" href="block.html">Block</a></li>
@@ -106,11 +108,15 @@
 <li class="toctree-l2"><a class="reference internal" href="../other/other.html">Other Utility Classes</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Release notes</a></li>
 </ul>
 
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -149,9 +155,9 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
         
-          <li><a href="../reference.html">Reference</a> &raquo;</li>
+          <li><a href="../reference.html">Python Module Reference</a> &raquo;</li>
         
           <li><a href="chain.html">Chain Classes</a> &raquo;</li>
         
@@ -176,172 +182,140 @@
             
   <div class="section" id="blockchain">
 <h1>Blockchain<a class="headerlink" href="#blockchain" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="blocksci.Blockchain">
-<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">Blockchain</code><span class="sig-paren">(</span><em>loc</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class representing the blockchain. This class is contructed by passing it a string representing a file path to your BlockSci data files generated by blocksci_parser</p>
-<dl class="method">
+<em class="property">class </em><code class="sig-prename descclassname">blocksci.</code><code class="sig-name descname">Blockchain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">loc</span></em>, <em class="sig-param"><span class="n">max_block</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing the blockchain. This class is constructed by passing it a string representing a file path to your BlockSci data files generated by blocksci_parser</p>
+<dl class="py method">
 <dt id="blocksci.Blockchain.address_count">
-<code class="descname">address_count</code><span class="sig-paren">(</span><em>address_type: blocksci.address_type</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#blocksci.Blockchain.address_count" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">address_count</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">address_type</span><span class="p">:</span> <span class="n"><a class="reference internal" href="../addresses/types.html#blocksci.address_type" title="blocksci.address_type">blocksci.address_type</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a><a class="headerlink" href="#blocksci.Blockchain.address_count" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get an upper bound of the number of address of a given type (This reflects the number of type equivlant addresses of that type).</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="blocksci.Blockchain.address_from_index">
-<code class="descname">address_from_index</code><span class="sig-paren">(</span><em>index: int</em>, <em>type: blocksci.address_type</em><span class="sig-paren">)</span> &#x2192; Address<a class="headerlink" href="#blocksci.Blockchain.address_from_index" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">address_from_index</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">index</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a></span></em>, <em class="sig-param"><span class="n">type</span><span class="p">:</span> <span class="n"><a class="reference internal" href="../addresses/types.html#blocksci.address_type" title="blocksci.address_type">blocksci.address_type</a></span></em><span class="sig-paren">)</span> &#x2192; Address<a class="headerlink" href="#blocksci.Blockchain.address_from_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>Construct an address object from an address num and type</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="../addresses/address.html#blocksci.Address" title="blocksci.Address"><code class="xref py py-class docutils literal notranslate"><span class="pre">Address</span></code></a></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="blocksci.Blockchain.address_from_string">
-<code class="descname">address_from_string</code><span class="sig-paren">(</span><em>address_string: str</em><span class="sig-paren">)</span> &#x2192; Optional[Address]<a class="headerlink" href="#blocksci.Blockchain.address_from_string" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">address_from_string</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">address_string</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>Address<span class="p">]</span><a class="headerlink" href="#blocksci.Blockchain.address_from_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Construct an address object from an address string</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Optional[Address]</span></code></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="blocksci.Blockchain.addresses">
-<code class="descname">addresses</code><span class="sig-paren">(</span><em>address_type: blocksci.address_type</em><span class="sig-paren">)</span> &#x2192; Union[blocksci.NonstandardAddressRange, blocksci.PubkeyAddressRange, blocksci.PubkeyHashAddressRange, blocksci.MultisigPubkeyRange, blocksci.ScriptHashAddressRange, blocksci.MultisigAddressRange, blocksci.OpReturnRange, blocksci.WitnessPubkeyHashAddressRange, blocksci.WitnessScriptHashAddressRange]<a class="headerlink" href="#blocksci.Blockchain.addresses" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a range of all addresses of the given type</p>
+<code class="sig-name descname">addresses</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">address_type</span><span class="p">:</span> <span class="n"><a class="reference internal" href="../addresses/types.html#blocksci.address_type" title="blocksci.address_type">blocksci.address_type</a></span></em><span class="sig-paren">)</span> &#x2192; Union<span class="p">[</span><a class="reference internal" href="../addresses/ranges/NonstandardAddressRange.html#blocksci.NonstandardAddressRange" title="blocksci.NonstandardAddressRange">blocksci.NonstandardAddressRange</a><span class="p">, </span><a class="reference internal" href="../addresses/ranges/PubkeyAddressRange.html#blocksci.PubkeyAddressRange" title="blocksci.PubkeyAddressRange">blocksci.PubkeyAddressRange</a><span class="p">, </span><a class="reference internal" href="../addresses/ranges/PubkeyHashAddressRange.html#blocksci.PubkeyHashAddressRange" title="blocksci.PubkeyHashAddressRange">blocksci.PubkeyHashAddressRange</a><span class="p">, </span><a class="reference internal" href="../addresses/ranges/MultisigPubkeyRange.html#blocksci.MultisigPubkeyRange" title="blocksci.MultisigPubkeyRange">blocksci.MultisigPubkeyRange</a><span class="p">, </span><a class="reference internal" href="../addresses/ranges/ScriptHashAddressRange.html#blocksci.ScriptHashAddressRange" title="blocksci.ScriptHashAddressRange">blocksci.ScriptHashAddressRange</a><span class="p">, </span><a class="reference internal" href="../addresses/ranges/MultisigAddressRange.html#blocksci.MultisigAddressRange" title="blocksci.MultisigAddressRange">blocksci.MultisigAddressRange</a><span class="p">, </span><a class="reference internal" href="../addresses/ranges/OpReturnRange.html#blocksci.OpReturnRange" title="blocksci.OpReturnRange">blocksci.OpReturnRange</a><span class="p">, </span><a class="reference internal" href="../addresses/ranges/WitnessPubkeyHashAddressRange.html#blocksci.WitnessPubkeyHashAddressRange" title="blocksci.WitnessPubkeyHashAddressRange">blocksci.WitnessPubkeyHashAddressRange</a><span class="p">, </span><a class="reference internal" href="../addresses/ranges/WitnessScriptHashAddressRange.html#blocksci.WitnessScriptHashAddressRange" title="blocksci.WitnessScriptHashAddressRange">blocksci.WitnessScriptHashAddressRange</a><span class="p">, </span>blocksci.WitnessUnknownAddressRange<span class="p">]</span><a class="headerlink" href="#blocksci.Blockchain.addresses" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a range of all addresses of the given type.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="blocksci.Blockchain.addresses_with_prefix">
-<code class="descname">addresses_with_prefix</code><span class="sig-paren">(</span><em>prefix: str</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#blocksci.Blockchain.addresses_with_prefix" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">addresses_with_prefix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prefix</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)">list</a><a class="headerlink" href="#blocksci.Blockchain.addresses_with_prefix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find all addresses beginning with the given prefix</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.Blockchain.blocks">
-<code class="descname">blocks</code><a class="headerlink" href="#blocksci.Blockchain.blocks" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">blocks</code><a class="headerlink" href="#blocksci.Blockchain.blocks" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a range of all the blocks in the chain</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="ranges/BlockRange.html#blocksci.BlockRange" title="blocksci.BlockRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.BlockRange</span></code></a></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
+<dt id="blocksci.Blockchain.config_location">
+<em class="property">property </em><code class="sig-name descname">config_location</code><a class="headerlink" href="#blocksci.Blockchain.config_location" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the location of the configuration file that this Blockchain object represents.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="blocksci.Blockchain.data_location">
+<em class="property">property </em><code class="sig-name descname">data_location</code><a class="headerlink" href="#blocksci.Blockchain.data_location" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the location of the data directory that this Blockchain object represents.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="blocksci.Blockchain.filter_blocks">
-<code class="descname">filter_blocks</code><span class="sig-paren">(</span><em>filterFunc</em>, <em>start=None</em>, <em>end=None</em>, <em>cpu_count=8</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.filter_blocks" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">filter_blocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filter_func</span></em>, <em class="sig-param"><span class="n">start</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">end</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cpu_count</span><span class="o">=</span><span class="default_value">4</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.filter_blocks" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return all blocks in range which match the given criteria</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
+<dt id="blocksci.Blockchain.filter_blocks_legacy">
+<code class="sig-name descname">filter_blocks_legacy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filter_func</span></em>, <em class="sig-param"><span class="n">start</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">end</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cpu_count</span><span class="o">=</span><span class="default_value">4</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.filter_blocks_legacy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all blocks in range which match the given criteria</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="blocksci.Blockchain.filter_txes">
-<code class="descname">filter_txes</code><span class="sig-paren">(</span><em>filterFunc</em>, <em>start=None</em>, <em>end=None</em>, <em>cpu_count=8</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.filter_txes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">filter_txes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filter_func</span></em>, <em class="sig-param"><span class="n">start</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">end</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cpu_count</span><span class="o">=</span><span class="default_value">4</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.filter_txes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return all transactions in range which match the given criteria</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
+<dt id="blocksci.Blockchain.filter_txes_legacy">
+<code class="sig-name descname">filter_txes_legacy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filter_func</span></em>, <em class="sig-param"><span class="n">start</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">end</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cpu_count</span><span class="o">=</span><span class="default_value">4</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.filter_txes_legacy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all transactions in range which match the given criteria</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="blocksci.Blockchain.heights_to_dates">
-<code class="descname">heights_to_dates</code><span class="sig-paren">(</span><em>df</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.heights_to_dates" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">heights_to_dates</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.heights_to_dates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a pandas data frame with a block height index into a frame with a block time index</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
+<dt id="blocksci.Blockchain.is_parser_running">
+<code class="sig-name descname">is_parser_running</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a><a class="headerlink" href="#blocksci.Blockchain.is_parser_running" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns whether the parser is currently operating on this chain’s data directory.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="blocksci.Blockchain.map_blocks">
-<code class="descname">map_blocks</code><span class="sig-paren">(</span><em>blockFunc</em>, <em>start=None</em>, <em>end=None</em>, <em>cpu_count=8</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.map_blocks" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">map_blocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">block_func</span></em>, <em class="sig-param"><span class="n">start</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">end</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cpu_count</span><span class="o">=</span><span class="default_value">4</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.map_blocks" title="Permalink to this definition">¶</a></dt>
 <dd><p>Runs the given function over each block in range and returns a list of the results</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="blocksci.Blockchain.mapreduce_block_ranges">
-<code class="descname">mapreduce_block_ranges</code><span class="sig-paren">(</span><em>mapFunc</em>, <em>reduceFunc</em>, <em>init=(no default)</em>, <em>start=None</em>, <em>end=None</em>, <em>cpu_count=8</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.mapreduce_block_ranges" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">mapreduce_block_ranges</code><span class="sig-paren">(</span><em class="sig-param">map_func</em>, <em class="sig-param">reduce_func</em>, <em class="sig-param">init=(no default)</em>, <em class="sig-param">start=None</em>, <em class="sig-param">end=None</em>, <em class="sig-param">cpu_count=4</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.mapreduce_block_ranges" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialized multithreaded map reduce function over a stream of block ranges</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="blocksci.Blockchain.mapreduce_blocks">
-<code class="descname">mapreduce_blocks</code><span class="sig-paren">(</span><em>mapFunc</em>, <em>reduceFunc</em>, <em>init=(no default)</em>, <em>start=None</em>, <em>end=None</em>, <em>cpu_count=8</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.mapreduce_blocks" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">mapreduce_blocks</code><span class="sig-paren">(</span><em class="sig-param">map_func</em>, <em class="sig-param">reduce_func</em>, <em class="sig-param">init=(no default)</em>, <em class="sig-param">start=None</em>, <em class="sig-param">end=None</em>, <em class="sig-param">cpu_count=4</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.mapreduce_blocks" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialized multithreaded map reduce function over a stream of blocks</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="blocksci.Blockchain.mapreduce_txes">
-<code class="descname">mapreduce_txes</code><span class="sig-paren">(</span><em>mapFunc</em>, <em>reduceFunc</em>, <em>init=(no default)</em>, <em>start=None</em>, <em>end=None</em>, <em>cpu_count=8</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.mapreduce_txes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">mapreduce_txes</code><span class="sig-paren">(</span><em class="sig-param">map_func</em>, <em class="sig-param">reduce_func</em>, <em class="sig-param">init=(no default)</em>, <em class="sig-param">start=None</em>, <em class="sig-param">end=None</em>, <em class="sig-param">cpu_count=4</em><span class="sig-paren">)</span><a class="headerlink" href="#blocksci.Blockchain.mapreduce_txes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialized multithreaded map reduce function over a stream of transactions</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="blocksci.Blockchain.most_valuable_addresses">
-<code class="descname">most_valuable_addresses</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict[int, Address]<a class="headerlink" href="#blocksci.Blockchain.most_valuable_addresses" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get a list of the top 100 most valuable addresses</p>
-</dd></dl>
-
-<dl class="method">
+<dl class="py method">
 <dt id="blocksci.Blockchain.range">
-<code class="descname">range</code><span class="sig-paren">(</span><em>start</em>, <em>end=None</em><span class="sig-paren">)</span> &#x2192; blocksci.BlockRange<a class="headerlink" href="#blocksci.Blockchain.range" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">range</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span></em>, <em class="sig-param"><span class="n">end</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="ranges/BlockRange.html#blocksci.BlockRange" title="blocksci.BlockRange">blocksci.BlockRange</a><a class="headerlink" href="#blocksci.Blockchain.range" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the range of blocks mined between the given dates</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="blocksci.Blockchain.reload">
-<code class="descname">reload</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#blocksci.Blockchain.reload" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reload the blockchain to make new blocks visible (Invalidates current BlockSci objects)</p>
+<code class="sig-name descname">reload</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a><a class="headerlink" href="#blocksci.Blockchain.reload" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reload the blockchain to make new blocks visible (Invalidates current BlockSci objects).</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="blocksci.Blockchain.tx_with_hash">
-<code class="descname">tx_with_hash</code><span class="sig-paren">(</span><em>tx_hash: str</em><span class="sig-paren">)</span> &#x2192; blocksci.Tx<a class="headerlink" href="#blocksci.Blockchain.tx_with_hash" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">tx_with_hash</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tx_hash</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="tx.html#blocksci.Tx" title="blocksci.Tx">blocksci.Tx</a><a class="headerlink" href="#blocksci.Blockchain.tx_with_hash" title="Permalink to this definition">¶</a></dt>
 <dd><p>This functions gets the transaction with given hash.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tx.html#blocksci.Tx" title="blocksci.Tx"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.Tx</span></code></a></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="blocksci.Blockchain.tx_with_index">
-<code class="descname">tx_with_index</code><span class="sig-paren">(</span><em>index: int</em><span class="sig-paren">)</span> &#x2192; blocksci.Tx<a class="headerlink" href="#blocksci.Blockchain.tx_with_index" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">tx_with_index</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">index</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="tx.html#blocksci.Tx" title="blocksci.Tx">blocksci.Tx</a><a class="headerlink" href="#blocksci.Blockchain.tx_with_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>This functions gets the transaction with given index.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tx.html#blocksci.Tx" title="blocksci.Tx"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.Tx</span></code></a></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
 </dd></dl>
@@ -359,7 +333,7 @@
         <a href="block.html" class="btn btn-neutral float-right" title="Block" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="chain.html" class="btn btn-neutral" title="Chain Classes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="chain.html" class="btn btn-neutral float-left" title="Chain Classes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -368,11 +342,19 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, Harry Kalodner.
+        
+        &copy; Copyright 2018-2020, BlockSci Developers
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -384,37 +366,16 @@
   </div>
   
 
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../../',
-            VERSION:'0.5.0',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../../_static/jquery.js"></script>
-      <script type="text/javascript" src="../../_static/underscore.js"></script>
-      <script type="text/javascript" src="../../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="../../_static/js/theme.js"></script>
-  
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

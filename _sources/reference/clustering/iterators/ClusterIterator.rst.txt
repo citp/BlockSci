@@ -1,5 +1,5 @@
 Cluster Iterator
 ====================================
 
-.. autoclass:: blocksci.ClusterIterator
+.. autoclass:: blocksci.cluster.ClusterIterator
    :members:

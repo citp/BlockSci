@@ -1,15 +1,18 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Local setup &mdash; BlockSci 0.5.0 documentation</title>
+  <title>Local Setup &mdash; BlockSci 0.7.0 documentation</title>
   
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
 
   
   
@@ -17,39 +20,38 @@
   
 
   
-
-  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
 
-  
-
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Reference" href="reference/reference.html" />
-    <link rel="prev" title="Compiling BlockSci" href="compiling.html" /> 
-
-  
-  <script src="_static/js/modernizr.min.js"></script>
-
+    <link rel="next" title="Using BlockSci" href="using-blocksci.html" />
+    <link rel="prev" title="BlockSci Version 0.7 Documentation" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
-            <a href="index.html" class="icon icon-home"> BlockSci
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> BlockSci
           
 
           
@@ -59,7 +61,7 @@
             
             
               <div class="version">
-                0.5.0
+                0.7.0
               </div>
             
           
@@ -76,6 +78,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -83,23 +86,34 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="readme.html">BlockSci</a></li>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Release notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="compiling.html">Compiling BlockSci</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Local setup</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#blocksci-parser">BlockSci Parser</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#incremental-updates">Incremental updates</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#mempool-recorder">Mempool Recorder</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Local Setup</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#system-requirements">System requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ubuntu-18-04">Ubuntu 18.04</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mac-os-10-15">Mac OS 10.15</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="reference/reference.html">Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-a-full-node">Running a full node</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#parsing-the-blockchain">Parsing the blockchain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#incremental-updates">Incremental updates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mempool-recorder">Mempool recorder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#clustering">Clustering</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="using-blocksci.html">Using BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fluent-interface.html">Fluent Interface (Python)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/reference.html">Python Module Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Release notes</a></li>
 </ul>
 
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -138,9 +152,9 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="index.html">Docs</a> &raquo;</li>
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>Local setup</li>
+      <li>Local Setup</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -160,36 +174,114 @@
            <div itemprop="articleBody">
             
   <div class="section" id="local-setup">
-<h1>Local setup<a class="headerlink" href="#local-setup" title="Permalink to this headline">¶</a></h1>
-<p>BlockSci is composed of two major components, the parser, and the analysis library. The parser is used to generate the backing blocksci database format. The analysis library can then be pointed at the generated data.</p>
-<p>Note that BlockSci runs best with 64GB of RAM or above though 32 GB is feasable although much slower.</p>
-<div class="section" id="blocksci-parser">
-<h2>BlockSci Parser<a class="headerlink" href="#blocksci-parser" title="Permalink to this headline">¶</a></h2>
-<p>The BlockSci parser extracts blockchain data generated by a full node (such as bitcoind or an altcoin node). Thus to set up BlockSci, you must first run a full node.</p>
-<p>The BlockSci parser provides two different mechanisms for processing blockchain data, a disk mode and a RPC mode.</p>
-<p>Disk mode is optimized for parsing Bitcoin’s data files. It reads blockchain data directly from disk in a rapid manner. However this means that it does not work on many other blockchains which have different serialization formats than Bitcoin.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>blocksci_parser --output-directory bitcoin-data update disk --coin-directory .bitcoin
+<h1>Local Setup<a class="headerlink" href="#local-setup" title="Permalink to this headline">¶</a></h1>
+<p>BlockSci consists of two major components: the parser, and the analysis library. The parser generates the BlockSci Data files. The analysis library can then be pointed at the generated data.</p>
+<div class="section" id="system-requirements">
+<h2>System requirements<a class="headerlink" href="#system-requirements" title="Permalink to this headline">¶</a></h2>
+<p>To parse the Bitcoin blockchain, BlockSci requires at least 60 GB of RAM (as of July 2020). For smaller blockchains using less RAM might be sufficient.</p>
+<ul class="simple">
+<li><p>GCC 7.2 or above, or Clang 5 or above</p></li>
+<li><p>CMake 3.11 or above</p></li>
+<li><p>Python 3</p></li>
+</ul>
+</div>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="ubuntu-18-04">
+<h3>Ubuntu 18.04<a class="headerlink" href="#ubuntu-18-04" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+sudo apt-get update
+sudo apt install cmake libtool autoconf libboost-filesystem-dev libboost-iostreams-dev <span class="se">\</span>
+libboost-serialization-dev libboost-thread-dev libboost-test-dev  libssl-dev libjsoncpp-dev <span class="se">\</span>
+libcurl4-openssl-dev libjsoncpp-dev libjsonrpccpp-dev libsnappy-dev zlib1g-dev libbz2-dev <span class="se">\</span>
+liblz4-dev libzstd-dev libjemalloc-dev libsparsehash-dev python3-dev python3-pip
+
+git clone https://github.com/citp/BlockSci.git
+<span class="nb">cd</span> BlockSci
+mkdir release
+<span class="nb">cd</span> release
+<span class="nv">CC</span><span class="o">=</span>gcc-7 <span class="nv">CXX</span><span class="o">=</span>g++-7 cmake -DCMAKE_BUILD_TYPE<span class="o">=</span>Release ..
+make
+sudo make install
+
+<span class="nb">cd</span> ..
+<span class="nv">CC</span><span class="o">=</span>gcc-7 <span class="nv">CXX</span><span class="o">=</span>g++-7 sudo -H pip3 install -e blockscipy
 </pre></div>
 </div>
-<p>RPC mode uses the RPC interface of a cryptocurrency to extract data regarding the blockchain. It works with a variety of cryptocurrencies which have the same general model as Bitcoin, but with minor changes to the serialization format which break the parser in disk mode. Examples of this are Zcash and Namecoin. To use the parser in RPC mode, you’re full node must be running with txindex enabled.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>blocksci_parser --output-directory bitcoin-data update rpc --username <span class="o">[</span>user<span class="o">]</span> --password <span class="o">[</span>pass<span class="o">]</span> --address <span class="o">[</span>ip<span class="o">]</span> --port <span class="o">[</span>port<span class="o">]</span>
+<p>To avoid timestamp inconsistencies (i.e. pure Python <code class="docutils literal notranslate"><span class="pre">datetime</span></code> objects get adjusted to the local time zone, in contrast to numpy <code class="docutils literal notranslate"><span class="pre">datetime64</span></code> objects returned by ranges/iterators and the fluent interface), set the system clock to UTC:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo timedatectl set-timezone UTC
+</pre></div>
+</div>
+<p>You will also need to <a class="reference external" href="https://ro-che.info/articles/2017-03-26-increase-open-files-limit">increase</a> the open files limit on your system (e.g., to 64000).</p>
+</div>
+<div class="section" id="mac-os-10-15">
+<h3>Mac OS 10.15<a class="headerlink" href="#mac-os-10-15" title="Permalink to this headline">¶</a></h3>
+<p>BlockSci currently <em>is not compatible with Xcode 11.5</em> and above, due to issues with some dependencies. The instructions below may work with older versions of Xcode. We hope to be able to support MacOS again in the future.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>brew install cmake jsoncpp libjson-rpc-cpp boost openssl jemalloc zstd <span class="se">\</span>
+automake libtool google-sparsehash lz4 python3
+sudo xcode-select --reset
+
+git clone https://github.com/citp/BlockSci.git
+<span class="nb">cd</span> BlockSci
+mkdir release
+<span class="nb">cd</span> release
+cmake -DCMAKE_BUILD_TYPE<span class="o">=</span>Release -DOPENSSL_ROOT_DIR<span class="o">=</span>/usr/local/opt/openssl ..
+make
+sudo make install
+
+<span class="nb">cd</span> ..
+pip3 install -e blockscipy
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="running-a-full-node">
+<h2>Running a full node<a class="headerlink" href="#running-a-full-node" title="Permalink to this headline">¶</a></h2>
+<p>The BlockSci parser extracts blockchain data generated by a full node (such as bitcoind or an altcoin node). Thus, to set up BlockSci, you must first run a full node.</p>
+<p>The BlockSci parser provides two different mechanisms for processing blockchain data, a disk mode and an RPC mode.</p>
+<ul class="simple">
+<li><p><strong>Disk mode</strong> is optimized for parsing Bitcoin’s data files. It reads blockchain data directly from disk in a rapid manner. However, this means that it does not work on blockchains that have a different serialization format than Bitcoin.</p></li>
+<li><p><strong>RPC mode</strong> uses the RPC interface of a cryptocurrency to extract data regarding the blockchain. It works with a variety of cryptocurrencies which have the same general model as Bitcoin, but with minor changes to the serialization format (that break the parser in disk mode). Examples of this are Zcash and Namecoin. To use the parser in RPC mode, your full node must be running with <code class="docutils literal notranslate"><span class="pre">txindex</span></code> enabled.</p></li>
+</ul>
+<p>To set up a full node, please refer to its installation instructions.</p>
+</div>
+<div class="section" id="parsing-the-blockchain">
+<h2>Parsing the blockchain<a class="headerlink" href="#parsing-the-blockchain" title="Permalink to this headline">¶</a></h2>
+<p>Before you can parse a blockchain, you’ll need to generate a config file.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>blocksci_parser &lt;config file&gt; generate-config &lt;coin type&gt; &lt;blocksci data directory&gt; <span class="o">[</span>--max-block &lt;max block&gt;<span class="o">]</span> <span class="o">[</span>--disk &lt;fullnode data directory&gt;<span class="o">]</span> <span class="o">[</span>--rpc &lt;username&gt; &lt;password&gt; <span class="o">[</span>--address &lt;address&gt;<span class="o">]</span> <span class="o">[</span>--port &lt;port&gt;<span class="o">]]</span>
+</pre></div>
+</div>
+<p>BlockSci provides defaults for the most common cryptocurrencies, including Bitcoin, Bitcoin Cash, Litecoin, Dash, Namecoin and ZCash.
+These can be selected through the <code class="docutils literal notranslate"><span class="pre">&lt;coin</span> <span class="pre">type&gt;</span></code> field (simply run <code class="docutils literal notranslate"><span class="pre">blocksci_parser</span></code> to see all the options available).
+BlockSci does, however, not provide defaults for the data directories, as they differ between operating systems.
+You’ll thus need to provide information for either the <code class="docutils literal notranslate"><span class="pre">--disk</span></code> or the <code class="docutils literal notranslate"><span class="pre">--rpc</span></code> option.</p>
+<p>After creating the config file, you can parse the blockchain by running:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>blocksci_parser &lt;config file&gt; update
 </pre></div>
 </div>
 </div>
 <div class="section" id="incremental-updates">
 <h2>Incremental updates<a class="headerlink" href="#incremental-updates" title="Permalink to this headline">¶</a></h2>
-<p>BlockSci can be kept up to date with the blockchain by setting up a cronjob to periodically run the parser command. Updates to the parser should not noticeably impact usage of the analysis library. It is recommended that the Blockchain be kept approximately 6 blocks back from the head of the chain in order to avoid imperfect reorg handling in BlockSci.</p>
-<p>For example you can set BlockSci to update hourly and stay 6 blocks behind the head of the chain via adding</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>@hourly /usr/local/bin/blocksci_parser --output-directory /home/ubuntu/bitcoin-data update --max-block -6 disk --coin-directory /home/ubuntu/.bitcoin
+<p>BlockSci can be kept up to date with the blockchain by setting up a cronjob to periodically run the parser command. Updates to the parser should not noticeably impact usage of the analysis library. For Bitcoin, we recommended keeping the parsing at least 6 blocks behind the head of the chain as BlockSci currently does not handle reorganizations. Other cryptocurrencies may require greater security margins.</p>
+<p>You can set BlockSci to stay 6 blocks behind the head of the chain by setting <cite>“maxBlockNum”: -6</cite> in your config file and adding</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>@hourly /usr/local/bin/blocksci_parser &lt;config file&gt; update
 </pre></div>
 </div>
 <p>to your system <a class="reference external" href="https://help.ubuntu.com/community/CronHowto">crontab</a>.</p>
 </div>
 <div class="section" id="mempool-recorder">
-<h2>Mempool Recorder<a class="headerlink" href="#mempool-recorder" title="Permalink to this headline">¶</a></h2>
-<p>BlockSci provides an optional mempool recorder will record the arrival times of blocks and transactions at your local node. The recorder works by repeatedly pinging the RPC interface and obvserving as new transactions arrive. This data is accessable directly through the python API via <cite>Tx.time_seen</cite> and <cite>Block.time_seen</cite> which will return a datetime or <cite>None</cite> if the transaction or block was not observed.</p>
-<p>Running the mempool recorder is very similar to running the parser in RCP mode.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mempool_recorder &lt;data location&gt; --username &lt;username&gt; --password &lt;password&gt; <span class="o">[</span>--address &lt;address&gt;<span class="o">]</span> <span class="o">[</span>--port &lt;port&gt;<span class="o">]</span>
+<h2>Mempool recorder<a class="headerlink" href="#mempool-recorder" title="Permalink to this headline">¶</a></h2>
+<p>BlockSci provides an optional mempool recorder will record the arrival times of blocks and transactions at your local node. The recorder works by repeatedly pinging the RPC interface and obvserving as new transactions arrive. This data is accessible directly through the python API via <cite>Tx.timestamp_seen/Tx.time_seen</cite> and <cite>Block.timestamp_seen/Block.time_seen</cite> which will return a timestamp, or <cite>None</cite> if the transaction or block was not observed.
+To use the mempool recorder, you need to have continuous incremental updates enabled (see above) and a valid RPC section in your config file.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mempool_recorder &lt;config file&gt;
+</pre></div>
+</div>
+</div>
+<div class="section" id="clustering">
+<h2>Clustering<a class="headerlink" href="#clustering" title="Permalink to this headline">¶</a></h2>
+<p>BlockSci provides a clustering module to apply heuristic based clustering techniques. We recommend using it through the Python <a class="reference internal" href="reference/clustering/clustering.html#module-blocksci.cluster" title="blocksci.cluster"><code class="xref py py-mod docutils literal notranslate"><span class="pre">blocksci.cluster</span></code></a> module, which provides many customization options.</p>
+<p>If you prefer to use the standalone tool, you can run it as follows.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>blocksci_clusterer &lt;data location&gt; &lt;cluster output directory&gt; <span class="o">[</span>--overwrite<span class="o">]</span>
 </pre></div>
 </div>
 </div>
@@ -203,10 +295,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="reference/reference.html" class="btn btn-neutral float-right" title="Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="using-blocksci.html" class="btn btn-neutral float-right" title="Using BlockSci" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="compiling.html" class="btn btn-neutral" title="Compiling BlockSci" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral float-left" title="BlockSci Version 0.7 Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -215,11 +307,19 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, Harry Kalodner.
+        
+        &copy; Copyright 2018-2020, BlockSci Developers
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -231,37 +331,16 @@
   </div>
   
 
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'0.5.0',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

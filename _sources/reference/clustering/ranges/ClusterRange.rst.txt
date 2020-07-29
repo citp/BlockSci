@@ -1,5 +1,5 @@
 Cluster Range
 ====================================
 
-.. autoclass:: blocksci.ClusterRange
+.. autoclass:: blocksci.cluster.ClusterRange
    :members:

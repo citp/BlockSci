@@ -1,15 +1,18 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Tagged Cluster Iterator &mdash; BlockSci 0.5.0 documentation</title>
+  <title>Tagged Cluster Iterator &mdash; BlockSci 0.7.0 documentation</title>
   
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
 
   
   
@@ -17,39 +20,38 @@
   
 
   
-
-  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
-  
-
-  
-    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="Tagged Address Iterator" href="TaggedAddressIterator.html" />
     <link rel="prev" title="Cluster Iterator" href="ClusterIterator.html" /> 
-
-  
-  <script src="../../../_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
-            <a href="../../../index.html" class="icon icon-home"> BlockSci
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> BlockSci
           
 
           
@@ -59,7 +61,7 @@
             
             
               <div class="version">
-                0.5.0
+                0.7.0
               </div>
             
           
@@ -76,6 +78,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -83,13 +86,12 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">BlockSci</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Release notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../compiling.html">Compiling BlockSci</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../setup.html">Local setup</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../../reference.html">Reference</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../setup.html">Local Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../using-blocksci.html">Using BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../fluent-interface.html">Fluent Interface (Python)</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../reference.html">Python Module Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../../chain/chain.html">Chain Classes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../addresses/addresses.html">Address Classes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../heuristics/heuristics.html">Heuristics</a></li>
@@ -102,9 +104,6 @@
 <li class="toctree-l4"><a class="reference internal" href="ClusterIterator.html">Cluster Iterator</a></li>
 <li class="toctree-l4 current"><a class="current reference internal" href="#">Tagged Cluster Iterator</a></li>
 <li class="toctree-l4"><a class="reference internal" href="TaggedAddressIterator.html">Tagged Address Iterator</a></li>
-<li class="toctree-l4"><a class="reference internal" href="ClusterOptionalIterator.html">Optional Cluster Iterator</a></li>
-<li class="toctree-l4"><a class="reference internal" href="TaggedClusterOptionalIterator.html">Optional Tagged Cluster Iterator</a></li>
-<li class="toctree-l4"><a class="reference internal" href="TaggedAddressOptionalIterator.html">Optional Tagged Address Iterator</a></li>
 </ul>
 </li>
 </ul>
@@ -112,11 +111,15 @@
 <li class="toctree-l2"><a class="reference internal" href="../../other/other.html">Other Utility Classes</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../../troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Release notes</a></li>
 </ul>
 
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -155,9 +158,9 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
         
-          <li><a href="../../reference.html">Reference</a> &raquo;</li>
+          <li><a href="../../reference.html">Python Module Reference</a> &raquo;</li>
         
           <li><a href="../clustering.html">Clustering</a> &raquo;</li>
         
@@ -184,41 +187,29 @@
             
   <div class="section" id="tagged-cluster-iterator">
 <h1>Tagged Cluster Iterator<a class="headerlink" href="#tagged-cluster-iterator" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="blocksci.TaggedClusterIterator">
-<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">TaggedClusterIterator</code><a class="headerlink" href="#blocksci.TaggedClusterIterator" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="attribute">
-<dt id="blocksci.TaggedClusterIterator.all">
-<code class="descname">all</code><a class="headerlink" href="#blocksci.TaggedClusterIterator.all" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a list of all of the objects in the range</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="blocksci.TaggedClusterIterator.cluster">
-<code class="descname">cluster</code><a class="headerlink" href="#blocksci.TaggedClusterIterator.cluster" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt id="blocksci.cluster.TaggedClusterIterator">
+<em class="property">class </em><code class="sig-prename descclassname">blocksci.cluster.</code><code class="sig-name descname">TaggedClusterIterator</code><a class="headerlink" href="#blocksci.cluster.TaggedClusterIterator" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="blocksci.cluster.TaggedClusterIterator.cluster">
+<em class="property">property </em><code class="sig-name descname">cluster</code><a class="headerlink" href="#blocksci.cluster.TaggedClusterIterator.cluster" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: Return the cluster object which has been tagged</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="ClusterIterator.html#blocksci.ClusterIterator" title="blocksci.ClusterIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.ClusterIterator</span></code></a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="ClusterIterator.html#blocksci.cluster.ClusterIterator" title="blocksci.cluster.ClusterIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.cluster.ClusterIterator</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="blocksci.TaggedClusterIterator.tagged_addresses">
-<code class="descname">tagged_addresses</code><a class="headerlink" href="#blocksci.TaggedClusterIterator.tagged_addresses" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="blocksci.cluster.TaggedClusterIterator.tagged_addresses">
+<em class="property">property </em><code class="sig-name descname">tagged_addresses</code><a class="headerlink" href="#blocksci.cluster.TaggedClusterIterator.tagged_addresses" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: Return the list of addresses inside the cluster which have been tagged</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="TaggedAddressIterator.html#blocksci.TaggedAddressIterator" title="blocksci.TaggedAddressIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.TaggedAddressIterator</span></code></a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="TaggedAddressIterator.html#blocksci.cluster.TaggedAddressIterator" title="blocksci.cluster.TaggedAddressIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.cluster.TaggedAddressIterator</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -236,7 +227,7 @@
         <a href="TaggedAddressIterator.html" class="btn btn-neutral float-right" title="Tagged Address Iterator" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="ClusterIterator.html" class="btn btn-neutral" title="Cluster Iterator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="ClusterIterator.html" class="btn btn-neutral float-left" title="Cluster Iterator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -245,11 +236,19 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, Harry Kalodner.
+        
+        &copy; Copyright 2018-2020, BlockSci Developers
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -261,37 +260,16 @@
   </div>
   
 
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../../../',
-            VERSION:'0.5.0',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../../../_static/jquery.js"></script>
-      <script type="text/javascript" src="../../../_static/underscore.js"></script>
-      <script type="text/javascript" src="../../../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
-  
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

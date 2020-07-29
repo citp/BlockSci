@@ -1,15 +1,18 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Tx &mdash; BlockSci 0.5.0 documentation</title>
+  <title>Tx &mdash; BlockSci 0.7.0 documentation</title>
   
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
 
   
   
@@ -17,39 +20,38 @@
   
 
   
-
-  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
-  
-
-  
-    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Input" href="input.html" />
     <link rel="prev" title="Block" href="block.html" /> 
-
-  
-  <script src="../../_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
-            <a href="../../index.html" class="icon icon-home"> BlockSci
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> BlockSci
           
 
           
@@ -59,7 +61,7 @@
             
             
               <div class="version">
-                0.5.0
+                0.7.0
               </div>
             
           
@@ -76,6 +78,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -83,13 +86,12 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../../readme.html">BlockSci</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Release notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../compiling.html">Compiling BlockSci</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../setup.html">Local setup</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../reference.html">Reference</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../setup.html">Local Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../using-blocksci.html">Using BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fluent-interface.html">Fluent Interface (Python)</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../reference.html">Python Module Reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="chain.html">Chain Classes</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="blockchain.html">Blockchain</a></li>
 <li class="toctree-l3"><a class="reference internal" href="block.html">Block</a></li>
@@ -106,11 +108,15 @@
 <li class="toctree-l2"><a class="reference internal" href="../other/other.html">Other Utility Classes</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Release notes</a></li>
 </ul>
 
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -149,9 +155,9 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
         
-          <li><a href="../reference.html">Reference</a> &raquo;</li>
+          <li><a href="../reference.html">Python Module Reference</a> &raquo;</li>
         
           <li><a href="chain.html">Chain Classes</a> &raquo;</li>
         
@@ -176,386 +182,202 @@
             
   <div class="section" id="tx">
 <h1>Tx<a class="headerlink" href="#tx" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="blocksci.Tx">
-<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">Tx</code><a class="headerlink" href="#blocksci.Tx" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">blocksci.</code><code class="sig-name descname">Tx</code><a class="headerlink" href="#blocksci.Tx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class representing a transaction in a block</p>
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.Tx.base_size">
-<code class="descname">base_size</code><a class="headerlink" href="#blocksci.Tx.base_size" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">base_size</code><a class="headerlink" href="#blocksci.Tx.base_size" title="Permalink to this definition">¶</a></dt>
 <dd><p>The size of the non-segwit data in bytes</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.Tx.block">
-<code class="descname">block</code><a class="headerlink" href="#blocksci.Tx.block" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">block</code><a class="headerlink" href="#blocksci.Tx.block" title="Permalink to this definition">¶</a></dt>
 <dd><p>The block that this transaction was in</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="block.html#blocksci.Block" title="blocksci.Block"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.Block</span></code></a></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.Tx.block_height">
-<code class="descname">block_height</code><a class="headerlink" href="#blocksci.Tx.block_height" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">block_height</code><a class="headerlink" href="#blocksci.Tx.block_height" title="Permalink to this definition">¶</a></dt>
 <dd><p>The height of the block that this transaction was in</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.Tx.block_time">
-<code class="descname">block_time</code><a class="headerlink" href="#blocksci.Tx.block_time" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">block_time</code><a class="headerlink" href="#blocksci.Tx.block_time" title="Permalink to this definition">¶</a></dt>
 <dd><p>The time that the block containing this transaction arrived</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">datetime.datetime</span></code></a></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="blocksci.Tx.change_output">
-<code class="descname">change_output</code><a class="headerlink" href="#blocksci.Tx.change_output" title="Permalink to this definition">¶</a></dt>
-<dd><p>If the change address in this transaction can be determined via the fresh address criteria, return it. Otherwise return None.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Optional[blocksci.Output]</span></code></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.Tx.fee">
-<code class="descname">fee</code><a class="headerlink" href="#blocksci.Tx.fee" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">fee</code><a class="headerlink" href="#blocksci.Tx.fee" title="Permalink to this definition">¶</a></dt>
 <dd><p>The fee paid by this transaction</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="blocksci.Tx.fee_per_byte">
-<code class="descname">fee_per_byte</code><span class="sig-paren">(</span><em>size_measure: str='virtual'</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#blocksci.Tx.fee_per_byte" title="Permalink to this definition">¶</a></dt>
-<dd><p>The ratio of fee paid to size of this transaction. By default this uses veritual size, but passing total, base, weight, or virtual let’s you choose what measure of size you want</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
-</tr>
-</tbody>
-</table>
+<code class="sig-name descname">fee_per_byte</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">size_measure</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></span> <span class="o">=</span> <span class="default_value">'virtual'</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a><a class="headerlink" href="#blocksci.Tx.fee_per_byte" title="Permalink to this definition">¶</a></dt>
+<dd><p>The (rounded) ratio of fee paid to size of this transaction (in byte). By default this uses virtual size, but passing total, base, weight, or virtual let’s you choose a different size measure</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
+<dt id="blocksci.Tx.fee_per_kbyte">
+<code class="sig-name descname">fee_per_kbyte</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">size_measure</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></span> <span class="o">=</span> <span class="default_value">'virtual'</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a><a class="headerlink" href="#blocksci.Tx.fee_per_kbyte" title="Permalink to this definition">¶</a></dt>
+<dd><p>The (rounded) ratio of fee paid to size of this transaction (in kbyte). By default this uses virtual size, but passing total, base, weight, or virtual let’s you choose a different size measure</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="blocksci.Tx.hash">
-<code class="descname">hash</code><a class="headerlink" href="#blocksci.Tx.hash" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">hash</code><a class="headerlink" href="#blocksci.Tx.hash" title="Permalink to this definition">¶</a></dt>
 <dd><p>The 256-bit hash of this transaction</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.uint256</span></code></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="blocksci.Tx.includes_output_of_type">
-<code class="descname">includes_output_of_type</code><span class="sig-paren">(</span><em>address_type: blocksci.address_type</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#blocksci.Tx.includes_output_of_type" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">includes_output_of_type</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">address_type</span><span class="p">:</span> <span class="n"><a class="reference internal" href="../addresses/types.html#blocksci.address_type" title="blocksci.address_type">blocksci.address_type</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a><a class="headerlink" href="#blocksci.Tx.includes_output_of_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check whether the given transaction includes an output of the given address type</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.Tx.index">
-<code class="descname">index</code><a class="headerlink" href="#blocksci.Tx.index" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">index</code><a class="headerlink" href="#blocksci.Tx.index" title="Permalink to this definition">¶</a></dt>
 <dd><p>The internal index of this transaction</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.Tx.input_count">
-<code class="descname">input_count</code><a class="headerlink" href="#blocksci.Tx.input_count" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">input_count</code><a class="headerlink" href="#blocksci.Tx.input_count" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of inputs this transaction has</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.Tx.input_value">
-<code class="descname">input_value</code><a class="headerlink" href="#blocksci.Tx.input_value" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">input_value</code><a class="headerlink" href="#blocksci.Tx.input_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>The sum of the value of all of the inputs</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.Tx.inputs">
-<code class="descname">inputs</code><a class="headerlink" href="#blocksci.Tx.inputs" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">inputs</code><a class="headerlink" href="#blocksci.Tx.inputs" title="Permalink to this definition">¶</a></dt>
 <dd><p>A list of the inputs of the transaction</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="ranges/InputRange.html#blocksci.InputRange" title="blocksci.InputRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.InputRange</span></code></a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="ranges/InputRange.html#blocksci.InputRange" title="blocksci.InputRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.InputRange</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.Tx.ins">
-<code class="descname">ins</code><a class="headerlink" href="#blocksci.Tx.ins" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">ins</code><a class="headerlink" href="#blocksci.Tx.ins" title="Permalink to this definition">¶</a></dt>
 <dd><p>A list of the inputs of the transaction</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="ranges/InputRange.html#blocksci.InputRange" title="blocksci.InputRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.InputRange</span></code></a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="ranges/InputRange.html#blocksci.InputRange" title="blocksci.InputRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.InputRange</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.Tx.is_coinbase">
-<code class="descname">is_coinbase</code><a class="headerlink" href="#blocksci.Tx.is_coinbase" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">is_coinbase</code><a class="headerlink" href="#blocksci.Tx.is_coinbase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return’s true if this transaction is a Coinbase transaction</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.Tx.locktime">
-<code class="descname">locktime</code><a class="headerlink" href="#blocksci.Tx.locktime" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">locktime</code><a class="headerlink" href="#blocksci.Tx.locktime" title="Permalink to this definition">¶</a></dt>
 <dd><p>The locktime of this transasction</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.Tx.observed_in_mempool">
-<code class="descname">observed_in_mempool</code><a class="headerlink" href="#blocksci.Tx.observed_in_mempool" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">observed_in_mempool</code><a class="headerlink" href="#blocksci.Tx.observed_in_mempool" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns whether this transaction was seen in the mempool by the recorder</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.Tx.op_return">
-<code class="descname">op_return</code><a class="headerlink" href="#blocksci.Tx.op_return" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">op_return</code><a class="headerlink" href="#blocksci.Tx.op_return" title="Permalink to this definition">¶</a></dt>
 <dd><p>If this transaction included a null data address, return its output. Otherwise return None</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Optional[blocksci.Output]</span></code></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.Tx.output_count">
-<code class="descname">output_count</code><a class="headerlink" href="#blocksci.Tx.output_count" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">output_count</code><a class="headerlink" href="#blocksci.Tx.output_count" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of outputs this transaction has</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.Tx.output_value">
-<code class="descname">output_value</code><a class="headerlink" href="#blocksci.Tx.output_value" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">output_value</code><a class="headerlink" href="#blocksci.Tx.output_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>The sum of the value of all of the outputs</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.Tx.outputs">
-<code class="descname">outputs</code><a class="headerlink" href="#blocksci.Tx.outputs" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">outputs</code><a class="headerlink" href="#blocksci.Tx.outputs" title="Permalink to this definition">¶</a></dt>
 <dd><p>A list of the outputs of the transaction</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="ranges/OutputRange.html#blocksci.OutputRange" title="blocksci.OutputRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.OutputRange</span></code></a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="ranges/OutputRange.html#blocksci.OutputRange" title="blocksci.OutputRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.OutputRange</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.Tx.outs">
-<code class="descname">outs</code><a class="headerlink" href="#blocksci.Tx.outs" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">outs</code><a class="headerlink" href="#blocksci.Tx.outs" title="Permalink to this definition">¶</a></dt>
 <dd><p>A list of the outputs of the transaction</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="ranges/OutputRange.html#blocksci.OutputRange" title="blocksci.OutputRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.OutputRange</span></code></a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="ranges/OutputRange.html#blocksci.OutputRange" title="blocksci.OutputRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.OutputRange</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.Tx.size_bytes">
-<code class="descname">size_bytes</code><a class="headerlink" href="#blocksci.Tx.size_bytes" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">size_bytes</code><a class="headerlink" href="#blocksci.Tx.size_bytes" title="Permalink to this definition">¶</a></dt>
 <dd><p>The size of this transaction in bytes</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.Tx.time_seen">
-<code class="descname">time_seen</code><a class="headerlink" href="#blocksci.Tx.time_seen" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">time_seen</code><a class="headerlink" href="#blocksci.Tx.time_seen" title="Permalink to this definition">¶</a></dt>
 <dd><p>If recorded by the mempool recorder, the time that this transaction was first seen by your node</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Optional[datetime.datetime]</span></code></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
+<dt id="blocksci.Tx.timestamp_seen">
+<em class="property">property </em><code class="sig-name descname">timestamp_seen</code><a class="headerlink" href="#blocksci.Tx.timestamp_seen" title="Permalink to this definition">¶</a></dt>
+<dd><p>If recorded by the mempool recorder, the time that this transaction was first seen by your node</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="blocksci.Tx.total_size">
-<code class="descname">total_size</code><a class="headerlink" href="#blocksci.Tx.total_size" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">total_size</code><a class="headerlink" href="#blocksci.Tx.total_size" title="Permalink to this definition">¶</a></dt>
 <dd><p>The size all transaction data in bytes</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
+<dt id="blocksci.Tx.version">
+<em class="property">property </em><code class="sig-name descname">version</code><a class="headerlink" href="#blocksci.Tx.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>The version of this transaction</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="blocksci.Tx.virtual_size">
-<code class="descname">virtual_size</code><a class="headerlink" href="#blocksci.Tx.virtual_size" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">virtual_size</code><a class="headerlink" href="#blocksci.Tx.virtual_size" title="Permalink to this definition">¶</a></dt>
 <dd><p>The weight of the transaction divided by 4</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.Tx.weight">
-<code class="descname">weight</code><a class="headerlink" href="#blocksci.Tx.weight" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">weight</code><a class="headerlink" href="#blocksci.Tx.weight" title="Permalink to this definition">¶</a></dt>
 <dd><p>Three times the base size plus the total size</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
 </dd></dl>
@@ -573,7 +395,7 @@
         <a href="input.html" class="btn btn-neutral float-right" title="Input" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="block.html" class="btn btn-neutral" title="Block" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="block.html" class="btn btn-neutral float-left" title="Block" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -582,11 +404,19 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, Harry Kalodner.
+        
+        &copy; Copyright 2018-2020, BlockSci Developers
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -598,37 +428,16 @@
   </div>
   
 
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../../',
-            VERSION:'0.5.0',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../../_static/jquery.js"></script>
-      <script type="text/javascript" src="../../_static/underscore.js"></script>
-      <script type="text/javascript" src="../../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="../../_static/js/theme.js"></script>
-  
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

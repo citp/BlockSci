@@ -7,8 +7,3 @@ Iterator Classes
    ClusterIterator
    TaggedClusterIterator
    TaggedAddressIterator
-
-   ClusterOptionalIterator
-   TaggedClusterOptionalIterator
-   TaggedAddressOptionalIterator
-   

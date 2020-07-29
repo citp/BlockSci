@@ -1,15 +1,18 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Address Types &mdash; BlockSci 0.5.0 documentation</title>
+  <title>Address Types &mdash; BlockSci 0.7.0 documentation</title>
   
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
 
   
   
@@ -17,39 +20,38 @@
   
 
   
-
-  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
-  
-
-  
-    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Range Classes" href="ranges/ranges.html" />
     <link rel="prev" title="Equivalent Addresses" href="equiv_address.html" /> 
-
-  
-  <script src="../../_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
-            <a href="../../index.html" class="icon icon-home"> BlockSci
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> BlockSci
           
 
           
@@ -59,7 +61,7 @@
             
             
               <div class="version">
-                0.5.0
+                0.7.0
               </div>
             
           
@@ -76,6 +78,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -83,13 +86,12 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../../readme.html">BlockSci</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Release notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../compiling.html">Compiling BlockSci</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../setup.html">Local setup</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../reference.html">Reference</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../setup.html">Local Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../using-blocksci.html">Using BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fluent-interface.html">Fluent Interface (Python)</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../reference.html">Python Module Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../chain/chain.html">Chain Classes</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="addresses.html">Address Classes</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="address.html">Addresses</a></li>
@@ -104,11 +106,15 @@
 <li class="toctree-l2"><a class="reference internal" href="../other/other.html">Other Utility Classes</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Release notes</a></li>
 </ul>
 
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -147,9 +153,9 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
         
-          <li><a href="../reference.html">Reference</a> &raquo;</li>
+          <li><a href="../reference.html">Python Module Reference</a> &raquo;</li>
         
           <li><a href="addresses.html">Address Classes</a> &raquo;</li>
         
@@ -174,58 +180,82 @@
             
   <div class="section" id="address-types">
 <h1>Address Types<a class="headerlink" href="#address-types" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="blocksci.address_type">
-<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">address_type</code><a class="headerlink" href="#blocksci.address_type" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">blocksci.</code><code class="sig-name descname">address_type</code><a class="headerlink" href="#blocksci.address_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Enumeration of all address types</p>
-<dl class="attribute">
+<p>Members:</p>
+<blockquote>
+<div><p>nonstandard</p>
+<p>pubkey</p>
+<p>pubkeyhash</p>
+<p>multisig_pubkey</p>
+<p>scripthash</p>
+<p>multisig</p>
+<p>nulldata</p>
+<p>witness_pubkeyhash</p>
+<p>witness_scripthash</p>
+<p>witness_unknown</p>
+</div></blockquote>
+<dl class="py attribute">
 <dt id="blocksci.address_type.multisig">
-<code class="descname">multisig</code><em class="property"> = address_type.multisig</em><a class="headerlink" href="#blocksci.address_type.multisig" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">multisig</code><em class="property"> = address_type.multisig</em><a class="headerlink" href="#blocksci.address_type.multisig" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="blocksci.address_type.multisig_pubkey">
-<code class="descname">multisig_pubkey</code><em class="property"> = address_type.multisig_pubkey</em><a class="headerlink" href="#blocksci.address_type.multisig_pubkey" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">multisig_pubkey</code><em class="property"> = address_type.multisig_pubkey</em><a class="headerlink" href="#blocksci.address_type.multisig_pubkey" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
+<dt id="blocksci.address_type.name">
+<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#blocksci.address_type.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>(self: handle) -&gt; str</p>
+</dd></dl>
+
+<dl class="py attribute">
 <dt id="blocksci.address_type.nonstandard">
-<code class="descname">nonstandard</code><em class="property"> = address_type.nonstandard</em><a class="headerlink" href="#blocksci.address_type.nonstandard" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">nonstandard</code><em class="property"> = address_type.nonstandard</em><a class="headerlink" href="#blocksci.address_type.nonstandard" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="blocksci.address_type.nulldata">
-<code class="descname">nulldata</code><em class="property"> = address_type.nulldata</em><a class="headerlink" href="#blocksci.address_type.nulldata" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">nulldata</code><em class="property"> = address_type.nulldata</em><a class="headerlink" href="#blocksci.address_type.nulldata" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="blocksci.address_type.pubkey">
-<code class="descname">pubkey</code><em class="property"> = address_type.pubkey</em><a class="headerlink" href="#blocksci.address_type.pubkey" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">pubkey</code><em class="property"> = address_type.pubkey</em><a class="headerlink" href="#blocksci.address_type.pubkey" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="blocksci.address_type.pubkeyhash">
-<code class="descname">pubkeyhash</code><em class="property"> = address_type.pubkeyhash</em><a class="headerlink" href="#blocksci.address_type.pubkeyhash" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">pubkeyhash</code><em class="property"> = address_type.pubkeyhash</em><a class="headerlink" href="#blocksci.address_type.pubkeyhash" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="blocksci.address_type.scripthash">
-<code class="descname">scripthash</code><em class="property"> = address_type.scripthash</em><a class="headerlink" href="#blocksci.address_type.scripthash" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">scripthash</code><em class="property"> = address_type.scripthash</em><a class="headerlink" href="#blocksci.address_type.scripthash" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="blocksci.address_type.types">
-<code class="descname">types</code><em class="property"> = [address_type.nonstandard, address_type.pubkey, address_type.pubkeyhash, address_type.multisig_pubkey, address_type.scripthash, address_type.multisig, address_type.nulldata, address_type.witness_pubkeyhash, address_type.witness_scripthash]</em><a class="headerlink" href="#blocksci.address_type.types" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">types</code><em class="property"> = [address_type.nonstandard, address_type.pubkey, address_type.pubkeyhash, address_type.multisig_pubkey, address_type.scripthash, address_type.multisig, address_type.nulldata, address_type.witness_pubkeyhash, address_type.witness_scripthash, address_type.witness_unknown]</em><a class="headerlink" href="#blocksci.address_type.types" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="blocksci.address_type.witness_pubkeyhash">
-<code class="descname">witness_pubkeyhash</code><em class="property"> = address_type.witness_pubkeyhash</em><a class="headerlink" href="#blocksci.address_type.witness_pubkeyhash" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">witness_pubkeyhash</code><em class="property"> = address_type.witness_pubkeyhash</em><a class="headerlink" href="#blocksci.address_type.witness_pubkeyhash" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="blocksci.address_type.witness_scripthash">
-<code class="descname">witness_scripthash</code><em class="property"> = address_type.witness_scripthash</em><a class="headerlink" href="#blocksci.address_type.witness_scripthash" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">witness_scripthash</code><em class="property"> = address_type.witness_scripthash</em><a class="headerlink" href="#blocksci.address_type.witness_scripthash" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="blocksci.address_type.witness_unknown">
+<code class="sig-name descname">witness_unknown</code><em class="property"> = address_type.witness_unknown</em><a class="headerlink" href="#blocksci.address_type.witness_unknown" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -243,7 +273,7 @@
         <a href="ranges/ranges.html" class="btn btn-neutral float-right" title="Range Classes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="equiv_address.html" class="btn btn-neutral" title="Equivalent Addresses" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="equiv_address.html" class="btn btn-neutral float-left" title="Equivalent Addresses" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -252,11 +282,19 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, Harry Kalodner.
+        
+        &copy; Copyright 2018-2020, BlockSci Developers
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -268,37 +306,16 @@
   </div>
   
 
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../../',
-            VERSION:'0.5.0',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../../_static/jquery.js"></script>
-      <script type="text/javascript" src="../../_static/underscore.js"></script>
-      <script type="text/javascript" src="../../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="../../_static/js/theme.js"></script>
-  
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

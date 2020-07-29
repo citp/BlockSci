@@ -1,15 +1,18 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>blocksci &mdash; BlockSci 0.5.0 documentation</title>
+  <title>blocksci &mdash; BlockSci 0.7.0 documentation</title>
   
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
 
   
   
@@ -17,37 +20,36 @@
   
 
   
-
-  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
 
-  
-
-  
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
-
-  
-  <script src="../_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
-            <a href="../index.html" class="icon icon-home"> BlockSci
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> BlockSci
           
 
           
@@ -57,7 +59,7 @@
             
             
               <div class="version">
-                0.5.0
+                0.7.0
               </div>
             
           
@@ -74,6 +76,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -81,18 +84,21 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../readme.html">BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../setup.html">Local Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../using-blocksci.html">Using BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fluent-interface.html">Fluent Interface (Python)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/reference.html">Python Module Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../changelog.html">Release notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../compiling.html">Compiling BlockSci</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../setup.html">Local setup</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../reference/reference.html">Reference</a></li>
 </ul>
 
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -131,7 +137,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html">Docs</a> &raquo;</li>
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="index.html">Module code</a> &raquo;</li>
         
@@ -151,43 +157,73 @@
            <div itemprop="articleBody">
             
   <h1>Source code for blocksci</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">._blocksci</span> <span class="k">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">.currency</span> <span class="k">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">.blockchain_info</span> <span class="k">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">.blocktrail</span> <span class="k">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">.opreturn</span> <span class="k">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">.pickler</span> <span class="k">import</span> <span class="o">*</span>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;BlockSci Module</span>
 
-<span class="kn">from</span> <span class="nn">multiprocess</span> <span class="k">import</span> <span class="n">Pool</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">reduce</span>
-<span class="kn">import</span> <span class="nn">operator</span>
-<span class="kn">import</span> <span class="nn">datetime</span>
-<span class="kn">import</span> <span class="nn">dateparser</span>
-<span class="kn">from</span> <span class="nn">dateutil.relativedelta</span> <span class="k">import</span> <span class="n">relativedelta</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">psutil</span>
+<span class="sd">BlockSci enables fast and expressive analysis of Bitcoin’s and many</span>
+<span class="sd">other blockchains.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
 <span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">import</span> <span class="nn">importlib</span>
 <span class="kn">import</span> <span class="nn">subprocess</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">inspect</span>
 <span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">heapq</span>
+<span class="kn">import</span> <span class="nn">operator</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
 
-<span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;0.5.0&quot;</span>
+<span class="kn">import</span> <span class="nn">psutil</span>
+<span class="kn">from</span> <span class="nn">multiprocess</span> <span class="kn">import</span> <span class="n">Pool</span>
+<span class="kn">import</span> <span class="nn">dateparser</span>
+<span class="kn">from</span> <span class="nn">dateutil.relativedelta</span> <span class="kn">import</span> <span class="n">relativedelta</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
+<span class="kn">from</span> <span class="nn">._blocksci</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">._blocksci</span> <span class="kn">import</span> <span class="n">_traverse</span>
+<span class="kn">from</span> <span class="nn">.currency</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">.blockchain_info</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">.opreturn</span> <span class="kn">import</span> <span class="n">label_application</span>
+<span class="kn">from</span> <span class="nn">.pickler</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;0.6.0&quot;</span>
+
+
+<span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s1">&#39;blocksci.proxy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">proxy</span>
 <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s1">&#39;blocksci.cluster&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cluster</span>
 <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s1">&#39;blocksci.heuristics&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">heuristics</span>
 <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s1">&#39;blocksci.heuristics.change&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">heuristics</span><span class="o">.</span><span class="n">change</span>
 
-<span class="k">class</span> <span class="nc">_NoDefault</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<span class="k">class</span> <span class="nc">_NoDefault</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s1">&#39;(no default)&#39;</span>
 
-<span class="n">missing_param</span> <span class="o">=</span> <span class="n">_NoDefault</span><span class="p">()</span>
 
-<span class="k">def</span> <span class="nf">mapreduce_block_ranges</span><span class="p">(</span><span class="n">chain</span><span class="p">,</span> <span class="n">mapFunc</span><span class="p">,</span> <span class="n">reduceFunc</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="n">missing_param</span><span class="p">,</span>  <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cpu_count</span><span class="o">=</span><span class="n">psutil</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()):</span>
+<span class="n">MISSING_PARAM</span> <span class="o">=</span> <span class="n">_NoDefault</span><span class="p">()</span>
+
+
+<span class="c1"># Alert the user if the disk space is getting full</span>
+<span class="n">disk_info</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">statvfs</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+<span class="n">free_space</span> <span class="o">=</span> <span class="p">(</span><span class="n">disk_info</span><span class="o">.</span><span class="n">f_frsize</span> <span class="o">*</span> <span class="n">disk_info</span><span class="o">.</span><span class="n">f_bavail</span><span class="p">)</span> <span class="o">//</span> <span class="p">(</span><span class="mi">1024</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">free_space</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">:</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Warning: You only have </span><span class="si">{}</span><span class="s2">GB of free disk space left. Running out of disk space may crash the parser and corrupt the BlockSci data files.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">free_space</span><span class="p">))</span>
+
+<span class="c1"># UTC time zone is recommended</span>
+<span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">tzname</span> <span class="o">!=</span> <span class="p">(</span><span class="s1">&#39;UTC&#39;</span><span class="p">,</span> <span class="s1">&#39;UTC&#39;</span><span class="p">):</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Warning: Your system is set to a timezone other than UTC, leading to inconsistencies between datetime objects (which are adjusted to your local timezone) and datetime64 timestamps returned by iterators and ranges, or the fluent interface (which use UTC).&quot;</span><span class="p">)</span>
+
+
+
+<span class="k">def</span> <span class="nf">mapreduce_block_ranges</span><span class="p">(</span><span class="n">chain</span><span class="p">,</span> <span class="n">map_func</span><span class="p">,</span> <span class="n">reduce_func</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="n">MISSING_PARAM</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cpu_count</span><span class="o">=</span><span class="n">psutil</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()):</span>
     <span class="sd">&quot;&quot;&quot;Initialized multithreaded map reduce function over a stream of block ranges</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -203,95 +239,185 @@
         <span class="k">return</span> <span class="n">mapFunc</span><span class="p">(</span><span class="n">chain</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">])</span>
 
     <span class="n">raw_segments</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">_segment_indexes</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">cpu_count</span><span class="p">)</span>
-    <span class="n">config</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">_config</span>
-
-    <span class="n">segments</span> <span class="o">=</span> <span class="p">[(</span><span class="n">raw_segment</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span> <span class="k">for</span> <span class="n">raw_segment</span> <span class="ow">in</span> <span class="n">raw_segments</span><span class="p">]</span>
+    <span class="n">segments</span> <span class="o">=</span> <span class="p">[(</span><span class="n">raw_segment</span><span class="p">,</span> <span class="n">chain</span><span class="o">.</span><span class="n">config_location</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">chain</span><span class="p">))</span> <span class="k">for</span> <span class="n">raw_segment</span> <span class="ow">in</span> <span class="n">raw_segments</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">real_map_func</span><span class="p">(</span><span class="nb">input</span><span class="p">):</span>
-        <span class="n">local_chain</span> <span class="o">=</span> <span class="n">Blockchain</span><span class="p">(</span><span class="nb">input</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">local_chain</span> <span class="o">=</span> <span class="n">Blockchain</span><span class="p">(</span><span class="nb">input</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">input</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
         <span class="n">file</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
         <span class="n">pickler</span> <span class="o">=</span> <span class="n">Pickler</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
-        <span class="n">mapped</span> <span class="o">=</span> <span class="n">mapFunc</span><span class="p">(</span><span class="n">local_chain</span><span class="p">[</span><span class="nb">input</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]:</span><span class="nb">input</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]])</span>
+        <span class="n">mapped</span> <span class="o">=</span> <span class="n">map_func</span><span class="p">(</span><span class="n">local_chain</span><span class="p">[</span><span class="nb">input</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]:</span><span class="nb">input</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]])</span>
         <span class="n">pickler</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">mapped</span><span class="p">)</span>
         <span class="n">file</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">file</span>
 
     <span class="k">with</span> <span class="n">Pool</span><span class="p">(</span><span class="n">cpu_count</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
         <span class="n">results_future</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">map_async</span><span class="p">(</span><span class="n">real_map_func</span><span class="p">,</span> <span class="n">segments</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
-        <span class="n">first</span> <span class="o">=</span> <span class="n">mapFunc</span><span class="p">(</span><span class="n">chain</span><span class="p">[</span><span class="n">raw_segments</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]:</span><span class="n">raw_segments</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]])</span>
+        <span class="n">first</span> <span class="o">=</span> <span class="n">map_func</span><span class="p">(</span><span class="n">chain</span><span class="p">[</span><span class="n">raw_segments</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]:</span><span class="n">raw_segments</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]])</span>
         <span class="n">results</span> <span class="o">=</span> <span class="n">results_future</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
         <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="n">Unpickler</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">chain</span><span class="p">)</span><span class="o">.</span><span class="n">load</span><span class="p">()</span> <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span>
     <span class="n">results</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">first</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">init</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="n">missing_param</span><span class="p">):</span> 
-        <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">reduceFunc</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">init</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">MISSING_PARAM</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">reduce_func</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">reduceFunc</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="n">init</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">reduce_func</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="n">init</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">mapreduce_blocks</span><span class="p">(</span><span class="n">chain</span><span class="p">,</span> <span class="n">mapFunc</span><span class="p">,</span> <span class="n">reduceFunc</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="n">missing_param</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cpu_count</span><span class="o">=</span><span class="n">psutil</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()):</span>
+<span class="k">def</span> <span class="nf">mapreduce_blocks</span><span class="p">(</span><span class="n">chain</span><span class="p">,</span> <span class="n">map_func</span><span class="p">,</span> <span class="n">reduce_func</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="n">MISSING_PARAM</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cpu_count</span><span class="o">=</span><span class="n">psutil</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()):</span>
     <span class="sd">&quot;&quot;&quot;Initialized multithreaded map reduce function over a stream of blocks</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">mapRangeFunc</span><span class="p">(</span><span class="n">blocks</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">init</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="n">missing_param</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">reduceFunc</span><span class="p">,</span> <span class="p">(</span><span class="n">mapFunc</span><span class="p">(</span><span class="n">block</span><span class="p">)</span> <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">blocks</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">map_range_func</span><span class="p">(</span><span class="n">blocks</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">init</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">MISSING_PARAM</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">reduce_func</span><span class="p">,</span> <span class="p">(</span><span class="n">map_func</span><span class="p">(</span><span class="n">block</span><span class="p">)</span> <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">blocks</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">reduceFunc</span><span class="p">,</span> <span class="p">(</span><span class="n">mapFunc</span><span class="p">(</span><span class="n">block</span><span class="p">)</span> <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">blocks</span><span class="p">),</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">init</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">mapreduce_block_ranges</span><span class="p">(</span><span class="n">chain</span><span class="p">,</span> <span class="n">mapRangeFunc</span><span class="p">,</span> <span class="n">reduceFunc</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">cpu_count</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span>
+                <span class="n">reduce_func</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">map_func</span><span class="p">(</span><span class="n">block</span><span class="p">)</span> <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">blocks</span><span class="p">),</span>
+                <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">init</span><span class="p">)</span>
+            <span class="p">)</span>
+    <span class="k">return</span> <span class="n">mapreduce_block_ranges</span><span class="p">(</span>
+        <span class="n">chain</span><span class="p">,</span>
+        <span class="n">map_range_func</span><span class="p">,</span>
+        <span class="n">reduce_func</span><span class="p">,</span>
+        <span class="n">init</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">,</span>
+        <span class="n">cpu_count</span>
+    <span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">mapreduce_txes</span><span class="p">(</span><span class="n">chain</span><span class="p">,</span> <span class="n">mapFunc</span><span class="p">,</span> <span class="n">reduceFunc</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="n">missing_param</span><span class="p">,</span>  <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cpu_count</span><span class="o">=</span><span class="n">psutil</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()):</span>
+
+<span class="k">def</span> <span class="nf">mapreduce_txes</span><span class="p">(</span><span class="n">chain</span><span class="p">,</span> <span class="n">map_func</span><span class="p">,</span> <span class="n">reduce_func</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="n">MISSING_PARAM</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cpu_count</span><span class="o">=</span><span class="n">psutil</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()):</span>
     <span class="sd">&quot;&quot;&quot;Initialized multithreaded map reduce function over a stream of transactions</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">mapRangeFunc</span><span class="p">(</span><span class="n">blocks</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">init</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="n">missing_param</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">reduceFunc</span><span class="p">,</span> <span class="p">(</span><span class="n">mapFunc</span><span class="p">(</span><span class="n">tx</span><span class="p">)</span> <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">blocks</span> <span class="k">for</span> <span class="n">tx</span> <span class="ow">in</span> <span class="n">block</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">map_range_func</span><span class="p">(</span><span class="n">blocks</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">init</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">MISSING_PARAM</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span>
+                <span class="n">reduce_func</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">map_func</span><span class="p">(</span><span class="n">tx</span><span class="p">)</span> <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">blocks</span> <span class="k">for</span> <span class="n">tx</span> <span class="ow">in</span> <span class="n">block</span><span class="p">)</span>
+            <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">reduceFunc</span><span class="p">,</span> <span class="p">(</span><span class="n">mapFunc</span><span class="p">(</span><span class="n">tx</span><span class="p">)</span> <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">blocks</span> <span class="k">for</span> <span class="n">tx</span> <span class="ow">in</span> <span class="n">block</span><span class="p">),</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">init</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">mapreduce_block_ranges</span><span class="p">(</span><span class="n">chain</span><span class="p">,</span> <span class="n">mapRangeFunc</span><span class="p">,</span> <span class="n">reduceFunc</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">cpu_count</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span>
+                <span class="n">reduce_func</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">map_func</span><span class="p">(</span><span class="n">tx</span><span class="p">)</span> <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">blocks</span> <span class="k">for</span> <span class="n">tx</span> <span class="ow">in</span> <span class="n">block</span><span class="p">),</span>
+                <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">init</span><span class="p">)</span>
+            <span class="p">)</span>
+    <span class="k">return</span> <span class="n">mapreduce_block_ranges</span><span class="p">(</span>
+        <span class="n">chain</span><span class="p">,</span>
+        <span class="n">map_range_func</span><span class="p">,</span>
+        <span class="n">reduce_func</span><span class="p">,</span>
+        <span class="n">init</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">,</span>
+        <span class="n">cpu_count</span>
+    <span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">map_blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blockFunc</span><span class="p">,</span> <span class="n">start</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cpu_count</span><span class="o">=</span><span class="n">psutil</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()):</span>
+
+<span class="k">def</span> <span class="nf">map_blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">block_func</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cpu_count</span><span class="o">=</span><span class="n">psutil</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()):</span>
     <span class="sd">&quot;&quot;&quot;Runs the given function over each block in range and returns a list of the results</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">mapFunc</span><span class="p">(</span><span class="n">blocks</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">blockFunc</span><span class="p">(</span><span class="n">block</span><span class="p">)</span> <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">blocks</span><span class="p">]</span>
+    <span class="k">def</span> <span class="nf">map_func</span><span class="p">(</span><span class="n">blocks</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">block_func</span><span class="p">(</span><span class="n">block</span><span class="p">)</span> <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">blocks</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">reduceFunc</span><span class="p">(</span><span class="n">accum</span><span class="p">,</span> <span class="n">new_val</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">reduce_func</span><span class="p">(</span><span class="n">accum</span><span class="p">,</span> <span class="n">new_val</span><span class="p">):</span>
         <span class="n">accum</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">new_val</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">accum</span>
 
-    <span class="k">return</span> <span class="n">mapreduce_block_ranges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mapFunc</span><span class="p">,</span> <span class="n">reduceFunc</span><span class="p">,</span> <span class="n">missing_param</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">cpu_count</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mapreduce_block_ranges</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">map_func</span><span class="p">,</span>
+        <span class="n">reduce_func</span><span class="p">,</span>
+        <span class="n">MISSING_PARAM</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">,</span>
+        <span class="n">cpu_count</span>
+    <span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">filter_blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filterFunc</span><span class="p">,</span> <span class="n">start</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cpu_count</span><span class="o">=</span><span class="n">psutil</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()):</span>
+
+<span class="k">def</span> <span class="nf">filter_blocks</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">filter_func</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cpu_count</span><span class="o">=</span><span class="n">psutil</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span>
+<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Return all blocks in range which match the given criteria</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">mapFunc</span><span class="p">(</span><span class="n">blocks</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">block</span> <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">blocks</span> <span class="k">if</span> <span class="n">filterFunc</span><span class="p">(</span><span class="n">block</span><span class="p">)]</span>
-    <span class="k">def</span> <span class="nf">reduceFunc</span><span class="p">(</span><span class="n">accum</span><span class="p">,</span> <span class="n">new_val</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">map_func</span><span class="p">(</span><span class="n">blocks</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">blocks</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">filter_func</span><span class="p">)</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">reduce_func</span><span class="p">(</span><span class="n">accum</span><span class="p">,</span> <span class="n">new_val</span><span class="p">):</span>
         <span class="n">accum</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">new_val</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">accum</span>
-    <span class="k">return</span>  <span class="n">mapreduce_block_ranges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mapFunc</span><span class="p">,</span> <span class="n">reduceFunc</span><span class="p">,</span> <span class="n">missing_param</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">cpu_count</span><span class="o">=</span><span class="n">cpu_count</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">filter_txes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filterFunc</span><span class="p">,</span> <span class="n">start</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cpu_count</span><span class="o">=</span><span class="n">psutil</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()):</span>
+    <span class="k">return</span> <span class="n">mapreduce_block_ranges</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">map_func</span><span class="p">,</span> <span class="n">reduce_func</span><span class="p">,</span> <span class="n">MISSING_PARAM</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">cpu_count</span><span class="o">=</span><span class="n">cpu_count</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">filter_blocks_legacy</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">filter_func</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cpu_count</span><span class="o">=</span><span class="n">psutil</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return all blocks in range which match the given criteria</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">map_func</span><span class="p">(</span><span class="n">blocks</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">block</span> <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">blocks</span> <span class="k">if</span> <span class="n">filter_func</span><span class="p">(</span><span class="n">block</span><span class="p">)]</span>
+
+    <span class="k">def</span> <span class="nf">reduce_func</span><span class="p">(</span><span class="n">accum</span><span class="p">,</span> <span class="n">new_val</span><span class="p">):</span>
+        <span class="n">accum</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">new_val</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">accum</span>
+
+    <span class="k">return</span> <span class="n">mapreduce_block_ranges</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">map_func</span><span class="p">,</span> <span class="n">reduce_func</span><span class="p">,</span> <span class="n">MISSING_PARAM</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">cpu_count</span><span class="o">=</span><span class="n">cpu_count</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">filter_txes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_func</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cpu_count</span><span class="o">=</span><span class="n">psutil</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()):</span>
     <span class="sd">&quot;&quot;&quot;Return all transactions in range which match the given criteria</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">mapFunc</span><span class="p">(</span><span class="n">blocks</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">tx</span> <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">blocks</span> <span class="k">for</span> <span class="n">tx</span> <span class="ow">in</span> <span class="n">block</span> <span class="k">if</span> <span class="n">filterFunc</span><span class="p">(</span><span class="n">tx</span><span class="p">)]</span>
-    <span class="k">def</span> <span class="nf">reduceFunc</span><span class="p">(</span><span class="n">accum</span><span class="p">,</span> <span class="n">new_val</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">map_func</span><span class="p">(</span><span class="n">blocks</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">blocks</span><span class="o">.</span><span class="n">txes</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">filter_func</span><span class="p">)</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">reduce_func</span><span class="p">(</span><span class="n">accum</span><span class="p">,</span> <span class="n">new_val</span><span class="p">):</span>
         <span class="n">accum</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">new_val</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">accum</span>
-    <span class="k">return</span> <span class="n">mapreduce_block_ranges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mapFunc</span><span class="p">,</span> <span class="n">reduceFunc</span><span class="p">,</span> <span class="n">missing_param</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">cpu_count</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">mapreduce_block_ranges</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">map_func</span><span class="p">,</span> <span class="n">reduce_func</span><span class="p">,</span> <span class="n">MISSING_PARAM</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">cpu_count</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">filter_txes_legacy</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">filter_func</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cpu_count</span><span class="o">=</span><span class="n">psutil</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return all transactions in range which match the given criteria</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">map_func</span><span class="p">(</span><span class="n">blocks</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">tx</span> <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">blocks</span> <span class="k">for</span> <span class="n">tx</span> <span class="ow">in</span> <span class="n">block</span> <span class="k">if</span> <span class="n">filter_func</span><span class="p">(</span><span class="n">tx</span><span class="p">)]</span>
+
+    <span class="k">def</span> <span class="nf">reduce_func</span><span class="p">(</span><span class="n">accum</span><span class="p">,</span> <span class="n">new_val</span><span class="p">):</span>
+        <span class="n">accum</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">new_val</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">accum</span>
+
+    <span class="k">return</span> <span class="n">mapreduce_block_ranges</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">map_func</span><span class="p">,</span> <span class="n">reduce_func</span><span class="p">,</span> <span class="n">MISSING_PARAM</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">cpu_count</span>
+    <span class="p">)</span>
+
 
 <span class="n">Blockchain</span><span class="o">.</span><span class="n">map_blocks</span> <span class="o">=</span> <span class="n">map_blocks</span>
 <span class="n">Blockchain</span><span class="o">.</span><span class="n">filter_blocks</span> <span class="o">=</span> <span class="n">filter_blocks</span>
+<span class="n">Blockchain</span><span class="o">.</span><span class="n">filter_blocks_legacy</span> <span class="o">=</span> <span class="n">filter_blocks_legacy</span>
 <span class="n">Blockchain</span><span class="o">.</span><span class="n">filter_txes</span> <span class="o">=</span> <span class="n">filter_txes</span>
+<span class="n">Blockchain</span><span class="o">.</span><span class="n">filter_txes_legacy</span> <span class="o">=</span> <span class="n">filter_txes_legacy</span>
 <span class="n">Blockchain</span><span class="o">.</span><span class="n">mapreduce_block_ranges</span> <span class="o">=</span> <span class="n">mapreduce_block_ranges</span>
 <span class="n">Blockchain</span><span class="o">.</span><span class="n">mapreduce_blocks</span> <span class="o">=</span> <span class="n">mapreduce_blocks</span>
 <span class="n">Blockchain</span><span class="o">.</span><span class="n">mapreduce_txes</span> <span class="o">=</span> <span class="n">mapreduce_txes</span>
+
 
 <span class="k">def</span> <span class="nf">heights_to_dates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert a pandas data frame with a block height index into a frame with a block time index</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_series</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">time</span><span class="p">))</span>
+
 
 <span class="k">def</span> <span class="nf">block_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BlockRange</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -320,11 +446,16 @@
 
     <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">oldest</span><span class="p">:</span><span class="n">newest</span><span class="p">]</span>
 
+
 <span class="n">old_init</span> <span class="o">=</span> <span class="n">Blockchain</span><span class="o">.</span><span class="fm">__init__</span>
-<span class="k">def</span> <span class="nf">new_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loc</span><span class="p">):</span>
-    <span class="n">old_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loc</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">new_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">max_block</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">max_block</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">old_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loc</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">old_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">max_block</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">block_times</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">cpp</span> <span class="o">=</span> <span class="n">CPP</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
     <span class="n">ec2_instance_path</span> <span class="o">=</span> <span class="s2">&quot;/home/ubuntu/BlockSci/IS_EC2&quot;</span>
     <span class="n">tx_heated_path</span> <span class="o">=</span> <span class="s2">&quot;/home/ubuntu/BlockSci/TX_DATA_HEATED&quot;</span>
     <span class="n">scripts_heated_path</span> <span class="o">=</span> <span class="s2">&quot;/home/ubuntu/BlockSci/SCRIPT_DATA_HEATED&quot;</span>
@@ -337,16 +468,525 @@
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Note: this appears to be a fresh instance. Script data has not yet been cached locally. Some queries might be slow. Caching is currently ongoing in the background, and usually takes 1.5 hours.&quot;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">index_heated_path</span><span class="p">):</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Note: this appears to be a fresh instance. Index data has not yet been cached locally. A few queries might be slow. Caching is currently ongoing in the background, and usually takes 3.5 hours.&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">most_valuable_addresses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nlargest</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+    <span class="n">current_address_vals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">blocks</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="o">~</span><span class="n">o</span><span class="o">.</span><span class="n">is_spent</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">group_by</span><span class="p">(</span> \
+        <span class="k">lambda</span> <span class="n">output</span><span class="p">:</span> <span class="n">output</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> \
+        <span class="k">lambda</span> <span class="n">outputs</span><span class="p">:</span> <span class="n">outputs</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">sum</span> \
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">heapq</span><span class="o">.</span><span class="n">nlargest</span><span class="p">(</span><span class="n">nlargest</span><span class="p">,</span> <span class="n">current_address_vals</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="n">operator</span><span class="o">.</span><span class="n">itemgetter</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+
 <span class="n">Blockchain</span><span class="o">.</span><span class="fm">__init__</span> <span class="o">=</span> <span class="n">new_init</span>
 <span class="n">Blockchain</span><span class="o">.</span><span class="n">range</span> <span class="o">=</span> <span class="n">block_range</span>
 <span class="n">Blockchain</span><span class="o">.</span><span class="n">heights_to_dates</span> <span class="o">=</span> <span class="n">heights_to_dates</span>
+<span class="n">Blockchain</span><span class="o">.</span><span class="n">most_valuable_addresses</span> <span class="o">=</span> <span class="n">most_valuable_addresses</span>
+
+<span class="k">def</span> <span class="nf">traverse</span><span class="p">(</span><span class="n">proxy_func</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">_traverse</span><span class="p">(</span><span class="n">proxy_func</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">_self_proxy</span><span class="p">),</span> <span class="n">val</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">apply_map</span><span class="p">(</span><span class="n">prox</span><span class="p">,</span> <span class="n">prop</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">prop</span><span class="o">.</span><span class="n">ptype</span> <span class="o">==</span> <span class="n">proxy</span><span class="o">.</span><span class="n">proxy_type</span><span class="o">.</span><span class="n">optional</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">prox</span><span class="o">.</span><span class="n">_map_optional</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">prop</span><span class="o">.</span><span class="n">ptype</span> <span class="o">==</span> <span class="n">proxy</span><span class="o">.</span><span class="n">proxy_type</span><span class="o">.</span><span class="n">iterator</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">prox</span><span class="o">.</span><span class="n">_map_sequence</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">prop</span><span class="o">.</span><span class="n">ptype</span> <span class="o">==</span> <span class="n">proxy</span><span class="o">.</span><span class="n">proxy_type</span><span class="o">.</span><span class="n">range</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">prox</span><span class="o">.</span><span class="n">_map_sequence</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">prox</span><span class="o">.</span><span class="n">_map</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">setup_optional_proxy_map_funcs</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">optional_map_func</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">nested_proxy</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">r</span><span class="o">.</span><span class="n">_map</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+    <span class="n">optional_cls</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">proxy</span><span class="p">)</span> <span class="k">if</span> <span class="s1">&#39;Optional&#39;</span> <span class="ow">in</span> <span class="n">x</span> <span class="ow">and</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isupper</span><span class="p">()]</span>
+
+    <span class="k">for</span> <span class="n">cl</span> <span class="ow">in</span> <span class="n">optional_cls</span><span class="p">:</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="n">cl</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="o">=</span> <span class="n">optional_map_func</span>
+
+<span class="k">def</span> <span class="nf">setup_sequence_map_funcs</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">range_map_func</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">_self_proxy</span><span class="o">.</span><span class="n">nested_proxy</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">apply_map</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">_self_proxy</span><span class="p">,</span> <span class="n">p</span><span class="p">)(</span><span class="n">r</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">range_where_func</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">_self_proxy</span><span class="o">.</span><span class="n">nested_proxy</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">r</span><span class="o">.</span><span class="n">_self_proxy</span><span class="o">.</span><span class="n">_where</span><span class="p">(</span><span class="n">p</span><span class="p">)(</span><span class="n">r</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">range_max_func</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">_self_proxy</span><span class="o">.</span><span class="n">nested_proxy</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">r</span><span class="o">.</span><span class="n">_self_proxy</span><span class="o">.</span><span class="n">_max</span><span class="p">(</span><span class="n">p</span><span class="p">)(</span><span class="n">r</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">range_min_func</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">_self_proxy</span><span class="o">.</span><span class="n">nested_proxy</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">r</span><span class="o">.</span><span class="n">_self_proxy</span><span class="o">.</span><span class="n">_min</span><span class="p">(</span><span class="n">p</span><span class="p">)(</span><span class="n">r</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">range_any_func</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">_self_proxy</span><span class="o">.</span><span class="n">nested_proxy</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">r</span><span class="o">.</span><span class="n">_self_proxy</span><span class="o">.</span><span class="n">_any</span><span class="p">(</span><span class="n">p</span><span class="p">)(</span><span class="n">r</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">range_all_func</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">_self_proxy</span><span class="o">.</span><span class="n">nested_proxy</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">r</span><span class="o">.</span><span class="n">_self_proxy</span><span class="o">.</span><span class="n">_all</span><span class="p">(</span><span class="n">p</span><span class="p">)(</span><span class="n">r</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">range_group_by_func</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">grouper_func</span><span class="p">,</span> <span class="n">evaler_func</span><span class="p">):</span>
+        <span class="n">grouper</span> <span class="o">=</span> <span class="n">grouper_func</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">_self_proxy</span><span class="o">.</span><span class="n">nested_proxy</span><span class="p">)</span>
+        <span class="n">evaler</span> <span class="o">=</span> <span class="n">evaler_func</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">_self_proxy</span><span class="o">.</span><span class="n">nested_proxy</span><span class="o">.</span><span class="n">range_proxy</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">r</span><span class="o">.</span><span class="n">_group_by</span><span class="p">(</span><span class="n">grouper</span><span class="p">,</span> <span class="n">evaler</span><span class="p">)</span>
+
+    <span class="n">iterator_and_range_cls</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">globals</span><span class="p">()</span> <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;Iterator&#39;</span> <span class="ow">in</span> <span class="n">x</span> <span class="ow">or</span> <span class="s1">&#39;Range&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">)</span> <span class="ow">and</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isupper</span><span class="p">()]</span>
+
+    <span class="k">for</span> <span class="n">cl</span> <span class="ow">in</span> <span class="n">iterator_and_range_cls</span><span class="p">:</span>
+        <span class="nb">globals</span><span class="p">()[</span><span class="n">cl</span><span class="p">]</span><span class="o">.</span><span class="n">map</span> <span class="o">=</span> <span class="n">range_map_func</span>
+        <span class="nb">globals</span><span class="p">()[</span><span class="n">cl</span><span class="p">]</span><span class="o">.</span><span class="n">select</span> <span class="o">=</span> <span class="n">range_map_func</span>
+        <span class="nb">globals</span><span class="p">()[</span><span class="n">cl</span><span class="p">]</span><span class="o">.</span><span class="n">where</span> <span class="o">=</span> <span class="n">range_where_func</span>
+        <span class="nb">globals</span><span class="p">()[</span><span class="n">cl</span><span class="p">]</span><span class="o">.</span><span class="n">group_by</span> <span class="o">=</span> <span class="n">range_group_by_func</span>
+        <span class="nb">globals</span><span class="p">()[</span><span class="n">cl</span><span class="p">]</span><span class="o">.</span><span class="n">max</span> <span class="o">=</span> <span class="n">range_max_func</span>
+        <span class="nb">globals</span><span class="p">()[</span><span class="n">cl</span><span class="p">]</span><span class="o">.</span><span class="n">min</span> <span class="o">=</span> <span class="n">range_min_func</span>
+        <span class="nb">globals</span><span class="p">()[</span><span class="n">cl</span><span class="p">]</span><span class="o">.</span><span class="n">any</span> <span class="o">=</span> <span class="n">range_any_func</span>
+        <span class="nb">globals</span><span class="p">()[</span><span class="n">cl</span><span class="p">]</span><span class="o">.</span><span class="n">all</span> <span class="o">=</span> <span class="n">range_all_func</span>
+
+<span class="k">def</span> <span class="nf">setup_sequence_proxy_map_funcs</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">range_map_func</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">nested_proxy</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">apply_map</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">range_where_func</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">nested_proxy</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">r</span><span class="o">.</span><span class="n">_where</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">range_max_func</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">nested_proxy</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">r</span><span class="o">.</span><span class="n">_max</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">range_min_func</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">nested_proxy</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">r</span><span class="o">.</span><span class="n">_min</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">range_any_func</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">nested_proxy</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">r</span><span class="o">.</span><span class="n">_any</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">range_all_func</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">nested_proxy</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">r</span><span class="o">.</span><span class="n">_all</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+    <span class="n">iterator_and_range_cls</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">proxy</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;Iterator&#39;</span> <span class="ow">in</span> <span class="n">x</span> <span class="ow">or</span> <span class="s1">&#39;Range&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">)</span> <span class="ow">and</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isupper</span><span class="p">()]</span>
+
+    <span class="k">for</span> <span class="n">cl</span> <span class="ow">in</span> <span class="n">iterator_and_range_cls</span><span class="p">:</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="n">cl</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="o">=</span> <span class="n">range_map_func</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="n">cl</span><span class="p">)</span><span class="o">.</span><span class="n">select</span> <span class="o">=</span> <span class="n">range_map_func</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="n">cl</span><span class="p">)</span><span class="o">.</span><span class="n">where</span> <span class="o">=</span> <span class="n">range_where_func</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="n">cl</span><span class="p">)</span><span class="o">.</span><span class="n">max</span> <span class="o">=</span> <span class="n">range_max_func</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="n">cl</span><span class="p">)</span><span class="o">.</span><span class="n">min</span> <span class="o">=</span> <span class="n">range_min_func</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="n">cl</span><span class="p">)</span><span class="o">.</span><span class="n">any</span> <span class="o">=</span> <span class="n">range_any_func</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="n">cl</span><span class="p">)</span><span class="o">.</span><span class="n">all</span> <span class="o">=</span> <span class="n">range_all_func</span>
+
+<span class="n">non_copying_methods</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="s2">&quot;ptype&quot;</span><span class="p">,</span> <span class="s2">&quot;iterator_proxy&quot;</span><span class="p">,</span> <span class="s2">&quot;range_proxy&quot;</span><span class="p">,</span> <span class="s2">&quot;optional_proxy&quot;</span><span class="p">,</span> <span class="s2">&quot;output_type_name&quot;</span><span class="p">])</span>
+
+<span class="k">def</span> <span class="nf">_get_core_functions_methods</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">attr</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="vm">__dict__</span> <span class="k">if</span>
+            <span class="ow">not</span> <span class="n">attr</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;__&#39;</span> <span class="ow">and</span> <span class="n">attr</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">non_copying_methods</span> <span class="ow">and</span>
+            <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="nb">property</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">_get_core_properties_methods</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">attr</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="vm">__dict__</span> <span class="k">if</span> <span class="n">attr</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">non_copying_methods</span> <span class="ow">and</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="nb">property</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">_get_functions_methods</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">attr</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="k">if</span>
+            <span class="ow">not</span> <span class="n">attr</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;__&#39;</span> <span class="ow">and</span> <span class="n">attr</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">non_copying_methods</span> <span class="ow">and</span>
+            <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="nb">property</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">_get_properties_methods</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">attr</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="k">if</span> <span class="n">attr</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">non_copying_methods</span> <span class="ow">and</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="nb">property</span><span class="p">))</span>
+
+<span class="c1"># https://gist.github.com/carlsmith/b2e6ba538ca6f58689b4c18f46fef11c</span>
+<span class="k">def</span> <span class="nf">replace</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">substitutions</span><span class="p">):</span>
+    <span class="n">substrings</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">substitutions</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="nb">len</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">,</span> <span class="n">substrings</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">regex</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="k">lambda</span> <span class="n">match</span><span class="p">:</span> <span class="n">substitutions</span><span class="p">[</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)],</span> <span class="n">string</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">fix_all_doc_def</span><span class="p">(</span><span class="n">doc</span><span class="p">):</span>
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">replace</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="p">{</span>
+        <span class="s2">&quot;blocksci.proxy.intIteratorProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;numpy.ndarray[int]&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blocksci.proxy.intRangeProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;numpy.ndarray[int]&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blocksci.proxy.boolIteratorProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;numpy.ndarray[bool]&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blocksci.proxy.boolRangeProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;numpy.ndarray[bool]&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blocksci.proxy.ClusterIteratorProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;blocksci.cluster.ClusterIterator&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blocksci.proxy.TaggedClusterIteratorProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;blocksci.cluster.TaggedClusterIterator&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blocksci.proxy.TaggedAddressIteratorProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;blocksci.cluster.TaggedAddressIterator&quot;</span>
+    <span class="p">})</span>
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(blocksci\.proxy\.)([a-zA-Z]+)(IteratorProxy)&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;blocksci.\2Iterator&quot;</span><span class="p">,</span> <span class="n">doc</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">doc</span>
+
+<span class="k">def</span> <span class="nf">fix_self_doc_def</span><span class="p">(</span><span class="n">doc</span><span class="p">):</span>
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">fix_all_doc_def</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">replace</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="p">{</span>
+        <span class="s2">&quot;blocksci.proxy.ProxyAddress&quot;</span><span class="p">:</span> <span class="s2">&quot;blocksci.Address&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blocksci.proxy.intProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;int&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blocksci.proxy.boolProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blocksci.proxy.ClusterProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;blocksci.cluster.Cluster&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blocksci.proxy.TaggedClusterProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;blocksci.cluster.TaggedCluster&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blocksci.proxy.TaggedAddressProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;blocksci.cluster.TaggedAddress&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blocksci.proxy.ClusterRangeProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;blocksci.cluster.ClusterRange&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blocksci.proxy.TaggedClusterRangeProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;blocksci.cluster.TaggedClusterRange&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blocksci.proxy.TaggedAddressRangeProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;blocksci.cluster.TaggedAddressRange&quot;</span>
+    <span class="p">})</span>
+
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(blocksci\.proxy\.Optional)([a-zA-Z]+)(Proxy)&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;Optional\[blocksci\.\2\]&quot;</span><span class="p">,</span> <span class="n">doc</span><span class="p">)</span>
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(blocksci\.proxy\.)([a-zA-Z]+)(RangeProxy)&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;blocksci.\2Range&quot;</span><span class="p">,</span> <span class="n">doc</span><span class="p">)</span>
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(blocksci\.proxy\.)([a-zA-Z]+)(Proxy)&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;blocksci.\2&quot;</span><span class="p">,</span> <span class="n">doc</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">doc</span>
+
+<span class="k">def</span> <span class="nf">fix_sequence_doc_def</span><span class="p">(</span><span class="n">doc</span><span class="p">):</span>
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">fix_all_doc_def</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">replace</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="p">{</span>
+        <span class="s2">&quot;blocksci.proxy.intProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;numpy.ndarray[int]&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blocksci.proxy.boolProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;numpy.ndarray[bool]&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blocksci.proxy.ClusterRangeProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;blocksci.cluster.ClusterIterator&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blocksci.proxy.TaggedClusterRangeProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;blocksci.cluster.TaggedClusterIterator&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blocksci.proxy.TaggedAddressRangeProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;blocksci.cluster.ClusterIterator&quot;</span>
+    <span class="p">})</span>
+
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(blocksci\.proxy\.Optional)([a-zA-Z]+)(Proxy)&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;blocksci\.\2Iterator&quot;</span><span class="p">,</span> <span class="n">doc</span><span class="p">)</span>
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(blocksci\.proxy\.)([a-zA-Z]+)(RangeProxy)&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;blocksci.\2Iterator&quot;</span><span class="p">,</span> <span class="n">doc</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">doc</span>
+
+<span class="k">def</span> <span class="nf">fix_iterator_doc_def</span><span class="p">(</span><span class="n">doc</span><span class="p">):</span>
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">fix_sequence_doc_def</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">replace</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="p">{</span>
+        <span class="s2">&quot;blocksci.proxy.ClusterProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;blocksci.cluster.ClusterIterator&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blocksci.proxy.TaggedClusterProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;blocksci.cluster.TaggedClusterIterator&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blocksci.proxy.TaggedAddressProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;blocksci.cluster.TaggedAddressIterator&quot;</span>
+    <span class="p">})</span>
+
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(blocksci\.proxy\.)([a-zA-Z]+)(Proxy)&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;blocksci\.\2Iterator&quot;</span><span class="p">,</span> <span class="n">doc</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">doc</span>
+
+<span class="k">def</span> <span class="nf">fix_range_doc_def</span><span class="p">(</span><span class="n">doc</span><span class="p">):</span>
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">fix_sequence_doc_def</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">replace</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="p">{</span>
+        <span class="s2">&quot;blocksci.proxy.ClusterProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;blocksci.cluster.ClusterRange&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blocksci.proxy.TaggedClusterProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;blocksci.cluster.TaggedClusterRange&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blocksci.proxy.TaggedAddressProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;blocksci.cluster.TaggedAddressRange&quot;</span>
+    <span class="p">})</span>
+
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(blocksci\.proxy\.)([a-zA-Z]+)(Proxy)&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;blocksci\.\2Range&quot;</span><span class="p">,</span> <span class="n">doc</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">doc</span>
+
+<span class="k">def</span> <span class="nf">setup_self_methods</span><span class="p">(</span><span class="n">main</span><span class="p">,</span> <span class="n">proxy_obj_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_proxy</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">proxy_obj_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">proxy_obj_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">main</span><span class="o">.</span><span class="n">_self_proxy</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">sample_proxy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">sample_proxy</span> <span class="o">=</span> <span class="n">main</span><span class="o">.</span><span class="n">_self_proxy</span>
+
+    <span class="c1"># ignore properties that already exist (normal pybind11 binding)</span>
+    <span class="n">existing_properties</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">dir</span><span class="p">(</span><span class="n">main</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">self_property_creator</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+        <span class="n">prop</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">_self_proxy</span><span class="p">,</span> <span class="n">name</span><span class="p">)(</span><span class="n">s</span><span class="p">))</span>
+        <span class="n">prop</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">proxy_obj_type</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">:type: :class:`&quot;</span> <span class="o">+</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sample_proxy</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">output_type_name</span> <span class="o">+</span> <span class="s2">&quot;`&quot;</span>
+        <span class="k">return</span> <span class="n">prop</span>
+
+    <span class="k">def</span> <span class="nf">self_method_creator</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">method</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">_self_proxy</span><span class="p">,</span> <span class="n">name</span><span class="p">)(</span><span class="o">*</span><span class="n">args</span><span class="p">)(</span><span class="n">s</span><span class="p">)</span>
+
+        <span class="n">orig_doc</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">proxy_obj_type</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="vm">__doc__</span>
+        <span class="n">split</span> <span class="o">=</span> <span class="n">orig_doc</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">method</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">fix_self_doc_def</span><span class="p">(</span><span class="n">split</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">method</span>
+
+    <span class="n">core_properties_methods</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">_get_core_properties_methods</span><span class="p">(</span><span class="n">proxy_obj_type</span><span class="p">))</span> <span class="o">-</span> <span class="n">existing_properties</span>
+    <span class="n">core_functions_methods</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">_get_core_functions_methods</span><span class="p">(</span><span class="n">proxy_obj_type</span><span class="p">))</span> <span class="o">-</span> <span class="n">existing_properties</span>
+
+    <span class="k">for</span> <span class="n">proxy_func</span> <span class="ow">in</span> <span class="n">core_properties_methods</span><span class="p">:</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">main</span><span class="p">,</span> <span class="n">proxy_func</span><span class="p">,</span> <span class="n">self_property_creator</span><span class="p">(</span><span class="n">proxy_func</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">proxy_func</span> <span class="ow">in</span> <span class="n">core_functions_methods</span><span class="p">:</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">main</span><span class="p">,</span> <span class="n">proxy_func</span><span class="p">,</span> <span class="n">self_method_creator</span><span class="p">(</span><span class="n">proxy_func</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">setup_iterator_methods</span><span class="p">(</span><span class="n">iterator</span><span class="p">,</span> <span class="n">doc_func</span><span class="o">=</span><span class="n">fix_iterator_doc_def</span><span class="p">,</span> <span class="n">nested_proxy_cl</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_proxy</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">nested_proxy_cl</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">nested_proxy_cl</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">iterator</span><span class="o">.</span><span class="n">_self_proxy</span><span class="o">.</span><span class="n">nested_proxy</span><span class="p">)</span>
+        <span class="n">sample_proxy</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">.</span><span class="n">_self_proxy</span>
+
+    <span class="k">def</span> <span class="nf">iterator_creator</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">method</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">apply_map</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">_self_proxy</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">_self_proxy</span><span class="o">.</span><span class="n">nested_proxy</span><span class="p">,</span> <span class="n">name</span><span class="p">))(</span><span class="n">s</span><span class="p">)</span>
+        <span class="n">prop</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">method</span><span class="p">)</span>
+        <span class="n">prop</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;For each item: &quot;</span> <span class="o">+</span> \
+                       <span class="nb">getattr</span><span class="p">(</span><span class="n">nested_proxy_cl</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">+</span> \
+                       <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">:type: :class:`&quot;</span> <span class="o">+</span> \
+                       <span class="n">apply_map</span><span class="p">(</span><span class="n">sample_proxy</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sample_proxy</span><span class="o">.</span><span class="n">nested_proxy</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span><span class="o">.</span><span class="n">output_type_name</span> <span class="o">+</span> \
+                       <span class="s2">&quot;`&quot;</span>
+        <span class="k">return</span> <span class="n">prop</span>
+
+    <span class="k">def</span> <span class="nf">iterator_method_creator</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">method</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">apply_map</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">_self_proxy</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">_self_proxy</span><span class="o">.</span><span class="n">nested_proxy</span><span class="p">,</span> <span class="n">name</span><span class="p">)(</span><span class="o">*</span><span class="n">args</span><span class="p">))(</span><span class="n">rng</span><span class="p">)</span>
+
+        <span class="n">orig_doc</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">nested_proxy_cl</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="vm">__doc__</span>
+        <span class="n">split</span> <span class="o">=</span> <span class="n">orig_doc</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">split</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">iterator</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="n">method</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">doc_func</span><span class="p">(</span><span class="n">split</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">For each item: &#39;</span> <span class="o">+</span> <span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">method</span>
+
+    <span class="k">for</span> <span class="n">proxy_func</span> <span class="ow">in</span> <span class="n">_get_core_properties_methods</span><span class="p">(</span><span class="n">nested_proxy_cl</span><span class="p">):</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">iterator</span><span class="p">,</span> <span class="n">proxy_func</span><span class="p">,</span> <span class="n">iterator_creator</span><span class="p">(</span><span class="n">proxy_func</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">proxy_func</span> <span class="ow">in</span> <span class="n">_get_core_functions_methods</span><span class="p">(</span><span class="n">nested_proxy_cl</span><span class="p">):</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">iterator</span><span class="p">,</span> <span class="n">proxy_func</span><span class="p">,</span> <span class="n">iterator_method_creator</span><span class="p">(</span><span class="n">proxy_func</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">setup_iterator_proxy_methods</span><span class="p">(</span><span class="n">iterator_proxy</span><span class="p">):</span>
+    <span class="n">proxy_cl</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">iterator_proxy</span><span class="p">)</span>
+    <span class="n">nested_proxy_cl</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">iterator_proxy</span><span class="o">.</span><span class="n">nested_proxy</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">iterator_proxy_creator</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">method</span><span class="p">(</span><span class="n">rng</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">apply_map</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">nested_proxy</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">property</span><span class="p">(</span><span class="n">method</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">iterator_proxy_method_creator</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">method</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">apply_map</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">nested_proxy</span><span class="p">,</span> <span class="n">name</span><span class="p">)(</span><span class="o">*</span><span class="n">args</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">method</span>
+
+    <span class="k">for</span> <span class="n">proxy_func</span> <span class="ow">in</span> <span class="n">_get_core_properties_methods</span><span class="p">(</span><span class="n">nested_proxy_cl</span><span class="p">):</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">proxy_cl</span><span class="p">,</span> <span class="n">proxy_func</span><span class="p">,</span> <span class="n">iterator_proxy_creator</span><span class="p">(</span><span class="n">proxy_func</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">proxy_func</span> <span class="ow">in</span> <span class="n">_get_core_functions_methods</span><span class="p">(</span><span class="n">nested_proxy_cl</span><span class="p">):</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">proxy_cl</span><span class="p">,</span> <span class="n">proxy_func</span><span class="p">,</span> <span class="n">iterator_proxy_method_creator</span><span class="p">(</span><span class="n">proxy_func</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">setup_size_property</span><span class="p">(</span><span class="n">iterator</span><span class="p">):</span>
+    <span class="n">iterator</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="k">lambda</span> <span class="n">rng</span><span class="p">:</span> <span class="n">rng</span><span class="o">.</span><span class="n">_self_proxy</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">rng</span><span class="p">))</span>
+    <span class="n">iterator</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="k">lambda</span> <span class="n">rng</span><span class="p">:</span> <span class="n">rng</span><span class="o">.</span><span class="n">_self_proxy</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">rng</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">setup_range_methods</span><span class="p">(</span><span class="n">blocksci_range</span><span class="p">,</span> <span class="n">nested_proxy_cl</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_proxy</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">setup_iterator_methods</span><span class="p">(</span><span class="n">blocksci_range</span><span class="p">,</span> <span class="n">fix_range_doc_def</span><span class="p">,</span> <span class="n">nested_proxy_cl</span><span class="p">,</span> <span class="n">sample_proxy</span><span class="p">)</span>
+    <span class="n">blocksci_range</span><span class="o">.</span><span class="fm">__getitem__</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">rng</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="n">rng</span><span class="o">.</span><span class="n">_self_proxy</span><span class="p">[</span><span class="n">index</span><span class="p">](</span><span class="n">rng</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">setup_iterator_and_proxy_methods</span><span class="p">(</span><span class="n">iterator</span><span class="p">):</span>
+    <span class="n">setup_iterator_methods</span><span class="p">(</span><span class="n">iterator</span><span class="p">)</span>
+    <span class="n">setup_iterator_proxy_methods</span><span class="p">(</span><span class="n">iterator</span><span class="o">.</span><span class="n">_self_proxy</span><span class="p">)</span>
+    <span class="n">setup_size_property</span><span class="p">(</span><span class="n">iterator</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">setup_range_and_proxy_methods</span><span class="p">(</span><span class="n">blocksci_range</span><span class="p">):</span>
+    <span class="n">setup_range_methods</span><span class="p">(</span><span class="n">blocksci_range</span><span class="p">)</span>
+    <span class="n">setup_iterator_proxy_methods</span><span class="p">(</span><span class="n">blocksci_range</span><span class="o">.</span><span class="n">_self_proxy</span><span class="p">)</span>
+    <span class="n">setup_size_property</span><span class="p">(</span><span class="n">blocksci_range</span><span class="p">)</span>
+
+<span class="n">setup_optional_proxy_map_funcs</span><span class="p">()</span>
+<span class="n">setup_sequence_proxy_map_funcs</span><span class="p">()</span>
+<span class="n">setup_sequence_map_funcs</span><span class="p">()</span>
+
+<span class="n">setup_self_methods</span><span class="p">(</span><span class="n">Block</span><span class="p">)</span>
+<span class="n">setup_self_methods</span><span class="p">(</span><span class="n">Tx</span><span class="p">)</span>
+<span class="n">setup_self_methods</span><span class="p">(</span><span class="n">Output</span><span class="p">)</span>
+<span class="n">setup_self_methods</span><span class="p">(</span><span class="n">Input</span><span class="p">)</span>
+<span class="n">setup_self_methods</span><span class="p">(</span><span class="n">EquivAddress</span><span class="p">)</span>
+
+<span class="n">setup_self_methods</span><span class="p">(</span><span class="n">Address</span><span class="p">,</span> <span class="n">proxy</span><span class="o">.</span><span class="n">ProxyAddress</span><span class="p">,</span> <span class="n">PubkeyAddress</span><span class="o">.</span><span class="n">_self_proxy</span><span class="p">)</span>
+<span class="n">setup_self_methods</span><span class="p">(</span><span class="n">PubkeyAddress</span><span class="p">)</span>
+<span class="n">setup_self_methods</span><span class="p">(</span><span class="n">PubkeyHashAddress</span><span class="p">)</span>
+<span class="n">setup_self_methods</span><span class="p">(</span><span class="n">WitnessPubkeyHashAddress</span><span class="p">)</span>
+<span class="n">setup_self_methods</span><span class="p">(</span><span class="n">MultisigPubkey</span><span class="p">)</span>
+<span class="n">setup_self_methods</span><span class="p">(</span><span class="n">ScriptHashAddress</span><span class="p">)</span>
+<span class="n">setup_self_methods</span><span class="p">(</span><span class="n">WitnessScriptHashAddress</span><span class="p">)</span>
+<span class="n">setup_self_methods</span><span class="p">(</span><span class="n">MultisigAddress</span><span class="p">)</span>
+<span class="n">setup_self_methods</span><span class="p">(</span><span class="n">NonStandardAddress</span><span class="p">)</span>
+<span class="n">setup_self_methods</span><span class="p">(</span><span class="n">OpReturn</span><span class="p">)</span>
+<span class="n">setup_self_methods</span><span class="p">(</span><span class="n">WitnessUnknownAddress</span><span class="p">)</span>
+
+<span class="n">setup_self_methods</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">Cluster</span><span class="p">)</span>
+<span class="n">setup_self_methods</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">TaggedCluster</span><span class="p">)</span>
+<span class="n">setup_self_methods</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">TaggedAddress</span><span class="p">)</span>
+
+<span class="n">setup_iterator_and_proxy_methods</span><span class="p">(</span><span class="n">BlockIterator</span><span class="p">)</span>
+<span class="n">setup_iterator_and_proxy_methods</span><span class="p">(</span><span class="n">TxIterator</span><span class="p">)</span>
+<span class="n">setup_iterator_and_proxy_methods</span><span class="p">(</span><span class="n">OutputIterator</span><span class="p">)</span>
+<span class="n">setup_iterator_and_proxy_methods</span><span class="p">(</span><span class="n">InputIterator</span><span class="p">)</span>
+<span class="n">setup_iterator_and_proxy_methods</span><span class="p">(</span><span class="n">AddressIterator</span><span class="p">)</span>
+<span class="n">setup_iterator_and_proxy_methods</span><span class="p">(</span><span class="n">EquivAddressIterator</span><span class="p">)</span>
+
+<span class="n">setup_iterator_methods</span><span class="p">(</span><span class="n">GenericAddressIterator</span><span class="p">,</span> <span class="n">proxy</span><span class="o">.</span><span class="n">ProxyAddress</span><span class="p">,</span> <span class="n">PubkeyAddressIterator</span><span class="o">.</span><span class="n">_self_proxy</span><span class="p">)</span>
+<span class="n">setup_iterator_and_proxy_methods</span><span class="p">(</span><span class="n">PubkeyAddressIterator</span><span class="p">)</span>
+<span class="n">setup_iterator_and_proxy_methods</span><span class="p">(</span><span class="n">PubkeyHashAddressIterator</span><span class="p">)</span>
+<span class="n">setup_iterator_and_proxy_methods</span><span class="p">(</span><span class="n">WitnessPubkeyHashAddressIterator</span><span class="p">)</span>
+<span class="n">setup_iterator_and_proxy_methods</span><span class="p">(</span><span class="n">MultisigPubkeyIterator</span><span class="p">)</span>
+<span class="n">setup_iterator_and_proxy_methods</span><span class="p">(</span><span class="n">ScriptHashAddressIterator</span><span class="p">)</span>
+<span class="n">setup_iterator_and_proxy_methods</span><span class="p">(</span><span class="n">WitnessScriptHashAddressIterator</span><span class="p">)</span>
+<span class="n">setup_iterator_and_proxy_methods</span><span class="p">(</span><span class="n">MultisigAddressIterator</span><span class="p">)</span>
+<span class="n">setup_iterator_and_proxy_methods</span><span class="p">(</span><span class="n">NonstandardAddressIterator</span><span class="p">)</span>
+<span class="n">setup_iterator_and_proxy_methods</span><span class="p">(</span><span class="n">OpReturnIterator</span><span class="p">)</span>
+
+<span class="n">setup_iterator_and_proxy_methods</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">ClusterIterator</span><span class="p">)</span>
+<span class="n">setup_iterator_and_proxy_methods</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">TaggedClusterIterator</span><span class="p">)</span>
+<span class="n">setup_iterator_and_proxy_methods</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">TaggedAddressIterator</span><span class="p">)</span>
+
+<span class="n">setup_range_and_proxy_methods</span><span class="p">(</span><span class="n">BlockRange</span><span class="p">)</span>
+<span class="n">setup_range_and_proxy_methods</span><span class="p">(</span><span class="n">TxRange</span><span class="p">)</span>
+<span class="n">setup_range_and_proxy_methods</span><span class="p">(</span><span class="n">OutputRange</span><span class="p">)</span>
+<span class="n">setup_range_and_proxy_methods</span><span class="p">(</span><span class="n">InputRange</span><span class="p">)</span>
+<span class="n">setup_range_and_proxy_methods</span><span class="p">(</span><span class="n">AddressRange</span><span class="p">)</span>
+<span class="n">setup_range_and_proxy_methods</span><span class="p">(</span><span class="n">EquivAddressRange</span><span class="p">)</span>
+
+<span class="n">setup_range_methods</span><span class="p">(</span><span class="n">GenericAddressRange</span><span class="p">,</span> <span class="n">proxy</span><span class="o">.</span><span class="n">ProxyAddress</span><span class="p">,</span> <span class="n">PubkeyAddressRange</span><span class="o">.</span><span class="n">_self_proxy</span><span class="p">)</span>
+<span class="n">setup_range_and_proxy_methods</span><span class="p">(</span><span class="n">PubkeyAddressRange</span><span class="p">)</span>
+<span class="n">setup_range_and_proxy_methods</span><span class="p">(</span><span class="n">PubkeyHashAddressRange</span><span class="p">)</span>
+<span class="n">setup_range_and_proxy_methods</span><span class="p">(</span><span class="n">WitnessPubkeyHashAddressRange</span><span class="p">)</span>
+<span class="n">setup_range_and_proxy_methods</span><span class="p">(</span><span class="n">MultisigPubkeyRange</span><span class="p">)</span>
+<span class="n">setup_range_and_proxy_methods</span><span class="p">(</span><span class="n">ScriptHashAddressRange</span><span class="p">)</span>
+<span class="n">setup_range_and_proxy_methods</span><span class="p">(</span><span class="n">WitnessScriptHashAddressRange</span><span class="p">)</span>
+<span class="n">setup_range_and_proxy_methods</span><span class="p">(</span><span class="n">MultisigAddressRange</span><span class="p">)</span>
+<span class="n">setup_range_and_proxy_methods</span><span class="p">(</span><span class="n">NonstandardAddressRange</span><span class="p">)</span>
+<span class="n">setup_range_and_proxy_methods</span><span class="p">(</span><span class="n">OpReturnRange</span><span class="p">)</span>
+
+<span class="n">setup_range_and_proxy_methods</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">ClusterRange</span><span class="p">)</span>
+<span class="n">setup_range_and_proxy_methods</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">TaggedClusterRange</span><span class="p">)</span>
+<span class="n">setup_range_and_proxy_methods</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">TaggedAddressRange</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">txes_including_output_of_type</span><span class="p">(</span><span class="n">txes</span><span class="p">,</span> <span class="n">typ</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">txes</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">tx</span><span class="p">:</span> <span class="n">tx</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">address_type</span> <span class="o">==</span> <span class="n">typ</span><span class="p">))</span>
+
+<span class="n">TxIterator</span><span class="o">.</span><span class="n">including_output_of_type</span> <span class="o">=</span> <span class="n">txes_including_output_of_type</span>
+
+<span class="n">TxRange</span><span class="o">.</span><span class="n">including_output_of_type</span> <span class="o">=</span> <span class="n">txes_including_output_of_type</span>
+
+
+<span class="k">def</span> <span class="nf">inputs_sent_before_height</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InputIterator</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Filter the inputs to include only inputs which spent an output created before the given height</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">inputs</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">inp</span><span class="p">:</span> <span class="n">inp</span><span class="o">.</span><span class="n">spent_tx</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">height</span> <span class="o">&lt;</span> <span class="n">height</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">inputs_sent_after_height</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InputIterator</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Filter the inputs to include only inputs which spent an output created after the given height</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">inputs</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">inp</span><span class="p">:</span> <span class="n">inp</span><span class="o">.</span><span class="n">spent_tx</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">height</span> <span class="o">&gt;=</span> <span class="n">height</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">inputs_with_age_less_than</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InputIterator</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Filter the inputs to include only inputs with age less than the given value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">inputs</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">inp</span><span class="p">:</span> <span class="n">inp</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">block_height</span> <span class="o">-</span> <span class="n">inp</span><span class="o">.</span><span class="n">spent_tx</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">height</span> <span class="o">&lt;</span> <span class="n">age</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">inputs_with_age_greater_than</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InputIterator</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Filter the inputs to include only inputs with age more than the given value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">inputs</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">inp</span><span class="p">:</span> <span class="n">inp</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">block_height</span> <span class="o">-</span> <span class="n">inp</span><span class="o">.</span><span class="n">spent_tx</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">height</span> <span class="o">&gt;=</span> <span class="n">age</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">inputs_with_address_type</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">typ</span><span class="p">:</span> <span class="n">address_type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InputIterator</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Filter the inputs to include only inputs that came from an address with the given type</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">inputs</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">inp</span><span class="p">:</span> <span class="n">inp</span><span class="o">.</span><span class="n">address_type</span> <span class="o">==</span> <span class="n">typ</span><span class="p">)</span>
+
+
+<span class="n">InputIterator</span><span class="o">.</span><span class="n">sent_before_height</span> <span class="o">=</span> <span class="n">inputs_sent_before_height</span>
+<span class="n">InputIterator</span><span class="o">.</span><span class="n">sent_after_height</span> <span class="o">=</span> <span class="n">inputs_sent_after_height</span>
+<span class="n">InputIterator</span><span class="o">.</span><span class="n">with_age_less_than</span> <span class="o">=</span> <span class="n">inputs_with_age_less_than</span>
+<span class="n">InputIterator</span><span class="o">.</span><span class="n">with_age_greater_than</span> <span class="o">=</span> <span class="n">inputs_with_age_greater_than</span>
+<span class="n">InputIterator</span><span class="o">.</span><span class="n">with_address_type</span> <span class="o">=</span> <span class="n">inputs_with_address_type</span>
+
+<span class="n">InputRange</span><span class="o">.</span><span class="n">sent_before_height</span> <span class="o">=</span> <span class="n">inputs_sent_before_height</span>
+<span class="n">InputRange</span><span class="o">.</span><span class="n">sent_after_height</span> <span class="o">=</span> <span class="n">inputs_sent_after_height</span>
+<span class="n">InputRange</span><span class="o">.</span><span class="n">with_age_less_than</span> <span class="o">=</span> <span class="n">inputs_with_age_less_than</span>
+<span class="n">InputRange</span><span class="o">.</span><span class="n">with_age_greater_than</span> <span class="o">=</span> <span class="n">inputs_with_age_greater_than</span>
+<span class="n">InputRange</span><span class="o">.</span><span class="n">with_address_type</span> <span class="o">=</span> <span class="n">inputs_with_address_type</span>
+
+<span class="k">def</span> <span class="nf">_outputAge</span><span class="p">(</span><span class="n">output</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">output</span><span class="o">.</span><span class="n">spending_tx</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">tx</span><span class="p">:</span> <span class="n">tx</span><span class="o">.</span><span class="n">block_height</span><span class="p">)</span> <span class="o">-</span> <span class="n">output</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">block_height</span>
+
+<span class="k">def</span> <span class="nf">outputs_unspent</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">height</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">outputs</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">output</span><span class="p">:</span> <span class="o">~</span><span class="n">output</span><span class="o">.</span><span class="n">is_spent</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">outputs</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">output</span><span class="p">:</span> <span class="p">(</span><span class="o">~</span><span class="n">output</span><span class="o">.</span><span class="n">is_spent</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">spending_tx</span><span class="o">.</span><span class="n">block_height</span><span class="o">.</span><span class="n">or_value</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">height</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">outputs_spent_before_height</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">height</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">outputs</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">output</span><span class="p">:</span> <span class="n">output</span><span class="o">.</span><span class="n">is_spent</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">output</span><span class="p">:</span> <span class="n">output</span><span class="o">.</span><span class="n">spending_tx</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">tx</span><span class="p">:</span> <span class="n">tx</span><span class="o">.</span><span class="n">block_height</span><span class="p">)</span><span class="o">.</span><span class="n">or_value</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">height</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">outputs_spent_after_height</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">height</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">outputs</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">output</span><span class="p">:</span> <span class="n">output</span><span class="o">.</span><span class="n">is_spent</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">output</span><span class="p">:</span> <span class="n">output</span><span class="o">.</span><span class="n">spending_tx</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">tx</span><span class="p">:</span> <span class="n">tx</span><span class="o">.</span><span class="n">block_height</span><span class="p">)</span><span class="o">.</span><span class="n">or_value</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">height</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">outputs_spent_with_age_less_than</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">age</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">outputs</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">output</span><span class="p">:</span> <span class="n">output</span><span class="o">.</span><span class="n">is_spent</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">output</span><span class="p">:</span> <span class="n">_outputAge</span><span class="p">(</span><span class="n">output</span><span class="p">)</span><span class="o">.</span><span class="n">or_value</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">age</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">outputs_spent_with_age_greater_than</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">age</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">outputs</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">output</span><span class="p">:</span> <span class="n">output</span><span class="o">.</span><span class="n">is_spent</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">output</span><span class="p">:</span> <span class="n">_outputAge</span><span class="p">(</span><span class="n">output</span><span class="p">)</span><span class="o">.</span><span class="n">or_value</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">age</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">outputs_with_address_type</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">typ</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">outputs</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">output</span><span class="p">:</span> <span class="n">output</span><span class="o">.</span><span class="n">address_type</span> <span class="o">==</span> <span class="n">typ</span><span class="p">)</span>
+
+
+<span class="n">OutputIterator</span><span class="o">.</span><span class="n">unspent</span> <span class="o">=</span> <span class="n">outputs_unspent</span>
+<span class="n">OutputIterator</span><span class="o">.</span><span class="n">spent_before_height</span> <span class="o">=</span> <span class="n">outputs_spent_before_height</span>
+<span class="n">OutputIterator</span><span class="o">.</span><span class="n">spent_after_height</span> <span class="o">=</span> <span class="n">outputs_spent_after_height</span>
+<span class="n">OutputIterator</span><span class="o">.</span><span class="n">spent_with_age_less_than</span> <span class="o">=</span> <span class="n">outputs_spent_with_age_less_than</span>
+<span class="n">OutputIterator</span><span class="o">.</span><span class="n">outputs_spent_with_age_greater_than</span> <span class="o">=</span> <span class="n">outputs_spent_with_age_greater_than</span>
+<span class="n">OutputIterator</span><span class="o">.</span><span class="n">with_address_type</span> <span class="o">=</span> <span class="n">outputs_with_address_type</span>
+
+<span class="n">OutputRange</span><span class="o">.</span><span class="n">unspent</span> <span class="o">=</span> <span class="n">outputs_unspent</span>
+<span class="n">OutputRange</span><span class="o">.</span><span class="n">spent_before_height</span> <span class="o">=</span> <span class="n">outputs_spent_before_height</span>
+<span class="n">OutputRange</span><span class="o">.</span><span class="n">spent_after_height</span> <span class="o">=</span> <span class="n">outputs_spent_after_height</span>
+<span class="n">OutputRange</span><span class="o">.</span><span class="n">spent_with_age_less_than</span> <span class="o">=</span> <span class="n">outputs_spent_with_age_less_than</span>
+<span class="n">OutputRange</span><span class="o">.</span><span class="n">outputs_spent_with_age_greater_than</span> <span class="o">=</span> <span class="n">outputs_spent_with_age_greater_than</span>
+<span class="n">OutputRange</span><span class="o">.</span><span class="n">with_address_type</span> <span class="o">=</span> <span class="n">outputs_with_address_type</span>
+
+
+<span class="k">def</span> <span class="nf">coinjoin_txes</span><span class="p">(</span><span class="n">txes</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">txes</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">heuristics</span><span class="o">.</span><span class="n">is_coinjoin</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">possible_coinjoin_txes</span><span class="p">(</span><span class="n">txes</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">txes</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">heuristics</span><span class="o">.</span><span class="n">is_possible_coinjoin</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">address_deanon_txes</span><span class="p">(</span><span class="n">txes</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">txes</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">heuristics</span><span class="o">.</span><span class="n">is_address_deanon</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">change_over_txes</span><span class="p">(</span><span class="n">txes</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">txes</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">heuristics</span><span class="o">.</span><span class="n">is_change_over</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">keyset_change_txes</span><span class="p">(</span><span class="n">txes</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">txes</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">heuristics</span><span class="o">.</span><span class="n">is_keyset_change</span><span class="p">)</span>
+
+<span class="n">old_power_of_ten_value</span> <span class="o">=</span> <span class="n">heuristics</span><span class="o">.</span><span class="n">change</span><span class="o">.</span><span class="n">power_of_ten_value</span>
+<span class="k">def</span> <span class="nf">new_power_of_ten_value</span><span class="p">(</span><span class="n">digits</span><span class="p">,</span> <span class="n">tx</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">tx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">old_power_of_ten_value</span><span class="p">(</span><span class="n">digits</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">old_power_of_ten_value</span><span class="p">(</span><span class="n">digits</span><span class="p">)(</span><span class="n">tx</span><span class="p">)</span>
+
+<span class="n">heuristics</span><span class="o">.</span><span class="n">change</span><span class="o">.</span><span class="n">power_of_ten_value</span> <span class="o">=</span> <span class="n">new_power_of_ten_value</span>
+<span class="n">heuristics</span><span class="o">.</span><span class="n">coinjoin_txes</span> <span class="o">=</span> <span class="n">coinjoin_txes</span>
+<span class="n">heuristics</span><span class="o">.</span><span class="n">possible_coinjoin_txes</span> <span class="o">=</span> <span class="n">possible_coinjoin_txes</span>
+<span class="n">heuristics</span><span class="o">.</span><span class="n">address_deanon_txes</span> <span class="o">=</span> <span class="n">address_deanon_txes</span>
+<span class="n">heuristics</span><span class="o">.</span><span class="n">change_over_txes</span> <span class="o">=</span> <span class="n">change_over_txes</span>
+<span class="n">heuristics</span><span class="o">.</span><span class="n">keyset_change_txes</span> <span class="o">=</span> <span class="n">keyset_change_txes</span>
+
 
 <span class="n">first_miner_run</span> <span class="o">=</span> <span class="kc">True</span>
+
 
 <span class="k">class</span> <span class="nc">DummyClass</span><span class="p">:</span>
     <span class="k">pass</span>
 
+
 <span class="n">loaderDirectory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">getsourcefile</span><span class="p">(</span><span class="n">DummyClass</span><span class="p">)))</span>
+
+
 <span class="k">def</span> <span class="nf">get_miner</span><span class="p">(</span><span class="n">block</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get the miner of the block based on the text in the coinbase transaction</span>
@@ -365,94 +1005,35 @@
         <span class="n">first_miner_run</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">coinbase</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">coinbase_param</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf_8&quot;</span><span class="p">,</span> <span class="s2">&quot;replace&quot;</span><span class="p">)</span>
     <span class="n">tag_matches</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">coinbase_tag_re</span><span class="p">,</span> <span class="n">coinbase</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tag_matches</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">tag_matches</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">pool_data</span><span class="p">[</span><span class="s2">&quot;coinbase_tags&quot;</span><span class="p">][</span><span class="n">tag_matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
     <span class="k">for</span> <span class="n">txout</span> <span class="ow">in</span> <span class="n">block</span><span class="o">.</span><span class="n">coinbase_tx</span><span class="o">.</span><span class="n">outs</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">txout</span><span class="o">.</span><span class="n">address</span> <span class="ow">in</span> <span class="n">tagged_addresses</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">tagged_addresses</span><span class="p">[</span><span class="n">txout</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
-    
+
     <span class="n">additional_miners</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;EclipseMC&quot;</span> <span class="p">:</span> <span class="s2">&quot;EclipseMC&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;poolserverj&quot;</span> <span class="p">:</span> <span class="s2">&quot;poolserverj&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;/stratumPool/&quot;</span> <span class="p">:</span> <span class="s2">&quot;stratumPool&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;/stratum/&quot;</span> <span class="p">:</span> <span class="s2">&quot;stratum&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;/nodeStratum/&quot;</span> <span class="p">:</span> <span class="s2">&quot;nodeStratum&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;BitLC&quot;</span> <span class="p">:</span> <span class="s2">&quot;BitLC&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;/TangPool/&quot;</span> <span class="p">:</span> <span class="s2">&quot;TangPool&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;/Tangpool/&quot;</span> <span class="p">:</span> <span class="s2">&quot;TangPool&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pool.mkalinin.ru&quot;</span> <span class="p">:</span> <span class="s2">&quot;pool.mkalinin.ru&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;For Pierce and Paul&quot;</span> <span class="p">:</span> <span class="s2">&quot;Pierce and Paul&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;50btc.com&quot;</span> <span class="p">:</span> <span class="s2">&quot;50btc.com&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;七彩神仙鱼&quot;</span> <span class="p">:</span> <span class="s2">&quot;F2Pool&quot;</span>
+        <span class="s2">&quot;EclipseMC&quot;</span><span class="p">:</span> <span class="s2">&quot;EclipseMC&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;poolserverj&quot;</span><span class="p">:</span> <span class="s2">&quot;poolserverj&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;/stratumPool/&quot;</span><span class="p">:</span> <span class="s2">&quot;stratumPool&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;/stratum/&quot;</span><span class="p">:</span> <span class="s2">&quot;stratum&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;/nodeStratum/&quot;</span><span class="p">:</span> <span class="s2">&quot;nodeStratum&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;BitLC&quot;</span><span class="p">:</span> <span class="s2">&quot;BitLC&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;/TangPool/&quot;</span><span class="p">:</span> <span class="s2">&quot;TangPool&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;/Tangpool/&quot;</span><span class="p">:</span> <span class="s2">&quot;TangPool&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pool.mkalinin.ru&quot;</span><span class="p">:</span> <span class="s2">&quot;pool.mkalinin.ru&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;For Pierce and Paul&quot;</span><span class="p">:</span> <span class="s2">&quot;Pierce and Paul&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;50btc.com&quot;</span><span class="p">:</span> <span class="s2">&quot;50btc.com&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;七彩神仙鱼&quot;</span><span class="p">:</span> <span class="s2">&quot;F2Pool&quot;</span>
     <span class="p">}</span>
-    
+
     <span class="k">for</span> <span class="n">miner</span> <span class="ow">in</span> <span class="n">additional_miners</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">miner</span> <span class="ow">in</span> <span class="n">coinbase</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">additional_miners</span><span class="p">[</span><span class="n">miner</span><span class="p">]</span>
-    
+
     <span class="k">return</span> <span class="s2">&quot;Unknown&quot;</span>
 
+
 <span class="n">Block</span><span class="o">.</span><span class="n">miner</span> <span class="o">=</span> <span class="n">get_miner</span>
-
-<span class="k">class</span> <span class="nc">CPP</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chain</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dynamicFunctionCounter</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">module_directory</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">module_directory</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">saved_tx_filters</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">chain</span> <span class="o">=</span> <span class="n">chain</span>
-
-    <span class="k">def</span> <span class="nf">generate_module_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">module_name</span> <span class="o">=</span> <span class="s2">&quot;dynamicCode&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dynamicFunctionCounter</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dynamicFunctionCounter</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">return</span> <span class="n">module_name</span>
-
-    <span class="k">def</span> <span class="nf">filter_tx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">if</span> <span class="n">end</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">end</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chain</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">code</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_tx_filters</span><span class="p">:</span>
-            <span class="kn">from</span> <span class="nn">string</span> <span class="k">import</span> <span class="n">Template</span>
-            <span class="n">filein</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">loaderDirectory</span> <span class="o">+</span> <span class="s1">&#39;/filterTxesExtension.cpp&#39;</span><span class="p">)</span>
-            <span class="n">template</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span><span class="n">filein</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
-            <span class="n">module_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_module_name</span><span class="p">()</span>
-            <span class="n">filled_template</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">safe_substitute</span><span class="p">({</span><span class="s2">&quot;module_name&quot;</span><span class="p">:</span><span class="n">module_name</span><span class="p">,</span> <span class="s2">&quot;func_def&quot;</span> <span class="p">:</span> <span class="n">code</span><span class="p">})</span>
-            <span class="n">makefile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_makefile</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
-            <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_function</span><span class="p">(</span><span class="n">filled_template</span><span class="p">,</span> <span class="n">makefile</span><span class="p">,</span> <span class="n">module_name</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">saved_tx_filters</span><span class="p">[</span><span class="n">code</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_tx_filters</span><span class="p">[</span><span class="n">code</span><span class="p">](</span><span class="bp">self</span><span class="o">.</span><span class="n">chain</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">create_makefile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module_name</span><span class="p">):</span>
-        <span class="kn">from</span> <span class="nn">string</span> <span class="k">import</span> <span class="n">Template</span>
-        <span class="kn">import</span> <span class="nn">os</span>
-        <span class="n">filein</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">loaderDirectory</span> <span class="o">+</span> <span class="s1">&#39;/templateMakefile&#39;</span><span class="p">)</span>
-        <span class="n">template</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span><span class="n">filein</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
-        <span class="n">subs</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;module_name&quot;</span> <span class="p">:</span> <span class="n">module_name</span><span class="p">,</span>
-            <span class="s2">&quot;install_location&quot;</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_directory</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-            <span class="s2">&quot;srcname&quot;</span> <span class="p">:</span> <span class="n">module_name</span> <span class="o">+</span> <span class="s2">&quot;.cpp&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;python_blocksci_dir&quot;</span><span class="p">:</span><span class="n">loaderDirectory</span>
-        <span class="p">}</span>
-        <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">safe_substitute</span><span class="p">(</span><span class="n">subs</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">build_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">full_code</span><span class="p">,</span> <span class="n">makefile</span><span class="p">,</span> <span class="n">module_name</span><span class="p">):</span>
-        <span class="n">builddir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">builddir</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">module_name</span> <span class="o">+</span> <span class="s2">&quot;.cpp&quot;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">full_code</span><span class="p">)</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">builddir</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;/CMakeLists.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">makefile</span><span class="p">)</span>
-        <span class="n">process</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span><span class="s2">&quot;cmake&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">],</span> <span class="n">cwd</span><span class="o">=</span><span class="n">builddir</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
-        <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">))</span>
-        <span class="n">process</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span><span class="s2">&quot;make&quot;</span><span class="p">],</span> <span class="n">cwd</span><span class="o">=</span><span class="n">builddir</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
-        <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">))</span>
-        <span class="n">process</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span><span class="s2">&quot;make&quot;</span><span class="p">,</span> <span class="s2">&quot;install&quot;</span><span class="p">],</span> <span class="n">cwd</span><span class="o">=</span><span class="n">builddir</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
-        <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">))</span>
-        <span class="n">mod</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="s2">&quot;func&quot;</span><span class="p">)</span>
 </pre></div>
 
            </div>
@@ -465,11 +1046,19 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, Harry Kalodner.
+        
+        &copy; Copyright 2018-2020, BlockSci Developers
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -481,37 +1070,16 @@
   </div>
   
 
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'0.5.0',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-  
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

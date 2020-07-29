@@ -1,15 +1,18 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Block Iterator &mdash; BlockSci 0.5.0 documentation</title>
+  <title>Block Iterator &mdash; BlockSci 0.7.0 documentation</title>
   
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
 
   
   
@@ -17,39 +20,38 @@
   
 
   
-
-  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
-  
-
-  
-    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="Tx Iterator" href="TxIterator.html" />
     <link rel="prev" title="Iterator Classes" href="iterators.html" /> 
-
-  
-  <script src="../../../_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
-            <a href="../../../index.html" class="icon icon-home"> BlockSci
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> BlockSci
           
 
           
@@ -59,7 +61,7 @@
             
             
               <div class="version">
-                0.5.0
+                0.7.0
               </div>
             
           
@@ -76,6 +78,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -83,13 +86,12 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">BlockSci</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Release notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../compiling.html">Compiling BlockSci</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../setup.html">Local setup</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../../reference.html">Reference</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../setup.html">Local Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../using-blocksci.html">Using BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../fluent-interface.html">Fluent Interface (Python)</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../reference.html">Python Module Reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../chain.html">Chain Classes</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="../blockchain.html">Blockchain</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../block.html">Block</a></li>
@@ -102,10 +104,6 @@
 <li class="toctree-l4"><a class="reference internal" href="TxIterator.html">Tx Iterator</a></li>
 <li class="toctree-l4"><a class="reference internal" href="InputIterator.html">Input Iterator</a></li>
 <li class="toctree-l4"><a class="reference internal" href="OutputIterator.html">Output Iterator</a></li>
-<li class="toctree-l4"><a class="reference internal" href="BlockOptionalIterator.html">Optional Block Iterator</a></li>
-<li class="toctree-l4"><a class="reference internal" href="TxOptionalIterator.html">Optional Tx Iterator</a></li>
-<li class="toctree-l4"><a class="reference internal" href="InputOptionalIterator.html">Optional Input Iterator</a></li>
-<li class="toctree-l4"><a class="reference internal" href="OutputOptionalIterator.html">Optional Output Iterator</a></li>
 </ul>
 </li>
 </ul>
@@ -116,11 +114,15 @@
 <li class="toctree-l2"><a class="reference internal" href="../../other/other.html">Other Utility Classes</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../../troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Release notes</a></li>
 </ul>
 
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -159,9 +161,9 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
         
-          <li><a href="../../reference.html">Reference</a> &raquo;</li>
+          <li><a href="../../reference.html">Python Module Reference</a> &raquo;</li>
         
           <li><a href="../chain.html">Chain Classes</a> &raquo;</li>
         
@@ -188,391 +190,315 @@
             
   <div class="section" id="block-iterator">
 <h1>Block Iterator<a class="headerlink" href="#block-iterator" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="blocksci.BlockIterator">
-<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">BlockIterator</code><a class="headerlink" href="#blocksci.BlockIterator" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="attribute">
-<dt id="blocksci.BlockIterator.all">
-<code class="descname">all</code><a class="headerlink" href="#blocksci.BlockIterator.all" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a list of all of the objects in the range</p>
-</dd></dl>
-
-<dl class="attribute">
+<em class="property">class </em><code class="sig-prename descclassname">blocksci.</code><code class="sig-name descname">BlockIterator</code><a class="headerlink" href="#blocksci.BlockIterator" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
 <dt id="blocksci.BlockIterator.base_size">
-<code class="descname">base_size</code><a class="headerlink" href="#blocksci.BlockIterator.base_size" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">base_size</code><a class="headerlink" href="#blocksci.BlockIterator.base_size" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: The size of the non-segwit data in bytes</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[uint32]</span></code></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int]</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.BlockIterator.bits">
-<code class="descname">bits</code><a class="headerlink" href="#blocksci.BlockIterator.bits" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">bits</code><a class="headerlink" href="#blocksci.BlockIterator.bits" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: Difficulty threshold specified in block header</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[uint32]</span></code></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int]</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.BlockIterator.coinbase_param">
-<code class="descname">coinbase_param</code><a class="headerlink" href="#blocksci.BlockIterator.coinbase_param" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">coinbase_param</code><a class="headerlink" href="#blocksci.BlockIterator.coinbase_param" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: Data contained within the coinbase transaction of this block</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.BlockIterator.coinbase_tx">
-<code class="descname">coinbase_tx</code><a class="headerlink" href="#blocksci.BlockIterator.coinbase_tx" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">coinbase_tx</code><a class="headerlink" href="#blocksci.BlockIterator.coinbase_tx" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: Return the coinbase transaction in this block</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="TxIterator.html#blocksci.TxIterator" title="blocksci.TxIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.TxIterator</span></code></a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="TxIterator.html#blocksci.TxIterator" title="blocksci.TxIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.TxIterator</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.BlockIterator.fee">
-<code class="descname">fee</code><a class="headerlink" href="#blocksci.BlockIterator.fee" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">fee</code><a class="headerlink" href="#blocksci.BlockIterator.fee" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: The sum of the transaction fees contained in this block</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int64]</span></code></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int]</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.BlockIterator.hash">
-<code class="descname">hash</code><a class="headerlink" href="#blocksci.BlockIterator.hash" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">hash</code><a class="headerlink" href="#blocksci.BlockIterator.hash" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: Hash of this block</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[S64]</span></code></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[S64]</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.BlockIterator.height">
-<code class="descname">height</code><a class="headerlink" href="#blocksci.BlockIterator.height" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">height</code><a class="headerlink" href="#blocksci.BlockIterator.height" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: Height of the block in the blockchain</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int32]</span></code></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int]</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.BlockIterator.input_count">
-<code class="descname">input_count</code><a class="headerlink" href="#blocksci.BlockIterator.input_count" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">input_count</code><a class="headerlink" href="#blocksci.BlockIterator.input_count" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: Returns total number of inputs included in this block</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[uint64]</span></code></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int]</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.BlockIterator.input_value">
-<code class="descname">input_value</code><a class="headerlink" href="#blocksci.BlockIterator.input_value" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">input_value</code><a class="headerlink" href="#blocksci.BlockIterator.input_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: Returns the sum of the value of all of the inputs included in this block</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int64]</span></code></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int]</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.BlockIterator.inputs">
-<code class="descname">inputs</code><a class="headerlink" href="#blocksci.BlockIterator.inputs" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">inputs</code><a class="headerlink" href="#blocksci.BlockIterator.inputs" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: A range of all of the inputs in the block</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="InputIterator.html#blocksci.InputIterator" title="blocksci.InputIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.InputIterator</span></code></a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="InputIterator.html#blocksci.InputIterator" title="blocksci.InputIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.InputIterator</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.BlockIterator.next_block">
-<code class="descname">next_block</code><a class="headerlink" href="#blocksci.BlockIterator.next_block" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">next_block</code><a class="headerlink" href="#blocksci.BlockIterator.next_block" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: Returns the block which follows this one in the chain</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#blocksci.BlockIterator" title="blocksci.BlockIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.BlockIterator</span></code></a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#blocksci.BlockIterator" title="blocksci.BlockIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.BlockIterator</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.BlockIterator.nonce">
-<code class="descname">nonce</code><a class="headerlink" href="#blocksci.BlockIterator.nonce" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">nonce</code><a class="headerlink" href="#blocksci.BlockIterator.nonce" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: Nonce specified in block header</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[uint32]</span></code></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int]</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.BlockIterator.output_count">
-<code class="descname">output_count</code><a class="headerlink" href="#blocksci.BlockIterator.output_count" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">output_count</code><a class="headerlink" href="#blocksci.BlockIterator.output_count" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: Returns total number of outputs included in this block</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[uint64]</span></code></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int]</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.BlockIterator.output_value">
-<code class="descname">output_value</code><a class="headerlink" href="#blocksci.BlockIterator.output_value" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">output_value</code><a class="headerlink" href="#blocksci.BlockIterator.output_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: Returns the sum of the value of all of the outputs included in this block</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int64]</span></code></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int]</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.BlockIterator.outputs">
-<code class="descname">outputs</code><a class="headerlink" href="#blocksci.BlockIterator.outputs" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">outputs</code><a class="headerlink" href="#blocksci.BlockIterator.outputs" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: A range of all of the outputs in the block</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="OutputIterator.html#blocksci.OutputIterator" title="blocksci.OutputIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.OutputIterator</span></code></a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="OutputIterator.html#blocksci.OutputIterator" title="blocksci.OutputIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.OutputIterator</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.BlockIterator.prev_block">
-<code class="descname">prev_block</code><a class="headerlink" href="#blocksci.BlockIterator.prev_block" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">prev_block</code><a class="headerlink" href="#blocksci.BlockIterator.prev_block" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: Returns the block which comes before this one in the chain</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#blocksci.BlockIterator" title="blocksci.BlockIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.BlockIterator</span></code></a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#blocksci.BlockIterator" title="blocksci.BlockIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.BlockIterator</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.BlockIterator.revenue">
-<code class="descname">revenue</code><a class="headerlink" href="#blocksci.BlockIterator.revenue" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">revenue</code><a class="headerlink" href="#blocksci.BlockIterator.revenue" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: Total reward received by the miner of this block</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int64]</span></code></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int]</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.BlockIterator.size_bytes">
-<code class="descname">size_bytes</code><a class="headerlink" href="#blocksci.BlockIterator.size_bytes" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">size_bytes</code><a class="headerlink" href="#blocksci.BlockIterator.size_bytes" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: Returns the total size of the block in bytes</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[uint32]</span></code></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int]</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.BlockIterator.time">
-<code class="descname">time</code><a class="headerlink" href="#blocksci.BlockIterator.time" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">time</code><a class="headerlink" href="#blocksci.BlockIterator.time" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: Datetime object created from creation timestamp</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[NumpyDatetime]</span></code></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[datetime64[ns]]</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.BlockIterator.time_seen">
-<code class="descname">time_seen</code><a class="headerlink" href="#blocksci.BlockIterator.time_seen" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">time_seen</code><a class="headerlink" href="#blocksci.BlockIterator.time_seen" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: If recorded by the mempool recorder, the time that this block was first seen by your node</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../other/iterators/DateOptionalIterator.html#blocksci.DateOptionalIterator" title="blocksci.DateOptionalIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.DateOptionalIterator</span></code></a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[datetime64[ns]]</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.BlockIterator.timestamp">
-<code class="descname">timestamp</code><a class="headerlink" href="#blocksci.BlockIterator.timestamp" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">timestamp</code><a class="headerlink" href="#blocksci.BlockIterator.timestamp" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: Creation timestamp specified in block header</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[uint32]</span></code></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int]</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
+<dt id="blocksci.BlockIterator.timestamp_seen">
+<em class="property">property </em><code class="sig-name descname">timestamp_seen</code><a class="headerlink" href="#blocksci.BlockIterator.timestamp_seen" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each item: If recorded by the mempool recorder, the timestamp that this block was first seen by your node</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="blocksci.BlockIterator.total_size">
-<code class="descname">total_size</code><a class="headerlink" href="#blocksci.BlockIterator.total_size" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">total_size</code><a class="headerlink" href="#blocksci.BlockIterator.total_size" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: The size all block data in bytes</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[uint32]</span></code></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int]</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.BlockIterator.tx_count">
-<code class="descname">tx_count</code><a class="headerlink" href="#blocksci.BlockIterator.tx_count" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">tx_count</code><a class="headerlink" href="#blocksci.BlockIterator.tx_count" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: A range of all of the txes in the block</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int64]</span></code></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int]</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.BlockIterator.txes">
-<code class="descname">txes</code><a class="headerlink" href="#blocksci.BlockIterator.txes" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">txes</code><a class="headerlink" href="#blocksci.BlockIterator.txes" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: A range of all of the txes in the block</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="TxIterator.html#blocksci.TxIterator" title="blocksci.TxIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.TxIterator</span></code></a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="TxIterator.html#blocksci.TxIterator" title="blocksci.TxIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.TxIterator</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.BlockIterator.version">
-<code class="descname">version</code><a class="headerlink" href="#blocksci.BlockIterator.version" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">version</code><a class="headerlink" href="#blocksci.BlockIterator.version" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: Protocol version specified in block header</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int32]</span></code></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int]</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.BlockIterator.virtual_size">
-<code class="descname">virtual_size</code><a class="headerlink" href="#blocksci.BlockIterator.virtual_size" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">virtual_size</code><a class="headerlink" href="#blocksci.BlockIterator.virtual_size" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: The weight of the block divided by 4</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[uint32]</span></code></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int]</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.BlockIterator.weight">
-<code class="descname">weight</code><a class="headerlink" href="#blocksci.BlockIterator.weight" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">weight</code><a class="headerlink" href="#blocksci.BlockIterator.weight" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: Three times the base size plus the total size</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[uint32]</span></code></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int]</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -590,7 +516,7 @@
         <a href="TxIterator.html" class="btn btn-neutral float-right" title="Tx Iterator" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="iterators.html" class="btn btn-neutral" title="Iterator Classes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="iterators.html" class="btn btn-neutral float-left" title="Iterator Classes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -599,11 +525,19 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, Harry Kalodner.
+        
+        &copy; Copyright 2018-2020, BlockSci Developers
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -615,37 +549,16 @@
   </div>
   
 
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../../../',
-            VERSION:'0.5.0',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../../../_static/jquery.js"></script>
-      <script type="text/javascript" src="../../../_static/underscore.js"></script>
-      <script type="text/javascript" src="../../../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
-  
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

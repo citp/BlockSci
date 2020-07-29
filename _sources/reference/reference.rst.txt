@@ -1,4 +1,4 @@
-Reference
+Python Module Reference
 =========================
 
 .. toctree::

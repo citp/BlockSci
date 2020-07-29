@@ -1,15 +1,18 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>BlockSci Version 0.5.0 Documentation &mdash; BlockSci 0.5.0 documentation</title>
+  <title>BlockSci Version 0.7 Documentation &mdash; BlockSci 0.7.0 documentation</title>
   
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
 
   
   
@@ -17,38 +20,37 @@
   
 
   
-
-  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
 
-  
-
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="BlockSci" href="readme.html" /> 
-
-  
-  <script src="_static/js/modernizr.min.js"></script>
-
+    <link rel="next" title="Local Setup" href="setup.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
-            <a href="#" class="icon icon-home"> BlockSci
+            <a href="#" class="icon icon-home" alt="Documentation Home"> BlockSci
           
 
           
@@ -58,7 +60,7 @@
             
             
               <div class="version">
-                0.5.0
+                0.7.0
               </div>
             
           
@@ -75,6 +77,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -82,18 +85,21 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="readme.html">BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Local Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using-blocksci.html">Using BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fluent-interface.html">Fluent Interface (Python)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/reference.html">Python Module Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="changelog.html">Release notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="compiling.html">Compiling BlockSci</a></li>
-<li class="toctree-l1"><a class="reference internal" href="setup.html">Local setup</a></li>
-<li class="toctree-l1"><a class="reference internal" href="reference/reference.html">Reference</a></li>
 </ul>
 
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -132,9 +138,9 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="#">Docs</a> &raquo;</li>
+      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
         
-      <li>BlockSci Version 0.5.0 Documentation</li>
+      <li>BlockSci Version 0.7 Documentation</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -153,64 +159,30 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="blocksci-version-0-5-0-documentation">
-<h1>BlockSci Version 0.5.0 Documentation<a class="headerlink" href="#blocksci-version-0-5-0-documentation" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="blocksci-version-0-7-documentation">
+<h1>BlockSci Version 0.7 Documentation<a class="headerlink" href="#blocksci-version-0-7-documentation" title="Permalink to this headline">¶</a></h1>
+<p>The Bitcoin blockchain — currently 280 GB and growing — contains a massive amount of data that can give us insights into the Bitcoin ecosystem, including how users, businesses, and miners operate. BlockSci enables fast and expressive analysis of Bitcoin’s and many other blockchains. The accompanying paper explains its design and applications: <a class="reference external" href="https://arxiv.org/pdf/1709.02489.pdf">https://arxiv.org/pdf/1709.02489.pdf</a> (an updated version of the paper has been accepted at Usenix Security and will be available soon).</p>
+<p>Please refer to the <a class="reference external" href="changelog.html">release notes</a> to learn about new features, important bug fixes and other changes.</p>
 <div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Contents:</span></p>
+<p class="caption"><span class="caption-text">Table of Contents</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="readme.html">BlockSci</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="readme.html#documentation">Documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="readme.html#latest-release-blocksci-v0-5-0">Latest release (BlockSci v0.5.0)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="readme.html#quick-setup-using-amazon-ec2">Quick setup using Amazon EC2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="readme.html#using-the-analysis-library">Using the analysis library</a></li>
-<li class="toctree-l2"><a class="reference internal" href="readme.html#setting-up-blocksci-locally">Setting up BlockSci Locally</a></li>
-<li class="toctree-l2"><a class="reference internal" href="readme.html#getting-help">Getting help</a></li>
-<li class="toctree-l2"><a class="reference internal" href="readme.html#team-contact-info">Team &amp; contact info</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Release notes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-5-0">Version 0.5.0</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-4-5">Version 0.4.5</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-3">Version 0.3</a></li>
-<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-2">Version 0.2</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="compiling.html">Compiling BlockSci</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="compiling.html#ubuntu-16-04">Ubuntu 16.04</a></li>
-<li class="toctree-l2"><a class="reference internal" href="compiling.html#mac-os-10-13">Mac OS 10.13</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="setup.html">Local setup</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="setup.html#blocksci-parser">BlockSci Parser</a></li>
-<li class="toctree-l2"><a class="reference internal" href="setup.html#incremental-updates">Incremental updates</a></li>
-<li class="toctree-l2"><a class="reference internal" href="setup.html#mempool-recorder">Mempool Recorder</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="reference/reference.html">Reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="reference/chain/chain.html">Chain Classes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference/addresses/addresses.html">Address Classes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference/heuristics/heuristics.html">Heuristics</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference/clustering/clustering.html">Clustering</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference/other/other.html">Other Utility Classes</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Local Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using-blocksci.html">Using BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fluent-interface.html">Fluent Interface (Python)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/reference.html">Python Module Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Release notes</a></li>
 </ul>
 </div>
 </div>
 <div class="section" id="old-documentation">
 <h1>Old Documentation<a class="headerlink" href="#old-documentation" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
-<li>BlockSci <a class="reference external" href="0.4.5/index.html">Version 0.4.5 Documentation</a></li>
-<li>BlockSci <a class="reference external" href="0.3/index.html">Version 0.3 Documentation</a></li>
-<li>BlockSci <a class="reference external" href="0.2/index.html">Version 0.2 Documentation</a></li>
-</ul>
-</div>
-<div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
-<ul class="simple">
-<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
-<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
-<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+<li><p>BlockSci <a class="reference external" href="https://citp.github.io/old-blocksci-docs/0.5.0/index.html">Version 0.5.0 Documentation</a></p></li>
+<li><p>BlockSci <a class="reference external" href="https://citp.github.io/old-blocksci-docs/0.4.5/index.html">Version 0.4.5 Documentation</a></p></li>
+<li><p>BlockSci <a class="reference external" href="https://citp.github.io/old-blocksci-docs/0.3/index.html">Version 0.3 Documentation</a></p></li>
+<li><p>BlockSci <a class="reference external" href="https://citp.github.io/old-blocksci-docs/0.2/index.html">Version 0.2 Documentation</a></p></li>
 </ul>
 </div>
 
@@ -222,7 +194,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="readme.html" class="btn btn-neutral float-right" title="BlockSci" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="setup.html" class="btn btn-neutral float-right" title="Local Setup" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
     </div>
@@ -232,11 +204,19 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, Harry Kalodner.
+        
+        &copy; Copyright 2018-2020, BlockSci Developers
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -248,37 +228,16 @@
   </div>
   
 
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'0.5.0',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

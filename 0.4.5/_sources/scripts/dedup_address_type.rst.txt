@@ -1,7 +1,0 @@
-Dedup Address Type
-====================================
-
-.. autoclass:: blocksci.dedup_address_type
-   :members:
-   :inherited-members:
-   :undoc-members:

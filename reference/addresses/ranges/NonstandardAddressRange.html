@@ -1,15 +1,18 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Nonstandard Address Range &mdash; BlockSci 0.5.0 documentation</title>
+  <title>Nonstandard Address Range &mdash; BlockSci 0.7.0 documentation</title>
   
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
 
   
   
@@ -17,39 +20,38 @@
   
 
   
-
-  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
-  
-
-  
-    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="Optional Address Range" href="AddressOptionalRange.html" />
+    <link rel="next" title="Iterator Classes" href="../iterators/iterators.html" />
     <link rel="prev" title="Witness Scripthash Address Range" href="WitnessScriptHashAddressRange.html" /> 
-
-  
-  <script src="../../../_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
-            <a href="../../../index.html" class="icon icon-home"> BlockSci
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> BlockSci
           
 
           
@@ -59,7 +61,7 @@
             
             
               <div class="version">
-                0.5.0
+                0.7.0
               </div>
             
           
@@ -76,6 +78,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -83,13 +86,12 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">BlockSci</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Release notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../compiling.html">Compiling BlockSci</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../setup.html">Local setup</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../../reference.html">Reference</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../setup.html">Local Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../using-blocksci.html">Using BlockSci</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../fluent-interface.html">Fluent Interface (Python)</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../reference.html">Python Module Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../../chain/chain.html">Chain Classes</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../addresses.html">Address Classes</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="../address.html">Addresses</a></li>
@@ -107,17 +109,6 @@
 <li class="toctree-l4"><a class="reference internal" href="ScriptHashAddressRange.html">Scripthash Address Range</a></li>
 <li class="toctree-l4"><a class="reference internal" href="WitnessScriptHashAddressRange.html">Witness Scripthash Address Range</a></li>
 <li class="toctree-l4 current"><a class="current reference internal" href="#">Nonstandard Address Range</a></li>
-<li class="toctree-l4"><a class="reference internal" href="AddressOptionalRange.html">Optional Address Range</a></li>
-<li class="toctree-l4"><a class="reference internal" href="EquivAddressOptionalRange.html">Optional Equiv Address Range</a></li>
-<li class="toctree-l4"><a class="reference internal" href="PubkeyAddressOptionalRange.html">Optional Pubkey Address Range</a></li>
-<li class="toctree-l4"><a class="reference internal" href="PubkeyHashAddressOptionalRange.html">Optional Pubkey Hash Address Range</a></li>
-<li class="toctree-l4"><a class="reference internal" href="MultisigPubkeyOptionalRange.html">Optional Multisig Pubkey Range</a></li>
-<li class="toctree-l4"><a class="reference internal" href="WitnessPubkeyHashAddressOptionalRange.html">Optional Witness Pubkey Hash Address Range</a></li>
-<li class="toctree-l4"><a class="reference internal" href="MultisigAddressOptionalRange.html">Optional Multisig Address Range</a></li>
-<li class="toctree-l4"><a class="reference internal" href="OpReturnOptionalRange.html">Optional OpReturn Range</a></li>
-<li class="toctree-l4"><a class="reference internal" href="ScriptHashAddressOptionalRange.html">Optional Scripthash Address Range</a></li>
-<li class="toctree-l4"><a class="reference internal" href="WitnessScriptHashAddressOptionalRange.html">Optional Witness Scripthash Address Range</a></li>
-<li class="toctree-l4"><a class="reference internal" href="NonstandardAddressOptionalRange.html">Optional Nonstandard Address Range</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../iterators/iterators.html">Iterator Classes</a></li>
@@ -128,11 +119,15 @@
 <li class="toctree-l2"><a class="reference internal" href="../../other/other.html">Other Utility Classes</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../../troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Release notes</a></li>
 </ul>
 
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -171,9 +166,9 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
         
-          <li><a href="../../reference.html">Reference</a> &raquo;</li>
+          <li><a href="../../reference.html">Python Module Reference</a> &raquo;</li>
         
           <li><a href="../addresses.html">Address Classes</a> &raquo;</li>
         
@@ -200,195 +195,30 @@
             
   <div class="section" id="nonstandard-address-range">
 <h1>Nonstandard Address Range<a class="headerlink" href="#nonstandard-address-range" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="blocksci.NonstandardAddressRange">
-<em class="property">class </em><code class="descclassname">blocksci.</code><code class="descname">NonstandardAddressRange</code><a class="headerlink" href="#blocksci.NonstandardAddressRange" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="attribute">
-<dt id="blocksci.NonstandardAddressRange.address_num">
-<code class="descname">address_num</code><a class="headerlink" href="#blocksci.NonstandardAddressRange.address_num" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each item: The internal identifier of the address</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[uint32]</span></code></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="blocksci.NonstandardAddressRange.all">
-<code class="descname">all</code><a class="headerlink" href="#blocksci.NonstandardAddressRange.all" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a list of all of the objects in the range</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="blocksci.NonstandardAddressRange.balance">
-<code class="descname">balance</code><span class="sig-paren">(</span><em>height: int=-1</em><span class="sig-paren">)</span> &#x2192; numpy.ndarray[int64]<a class="headerlink" href="#blocksci.NonstandardAddressRange.balance" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each item: Calculates the balance held by this address at the height (Defaults to the full chain)</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int64]</span></code></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="blocksci.NonstandardAddressRange.equiv">
-<code class="descname">equiv</code><span class="sig-paren">(</span><em>equiv_script: bool=True</em><span class="sig-paren">)</span> &#x2192; blocksci.EquivAddressRange<a class="headerlink" href="#blocksci.NonstandardAddressRange.equiv" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each item: Returns a list of all addresses equivalent to this address</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="EquivAddressRange.html#blocksci.EquivAddressRange" title="blocksci.EquivAddressRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.EquivAddressRange</span></code></a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="blocksci.NonstandardAddressRange.first_tx">
-<code class="descname">first_tx</code><a class="headerlink" href="#blocksci.NonstandardAddressRange.first_tx" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each item: Get the first transaction that was sent to a type equivalent address</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../chain/ranges/TxRange.html#blocksci.TxRange" title="blocksci.TxRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.TxRange</span></code></a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="blocksci.NonstandardAddressRange.has_been_spent">
-<code class="descname">has_been_spent</code><a class="headerlink" href="#blocksci.NonstandardAddressRange.has_been_spent" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each item: Check if a type equivalent address has ever been spent</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[NumpyBool]</span></code></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
+<em class="property">class </em><code class="sig-prename descclassname">blocksci.</code><code class="sig-name descname">NonstandardAddressRange</code><a class="headerlink" href="#blocksci.NonstandardAddressRange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.NonstandardAddressSequence</span></code>, <a class="reference internal" href="AddressRange.html#blocksci.GenericAddressRange" title="blocksci.GenericAddressRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.GenericAddressRange</span></code></a></p>
+<dl class="py method">
 <dt id="blocksci.NonstandardAddressRange.in_script">
-<code class="descname">in_script</code><a class="headerlink" href="#blocksci.NonstandardAddressRange.in_script" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">in_script</code><a class="headerlink" href="#blocksci.NonstandardAddressRange.in_script" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: Nonstandard input script</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="blocksci.NonstandardAddressRange.in_txes_count">
-<code class="descname">in_txes_count</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; numpy.ndarray[int64]<a class="headerlink" href="#blocksci.NonstandardAddressRange.in_txes_count" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each item: Return the number of transactions where this address was an input</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int64]</span></code></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
+<dl class="py method">
 <dt id="blocksci.NonstandardAddressRange.out_script">
-<code class="descname">out_script</code><a class="headerlink" href="#blocksci.NonstandardAddressRange.out_script" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">out_script</code><a class="headerlink" href="#blocksci.NonstandardAddressRange.out_script" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each item: Nonstandard output script</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="blocksci.NonstandardAddressRange.out_txes_count">
-<code class="descname">out_txes_count</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; numpy.ndarray[int64]<a class="headerlink" href="#blocksci.NonstandardAddressRange.out_txes_count" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each item: Return the number of transactions where this address was an output</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int64]</span></code></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="blocksci.NonstandardAddressRange.outs">
-<code class="descname">outs</code><a class="headerlink" href="#blocksci.NonstandardAddressRange.outs" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each item: Returns a range of all outputs sent to this address</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../chain/iterators/OutputIterator.html#blocksci.OutputIterator" title="blocksci.OutputIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.OutputIterator</span></code></a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="blocksci.NonstandardAddressRange.raw_type">
-<code class="descname">raw_type</code><a class="headerlink" href="#blocksci.NonstandardAddressRange.raw_type" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each item: The type of address</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray[int64]</span></code></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="blocksci.NonstandardAddressRange.revealed_tx">
-<code class="descname">revealed_tx</code><a class="headerlink" href="#blocksci.NonstandardAddressRange.revealed_tx" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each item: The transaction where a type equivalent address was first revealed</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="../../chain/ranges/TxOptionalRange.html#blocksci.TxOptionalRange" title="blocksci.TxOptionalRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.TxOptionalRange</span></code></a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="blocksci.NonstandardAddressRange.type">
-<code class="descname">type</code><a class="headerlink" href="#blocksci.NonstandardAddressRange.type" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each item: The type of address</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -403,10 +233,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="AddressOptionalRange.html" class="btn btn-neutral float-right" title="Optional Address Range" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="../iterators/iterators.html" class="btn btn-neutral float-right" title="Iterator Classes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="WitnessScriptHashAddressRange.html" class="btn btn-neutral" title="Witness Scripthash Address Range" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="WitnessScriptHashAddressRange.html" class="btn btn-neutral float-left" title="Witness Scripthash Address Range" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -415,11 +245,19 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, Harry Kalodner.
+        
+        &copy; Copyright 2018-2020, BlockSci Developers
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -431,37 +269,16 @@
   </div>
   
 
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../../../',
-            VERSION:'0.5.0',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../../../_static/jquery.js"></script>
-      <script type="text/javascript" src="../../../_static/underscore.js"></script>
-      <script type="text/javascript" src="../../../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
-  
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>
