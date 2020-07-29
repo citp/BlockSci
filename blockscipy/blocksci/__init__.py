@@ -760,7 +760,7 @@ def outputs_unspent(outputs, height = -1):
 def outputs_spent_before_height(outputs, height):
     return outputs.where(lambda output: output.is_spent).where(lambda output: output.spending_tx.map(lambda tx: tx.block_height).or_value(0) < height)
 
-def outputs_spent_after_height(outputs, age):
+def outputs_spent_after_height(outputs, height):
     return outputs.where(lambda output: output.is_spent).where(lambda output: output.spending_tx.map(lambda tx: tx.block_height).or_value(0) >= height)
 
 def outputs_spent_with_age_less_than(outputs, age):
