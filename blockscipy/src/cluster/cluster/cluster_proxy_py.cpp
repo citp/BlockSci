@@ -18,6 +18,8 @@ struct AddClusterProxyMethods {
     template <typename FuncApplication>
     void operator()(FuncApplication func) {
         using namespace blocksci;
+
+        func(method_tag, "tagged_addresses", &Cluster::taggedAddresses, "Given a dictionary of tags, return a range of TaggedAddress objects for any tagged addresses in the cluster", pybind11::arg("tagged_addresses"));
         func(method_tag, "outs", +[](Cluster &cluster) -> RawIterator<Output> {
             pybind11::print("Warning: `outs` is deprecated. Use `outputs` instead.");
             return cluster.getOutputs();

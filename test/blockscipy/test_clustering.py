@@ -266,3 +266,17 @@ def cluster_regtest(chain, json_data, regtest, cm):
             sorted(cluster.addresses.to_list(), key=lambda x: x.address_num),
             file=regtest,
         )
+
+
+def test_tagged_address(chain, tmpdir_factory):
+    cm = blocksci.cluster.ClusterManager.create_clustering(
+        str(tmpdir_factory.mktemp("tagged-address-test")),
+        chain,
+        heuristic=blocksci.heuristics.change.none
+    )
+    address = chain[-1].txes[0].outputs[0].address
+    cluster = cm.cluster_with_address(address)
+    tags = {address: "test-tag"}
+    assert cluster.tagged_addresses(tags).size == 1
+    assert cluster.tagged_addresses(tags).to_list()[0].address == address
+    assert cluster.tagged_addresses(tags).to_list()[0].tag == "test-tag"
