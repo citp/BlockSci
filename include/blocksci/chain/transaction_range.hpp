@@ -75,6 +75,7 @@ namespace blocksci {
                 }
                 resetTx();
                 tx.data.sequenceNumbers -= tx.data.rawTx->inputCount;
+                tx.data.spentOutputNums -= tx.data.rawTx->inputCount;
                 --tx.data.version;
                 --tx.data.hash;
                 return *this;
