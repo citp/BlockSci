@@ -1,6 +1,7 @@
 Troubleshooting
 =====================
 
+
 Frequently asked questions (FAQ)
 ---------------------------------
 
@@ -13,10 +14,8 @@ Technical and practical questions
 -----------------------------------
 
 If you've encountered an issue or have a question about using BlockSci not answered in the FAQ, the best way to find help is to search for similar issues in our `GitHub issue tracker`_, or open a new issue.
-Please make sure to provide as much helpful information as possible, including the information requested in the GitHub issue template.
 
-Please know that we are an academic team and aren't able to provide the standard of support that you might expect from a commercial project.
-
+As of November 2020, we are no longer actively developing or supporting BlockSci.
 
 .. _GitHub issue tracker: https://github.com/citp/blocksci/issues
 
@@ -28,6 +27,12 @@ We are not able to keep track of the development of the various blockchains that
 When cryptocurrencies implement new features (e.g., script types, signature schemes), there's a possibility that it breaks BlockSci in unexpected ways or requires updates to the code base (e.g., the parsing logic).
 We therefore strongly recommend that you put procedures in place that may help detect issues with data validity and correctness, such as comparing transaction and address data against blockchain explorers.
 
+
+Known limitations
+-------------------
+
+- Iterating over an ``AddressIterator`` in Python will produce a segfault or implausible results (this includes casting it to a list using ``list(iterator)``). Use ``.to_list()`` to retrieve a list of the results over which you can iterate.
+- Slicing a ``ClusterRange`` will produce a segfault or implausible results.
 
 Parser diagnostics
 --------------------

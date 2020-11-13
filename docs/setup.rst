@@ -56,7 +56,7 @@ You will also need to increase_ the open files limit on your system (e.g., to 64
 Mac OS 10.15
 ^^^^^^^^^^^^^
 
-BlockSci currently *is not compatible with Xcode 11.5* and above, due to issues with some dependencies. The instructions below may work with older versions of Xcode. We hope to be able to support MacOS again in the future.
+BlockSci currently *is not compatible with Xcode 11.5* and above, due to incompatibility with some dependencies. The instructions below may work with older versions of Xcode.
 
 ..  code-block:: bash
 

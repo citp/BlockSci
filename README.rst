@@ -1,11 +1,13 @@
 BlockSci
 ~~~~~~~~~~~~~~~~~~
 
-The Bitcoin blockchain — currently 280 GB and growing — contains a massive amount of data that can give us insights into the Bitcoin ecosystem, including how users, businesses, and miners operate. BlockSci enables fast and expressive analysis of Bitcoin’s and many other blockchains. The accompanying paper explains its design and applications: https://arxiv.org/pdf/1709.02489.pdf (an updated version of the paper has been accepted at Usenix Security and will be available soon).
+**As of November 2020, we are no longer actively developing or supporting BlockSci.** Please be aware that as cryptocurrencies continue to evolve, they may lose compatibility with BlockSci and might break it in unexpected ways.
+
+The Bitcoin blockchain — currently 280 GB and growing — contains a massive amount of data that can give us insights into the Bitcoin ecosystem, including how users, businesses, and miners operate. BlockSci enables fast and expressive analysis of Bitcoin’s and many other blockchains. The accompanying paper explains its design and applications: https://www.usenix.org/system/files/sec20-kalodner.pdf.
 
 Current tools for blockchain analysis depend on general-purpose databases that provide "ACID" guarantees. But that’s unnecessary for blockchain analysis where the data structures are append-only. We take advantage of this observation in the design of our custom in-memory blockchain database as well as an analysis library. BlockSci’s core infrastructure is written in C++ and optimized for speed. (For example, traversing every transaction input and output on the Bitcoin blockchain takes only **1 second** on our r5.4xlarge EC2 machine.) To make analysis more convenient, we provide Python bindings and a Jupyter notebook interface.
 
-*This repository contains research code that may contain bugs and errors and may break in unexpected ways. We are an academic team and aren’t able to provide the level of QA and support that you might expect from a commercial project.*
+*This repository contains research code that is no longer actively maintained, may contain bugs and errors and may break in unexpected ways. We are an academic team and aren’t able to provide the level of QA and support that you might expect from a commercial project.*
 
 
 Documentation
@@ -54,7 +56,7 @@ Version 0.7.0 comes with a new `fluent Python interface`_ for fast and expressiv
 Amazon EC2 AMI
 ==============================
 
-We currently do not provide an AMI for BlockSci.
+We no longer provide an AMI for BlockSci.
 
 
 Getting help

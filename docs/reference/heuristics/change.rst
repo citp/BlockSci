@@ -1,7 +1,7 @@
 Change Address Heuristics
 --------------------------
 
-BlockSci supports a number of different heuristics for determining potential change outputs for a given transaction.
+BlockSci provides a number of different heuristics for determining potential change outputs for a given transaction.
 The heuristics are sometimes contradictory and thus we provide users with the ability to choose which heuristics they wish to apply.
 Further, you can combine different change address heuristics through the various composition operators of the :py:class:`blocksci.heuristics.change.ChangeHeuristic` class.
 
@@ -9,7 +9,8 @@ Further, you can combine different change address heuristics through the various
     :members:
     :special-members: __call__, __and__, __or__, __sub__
 
-Note that most heuristics can return multiple outputs as candidates. To only return an output when there's only a single candidate, use `.unique_change`.
+Note that many heuristics can return multiple outputs as candidates. To only return an output when there's only a single candidate, use `.unique_change`.
+We recommend against simply using one of these heuristics without further refinement for clustering.
 
 Static Heuristics
 ~~~~~~~~~~~~~~~~~
@@ -26,7 +27,7 @@ Static heuristics do not depend on the outputs being spent.
 
 .. autoattribute:: blocksci.heuristics.change.optimal_change
 
-    If there exists an output that is smaller than any of the inputs it is likely the change. If a change output was larger than the smallest input, then the coin selection algorithm wouldn't need to add the input in the first place.
+    If there exists an output that is smaller than any of the inputs it is likely the change. If a change output was larger than the smallest input, then the coin selection algorithm wouldn't need to add the input in the first place. (Note that if a transaction has only one input, all outputs are likely to have a value smaller than the input and will be returned).
 
 .. autofunction:: blocksci.heuristics.change.power_of_ten_value
 
