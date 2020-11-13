@@ -100,6 +100,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#incremental-updates">Incremental updates</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#mempool-recorder">Mempool recorder</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#clustering">Clustering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#multi-chain-mode">Multi-chain mode</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="using-blocksci.html">Using BlockSci</a></li>
@@ -216,7 +217,7 @@ sudo make install
 </div>
 <div class="section" id="mac-os-10-15">
 <h3>Mac OS 10.15<a class="headerlink" href="#mac-os-10-15" title="Permalink to this headline">¶</a></h3>
-<p>BlockSci currently <em>is not compatible with Xcode 11.5</em> and above, due to issues with some dependencies. The instructions below may work with older versions of Xcode. We hope to be able to support MacOS again in the future.</p>
+<p>BlockSci currently <em>is not compatible with Xcode 11.5</em> and above, due to incompatibility with some dependencies. The instructions below may work with older versions of Xcode.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>brew install cmake jsoncpp libjson-rpc-cpp boost openssl jemalloc zstd <span class="se">\</span>
 automake libtool google-sparsehash lz4 python3
 sudo xcode-select --reset
@@ -284,6 +285,10 @@ To use the mempool recorder, you need to have continuous incremental updates ena
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>blocksci_clusterer &lt;data location&gt; &lt;cluster output directory&gt; <span class="o">[</span>--overwrite<span class="o">]</span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="multi-chain-mode">
+<h2>Multi-chain mode<a class="headerlink" href="#multi-chain-mode" title="Permalink to this headline">¶</a></h2>
+<p>The multi-chain mode described in the paper is not integrated into the latest release of BlockSci. The prototype implementation is available at <a class="reference external" href="https://github.com/mplattner/BlockSci/tree/feature/fork-support">mplattner/BlockSci</a>.</p>
 </div>
 </div>
 

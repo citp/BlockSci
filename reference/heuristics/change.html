@@ -183,7 +183,7 @@
             
   <div class="section" id="change-address-heuristics">
 <h1>Change Address Heuristics<a class="headerlink" href="#change-address-heuristics" title="Permalink to this headline">¶</a></h1>
-<p>BlockSci supports a number of different heuristics for determining the change address for a given transaction.
+<p>BlockSci provides a number of different heuristics for determining potential change outputs for a given transaction.
 The heuristics are sometimes contradictory and thus we provide users with the ability to choose which heuristics they wish to apply.
 Further, you can combine different change address heuristics through the various composition operators of the <a class="reference internal" href="#blocksci.heuristics.change.ChangeHeuristic" title="blocksci.heuristics.change.ChangeHeuristic"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksci.heuristics.change.ChangeHeuristic</span></code></a> class.</p>
 <dl class="py class">
@@ -227,9 +227,11 @@ Further, you can combine different change address heuristics through the various
 
 </dd></dl>
 
+<p>Note that many heuristics can return multiple outputs as candidates. To only return an output when there’s only a single candidate, use <cite>.unique_change</cite>.
+We recommend against simply using one of these heuristics without further refinement for clustering.</p>
 <div class="section" id="static-heuristics">
 <h2>Static Heuristics<a class="headerlink" href="#static-heuristics" title="Permalink to this headline">¶</a></h2>
-<p>Static heuristics do not depend on the outputs being spent. They will always return the same result.</p>
+<p>Static heuristics do not depend on the outputs being spent.</p>
 <dl class="py attribute">
 <dt id="blocksci.heuristics.change.address_reuse">
 <code class="sig-prename descclassname">change.</code><code class="sig-name descname">address_reuse</code><em class="property"> = &lt;blocksci.heuristics.change.ChangeHeuristic object&gt;</em><a class="headerlink" href="#blocksci.heuristics.change.address_reuse" title="Permalink to this definition">¶</a></dt>
@@ -245,7 +247,7 @@ Further, you can combine different change address heuristics through the various
 <dl class="py attribute">
 <dt id="blocksci.heuristics.change.optimal_change">
 <code class="sig-prename descclassname">change.</code><code class="sig-name descname">optimal_change</code><em class="property"> = &lt;blocksci.heuristics.change.ChangeHeuristic object&gt;</em><a class="headerlink" href="#blocksci.heuristics.change.optimal_change" title="Permalink to this definition">¶</a></dt>
-<dd><p>If there exists an output that is smaller than any of the inputs it is likely the change. If a change output was larger than the smallest input, then the coin selection algorithm wouldn’t need to add the input in the first place.</p>
+<dd><p>If there exists an output that is smaller than any of the inputs it is likely the change. If a change output was larger than the smallest input, then the coin selection algorithm wouldn’t need to add the input in the first place. (Note that if a transaction has only one input, all outputs are likely to have a value smaller than the input and will be returned).</p>
 </dd></dl>
 
 <dl class="py function">
@@ -254,10 +256,6 @@ Further, you can combine different change address heuristics through the various
 <dd><p>Detects possible change outputs by excluding output values that are multiples of 10^`digits`, as such values are unlikely to occur randomly.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="dynamic-heuristics">
-<h2>Dynamic Heuristics<a class="headerlink" href="#dynamic-heuristics" title="Permalink to this headline">¶</a></h2>
-<p>Dynamic heuristics depend on the state of the blockchain. If outputs of a transaction are spent, the results returned by the following heuristics can change.</p>
 <dl class="py attribute">
 <dt id="blocksci.heuristics.change.client_change_address_behavior">
 <code class="sig-prename descclassname">change.</code><code class="sig-name descname">client_change_address_behavior</code><em class="property"> = &lt;blocksci.heuristics.change.ChangeHeuristic object&gt;</em><a class="headerlink" href="#blocksci.heuristics.change.client_change_address_behavior" title="Permalink to this definition">¶</a></dt>
@@ -267,9 +265,13 @@ Further, you can combine different change address heuristics through the various
 <dl class="py attribute">
 <dt id="blocksci.heuristics.change.legacy">
 <code class="sig-prename descclassname">change.</code><code class="sig-name descname">legacy</code><em class="property"> = &lt;blocksci.heuristics.change.ChangeHeuristic object&gt;</em><a class="headerlink" href="#blocksci.heuristics.change.legacy" title="Permalink to this definition">¶</a></dt>
-<dd><p>The original change address heuristic that was the default used in BlockSci before version 0.6. It consists of the intersection of the optimal change heuristic and the client address behavior heuristic</p>
+<dd><p>The original change address heuristic that was the default used in BlockSci before version 0.6.</p>
 </dd></dl>
 
+</div>
+<div class="section" id="dynamic-heuristics">
+<h2>Dynamic Heuristics<a class="headerlink" href="#dynamic-heuristics" title="Permalink to this headline">¶</a></h2>
+<p>Dynamic heuristics depend on the state of the blockchain. If outputs of a transaction are spent, the results returned by the following heuristics can change.</p>
 <dl class="py attribute">
 <dt id="blocksci.heuristics.change.locktime">
 <code class="sig-prename descclassname">change.</code><code class="sig-name descname">locktime</code><em class="property"> = &lt;blocksci.heuristics.change.ChangeHeuristic object&gt;</em><a class="headerlink" href="#blocksci.heuristics.change.locktime" title="Permalink to this definition">¶</a></dt>
